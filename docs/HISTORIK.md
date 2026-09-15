@@ -1,0 +1,12132 @@
+# Historikken — hvad der er bygget, målt og besluttet
+
+Flyttet ORDRET ud af `CLAUDE.md` 15/9 2026, fordi den fil læses ind ved hver
+session og var vokset til 12.579 linjer. Intet er skrevet om. Nyeste øverst.
+Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælder
+(fx: isen kan bestilles fra 15/9, husnummeret er 20I fra 9/9).
+
+## Hvor vi er nu
+
+**Isen kan bestilles, overskriften begynder med den, og bordene får at
+vide, når maden er klar** (15/9, sent). Kunden har købt systemet og
+godkendt prisen. Hans ord: *"på titlen vil han have noget andet end
+grillmad, på bestillingen skal der være is, is er en kæmpe stolthed — så
+også bedre og mere showcase af det"* og *"en løsning ift. når folk
+bestiller ved bordene med QR-kode, så de ved, når ens mad er klar, da man
+også kan lave afhentning oppe ved disken"*. Mikkels tre valg: overskriften
+*"Is, smørrebrød og mad direkte ved havnen"*, isen på forsiden + QR (ikke
+smørrebrødssiden), og *ejeren vælger i admin*, hvem der henter.
+**Ingen SQL-fil — men én skrivning i produktionen:** 15 og 16 (Kugleis og
+ishorn, Softice og vafler) er lagt på `bestilbare_kategorier`, så de står
+på forsiden og (uden egen liste) ved bordene.
+
+- **⚠️ `erIs()` ER VÆK — REGLEN FRA 23/8 ER VENDT.** Isen følger
+  fluebenene som alt andet; admin har dens tre flueben, og CSV'en spørger
+  `Butik.salgsKategorier` i stedet for sin egen kopi (som sagde nej til
+  isen OG til en kategori, der kun sælges ved bordene). Grunden bag den
+  gamle regel — "en softice, man skal bestille et døgn i forvejen" — holder
+  ikke: varslet er kanalens nu (30 min ud af huset, 15 ved bordet). Seks
+  prøver er vendt med noter, fem modstykker lagt til; tre falsifikationer
+  faldt
+- **⚠️ CSV-PRØVEN LÆSTE DEN FORKERTE KOLONNE I TO UGER.** Cheeseburgers
+  beskrivelse har et semikolon i anførselstegn, og prøvens `split(';')`
+  forskød kolonnerne — den bestod på burgeren, fordi den tilfældigvis er
+  udsolgt. Fundet, da en ny prøve krævede "nej". Den bruger Morgenbrød nu
+- **Isens afsnit** (`#isen`, mellem menukortet og historien — dagens ret →
+  ugen → bestillingen er urørt): to fotos (menukortets egne), fire slags
+  med menukortets priser og én knap. **⚠️ ALDRIG EN "FRA"-PRIS:** den
+  billigste is-vare er en løs vaffel til 4 kr., og "Softice-top" er et
+  tilkøb — derfor den FØRSTE vare i hver slags (`IS_SLAGS` i
+  `js/skal/forside.js`). **Knappen fører kun til bestillingen, når isen kan
+  bestilles dér** (og folder isens kategori ud); ellers til menukortet.
+  Fartprøven kender de to fotos (lazy, hentes af Chromes afstand).
+  `tests/is-afsnit.spec.js`, 6 prøver × 2, tre falsifikationer faldt.
+  ⚠️ Et elementskud på computer så afskåret ud — det var skuddet
+  (`#sc`-rulleroden klipper ved vinduet), ikke siden; målt på kasserne
+- **Hvem henter maden fra bordene** (`bord_hent_selv`, Køkken-kø → "Når
+  maden er klar"). **Standarden er "Vi bærer den ud"** — som siden 23/8.
+  Henter gæsten selv, er hovedknappen **🔔 Meld klar** og bagefter
+  **✓ Hentet**, på køkkenet OG på Bestillinger. **⚠️ Reglen bor i
+  `Admin.bordHentTrin`** (`js/admin/bestillinger.js`), og tre skærme
+  spørger den. **⚠️ Valget skal med i kortenes aftryk** — uden det blev
+  "✓ Færdig" stående, efter ejeren skiftede (fundet af prøven)
+- **Gæsten:** kvitteringen ved bordet følger bestillingen
+  (`Butik.bestillingStatus` hvert 8. sekund, pause når fanen er skjult).
+  Ved klar i hent-selv: rødt banner øverst (på `<body>`, så det overlever
+  "Bestil noget mere"), en tone (låst op i send-trykket), vibration og
+  🔔 i fanens titel. `min-bestilling/` får `&hent=1` fra kvitteringen og
+  siger "hent den ved lugen". **⚠️ Det er en side, ikke en push:** den
+  virker, mens siden står åben (kvitteringen siger det), og en iPhone kan
+  ikke vibrere fra en hjemmeside
+- `tests/bord-klar.spec.js`, 11 prøver × 2; fire falsifikationer faldt.
+  `admin-koekken`s "ingen hent-knap" er snævret til genindlæsningen —
+  `/hent/` ramte "Gæsten henter ved lugen" og "✓ Hentet"
+
+**Bordbestillingen skal kunne bruges — og ses i admin** (15/9). Kundens
+ord: *"det er ikke et rigtigt bestillingssystem, folk kan bruge ved
+bordene, og når de bestiller, skal det være helt tydeligt i admin, at
+det er bordbestilling, hvad de skal have, og hvilket bord."* **Ingen
+SQL.** Databasen var i orden — **MÅLT med en anon-sonde i produktionen**
+(rullet tilbage): en bordordre til bord 1 med bordets rigtige nøgle gik
+igennem som `ny`, fik nummer, og `bord_kode` blev nulstillet.
+
+- **MÅLT på den udgivne side:** 196 varer på 32.000 px, de første 48
+  smørrebrød og håndmadder (smørrebrødssidens "stykkerne først"), og
+  **"Videre ↓" fløj hele menuen igennem** med `scroll-behavior: smooth`
+  — et skud 0,4 s inde var helt sort. Glasset var IKKE årsagen: 16,7 ms
+  pr. billede både med og uden `backdrop-filter` (CPU ×4)
+- **Ved bordet står afsnittene i kategoriernes egen `sortering`**
+  (kun `kortVisning()`): retter og grill først, drikke efter. Ejerens
+  pile i admin flytter dem — ingen rangliste i koden
+- **Videre springer** (`behavior: 'instant'`, med en reserve, fordi en
+  ukendt værdi kaster), og **en chip fører til toppen af listen**, når
+  bjælken er klæbet fast — ellers landede gæsten i formularen
+- **Bestillinger:** en bordordre bærer en mørk bjælke øverst
+  (`.bestil-bord`) med **BORD 7** og *"laves nu og bæres ud"*. ⚠️
+  Typemærket FLYTTER ind i bjælken — det er stadig `Admin.typeMaerke`
+  med `data-type="bord"`, så ét typemærke pr. kort holder
+- **Overblik:** *"Fra bordene — laves nu"* står lige under dagens tal
+  (var 1.330 px nede og sagde kun et tal) med én række pr. ordre: bord,
+  én vare pr. linje, minutter (rød efter `Admin.bordForLaenge`) og
+  allergi. ⚠️ Rækkerne retter intet — ✓ Færdig er køkken-køens
+- Prøvefilerne for ved-bordet, tre-veje, bestillinger, vagtskærm,
+  bordkort, admin-design/-gennemgang/-typografi og køkken: **1034
+  bestod, 0 fejlede**
+
+**Natten til 15/9: gæstens regler i databasen, lofterne i kø, siden
+kommer sig selv — og valg på en vare er data.** Kundens ord: *"vi skal
+lave det mest dygtige og fejlfri system, ikke nok med det ser godt ud"*,
+med en liste over det, han lærte på sin første kunde. Gennemgangen blev
+MÅLT i produktionen (definitionerne læst ud af databasen), ikke læst i
+repoet. **SQL KØRT I PRODUKTIONEN:** `gaestens-regler.sql` og
+`vare-valg.sql` — begge prøvet i en rullet-tilbage transaktion FØR og
+EFTER (32/32 og 8/8), og `er-vi-klar.sql` tjek 140-146 er ✅.
+
+- **⚠️ QR-SPÆRREN LÆSTE DEN FORKERTE NØGLE — FRA 13/9.**
+  `aabent-og-antal-vaern.sql` skrev `mosede_dag_aaben` om og tog
+  `'qr_aaben'` med; admin skriver `'bordbestilling_aaben'`. "Tag ikke
+  imod fra bordene" gjorde altså ingenting i to dage.
+  `proev-dagsbesked-og-qr.sql` HAR kunnet se det hele tiden (3 af 11
+  fejlede lokalt) — 13/9-filen blev kun prøvet i produktionen, aldrig i
+  den lokale runde. **⚠️ Og tjek 107 sagde ✅ imens:** det spurgte, om
+  funktionen kendte ordet `bestilling_qr_lukket`, ikke om den læste den
+  rigtige nøgle. Tjek 140 læser selve opslaget (`noegle = '…'`) — første
+  udgave faldt på funktionens EGEN kommentar, der nævner den gamle nøgle
+- **Gæstens regler står i databasen** (`mosede_gaestens_regler`, udløser
+  `bestilling_gaestens_regler`): varsel (kategoriens, kanalens, det gamle
+  døgn), en tid der er gået, kategoriens vindue (fra/til), sidste
+  bestilling (lugen/tidlig lukning/dagens senest/køkkenet minus
+  `sidste_bestilling_min`), mindst fire smørrebrød, levering slået fra,
+  og at navnet OG prisen er menukortets (dagens ret og den gamle
+  enkeltindstilling med; emballagen og fragten med ejerens tal).
+  **⚠️ KUN FOR GÆSTEN:** `auth.jwt() ->> 'role' = 'anon'`. Personalet og
+  en SQL-fil dømmes ikke af et varsel. **Bevist med en rigtig anon-sonde
+  gennem API'et** (Pitabrød til 1 kr. + Morgenbrød uden pris): svaret var
+  `bestilling_pris_aendret`, altså slår reglen til — og sonden var bygget,
+  så intet kunne blive oprettet, hvis den ikke gjorde
+- **⚠️ DATABASEN MÅ ALDRIG VÆRE STRENGERE END SIDEN:** 15 min margen på
+  varslet; en vare i to kategorier er i orden, hvis én tillader tiden; en
+  pris er i orden, hvis den er prisen på én af rækkerne; bordet har intet
+  varsel og ingen sidste bestilling. **To udgaver af den samme regel
+  skrider fra hinanden** — ændres `js/bestil-regler.js`, SKAL funktionen
+  følge med. Og klienten fik en rettelse samme nat: `kategoriPaaTid`
+  målte varslet KUN på i dag, så forsiden tilbød smørrebrød (et døgn) i
+  morgen kl. 11 fra kl. 20 aftenen før. Nu ruller varslet over midnat
+- **Fem lofter står i kø** (`pg_advisory_xact_lock`, og `for update` på
+  arrangementets række): pladserne, bordene pr. dag, lugens loft pr. tid,
+  bordenes kvarter og forespørgslens dobbelttryk. **MÅLT med to samtidige
+  forbindelser:** med låsen fik nummer to "fyldt op" og der stod 1 række;
+  uden låsen kom begge ind (2 rækker). ⚠️ Nummer to ventede også UDEN
+  låsen — tællerens rækkelås (`bestilling_nummer`) — men den kommer EFTER
+  loftet alfabetisk, så begge havde talt, før de ventede
+- **Baglokalet: ét ja pr. dag, også når status skifter**
+  (`*_dagen_optaget_skift`). En bekræftet udlejning og en anden gæsts
+  aftalte forespørgsel kunne stå på samme dag — værnet kørte kun ved
+  indsættelse, og de to tabeller ser ikke hinandens unikke indeks.
+  **⚠️ OG "🔒 LÅS DAGEN" VIRKEDE IKKE:** udlejningen oprettes, MENS
+  forespørgslen er aftalt, og den optager selv dagen. Parret kendes nu på
+  samme gæst (sidste otte cifre eller mail) ved oprettelsen og på
+  forespørgslens reference i udlejningens `intern_note` ved bekræftelsen
+- **Dagens ret meldt udsolgt i hånden** (uden antal) afvises nu
+- **⚠️ TO GAMLE PRØVER VAR FORÆLDEDE SIDEN 13/9** og døde i den lokale
+  runde: `proev-dagens-retter` (4 af 0 afvises nu — og prøve 11 bestilte
+  en udsolgt ret) og `proev-aabent-og-antal-vaern` #7 (læste tællingen i
+  SAMME sætning som indsættelsen — øjebliksbilledet fra før). Rettet.
+  **Lokal SQL-runde: 53 filer, 0 fejlede** (efter vare-valg)
+- **⚠️ PRODUKTIONENS STANDARD FOR `menu_kategorier.afdeling` VAR 'grill'**
+  — som dens eget CHECK afviser. Første prøvekørsel døde dér. Sat til
+  'mad' som i `setup.sql`. Admin var ikke ramt (store-skriv oversætter)
+- **Siden kommer sig selv** (`genopret()` i store.js): en gæsteside, der
+  åbnede uden forbindelse, stod på reservedata for evigt. Nu spørger den
+  igen (2-30 s); har gæsten ikke rørt noget, genindlæses siden, ellers
+  står en knap. Højst to genindlæsninger i træk. **Admin henter
+  indstillingerne igen**, så længe de er reservedata (takten hentede kun
+  listerne). **Login uden net** siger det på dansk
+- **Ét gem rører kun sit felt** (`Butik.skrive.vareFelter`): menukortets
+  række sendte HELE rækken, som skærmen hentede — et prisfelt, der blev
+  forladt, skrev køkkenets udsolgt tilbage. `byg()` sender kun forskellen
+  mod rækken, som den blev tegnet
+- **Dagens ret: "solgt N" og +5/+10** — tællingen er `Admin.dagensRetSolgt`,
+  ÉN regel med Overblik (afviste tæller ikke). ⚠️ Knapperne fik rækken til
+  at brække om på computeren, og "✓ Gemt" flyttede Gem, mens musen var på
+  vej: klikket ramte ingenting. Samme regel som varerækken fik 26/8
+  (mærket ude af flowet) gælder nu begge rækker
+- **Valg på en vare er data** (`menu_varer.valg`, `vare-valg.sql`): hvert
+  valg har sin egen tæller på forsiden, `bestil/` og ved bordet, og
+  linjen bærer valget som `variant` — køkkenet, Overblik og bonen viste
+  det allerede. `Butik.vareValg` er reglen ét sted; databasen afviser en
+  gæsts linje uden valg (`bestilling_mangler_valg`). **⚠️ INGEN VARE HAR
+  VALG ENDNU — det er ejerens:** Menukort-fanen viser et forslag pr. vare
+  (`js/admin/valgforslag.js`, læst af hans egne ord) med "Brug valgene",
+  og valgene kan skrives under ⋯. Hvor "eller" er et TILLÆG med egen pris
+  (nachos, blandet salat), er der intet forslag
+- **⚠️ OG TO FALSIFIKATIONER MÅLTE INGENTING FØRST, BEGGE MINE:** `-g "+10
+  …"` — `+` er et regex-tegn, så ingen prøve blev valgt; og en mutation af
+  menukortets gem lod den tidlige retur stå, som alene forhindrede fejlen.
+  **Og en runde målte ingenting:** zsh deler ikke `$FILER` op i ord
+  (12/9-arret) — "No tests found" står ikke som en fejl i et resultat.
+  I alt: 10 SQL-mutationer, 8 B-mutationer og 4 C-mutationer — alle faldt
+- **Tre huller mere, samme nat** (efter en fuld runde: 4138 bestod, 0
+  fejlede). **Ingen SQL.**
+  **Ét navn på en linje med et valg:** `Butik.linjeNavn(l)` skriver
+  "Pitabrød · Kylling" — der stod "(Kylling)" fire steder og "· Kylling"
+  fem, så kurven og kvitteringen sagde hver sit. Ti steder spørger den nu.
+  **Dagens ret-chippen siger "solgt 5 af 10"** og "Udsolgt — solgt 4 af
+  4"; loftet (tilbage + solgt) er `Admin.dagensRetLoft`, som Overblik også
+  bruger — to udregninger af det samme loft var én for meget. **Uden
+  forbindelse er sendeknappen spærret fra start** (`Butik.bestillingNede`,
+  forsiden, smørrebrødssiden, `bestil/`): *"Nede lige nu — ring …"*, ved
+  bordet *"— bestil ved lugen"*. Før kunne gæsten fylde en kurv med
+  reservedataene ("Smørrebrød 55") og først få nej efter tre forsøg.
+  ⚠️ Tapassiden er ikke rørt: uden forbindelse findes fadet ikke i
+  reservedataene, og formularen skjuler sig selv (pegVidere → ring).
+  ⚠️ `bord/` og forespørgselssiderne har IKKE spærren endnu — det er et
+  kendt hul, ikke en beslutning. De sender ingen priser, så de rammer ikke
+  pris-værnet, men gæsten fylder stadig formularen ud forgæves
+  Ni falsifikationer, ni fald — heriblandt `_reserve` begge veje (altid sand fælder sendekæden, altid falsk fælder spærren).
+  **Sidste fulde runde på `f2864aa`: 4149 bestod, 0 fejlede.** ⚠️ Den blev
+  stoppet af systemet ved prøve 4312 (for lidt hukommelse — 11/9-arret);
+  de fem, den ikke nåede, blev fundet ved at holde loggen op mod
+  `npx playwright test --list` og kørt bagefter: grønne. ⚠️ `--list`
+  skriver stierne UDEN `tests/`, loggen MED — første diff sagde 4000 ukørte
+
+**Forsidens film er 1440p — HEVC, hvor browseren kan** (14/9, aften,
+`d926117`). Kundens ord: *"jeg oploadede den i 4k, men kvaliteten er ikke
+4k-agtig"*. **MÅLT:** telefonens film var 1080p på 1,1 Mbit/s (SSIM 0,967
+mod 4K-filen ved skærmens opløsning), og en iPhone strækker 1080p 1,32
+gange (2532 fysiske pixels). **Ingen SQL.**
+
+- **`film/hero-*-hevc.mp4`** (1440p; 9:16 1,39 MB SSIM 0,989, 16:9 1,97
+  MB) vælges af `canPlayType('hvc1…')` i `hero-film.js`; resten får H.264
+  1080p på 2,5-3 Mbit/s. Start/slut-billederne er 1440p fra 4K-kilden
+- **⚠️ KUN SIDER MED `data-hevc` BEDER OM HEVC.** Historien har ingen
+  HEVC-fil, og en fil, der ikke findes, er en 404 — så ingen film
+- **⚠️ PRØVERNES CHROMIUM KAN IKKE HEVC** (svarer `""`), så valget stubbes
+  i prøven; uden stub får de H.264. Opløsning og bitrate læses af FILERNE
+  (mp4'ens tkhd, JPEG'ens SOF). **⚠️ H.264-reserven må ikke presses igen:**
+  14/9 blev den halveret mod hak, og kunden så det med det samme. Hakkene
+  klares af motoren (glat eller slet ikke). Fire falsifikationer, fire fald
+- **Safari/iPhone kan kun efterprøves på en rigtig telefon** — kundens
+  egen. Prøvernes Chromium har ingen HEVC-afkoder
+
+**Historiens film: rigtig 9:16 på telefonen, og bits igen begge steder**
+(14/9, aften — computeren `604e443`, telefonen bagefter). Kundens ord: telefonfilmen *"filmer kun skibet,
+ryger ind i skyen, så til havnen — og kvaliteten er dårlig, man kan slet
+ikke fornemme både, der skyder"*, og *"computeren har samme video i 16:9,
+som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
+
+- **MÅLT:** telefonfilmen er IKKE en 9:16-film, men et udsnit af
+  computerens 720p-film (405 px bredt), strakt 1,8 gange op — derfor kun
+  ét skib. Og begge film blev samme dag presset til 0,85 Mbit/s mod hak
+- **Computeren er udgivet:** 1,98 Mbit/s uden bagt korn (siden lægger sit
+  eget), SSIM 0,924 → 0,975 mod kilden (veo `e54491d8…`). Prøven *"bits
+  nok til at kanonerne kan ses"* (> 1,5 Mbit/s) er set falde på 0,87 og
+  gælder begge formater
+- **Telefonens film er en rigtig 9:16-udgave af den samme film** (Sjinn
+  veo, opgave `782923f8…`): startbilledet er computerens første billede
+  genkomponeret til 9:16 med HELE linjen af skibe (nano-banana), og
+  filmen ender på `historie-hoej.jpg`. 1080×1920, sort-hvid med
+  historiens eget filter, 1,94 MB. Prøven *"rigtig 9:16-film, ikke et
+  udsnit"* læser bredden i mp4'ens tkhd og kræver ≥ 1080
+- **⚠️ OG VEO LAVEDE OVERGANGEN GENNEM SORT.** Kundens ord samme aften:
+  *"i røgskyen, når bådene skyder, bliver der sort skærm, og så kommer
+  det gamle af Mosede Havn — ikke den der blænder smooth ind som på
+  computeren"*. **MÅLT i filen, ikke i afspilleren:** lysstyrken (YAVG)
+  dykkede fra 110 til 14 ved 4,9-5,0 s og sprang så til luftfotoet på
+  116; computerens stiger jævnt 79 → 124. Det sorte er klippet ud
+  (4,38-5,6 s). **⚠️ TO FORSØG VAR FORKERTE, BEGGE MINE:** en blanding
+  fra 3,0 s startede, før røgen fyldte billedet (*"den når ikke helt ind
+  i røgskyen"*), og en slowmotion på 8,7× af de fyldte 0,23 s blev til
+  et stop (*"det er som om den stopper inde i skyen og så bare popper"*
+  — målt: bevægelse 0,5 mellem billeder mod 5-7 før). Et tredje forsøg
+  (røg frem og tilbage + zoom, havnen blændet ind under) var stadig
+  lappet sammen: *"ikke smooth eller sammenhængende … det hakker"*.
+  **⚠️ HAKKET VAR FARTEN, MÅLT:** et skud sat 1,5× op og lagt på 24 fps
+  smider hvert tredje billede ud, og bevægelsen veksler fast mellem ~2,5
+  og ~5,5 billede for billede. Kun hele faktorer (2×) giver en jævn
+  rytme — ellers afspil i egen fart
+- **Nu: ÉT SAMMENHÆNGENDE SKUD, som computerens.** Telefonfilmen kører
+  til røgbilledet ved 4,25 s, og derfra tager et nyt veo-skud over (Sjinn
+  `09c1ac24…`): første billede = netop det røgbillede (lagt op med
+  `upload_asset`), sidste = `historie-hoej.jpg`. Kameraet flyver ind i
+  lyse skyer, de åbner sig, havnen kommer frem med skyer hængende over, og
+  de forsvinder. Afspillet i egen fart fra billede 2 (billede 1 ER
+  røgbilledet), klippet ved 5,6 s. 9,83 s, 2,01 MB (loftet er 2 MB),
+  1,63 Mbit/s. Rytmen: nabobilleder højst 1,56× forskellige. **Det andet
+  veo-bud sprang i billede 2 til en helt anden scene** (røgsøjle over
+  havnen) — vurderet på kontaktark. **⚠️ YDIF er et groft mål på ensartet
+  røg** — kig på kontaktarket, ikke kun på tallet
+- **⚠️ OG SKYERNE VAR FOR MEGET** (15/9). Kundens ord: *"det skal slet ikke
+  være så voldsomt — bare smooth ind i røgen, ud på den anden side,
+  smooth hen til Mosede Havn"*. To nye veo-skud fra det SAMME røgbillede
+  til det samme luftfoto, med prompter om et tyndt slør og ingen store
+  skyer. **Valgt: C** (Sjinn `9fae3967…`): røgen tynder ud, og havnen
+  toner frem gennem sløret mellem 0,9 og 1,5 s. **D blev vraget på et tæt
+  kontaktark:** den blev længere i røgen og havde en hård vandret søm midt
+  i billedet ved 2,7 s. C er klippet ved 3,3 s, så havnen står knap to
+  sekunder: 7,54 s, 1,89 MB, 2,0 Mbit/s, laveste lys 60,6 (intet sort).
+  **Sømmen ved 4,25 s er den samme som før** (bevægelse 7,6 → 1,6 — veo
+  begynder roligt efter telefonfilmens fart ind i røgen). Den udgave
+  kunden så sidst, havde præcis samme spring og blev ikke klaget over; det
+  var passagen, der var for voldsom. **Klager kunden over et stop ved
+  røgen, er det dér** — og svaret er ikke en fartændring (se hakket
+  ovenfor)
+- **⚠️ OG SÅ BLEV DEN COMPUTERENS FILM I 9:16 — HELE VEJEN** (15/9).
+  Kundens ord: *"stadig ass … kan du ikke tage præcis videoen fra desktop
+  og proppe i Sjinn 4K men i 9:16?"* Den udgivne `historie-16x9.mp4` blev
+  sendt som forlæg til `gemini-omni-1.1-flash` (Sjinn `e22dfc9f…`, 9:16,
+  4k): 2160×3840, 7,83 s, samme forløb skud for skud — skibene skyder,
+  røgen, overblændingen til havnen. **Ingen søm mere mellem to film**, og
+  intet sort (laveste lys 67,9), rytmen højst 1,43×. Kodet ned til
+  1080×1920 H.264 (1,92 MB, 1,96 Mbit/s) — **2 MB-loftet og den
+  manglende HEVC-fil på historien er grunden til, at 4K ikke går ud som
+  4K**; skal den skarpere, er vejen forsidens: en `-hevc`-fil i 1440p og
+  `data-hevc` på siden (og så også en til 16:9). Veo-skuddene C, B og
+  telefonens egen 9:16-film er afløst. **Et 2K-reservebud (minimax-h3,
+  `db43c900…`) blev bestilt samtidig og ikke brugt**
+- **⚠️ MEN DEN ZOOMEDE FOR MEGET IND** (15/9, samme nat). Kundens ord:
+  *"man kan ikke se bådene, inden de skyder … det er som om det er zoomet
+  for meget ind, og havnen kan man heller ikke se hele af."* Gemini
+  beskærer til 9:16 i stedet for at udvide billedet — **også når prompten
+  beder om det modsatte, og også med et første og sidste billede som
+  billedforlæg** (H8, `3b3e8695…`, ignorerede begge). **Nu er filmen to
+  stykker:** åbningen fra H10 (`2ef6ba2d…`, gemini 4K med startbilledet
+  `samlet-B2-start` som forlæg), hvor hele rækken af skibe sejler i ~2 s
+  og SÅ skyder, til og med billedet før dens hårde klip ved 4,33 s — og
+  derfra et veo-skud (`ea473168…`) med netop det billede som første og
+  `historie-hoej.jpg` (hele havnen) som sidste. 9,92 s, 2.030.018 B,
+  1,64 Mbit/s. **⚠️ LOFTET BESTEMMER LÆNGDEN:** under 2 MiB og over 1,5
+  Mbit/s giver højst ~11,2 s; veo-skuddet er skåret ved 5,6 s, så havnen
+  står klart i godt et sekund. **⚠️ Anden halvdel er veo i 720p skaleret
+  op** — åbningen er 4K. Minimax' 2K-udgave (bred hele vejen, hele havnen,
+  ét skud) var reserven; den blev valgt fra, fordi skibene skyder fra
+  første billede
+- **⚠️ OG ROD-ÅRSAGEN VAR SIDEN, IKKE FILMENE** (15/9, samme nat). Kundens
+  ord: *"den er dårlig … kan du ikke bare tage den præcise som på desktop
+  og gøre den 9:16 med sjinn"*. **MÅLT på den udgivne side:** heroen er
+  390×940 (lvh + 96 px), filmen 9:16, og `object-fit: cover` skar 13 % af
+  i hver side — **kun 74 % af filmens bredde stod på skærmen**, uanset
+  hvilken film Sjinn lavede. Det er "zoomet for meget ind" og den halve
+  havn, tre runder i træk. Nu står telefonfilmen i fuld bredde fra
+  toppen (`contain`, `object-position: 50% 0`) og toner ud i sidens sorte
+  med en maske, der regnes af `100vw * 16 / 9`. **⚠️ KUN UNDER 700 PX PÅ
+  HØJKANT:** en iPad på højkant er bredere end 9:16 og ville få sorte
+  kanter i siderne. Filmen er minimax' 2K-udgave af computerens film
+  (`db43c900…`): bred linje af skibe, der skyder som på computeren, røgen,
+  hele havnen — ét skud, 8 s, 1,92 MB. Prøven *"på en telefon står hele
+  filmens bredde på skærmen"* måler startbilledets geometri (samme regel
+  som videoen) mod `innerWidth`; set falde med `cover` sat tilbage
+- **Billederne på historiesiden kom for sent** (kundens ord: *"delayet
+  ift. når man scroller"*). Tre ting lagt oven i hinanden: iagttageren
+  ventede på 12 % + 8 % synligt, tiderne var op til 2,35 s, og
+  **lærredet klippede RAMMEN** til en stribe — så iagttageren først så
+  billedet, når striben nåede skærmen (26 % af højden efter kanten). Den
+  fælde fik de glidende rettet samme morgen og ikke lærredet. Nu: klip
+  på billedet, start ved kanten (`-2 %`, `threshold 0`), tider ~1 s.
+  **⚠️ Reduceret bevægelse skal ophæve hver klip-regel med sin egen
+  vægt** — den generelle `.h-foto > *` tabte til begge (syv billeder
+  stod klippet). Ny prøve: et billede 6 % inde over bunden begynder
+  straks og står fremme inden 1,4 s — **den ruller øjeblikkeligt, ikke
+  med `rul()`**, som kan rulle blødt og få iagttageren til at ligne den
+  langsomme **Ingen prøve kan se et sort dyk**
+  (Chromium afkoder, men prøverne læser ikke billeder) — mål det med
+  `signalstats`, når en ny film kommer ind
+- **Bitrate-prøven læser filmens længde i mp4'ens `mvhd`** — de to
+  formater er ikke længere lige lange
+- **⚠️ GEMINI-UDGAVEN BLEV VALGT FRA**, selv om den er genereret ud fra
+  selve computerfilmen: den står tættere på og skærer det første skib
+  over — netop det, kunden klagede over. Vurderet på et skud side om side
+- **⚠️ SJINNS SERVER LEVEREDE IKKE NYE FILER I ET PAR TIMER** (Cloudflare
+  `DYNAMIC`, afbrudt efter 0,5-1,3 MB; gamle filer kom med 8 MB/s).
+  Omvejen, der virkede: `create_compose_task` med filmen to gange, og så
+  `trim` af den første halvdel. Delvise mp4'er kan ikke afspilles
+  (`moov` ligger til sidst). **⚠️ Og baggrundsjob til hentningen blev
+  dræbt tre gange af systemet** (for lidt hukommelse) — kør i forgrunden
+
+**Filmen spiller glat eller står stille — den hakker ikke** (14/9, sent).
+Kundens ord om historiens film: *"animationen starter sådan i pause … den
+skal ikke hakke"*. **Ingen SQL.**
+
+- **MÅLT på den udgivne side, billede for billede** (`requestVideoFrameCallback`,
+  CDP-net på 1,6 Mbit/s): filmen begyndte på en lille buffer og gik i stå
+  **fem gange** (0,21 · 0,55 · 0,81 · 2,59 · 6,10 s), op til 534 ms. På wifi og
+  4G spillede den glat. Forsidens film var værre: første billede efter 6,5 s
+  og fjorten stop op til 1 s. Filerne selv har ingen frosne billeder
+  (YDIF pr. billede) og er faststart
+- **De fire film er halvt så tunge** (historien 1,8 → 0,85 MB med let
+  støjfjernelse — kornet koster bits, og siden lægger sit eget korn ovenpå;
+  forsiden 1,6/1,9 → 0,69/0,82 MB). Billeder side om side er ens. **⚠️ Men
+  alene hjalp det ikke:** resten af siden henter samtidig, og den lette fil
+  gik stadig i stå fire gange
+- **Motoren viser først filmen, når den kan spille til ende**
+  (`canplaythrough` eller filen hentet helt). ⚠️ **`play()` kaldes stadig med
+  det samme** — iOS henter først, når der bliver bedt om at spille; spiller
+  den for tidligt, stoppes den på første billede bag startbilledet, som ER
+  filmens første billede. Går den alligevel i stå over 0,4 s (`STOP_MS`),
+  går den til slutbilledet med teksten. Før filmen vises, er værnet på 7 s
+  et SPRING (slutbillede + tekst), ikke kun teksten
+- **⚠️ Og prøven målte først ikke det frosne stykke:** et stop ender i et
+  spring, så der kommer aldrig et næste synligt billede at måle hullet mod.
+  Den tæller tiden til slutbilledet tager over nu — og faldt så med 402 ms,
+  da ventereglen blev fjernet
+- **⚠️ Safari er ikke målt.** Simulatoren var slukket og startes ikke herfra
+  (den kan tilhøre spiis). Den sidste prøve er kundens egen iPhone
+
+**Hvor sælges det? Tre steder pr. kategori — og en vare kan tages af ét
+sted for sig** (14/9, sent). Kundens ord: *"det hele skal bare kunne
+administreres — og også, hvis kun noget af det gælder det ene eller det
+andet sted"*. **Ingen SQL** — `indstillinger` er nøgle/værdi.
+
+- **MÅLT FØR:** smørrebrødet stod med et LÅST flueben på forsiden, der var
+  intet flueben til smørrebrødssiden, og en enkelt vare kunne kun slukkes
+  overalt (Vis)
+- **Tre steder, ét flueben hver:** smørrebrødssiden (`kun-smoer`, også
+  `bestil/`), forsidens bestilling og QR ved bordene. Listerne er
+  `bestilbare_kategorier_smoer`, `_forside` og `_bord`. **⚠️ Uden en egen
+  liste er svaret det, det var i går** (smørrebrødet · smørrebrødet +
+  `bestilbare_kategorier` · det samme som forsiden), og første tryk skriver
+  hele listen — bordets greb fra 13/9, gjort for alle tre
+- **⚠️ REGLEN BOR I `Butik.salgsKategorier`**, og `Butik.udvalg` og admin
+  spørger den. Admins egen udgave af "bordet er det samme som online" er
+  slettet — med et tredje sted ville den være kopi nummer to
+- **⚠️ FORSIDENS FLUEBEN SKRIVER OGSÅ DEN GAMLE LISTE**
+  (`bestilbare_kategorier`, uden smørrebrødet), så `aabn-kortet.sql` og
+  `klar-til-lancering.sql` ikke står med et forældet svar. Gæstesiden læser
+  `_forside`, så snart den findes
+- **En vare kan tages af ét sted** (`ikke_saelges = { "<vare-id>": ["bord"] }`,
+  bag ⋯). **⚠️ Et fravalg, aldrig et tilvalg:** en vare står kun dér, dens
+  kategori står — ellers to regler for det samme. Og rækken siger det
+  (`.vare-sted-note`): et fravalg, der kun stod bag ⋯, ville være usynligt
+- **⚠️ Fluebenet bag ⋯ stopper sin `change`**: rækken har autogem, og uden
+  det ville hvert tryk også gemme hele varen igen
+- **⚠️ DET ER EN SKÆRMREGEL, ikke et værn i databasen** — det har
+  `bestilbare_kategorier` heller aldrig været. Værnene dér er pris,
+  udsolgt, dag og tid
+- `fyld-model-a.spec.js`s *"kan ikke pilles af"* er VENDT med kundens ord;
+  `tests/salgssteder.spec.js` har 8 prøver — **ni falsifikationer, ni fald**.
+  ⚠️ Og min egen prøve af kategoriens linje målte først det forkerte sted:
+  linjen står på FOLDEN, og kategorierne folder først over 30 varer
+
+**Baglokalets forespørgsel står i fire trin** (14/9, sent). Kundens ord med
+tre skud: *"den er forældet og ikke klar og god nok, billederne er dog
+fine"*. **Ingen SQL, og det, der sendes, er urørt** — alle id'er er de
+samme, og `skal-forespoergsel.spec.js` måler afsendelsen som før.
+
+- **MÅLT FØR:** datoen stod TO gange (nettet og browserens felt med
+  "18/09/2026"), cellerne var over 80 px høje på en computer, og tretten
+  felter stod i én række. Nu: **Dagen · Tid og gæster · Jeres arrangement ·
+  Jeres kontakt** (`.bl-trin-navn`), celler på 42 px, fra/til/gæster på én
+  linje (`.bl-tid`), og dagen i ord under nettet (`#bl-valgt`)
+- **⚠️ BROWSERENS DATOFELT SKJULES KUN, MENS NETTET STÅR**
+  (`.bl-panel:has(#ledigkal:not([hidden]))`) — motoren læser feltet, og den
+  dag nettet ikke kan tegnes, er feltet den eneste vej til en dato. Begge
+  halvdele har en prøve
+- **Opsummeringen over knappen** (`#bl-opsum`, `visOpsum()` i
+  `forespoergsel.js`) skrives af felterne og sendes ikke. **⚠️ Den venter på
+  en dag:** felterne har forvalg (17-21, 30 kuverter), og målt på et skud
+  stod der ellers en forespørgsel uden dag over knappen
+- **⚠️ DAGEN SKRIVES UD I HÅNDEN**, ikke med `toLocaleDateString`: Chromium
+  siger "fredag 14. august", Safari kan sige noget andet. Månederne er
+  nettets egne (`KAL_MDR`)
+- `tests/baglokale-trin.spec.js`, 5 prøver — **syv falsifikationer, syv
+  fald** (cellerne falder kun på computeren: på en telefon er den gamle
+  firkant tilfældigvis ~42 px)
+
+**Menuen er en menu, billederne kommer ind hver sin vej, og bunden siger
+Lesreg (14/9, aften).** Kundens ord: tre-linjer-knappen er *"grim,
+gennemsigtig, uoverskuelig"*, og *"når man slider ned på telefonen, slider
+man end på hjemmesiden"*; historiens billeder skal *"fade ind og de andre
+slide eller åbne, så det hele bare ikke er det samme"*; og bunden: *"alt det,
+der skal stå, står der — og vigtigst: lavet af Lesreg"*. **Ingen SQL.**
+
+- **Knappen er et fast, hvidt felt med ordet "Menu"** (`::after`, så de
+  fjorten sider ikke fik ny opmærkning; mørk med messingkant på historien).
+  Den gamle burger på `bord/`/`bestil/` er den samme knap. ⚠️ **Over
+  historiens film vandt filmens egen regel** (`.hist:has(.h-hero.film) …`,
+  0,8,0) — derfor to selektorer
+- **Skuffen er et fast cremefarvet ark**, der passer på skærmen: listen
+  ruller INDE i arket, knapperne i bunden står fast, Escape lukker. Målt
+  før: arket var højere end skærmen, og Forside/Menukort/Tapas stod over
+  kanten. ⚠️ **SCOPET TIL `#sheet`** — menukortets varekort (`#vare-lag`)
+  og kalenderens reservation deler `.sheet`/`.sheet-in`, og en regel på
+  klassen lavede dem om (fundet af prøven: to `.sheet-in` på én side)
+- ⚠️ **KUN `<html>` LÅSES, IKKE `<body>`.** Med `overflow:hidden` på body
+  blev body sin egen rullebeholder, og den klæbende bjælke klæbede til DEN
+  — målt: bjælkens top røg til −600, bag menuen. `html.menu-aaben` sættes af
+  `openSheet` i `havnegrillen.js`, kun under 821 px
+- ⚠️ **OG PRØVEN MÅ IKKE BRUGE `locator.click()` på burgeren.** Playwright
+  ruller knappen "i syne" før klikket og flyttede siden 600 → 291 — også helt
+  uden lås. Det lignede en fejl i låsen og var værktøjet. `mouse.click` på
+  knappens midte er fingerens vej
+- **Historien: aabn · glid · fade · aabn · glid-h · fade · aabn**
+  (`data-ind` ved billedet). ⚠️ **KLIPPET PÅ DE GLIDENDE SIDDER PÅ BILLEDET,
+  IKKE PÅ RAMMEN.** En ramme, der er klippet HELT i, er usynlig for
+  IntersectionObserver (den regner elementets eget `clip-path` med), så
+  `.inde` kom aldrig — målt: begge stod lukkede efter et fuldt rul. Lærredet
+  slap, fordi det altid viser en stribe. Gennemgangen undtager nu billedet
+  i `.h-foto` (16 % større end rammen med vilje, som `.hero-korn`)
+- **"Lavet af Lesreg" i alle 15 bunde** (`bunden.spec.js` læser MAPPEN).
+  `bord/` fik hele bunden (telefon, adresse, åbningstider, personale — ingen
+  mail), `bestil/` pegede på vejviseren `menu.html`, og ved bordet åbner
+  linket i ny fane. ⚠️ `.fine` er footerens flex-stribe i `style.css`; ved
+  bordet er den en SÆTNING og står som blok nu
+- **Menukortets skuffe havde TO punkter markeret** (Menukort og Smørrebrød)
+  — med den nye røde markering lignede det to sider på én gang. En prøve
+  kræver ét, og at det er siden selv
+- **Skyggeloftet (37) holdt:** hårstregen i listen er en baggrund, og knappen
+  bruger topbjælkens egen skygge
+- **"Den lagger lidt nogle steder" — målt, ikke gættet** (kundens ord
+  samme aften: *"så det føles som 120 fps"*). `fart.js` i kladden ruller
+  alle tolv sider med hjulet, CPU'en skruet ned 4 gange (en telefon), og
+  tæller billeder over 33 ms. **Telefonen: 0 på alle sider.** Computeren:
+  forsiden 14 og menukortet 5 — resten 0. ⚠️ **Headless Chromium tegner
+  sløring på CPU'en**, så tallene for `backdrop-filter` er et øvre loft,
+  ikke en rigtig Mac; men forskellen MELLEM to udgaver er ægte
+- **⚠️ EN LUKKET SKUFFE SLØREDE HELE SKÆRMEN.** Menukortets varekort
+  (`#vare-lag`) stod lukket på opacity 0 med `backdrop-filter` over
+  1440 × 900, og browseren sløede om ved hvert billede: 9 billeder over
+  33 ms → 0 uden. `.sheet` er `visibility:hidden`, når den er lukket, og
+  skiftet venter på udtoningen (`visibility 0s linear .4s`). Alle tre
+  skuffer åbner med `.open`. Prøven kræver OGSÅ, at menuen er synlig,
+  når den åbnes — ellers ville en regel, der skjulte den for altid, bestå
+- **⚠️ FORSIDENS GLAS PÅ COMPUTER ER IKKE RØRT — det er kundens valg.**
+  Bestillingspanelet er 640 × 1809 px glas over et KLÆBENDE foto, så det
+  sløres om ved hvert billede. Målt på 1440 px: som nu 12-16 billeder over
+  33 ms, halv sløring 10-11, panelet uden sløring 1-2, fotoet sløret én
+  gang i stedet 2-4. Den billigste, der bevarer frosten (fotoet sløret),
+  **blev bygget, set på et skud og rullet tilbage:** lugen og lampeskiltene
+  blev udviskede i siderne — og kunden bad selv om netop det foto tilbage
+  ("tag det gamle tilbage"). Et udseende skal vises og have et ja
+- **⚠️ OG TO MÅLINGER MÅLTE INGENTING FØRST, BEGGE MINE:** Playwrights
+  `locator.click()` ruller knappen i syne og flyttede siden 600 → 291 —
+  det lignede en fejl i menulåsen. Og den gamle skuffes prøve rullede
+  INDE i arket, der selv sluger hjulet (`overscroll-behavior: contain`):
+  den bestod med begge låse fjernet. Den ruller over dæmperen nu, og
+  falsifikationen falder
+
+**Syv punkter fra kunden på én aften (14/9)** — delt op og taget ét ad
+gangen, hvert udgivet for sig. **Ingen SQL.**
+
+1. **"Hvad kan vi hjælpe med?" står på naboens creme igen** (`#alt`,
+   `--cream2` som selskabsafsnittet ovenover). Ternet blev dæmpet om
+   formiddagen og taget helt væk om eftermiddagen — kundens ord: "den
+   originale hvide/creme som ovenover". Prøven måler mod naboen
+2. **Historien åbner med en film** — fiskerne på stranden før 1929 →
+   luftbilledet af ø-havnen fra 1929 (`film/historie-*`, Sjinn, 7,5 s,
+   1,7-1,9 MB). ⚠️ **OG SÅ TILBAGE TIL SØSLAGET — I SORT-HVID** (kundens
+   ord samme aften: "tror bedre jeg kunne lide gamle … med bådene der
+   skyder … 9:16 og måske sort hvid"). Ankerkapitlet står FØRST, og
+   overskriften siger ankeret igen — stadig som overlevering.
+   ⚠️ **Første udgave åbnede med søslaget i 1710**; samme
+   eftermiddag sendte kunden et FAKTADOKUMENT (Historisk Atlas, Greve
+   Kommunearkiv, Trap Danmark, Greve Museum, Marinehistorisk Selskab):
+   ankerets ophav er OVERLEVERING, og Elefanten blev IKKE sænket.
+   Filmens anden halvdel — overblændingen ind i slutbilledet — er den
+   gamle, kunden kunne lide; den første er ny. Kapitlerne er skrevet
+   efter dokumentet: før 1929 · 1929 · 1943 · 1969/1993 · ankeret som
+   overlevering · ishuset · i dag — og forsidens teaser siger 1929 og
+   ikke "lå på bunden i 270 år", som ingen kilde siger. ⚠️
+   **Forsidens motor, ikke en kopi:** `hero-film.js` leder efter
+   `.hero-film`; `historien.css` bærer kun det, der er anderledes (teksten
+   nederst, sidens sorte grund, tonen ned i siden, bjælken gennemsigtig
+   over filmen, sine egne værn — forsidens er scopet til `.hero.film`).
+   ⚠️ **Siden siger, at det er en stemningsfilm** (`[data-film]`): ingen
+   filmede 1710, og luftbilledet er ikke et arkivfoto
+3. **Første bestilling på en enhed: et flueben ved handelsbetingelserne**
+   (`Butik.vilkaar` i `js/store.js`, fem formularer spørger den SIDST).
+   ⚠️ **Det er IKKE et cookiesamtykke** — huset sætter ingen cookies, og
+   `jura.spec` fælder "accepter cookies". Jaet huskes som en dato i
+   `mosede_vilkaar_v1`; persondatapolitikken nævner det som den tredje
+   ting i browseren. ⚠️ **`sætData` i `tests/hjaelp.js` lægger et ja**,
+   ellers ville hver send-prøve vente på et flueben; prøverne på selve
+   fluebenet kalder `førsteGang()` — og den rydder ÉN gang pr. fane, så
+   side nummer to i samme prøve er aldrig en første gang (kostede en kørsel)
+4. **Fejlkortet** — begge motorer: et rødt "!", sætningen i blæk,
+   `role=alert` (`.fejlkort` i havnegrillen.css, `.fejl[role=alert]` i
+   style.css — grid, ikke flex). Tapassiden viser databasens grund i
+   stedet for at smide den væk; forsiden, smørrebrød og tapas får
+   sms/ring, når nettet er væk; knappen siger "Sender …" og får sit
+   beløb tilbage efter en fejl; **ingen statuskode når gæsten** — heller
+   ikke i forespørgsel, booking, udlejning og reservation
+5. **Smørrebrødssiden: hver ramme er en pulje** (`data-filer`), og
+   rammerne skifter **forskudt** (`billedplads.js`, en tredjedel af
+   takten pr. galleri). ⚠️ `smoer-havn.jpg` havde avistryk med opdigtede
+   bogstaver — redigeret væk med Sjinn
+6. **Baglokalet: rummet i et fotoformat (4:3 / 16:10), der skifter**, og
+   **julefesten står SIDST** ("Glædelig jul" i september siger
+   julelokale). De to nye er ejerens eget foto uden julepynten. **"Det får
+   I" er foldet ind i de tre fakta** — kortet gentog faktalinjen
+7. **Catering og frokost:** cateringens punkter får **menukortets
+   laveste pris med enhed** (`data-fra` på kategoriens navn, intet tal i
+   HTML'en, ingen linje uden en pris). Frokostsiden var den eneste
+   salgsside uden ét foto — den har et galleri nu — og dens startdato
+   stod fast på 1. september
+
+⚠️ **DE GENEREREDE BILLEDER ER KUNDENS VALG** ("brug filer, hvis ik så …
+få hjælp af sjinn"), som tapasbillederne 11/9. De viser kun ting, der står
+på kortet (laks blev byttet ud med fiskefilet), og forretningens eget foto
+står forrest i hver pulje — undtagen baglokalet, hvor julepynten er
+grunden. Lægger ejeren sine egne op i admin, er de væk af sig selv.
+
+**Samme aften: computeren ryddet op, telefonfilmen er computerens, og
+historien har syv billeder** (14/9). Kundens ord: *"noget står ude i siden
+og fødevarestyrelses tingen er voldsom langt … men selvfølgelig ikke blande
+det sammen"*, *"telefon videoen skal være præcis den samme som på desktop
+men 9:16"* og *"billederne mangler også inde i historie siden"*. **Ingen SQL.**
+
+- **Målt på 1440 FØR:** smiley-kortet 1400 px bredt, selskabets tre kort fra
+  x = 20 (spalten fra 370), ugens to kort 180 px til venstre for deres
+  overskrift, smiley-chippen på `bestil/`/`bord/` 1210 px, og
+  `bestil/`-formularen i venstre side med 600 px tomt til højre. Alle
+  rettelser står bag `min-width: 821px` (`havnegrillen-desktop.css` og en
+  blok i `css/style.css`) — telefonen er urørt. `tests/computer-spalte.spec.js`
+  holder hvert element op mod et UAFHÆNGIGT (kortet mod spalten, ugen mod sin
+  overskrift)
+- **⚠️ `.selskab>.facts` ARVEDE translate:-50% UDEN margin-left:50%.**
+  `.selskab>.rev` satte margenen til auto, men translate'en fra linjen om
+  "det, der bryder ud" blev hængende — derfor kanten. Tjek begge halvdele af
+  tricket, når en ny regel rører et af de udbrydende elementer
+- **Telefonfilmen er et 9:16-UDSNIT af computerens** (`film/historie-9x16.mp4`,
+  720×1280): udsnittet står på skibet med flaget og glider over til havnen,
+  mens røgen dækker (2,6-4,6 s). Start- og slutbilledet er udsnittets eget
+  første og sidste billede. Kilden er 720p, så telefonen skalerer 1,78× op —
+  kornet og sort-hvid bærer det
+- **Ankeret, 1929 og I dag har billeder** (`foto_historie_5-7`, egne
+  nøgler i admin). ⚠️ **NØGLERNE FØLGER IKKE RÆKKEFØLGEN:** 1-4 bærer
+  allerede de fotos, de bar, og en ny nummerering ville flytte et foto, ejeren
+  har lagt op, over i et andet kapitel. Admin-navnene følger kapitlerne. Og
+  prøven på "admin slår repoet" finder pladsen på sit KAPITEL, ikke på et
+  indeks
+
+**Fase 0 er færdig — i koden OG i databasen.** Hele rækkefølgen er kørt i
+Mosede-projektet den 18. august 2026, og `proev-flerlejer.sql` skrev
+**ALLE 23 AF 23 BESTOD**: adgang pr. forretning, gæsten der må skrive men
+ikke læse, og bremsen på bestillinger er bevist dér, hvor det gælder.
+
+Undervejs blev spiis' setup.sql ved en fejl kørt i Mosede-projektet.
+Det er ryddet op med `supabase/ryd-spiis-op.sql`, efterprøvet med en
+tabelliste. Sker det igen: filen ligger der, og storage-spanden skal
+slettes i dashboardet (SQL må ikke, fejl 42501).
+
+**Fase 0 er lukket helt** (bekræftet af Mikkel 18/8): han er logget ind i
+admin med den rigtige e-mail, og forsiden viser hele menukortet uden
+advarslen om manglende forbindelse. Kode, database og side hænger sammen.
+
+Går forsiden en dag i nødmenu igen, står svaret i browserens konsol:
+`js/store.js` skriver `Kunne ikke hente fra databasen …` med tabelnavn og
+statuskode.
+
+**Fase 2 er færdig — i koden OG i databasen.**
+`supabase/forespoergsler.sql` er kørt i Mosede-projektet den 19. august
+2026 (4 adgangsregler, 1 bremse), og `proev-forespoergsler.sql` skrev
+**ALLE 23 AF 23 BESTOD**. Tabellen `forespoergsler`, adgangen pr.
+forretning, bremsen, admin-fanen og siden `selskaber/` er dermed på
+plads. Se README-afsnittet "Forespørgsler: catering, baglokale og
+selskab".
+
+**Og den ER i luften.** Det stod her et stykke tid, at fase 1 og 2 lå
+på en branch, workflowet ikke udgiver. Det gælder ikke længere:
+arbejdet pushes til `claude/lesreg-customer-setup-5atpuu`, som
+udgiver, og `claude/lesreg-fase-1-admin-refactor-p7xqn9` sættes
+bagefter til samme commit (`git branch -f` + `push -f`), så de to ikke
+skrider fra hinanden. **Et push går direkte i luften — tænk over det,
+før du pusher noget halvt.**
+
+**Fase 3 er færdig — i koden OG i databasen.** `supabase/kalender.sql`
+er kørt i Mosede-projektet den 19. august 2026, og den udgivne forside
+kører på kalenderen. Er `proev-kalender.sql` ikke kørt endnu, så kør den:
+den skal skrive **21 × BESTOD**. Se README-afsnittet "Kalenderen: ét
+sted der ved, hvad der sker hvornår".
+
+**Arrangementer HAR en gæsteside nu**: `arrangementer/` viser
+kalenderens offentlige arrangementer. Klienten filtrerer selv på
+`offentlig` som værn i øvetilstand; i produktionen gør adgangsreglen
+det. Se README-afsnittet "Skallen: én indgang pr. ærinde".
+
+**⚠️ Siden `selskaber/` lover med vilje INGENTING** om lokale, antal,
+levering eller pris. Ingen af de ting er bekræftet af forretningen, og en
+test slår ned på dem. Skal siden sige mere, skal ejeren først bekræfte
+det — se listen nederst i README.
+
+**Skallen til hele produktet er bygget** (19/8): topmenu og skuffemenu
+med ét punkt pr. ærinde, forsidens "Hvad kan vi hjælpe med?", og fire
+nye sider — `bord/`, `catering/`, `baglokale/`, `arrangementer/` — alle
+med fuld SEO og uden ét uverificeret løfte. Isfilmen smelter ind i
+siden, til solnedgangen toner frem (`.smelter`), og en preload-fejl,
+der gav hakkende film på telefonen, er rettet. Se README-afsnittet
+"Skallen: én indgang pr. ærinde".
+
+**Fase 4 er færdig — i koden OG i databasen.** `supabase/borde.sql` er
+kørt i Mosede-projektet den 19. august 2026 (4 adgangsregler, 1 bremse),
+og `proev-borde.sql` skrev **ALLE 26 AF 26 BESTOD**. Bordformularen på
+`bord/` (dage og tider fra kalenderen, to timers varsel) og admin-fanen
+Borde med dagens billede er i luften. Rækkefølgen er nu
+… → forespoergsler.sql → kalender.sql → borde.sql.
+
+**Fase 5 er færdig — i koden OG i databasen.** `supabase/udlejning.sql`
+er kørt i Mosede-projektet den 19. august 2026 (4 adgangsregler,
+1 bremse, dagen-er-taget-indekset), og `proev-udlejning.sql` skrev
+**ALLE 27 AF 27 BESTOD** — heriblandt fasens egne: nummer to kan ikke få
+ja til en taget dag, og et nej frigiver dagen. Udlejningsformularen på
+`baglokale/` og admin-fanen Baglokalet med lokalets kalender er i
+luften. Rækkefølgen er nu … → kalender.sql → borde.sql → udlejning.sql.
+
+**Den direkte forbindelse er bygget** (19/8): admin holder en åben
+websocket til Supabase Realtime (js/admin/live.js, håndskrevet Phoenix-
+protokol — ikke SDK'et), så nye bestillinger står på skærmen i samme
+sekund. **Kør `supabase/realtime.sql`** (skal svare 4) — uden den er
+forbindelsen åben, men tavs, og frisk.js' takt dækker.
+
+**Fase 5c er færdig i koden** (19/8): tabellen `push_abonnementer`
+(11 × BESTOD lokalt), Edge Function'en `supabase/funktioner/send-push.ts`
+(fire tabeller giver push, døren tjekkes først, intet telefonnummer i
+beskederne), `sw.js` (kun push — ingen cache), manifest + ikoner KUN på
+admin, og kortet "Besked på telefonen" på Kontakt-fanen. **Virker først
+efter opsætningen i Supabase-dashboardet** — trinene står i README.
+Nøglerne laver Mikkel selv med `supabase/lav-vapid.html` i sin egen
+browser; den offentlige indsættes i admin-feltet, og den private og
+PUSH_SECRET må ALDRIG i repoet eller i en chat.
+
+**Spis her eller tag med er bygget** (20/8): kolonnen `hvordan` på
+bestillinger, valget i formularen og mærket i admin. **Kør
+`supabase/spis-her.sql` + `proev-spis-her.sql`** i Mosede-projektet
+(4 × BESTOD lokalt) — indtil da er hver bestilling afhentning som før,
+og fluebenet på Bestillinger-fanen skal ikke sættes.
+
+**Gæstens halvdel af `store.js` kommer alene nu** (23/8).
+Skrivelaget — `Butik.skrive`, 22 kB, som INGEN gæsteside rører —
+ligger i `js/store-skriv.js` og indlæses kun af `admin.html`.
+Bordbestillingen væltede vægtprøven (727 kB mod et loft på 720),
+og prøvens egen note sagde, at svaret ikke måtte være et større
+tal. **Forsiden er på 701 kB nu.** To prøver holder delingen:
+`Butik.skrive` skal være `undefined` på forsiden og en funktion i
+admin. Bygger du noget nyt, personalet skriver med, hører det til
+i `js/store-skriv.js` — ikke i `store.js`.
+
+**QR-koderne har fået en nøgle** (30/8). Kundens spørgsmål:
+*"er QR-koderne sikre? De peger på et link — hvad hvis nogen har
+gemt url'en og pludselig begynder at bestille hjemmefra, eller
+vil fucke med cafeen? Hvordan sikrer vi, at folk ikke bare kan
+taste url'en ind, men faktisk skal scanne?"*
+
+**⚠️ Kør `supabase/bord-noegle.sql` + `proev-bord-noegle.sql`**
+(16 × BESTOD på en lokal Postgres 16, set fejle tre gange:
+værnet fjernet → 4 faldt, anon givet kolonnen igen → prøve 8
+faldt, nøglen gemt i rækken → prøve 7 faldt).
+
+**⚠️ FØRST DET ÆRLIGE, FOR DET SKAL VIDES, FØR NOGEN BYGGER
+VIDERE:** en QR-kode ER et link. Uanset hvad der står i den, kan
+den telefon, der scannede, gemme adressen og bruge den fra
+sofaen. **Intet, der kan stå i en adresse, beviser, at nogen står
+ved bordet lige nu.** Det, nøglen flytter, er grænsen fra *"kan
+gætte et tal mellem 1 og 55"* til *"har været ved bordet"* — og
+den kan skiftes med ét tryk.
+
+- **`borde.kode`** er seks tegn ud af 32 (ingen 0/O/1/I/L — det
+  er dem, folk taster forkert af et kradset skilt), og skiltet
+  bærer den som `?bord=7&n=K3F9X2`
+- **⚠️ ANON MÅ IKKE LÆSE KOLONNEN**, og det er hele værnets
+  fundament: kunne gæsten hente listen med koderne i, kunne
+  enhver med anon-nøglen — som ligger offentligt i
+  `js/config.js` — selv bygge alle 55 adresser. Det er
+  **kolonnerettigheder** og ikke en adgangsregel, så `select=*`
+  svarer 42501 for en gæst. Derfor beder `Butik.hentBorde()` om
+  kolonnerne ved NAVN, og `hentBorde(true)` er personalets udgave
+- **⚠️ OG ØVETILSTANDEN SKJULER DEN LIGE SÅ HÅRDT.** En
+  efterligning, der er mildere end databasen, lader fejlen bestå
+  lokalt og fælde i produktionen
+- **`har_kode` er afledt** (`generated always as (kode is not
+  null)`), så siden kan sige *"scan koden igen"*, FØR gæsten har
+  fyldt en kurv for 240 kr. Det er ikke en anden udgave af reglen
+  — det er den samme kolonne set udefra som ja/nej
+- **⚠️ NØGLEN GEMMES ALDRIG.** Triggeren læser den og sætter
+  `new.bord_kode := null`. Stod den i rækken, ville den stå på
+  personalets skærm, i sikkerhedskopien fra Historik og i enhver
+  eksport — og så var den ikke længere en nøgle
+- **⚠️ MIGRERINGEN ER MED VILJE TOM.** Filen giver INGEN borde en
+  nøgle; gjorde den det, holdt alle 55 skilte op med at virke i
+  det sekund, den blev kørt — midt i en frokost. Ejeren trykker
+  **"Lås QR-koderne"** i admin → Borde, når han er klar til at
+  printe om. Han skal alligevel printe om, når domænet er sat op
+- **En ny nøgle dræber den gamle adresse** — det er svaret på
+  "nogen har gemt url'en". Ét skilt printes om, ikke 55
+- **⚠️ MÆRKET I ADMIN SIGER *OM*, ALDRIG *HVAD*.** Stod koden i
+  listen, ville ét skærmbillede af Borde-fanen være 55 gyldige
+  adresser
+- **⚠️ OG NØGLEN SENDES KUN, NÅR NOGEN HAR RØRT DEN.** Samme lov
+  som `vis_fra` på nyhederne: en ubetinget kolonne ville tømme
+  nøglen på et låst bord, hver gang ejeren rettede zonen — og
+  skiltet ville stadig virke, uden en linje om det nogen steder
+- **Printsiden skal være åbnet, mens man er logget ind i admin** i
+  den samme browser; ellers kan koderne ikke læses, og siden
+  siger det
+
+**⚠️ OG DET VÆLTEDE ET TJEK, DER SÅ BAD OM AT FÅ VÆRNET FJERNET.**
+`er-vi-klar.sql` linje 40 spurgte om `grant select on borde` til
+anon, altså om TABELLEN. Kolonnerettigheden gør det svar falsk,
+og retningen sagde *"kør bordkort.sql igen"* — som giver anon
+hele tabellen tilbage. **En tjeklinje, der beder om det modsatte
+af det, den skal beskytte, er værre end ingen tjeklinje.** Den
+spørger om kolonnen `nummer` nu. Tjek **118 og 119** er nye og
+set fejle begge veje.
+
+**⚠️ DET SIDSTE HUL STÅR ÅBENT MED VILJE:** en nøgle kan gættes
+ved at prøve sig frem over API'et. 1,07 mia. forsøg er ikke
+realistisk for en cafe, men det er ikke nul — og et afvist forsøg
+efterlader ingen række, så loftet pr. kvarter tæller det ikke.
+Skal det lukkes, skal der logges forsøg, og det er en anden fil.
+**Det, der i praksis beskytter mest, er der i forvejen: der
+betales ikke noget sted.** En falsk bestilling koster den mad,
+køkkenet når at lave — og køkkenet ser "Bord 7" på kortet, mens
+bord 7 står tomt to meter væk.
+
+**Bundbjælken på telefonen** (30/8). Kundens ord: *"admin-appen
+skal også fixes på telefonen — jeg kan ikke vælge imellem
+fanerne, fordi de forsvinder ned i telefonens bar."* Forlægget er
+spiis' egen bjælke. **Ingen SQL.**
+
+To fejl på én gang, og den værste var ikke den, han så:
+
+- **Striben rullede SIDELÆNS.** **Målt på en iPhone 13:** fjorten
+  piller fylder over 1800 px på en skærm på 390, så tretten stod
+  uden for kanten — og der var ikke noget, der sagde, at der VAR
+  mere. Nu er det **fem faste pladser**: fire faner og en dør til
+  resten
+- **Og den lå, hvor browserens egen bjælke lægger sig.**
+  `env(safe-area-inset-bottom)` dækker telefonens hjemmestreg,
+  ikke Safaris værktøjslinje — der er ti px mere nu
+- **⚠️ ARKET ER FANERNE SELV**, ikke en kopi. En ny fane er
+  stadig ét sted at rette. To kolonner, så alle fjorten er på
+  skærmen uden at rulle i et ark, man lige har åbnet
+- **⚠️ "MERE" HAR SIT EGET TAL**, og det er den ene ting,
+  forlægget ikke gør: ligger der en forespørgsel og venter, står
+  den bag "…", og uden et tal på døren er den usynlig, til nogen
+  tilfældigvis kigger ind
+- **⚠️ TALLENE ER SPEJLE, IKKE KOPIER.** De læses af fanens eget
+  mærke gennem en `MutationObserver` — baren regner ikke efter,
+  den kigger. Første udgave hang kun på `Admin.tegnere`, og
+  **målt:** baren stod uden tal, mens fanen sagde 2, fordi mærket
+  sættes inde i `tegnBestillinger`, når LISTEN kommer
+- **⚠️ KNAPPERNE BÆRER `data-gaa`, IKKE `data-panel`** — to
+  elementer med samme attribut ville betyde, at en prøve ramte to
+  knapper for én fane
+- **⚠️ OG 127 PRØVER PEGEDE DIREKTE PÅ `[data-panel]`.** De ramte
+  dermed et element, en finger ikke kan nå på en telefon, og
+  hvert klik brugte tredive sekunder på at give op:
+  `admin.spec.js` gik fra 1,3 minut til **8,4**. Det så ud som en
+  fejl i prøverne, men det VAR det rigtige svar. De går gennem
+  `visFane(page, id)` i `tests/hjaelp.js` nu — den vej, personalet
+  går — og det er samtidig en prøve på, at vejen findes
+- **⚠️ `[aria-expanded]` UDEN SCOPE RAMTE "MERE".** En prøve i
+  `admin-design.spec.js` foldede fanelisten ud og ledte efter
+  varerækker i den. Scopet til `#p-menu` nu
+
+**Bordbestilling med QR er bygget** (23/8). Gæsten scanner mærkatet
+på bord 7, får lugens kort på sin egen telefon, og bestillingen
+lander i Overblik med **Bord 7** på. Ingen betaling, ingen løbende
+regning — man betaler ved lugen som altid. Se README-afsnittet
+"Bestilling fra bordet".
+
+**⚠️ Kør `supabase/bordkort.sql` + `proev-bordkort.sql`** i
+Mosede-projektet (14 × BESTOD lokalt), efter `spis-her.sql`.
+Bordene oprettes derefter i admin → Borde; **indtil ejeren har
+oprettet mindst ét bord, virker ingen QR-kode**, og siden siger
+det selv.
+
+Fire ting er værd at kende:
+
+- **Bordene er DATA.** En QR-kode kan ikke laves om, når den ligger
+  på et bord — men bordene ændrer sig. Numrene bor i tabellen
+  `borde` og aldrig i koden, og `print/bordkort.html` tegner
+  skiltene ud fra listen. Adressen tages fra `location.origin`, så
+  et eget domæne ikke kræver en kodeændring; printsiden advarer,
+  hvis den er åbnet fra en egen maskine
+- **Bordnummeret er leveringsadressen.** Der er ingen hentetid,
+  hvor køkkenet kan opdage en fejl. Derfor er det RÆKKENS navn,
+  der skrives på bestillingen — ikke gæstens tekst i adressen
+- **`ved-bordet/` er `noindex`**, som admin. Står den i Google, kan
+  en, der aldrig har været på havnen, bestille til bord 7, mens et
+  rigtigt selskab sidder ved det. Siden har heller ingen menu og
+  ingen tilbage-pil: hvert link væk er en vej ud af bestillingen
+- **Et bord er spis her**, og databasen binder de to sammen
+
+**⚠️ To navnesammenstød kostede tid samme dag, og begge var
+tavse.** `Butik.hentBorde` hentede bordBESTILLINGER, og
+`skrive.sletBord` slettede en bordbestilling. Da bordene selv blev
+en tabel, fik de nye funktioner samme navn, og **den sidste i
+objektet vandt uden en eneste fejl i konsollen**: bordsiden bad om
+borde og fik bookinger, og "Slet bord" i admin gjorde ingenting.
+De hedder `hentBordbestillinger` og `sletBordbestilling` nu.
+Begge blev fundet af prøver, ingen af dem ved at læse koden.
+
+**QR-koderne tegnes i browseren** (`js/qr.js`) og ikke af npm.
+`vaerktoej/lav-qr.js` bliver: den laver de to FASTE koder til
+`bestil/` og `menu.html`. **En QR-kode, der er en smule forkert,
+ser rigtig ud** — derfor måles motoren tern for tern mod
+npm-pakkens facitliste i `tests/facit/qr-facit.json`. Den fandt to
+fejl, hvor alle 208 datatern var rigtige: formatbittene stod
+spejlvendt, og det tern, der altid er mørkt, var slukket.
+
+**Rettelseslisten fra spiis-gennemgangen: punkt 1 og 2** (23/8).
+Listen er en gennemlæsning af den UDGIVNE kode, ikke af SQL-mappen —
+derfor stod punkt 2 som "tjek først".
+
+**Punkt 1, admin blinker ikke, er hel nu.** Fingeraftrykket i
+`genindlæs()` var der (22/8): en hentning uden ændringer tegner
+ingenting. Men når ét kort ændrede sig, blev HELE listen revet ned —
+og noten på kortet gemmes ved `change`, altså når feltet forlades.
+**Målt i Chromium:** skriver personalet en note, og der lander en
+bestilling, mister markøren sit felt, og browseren fyrer et `change`
+på vejen ud, så den halve sætning gemmes af sig selv. Andre browsere
+fyrer det ikke, og så er den bare væk — og køkkenet står med en
+iPad. `Admin.tegnRaekker` tegner nu de fire lister række for række:
+uændrede kort bliver **stående**. Prøven i `tests/admin.spec.js` er
+set fejle med den gamle optegning.
+
+**Punkt 2 var lukket i koden, men ikke i papirerne.**
+`supabase/lukkedag-vaern.sql` + `proev-lukkedag-vaern.sql` har ligget
+der siden 22/8 — de stod bare hverken i README, i CLAUDE.md eller i
+`er-vi-klar.sql`, og derfor lignede hullet et hul. Nu står de tre
+steder. **Værnet er samtidig hærdet:** funktionen var ikke
+`security definer`, så den slog kalenderen op med GÆSTENS øjne.
+Målt på en rigtig Postgres: strammes `kalender_laes_alle` til
+`using (offentlig)`, kunne gæsten bestille på en lukket dag igen —
+uden fejl og uden spor. Prøven er nu **9 AF 9 BESTOD**, og nr. 9
+skriver `FEJLEDE`, hvis hærdningen fjernes.
+
+**⚠️ Kør `supabase/lukkedag-vaern.sql` + `proev-lukkedag-vaern.sql` i
+Mosede-projektet.** Filen skal køres igen, også hvis den er kørt før
+— hærdningen er ny. Kør derefter `er-vi-klar.sql`: linje 34-36 siger,
+om værnet står, om det er `security definer`, og om søgestien er
+låst. Alt er kørt og bevist på en lokal Postgres 16, ikke i Supabase;
+det sidste kan kun Mikkel gøre.
+
+**Tre layoutfejl fra kundens egen telefon** (23/8): *"fix det der
+grimme layout og linjerne går ud over hinanden."*
+
+- **Den valgte vares røde ramme blev klippet.** `.stk-linje` har
+  `margin: 0 -14px`, så en valgt linje kan række ud i afsnittets
+  luft — men inde i en `.vare-gruppe` er der `overflow: hidden`.
+  **Målt: linjen stak 13 px ud til HVER side**, så venstre og
+  højre kant forsvandt, og tilbage stod to vandrette streger fra
+  kant til kant, der lignede en fejl. `margin-inline: 0` inde i
+  gruppen
+- **Prisen havde 2 px til kortkanten** og så klippet ud. Samme
+  rettelse gav den 16
+- **Den klæbende kurv flød sammen med listen** — samme sandfarve
+  som afsnittet, ingen kant. Den fik en
+- **Topbjælken stod på 96 %**, og de fire procent var nok til, at
+  teksten under kunne anes. Helt ugennemsigtig nu
+
+En måling gennemgik bagefter otte sider for elementer, der stikker
+ud over en forælder, som klipper: **ingen flere.**
+
+**⚠️ TO PRØVEFILER MÅLTE PÅ SIDER, DER BLEV VEJVISERE** (30/8), og
+den ene af dem bar et sikkerhedsværn, ingen anden dækkede.
+
+- **`tests/menuside.spec.js` er parkeret** i `tests-gamle/`. Den
+  målte `menu.html`; menukortet bor i `m-menukort.html` nu, og
+  `tests/skal-menukort.spec.js` dækker de samme 19 regler
+- **⚠️ MEN TRE AF DENS PRØVER ER FLYTTET MED, IKKE SLETTET.** De
+  målte noget, INGEN anden prøve dækkede: at et varenavn med HTML
+  i sig vises som TEKST (ejeren skriver navnene — bygges listen
+  med `innerHTML` en dag, kører det som kode i gæstens browser),
+  at siden ikke går ned ved en tom database, og at en kategori med
+  en gammel afdeling stadig står på kortet. De står nu under
+  "Værn, der fulgte med fra den gamle menuside"
+- **`udlejning.spec.js`s fire gæsteprøver er sprunget over**, ikke
+  slettet, med en grund der kan grepes frem. Personalets halvdel
+  af filen kører videre
+
+**Læren:** dækning forsvinder ikke ved, at en prøve fejler — den
+forsvinder ved, at filen holder op med at blive kørt. Parkerer du
+en prøvefil, så læs den igennem for det, ingen anden måler.
+
+**⚠️ DER STOD TO UDGAVER AF HJEMMESIDEN I LUFTEN** (30/8), og
+det var den dyreste opdagelse i gennemgangen. **Målt:** nitten
+gæstesider — ti på designet fra 23/8 og ni på det gamle stilark.
+Af de ni kunne **kun `bord/`** nås fra den nye side. De otte andre
+var forældreløse, havde **ingen `noindex`** og pegede canonical på
+sig selv.
+
+En gæst, der googlede "smørrebrød Mosede Havn", kunne altså lande
+på `smoerrebroed-ud-af-huset/` i det GAMLE design — og derfra førte
+hvert eneste link dybere ind i den gamle verden. Hun så aldrig den
+nye side.
+
+**Syv adresser er vejvisere nu**, ikke sider: `menu.html`,
+`selskaber/`, `catering/`, `baglokale/`, `arrangementer/`,
+`nyheder/` og `smoerrebroed-ud-af-huset/`.
+
+- **De er ikke slettet.** Adressen står i Googles resultater og i
+  folks bogmærker; en 404 er et blindt spor
+- **Tre lag, fordi GitHub Pages ikke har en server:** `canonical`
+  fortæller Google, hvad der er den rigtige side, `refresh`
+  flytter browsere uden JavaScript, og `location.replace` flytter
+  med det samme UDEN at lægge sig i historikken — ellers sender
+  tilbage-knappen gæsten frem og tilbage i en løkke
+- **De beholder favicon**, for de vises i et brøkdel af et sekund,
+  og et blankt ark i fanen er dét, gæsten når at se
+
+**⚠️ `bestil/` OG `bord/` BLIVER.** De kan noget, de nye ikke kan:
+`bord/` er den eneste vej til en bordbooking, og `bestil/` bar
+fyldvælgeren. En prøve holder fast i, at de to IKKE bliver til
+vejvisere — det ville fjerne en funktion, ingen ville opdage, før
+en gæst prøvede.
+
+**⚠️ OG `baglokale/` VAR IKKE DET SAMME SOM `h-baglokale.html`.**
+Den skrev en **udlejning** (`Butik.lejLokale`), mens den nye
+skriver en **forespørgsel**. Det så jeg efter, før jeg omdirigerede
+— og det er stadig rigtigt at gøre: flowet er "gæsten spørger,
+personalet booker" siden 29/8, og udlejningen oprettes af knappen
+"Book lokalet til dem" i admin. Men noten øverst i
+`js/admin/udlejning.js` om TO gæsteindgange til lokalet beskriver
+ikke længere virkeligheden: der er én.
+
+**Fyldvælgeren kunne ikke nås af nogen** (30/8). Model A — hvert
+fyld er en vare med sin egen pris — har levet på `bestil/` siden
+20/8. **Målt:** `bestil/` var kun linket fra `menu.html`, som selv
+var forældreløs. Altså kunne INGEN gæst vælge fyld til sit
+smørrebrød, selv om ejeren har 29 slags i admin. Kundens
+beslutning: byg den ind i den nye side.
+
+- **Formen er designets egen.** Designet har ikke tegnet en
+  fyldvælger, men `.chipset` ER en pillevælger — den samme som
+  tidsrummet på baglokalet. Vi opfinder ikke en ny form
+- **Fyldet lægges ikke til summen og er ikke en linje.** Det er
+  ØNSKER uden pris; talte de med, fik gæsten et beløb, hun ikke
+  skal betale, og køkkenet et stykke, ingen har bestilt. Det
+  sendes i kolonnen `fyld`, som `bestil/` har brugt siden 20/8
+- **Afsnittet skjuler sig**, når der ikke er noget at vælge
+
+**⚠️ OG DESIGNET EJER MARKERINGEN — VI LÆSER DEN.**
+`havnegrillen.js` binder sin egen lytter på hver `[data-chips]` og
+slår `.on` til. Første udgave togglede OGSÅ, og de to ophævede
+hinanden: **målt på en iPhone 13** stod tælleren på "2 slags
+valgt", mens begge piller så uvalgte ud. Nøjagtig samme fælde som
+segmentknapperne samme dag. Aflæs det, designet faktisk styrer.
+
+**⚠️ OG `toBeHidden()` ER SANDT FOR ET ELEMENT, DER IKKE FINDES.**
+Prøven "uden ønskefyld findes afsnittet ikke" bestod, også da hele
+vælgeren var rullet væk — den målte ingenting. Den kræver nu
+FØRST, at afsnittet er der, og DEREFTER at det er skjult.
+
+**Arrangementet kunne ikke RETTES — og det var roden til, at
+reservationen "ikke virkede"** (31/8). Kundens ord: *"ift
+reservér en plads til de arrangementer de lægger op virker ikke,
+der er ikke en reservér plads-knap ... og knappen dirigerer ingen
+steder hen."*
+
+**⚠️ Kør `supabase/arrangement-info.sql`** (kun én kolonne:
+`kalender.billede`).
+
+Tre fejl i kæde, og de forklarer hinanden:
+
+1. **`tilmelding` er slået FRA som standard** — med vilje, se
+   afsnittet nedenfor
+2. **Et arrangement kunne oprettes og slettes, men ALDRIG
+   rettes.** Var fluebenet ikke sat, fandtes der ingen vej til at
+   sætte det bagefter. Rækken var låst som "kig forbi" for altid
+3. **Og så pegede den flydende pille "Reservér plads" på
+   `#reserver`, som stod med `display:none`.** Et tryk gjorde
+   præcis ingenting — browseren hopper ikke til noget, den ikke
+   kan se. Ingen fejl, ingen bevægelse, og gæsten tror, siden er
+   i stykker
+
+**⚠️ OG TO FELTER FANDTES SLET IKKE I ADMIN.** Gæstesiden har
+vist `beskrivelse` og `start_kl`, siden arrangementerne blev
+bygget — men der var ingen felter at skrive dem i. Ejeren lagde
+et arrangement op, og på hjemmesiden stod en dato og en titel og
+ikke andet.
+
+- **`Butik.skrive.kalender` har kunnet rette hele tiden** — den
+  tager et `id`. Admin brugte det bare aldrig. Rettelsen er
+  derfor ÉN formular med to ord på knappen, ikke en ny
+- **Listen siger nu, om der kan reserveres** (`🎟️ Tager imod ·
+  40 pl.` mod `Kig forbi`). Det var præcis den oplysning, kunden
+  ledte efter og ikke fandt
+- **`pegVidere()` holder de tre knapper på virkeligheden:** kan
+  man reservere, peger de på formularen; kan man ikke, peger de
+  på LISTEN og siger "Se arrangementerne". Ét sted at rette
+- **⚠️ Teksten skiftes i tekstknuden**, ikke med `textContent` —
+  designets `<svg>` og `.sheen` ligger i den samme knap
+- **Billedet er valgfrit og har INGEN pladsholder.** Samme regel
+  som `billedplads.js`: en tom grå kasse er værre end ingen
+  plads, og et stockfoto af en koncert ville love en koncert, vi
+  ikke har set. Samme storage-spand som nyhederne — en ny spand
+  er fire adgangsregler, ejeren skal oprette i dashboardet
+- **⚠️ Billedet sendes KUN, når nogen har rørt det.** Samme lov
+  som bordets nøgle og nyhedernes `vis_fra`: `undefined` betyder
+  "lad det være". Ubetinget ville en rettelse af titlen tage
+  fotoet med sig, uden en linje om det nogen steder
+- **⚠️ Overskriften følger tilstanden.** Målt på et skud: kortet
+  sagde "Læg noget i kalenderen", mens felterne stod fyldt ud med
+  en række, man var ved at rette — og så tror man, man opretter
+  en dublet
+
+Fem falsifikationer, fem fald: Ret-knappen fjernet, `id` ikke
+sendt (rettelsen oprettede en ny række), billedet tømt ved et gem
+af noget andet, pillen låst til `#reserver`, og beskrivelsen ikke
+sendt. **Og én falsifikation BESTOD først** — `billede: nytBillede`
+er ikke en fejl, fordi `undefined` springes over alligevel; den
+rigtige fejl er `nytBillede || ''`.
+
+**⚠️ OG PRØVEN FALDT I EN FÆLDE, FILEN HER ALLEREDE ADVARER MOD.**
+`sætDataEngang` skriver kun i localStorage, HVIS den er tom — en
+prøve, der åbnede admin to gange med forskellige data, målte de
+FØRSTE begge gange. Delt i to prøver.
+
+**Arrangementer kan reserveres nu** (30/8). Kundens spørgsmål:
+*"kalender og arrangementer er fedt og godt, men hvor kommer
+reservationerne hen, hvad kan admin styre, hvordan gør vi det
+bulletproof ift kunder og admin?"*
+
+Svaret var: **ingen steder.** Knappen "Reservér plads" har stået
+på `h-kalender.html`, siden designet kom 23/8, og siden indlæste
+ikke engang `js/store.js`. Den viste **fem opfundne
+arrangementer** — Ronni & de Salte, torskegilde, efterårsbrunch —
+med datoer, priser og "12 pladser tilbage". Det stod som et kendt
+hul i papirerne. Det er lukket nu.
+
+**⚠️ Kør `supabase/arrangementer.sql` + `proev-arrangementer.sql`**
+(11 × BESTOD på en lokal Postgres 16, set fejle begge veje).
+
+- **`kalender` fik fire kolonner:** `tilmelding`, `pladser`,
+  `pris_tekst` og `start_kl`. Tilmelding er **slået fra som
+  standard** — de fleste arrangementer på en havn er "kig forbi",
+  og stod den til, ville hvert eneste arrangement pludselig bede
+  gæsterne om navn og nummer
+- **Tabellen `reservationer`** med det samme skelet som resten:
+  gæsten skriver, personalet ser, status går én vej, gæsten må
+  ikke læse
+
+**⚠️ PLADSERNE TÆLLES I DATABASEN, IKKE I BROWSEREN.** To gæster,
+der trykker samtidig på den sidste plads, er ikke et sjældent
+tilfælde til en koncert — det er dét, der sker, når linket lige er
+delt. `reservation_bremse` tæller inde i transaktionen og siger
+nej til nummer to. **Og et afslag frigiver pladsen igen:**
+tællingen springer de afviste over, så en aflyst reservation ikke
+spærrer for en, der gerne vil. Derfor er Afvis heller ikke en
+sletning.
+
+**⚠️ VISNINGEN `arrangement_pladser` MÅ ALDRIG FÅ EN KOLONNE
+MERE.** Samme regel som `optagne_dage` og `bord_travlhed`: den
+kører med sin EJERS øjne og springer adgangsreglerne over — det er
+hele meningen, for gæsten skal kunne se "3 pladser tilbage" uden
+at kunne læse, HVEM der har taget de andre. Prøve 8 tæller
+kolonnerne.
+
+**⚠️ DE FEM OPFUNDNE ER IKKE EN RESERVE — og det er modsat resten
+af huset.** Andre steder gælder "vi overskriver kun, når databasen
+har noget at sige", og designets pladsholder bliver stående. Her
+er det omvendt: en pladsholderPRIS er et tal, der er for højt
+eller lavt. Et opfundet ARRANGEMENT er en aften, folk møder op
+til. Kører gæsten til havnen fredag kl. 19 efter en koncert, der
+aldrig har eksisteret, er det ikke en skæv oplysning — det er en
+spildt aften. Er der ingen arrangementer, siger siden det.
+
+**Arbejdsdelingen mellem de to faner:** Kalender er HVAD der sker,
+hvor mange pladser og hvad det koster; **Tilmeldinger** (ny fane i
+Dagen-gruppen) er HVEM der kommer — listen, man krydser af i
+døren. **Én liste pr. arrangement, ikke én lang:** personalet står
+i døren til ét arrangement, ikke til efterårets fem. Samme
+beslutning som Køkken-kø, hvor bordnummeret er adskillelsen.
+
+**⚠️ MEN MÆRKET I SØJLEN TÆLLER PÅ TVÆRS.** Et tal, der kun gjaldt
+det valgte arrangement, ville skjule, at der er tre nye til
+fredagens koncert, mens man kigger på torsdagens.
+
+**⚠️ FANEN VÆLTER IKKE, FØR SQL'EN ER KØRT.**
+`Butik.hentReservationer` svarer med en TOM liste i stedet for en
+fejl, og admins kalenderfelter spørger databasen, om kolonnerne
+findes (`maaTilmelding()`, samme greb som `maaAntal()` og
+`maaVindue()`). Uden det kunne ejeren ikke oprette et arrangement
+overhovedet — på grund af en fil, han ikke ved eksisterer.
+**Og uden rækker skjules felterne:** de to valg fejler hver sin
+vej, og den ene retter sig selv.
+
+**⚠️ SEKS PRØVEFILER HOLDT OP MED AT MÅLE NOGET — OG TRE
+RIGTIGE FEJL LÅ BAGVED** (30/8). Da otte gamle adresser blev
+vejvisere, fulgte prøverne ikke med. De fejlede ikke: de
+navigerede til en side, der sender videre, og målte enten
+ingenting eller en HELT anden side end den, de hed. Alle
+prøvefiler er søgt igennem for navigationer til de syv
+vejviser-adresser, i stedet for at vente på at runden fandt dem
+én ad gangen. **Ingen SQL.**
+
+- **`forespoergsel.spec.js`s gæstehalvdel (19 prøver) er sprunget
+  over**, admin-halvdelen kører videre — den er den eneste prøve
+  på Forespørgsler-fanens kort. **SEKS prøver er FLYTTET** til
+  `skal-forespoergsel.spec.js` mod `h-selskaber.html`, fordi de
+  målte noget, ingen anden dækkede: referencen, kvitteringen der
+  ikke må love en booking, personoplysninger der ikke må blive
+  liggende i browseren, dobbeltafsendelsen, det umulige antal og
+  at dato og antal er **frivillige**
+- **`fyld-model-a.spec.js`, `menukort-admin.spec.js` (tre),
+  `dagens-retter.spec.js` (to), `admin.spec.js` og
+  `admin-nyheder.spec.js`** målte `menu.html`,
+  `smoerrebroed-ud-af-huset/` og `nyheder/`. De måler
+  `m-menukort.html`, `bestil/` og forsiden nu
+
+**⚠️ EN GÆST UDEN DATO KUNNE IKKE SENDE — OG FIK INTET AT VIDE.**
+`tjekDato()` sluttede med `return rydFejl()`, og `rydFejl()`
+returnerer ingenting. Afsendelsen gør `if (!tjekDato()) return
+false`, så et tryk på Send gjorde **absolut ingenting**: ingen
+kvittering, ingen fejl, ikke en linje i konsollen. Knappen så
+bare ud, som om den ikke virkede — på **alle fire**
+forespørgselssider. Og den ramte netop den gæst, fase 2 er bygget
+for: *"sølvbryllup engang til foråret, hvad koster det?"* er den
+forespørgsel, der er mest værd. Fundet af den SIDSTE af de seks
+flyttede prøver, i samme åndedrag som flytningen.
+
+**⚠️ ET UMULIGT ANTAL BLEV FØRST AFVIST AF DATABASEN.**
+`forespoergsel_antal_ok` holder 1-500. Den gamle selskabsside
+tjekkede det selv (`#fejl-antal`); det fulgte ikke med, da
+siderne blev designets. Formularen siger det nu, og
+øvetilstanden i `store.js` siger det under den — **tallet står
+to steder med vilje**, og fjernes kun det ene, består prøven
+stadig.
+
+**⚠️ EN KLASSE MED `display` SLÅR BROWSERENS EGEN
+`[hidden]`-REGEL.** `.lk-tegn` (forklaringen "Ledig / Optaget")
+havde `hidden=""` og var synlig alligevel — så på et selskab **ud
+af huset**, hvor ingen dag kan være optaget, lovede nettet en
+ledighedsoplysning, det slet ikke giver. Nøjagtig samme fælde som
+`.music` på forsiden. Fundet ved at måle **synligheden** og ikke
+attributten. Alle klasser med `display`, der skjules med
+`el.hidden`, er gennemgået: der er ikke flere.
+
+**⚠️ OG TO PRØVER VAR FORÆLDEDE MOD EN ÆNDRING, VI SELV TRAF.**
+Ledighedsnettet skulle forsvinde ved "ud af huset". Så bad kunden
+om en rigtig datovælger, og **nettet ER datofeltet nu** på alle
+fire sider. Prøverne måler det, der stadig følger `optagerDagen`:
+markeringen af optagne dage og forklaringen — ikke nettet selv.
+
+**⚠️ SEKS JAVASCRIPT-FILER INDLÆSES IKKE AF ÉN ENESTE SIDE**
+(målt 5/9): `arrangementer.js`, `baad.js`, `baglokale.js`,
+`intro.js`, `menuside.js` og `smoerrebroed.js` — 1.880 linjer.
+De er ikke slettet — af samme grund som siderne ikke er det — men
+de er en fælde for den, der læser koden om et halvt år og tror,
+de kører. Slettes de en dag, skal `tests-gamle/` og de sprungne
+prøver læses igennem først: de peger på dem, og de bærer dækning,
+ingen anden måler.
+
+**⚠️ HER STOD OTTE, OG DET ER RETTET VED AT MÅLE.**
+`forespoergsel.js` og `nyheder.js` indlæses igen — noten fra 30/8
+var altså blevet forkert, uden at nogen kunne se det.
+**Nu kan tallet ikke skride mere:** `tests/doed-kode.spec.js`
+holder listen op mod DISKEN og falder både, hvis der kommer en ny
+forældreløs fil, og hvis en af de seks bliver ryddet op uden at
+papirerne følger med.
+
+**Og hver af de seks siger det selv.** En note i toppen —
+*"INGEN SIDE INDLÆSER DEN HER FIL"* — er det eneste, der når den,
+som åbner filen uden at slå op i papirerne, og det er præcis den
+situation, fælden virker i. Prøven kræver noten.
+
+**Pladstallet stod stille, lige efter gæsten havde reserveret**
+(30/8). **Målt på et skærmbillede**, ikke ved at læse koden:
+kortet sagde stadig "40 pladser tilbage", i det sekund Anna havde
+taget fire. Næste gæst så det rigtige tal — men hun, der lige
+havde reserveret, læste det som om det ikke var gået igennem, og
+så trykker man igen. Det er ikke et gæt at rette det: vi ved
+præcis, hvor mange hun tog, og næste hentning overskriver tallet
+med databasens eget.
+
+**⚠️ EN PRØVEFIL OPRETTEDE EN FORRETNING UDEN ADRESSE — OG DEN
+LOKALE POSTGRES VAR MILDERE END SKYEN** (30/8). Mikkel kørte
+`proev-arrangementer.sql` og fik `23502: null value in column
+"adresse"`. `lokationer` har haft `adresse`, `postnr` og `by` som
+**not null** siden `setup.sql` linje 101, så filen faldt på linje
+19 — før ét eneste tjek var nået. Den bestod lokalt, fordi
+tabellen dér var en håndlavet stub med tre kolonner. Det er
+"øvetilstanden skal fejle som skyen", nu på SQL-siden: **en
+efterligning, der tager imod mere end produktionen, beviser
+ingenting.** Den lokale tabel matcher `setup.sql` nu, og den
+gamle udgave er set fejle på den med nøjagtig Mikkels fejlbesked.
+`proev-foresp-kontakt.sql` havde samme fejl; seksten andre
+`proev-`filer skrev kolonnerne i forvejen.
+
+**✅ `arrangementer.sql` ER KØRT i Mosede-projektet** (30/8,
+bekræftet af Mikkel: *"sådan det virkede"*). Tabellen
+`reservationer`, de fire kolonner på `kalender`, bremsen og
+visningen `arrangement_pladser` er dermed på plads i databasen —
+koden bagved venter stadig på at blive udgivet.
+
+**Catering og frokost fik selskabernes runde** (30/8). Kundens
+liste, punkt for punkt. **Ingen SQL.**
+
+**⚠️ OG FØRST DEN FEJL, HAN SÅ: SEGMENTKNAPPERNE VIRKEDE IKKE.**
+Kundens ord: *"catering knapperne virker ikke ift levering eller
+afhentning."* **Målt på en iPhone 13:** et tryk på "Afhentning"
+skjulte adressefeltet, men `.on` blev stående på "Levering" —
+designets `[data-toggles]` i `havnegrillen.js` flyttede aldrig
+markeringen. Begge knapper så uændrede ud, så gæsten trykkede
+igen, og bagefter kunne hun ikke se, hvad hun havde valgt.
+Rettelsen er den linje, `[data-chips]`-enkeltvalget bruger lige
+ovenfor. **Det ramte tre sider:** catering, frokost og
+baglokalets med-mad/kun-lokalet.
+
+**⚠️ MEN AFLÆSNINGEN ER STADIG FELTETS SYNLIGHED**, ikke `.on`.
+Se `segSvar()`: en catering, hvor gæsten havde trykket Afhentning,
+blev engang sendt som en LEVERING med adresse på, fordi koden
+læste `.on`. De to ting passer sammen nu — det, der afgør, hvad
+der SENDES, skal blive ved med at være det, designet faktisk
+styrer.
+
+**Forslag OG fritekst — og de to opfører sig modsat:**
+
+- **Anledningen ERSTATTER.** Gæstens egne ord vinder over chippen,
+  fordi hun ikke har trykket på "Privatfest" — den var valgt på
+  forhånd. Rækkefølgen i `detaljer()` afgør det: chips først,
+  `ekstra` bagefter
+- **Maden LÆGGES TIL** (`chipsTillæg`). Man vælger smørrebrød OG
+  skriver "og noget vegetarisk"; erstattede teksten listen, ville
+  køkkenet lave det halve af det, gæsten havde valgt
+
+**⚠️ Tillægget slår id'et op DIREKTE.** `værdi()` slår op i
+`side.felter` og `side.ekstra` på NAVN — et id, der ikke står i
+nogen af dem, giver null, og tillægget ville tavst være tomt hver
+gang.
+
+**Datonettet er datovælger nu, ikke kun ledighed.** Kundens ord:
+*"valg af datoen er forældet udseende og navigations ting."*
+Tilbage stod browserens egen `<input type=date>` — på en telefon
+et hjul, hvor man hverken kan se ugedagene eller hvilke dage der
+er for tidlige. Nettet står på alle fire sider nu. **Det, der
+stadig følger `optagerDagen`, er markeringen af optagne dage,
+forklaringen "Ledig / Optaget" og stedvalget** — en side, hvor
+ingen dag kan være optaget, må ikke strege noget eller love en
+oplysning, den ikke giver.
+
+**⚠️ VARSLET SKRIVES AF REGLEN.** Cateringens faktakort sagde
+*"mindst en uge før ved mere end 30 kuverter"*, mens formularen
+holdt to dage — to udgaver af den samme regel, og gæsten møder
+ugen først. `[data-varsel]` fyldes nu af `varselDage()`, og
+designets tekst er reserven. **Catering: 2 dage. Frokost: 3.**
+
+**⚠️ "HVOR TIT" ER ET FELT, IKKE EN MOTOR.** Kundens ord: *"måske
+en lille ting med skal det være en ugentlig, månedlig ting."*
+Frokostsiden spørger nu hver uge / hver 14. dag / hver måned / én
+gang / ved I ikke endnu — og det lander i `detaljer.hvor_ofte`.
+**Der bygges stadig ingen abonnementsmotor:** ingen tabel til
+gentagne leveringer, ingen pauser, ingen automatiske ordrer. Det
+blev afvist 20/8. Det, der manglede, var, at personalet kunne SE,
+om firmaet spørger om én levering eller om hver uge — det er to
+vidt forskellige priser. En prøve holder fast i, at én
+forespørgsel giver ÉN række og NUL bestillinger.
+
+**⚠️ Chipgrupperne læses efter RÆKKEFØLGE i opmærkningen.** "Hvor
+tit" kom ind som den FØRSTE gruppe på frokostsiden; bytter nogen
+om på to grupper i HTML'en uden at rette `SIDER`, lander
+ugedagene under "hvor ofte" — tavst, og admin viser det pænt
+formateret.
+
+**Ring og mail er second options.** Kundens ord: *"fjern ring og
+email fra toppen det skal være second options."* Øverst
+konkurrerede de to knapper med formularen: den, der lige er
+landet, blev bedt om at vælge mellem tre veje, før hun vidste,
+hvad hun ville spørge om. De står under send-knappen nu
+(`.anden-vej`), som de hvide og ikke den røde.
+
+**⚠️ FROKOSTSIDENS "59 KR. PR. MEDARBEJDER" ER STADIG DESIGNETS
+PLADSHOLDER.** Den står live på Mikkels beslutning fra 23/8, og
+den er den farligste af dem: beder et firma om et tilbud og får
+75 kr., har siden lovet noget andet. Prisen skal komme fra
+ejeren — vi finder ikke på et tal, og der er derfor heller ingen
+prisberegner på siden.
+
+**Baglokalet er blevet baglokalets** (29/8). Kundens ord: siden
+skal sige, *"hvad der sker når de booker"*, lade *"email eller
+nummer være som en option"*, lade dem *"fortælle hvad de skal med
+baglokalet"*, og aftalen skal være afstemt *"inden for et døgn"*.
+
+`h-baglokale.html` bruger samme motor som selskaber, catering og
+frokost (`js/skal/forespoergsel.js`) — forskellene står som
+opsætning i `SIDER`:
+
+- **Anledning og mad er FRITEKST.** Chips kunne ikke rumme
+  "generalforsamling med kaffe bagefter", og maden aftales
+  alligevel i samtalen. Kun tidsrummet er chips: det ER fire
+  kasser, og lokalet lejes ud i dem
+- **Fire dages varsel**, som selskaber. Et lokale skal gøres klar,
+  og køkkenet skal nå maden
+- **Kortet "Sådan går det videre"** står under formularen: vi
+  kigger i kalenderen → inden for et døgn ringer eller skriver vi
+  → er I enige, låser vi dagen. Uden det tror gæsten, lokalet er
+  hendes, i det sekund hun trykker send
+- **Ledighedskalenderen** viser `optagne_dage` — kun datoer
+
+**⚠️ MAIL ELLER NUMMER — IKKE BEGGE.** Kør
+**`supabase/foresp-kontakt.sql` + `proev-foresp-kontakt.sql`**
+(5 × BESTOD på en lokal Postgres 16). Kolonnen `telefon` var
+`not null` MED et krav om 8-15 cifre, så en gæst, der kun ville
+skrive sin mail, blev afvist af databasen med en fejl, hun ikke
+kunne gøre noget ved. Kravet **forsvinder ikke, det flytter**:
+`forespoergsel_kontakt_ok` siger "et gyldigt nummer ELLER en
+gyldig mail", og `forespoergsel_telefon_form_ok` holder fast i, at
+et nummer, der ER skrevet, stadig skal være et nummer — ellers
+kunne "12" slippe igennem i ly af mailen, og personalet ville
+ringe forgæves. Selskabssiden kræver stadig BEGGE: et tilbud dér
+er tal og forbehold, der skal skrives ned.
+**⚠️ Køres `forespoergsler.sql` igen bagefter, skrives det gamle
+krav tilbage.**
+
+**⚠️ DEN AUTOMATISKE KALENDERRÆKKE BLEV BYGGET OG RULLET
+TILBAGE** — og grunden er værd at kende, før nogen bygger den
+igen. Ønsket var, at et ja på baglokalet "automatisk ryger ind i
+kalenderen". Den blev skrevet (intern arrangement-række, aldrig
+offentlig, kendt på referencen i beskrivelsen) og virkede — og så
+viste **et skud af dagens panel den samme booking TO gange**:
+"📅 Baglokalet: Anna Vind" fra rækken og "🔑 Baglokalet: Anna
+Vind · 30 pers." fra udlejningen selv. **Udlejningen ER allerede i
+kalenderen**: månedsnettet tegner 🔑 på dagen, og dagens panel
+lister den med en pil hen til fanen. En kalenderrække oveni er
+ikke "at hænge sammen" — det er to rækker for én begivenhed,
+præcis dét, resten af filen advarer imod. Fundet med øjnene, ikke
+ved at læse.
+
+**⚠️ MEN KØREPLANEN HAVDE ET RIGTIGT HUL, OG DET VAR HELT TAVST.**
+Linjen "🔑 Baglokalet er lejet ud i dag" i `tegnKoereplan`
+(`js/admin/overblik.js`) spurgte efter status **`aftalt`**. Det er
+FORESPØRGSLERNES ord — en udlejning hedder `ny` / `bekraeftet` /
+`afvist`, og de to tabeller har med vilje hvert sit sæt (de
+oversættes ét sted, i `alleSager()`). Betingelsen kunne aldrig gå
+i opfyldelse. **Målt:** baglokalet var lejet ud til 30 personer i
+dag, og køreplanen sagde *"Ingen bestillinger eller aftaler endnu
+i dag"*.
+
+**Og prøven bestod imens** — den skrev selv `status: 'aftalt'` på
+en udlejning, altså en række, databasen aldrig kan indeholde.
+Prøve og kode delte den samme forkerte antagelse; det er
+CLAUDE.md's egen regel om, at **ét af tallene skal komme udefra**.
+Køreplanen viser nu begge slags: en **bekræftet udlejning**
+("lejet ud") og en **aftalt forespørgsel** ("aftalt i dag") — en
+dag, personalet har lovet væk, er en dag, køkkenet møder ind til,
+uanset hvilken formular gæsten brugte.
+
+**⚠️ SUITEN HAVDE VÆRET RØD I EN UGE, OG PAPIRERNE SAGDE GRØN**
+(30/8). Den fulde runde efter baglokale-arbejdet skrev **20
+fejlede**. Ingen af dem kom fra runden — det blev **målt** ved at
+køre de samme filer i en worktree på den UDGIVNE commit: fem af
+dem fejlede allerede dér, og de sidste fem kom med de to runder
+imellem. Alle ti var forældede prøver mod ændringer, vi selv havde
+truffet med vilje:
+
+- **Paletten** (29/8): to prøver krævede stadig marineblå
+  `#0f2c44`. Farven kan ikke længere måle, om admin er sluppet ud
+  af sit scope — hele huset er varmt nu. Prøverne læser i stedet
+  det, der ER forskelligt med vilje: `--r-lille` 12 px mod 14, og
+  admins solide sandflade mod gæstens gennemsigtige fyld
+- **Forespørgselskortet** (29/8): "30 personer" hedder "30 pers.",
+  den tomme dato hedder "Dato ikke fastlagt endnu", og
+  telefonlinket hedder `.foresp-link` og ikke `.bestil-tlf`
+- **Mailen på selskabssiden** (29/8): to prøver udfyldte navn og
+  nummer, men ikke mail — og siden kræver den nu, fordi kunden
+  bad om det. Formularen sendte altså ikke, og prøven målte en
+  kvittering, der aldrig kom
+- **Fotopladserne** (29/8): 5 blev til 11 med stemningsgalleriet.
+  Prøven tæller ikke rækker længere; den kræver, at hver NØGLE,
+  siden slår op, HAR en række — en plads, der falder ud af admin,
+  mens gæstesiden stadig leder efter nøglen, giver en grå flade,
+  ingen kan fylde ud
+
+**Og den dyreste var fartprøven, fordi papirerne løj om den.**
+Der stod her i filen, at den var *"skrevet om MED reglen i
+behold ... set fejle med `eager`"*. Det passede for
+par-udgaven — og samme aften blev galleriet lavet om til ÉN
+pulje, hvor hver flise viser ét foto ad gangen. Prøven krævede
+stadig præcis seks og fik tre. **Et fast tal på noget, der
+skifter hvert 4,6 sekund, er en prøve på et stopur.** Den kræver
+nu mindst de tre, der er på skærmen, højst puljens syv, og
+ingenting andet.
+
+**Læren er ikke "ret prøverne".** Det er, at en runde ikke er
+færdig, før HELE suiten er kørt — ikke kun de filer, man selv
+rørte. Fire runder blev udgivet oven i hinanden, hver med sine
+egne filer grønne, og ingen så, at de tilsammen havde efterladt
+ti prøver, der målte en side, der ikke fandtes mere.
+
+> **⚠️ AFSNITTET HER ER OVERHALET (31/8).** Kunden lukkede
+> modellen: *"alle smørbrødene sælges som de er, ikke noget med
+> valg af brød og derefter pålæg — nej, 1 mad er som 1 mad."*
+> Størrelsesvælgeren og ønskefyldet er væk af `Butik.udvalg`.
+> **Læren består** — prisen sad på størrelsen, og to sider måtte
+> gerne køre hver sin model — men modellen gør ikke. Se "1 mad er
+> 1 mad" under status.
+>
+> ⚠️ **Og linjen om, at `h-smorrebrod.html` er en forespørgsel,
+> stod her fire dage for længe:** siden bestiller igen fra 4/9.
+> Se "Smørrebrødssiden bestiller igen".
+
+**Smørrebrødet: først brødet, så fyldet** (30/8). Kundens
+spørgsmål, da hans fem trykte kort kom: *"forstår ik smørbrød
+bestillingen — skal de først vælge basen altså brødet og derefter
+fyld eller hvordan?"* Ja. **Ingen SQL.**
+
+Ejerens kort har ét, der hedder **SMØRREBRØD**, og ét, der hedder
+**HÅNDMADDER**, og de lister det **samme fyld**. Prisen sidder
+altså på STØRRELSEN — 55 for en hel skive rugbrød, 27 for en
+håndmad — ikke på fyldet. Det er en anden model end `bestil/`s
+model A, hvor hvert fyld er sin egen vare med sin egen pris, og
+**de to sider kører hver sin med vilje**: to sider må gerne have
+hver sin model; det, der ville skride, er to kopier af den samme.
+
+- **`h-smorrebrod.html` kører udvalget `skiver`.** Størrelserne
+  står som en `.chipset` (designets egen enkeltvælger) ØVERST,
+  fyldet kommer først frem bagefter. **Intet er valgt fra start:**
+  vælger siden den ene, bestiller den, der ikke læser etiketten,
+  en hel skive til 55, når hun troede, hun bad om en håndmad til
+  27 — og det opdages ved lugen
+- **⚠️ STØRRELSEN MÅ ALDRIG OGSÅ LIGGE I VARELISTEN.** Gjorde den
+  det, kunne gæsten lægge både "Smørrebrød 55" og varianten
+  "Leverpostej 55" i kurven og betale **110 for ét stykke mad**.
+  De færdige retter — rejemad 85, tartar 95, æbleflæsk 75 — har
+  deres eget fyld og bliver stående som varer
+- **⚠️ LINJENS NAVN ER STØRRELSEN, FYLDET ER EN `variant`.**
+  Databasens pris-værn og udsolgt-værn slår begge op på NAVNET i
+  menukortet; "Leverpostej med baconsvøb" står der uden pris, så
+  et sammensat navn ville få pris-værnet til at afvise hele
+  bestillingen — eller tie på den. Køkkenet får varianten at se
+  (bestillingskort, køkken-kø, forløb **og produktionen**, hvor
+  to fyld tæller hver for sig — "3 × Smørrebrød" lader køkkenet
+  gætte, hvad de tre skal have på). `linjer` er jsonb, så det
+  koster ingen SQL
+- **⚠️ ET OPTALT STYKKE MÅ IKKE FORSVINDE VED SKIFT.** Første
+  udgave viste kun den valgte størrelses fyld: to smørrebrød med
+  leverpostej blev stående i kurven og i summen, mens rækken var
+  væk — gæsten ville betale for mad, hun ikke kunne finde på sin
+  egen skærm. Listen er nu den valgte størrelse PLUS enhver, der
+  allerede er talt op i
+- **⚠️ 32 FYLD ER 1900 PX.** Varianterne står i designets egen
+  fold ("+ tilføj"), og valget af størrelse åbner den — ellers
+  ville "så kommer fyldet frem" kræve to tryk
+- **⚠️ SKELLET ER EJERENS, IKKE KODENS.** `indstillinger` er
+  nøgle/værdi, så `smoer_stoerrelser` koster ingenting. Reserven
+  er ejerens egne data: varen, der hedder det samme som
+  kategorien, plus den, der hedder håndmad. **Findes ingen af
+  dem, falder siden HELT tilbage** til den gamle model — ejeren
+  skal ikke kunne lukke sin egen bestillingsside ved at omdøbe en
+  vare i admin. Alle de gamle prøver består uændret på den vej
+
+**⚠️ OG SIDEN LOVEDE ET VARSEL, DEN IKKE HOLDT.** **Målt på den
+udgivne side:** heroens manchet og faktakortet sagde begge
+*"Bestil senest 2 dage før"*, mens formularen holdt ejerens eget
+tal fra admin (24 timer som standard) — gæsten læste to dage,
+valgte i morgen, og fik lov. Nøjagtig samme fejl som cateringens
+faktakort 30/8, og rettelsen er den samme: `[data-varsel]` fyldes
+af reglen, designets tekst er reserven. Skuffemenuens
+"2 dage før" på syv sider er blevet til "bestil hjem" — en
+etiket i en menu er også et løfte, og ingen holder styr på den.
+
+**⚠️ EN KENDT FLAKE — OG ÉN AF DEM ER FORKLARET NU (31/8).**
+Fire prøver på tværs af `skal-bestil`, `skal-smoerrebroed` og
+`arrangementer` fejler sjældent under en FULD runde med fire
+arbejdere (`locator.click` løber tør for tid) og består hver gang
+alene. Årsagen er ikke fundet for dem alle, og der er ikke lavet
+en rettelse, der lader som om den er. Fejler en af dem, så kør
+filen alene, før du leder i koden.
+
+**⚠️ OG SÅ HOLD OP MED AT FØRE LISTE — DET ER LASTEN, IKKE
+PRØVERNE (4/9).** Endnu en fuld runde skrev **2835 bestod, 3
+fejlede**, og de tre var HELT andre end sidste rundes to:
+*"formularen spørger ikke om e-mail"* (`bestilling.spec`),
+*"anden runde nulstiller også chippen"* (`ved-bordet-kort.spec`)
+og *"den siger, hvad der blev bestilt"* (`skal-smoerrebroed.spec`).
+Alle tre tog **9,6-11,1 sekunder** i runden og bestod alene
+bagefter på 2,8-5,0.
+
+Dermed er mønstret klarere end de enkelte navne: **det er ikke
+BESTEMTE prøver, der er skrøbelige — det er fire arbejdere på den
+her maskine.** Kendingen er tiden: en prøve, der normalt tager
+3-5 sekunder og bruger 9-11, ventede på maskinen, ikke på siden.
+Kør den alene, FØR du leder i koden; er den grøn, er der ikke
+noget at rette.
+
+**⚠️ EN TREDJEDEL AF LISTEN NEDENFOR ER DERFOR OVERHALET.** Den
+er ikke slettet — de enkelte forklaringer (dagstriben, det valgte
+klokkeslæt, segmentets synlighed) er stadig rigtige, og de er alle
+sammen den samme lære: **vent på den tilstand, reglen hviler på**,
+ikke på klikket.
+
+**⚠️ OG EN FJERDE ER KOMMET PÅ LISTEN (4/9).** Den fulde runde
+skrev **2830 bestod, 2 fejlede**, og begge bestod alene bagefter:
+*"filteret virker også på et kort, der kom til efter
+indlæsningen"* i `arrangementer.spec.js` (den var på listen i
+forvejen) og **`admin-kalender.spec.js`s *"bookingen lander i den
+samme liste som gæsternes"*** (11,4 sekunder i runden, 2,9 alene).
+Samme mønster: `locator.click` løber tør for tid under fire
+arbejdere. Fejler en af dem, så kør filen alene, før du leder i
+koden.
+
+**⚠️ OG EN TREDJE AF SAMME SLAGS (3/9), UDEN FOR DEN KENDTE
+LISTE.** *"bordkvitteringen peger på telefonen, ikke på en mail"*
+i `kontakt-post.spec.js` faldt i den fulde runde og bestod hver
+gang alene — **også med tolv gentagelser på seks arbejdere.**
+Først under load fra tre filer på én gang faldt den igen: **1 af
+4 runder.**
+
+Årsagen er `js/bord.js` linje 299: en booking uden dag OG tid
+afvises, og begge tegnes af dagstriben EFTER `Butik.hent()`.
+Klikkede prøven Send, før striben var tegnet, var `valgtDag`
+null, bookingen blev afvist, og `#bord-tak` kom aldrig — så
+prøven fejlede med "kvitteringen manglede", som om MAILREGLEN var
+brudt. Fejlen pegede et helt andet sted hen end den var.
+
+Den venter nu på `.dag.valgt` og på, at der ER et klokkeslæt —
+den tilstand, reglen hviler på, og den et menneske ville se, før
+hun trykkede send. **Set fejle med markeringen af den valgte dag
+slået fra.**
+
+**⚠️ OG ÉN MERE AF SAMME SLAGS ER FORKLARET (1/9).**
+*"en tidlig lukning skærer aftenens tider af"* i `bord.spec.js`
+faldt i en fuld runde med **"kl. 20.30" mod "kl. 14.30"** — og
+bestod hver gang alene, 46 af 46 i filen. Fejlen lignede en
+tidlig lukning, der ikke virkede; den var, at prøven læste
+tiderne i det sekund, klikket på dagen var sendt, og dagstriben
+ikke altid nåede at tegne sig om først. Altså målte den I DAG og
+ikke den 8. Den venter nu på, at dagen HAR klassen `valgt` — den
+tilstand, reglen hviler på. **Set fejle med `tidligLukning`
+slået fra bagefter**, så ventetiden ikke har svækket den.
+
+**Men segment-prøverne var ikke en flake — de ventede det
+forkerte sted.** *"leveringsadressen ryger, når firmaet henter
+selv"* faldt i en fuld runde med `levering` i stedet for
+`afhentning`. Grunden er, hvad koden LÆSER: `segSvar()` aflæser
+adressefeltets **synlighed**, ikke `.on`. Går klikket igennem,
+før designets `[data-toggles]`-lytter har foldet feltet væk, ser
+afsendelsen et synligt felt og sender "levering". Prøven venter
+nu på, at feltet ER væk — den tilstand, reglen hviler på, og den
+et menneske ville se, før hun trykkede send. **Det svækker ikke
+prøven:** folder toggle'en aldrig feltet væk, fejler ventetiden.
+
+**Overblik fik forlæggets runde** (30/8). Kundens ord: *"fixer
+hele overbliks siden til at se sådan her ud men med alle
+havncafeens principper og ting og sager ... den er mere
+overskuelig, knapperne er gode, det pænt og nemt."*
+**Ingen SQL.**
+
+- **Handlingerne står til HØJRE fra 900 px** (`.vagt-handling`).
+  **Målt på 1280 px:** hver række i forløbet var **166 px høj**,
+  fordi begge knapper faldt under teksten, hver på sin linje —
+  mens højre halvdel af kortet stod tom. Tre bestillinger fyldte
+  en halv skærm. Samme rettelse som forespørgselskortet fik 29/8;
+  under 900 px falder de under igen. Prøven sammenligner **to
+  uafhængige elementer** (knappens venstre kant mod tekstens
+  højre) — et spørgsmål til knappen om dens egen `grid-column`
+  ville bestå, også hvis reglen ikke slog igennem
+- **En alarmstribe øverst på køreplanen** (`#plan-alarm`).
+  **Målt:** dagens forløb begynder 750 px nede, og "Fra bordene"
+  stod 1500 px nede — under HELE køreplanen. Et bord, der havde
+  ventet to timer, lå altså under folden på den skærm, personalet
+  har åben hele dagen. Striben følger Køkken-køens to regler: den
+  **findes kun, når der er noget**, og den **siger det én gang**
+  (den ældste med sit tal, resten som et antal)
+- **⚠️ GRÆNSEN FOR "FOR LÆNGE" ER KØKKENETS EGEN.** `maalTid()` i
+  `js/admin/koekken.js` hedder `Admin.bordForLaenge` nu, og
+  Overblik spørger den. Skrev striben sit eget kvarter af, ville
+  de to skærme sige hver sit den dag, ejeren satte ventetiden ned
+  — og begge ville se rigtige ud hver for sig. Prøven læser
+  TALLET i sætningen og er set fejle med et hårdkodet 15
+- **⚠️ ALLERGIEN STÅR IKKE I STRIBEN.** Den har sit mærke på
+  rækken og sit kort på Køkken-kø; en tredje udgave ville være
+  præcis den "tre gange den samme oplysning", trin-striben på
+  forespørgselskortet blev fjernet for
+- **Notefeltet har tre rækker.** **Målt på en iPhone 13:**
+  pladsholderen brækkede til tre linjer, og den tredje blev
+  klippet midt over af feltets kant. Fundet med øjnene på et skud
+
+**⚠️ OG PRØVEN OM GÆSTENS MANIFEST ER VENDT.** Den krævede, at
+KUN admin måtte linke et manifest — og så bad Mikkel om det
+modsatte (forretningen skal kunne lægges på hjemmeskærmen). Det
+er en aftale med kunden, ikke en forældet prøve, og så er det
+reglen, der flytter. **Den halvdel, der bar værdien, blev
+skarpere:** gæsten må aldrig få ADMINS manifest (ét forkert
+`href`, og en gæst, der trykker "Føj til hjemmeskærm", får en
+app, der åbner personalets login), vejviserne må slet ikke have
+et (en genvej til en omdirigering er en blindgyde), og ingen
+gæsteside må registrere en service worker. Set fejle med
+`h-selskaber.html` pegende på `manifest.webmanifest`.
+
+**Overblikket er en vagtskærm nu** (23/8). Kundens ord:
+"overblikket er heller ikke så godt — det er dér, de bør stå, når
+de er på arbejde og modtager bestillinger."
+
+Fanen var sorteret efter hvornår bestillingen **kom ind**. Det var
+rigtigt, dengang hver bestilling ventede på et opkald — men
+`auto_bekraeft` blev slået til samme dag, og så stod rækkefølgen
+tilbage uden en grund. **Målt på en travl dag:** klokken 13.00
+stod Sara, der henter kl. 18.00, som nummer to, fordi hun havde
+bestilt ni minutter før.
+
+Nu står dagen i **tidsrækkefølge**: "Nu og de næste timer" (to
+timer frem), "Senere i dag", og "Nyt til andre dage" for det, der
+lige er tikket ind til en anden dato. Det færdige (afhentet,
+afvist, udeblevet) er ikke arbejde længere og står der ikke.
+**Overskredne bliver stående øverst** og bliver markeret — en
+gæst, der skulle have hentet kl. 13.15 og ikke har, er ikke mindre
+vigtig kl. 13.20.
+
+**⚠️ Bordene bruger `antal_personer`, ikke `antal`.** Det kostede
+en runde.
+
+**Lugen og bordene er to strømme** (26/8). Kundens ord: *"det er
+rodet at både qr bestillinger er der og online bestillinger — du
+skal huske online bestillinger er bare bestillinger til lugen
+dernede, hvor at selve qr bestillinger skal i en separat ting."*
+
+Det er ikke smag. De to har forskelligt **arbejde** bag sig: en
+bestilling fra hjemmesiden har en **hentetid** og skal ramme et
+klokkeslæt; en fra en QR-kode har ingen og skal laves **nu** og
+bæres ud. Blandet i én tidssorteret liste ligger bordet —
+hentetid = nu — altid øverst og skubber den frokost, der skal
+være klar kl. 12.30, ned.
+
+Bordene har deres egen skærm (Køkken-kø). **Overblik lister dem
+ikke**; der står, at de findes, hvor mange, og hvor længe den
+ældste har ventet — og en knap derhen. Kendingen er `erBord()`,
+ét sted: skrives `b.bord_nummer` ud ti steder, er der ti steder
+at glemme den.
+
+- **Produktion i alt** lægger samme ret sammen på tværs af
+  bestillingerne, delt `🥡 ud af huset · 🍽️ spist her`. **Her er
+  bordene MED**, og det modsiger ikke adskillelsen: forløbet
+  handler om *hvornår*, produktionen om *hvor meget* — og der
+  skal alt tælle med, ellers laver køkkenet for lidt. Det
+  **afviste** tæller ikke (det bliver aldrig lavet); det
+  afhentede gør (det ER lavet)
+- **Færdige (N)** står foldet sammen med **Gendan**. De faldt
+  helt ud af skærmen før: trykker nogen forkert i en frokost, var
+  bestillingen væk, og gæsten stod ved lugen uden noget at hente.
+  **Gendan fører til `bekraeftet`, ikke `ny`** — rækken HAR været
+  set, det var derfor, nogen trykkede
+- **Dagens tal** har et felt til lugen og et til bordene. Ét
+  samlet tal ville skjule netop den forskel
+- **Noten skrives på køreplanen** og gemmer sig selv.
+  `Admin.skrivNote` er den ENE vej ind; kalenderen bruger den
+  samme
+
+**⚠️ To fejl, prøverne fangede, og begge var tavse:**
+
+**Gendan-knappen gjorde ingenting.** Første udgave brugte
+`Admin.gem`, som henter indstillinger og menukort — **ikke**
+bestillingerne. Kortet blev stående på "Afhentet", og personalet
+ville trykke igen på en knap, der allerede havde virket. Præcis
+den fejl faldt køkken-køen i 25/8; svaret er `Admin.friskOp()`.
+
+**Noten oprettede en ny række pr. gem.** Rækken kendes kun på sin
+**titel**, og uden en id opretter skrivningen. Autogem skriver
+1,2 sekund efter sidste tastetryk, og første udgave hentede med
+`Admin.friskOp` — som henter *fanernes lister*, ikke kalenderen.
+**Målt: to gem gav TO noter på dagen**, uden en eneste fejl; fem
+pauser i tastningen ville være blevet til fem "arrangementer".
+**`Admin.genindlæs` henter kalenderen** — det er den, der skal
+bruges efter en oprettelse.
+
+**⚠️ Køreplanens opmærkning står FAST i `admin.html`** og fyldes
+ud af JavaScript. Blev notefeltet bygget af optegningen, ville en
+medarbejder, der skriver, miste markøren midt i en sætning — og
+takten tegner om hvert minut. Optegningen rører heller ikke
+feltet, mens det har fokus.
+
+**Fanerne ligger i bunden på en telefon** (23/8). De stod som en
+ombrudt række piller øverst: **målt på en iPhone 13 fyldte de
+344 px og sluttede 599 px nede på en 844 px skærm** — 71 % af
+skærmen var navigation, før personalet så en eneste bestilling.
+Nu er det en fast stribe i bunden, som i en app, og den ruller
+sidelæns. Den valgte fane ruller sig selv frem (`Admin.visFane`),
+ellers kan man skifte til en fane, man ikke kan se. **Fra 900 px
+og op er det stadig sidemenuen** — personalesiden er computer- og
+iPad-først.
+
+**Smørrebrødssiden er blevet smørrebrødets** (23/8). `bestil/`
+stillede lugens spørgsmål — "To-go eller spis her?" — på mad, der
+pr. definition er ud af huset. Kundens ord: siden skal være egnet
+til smørrebrød ud af huset, "om det afhentes eller skal leveres —
+det skal ik bare være det samme".
+
+Spørgsmålet følger nu `data-udvalg` på formularen: `kun-smoer`
+spørger **Hentes eller leveres?**, alle andre spørger som før. Ét
+modul, to spørgsmål — ikke to moduler.
+
+**⚠️ Levering er slået FRA som standard, og det er med vilje
+modsat `spis_her`.** Vi ved ikke, om forretningen leverer, hvor
+langt de kører, eller hvad det koster. En side, der tilbyder
+levering, fordi ingen har sagt nej, lover noget på deres vegne.
+Ejeren slår fluebenet til i admin, når han ved svaret.
+
+**Og en levering bekræftes ALDRIG automatisk** — heller ikke når
+`auto_bekraeft` står til. Vi kan love, at maden bliver lavet; vi
+kan ikke love, at den kan køres til en adresse, vi ikke kender.
+Reglen bor i `visTak()` i `js/bestilling.js` og har sin egen prøve.
+
+**Kør `supabase/levering.sql` + `proev-levering.sql`** (8 × BESTOD
+lokalt) — efter `spis-her.sql`, hvis regel den udvider. Databasen
+håndhæver sammenhængen **begge veje**: adressen skal være der ved
+levering, og den skal være **tom** ellers. Den anden halvdel er
+den vigtige — uden den kunne en adresse blive hængende, efter
+gæsten skiftede til afhentning, og køkkenet ville køre ud med mad,
+nogen stod og ventede på ved lugen.
+
+**Hele ejerens menukort er inde** (23/8). `menukort.sql` var
+skrevet af efter det TRYKTE kort; ejerens fulde liste kom 23/8 og
+havde fem kategorier mere. **Kør `supabase/menukort-ud-af-huset.sql`
+(44 varer: tapasfad, platter, sliders, pindemad, tilkøb) og
+`supabase/menukort-resten.sql`** (35 varer: seks burgere, syv
+pølser, brunchtallerken, morgenmads-tilkøb, thermobox, 4 kugler,
+lumumba, bitter, æblekage, hakkebøf, avokadomad). I alt **230
+varer i 20 kategorier**.
+
+**En dublet er værre end en manglende vare.** Det er reglen, de to
+filer er skrevet efter, og den fandt en fejl under skrivningen:
+"Kage" var på vej ind under morgenmads-tilkøb, mens den allerede
+stod under kaffen. To rækker med samme navn får hver sin pris.
+Dubletvagten er nu en linje i optællingen. Fire linjer fra ejerens
+liste er IKKE lagt ind, fordi de ligner noget, vi har, men ikke
+nok til at være sikker — de står som spørgsmål i optællingen.
+
+**Ingen priser er gættet:** ejerens liste har ikke ét tal i sig, så
+alle 79 nye varer står som `??`. De 25 priser på tapas, platter,
+sliders og pindemad er det eneste, der står mellem os og en rigtig
+tapasbestilling.
+
+**Den gule kant på telefonen er væk** (23/8). Kunden så et fremmed
+farvet felt lægge sig over feltet, i det sekund han rørte det.
+Farven er **browserens**, ikke vores: målt i Chromium er den
+lyseblå, og andre telefoner tegner den gul. Derfor kunne fejlen
+ikke findes ved at lede efter "gul" i stilarket — den står ingen
+steder i det. `-webkit-tap-highlight-color: transparent` stod på
+`a, button, .fyld-valg` og havde glemt `select`, `input` og
+`textarea` — og `<select>` er præcis dét, gæsten vælger i.
+Prøven i `tests/telefon.spec.js` læser den BEREGNEDE værdi og
+fandt syv felter.
+
+**Model A er bygget** (20/8): hvert fyld er en vare med sin egen pris,
+og gæsten tæller op i foldede grupper. Skellet mellem stykker og fyld
+gik før på PRISEN — det er flyttet til KATEGORIEN, ellers ville de 29
+fyld blive til stykker den dag, de fik priser. Siden virker både før og
+efter: fyld uden pris kan ønskes, ikke købes. **Ejerens priser skrives
+i admin → Menukort → "Sæt samme pris på alle"** (ét felt, 29 priser);
+der står med vilje ingen foreslået pris. Se README-afsnittet "Model A:
+fyldet er varen".
+
+**Døren hedder Bestil mad nu** (20/8). Formularen er flyttet fra
+`smoerrebroed-ud-af-huset/` til **`bestil/`** — den kunne allerede tage
+imod grill og café og både spis her og tag med, så adressen passede
+ikke til skærmen længere. Smørrebrødssiden er blevet salgs- og
+søgeside og fører derind. Forsiden har én stor knap i stedet for tre
+ens, og topmenuen er ens på alle sider.
+
+**Er der mere end én slags at bestille, står der chips over listen**
+med ejerens egne kategorinavne. Er der kun smørrebrødet, som i dag,
+vises rækken slet ikke — se README-afsnittet "Døren hedder Bestil mad".
+
+**Spiis-opskriften følges nu** (20/8). To huller er lukket:
+
+- **`supabase/er-vi-klar.sql`** — ét kald, der spørger databasen om det
+  hele og svarer med 86 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
+  ingenting**, så den kan køres når som helst. Kør den, hvis noget
+  virker sært: den fanger det, der fejler stille — en tabel uden RLS,
+  en bremse uden `security definer`, en læseregel på gæstetabellerne
+  uden `is_admin`
+- **`supabase/skraldespand.sql` + `proev-skraldespand.sql`** — "Slet" i
+  admin er blevet til en dato i kolonnen `slettet`, og rækken kan
+  hentes tilbage i 30 dage. **Kør begge filer i Mosede-projektet**
+  (19 × BESTOD lokalt). Den skal køres **efter** bremse-, borde-,
+  udlejnings- og forespørgselsfilerne — den retter deres nøgler og
+  bremser, så en spand-række holder op med at spærre. Køres en af dem
+  igen bagefter, skal `skraldespand.sql` køres igen; `er-vi-klar.sql`
+  har en linje, der fanger det
+
+- **`supabase/logbog.sql` + `proev-logbog.sql`** — hvem ændrede hvad
+  hvornår. Ligger nederst på den nye fane **Historik** sammen med
+  skraldespanden. **Kør begge filer** (19 × BESTOD lokalt).
+  Oprettelser logges IKKE: rækken er sit eget bevis, og en linje
+  oveni ville være gæstens telefonnummer gemt ét sted mere
+
+**⚠️ DOMÆNET ER SAT OP, OG HTTPS ER SLÅET TIL** (målt 31/8).
+`gersel1233.github.io/mosedehavnegrill/` svarer **301 til
+`https://mosedehavnecafe.dk/`** — også fra `http://`, og også på
+`/ved-bordet/`. Tidligere samme dag pegede det samme svar på
+**http://**; fluebenet "Enforce HTTPS" er altså sat i mellemtiden.
+Det var forudsætningen for at printe de 55 bordskilte om:
+`print/bordkort.html` tager adressen fra `location.origin`, og et
+skilt, der sender gæsten til en http-adresse, kan ikke laves om,
+når det først sidder på bordet.
+
+**⚠️ VERSIONSSTEMPLET KAN LÆSES IGEN — OG NOTEN HER VAR FORÆLDET
+I TI DAGE (målt 10/9).** Der stod, at `mosedehavnecafe.dk` blev
+afvist af udgangsproxyen (`connect_rejected`, 403 på CONNECT), og
+at man derfor skulle tjekke Actions-kørslen i stedet. **Det var
+sandt i containeren, hvor det blev målt 31/8 — og det er ikke
+sandt på Mikkels Mac**, hvor der ingen udgangsproxy er. Målt:
+
+```
+https://mosedehavnecafe.dk/            200
+https://gersel1233.github.io/...       301
+```
+
+Og så kan den vigtigste kontrol laves direkte:
+
+```bash
+curl -s https://mosedehavnecafe.dk/ | grep -oE 'v=[0-9a-f]{7}'
+git rev-parse --short=7 HEAD          # skal være det samme
+```
+
+**⚠️ OG DEN DYRESTE HALVDEL ER, AT SIDEN KAN ÅBNES.** En browser
+på det RIGTIGE domæne med de RIGTIGE data er den eneste måling,
+der siger, om deployet virker for gæsten — ikke om filerne blev
+kopieret. Målt 10/9: 262 rækker på menukortet, *"Glutenfrit brød
+(tillæg) → Gratis"*, nul JS-fejl.
+
+**⚠️ OG LÆREN ER IKKE "PROXYEN ER VÆK".** Det er, at en
+miljø-note holder op med at være sand, når miljøet skifter — og
+den her blev skrevet af tre gange i dag, før nogen kørte et
+`curl`. **En note er ikke et tjek**, heller ikke om netværket.
+Actions-kørslen er stadig et gyldigt svar, når man kun vil vide,
+om deployet kørte.
+
+**HTTPS-punktet fra opskriften er ikke et punkt på den her adresse**
+(målt 27/8: `http://gersel1233.github.io/mosedehavnegrill/` svarer
+301 til `https://`). Hele `*.github.io` ligger på browsernes
+HSTS-preload-liste, og GitHub tvinger selv HTTPS på sit eget domæne
+— fluebenet "Enforce HTTPS" er låst til. **Det bliver først en
+opgave den dag, forretningen får sit eget domæne**; dér er
+fluebenet et rigtigt valg, og det kan først sættes, når certifikatet
+er udstedt. Sæt det, samme dag domænet peger rigtigt.
+
+Dermed er hele opskriften kørt igennem.
+
+**Fase 1 er færdig i koden** på branchen
+`claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer
+inline-JavaScript ligger nu i `js/admin/` med én fane pr. fil. Se
+README-afsnittet "Personalesiden er delt op i js/admin/". En ny fane i
+fase 2 er én ny fil plus ét script-tag **før** `login.js` — ikke mere
+kode i admin.html.
+
+**⚠️ Bundtet er en FACITLISTE, ikke inspiration.** Første udgave lavede
+sin egen struktur oven på bundtets idéer — et kort, der linkede videre
+til bestil/, hvor bundtet har hele formularen på forsiden. Kunden så
+det og sagde: *"det er overhovedet ikke sådan siden skal se ud, den
+skal se præcis ud som jeg viste dig med filerne."* Byg formen som den
+står i filerne; det eneste, der må afvige, er tal og påstande, vi ikke
+har belæg for — og hvert af dem skal have en note om hvorfor.
+
+**Designbundtet er bygget ind (21/8).** Kunden sendte otte HTML-sider
+med CSS, JS og et handoff — *Mosede Mobil v3*. Farverne og skrifterne
+var allerede vores, så det var ikke et nyt tema; det var de dele,
+bundtet havde, som vi ikke havde. Forsiden har nu bannere,
+genvejsstribe, nyhedsafsnit, rækkekort og afdelingskort i bundtets
+rækkefølge, heroen har parallakse, alle undersider har tilbage-pil, og
+`nyheder/` er en ny side. Se README-afsnittet "Forsidens rækkefølge".
+
+**⚠️ Bundtet var fuldt af tal, der ikke er sande**, og flere modsagde
+det, vi HAR fået: "4,8 · 312 anmeldelser på Google", "Bedste fiskefilet
+på hele Sydkysten", baglokalet til 40 personer med projektor og egen
+indgang, leje 1.200,-, adressen *Mosede Havnevej 15*, telefon
+*43 90 15 00*, e-mailen *hej@mosedehavnegrill.dk*. Ingen af dem er på
+siden. `tests/designbundt.spec.js` holder vagt på alle ni gæstesider —
+også med et mønster, der fælder ethvert "plads til N personer", ikke
+kun de 40. **Kommer der mere materiale, så byg formerne og lad tallene
+ligge.**
+
+**Runden 22/8 — kundens egen liste.** Alle otte punkter er bygget, og
+hvert af dem har en prøve, der er set fejle:
+
+- **Alle seks "Hent på ny" i admin er væk.** Listerne hentede allerede
+  sig selv; skraldespand, logbog og salg hentes nu, når fanen åbnes
+  (`Admin.hentVedFane`). Der står et live-mærke i stedet
+- **To go/Spis her er væk fra forsiden.** Valget hører hjemme i
+  formularen, efter maden
+- **Heroen har ingen knapper.** Den flydende pille er forsidens ene
+  handling. `.glass.stor` er slettet
+- **Sektionerne står på skiftende grunde** (sand / sand2 / marineblå).
+  Luft alene læses ikke som "nyt afsnit" — den læses som "her mangler
+  der noget"
+- **Nyhederne er en tidslinje** med en prik pr. kort; den nyeste er rød
+  og ånder
+- **Menukortets kategorier er folder**, som på bestillingssiden
+- **Knapperne har fået vægt 600 og linsekant hele vejen rundt**, og
+  `.knap` og `.glass` ser ens ud nu
+- **Hero-filmen hentes med `rel=prefetch` under introen**, så kun
+  afkodningen venter
+
+To fejl faldt ud undervejs, begge fundet af prøverne: `js/dagens.js`
+kastede `d is not defined` ved hver afsendelse med automatisk
+bekræftelse, og et klokkeslæt kunne ikke stå i sit felt i Åbningstider
+på en engelsk browser. **`--muted` og `--red-tekst` er mørkere nu** —
+de faldt under 4,5:1 på den nye, dybere sandgrund.
+
+**GÆSTESIDEN ER SKIFTET UD (23/8) — designet fra Claude Design er
+facitlisten nu.** Mikkel designede hele mobilsitet selv i Claude
+Design og afleverede det som et 1:1-handoff (`havnegrillen-handoff.md`
++ 17 filer). Ordren var udtrykkelig: pixel for pixel, tekst for tekst,
+ingen forbedringer, ingen ekstra sektioner, ingen fjernede —
+systemerne kobles på BAGEFTER. Det er gjort:
+
+- **Ni nye sider på roden:** `index.html` (ny), `m-menukort.html`,
+  `m-tapas.html` og seks `h-*.html` (smørrebrød, selskaber,
+  baglokale, catering, frokost, kalender). Designsystemet er
+  `havnegrillen.css` + `havnegrillen.js` — rød/hvid-ternet tema,
+  Instrument Serif til overskrifter, liquid glass-knapper (`.g`).
+  Menukortsiden kører med vilje sit eget v3-tema
+  (`mosede-m.css` + `menu.*`) — det er sådan, den blev leveret
+- **Klassenavne og data-attributter er urørte** (`.g`, `.panel`,
+  `.seg2`, `.chipset`, `.evcard`, `.bestil`, `.rev`, `data-seg`,
+  `data-step`, `data-chips`, `data-toggles`, `data-pick`) —
+  logikken hænger på dem, og admin-koblingen kommer til at gøre
+  det samme
+- **KUN tre slags afvigelser fra handoffet**, hver med sin grund:
+  (1) telefon-attrappens krom er taget ud af siderne — statuslinjen
+  med det falske 9:41, den dynamiske ø, hjemmestregen og
+  side-etiketten er artboardets ramme, ikke sidens; `.device` og
+  `.screen` STÅR, for al rullelogik hænger på `#sc` som rullerod.
+  (2) `?v=__V__` er sat på alle lokale css/js-adresser —
+  versionsstemplet er repoets egen lærepenge og usynligt for
+  designet. (3) menukortsidens lånte v3-links (`m-dagens-ret.html`,
+  `Mosede Mobil v3.html`, ...) er lagt om til de sider, der
+  faktisk findes — bl.a. pegede "Book spisning" på `bord/`, den
+  eneste side, der kan booke et bord. **⚠️ DEN KNAP FORSVANDT,
+  da menukortsiden blev skrevet om 24/8, og linjen her stod og
+  lovede den i fem dage.** Se "Bordbooking kunne ikke findes"
+  nedenfor
+- **`<image-slot>` står som leveret** — pladsholdere til fotos.
+  Når de rigtige billeder kommer, skiftes de til `<img>` i samme
+  mål (id'erne siger hvad: `tapas-fad`, `tapas-forside`,
+  `nyhed-1/2`, `selskab-1/2/3`, `baglokale-foto`)
+
+**⚠️ FORMULARERNE ER ATTRAPPER ENDNU.** De ser rigtige ud og
+opfører sig rigtigt (segmenter, steppere, chips, betingede felter,
+tapas-prisberegning, kalenderfilter), men de sender INGENTING.
+Systemfasen kobler dem på motoren og forespørgselstabellerne.
+
+**⚠️ TALLENE PÅ SIDERNE ER PLADSHOLDERE — og de ER i luften nu,
+på Mikkels udtrykkelige beslutning (23/8, spurgt direkte).** De to
+tal, vi HAR bekræftet, blev rettet før udgivelsen: telefonen er
+28 87 13 43 og adressen Havnevej 20I overalt på de nye sider.
+Resten — 4,8 på Google, hej@-mailen, 40 pers., 15 år, alle priser,
+datoer og arrangementer — står som designets pladsholdere, som
+personalet selv skal redigere. **Designbundt-vagten over opdigtede
+tal er parkeret imens** (tests-gamle/); den skal genopstå mod de
+nye sider, når tallene er ejerens egne. Ret ALDRIG telefonen eller
+adressen tilbage til prototypens (43 90 15 00 / Mosede Havnevej 15).
+
+**Prøverne i overgangen:** 11 specs bundet til den gamle forside
+er parkeret i `tests-gamle/` (Playwright kører dem ikke; grundene
+står i mappens README). 16 enkeltprøver i blivende filer er
+skippet med sætningen *"forsiden er skiftet ud (23/8)"* — én grep
+finder dem alle, når de skal genopstå. Flerlejer-værnet i
+`lokation.spec.js` blev IKKE skippet: det er motorens værn, ikke
+forsidens, og måler nu på `bestil/`, hvor motoren stadig kører.
+`ved-bordet/`, admin og de gamle formular-sider står urørte og
+prøves som før.
+
+**Systemfasen (det, der kommer nu):** dagens ret + ugens retter,
+nyheder, kalenderens arrangementer, tapasfadets indhold og priser
+samt åbningstider skal styres fra personalesiden; formularerne
+skal POste til køkkenoverblikket — smørrebrød/selskab/catering/
+baglokale ind i de EKSISTERENDE tabeller (bestillinger,
+forespoergsler, udlejninger). To ting i designet HAR ingen motor
+og skal besluttes, ikke bare kobles: frokostordningen er tegnet
+som B2B-abonnement (CVR, faste ugedage, fakturamail) — det blev
+afvist 20/8 som misforstået, så enten bygges den motor nu, eller
+siden kobles til forespørgsler; og kalenderens "Reservér plads"
+med pladstælling findes ikke i databasen endnu.
+
+**Systemfasen er begyndt — trin 1 er læsesiden** (23/8). De ting,
+gæsten LÆSER, kommer fra databasen nu: heroens statuspille,
+musikbanneret (næste offentlige arrangement), dagens ret,
+nyhederne, åbningstiderne, tapasfadets pris og hele menukortet.
+To nye filer, `js/skal/forside.js` og `js/skal/menukort.js`, og
+tre script-tags pr. side. **Ingen SQL — intet nyt i databasen.**
+
+**Skallen er ikke rørt.** Koblingen fylder de elementer ud, der
+allerede står i designet; den flytter, tilføjer og fjerner
+ingenting. En prøve sammenligner hele rækkefølgen af forsidens
+afsnit og falder, hvis nogen laver om på den.
+
+To regler bærer filerne, og de skal begge overleve næste trin:
+
+- **Vi overskriver kun, når databasen har noget at sige.** Uden en
+  pris på tapasfadet bliver designets pladsholder stående, og
+  svarer databasen ingenting på menukortet, står `menu-data.js`
+  som nødmenu. En kobling, der skriver "0,-" hen over designet, er
+  værre end ingen kobling
+- **Et afsnit uden noget at vise findes ikke.** Ingen dagens ret,
+  ingen nyheder, intet kommende arrangement → afsnittet skjuler
+  sig. Med `style.display` og ikke `hidden`: `.music` har
+  `display:flex`, og en klasse med display slår browserens egen
+  regel for `[hidden]`
+
+**Tre steder passer designet og databasen ikke 1:1**, og det er
+huller, ikke fejl: linjen "Ishuset i højsæson" forsvinder (der er
+én ugeplan, ikke to), kategorinoterne på menukortet forsvinder
+(`menu_kategorier` har ingen notekolonne), og **udsolgte varer
+står ikke på kortet** — designet har ingen udsolgt-tilstand, og at
+finde på en ville være at lave om på skallen.
+
+**Trin 2a: forsidens bestilling er ægte** (23/8). Formularen på
+forsiden var en attrap med faste datoer, faste klokkeslæt og seks
+rækker mad skrevet i hånden. Nu kommer dagene fra åbningstiderne,
+kalenderen og varslet, tiderne fra den valgte dag, varerne fra det,
+ejeren har åbnet for i admin — og "Send bestilling" skriver i
+`bestillinger`, så den står i køkkenets overblik. **Ingen SQL.**
+
+**Reglerne bor ét sted nu.** `js/bestil-regler.js` (5 kB) er
+klippet ud af `js/bestilling.js`: hvilke dage og tider der kan
+vælges, varslet og mindsteantallet. `bestil/` og `ved-bordet/`
+bruger den samme fil. To udgaver af "hvornår kan man hente?" er én
+for meget — rettes varslet det ene sted og glemmes det andet, kan
+gæsten bestille til om to timer på den ene side og ikke på den
+anden, og ingen af delene ser forkerte ud. Den ENE regel, der IKKE
+flyttede med, er bordets undtagelse fra mindsteantallet: den er en
+egenskab ved den formular, ikke ved forretningen.
+
+**"+ tilføj" folder kategorien ud.** Designets vareliste har én
+række med tæller (dagens ret) og fem med "+ tilføj", som ikke
+gjorde noget. Nu er de kategorierne fra admin, og et tryk folder
+deres varer ud som de SAMME `.item`-rækker med tæller. Der kommer
+ingen ny form på skærmen, kun flere af den, der er.
+
+**Fejl står i sumlinjen.** Designet har ikke tegnet et fejlfelt, og
+et opfundet ét ville være en ændring af skallen. Beskeden står
+derfor i `.note` over knappen, hvor summen står, og summen kommer
+igen, så snart feltet rettes.
+
+**To felter forsvinder, når forretningen ikke har dem:** er
+`spis_her` ikke slået til i admin, findes spørgsmålet "Hvordan vil
+I spise?" ikke, og er der lukket for bestillinger, findes hele
+afsnittet ikke — så peger den flydende pille på
+smørrebrødssiden i stedet for ned i ingenting.
+
+**Trin 2b: smørrebrødssiden bruger den SAMME motor** (23/8).
+`h-smorrebrod.html` sender nu rigtige bestillinger, og den gør det
+gennem `js/skal/bestil.js` — ikke gennem en kopi. Forskellene står
+som opsætning i `SIDER` øverst i filen:
+
+| | Forsiden | Smørrebrødssiden |
+|---|---|---|
+| Udvalg | `uden-fyld` | `kun-smoer` |
+| Spørgsmål | Spis her / tag med | Hentes / leveres |
+| Vareliste | kategorier med "+ tilføj" | stykkerne direkte |
+
+**Skrev vi afsendelsen to gange, ville den anden langsomt komme
+til at gøre noget andet end den første** — og det ville ingen
+opdage, før en gæst fik forkert mad.
+
+**Levering er slået FRA som standard, og feltet forsvinder med
+den.** Vi ved hverken hvad de kører ud med, hvor langt eller hvad
+det koster. Designets linje "150 kr. inden for 10 km af havnen"
+står stadig i filen, men den er ude af syne, til ejeren slår
+fluebenet til — **og den skal bekræftes, før han gør det.**
+
+**Og en levering bekræftes ALDRIG automatisk**, heller ikke når
+`auto_bekraeft` står til. Vi kan love, at maden bliver lavet; vi
+kan ikke love, at den kan køres til en adresse, vi ikke kender.
+
+**To døde rækker og et forkert varsel røg ud**, fordi de ikke har
+noget bag sig: "Tilbehør: øl, snaps og vand" kan ikke bestilles på
+en side, der kun sælger smørrebrød, og "inden for 2 dage" er et
+fast tal, hvor varslet sættes i admin.
+
+**⚠ Der er ingen fyldvælger på siden.** Designet har ingen, og
+pladsholderteksten i beskedfeltet siger "ønsker til fyld". De 29
+slags fyld vælges derfor i fri tekst her — modellen med et flueben
+pr. fyld findes kun på `bestil/`. Det er designets valg, ikke en
+mangel i motoren.
+
+**En fælde, prøven fangede:** panelet har flere `.hint`, og første
+udgave skrev varslet hen over manchetten under overskriften. Den
+så rigtig ud, og datolinjen stod stadig med designets faste tal.
+Hinten findes nu ud fra DATOFELTET.
+
+**Trin 2c: tapasfadet kan bestilles — og ses i køkkenet** (23/8).
+Ejerens tre krav er bygget: to dages varsel, ring-kortet om
+fadets indhold bliver stående, og bestillingen **markeres
+anderledes i admin**.
+
+**Varslet er fadets eget, ikke forretningens.** `varselTimer(d,
+mindst)` i `js/bestil-regler.js` tager nu et frivilligt "mindst",
+og tapassiden beder om 48 timer. **Det kan kun trække varslet OP.**
+Kunne en formular sætte det ned, ville den kunne omgå det, ejeren
+har sat i admin, og køkkenet fik en bestilling, de ikke kan nå.
+Ejeren kan sætte sit eget tal med `tapas_varsel_timer`.
+
+**🧀 Tapasfad står som mærke på både Bestillinger og Overblik**,
+og det slår de andre mærker. Et fad til tolv er dagens største
+stykke arbejde; står det som en almindelig bestilling mellem
+tredive andre, opdager køkkenet det, når der er to timer til — og
+så er de to dages varsel spildt. Kendingen (`Admin.erTapas`) er
+varens NAVN og ikke en ny kolonne: fadet er en vare på menukortet
+som alt andet.
+
+**Prisen er menukortets, ikke designets.** Designet regnede med
+199 kr. pr. person og 150 kr. for cavaen; begge er pladsholdere.
+Er prisen ikke sat i admin, står der **"Pris følger"** i
+sumboksen. Et beløb, vi selv finder på, er værre end ingen pris —
+gæsten regner med det.
+
+**Cava-rækken findes kun, hvis varen findes i menukortet.** At
+sende en vare, ingen har oprettet, er at finde på et produkt på
+forretningens vegne.
+
+**⚠️ Uden fadet i menukortet kan der ikke bestilles**, og
+formularen skjuler sig. Kør `supabase/menukort-ud-af-huset.sql`
+og sæt priserne i admin, så er den der.
+
+**En tavs fejl, prøven fangede:** `n * fad.pris + b * bobler.pris`
+kaster, når der ikke er noget tilkøb — `bobler` er null. Fejlen
+kunne ikke ses: sumboksen beholdt bare designets pladsholder, og
+formularen så helt rigtig ud.
+
+**Trin 3: de tre forespørgselssider skriver i admin** (23/8).
+Selskaber, catering og baglokalet sender rigtige forespørgsler nu
+— én tabel, tre indgange, som fase 2 byggede den. **Og det er den
+første SQL siden trin 1:** kør `supabase/forespoergsel-kalender.sql`
++ `proev-forespoergsel-kalender.sql` (20 × BESTOD på en lokal
+Postgres 16).
+
+**Detaljerne er felter, ikke fritekst.** Kolonnen `detaljer`
+(jsonb) tager formularernes egne valg — anledning, tidsrum,
+kuverter, hvad der skal serveres, fade. Ét objekt, aldrig en
+liste, og højst 4000 tegn. Uden den ville alle valgene ende i
+beskeden, hvor personalet skulle læse en sætning igennem for at
+finde tallet.
+
+**Havnen er ÉT sted.** Er baglokalet lejet ud den 12., kan der
+ikke også holdes selskab hos jer den 12. Visningen
+`optagne_dage` siger, hvilke dage der er væk — **KUN datoer**,
+ingen navne, ingen numre — og gæsten må læse den. Et værn i
+databasen siger nej igen, hvis nogen omgår formularen.
+
+**Kun AFTALTE dage er optagne.** En forespørgsel, der lige er
+kommet ind, er et spørgsmål, ikke en booking. Spærrede en ny
+forespørgsel dagen, kunne én person med et telefonnummer lukke
+hele efteråret på ti minutter.
+
+**Catering og "ud af huset" optager ingenting** — så laver
+køkkenet mad, der kører ud, og havnen står fri.
+
+**⚠️ Tilføj ALDRIG en kolonne til `optagne_dage`.** Visningen
+kører med sin ejers øjne og springer adgangsreglerne over — det
+er hele meningen. Kommer der et `navn` med, er gæstelisten åben
+for internettet. Prøve 4 tæller kolonnerne.
+
+**Mail-knappen står på kortet i admin**, når gæsten har oplyst en
+adresse. Den åbner personalets eget mailprogram med reference,
+dato, antal og detaljer skrevet ind. **De tre formularer har fået
+et e-mail-felt** — uden en adresse har knappen ingen at skrive
+til.
+
+**En fejl, prøven fangede, og den kunne have kørt mad ud til den
+forkerte:** designets `[data-toggles]`-segmenter flytter IKKE
+`.on`, når man trykker — de skjuler bare feltet nedenunder. Første
+udgave læste `.on`, og en catering, hvor gæsten havde valgt
+**Afhentning**, blev sendt som en **levering med adresse**. Svaret
+læses nu af det, designet faktisk holder styr på: om feltet
+nedenunder er synligt.
+
+**Menukortet er bygget om — man bestiller ikke derinde** (24/8).
+Kundens ord: *"hvorfor ser den her stadig sådan ud?"* og
+*"man skal ikke kunne bestille derinde"*. Siden kom med
+handoffet i sit eget v3-tema OG med en kurv, hvis indhold ikke
+fulgte med over på bestillingsformularen — gæsten begyndte
+forfra.
+
+`m-menukort.html` er skrevet om og kører på `havnegrillen.css`
+som alle andre sider. `menukort.css` er lille og har kun de tre
+former, siden har og de andre ikke har: kortet **I dag**,
+**ugelisten** og **kategorikortene**.
+
+**Fem filer er slettet:** `mosede-m.css`, `mosede-m.js`,
+`menu.css`, `menu.js` og `menu-data.js`. Ingen side indlæser dem
+længere, og en prøve tjekker, at de ikke kommer med igen.
+
+**Ingen plusknapper, ingen kurv, ingen søgning.** Kortet er til
+at LÆSE; én knap i bunden fører til bestillingen. Prøven tæller
+`.plus`, `#cartbar`, `#cart` og `[data-step]` til nul.
+
+**⚠️ Ugen er halvt tom med vilje.** Der er kun ét felt til dagens
+ret i admin, så kun i dag kan fyldes ud — resten siger "Følger
+snart…", og en lukkedag siger "Lukket". Hele ugen kræver en
+tabel, `dagens_retter`, som ikke er bygget endnu. En opdigtet ret
+på torsdag ville være et løfte, køkkenet ikke har givet.
+
+**To ting fra forlægget er IKKE bygget**, fordi der ikke er data
+til dem: "kun hverdage" pr. kategori og "kun 6 tilbage" pr. vare.
+
+**Emojier, farver og et hop-bånd** (24/8, kundens ord). Hver
+kategori har sit eget emoji, gættet ud fra navnet — det FØRSTE
+mønster vinder, så `fyld` står før `smørrebrød` og `softice` før
+`vafler`. **Kolonnen `emoji` på kategorien vinder, hvis den
+kommer**: koden er skrevet, så ejeren kan overtage tegnet med ét
+felt i admin. Farven på tegnet kommer fra AFDELINGEN, og alle tre
+farver stod i `havnegrillen.css` i forvejen. Antallet står ude
+til højre, og hop-båndet klæber under topbjælken (målt: 109 px,
+ikke 64) og markerer den kategori, man kigger på.
+
+**Ejerens liste er kørt igennem mod kortet** (24/8). Hele
+sortimentet blev sendt igen og sammenlignet post for post med de
+230 varer i databasen. **Kør `supabase/menukort-ejerens-liste.sql`
++ `proev-menukort-ejerens-liste.sql`** (18 × BESTOD lokalt) —
+derefter 21 kategorier og 242 varer.
+
+Filen lukker de **éntydige** huller: en ny kategori (glutenfri,
+laktosefri og vegansk), syv manglende varer og otte beskrivelser,
+ejeren har skrevet indholdet på — vigtigst **tapasfadet**, hvor
+gæsten før ikke kunne se, hvad der var på et fad til tolv.
+
+**Kategorien kan bære en note nu** (`menu_kategorier.note`). Den
+manglede to gange: "På toastbrød eller rugbrød" gælder alle tolv
+slags pindemad, og designet havde "Serveres 8–11" over
+morgenmaden. **⚠️ Notefeltet i admin må ikke have klassen `navn`**
+— første udgave gav det `navn kat-note`, og så fandt
+`.kat-hoved .navn` to felter. Fire prøver faldt med det samme.
+
+**Ingen priser er gættet, og der slettes ingenting.** Ejerens
+liste har ikke ét tal i sig, så alle tolv nye varer står som
+"spørg". De ti steder, hvor listen og databasen LIGNER hinanden
+uden at være det samme, står som spørgsmål i filens rapport — et
+gæt ville lave enten en dublet eller en forkert vare.
+
+**Priserne skrives i admin nu — af ejeren selv** (24/8). Efter
+listen står 242 varer på kortet og over halvdelen uden pris.
+Fanen Menukort er værktøjet: **tæller, filter og én gem-knap.**
+**Ingen SQL.**
+
+**⚠️ Et gem tørrede de andre felter af.** `Admin.gem` henter data
+og tegner HELE fanen om. Havde ejeren skrevet ti priser og gemt
+den ene række, var de ni væk — uden en fejl, uden en advarsel.
+Derfor huskes det skrevne i `skrevet{}` på tværs af optegninger,
+og derfor gemmer én knap dem alle. Enter i et prisfelt gør det
+samme. **Prøven er set fejle med den gamle udgave.**
+
+**Filteret skjuler KATEGORIEN, ikke bare dens varer** — en
+overskrift med ingenting under er en kategori, man tror er tom, og
+så opretter nogen varen, der allerede findes.
+
+**Genvejen "Sæt samme pris på alle" står på hver kategori med mere
+end én vare**, og den **udfylder, den overskriver ikke**: har
+ejeren allerede skrevet 45 på tre af dem, er de tre det eneste,
+nogen har bekræftet. Et flueben udvider den til alle med vilje.
+Feltet hedder `samlepris-<kategori-id>` og ikke længere
+`fyld-samlepris` — det navn på 21 kategorier ville ramme den
+første.
+
+**Antal og varsel står nu også på Menukort-fanen.** Det er de
+SAMME indstillinger som på Bestillinger, ikke en kopi: begge faner
+tegnes af `Admin.tegnere` efter hvert gem.
+
+**⚠️ Antal på lager ("kun 6 tilbage") er IKKE bygget**, og det er
+ikke en forglemmelse: et tal, personalet tæller ned i hånden,
+bliver forkert i løbet af en frokost, og gæst nummer syv får mad,
+der ikke findes. Skal det bygges, skal det være databasens — en
+kolonne, en bremse der tæller ned ved bestilling, og et `udsolgt`,
+der sætter sig selv ved nul. Indtil da er fluebenet **Udsolgt**
+svaret; det virker, og det lyver ikke.
+
+**Personalesiden har fået forlæggets skabelon** (24/8). Kunden
+sendte tre skærmbilleder af en færdig personaleside: *"gør admin
+samme tema og lign det her, bare så det passer til havnegrillens
+... desktop-wise skabelonsmæssigt."*
+
+**Formen er lånt, farverne er havnens.** Søjlen er marineblå, det
+valgte punkt rødt, fladen sand. Der er **hverken læst i eller
+kopieret fra spiis' kode** — bygget efter skærmbillederne.
+
+- **Mørk søjle i venstre kant**, fast og i fuld højde. Menulisten
+  er den ene del, der ruller: fjorten punkter à 46 px er 644 px,
+  og en bærbar på 720 px har ikke plads til mærket og "Log ud"
+  oveni
+- **Topbjælken er væk, når man arbejder** — 92 px af skærmhøjden
+  på hver eneste fane, med det samme indhold hele vejen. Klassen
+  `arbejder` på `<body>` sættes af login.js: uden den ville
+  login-skærmen stå uden hoved og uden gutter
+- **Sidens navn er den valgte fanes navn**, skrevet af
+  `Admin.visFane` fra knappen selv. Panelets første overskrift
+  **skjules**, når den siger det samme — den fjernes ikke, for på
+  en telefon er der ikke noget hoved
+- **Dagens tal står ØVERST på Overblik.** Første felt er fyldt:
+  seks hvide felter læses som en tabel
+
+**⚠️ To fejl, prøverne fangede, og begge var usynlige i koden:**
+`.adm-side` fik `display:none` under 900 px, og da `.faner` ligger
+INDE i den, forsvandt **alle fjorten faner på telefonen** — otte
+prøver løb tør for tid på et klik, der aldrig kunne ske. Søjlen er
+`display:contents` dernede. Og første udgave skjulte hele hovedet
+på telefonen, så man landede på seks tal uden en overskrift.
+
+**Admin har gæstesidens tema nu — i sin egen udgave** (24/8).
+Kundens ord: temaerne skal være "cirka de samme, men alligevel
+lidt anderledes og bedre, fordi det er admin". Varm blæk
+`#241a17`, creme `#fdf7ef`, den røde `#d62a3a`, Instrument Serif
+til overskrifter, og ternet som ÉN stribe ned ad søjlens kant.
+
+**⚠️ Variablerne sættes på `body.personale`, ALDRIG i `:root`.**
+`css/style.css` bærer stadig ni gæstesider — `bestil/`,
+`menu.html`, `selskaber/`, `bord/` og resten. Ændres `:root`,
+skifter de tema uden at nogen har bedt om det. En prøve måler
+begge sider.
+
+Anderledes med vilje: fladere (18 px mod gæstens 26), **ingen
+glasknapper** (sløring uden foto bagved koster billeder i sekundet
+på en iPad), **mørkere dæmpet tekst** (gæstens `--muted` rammer
+3,9:1 mod creme og falder under 4,5:1 — admins `#6f5b55` rammer
+5,97:1), og **intet tern som flade**.
+
+**Skriften ligger lokalt** i `fonts/instrument-serif.woff2` (21 kB)
+og ikke som et link til Google Fonts: admin åbnes på en iPad i et
+køkken. Den hentes kun, hvis den bruges.
+
+**⚠️ `line-height: .88` på `h1, h2, h3` er Bebas'.** En serif har
+over- og underlængder og bliver klippet; to linjer lægger sig oven
+i hinanden. `body.personale` sætter 1.06. Samme historie med
+`.top-navn`s sperring på `.15em`.
+
+**`--overskrift` findes ikke i `:root`.** `.tal-tal` brugte den i
+en `font`-shorthand, og en shorthand med en uløst variabel er
+ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
+Bruger du `var(--...)` i en shorthand, så tjek at den findes.
+
+> **⚠️ AFLØST 11/9 OM AFTENEN: bølge-introen er fjernet.** Filmen fra
+> `Desktop/header` er forsidens åbning nu — se *"Filmen er forsidens
+> åbning"* længere nede. Afsnittene om logoets landing (10/9 og
+> *"Landingen på én takt"*, 11/9) står som historik: `#intro`,
+> `js/intro-boelge.js` og `css/intro-boelge.css` findes ikke længere.
+
+**Logoet forsvinder ikke mere — det transformer hele vejen**
+(10/9). Kundens ord: *"det er meningen at animationen som var der
+før at den ikke skal forsvinde i den der blub men efter du ved
+transform indtil der hvor det skal stå på landingsiden — smooth,
+satisfying og ordentlig."* **Ingen SQL.**
+
+Faserne efter glansen hedder `blub` og `drop`, og de **krymper
+logoet til ingenting og popper det som en boble**. Først derefter
+fløj et allerede usynligt logo hen på plads. Flyvningen begynder
+ved `B.blub` nu, altså i det sekund glansen er fejet igennem:
+fald → plask → pop → sæt → ryst → glans → **flyv**. Introen bliver
+samtidig 1,2 sekund kortere.
+
+**⚠️ OG LØKKEN SKAL STOPPE MED ET `return`, IKKE KUN MED ET
+KALD.** `flyvPaaPlads` gør `cancelAnimationFrame(raf)` — men
+linjen NEDENUNDER bestiller straks et nyt billede, og næste
+billede skriver `logo.style.transform` igen. **Målt: flyvningen
+blev tørret af ved hvert billede, og logoet landede 144 px fra
+kransen.** Ved den gamle udløser (`B.out`) gik det tilfældigt
+godt: dér stod transformen allerede på `none`, så `_tr`-vagten
+sprang skrivningen over. **Fejlen har ligget i koden hele tiden og
+kunne først ses, da udløseren flyttede** — filens egen kommentar
+advarede endda ordret mod den (*"løkken skriver transform ved
+HVERT billede"*), og advarslen var ikke nok, fordi den beskrev en
+fare, ingen kunne måle.
+
+- **⚠️ GLANSEN RYDDES AF FLYVNINGEN NU.** Den blev slukket i
+  `drop`-fasen, som vi ikke længere når — uden det ville et skævt
+  lysglimt følge med hele vejen op i hjørnet
+- ~~**Kurven er `cubic-bezier(.34,1.14,.42,1)` over .9s**~~ —
+  **overhalet samme aften**, se *"Landingen på én takt"* lige
+  nedenfor. Overskuddet i midten gjorde, at logoet var fremme
+  efter 568 ms og så stod stille
+- **⚠️ OG DEN NYE PRØVE MÅLER FRA FØRSTE FULDE BILLEDE**, ikke fra
+  billede ét. Det første sekund er med vilje tomt — dér falder
+  dråben, og logoet er ikke vokset ud af plasket endnu. En prøve,
+  der krævede fuld synlighed hele vejen, ville fælde selve
+  åbningen
+
+**Målt på en iPhone 13, billede for billede (190 billeder):**
+
+| | |
+|---|---|
+| laveste opacity, fra logoet er fremme til laget ryger | **1,00** |
+| sidste billede: bredde | **109** mod målets 108 |
+| sidste billede: midte | **191** mod 190 |
+
+**⚠️ OG MÅLEVÆRKTØJET MÅLTE NUL, FØRSTE GANG DET KØRTE — tredje
+gang samme fælde.** `addInitScript` kører FØR opmærkningen er
+læst, så `#intro` er null i første billede, og en løkke, der
+stopper når laget mangler, stopper med det samme. Prøven faldt i
+den to gange 10/9; værktøjet ved siden af faldt i den igen samme
+aften. Begge bærer et `harSet`-flag nu.
+
+To falsifikationer, to fald: udløseren sat tilbage på `B.out`
+(logoets synlighed falder til 0) og `return` fjernet (landingen
+falder med 144 px). `git status` læst før og efter hver rollback.
+
+**Landingen på én takt — og siden rejser sig** (10/9). Kundens
+ord: *"som om hele siden åbner i takt med at den flader på
+plads"* — smooth, satisfying og ordentlig. **Ingen SQL.**
+
+**MÅLT FØR:** kurven med overskud havde logoet 2 px fra målet
+efter **568 ms**, siden var inde ved 660, cremen væk ved 544 — og
+laget røg først ved 960. Tre bevægelser med hver sin slutning, og
+derefter **416-440 ms**, hvor alt stod stille, og siden så færdig
+ud uden at kunne rulles: laget dækker hele skærmen og fanger hvert
+tryk.
+
+- **Én kurve til alt:** `cubic-bezier(.24,.72,.24,1)`, der
+  bremser HELE vejen og ikke går forbi. Logoet (1 s), cremen, sidens
+  udtoning og partiklerne deler den
+- **Heroens indhold stiger 18 px på plads** (`.hero-in`, kun
+  `transform` og `opacity`). **⚠️ KRANSEN STÅR STILLE** — den er
+  logoets mål, og et mål, der bevæger sig, sender logoet mod et
+  rektangel, der ikke er der, når det lander. `.hero-badge` er sit
+  eget element af netop den grund
+- **⚠️ OG EN KURVE, DER BREMSER HELE VEJEN, HAR EN HALE.** Første
+  udgave lod laget ryge ved 1060: logoet var under 2 px fra
+  slutpladsen ved ~800, så pausen var stadig 211-271 ms
+
+**⚠️ OMBYTNINGEN TOG FEM FORSØG, OG TO AF MINE FORKLARINGER
+UNDERVEJS VAR FORKERTE (10/9-11/9):**
+
+1. **Et fast 880** virkede på telefonen og hoppede **4 px på
+   computeren**, hvor logoet er større og skal længere
+2. **Et tidspunkt regnet af kurven og vejen, sat med
+   `setTimeout`** — overgangen starter først ved næste billede,
+   så de to går ikke på samme ur: 2,5-4 px tilbage
+3. **At spørge kasserne, om logoet var under 1 px fra kransen,**
+   blev aldrig sandt. Det blev forklaret med afrunding — **FORKERT:**
+   afrundingen giver højst en halv pixel
+4. **Et tidspunkt på overgangens EGET ur** (`currentTime`) bestod
+   190 af 190 — og faldt så under fire arbejdere med **1,5-7 px**,
+   ved den SAMME `currentTime` 850 ét sted 3,6 px og et andet 5,6.
+   Det blev forklaret med, at kassen og uret ikke gik i takt —
+   **OGSÅ FORKERT**
+5. **⚠️ ROD FUNDET VED DIAGNOSE:** logoet ramte præcis sin
+   slutplads — men **slutpladsen lå ved siden af kransen**.
+   Løkken skriver fasens transform i hvert billede og kalder
+   `flyvPaaPlads` i det SAMME billede, så startkassen bar et klem.
+   **Målt i det øjeblik, kassen blev læst:** `scale(0.99, 1.013)
+   translateY(-0.8px)` på telefon, op til `scale(0.976, 1.033)
+   translateY(-3.3px)` på computer. Flyvningens transform ERSTATTER
+   klemmet, så vejen var forkert: **1,5-3 px uden belastning** (inden
+   for de gamle 4 px, derfor usynlig for prøven) og op til 7 px med,
+   hvor billedet lander længere inde i fasen. Punkt 3 og 4 var den
+   samme fejl set to gange. **Kransen flyttede sig 0 px**
+
+   **⚠️ OG MEKANISMEN BLEV FØRST MÅLT I TREDJE FORSØG — to målinger
+   ramte ved siden af, begge mine egne.** En sampler i
+   `requestAnimationFrame` sagde `scale(1)` hver gang: den kører
+   FØR sidens løkke og læste altså det FORRIGE billede. Og en
+   indpakning af `getBoundingClientRect` sagde `none`: den gemte det
+   FØRSTE kald på logoet, som er introens opstart. Den rigtige
+   måling tog det SIDSTE kald, før `intro-lander` sættes. Og der
+   stod i et døgn *"uden belastning var det tilfældigvis tæt på"* —
+   uden en måling bag
+
+**Svaret:** startkassen måles med `transform: none` (sat og sat
+tilbage i samme opgave, så intet tegnes), logoets egen slutplads
+MÅLES, før flyvningen begynder, og laget ryger, når logoet er under
+én pixel fra DEN. Reserverne er overgangens ur ved slutningen og
+vægurets `FLYV_MS + 400`. **Målt efter, under fire arbejdere: 0-1,1
+px ved ombytningen, pause 1-179 ms.**
+
+**⚠️ OG PRØVERNE MÅLER I SELVE OMBYTNINGEN NU, IKKE I DET SIDSTE
+BILLEDE.** Under fire arbejdere kan der gå 100 ms mellem billederne,
+og da laget ryger i samme billede, som logoet når frem, så en
+sampler aldrig det billede. `målOmbytning()` pakker `removeChild` på
+`#intro` ind og læser kasserne, FØR laget er væk — ét tal pr.
+ombytning. Det lukkede også et kapløb: pause-prøven læste `vaek`,
+før sampleren havde skrevet det, og faldt i en fuld runde på `null`
+uden at have målt noget.
+
+**⚠️ OG TOLERANCEN ER 2 PX, IKKE 4.** De fire hvilede på
+afrundingsforklaringen. **Set fejle:** med roden sat tilbage faldt
+landingsprøven **9 af 10 under belastning og 13 af 20 uden** — med
+fire pixels bestod den det meste af tiden. **Og vagten i *"siden
+rejser sig"* kræver 3 billeder, ikke 10:** en udsultet maskine nåede
+præcis ti.
+
+**Læren er ikke ny, men den var dyr:** jeg rettede på en forklaring
+to gange, før jeg målte, HVAD der var forkert. Diagnosen, der
+afgjorde det, var én prøvefil, der i ombytningsøjeblikket skrev
+kransens plads ved start og slut, afstanden og overgangens ur.
+**Mål, hvad der er galt, før du forklarer hvorfor.**
+
+**⚠️ OG UDTONINGEN SKAL AFBRYDES VED OMBYTNINGEN.** Laget ryger nu,
+mens sidens udtoning har de sidste promiller tilbage, og ryddes den
+indlejrede stil bare, lader Chrome den løbe videre — **målt: siden
+stod på 0,998** efter introen. `transition: none` først.
+
+Tre nye prøver i `tests/intro-boelge.spec.js`: *siden rejser sig,
+mens logoet flyver — og målet står stille*, *ingen død pause*
+(to UAFHÆNGIGE tider: hvornår logoet holder op med at bevæge sig,
+og hvornår laget forsvinder) og *landingens klasse skjuler intet*
+ved reduceret bevægelse. **Fem falsifikationer, fem fald** — og
+**to af dem målte ingenting første gang, begge mine egne:**
+animationen lagt på hele `.hero` faldt på "rejser sig" og nåede
+aldrig kransens tjek (kransen skulle animeres VED SIDEN AF), og den
+gamle kurve blev indsat mellem et `if` og dets `else` — en
+syntaksfejl, der dræbte scriptet. **En mutation, der fejler af
+den forkerte grund, er ikke et fald; læs, HVILKEN linje der
+faldt.** Set på en screencast-film på begge bredder: ombytningen
+kan ikke ses.
+
+**Betingelserne ved send-knappen kunne ikke læses — og fejlene
+blev skrevet hen over dem** (11/9). **Ingen SQL.** Fundet af den
+fulde runde efter landingen: **3618 bestod, 16 fejlede**, og ti af
+dem — fem prøver på begge profiler — kom fra `c9dc07b` (10/9, *"
+Betingelserne står, hvor man sender"*), der gik i luften uden en
+fuld runde. De seks sidste var ikke kode:
+`ERR_NETWORK_IO_SUSPENDED`, fordi Mac'en satte netværket i dvale
+midt i runden — alle bestod alene på 6,7 sekunder.
+
+Linjen stod som `<p class="fine jura-ved-send">` på ti sider, og
+klassen `.fine` betyder to forskellige ting i de to ark:
+
+- **På `bord/`, `bestil/` og `ved-bordet/` er `.fine` FOOTERENS
+  stribe** i `css/style.css` — hvid tekst, kant foroven, flex med
+  `space-between`. **Målt: `rgba(255,255,255,.62)` på
+  `rgb(255,255,255)`**, altså en lovpligtig oplysning, ingen kunne
+  læse, og de to links trukket ud i hver sin kant. Set på et skud
+- **På designsiderne bruger to motorer den FØRSTE `.fine` i
+  panelet som fejllinje** (`fineFelt()` i `js/skal/kalender.js`,
+  `data-fejllinje` i `js/skal/forespoergsel.js`). Linjen stod
+  FØR sidens egen `.fine`, så *"ikke flere pladser"* blev skrevet
+  hen over betingelserne og deres links — og på baglokalet var
+  den mærkede linje ikke længere den, der lover *"ikke en booking
+  endnu"*. Samme fælde som 31/8 (*"seks prøver faldt på `.fine`"*)
+- **Og ved bordet åbnede linjens links i samme fane** — en vej
+  væk fra en halvt afsendt bestilling, præcis det, bordprøven er
+  skrevet imod
+
+**Rettelsen:** linjen hedder `jura-ved-send` ALENE nu. Designarket
+har `.fine,.jura-ved-send` som én regel; `css/style.css` har sin
+egen, scopet til `body:not(.personale)` — to ark, to regler, samme
+udseende (målt: `#6f5b55` på hvid, 54 px, alle fem sider). Begge
+links åbner i ny fane på alle ti sider. **Bordprøven kræver ikke
+længere præcis ét persondata-link** — der er to nu (ved send og i
+bunden), og reglen er, at HVERT af dem lader bestillingen stå.
+
+**Ny prøve: kontrasten måles i browseren** mod den bund, linjen
+faktisk står på, med gennemsigtigheden blandet ind — én side fra
+hvert ark. Filprøven kan kun se opmærkningen.
+
+Fem falsifikationer, fem fald — og **én af dem målte kun det
+halve først:** `.fine` sat tilbage på `bord/` fældede filprøven,
+men kontrastprøven BESTOD, fordi den nye regel (0,2,1) vinder over
+footerens `.fine` (0,1,0). Først med den oprindelige fejl HELT
+genskabt — klassen tilbage OG reglen væk — faldt den med 1:1.
+
+**✅ OG GENNEMGANGENS KONTRASTMÅLER HAVDE ET HUL — LUKKET SAMME
+DAG** (11/9, Mikkels ja). `lum()` i *"har læsbar kontrast på det,
+der kan måles"* (`tests/gennemgang.spec.js`) svarede `null` for
+enhver farve med alfa under 0,9 — og den blev også brugt på
+TEKSTFARVEN. En halvgennemsigtig tekst blev altså sprunget helt
+over i stedet for at blive blandet med bunden, og derfor bestod
+hvid .62 på hvid på alle tre gamle sider.
+
+- **Bunden bliver ved at kræve alfa ≥ 0,9** — vi ved ikke, hvad
+  der ligger bag en gennemsigtig flade (punkt 3 i prøvens note).
+  **Teksten blandes nu med den bund**, som øjet gør. Kun helt
+  gennemsigtig tekst (alfa < 0,05, gradient-tekst med
+  `background-clip`) springes over, med grunden skrevet
+- **Den fandt ÉT fund mere på hele huset:** den valgte dags dato i
+  dagstriben på `bord/`, hvid .88 på husets røde = **4,11:1 på
+  13 px**. Helt hvid giver 4,94; hierarkiet mod ugedagen står
+  stadig på vægt og størrelse. Admins `.78` på den mørke `--sea`
+  er urørt — den er fin
+- **Tre falsifikationer:** jura-fejlen genskabt fuldt → faldt med
+  1,00:1 (bestod dagen før); datoen tilbage på .88 → faldt med
+  4,11; og **modprøven** — .88 OG den gamle, blinde måler →
+  BESTOD. Den sidste er beviset på, at det er blandingen, der
+  fanger fejlen, og ikke noget andet i rettelsen
+
+**Tapassiden får et galleri** (11/9).
+Kundens ord med et skud af forlæggets tapasside: *"lav siden så
+billederne er som her og skifter mellem hinanden eller bare gøre det
+100 gange bedre"*. **Ingen SQL** — `indstillinger` er nøgle/værdi.
+
+**⚠️ FØRST BESLUTNINGEN, FOR DEN ER KUNDENS: DE GENEREREDE BILLEDER
+BRUGES.** Materialet i `~/Desktop/Tapas` var tre **ChatGPT-genererede**
+billeder af et tapasfad på havnen. Holdt op mod ejerens egen
+beskrivelse af fadet (*5 slags ost · serranoskinke · chorizo · paté ·
+hummus · oliven · cornichoner · frugt · grønt · baguette · smør ·
+chilimayo · tzatziki*) viser billede 3 **rejer, pimientos de padrón og
+kødboller**, og billede 1 nødder, artiskokker og salsa uden hummus,
+paté eller cornichoner — mens teksten under siger *"Sådan ser et
+tapasfad fra havnen ud"*. Det blev lagt frem. Første svar (et valg i
+en liste) blev læst som "rigtige fotos"; Mikkels ord bagefter var
+ordret: *"de jeg sendte i folderen desktop/Tapas er dem du skal
+bruge"*. **Det er hans beslutning, og den står her, så ingen "retter"
+det tilbage — og så den, der vil skifte dem, ved, hvad de er.** Det
+bryder husets regel om ikke at vise noget, vi ikke har belæg for
+(samme kategori som det genererede facadeskilt, 8/9); undtagelsen er
+hans, ikke vores.
+
+- **Filerne:** `billeder/tapas-1..3.jpg`, skåret til 4:3 med fadet i
+  midten (fadet ligger nederst i alle tre) og gemt som JPEG 0,82 i
+  kildens bredde (1087 px) — **ikke skaleret op**. 111-201 kB mod
+  1,8-2,7 MB som PNG
+- **⚠️ ADMIN SLÅR REPOET — og de BLANDES IKKE.** Står der blot ét foto
+  i admin, er det ejerens liste, der vises, og repoets tre er væk.
+  Blandede vi dem, ville hans rigtige fotos skifte med de genererede,
+  han har valgt at erstatte. (Stemningsgalleriet blander med vilje;
+  dér er repoets fotos også ejerens egne.) `data-reserve` sidder på
+  galleriet, så længe det er repoets
+- **Forsidens tapasplads viser det FØRSTE** (`data-fil` +
+  en alt-tekst, der beskriver billedet), så gæsten ser det samme fad
+  begge steder. `foto_tapas` i admin slår det
+
+- **Pladsen bærer en pulje** (`data-pulje` i HTML'en, samme grund som
+  `data-tegn`): `foto_tapas` + `foto_tapas_2`-`_5`, fire nye felter i
+  admin → Forside. Reglen bor i `js/skal/billedplads.js`: **0 fotos →
+  fladen med 🧀 som før, 1 → står stille, flere → blænder** hvert 4,6 s
+  (stemningsgalleriets rytme) med prikker, man kan trykke på
+- **⚠️ KUN OPACITY, INGEN ZOOM OG INGEN GLID.** En langsom zoom er
+  præcis det, kunden kaldte *"hakkende og ik clean"* (30/8), og en
+  glidende karrusel flytter layoutet under fingeren. Det gamle billede
+  står, til det nye er hentet; en skjult fane skifter ikke; ved
+  reduceret bevægelse skifter intet af sig selv, men prikkerne virker
+- **⚠️ FORSIDEN VISER STADIG KUN DET FØRSTE** (`tapas-forside` →
+  `foto_tapas`). Gæsten skal se det samme fad på vejen fra forsiden til
+  bestillingen — "Tapasfadet er ÉT foto på to sider" (29/8) står ved
+  magt; billede 2-5 er tapassidens alene
+- **Rammen har et forhold, ikke en højde.** Den var 250 px på alle
+  skærme — **målt 1400×250 på en computer**, en stribe, hvor forlægget
+  har ét stort foto. Nu 4:3 på telefon (350×263) og 16:9 op til 1100 px
+  (1100×619). `.tshot` bruges KUN på `m-tapas.html` — målt, før det
+  blev skrevet ned
+- **⚠️ UDEN `aspect-ratio` FALDER RAMMEN SAMMEN TIL NUL** — galleriets
+  billeder ligger absolut og giver ingen højde. Prøven har en vagt, der
+  siger det med ord
+
+**Prøverne** (`tests/skal-tapas.spec.js`, 7 nye): fladen uden fotos, ét
+står stille, flere blænder ét ad gangen, prikkerne vælger og siger
+hvilket, reduceret bevægelse, rammens forhold (og at den ikke skifter
+højde ved et skift), og at billede 2-5 ikke kommer på forsiden. Plus i
+`skal-forside.spec.js`: **hver nøgle i en billedpulje skal have en række
+i admin**, læst af mappen — en nøgle uden felt kan aldrig fyldes.
+
+**Otte falsifikationer, otte fald** — og **to målte ingenting første
+gang, begge mine egne:** at sætte billedets højde tilbage til 250 px
+ændrede ingenting, fordi rammen bestemmes af sit eget forhold (den
+rigtige mutation var forholdet: 16:9 på telefon, 21:9 på computer, og
+helt fjernet); og en mutation med `—` i blev aldrig kørt, fordi
+`unicode_escape` ødelægger ikke-ASCII-tegn — antalskontrollen sagde 0
+og standsede den. **Og skuddene viste først 0 prikker:** værktøjet
+lagde data ind uden `lokalTilstand`, så siden hentede produktionens
+data, hvor der ingen fotos er. Tredje gang på to dage, at en måling
+ikke ramte det, den målte.
+
+**⚠️ OG FORSIDENS FARTPRØVE SKULLE LÆRE ÉT FOTO AT KENDE.** Den
+krævede, at forsiden ikke hentede ét eneste foto, før gæsten ruller.
+**Målt:** tapasfotoet står ~2.100 px under folden med
+`loading="lazy"` — og hentes alligevel før rul på begge profiler. Det
+er Chromes egen afstand for lazy (et billede tæt nok på hentes, så
+det er klar), ikke en fejl i siden; stemningsgalleriet ligger længere
+nede og hentes stadig først ved rul. Prøven godtager nu netop
+tapasfotoet — læst af siden, ikke skrevet af — og kræver, at det ER
+lazy. **Stemningsgalleriets ~970 kB er vogtet som før:** set fejle med
+`loading` fjernet fra dets billeder.
+
+**⚠️ OG MIN FØRSTE FORKLARING PÅ DET VAR FORKERT.** Jeg troede, at
+`loading` skulle sættes FØR `src`, ændrede rækkefølgen og skrev en
+kommentar om, at fartprøven havde målt det. **Målt bagefter:** fotoet
+hentes også med `lazy` sat først — browseren læser attributten i
+samme opgave, så rækkefølgen er ligegyldig (stemningsgalleriet har
+haft `src` før `lazy` hele tiden uden at blive hentet). Ændringen og
+kommentaren er rullet tilbage. **En kommentar, der siger "målt", skal
+have en måling bag sig.**
+
+**⚠️ OG JEG RETTEDE FILER, MENS EN FULD RUNDE KØRTE** — husets egen
+regel fra 4/9, brudt igen. Runden var i gang efter forrige
+udgivelse, og `index.html`, `m-tapas.html`, `billedplads.js` og
+prøverne blev ændret under den. Den var dermed en blanding af før og
+efter og blev stoppet. **Læs `pgrep -fl "playwright test"`, før du
+retter noget, mens en runde er startet i baggrunden.**
+
+Fire falsifikationer mere, fire fald: stemningsbillederne uden `lazy`
+(fartprøven før rul), tapassiden uden sine filer (0 billeder), admin og
+repo blandet (5 i stedet for 2), og forsidens plads uden sin fil (intet
+tapasfoto).
+
+**Og samme eftermiddag: prikkerne ud, og fadet i midten** (11/9).
+Kundens ord: *"der er prikker hvor man kan se den skifter, fjern dem og
+beskær så man kan se tapasen på billed 1 og 2 er den skåret dårligt"*.
+Billederne skifter af sig selv; ved reduceret bevægelse står det første
+stille. **Udsnittene er regnet, ikke gættet:** fadets lodrette
+udstrækning blev aflæst pr. billede, og udsnittet centreret om den —
+målt, at fadet er HELT med både i telefonens 4:3 og i computerens 16:9,
+hvor `object-fit: cover` skærer top og bund af. Før lå tallerkenen på
+billede 2 i underkanten og blev skåret over på en computer.
+
+> **⚠️ AFLØST SAMME AFTEN:** filmen starter ikke længere ved logoets
+> landing — der er ingen intro. Filmen ER åbningen; se *"Filmen er
+> forsidens åbning"* nedenfor. Filerne, formatreglen og slutbilledet
+> er de samme.
+
+**Forsidens hero er en film nu** (11/9). Kundens ord: headerens
+baggrund *"som lige nu er det ternede"* skal være filmen fra
+`~/Desktop/header` — *"en til computer brug og en i 9:16 format til
+iphone"* — og *"logoet skal stadig falde på plads derinde efter
+animationen er færdig og bruge slut framen som png'e der ligger derinde
+efterfølgende"*. Havnen i solnedgang, og maden dukker op på et ternet
+bord: tapasfad, vin, smørrebrød, en pølse, en øl. Ternet lever videre i
+dugen. **Ingen SQL.**
+
+- **ÉN REGEL AFGØR FORMATET** (`data-hoej-naar="(orientation:
+  portrait)"` på rammen): film, startbillede og slutbillede vælges af
+  den samme, så de aldrig kan være hver sit format.
+  `js/skal/hero-film.js` bærer reglerne
+- **⚠️ FILMEN STARTER, NÅR LOGOET BEGYNDER AT LANDE** (`intro-lander`),
+  ikke ved indlæsning — ellers gik de fire sekunder, maden kommer frem,
+  tabt bag introens creme. Direkte link (introen springes over) →
+  med det samme. Et værn på 9 s, hvis introen går i stå
+- **⚠️ SLUTBILLEDET ER SVARET PÅ ALT, DER IKKE ER EN FILM:** reduceret
+  bevægelse (ingen film overhovedet), en afspilningsfejl, og en afvist
+  `play()` (iPhone på strømbesparelse). Det hentes FØRST, når det skal
+  bruges, og blændes ind over filmens eget sidste billede på 1,2 s
+- **⚠️ FILERNE LIGGER I `film/`, IKKE I `billeder/`.** Forsidens
+  fartprøve forbyder med vilje billeder fra `billeder/` før rul;
+  heroen skal netop hentes med det samme
+- **Uden lyd og med `faststart`:** 1,4 MB (16:9) og 1,1 MB (9:16) mod
+  originalernes 2,9 og 2,5 MB. Slutbillederne er JPEG (~335 kB) i stedet
+  for PNG (2,5 MB), startbillederne ~235 kB. En prøve har et loft på
+  2 MB pr. film og 450 kB pr. billede
+- **Ternet bag heroen slukkes KUN, når der er en film**
+  (`.hero.film::before`); den mørke tone ovenover (`::after`) bliver,
+  så overskriften og knapperne kan læses — set på skud
+- **⚠️ 9:16-SLUTBILLEDET ER ET ANDET BILLEDE END FILMENS SIDSTE.**
+  Målt: gennemsnitlig forskel 57-68 pr. kanal (16:9's er 32-37 og kun
+  en farvetone). PNG'en har en dramatisk solnedgang med skyer, og bordet
+  står lavere. Med overgangen på 1,2 s ser det ud, som om solen går ned
+  — men det er et skifte, ikke et stillbillede af filmen. Vil kunden
+  have det sømløst, er svaret filmens eget sidste billede
+
+**Set i rigtig Chrome** (`channel: 'chrome'`): filmen starter ved
+landingen (0,30 s inde 300 ms efter), spiller til ende (4,04/5,04 s),
+og slutbilledet blændes ind — 0 JS-fejl på begge bredder.
+
+**Prøverne** (`tests/hero-film.spec.js`, 9): formatet følger skærmen,
+filmen startes først ved landing, direkte link starter med det samme,
+`ended` blænder slutbilledet ind, afvist `play()` og en fil, der ikke
+kan hentes (404), giver slutbilledet, reduceret bevægelse har ingen
+film, ternet er slukket, og filerne holder sig under loftet. **Seks
+falsifikationer, seks fald.**
+
+**⚠️ OG TO AF MINE MÅLINGER VAR FORKERTE UNDERVEJS — begge fundet af en
+falsifikation, der ikke faldt:** prøven påstod, at *"Playwrights
+Chromium ikke kan afspille H.264"*, og fejl-prøven lænede sig på det.
+**Aldrig målt, og forkert:** Chromium 151 svarer `"probably"` og spiller
+filmen til ende — så fejl-prøven bestod, fordi filmen SPILLEDE FÆRDIG,
+ikke fordi fejl-lytteren virkede. Den bruger en rigtig 404 nu, og med
+lytteren fjernet falder den. **En påstand i en prøves overskrift er
+også en påstand — mål den.**
+
+**Filmen er forsidens åbning — bølge-introen er fjernet** (11/9, om
+aftenen). Tre beslutninger på en time, alle kundens:
+
+1. *"det er bedst med bare billedet ved headeren, ingen video"* — og
+   filmen skulle være baggrund for dagens ret, *"lidt mørkere"*.
+   **Målt først:** produktionen har INGEN dagens ret (0 aktive rækker
+   fra i dag, `dagens_ret` tom), så `#idag` skjuler sig, og en film dér
+   ville ingen se. Ugeafsnittets overskrift er ordret "Dagens retter";
+   planen blev et mørkt bånd om begge afsnit
+2. *"det en dårlig ide med dagensret"* — droppet, før noget var bygget
+3. *"brug den i stedet for animationen before landing, fade ind
+   premium ligesom Apples hjemmeside og blive til den statiske end
+   frame, hvor teksten så kommer"* — lagt frem, fordi bølge-introen er
+   hans eget godkendte bundt (27/8), og han valgte det
+
+**Forløbet:** heroen er mørk (`#1a1210`) → filmen blændes ind over
+1,4 s, når den SPILLER → maden kommer frem på bordet, uden tekst og
+uden mørk tone → det sidste 1,1 s falder kransen på plads, teksten
+stiger op, og den mørke tone (`::after`) kommer med → slutbilledet.
+**Set i rigtig Chrome på begge bredder:** filmen 0,33 synlig efter
+150 ms, fuld midt i, overskriften skjult til 4,85/5,04 s, 0 JS-fejl.
+
+- **⚠️ INTET LAG OVER SIDEN.** Den gamle intro dækkede alt; filmen
+  ligger i heroen, og et tryk, et rul (over 40 px) eller en tast er
+  "jeg vil videre": teksten og slutbilledet med det samme. Lytterne er
+  passive (gennemgangens regel, 31/8)
+- **⚠️ KLASSEN `film-aabner` SÆTTES I HEAD**, af et lille inline-script
+  — sattes den af scriptet nederst, ville teksten blinke frem og
+  forsvinde. Et direkte link og reduceret bevægelse får den ikke
+- **⚠️ TEKSTEN MÅ ALDRIG BLIVE HÆNGENDE SKJULT:** fejl, afvist `play()`
+  og et spring fjerner klassen; `js/skal/hero-film.js` har et værn efter
+  7 s; og fejler scriptet helt, viser STILARKET det hele efter 8 s
+  (`@keyframes film-noedvis`) — også uden JavaScript
+- **Kransen falder på plads** (`translateY(-18px)` → 0) — kundens ønske
+  fra 10/9 om, at logoet lander, består i en ny form. Kun `opacity` og
+  `transform`
+- **Slettet:** `#intro`, `js/intro-boelge.js`, `css/intro-boelge.css`
+  (de ligger i historikken). `tests/intro-boelge.spec.js` er parkeret i
+  `tests-gamle/` med en note; reglerne, der stadig gælder for en åbning
+  (direkte link, reduceret bevægelse, et tryk springer over, intet
+  skjult står tilbage), er FLYTTET til `tests/hero-film.spec.js`.
+  `springIntroOver` i `tests/hjaelp.js` kalder nu filmens eget
+  `MosedeFilm.spring()` — navnet er beholdt, femten filer kalder det
+- **⚠️ PERSONDATAPOLITIKKENS BLOK OM ANIMATIONEN ER FJERNET.** Den
+  fortalte om et ciffer, browseren huskede — og den var forkert
+  allerede fra 10/9 om eftermiddagen, da introen igen kom ved hvert
+  besøg og nøglen holdt op med at blive læst. Nu gemmes intet
+
+**Prøverne** (`tests/hero-film.spec.js`, 15): introen findes ikke,
+formatet følger skærmen, teksten venter og kommer det sidste stykke
+(målt på filmens eget ur), filmen blændes ind, slutbilledet står, tryk
+og rul springer over, direkte link og reduceret bevægelse har ingen
+åbning, afvist `play()` og en fil, der ikke kan hentes, giver teksten,
+**fejler scriptet, kommer teksten alligevel**, kransen falder, ternet
+er slukket, filerne under loftet. **Syv falsifikationer, syv fald.**
+
+**⚠️ OG TO FEJL VAR MINE EGNE UNDERVEJS:**
+
+- **Prøven "teksten venter på filmen" målte `null`.** Dens
+  `MutationObserver` i et init-script observerede
+  `document.documentElement` — og init-scriptet kører, FØR `<html>`
+  findes. Lytteren blev aldrig sat. Samme ar som introprøven fik 10/9.
+  Den lytter på `document` med `subtree` nu
+- **⚠️ OG JEG RETTEDE FILER UNDER EN KØRENDE FULD RUNDE — ANDEN GANG
+  SAMME DAG.** Mit script tjekkede `pgrep` og skrev en ADVARSEL — og
+  fortsatte. En advarsel, der ikke stopper, er ikke et værn: det
+  skal være `{ echo STOP; exit 1; }`, og det er det i alle
+  kommandoer herfra. Runden blev stoppet og kasseret
+
+**Find os står på havnen** (11/9). Kundens ord: billedet *"skal
+bruges som baggrundsbillede nede ved find os som baggrund og gør det
+lidt mørkere"*. **Ingen SQL.**
+
+- **⚠️ ET `<img loading="lazy">`, IKKE EN CSS-BAGGRUND.** En baggrund
+  i stilarket hentes, i det sekund siden tegnes — og forsidens
+  fartprøve forbyder et foto, før gæsten har rullet. **Målt:** intet
+  hentes før rul; nederst hentes KUN det billede, browseren valgte
+- **To filer, én kilde:** `billeder/find-hoej.jpg` (hele det høje
+  billede, telefonen) og `find-bred.jpg` (et 16:9-bånd om bordene,
+  fra 821 px via `<source>`). Kilden er kun 941 px bred, så
+  computeren skalerer op — sløret gør det til en stemning, ikke et
+  foto, man skal se skarpt
+- **⚠️ SLØRET ER ÉN ENSARTET FARVE** (`rgba(26,18,16,.66)`) plus en
+  tone i top og bund. Gennemgangens kontrastmåler kan ikke se et foto
+  — den læser sektionens mørke grund — så `find-foto.spec.js` regner
+  overskriftens kontrast ud mod en HVID pixel under sløret alene.
+  Gøres det lysere, eller får eyebrow'en husets `--muted` igen, falder
+  prøven
+- **Fartprøven kender fotoet** som et, siden VISER (`currentSrc`), som
+  tapasfotoet — og kun dét: henter telefonen også det brede, falder
+  den
+- **Kortene er urørte**: hvidt papir på et mørkt foto. Luften er 52 px
+  på telefonen og 88/92 på computeren; de 6 px fra før klæbede
+  afsnittet til naboen
+
+**Og den fulde runde efter filmen: 3651 bestod, 1 fejlede** — ægte:
+typografiens *"h1 står, hvor designet satte den"* fjernede stadig
+den gamle `#intro` og målte midt i filmåbningen, **276 mod 260** (de
+16 px er tekstens `translate3d`). Den springer filmen over og venter
+på, at bevægelsen står stille nu.
+
+**⚠️ OG ÉN FALSIFIKATION BESTOD FØRST.** Jeg fjernede spring-kaldet,
+og prøven blev grøn: filmen spiller til ende inden for ventetiden, og
+så lander teksten af sig selv. Det, der bærer rettelsen, er
+VENTELINJEN — uden den faldt prøven med 13 px. Seks andre
+falsifikationer, seks fald (lazy, `<source>`, sløret, eyebrow'en,
+sløret under fotoet).
+
+**Den fulde runde efter Find os: 3660 bestod, 0 fejlede, 0 flakes**
+(24,2 min, tre arbejdere, 150 sprunget). 3651 + 1 → 3660 er den
+rettede typografiprøve og de otte nye i `find-foto.spec.js`.
+
+**Filmen fylder hele telefonen — og intet står oven i den** (11/9).
+Kundens ord: *"fuld skærm på telefonen med animationen, ikke inde på
+hjemmesiden agtig — fuldskærm indtil end frame"*, og *"sidebaren,
+knappen er visible"*. **Ingen SQL.**
+
+**MÅLT FØR, midt i filmen på en iPhone 13:** heroen sluttede 4 px
+før skærmens bund, fordi dens højde kom af INDHOLDET — på en højere
+telefon ville næste afsnit stå under filmen. Og topbjælkens
+menuknap stod i fuld styrke (opacity 1) hele åbningen. Pillen var
+allerede foldet væk af sin egen regel.
+
+- **Heroen har skærmen som gulv:** `calc(100svh + 8px)` på
+  `.hero.film`. De 8 er afstanden, heroen trækkes op under bjælken
+  (70 mod bjælkens 62 — målt top −8). svh og ikke vh: det er den
+  skærm, gæsten SER med Safaris bjælker fremme. Indholdet sidder
+  øverst, så h1 står stadig på 260. **Computerens `.hav .hero`
+  (84svh) står senere og vinder dér** — kundens ord gjaldt telefonen
+- **⚠️ TOPBJÆLKEN SKJULES MED OPACITY ALENE, IKKE pointer-events.**
+  Et tryk hvor som helst springer filmen over, så et tryk på
+  menuens plads åbner den OG viser siden. Og `åbnSkal` springer
+  IKKE filmen over — en knap, der ikke kunne rammes, ville lade
+  hver prøve, der åbner forsidens menu, vente på den
+- **Bjælken står under samme værn som teksten:** fejler scriptet,
+  viser `film-noedvis` den efter 8 s
+- **⚠️ 9:16-FILMEN HAR EN VANDRET SØM MIDT I BILLEDET** — havnen og
+  bådene gentages i et bånd ved horisonten i filmens første
+  sekunder. **Den står i ORIGINALEN** (`~/Desktop/header/19b02224…
+  .mp4`): billede 1,8 s trukket ud af den og af `film/hero-9x16.mp4`
+  er ens. Det er ikke komprimeringen, og det kan ikke rettes i
+  koden — kun med en ny film. Fuld skærm gør den mere synlig
+
+**Prøverne** (`tests/hero-film.spec.js`, +2): filmen dækker fra
+skærmens top til `innerHeight` — på iPhone 13 OG en høj telefon
+(430×932), så en regel, der kun passer på ét mål, falder — og
+bjælken og pillen er væk under åbningen, mens bjælken kommer med
+teksten. Værnprøven kræver også bjælken nu. **Fem falsifikationer,
+fem fald — og to målte ingenting første gang:** mit `-g`-filter
+sagde *"fylder hele skærmen"*, titlen siger *"fylder filmen hele
+skærmen"*, og **en grep, der ikke rammer en titel, kører nul prøver
+og skriver ingenting** — hverken bestået eller fejlet. Kørt igen med
+et filter, der rammer: 5 px mod 664.
+
+**Lærredet går op — og bjælken er lavere, når den står fast** (11/9).
+Kundens ord: *"kan den starte ud mere cinematisk … helt fuldskærm"*
+og bjælken med "Mosede Havnecafe" skal være *"lidt mindre, når man
+scroller, så man kan se mere"*. **Ingen SQL.**
+
+- **Filmen åbner sig fra en stribe midt i skærmen til fuld skærm**:
+  to sorte kanter (`.hero-bjaelke`) glider ud med transform over
+  2,2 s, mens filmen blændes ind over 2 s. De står KUN lukkede under
+  åbningen, før `.spiller`; et spring (`.slut`) åbner dem på .7 s, og
+  værnet (`film-vaek` efter 8 s) tager dem, hvis scriptet fejler —
+  ellers stod de som sorte felter over teksten
+- **Filmkorn og vignet** over filmen og slutbilledet. Kornet er
+  historiesidens SVG, rystet med transform i trin, og det er 12 %
+  større end filmen, der klipper det. **Gennemgangen undtager
+  `.hero-korn`** som designets `.sheen` — ÉN klasse med en grund,
+  så en knap, der stikker ud af heroen, stadig fanges. Ingen
+  `mix-blend-mode`
+- **Telefonens bjælke er 60 px fast mod 120** i prøveprofilen (på en
+  rigtig iPhone er hakket med, så forskellen er mindre): luft til
+  hakket + 6, indhold 40, bund 8. **⚠️ MARGENEN HOLDER DENS PLADS** —
+  den er `sticky` og i flow, og uden den ville hele siden rykke op,
+  når den sætter sig fast (de 6 px, den gamle regel skar af, gjorde
+  netop det). **⚠️ DE 10 PX FOR ORDMÆRKET LÆGGES KUN TIL, HVOR DER ER
+  ET** (`:has(.ordmaerke)`): undersidernes bjælke har pil og burger på
+  40 px, og målt hoppede h-selskaber 10 px ned uden
+- **⚠️ ANKERHOPPET MÅLER BJÆLKEN I DEN TILSTAND, DET LANDER I.** Det
+  tog højden fra FØR hoppet (120), og afsnittet lå med et hul på 60+
+  px under en bjælke på 60. `stuck` sættes og tages af i samme opgave,
+  og grænsen på 300 px står ét sted (`FAST_FRA` i havnegrillen.js)
+
+**Find os-kortene er glas** (11/9). Kundens ord: *"find os og
+åbningstider liquid glass og sådan see-through agtig, iOS 18"*.
+**Ingen SQL.**
+
+- **Mørkt glas, lys tekst:** tone `rgba(20,14,12,.3)`, `blur(22px)
+  saturate(160%)`. Bag kortene ligger det mørklagte foto; lyst glas
+  med mørk tekst kunne falde i en hvid sky, og husets røde forsvinder
+  på mørk grund (**målt: 1,79:1**), så links og "i dag" er lys rosa
+- **⚠️ SKYGGEN ER HEROENS GLASKNAP TEGN FOR TEGN.** Skralden står på
+  37 af 37 skygger; en ny værdi ville vælte typografiprøven
+- **⚠️ GENNEMGANGENS MÅLER KAN IKKE SE GLAS** — den springer en flade
+  under 90 % over og læser sektionens mørke grund. `find-foto.spec.js`
+  regner derfor hver tekst mod det lyseste, fotoet kan være, gennem
+  sløret OG glasset: hvid 8,8, dæmpet 5,9, rosa 5,2, statuspillen
+  6,0. Og kortet skal VÆRE glas: slører det ikke, eller er tonen over
+  .6, falder prøven
+
+**Prøverne:** `hero-film.spec.js` +3 (striben, lærredet går op med
+rigtig afspilning, et direkte link har intet lærred) og værnet
+kræver kanterne væk; `topbjaelke.spec.js` (ny, to sider: lavere OG
+intet hopper, målt på offsetTop-kæden, som ikke ser transforms);
+`find-foto.spec.js` +2. **Elleve falsifikationer, elleve fald** —
+syv på lærredet og bjælken, fire på glasset.
+
+**Den fulde runde bagefter: 3675 bestod, 0 fejlede, 0 flakes**
+(23,6 min, tre arbejdere, 153 sprunget — de to nye bjælkeprøver
+gælder kun telefonen). Udgivet som `9eac4cc`, målt i det udgivne
+stilark, i forsidens opmærkning og i scriptet.
+
+**Kundens egen iPhone fandt tre ting, ingen browser her kunne** (11/9).
+To skærmbilleder fra iOS 26 Safari og hans ord: *"den åbner op for
+langsomt"*, *"det er først, når de går i overgang til slutframen, at
+det andet skal komme"* — og hullerne ved kameraet og i bunden.
+**Ingen SQL.**
+
+- **⚠️ FELTET VED URET ER SAFARIS, IKKE SIDENS — OG iOS 26 LÆSER IKKE
+  theme-color.** Forsidens meta-tag sagde RØD (#d62a3a), og feltet på
+  hans skud var CREME: kroppens farve under 820 px. Den nye Safari
+  farver feltet med sidens baggrund. Kroppen er derfor mørk (#0b0706)
+  på forsiden, til bjælken står fast — `body:has(.hero.film):not(
+  :has(.topbar.stuck))`, altså bjælkens egen klasse og intet script.
+  Sidens indhold maler sin egen creme (`.screen`), så intet afsnit
+  skifter farve. theme-color er mørk med `data-fast` creme og skiftes
+  af `fastTone()` i havnegrillen.js for ældre iPhones — kun på sider
+  med `data-fast`
+- **⚠️ lvh OG IKKE svh.** Safaris bundlinje svæver OVEN PÅ siden, og
+  med svh (skærmen med bjælkerne fremme) stod ~95 punkter creme bag
+  den under filmen. **Chromium kan ikke se forskel** — de to er ens
+  her — så prøven læser reglen i arket. Kan kun efterprøves på en
+  rigtig iPhone
+- **Lærredet går op på 1,1 s** (var 2,2) og filmen blændes ind på 1,2
+  (var 2). **Målt med rigtig afspilning:** lærredet helt oppe efter
+  1,1 s
+- **⚠️ TEKSTEN KOMMER MED OVERGANGEN TIL SLUTBILLEDET.** Før kom teksten
+  1,1 s før slut, og slutbilledet først, når filmen var helt færdig —
+  to øjeblikke. Nu kalder `timeupdate` både `afsloer()` og `visSlut()`,
+  og slutbilledet HENTES, mens filmen spiller (`hentSlut()` ved
+  `playing`), så det er klar i samme øjeblik. **Målt:** teksten kom
+  ved 3,17 s af 4,04, og slutbilledet var synligt i samme
+  mutationsrunde
+
+**Prøverne:** `hero-film.spec.js` +3 (samme øjeblik med rigtig
+afspilning, 1,2 s-loftet, lvh i arket), `topbjaelke.spec.js` +2
+(feltet mørkt → creme → mørkt, og en underside skifter ikke). **Seks
+falsifikationer, seks fald.**
+
+**⚠️ OG DET KAN MÅLES HERFRA — MED SIMULATOREN, IKKE MED PLAYWRIGHT.**
+Her stod, at Safaris felt ved kameraet kun kunne ses på en rigtig
+iPhone. Det passede ikke: Mac'en har Xcodes iOS 26.5-simulator
+(iPhone 17 Pro), og Mobile Safari i den er den samme Safari-generation
+som kundens. Den udgivne side åbnes og fotograferes uden et klik:
+
+```bash
+xcrun simctl list devices booted            # er der en tændt iPhone?
+xcrun simctl openurl booted "https://mosedehavnecafe.dk/?t=$(date +%s)"
+xcrun simctl io booted screenshot --type=png skud.png
+```
+
+**Målt på den udgivne side (`bb7e7d8`):** feltet ved kameraet er
+MØRKT under filmen og på slutbilledet — kroppens baggrund virker i
+iOS 26 — og filmen går ned bag den svævende bundlinje. **Men i de
+nederste ~30 punkter stod næste afsnit** (Facebook · Instagram ·
+TikTok).
+
+**⚠️ OG FØRSTE RETTELSE VIRKEDE IKKE — SIMULATOREN SAGDE DET, IKKE
+PRØVEN.** `3aaeb05` lagde `env(safe-area-inset-bottom)` til gulvet
+ud fra en forklaring (*"lvh regner ikke hjemstregens felt med"*), og
+prøven i arket blev grøn. Skuddet bagefter viste den SAMME stribe.
+Så blev der målt i stedet for forklaret — en lille måleside
+(`python3 -m http.server` på Mac'en, `openurl` til
+`http://127.0.0.1:…`, simulatoren kan nå den):
+
+| | punkter |
+|---|---|
+| skærmen / `outerHeight` / `availHeight` | 874 |
+| feltet ved kameraet (uden for siden) | 62 |
+| `100lvh` / `100vh` | 754 |
+| `innerHeight` / `100svh` / `100dvh` / `fixed; bottom:0` / `-webkit-fill-available` | 714 |
+| `env(safe-area-inset-bottom)` og `-top` | **0** |
+
+Altså tegnes siden **58 punkter under lvh** (62 + 754 = 816 mod
+874), bag den svævende linje — og **ingen** CSS-enhed eller
+JavaScript-værdi siger det. env() var 0 hele tiden. Gulvet har et
+FAST tillæg nu (`--under-linjen`, 96 px = 8 + 58 + luft), og prøven
+kræver ≥ 66. Det koster ingenting at se: heroens indhold sidder
+øverst, og resten ligger under folden. **En rettelse, der bygger på
+en forklaring, skal ses virke — en prøve på arket kan kun sige, at
+reglen står der.**
+
+- **⚠️ `?t=` PÅ ADRESSEN**, ellers kan Safari vise en gemt udgave
+- **⚠️ SIMULATOREN KAN VÆRE STARTET AF ET ANDET PROJEKT.** Den her
+  var åbnet fra Spiis Rewards-appen. `openurl` åbner kun Safari —
+  rør hverken appen eller dens projekt (spiis-reglen øverst)
+- **⚠️ OG DEN ÆDER HUKOMMELSE.** To fulde runder blev stoppet af
+  systemet 11/9, mens den kørte ved siden af Chrome. Kør runden i
+  halvdele (`--project=mobil`, så `--project=computer`), og tag
+  simulatorens skud FØR eller EFTER runden, aldrig under
+
+**Filmen spiller færdig, før siden kommer** (11/9, sent). Kundens ord
+på sin egen telefon: *"it too quick onto the website, it doesn't let
+the video complete — after that it's fine"*. **Ingen SQL.**
+
+To ting skar filmens slutning af, og den ene kunne ikke ses i en
+browser her:
+
+- **Teksten og slutbilledet begyndte 1,1 s før slut** (`AFSLOER_FOER`),
+  og slutbilledet blev blændet ind hen over filmens sidste sekund.
+  Det var min læsning af hans ord fra samme aften (*"først når de går
+  i overgang til slutframen"*). Nu begynder begge ved `ended` — det
+  øjeblik er filmens sidste billede, og de kommer stadig SAMMEN
+- **⚠️ VÆRNENE TALTES FRA SIDENS INDLÆSNING**: 7 s i scriptet, 8 s i
+  stilarket. På en telefon på et mobilnet begynder filmen først efter
+  nogle sekunder, og så slog værnet til midt i den. **Playwright kan
+  ikke se det** — den lokale fil er der med det samme. Nu flyttes
+  scriptets værn til filmens egen resttid + 3 s, i det øjeblik den
+  SPILLER (`vaernOm`), og stilarkets 8 s gælder kun, hvis scriptet
+  aldrig nåede frem (`film-styret` på `<html>` slår dem fra). Før
+  afspilningen gælder de 7 s stadig: går filmen aldrig i gang, kommer
+  teksten alligevel
+- **Logoets lille fald (18 px) er urørt** og kommer i takt med
+  teksten, som kunden bad om samme aften
+
+**Prøverne:** *"teksten venter, til filmen har spillet færdig"* læser
+filmens egen `ended`; *"en film, der begynder sent …"* holder filen
+tilbage i 5 s og læser overskriftens **beregnede synlighed i hvert
+billede**, mens filmen spiller; *"går filmen aldrig i gang …"* er
+modstykket.
+
+**⚠️ OG DEN SENE PRØVE MÅLTE FORKERT FØRSTE GANG — to gange i én.**
+Den lyttede efter, hvornår klassen `film-aabner` forsvandt, og BESTOD
+med stilarkets 8 s slået til igen: det værn viser teksten med en
+animation og rører aldrig klassen. Og dens kontrol af, at filmen VAR
+sen, målte, hvornår SIDEN kom — altså netop det, fejlen flyttede.
+Nu måler den, hvornår filmen begyndte (`playing`) og sluttede
+(`ended`), og hvad øjet ser imellem. **Fire falsifikationer, fire
+fald** — alle på den regel, prøven handler om.
+
+**Aldrig sort, et stille "spring over", og et tryk er kun et tryk**
+(12/9). Kundens ord: *"den er sort i lidt for lang tid"*, *"noget
+nærmest invisible med tryk for skip"* og *"en sidste ting, der får den
+til at være 10 ud af 10 — vurder selv med egne øjne"*. **Ingen SQL.**
+Vurderet på en optagelse af simulatoren, billede for billede
+(`xcrun simctl io booted recordVideo` + `ffmpeg … tile`).
+
+- **Filmens første billede står med det samme** (`.hero-start`,
+  235 kB). Før var hele rammen usynlig, til filmen SPILLEDE — på et
+  mobilnet sekunder. Browseren vælger billedet, mens siden LÆSES
+  (`<picture>` med `media`), og det står oven på filmen, til den
+  FAKTISK spiller (`.afspiller`). **⚠️ Ikke til `.spiller`**, som også
+  sættes ved et spring: sprang gæsten over, før filmen var hentet,
+  stod der sort, til slutbilledet kom. **⚠️ `media` er den samme regel
+  som `data-hoej-naar`**, skrevet to steder, fordi valget skal ske før
+  scriptet — en prøve holder dem ens
+- **"Tryk for at springe over"** i små, dæmpede versaler lige over
+  Safaris bundlinje, først efter 1,2 s, med en hårfin linje, der løber
+  med filmens egen resttid (`--film-rest`). "Klik" på en computer
+- **⚠️ ET TRYK, DER SPRINGER OVER, TRYKKER IKKE OGSÅ PÅ NOGET.** Heroens
+  knapper står usynlige på deres pladser under åbningen, og et tryk
+  midt i filmen fulgte linket under fingeren — **målt:** trykket på
+  "spring over" landede på "Selskab & catering". `slugKlik()` sluger
+  det ene klik, der hører til trykket, KUN mens teksten er skjult.
+  Fundet af Playwright, der klagede over, at en anden modtog klikket
+- **Pillen "Bestil mad" blinkede** et splitsekund før filmen: den
+  foldes af et script, og stilarket er hurtigere. Den er væk under
+  åbningen fra første billede nu
+- **Skærmen er mørk fra første billede** (`<style>` i head, kun under
+  åbningen). ⚠️ Den hvide skærm i optagelsen FØR siden er Safaris
+  egen, mens den henter — den kan siden ikke farve
+
+**Prøverne** (`hero-film.spec.js` +6, og formatprøven skærpet). Fem
+falsifikationer, fem fald: klikket ikke slugt, startbilledet væk ved
+`.spiller`, rammen usynlig igen, `media` skredet, og knappen, der ikke
+slipper ved et spring (pillens egen prøve i `skal-forside.spec.js`).
+
+**Kunden laver en ny film** (sømmen i 9:16). Aftalt: **5 s**, rolige
+første og sidste ½ sekund, **sidste billede = slutbilledet**, intet
+logo eller tekst i filmen, roligt område øverst på midten (20-40 %
+nede) til kransen og overskriften, og det vigtige inden for de
+midterste 80 % af bredden — en iPhone er smallere end 9:16.
+
+**Den nye film er i luften — og computeren er fuld skærm** (12/9).
+Kundens ord: *"du skal erstatte end videoen og end framen med det her,
+de ligger i Desktop/Header1 … og på computer skal det også være
+fullscreen, det er den ikke lige nu"*. **Ingen SQL.**
+
+- **Filmen:** 9:16, 2160×3840, HEVC, 5,04 s med lyd →
+  `film/hero-9x16.mp4` 1080×1920 H.264, **uden lyd**, CRF 24,
+  `faststart` (1,26 MB — under prøvens loft på 2 MB). Første billede
+  er `hero-9x16-start.jpg` (251 kB), så startbilledet og filmen er det
+  samme billede
+- **Slutbilledet er kundens eget** (`ChatGPT Image … 11_50_49 PM.png`,
+  941×1672) skaleret til 1080×1920 med Lanczos og en let skarphed,
+  JPEG q4 (400 kB, under loftet på 450). **⚠️ Det er et andet billede
+  end filmens sidste:** gylden himmel med skyer mod filmens lyseblå
+  (målt: gennemsnitlig forskel ~50 pr. kanal). Med overgangen på 1,2 s
+  læses det som solen, der går ned — det er hans valg. Og det er kun
+  941 px bredt, så det skaleres op på en telefon
+- **⚠️ SØMMEN ER DER STADIG** — rækken af både gentages i et hårdt bånd
+  under horisonten, målt på et udsnit af første billede i fuld
+  opløsning. Den nye film blev lavet for at slippe af med netop den.
+  Det er i filen, ikke i koden; det er sagt til kunden med udsnittet
+- **⚠️ DER KOM INGEN 16:9.** Computeren kører videre på den gamle
+  16:9-film af samme scene. Et 16:9-bånd skåret af 9:16-filmen ville
+  miste havnen og lægge sømmen midt på en stor skærm
+- **Computerens hero fylder skærmen:** `.hav .hero.film` er
+  `calc(100svh + 12px)` (heroen trækkes 90 px op under en bjælke på
+  78). **Målt før:** 756 af 900 px på 1440×900. Prøven *"filmen
+  fylder hele skærmen"* måler nu også computeren på tre størrelser
+
+**Og så kom den rigtige nye film — uden søm** (12/9, om natten).
+Filen i `Header1` viste sig at være den GAMLE film i 4K (forskel ~8
+af 255 pr. kanal mod den gamle på samme tidspunkter, samme søm), og
+kunden sendte en ny: `Desktop/0c877347-….mp4`, 9:16, 2160×3840, 5 s.
+**Målt på et udsnit af første billede: sømmen er væk.**
+
+- `film/hero-9x16.mp4` 1080×1920 H.264 uden lyd, CRF 24 (1,58 MB)
+- **⚠️ SLUTBILLEDET ER NU FILMENS EGET SIDSTE BILLEDE**, ikke kundens
+  PNG fra `Header1`. Den nye film ender selv i en gylden solnedgang,
+  og PNG'en har en anden komposition (forskel ~47 pr. kanal — bordet
+  springer, når de to blændes). Med filmens eget sidste billede er
+  skiftet usynligt, og det er 2160 px i kilden mod PNG'ens 941. Det
+  var det aftalte (*"sidste billede = slutbilledet"*); PNG'en ligger i
+  historikken (`eb1ecba`), hvis kunden vil have den tilbage
+- Kun telefonen — computeren kører stadig den gamle 16:9-film
+
+**Historien står på et luftfoto af havnen — som Find os** (12/9).
+Kundens ord: *"det her skal være billedet, hvor tingene står ovenpå
+… den måde find os tingene ligger ovenpå det billede i baggrunden er
+perfekt, samme case her, og der er et 16:9 og 9:16"*. **Ingen SQL.**
+
+- **Samme lag som Find os, ikke en kopi:** `.hist-bg` og `.hist-slor`
+  står i de SAMME regler som `.find-bg`/`.find-slor`, så et slør, der
+  rettes ét sted, gælder begge afsnit. `<img loading="lazy">` med
+  `<source>` fra 821 px: telefonen henter `billeder/historie-hoej.jpg`
+  (941×1672), computeren `historie-bred.jpg` (1672×941) — begge
+  gråtone-JPEG, ~258 kB
+- **Kortene er Find os' mørke glas:** teaseren beholder sin messingkant,
+  kapitelkortene har heroens glasknaps skygge tegn for tegn (skralden
+  står stadig på 37). Den røde glød i hjørnet er væk — den farvede et
+  sort-hvidt foto lyserødt
+- **⚠️ TEKSTEN ER LØFTET TIL EN HVID SKY:** eyebrow .5 → .88,
+  kortenes tekst .68 → .76, og messingknappen `#d2ac6b` → `#e6c68d`
+  (den gav **4,14:1** på glasset over hvidt). `find-foto.spec.js` har
+  sin egen blok for historien, der regner hver tekst ud gennem sløret
+  og glasset
+- **⚠️ FOTOET ER GENERERET, IKKE ET ARKIVFOTO** — kundens valg, som
+  tapasbillederne 11/9. Det er dekorativt (`alt=""`, `aria-hidden`) og
+  har med vilje INGEN billedtekst: et årstal under det ville være en
+  påstand om et foto, der ikke findes. **Og skiltet på pakhuset er
+  forvansket** ("M.S.EEE HAVN") — under sløret er det svært at læse,
+  men på en stor skærm kan det anes
+- **Fartprøven kender fotoet**, som tapasfotoet: Chromes afstand for
+  lazy henter det før rul, så det er tilladt — kun det billede,
+  browseren valgte, og kun hvis det ER lazy
+
+**⚠️ OG ÉN FALSIFIKATION MÅLTE INGENTING FØRST.** Manchetten sat
+tilbage til `.74` på `.about p` bestod — for manchetten har sin egen
+regel (`.about p.lead`), og `.about p` rammer ingen synlig tekst i
+afsnittet. Mutationen skal ramme den regel, der FAKTISK farver
+teksten. Fem andre fald: messingen, glasset, `<source>`, lazy — og
+manchetten på sin egen regel.
+
+**Mindre tekst, ingen løfter uden belæg — og et bord på en lukket dag**
+(12/9). Kundens ord: *"fjern de ting der med stjerne, alt skal
+overensstemmes med hvad der blir sagt og lovet, og hold det til 40
+personer"* og *"for meget tekst ift. telefon-layoutet — selvfølgelig
+skal der være tekst, men ikke så meget"*. **Ingen SQL.**
+
+- **Stjernelinjen er væk** ("4,8" var designbundtets tal). To prøver er
+  VENDT med grunden skrevet ned: den må ikke komme igen, heller ikke
+  med et Google-link
+- **Løfter, ingen har givet, er taget af siden:** "Vi bekræfter på
+  sms" (der sendes ingen sms), tapaskortets "dagen før" og "pesto"
+  (fadet er 48 timer, og pesto står ikke på ejerens liste),
+  "10 til 60 gæster" og "60 stående" (Mikkel: **40**), "som regel
+  samme eftermiddag" (løftet er et døgn), frokostens "levering før
+  11.30 i kølekasser" og "menuplan hver fredag", kalenderens "live
+  musik, fællesspisning og torskegilde" og "reservationen holdes i
+  20 minutter". Og fire linjer, der talte til PERSONALET på
+  gæstesiden ("styres fra personalesiden")
+- **⚠️ `lokale_staaende` i admin vises ingen steder nu.** Feltet
+  står der stadig; siden siger kun pladserne
+- **Teksten er skåret ~35 % på undersiderne** (målt på en iPhone 13:
+  smørrebrød 331 → 199 ord, selskaber 369 → 226, catering 365 → 209,
+  frokost 311 → 217, forsiden 597 → 467). De tre sælgende afsnit pr.
+  side er blevet til ét — **med kundens egne ord i behold**; prøven
+  på cateringsiden kræver "dygtige", "maden er god", "holder det
+  hele" og "skræddersyr", og den faldt, da de røg med
+- **⚠️ DEN FØRSTE `.fine` I ET FORESPØRGSELSPANEL ER FEJLLINJEN**
+  (`forespoergsel.js` linje 276). Linjen på selskabssiden blev
+  fjernet for at spare tekst — og syv prøver faldt, fordi
+  afsendelsen ikke længere havde et sted at sige "skriv dit navn".
+  Den står igen, kortere, med en note
+- **Footerens bundlinje** står i 6,1:1 (var 4,08 på 11 px)
+
+**⚠️ OG `bord/` TILBØD EN DAG, EJEREN HAVDE LUKKET.** Målt i
+produktionen: `dags_regler` lukkede 12/9 for både ud af huset og spis
+her. Forsiden sagde "Køkkenet er lukket den dag" — og `bord/` tilbød
+i dag kl. 10.00. Databasen afviser bookingen
+(`bestilling_spis_her_lukket`), så gæsten fik først nej ved send.
+`planFor` spørger nu `Butik.maaBestille(d, iso, 'spis_her')` — den
+regel, der allerede fandtes — og har et modstykke: en dag, der KUN er
+lukket for ud af huset, kan stadig bookes.
+
+**⚠️ OG DAGSPANELET I ADMIN LÆSTE `r.luk_take_away`**, som ikke
+findes. En dag lukket for ud af huset stod som "✅ Åbent", og en dag
+lukket for begge dele som "Kun ud af huset er åben". Nettet havde det
+rigtigt; panelet ved siden af sagde noget andet. Begge rettelser er
+set fejle med fejlen sat tilbage.
+
+**Og computerens film er den nye** (`ac68cd7`): 16:9 uden søm,
+1,91 MB, med filmens eget første og sidste billede.
+
+**Isvaflen er loaderen — når filmen ikke er åbningen** (12/9).
+Kundens ord: *"den nye loader ift hver gang siden skal loade og den
+ik afspillet videoen ved headeren så bruges den her"*, med hans egen
+fil (`Desktop/CLAUDE - Loader.md`). `js/loader.js`, **ingen SQL.**
+
+- **Opmærkningen og stilen er filens, 1:1** — kun indpakningen er
+  vores (ren HTML i stedet for React). **⚠️ Én afvigelse, og den er
+  filens egen:** den siger "statisk ved reduceret bevægelse", men dens
+  CSS korter kun varigheden — `animation-delay:0s` er lagt til
+- **Scriptet er det FØRSTE i `<body>` og synkront** på de 14 sider i
+  sitemappet (en prøve læser sitemappet). Stilen ligger i scriptet,
+  så de mange besøg uden loader ikke betaler for et ark
+- **⚠️ TRE GANGE INGEN LOADER:** når forsidens film spiller (filmen ER
+  åbningen — `film-aabner` i head), ved et klik rundt på siden
+  (`document.referrer` fra samme domæne; filen siger "ikke ved
+  klik-navigation internt", og der gemmes intet i browseren), og i en
+  **automatiseret browser** (`navigator.webdriver`) — ellers ventede
+  hver af husets ~3.600 prøver 1,7 sekund, og alt, der måler det, øjet
+  ser, ramte isen. Loaderens egne prøver slår webdriver fra
+- **Mindst 1,2 s (filens krav), højst 5 s** — et billede, der aldrig
+  hentes, må ikke holde gæsten ude
+- **⚠️ OG PRØVEN "EN AUTOMATISERET BROWSER FÅR INGEN" MÅLTE INGENTING
+  FØRST:** `toHaveCount(0)` venter fem sekunder, og loaderen går af
+  sig selv efter 1,7. Den spørger en iagttager nu. Fem falsifikationer,
+  fem fald
+
+**⚠️ OG DEN FULDE RUNDE EFTER TEKSTRUNDEN FANDT TO FEJL, BEGGE MINE**
+(12/9, rettet i `c3bbecf`):
+
+- **`slugKlik()` slugte det første tryk HVOR SOM HELST under filmen.**
+  14 prøver på forsidens bestilling faldt: Playwright ruller og
+  trykker i samme øjeblik, og rul-lytteren springer først filmen over
+  bagefter. Kun et tryk PÅ `.hero` sluges nu — det er dér, de usynlige
+  knapper står. Rettelsen fra samme morgen var aldrig kørt i en fuld
+  runde
+- **Kalendersidens `.fine` var FEJLLINJEN** (`fineFelt()`), præcis som
+  selskabssidens. Begge blev fjernet for at spare tekst. **Før du
+  fjerner en `.fine` i et panel, så grep motoren for `.fine`**
+
+**Tidligere på havnen — det, der har været, forsvinder ikke** (12/9).
+Kundens ord: *"de gad godt, at man kunne gå ind og se tidligere sådan
+ting, der har været nede på havnen"* — og fem plakater fra
+`Desktop/arrengement`. **Ingen SQL.**
+
+- **En udløbet nyhed står nu i en fold under nyhederne** i stedet for
+  at forsvinde. ⚠️ **INGEN NY REGEL:** "tidligere" er præcis det, admin
+  kalder Udløbet (`Butik.nyhedStatus(n) === 'udloebet'`). En SKJULT
+  nyhed er ikke udløbet — den har ejeren valgt fra — og kommer ikke
+  med. Admin siger nu *"står under «Tidligere på havnen»"* ved en
+  udløbet nyhed; skal den ikke det, er det Skjul
+- **Havnens egne plakater står i repoet** (`billeder/tidligere/`, en
+  stor på 900 px og en lille på 200 px) og i `PLAKATER` i
+  `js/skal/forside.js` — ikke i databasen: det er historie, og et nyt
+  arrangement kommer derind af sig selv, når dets nyhed udløber. Et
+  tryk viser plakaten i fuld størrelse (`#plakat-vindue`, et `<dialog>`)
+- **⚠️ DATOEN ER PLAKATENS EGEN, ORDRET.** Kun Jens Rasmussen har en
+  hel dato (lørdag 5. september); Søren Borres siger "lørdag d. 29."
+  uden måned, og tre har ingen. *Opfind ikke svaret* — linjen siger det,
+  plakaten siger. Tilbudspriserne står kun på plakaten, ikke i teksten:
+  skrevet ud ville de læses som priser nu
+- **⚠️ FOLDEN ER ALTID LUKKET.** Nyhederne står lige under heroen, og
+  en åben fold ville hente plakaterne, før gæsten har rullet — fartprøven
+  forbyder det. En lukket `<details>` tegner ikke sit indhold, så
+  `loading="lazy"` venter, til nogen trykker
+- **⚠️ AFSNITTET FINDES NU ALTID** (plakaterne er der altid). Prøven
+  *"ingen nyheder = intet nyhedsafsnit"* er VENDT med grunden skrevet;
+  den vogter stadig, at designets to opdigtede nyhedskort aldrig står
+  tilbage — og **den fandt en ægte fejl, første gang den kørte:**
+  kortene blev kun SKJULT, ikke fjernet, så "Havnens tapas er landet"
+  stod stadig som tekst i siden. De ryddes nu
+- **`admin-nyheder.spec.js`s *"forsiden viser ikke en udløbet nyhed"*
+  er VENDT** med kundens ord: den udløbne står aldrig blandt de NYE,
+  men den står under "Tidligere på havnen"
+
+Fem falsifikationer, fem fald (alle nyheder i arkivet, kortene kun
+skjult, folden åben, rækkefølgen vendt, plakaten åbner ikke).
+
+**QR-siden står på lugen — og varefotoet er et lille 16:9** (12/9).
+Kundens ord: *"samme glowup til qr bestillingssiden, og gør så hvis de
+har lyst, de kan uploade 16:9 billeder i småt format, så det passer på
+telefon."* **Ingen SQL.**
+
+- **Forsidens bestilling er forlægget, tegn for tegn:** ejerens foto
+  af lugen (`billeder/bestil-luge.jpg`, den SAMME fil), det fælles
+  slør .66, formularen som mørkt glas (.3, `blur(22px)`), rækkerne hvid
+  .08 og rosa `#ffccd1` på rækkerne. Nye tal skulle regnes forfra
+- **⚠️ `ved-bordet/` INDLÆSER IKKE `havnegrillen.css`** (det ark
+  sprængte siden til 531 px 26/8), så glasset er skrevet efter i
+  `css/ved-bordet.css` til sidens egne klasser — ikke lånt
+- **⚠️ FOTOET KLÆBER I ET LAG, DER ER HELE SIDENS HØJDE**
+  (`.bord-bg`, `overflow: clip`). Det ternede hoved er væk; ternet bor
+  i dugen på fotoet og i BORD-pillen, som stadig er hvid
+- **⚠️ FIRE TING ER PAPIR:** en valgt vare, kurvbjælken og
+  `.flade`-boksene (kig, kvittering, bordvælger, "lukket"). `.flade`s
+  egen gradient (.92 → .74) lod fotoet trænge igennem som gråt
+- **⚠️ SØGEBJÆLKEN ER NÆSTEN UIGENNEMSIGTIG, IKKE SLØRET** — den
+  klæber over listen, og et glas, man kan læse varerne igennem, er
+  topbjælkens fejl fra 23/8. Den valgte chip er stadig husets røde i
+  den SAMME regel som dagen på `bord/` (`:not(.on)` i glasset)
+- **Varefotoet er 16:9, 88 px bredt (76 på en smal telefon)** — det
+  var en firkant på 58, og admin beskærer ALTID til 16:9, så browseren
+  skar en tredjedel væk igen. Højden kommer af `aspect-ratio`. Gælder
+  `.stk-foto` (QR-siden og `bestil/`); forsidens `.item-foto` er
+  designets og urørt
+- **⚠️ OG DET GEMMES I 640 PX, IKKE 1600.** `komprimer()` tager en
+  bredde nu, og kun Menukort-fanen beder om den; nyheder, kalender og
+  forside er urørte. 640 × 360 er tre gange skarpere end rækken kræver
+- **⚠️ GENNEMGANGENS MÅLER KAN IKKE SE FOTOET** — den finder sidens
+  mørke grund. `tests/ved-bordet-glas.spec.js` regner hver tekst mod en
+  HVID SKY gennem sløret, glasset og rækken
+- **⚠️ OG DEN VALGTE VARE MÅLTES FØRST MIDT I SIN OVERGANG:** klassen
+  sat, farven stadig glassets .08 — mens skuddet viste hvidt papir.
+  Prøven venter på fladen, ikke på klassen
+
+**Siden går ned under Safaris bjælke — pillen gemmer sig på vej ned**
+(12/9). Kundens ord med et skud af apple.com: *"når man scroller ned kan
+man se alt, også under browser-tingen … det skal fixes alle steder man
+scroller ned på hjemmesiden."* **Ingen SQL.**
+
+**⚠️ MÅLT I iOS 26 SAFARI (simulatoren), IKKE GÆTTET.** Seks udgaver af
+forsiden rullede sig selv ned og blev fotograferet. Så længe en
+fastgjort pille står SYNLIG nær bunden, lægger Safari en tæt flade under
+sin bundbjælke, farvet efter pillen eller siden — og indholdet stopper
+dér. Fladen kom også med pillen `sticky`, løftet 110 px, forankret
+foroven, uden `backdrop-filter` (så blev den lyserød) og **på opacity
+0**. Kun `visibility:hidden` — eller ingen pille — slap Safari.
+`.sheet` (fixed, inset 0, opacity 0) tæller ikke med.
+
+- **Pillen er `visibility:hidden`, når den er væk** — både `.tuck` (det,
+  den er en genvej til, er i syne) og den nye `.ned`. Synligheden skifter
+  EFTER transformen (`visibility 0s linear .45s`), så den stadig glider
+- **`.ned` sættes på vej NED og tages af på vej op** (`havnegrillen.js`,
+  12 px dødzone, først efter 80 px) — som apple.com. Det gælder alle
+  sider med pillen, fordi reglen bor i det fælles script
+- **⚠️ PÅ VEJ OP KOMMER PILLEN — OG FLADEN MED.** Det er prisen for, at
+  genvejen findes; Safari folder alligevel sin bjælke ud på vej op
+- **⚠️ PLAYWRIGHT KAN IKKE SE SAFARIS BJÆLKE.** `tests/pille-ned.spec.js`
+  måler derfor den egenskab, Safari reagerer på: pillens BEREGNEDE
+  `visibility`. To falsifikationer, to fald (`visibility` fjernet →
+  begge falder; `.ned`-skiftet fjernet → den første)
+- **⚠️ OG DET FØRSTE SKUD LØJ:** den lokale side peger på
+  `?v=__V__` bogstaveligt, så Safari viste det GAMLE script, og pillen
+  stod der stadig. Erstat `__V__` med et tidsstempel, før du tager skud
+- **Ikke rørt:** kurvbjælken på `bestil/` og `ved-bordet/` (den er
+  kassen, man betaler ved — skjules den på vej ned, er vejen videre væk)
+  og det cremefarvede felt ved uret øverst
+
+**Filmen bag dagens ret er væk igen — og blokkene fik en runde** (12/9).
+Kundens ord: *"fjern videoen fra dagensret sectionen, men stadig med
+den hvide beige baggrund, gør blokkene pænere også dagensret tingen
+når der er en, da kontrasten og rækkefølgen med billed ikke gav mening
+der."* **Ingen SQL.**
+
+- **Båndet, filmen og `js/skal/dagens-film.js` er slettet** (de ligger
+  i historikken, `95cfa03`). De to afsnit står på sidens creme igen,
+  og en prøve holder fast i, at der ingen film er bag dem
+- **⚠️ UGESTRIBEN KLIPPEDE KORTENES SKYGGE AF.** `.week` er en
+  rullebeholder, og den klipper alt uden for sin kasse — skyggen stod
+  som en hård, grå kant under hele striben. Luften ligger INDE i
+  striben nu og trækkes ud igen med en negativ margen, så kortene
+  står, hvor de stod. På telefonen går striben ud til skærmkanten
+- **⚠️ OG DERFOR MÅLER SØMPRØVEN KORTENES BUND, IKKE STRIBENS KASSE.**
+  Kassens bund er luft, ikke indhold; målt på kassen faldt sømmen til
+  2 px, mens gæsten så præcis det samme som før
+- **Prisen står i bunden af kortet som en pille**, dagens ret-kortets
+  form, i `--red-tekst` (den lyse røde gav 3,14:1). To naboer med hver
+  sin længde beskrivelse har prisen i samme højde
+- **I dag har en rød ring** (`.nu`, sat af `forside.js` EFTER grenene,
+  fordi de tomme dage skriver `className` om). Ringen er
+  `.item.hi`s egen skygge — skralden står på 37 af 37
+- **⚠️ "I DAG"-BLOKKEN STÅR PÅ TELEFONEN NU — SOM ET BÅND FOROVEN.**
+  Grunden til, at telefonen kun havde en stribe, var, at en blok på
+  96 px I SIDEN tog en tredjedel fra rettens navn. Et bånd over navnet
+  tager ingen bredde, så grunden holder. Prøven er VENDT: båndet skal
+  ligge over navnet og være kortets bredde; fra 560 px står blokken i
+  siden. Dampen damper nu også på telefonen
+- **⚠️ SKYGGEPRØVEN MÅLTE FØRST INDTONINGEN.** Uden rulning flytter
+  designets `.rev` kortene 12 px, og der stod 24 i stedet for 36.
+  Den venter på, at transformen er `none`, nu
+
+Seks falsifikationer, seks fald (luften fjernet, i dag umærket, prisen
+ikke i bunden, prisen i en lys rød, båndet væk, filmen sat tilbage).
+
+**Bestillingen står på lugen — glas som Find os** (12/9). Kundens ord:
+*"den måde det begynder at se ud med find os … kan vi få det til at
+være sådan som ved find os udseendemæssigt — start med bestil her,
+selve tingen, ikke indholdet og det tekniske."* **Ingen SQL, og
+formularen og dens motor er urørte.**
+
+- **Fotoet er ejerens eget** (`billeder/bestil-luge.jpg`, lugen under
+  skiltet *"MOSEDE HAVN - Grill & ishus"*, skåret af
+  `stemning-luge.jpg`) — ikke et genereret. Samme lag som Find os:
+  `<img loading="lazy">`, det fælles slør og et glaskort med Find os'
+  skygge tegn for tegn (skralden står stadig på 37 af 37)
+- **⚠️ FOTOET ER STICKY, OG DET ER HELE GRUNDEN TIL AT DET VIRKER.**
+  Formularen er over to tusind pixels høj på en telefon; med `cover`
+  over hele afsnittet blev fotoet en udvisket stribe. Nu står det
+  stille i skærmhøjde, mens formularen ruller forbi. **⚠️ `overflow:
+  clip` og ikke `hidden` på `.best-bg`** — hidden gør den til sin egen
+  rullebeholder, og så klæber intet. Set fejle begge veje
+- **⚠️ KLASSEN ER `.glasafsnit`, IKKE `#bestil`.** `h-smorrebrod.html`
+  har SELV et panel med `id="bestil"` og de samme `.panel/.item/.inp`.
+  Klassen kan gives til det næste afsnit, kunden vil have i glas
+- **⚠️ TRE TING ER HVIDT PAPIR:** dagens ret-blokken, en valgt vare og
+  tælleren — og **kvitteringen** (`.panel:has(.kvit-tak)`), fordi dens
+  tal og priser er skrevet til en lys flade. Uden resettet stod de
+  hvidt på hvidt. De almindelige rækker er `:not(.hi,.valgt)`
+- **⚠️ DEN LYSEROSA VAR FOR MØRK PÅ RÆKKERNE.** Find os' `#ffb3ba` gav
+  **4,15:1** oven på en række (hvid .08 over glas over slør over en
+  hvid sky). Rækkernes rosa er `#ffccd1` (4,96)
+
+- **⚠️ EN TIME UDEN FOTO (`c2387da`) — OG SÅ TILBAGE.** Kunden bad
+  om det uden baggrund, så det og bad om det gamle igen: *"tag det
+  gamle tilbage, altså det lige før"*. Fotoet af lugen er udgaven, der
+  gælder
+
+**Prøverne** (`find-foto.spec.js`, 3 nye; fartprøven kender fotoet som
+tapas- og historiefotoet). **Fire falsifikationer, fire fald** (lazy,
+glasset, sticky, hidden i stedet for clip). **⚠️ Og den femte bestod —
+den var død kode:** etiketternes egen hvide farve arvede de allerede
+fra panelet, så reglen er fjernet i stedet for at stå og lade som om.
+**⚠️ Og første falsifikationsrunde målte ingenting:** zsh deler ikke en
+variabel op i ord, så `npx playwright test $4` fik
+`"fil -g navn"` som ÉT argument og svarede *"No tests found"* — hverken
+bestået eller fejlet. Citér filteret som sit eget argument.
+
+**Menuerne holdt op mod hinanden — og databasen ryddet til
+lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
+stemmer med hinanden i cafeen og QR-code-bestillingen og normal
+online bestilling + sortiment"* og *"ryd det hele"*.
+**Ingen SQL i repoet — men fire skrivninger i produktionen.**
+
+**⚠️ FØRST DET, DER HOLDT.** `vaerktoej/menu-fire-flader.js` er ny:
+den lægger ejerens EGNE 308 varer i øvetilstand og læser, hvad
+hver flade FAKTISK viser — af SKÆRMEN og ikke af `Butik.udvalg`.
+Reglen bor ét sted, men optegningen er skrevet fire, og det er
+dér, to lister over det samme sortiment skrider fra hinanden.
+
+- **online (forsiden) og QR (ved bordet): 158 varer hver, samme
+  navne, samme priser — ikke én forskel**
+- **de syv trykte kort mod databasen: 0 prisuoverensstemmelser**
+- menukortet: 262 varer, altså 103 der kunne læses og ikke
+  bestilles
+
+**Målt efter de fire åbninger: 197 varer begge veje, stadig
+identiske, og 64 tilbage der kun kan læses** — isen (18,
+kodereglen), cateringen (46, mindst ti personer).
+
+**⚠️ OG MÅLEREN SAGDE NUL TRE GANGE FØRST — alle tre mine egne.**
+Selektorerne var gættet (`.mk-navn` er UGERÆKKEN, ikke varen),
+QR-siden havde intet bord i fiksturet og tegnede derfor ingen
+liste, og folden tegner listen OM, så markøren på "+ tilføj" blev
+revet væk, og næste runde LUKKEDE den igen: **11 kategorier ind,
+11 rækker ud, nul varer.** Kategorinavnene holdes i Node nu.
+Husets ældste ar: *en måling, der ikke rammer det, den måler,
+siger "bestået"*.
+
+**DE 103 VAR ÉN RETNING: kortet i cafeen solgte noget,
+hjemmesiden ikke havde.** Kundens svar: *"alle dem som er på
+menukortet og ikke er besværligt at rent faktisk kunne
+bestilles"*. Åbnet i produktionen:
+
+| kategori | varer | hvorfor |
+|---|---|---|
+| Kaffe og varme drikke (17) | 22 | 20 på kortet — og sodavandene på det SAMME kort var åbne |
+| Platter (27) | 2 | grillkortet siger "Skal bestilles" ved platten |
+| Tilkøb morgenmad (31) | 12 | kortets samlelinje "Æg, bacon, pålæg … 10,-" |
+| Tillæg: glutenfri m.fl. (32) | 3 | glutenfri står på håndmadskortet |
+
+**⚠️ OG GLUTENFRI ER GRATIS, MENS LAKTOSEFRI OG VEGANSK KOSTER
+10.** Det er ikke en skævhed: glutenfri står på TO trykte kort som
+"samme pris", mens de to andre står på INTET kort og har ejerens
+eget svar fra 1/9. To kilder, to svar — begge sande.
+
+**⚠️ ISEN BLEV IKKE ÅBNET — kundens eget valg.** 18 varer på
+IS-kortet kan ikke bestilles nogen af de tre steder, og det er
+ikke et glemt flueben: `!erIs(k)` i `Butik.udvalg` (js/store.js
+linje 1186) filtrerer afdelingen fra i KODEN, og admin viser ikke
+engang isens kategorier i "kan bestilles". Reglen er fra 23/8
+(*"det er altid til rådighed"*), og han holdt fast, da den blev
+lagt frem.
+
+**⚠️ CATERINGEN BLIVER LUKKET** (Tapasfad 26, Sliders 28,
+Reception og pindemad 29, Tilkøb ud af huset 30). De har
+mindsteantal på ti personer og står ikke på lugens kort; åbnedes
+de, kunne en gæst ved bordet købe én slider til 40.
+
+**⚠️ OG PRISVAGTEN FRA 2/9 SLOG TIL — OG SÅ BLEV DEN ÅBNET AF
+EJEREN SELV.** Glutenfri-tillægget skulle sættes til 0
+(håndmadskortet siger "SAMME PRIS", smørrebrødskortet "bare sig
+til", og kunden afgjorde 10/9, at kortet slår det håndskrevne ark
+fra 1/9 — samme regel som husnummeret 9/9). Skrivningen blev
+afvist med `P0001: kun_ejeren_saetter_priser`:
+`mosede_pris_er_ejerens()` spørger `auth.jwt()`, ikke
+databaserollen, så heller ikke service_role slipper igennem.
+
+**⚠️ FØRSTE SVAR VAR AT LADE VÆRE — OG DET VAR FOR FORSIGTIGT.**
+Kunden sagde det ligeud: *"hvorfor kan du ikke pille ved admin,
+det skal du kunne"*, og han havde sagt det 9/9 også. **Vagten er
+bygget mod en MEDARBEJDER, der retter en pris — ikke mod ejerens
+egen besked.** `request.jwt.claims` sættes derfor udtrykkeligt for
+netop den ene opdatering (samme greb som `proev-pris-vaern.sql`),
+og det står skrevet ned, at det skete. Vagten er URØRT.
+
+**⚠️ OG RÆKKEFØLGEN VAR IKKE LIGEGYLDIG:** prisen FØRST, kategorien
+bagefter. Åbnedes kategori 32 med de 10 kr. i behold, ville siden
+opkræve for noget, to trykte kort kalder gratis.
+
+**⚠️ 0 ER EN PRIS, IKKE ET FRAVÆR** — målt, ikke antaget.
+`harPris` spørger `!== null/undefined/''`, så nul går igennem, og
+`kroner(0)` skriver "0,-". Sattes prisen til NULL i stedet, blev
+varen til *"Ring og hør prisen"*, altså et spørgsmål om noget,
+kortet allerede har svaret på.
+
+**OPRYDNINGEN: 22 rækker i skraldespanden, og to dage blev fri
+igen.** Kundens ord: *"ryd det hele"*.
+
+**⚠️ SKÆRINGSDATOEN KUNNE IKKE GØRE DET, og det er værd at
+kende.** `ryd-proevedata.sql` antager, at prøvedata ligger i
+FORTIDEN — men prøve-udlejningen havde dato **23/9**, altså
+fremme i tiden, og ville overleve ethvert datosnit. **Målt før:
+`optagne_dage` sagde 12/9 og 23/9.** Altså fik en gæst, der
+spurgte om baglokalet eller et selskab de to dage, **nej** — af
+Mikkels egne prøver. Filens egen logik blev derfor kørt uden
+datoen: samme værn (`lokation_id`, `slettet is null`,
+skraldespanden og ikke en sletning), bare uden skæringen.
+
+- 15 bestillinger, 3 bookinger, 3 forespørgsler, 1 reservation,
+  1 udlejning → skraldespanden, 30 dages fortrydelse
+- numrene begynder forfra: **næste bestilling #0001**, næste
+  booking #0001 — kun fordi der ikke er levende rækker tilbage
+- **opsætningen er urørt:** 308 varer, 22 kategorier, 55 borde
+  (alle 55 med QR-nøgle), 7 åbningstider, nyheden
+- **to kalenderrækker blev slettet HÅRDT** (id 27 og 28,
+  *"Selskab: mikkel (35 pers.)"* og *"Smørrebrød ud af huset:
+  mikkel"*). ⚠️ Kalenderen har INGEN `slettet`-kolonne, så det
+  kan ikke fortrydes med en knap — indholdet blev derfor skrevet
+  ud FØRST, så rækkerne kan skrives igen i hånden
+- **⚠️ LOGBOGEN BLEV IKKE RØRT.** 75 linjer fra byggeperioden.
+  Den kan ikke fortrydes, og den blev ikke bedt ryddet — en
+  irreversibel sletning må ikke ske i ly af en, der kan fortrydes
+
+**⚠️ OG ANMELDELSES-LINJEN ER VÆK AF ØL, VIN & BAR-KORTET** (målt
+på Mikkels nye udgave 10/9). Der stod *"Giv os en vurdering på
+Google eller Facebook — vis den ved lugen, så følger der en
+gratis sodavand med til maden."* Den blev flaget 3/9, fordi den
+binder forretningen OG er i strid med Googles egne regler for
+anmeldelser. Den står som en NOTE i `vaerktoej/kortene.py` og
+ikke som en post, så det kan ses, at den ER fjernet — og ikke
+bare glemt ud af listen.
+
+**⚠️ MEN "OP TIL 40 PERSONER" ER PÅ TRYK NU.** ISBAR & BAR-boksen
+på det samme kort bærer designbundtets ubekræftede tal fra 21/8.
+`lokale_pladser` står stadig tomt i admin, netop fordi ingen har
+bekræftet det.
+
+**⚠️ OG STRESSTESTEN KUNNE IKKE KØRES PÅ MIKKELS EGEN MASKINE.**
+`require('/opt/node22/lib/node_modules/playwright')` — altså
+containeren, filen blev skrevet i. På en Mac dør den på linje ét
+med MODULE_NOT_FOUND. **Et værktøj, der kun kan køres ét sted, er
+et værktøj, ingen kører.** Tre filer havde det: `stresstest.js`,
+`lav-ikoner.js` og `lav-qr-husets.js`. De spørger repoets eget
+`node_modules` nu.
+
+**⚠️ OG DA DEN SÅ KØRTE, MÅLTE DEN EN TOM SIDE.** Rapporten sagde
+*"plusknapper fundet: 0"* og derefter *"JS-fejl under hamringen:
+0"* — og det andet nul lignede det bedst mulige svar. Løkken er
+`i < 60 && n`, så **de 60 hurtige tryk kørte aldrig**, og
+kurvlinjen *"Videre ↓"* var kurvens TOMME tilstand.
+
+Roden var ikke selektoren (den blev rettet 4/9, og noten står
+stadig) — det var DATAENE: `grunddata()` sætter ingen
+`bestilbare_kategorier`, og `Butik.udvalg` åbner kun de
+kategorier, fluebenet nævner, plus smørrebrødets egne, som kendes
+på NAVNET. De tyve her hedder *"Kategori 1..21"*. Altså havde
+QR-siden **ingen varer overhovedet** — og højden i tabellen sagde
+**1.707 px**, hvor den skulle sige 27.783.
+
+Fiksturet åbner alle 21 nu, **og rapporten råber op ved nul**:
+et nul er ikke et resultat, det er en måling, der mislykkedes.
+**Set fejle:** fluebenet fjernet igen → linjen står der.
+
+**Målt efter (10/9, MacBook, ejerens størrelsesordener):**
+
+| | median | >33 ms | JS-fejl |
+|---|---|---|---|
+| 13 gæstesider | **16,7 ms** | 0 | 0 |
+| 8 admin-faner | 16,7 ms (tegnetid ~505 ms) | 0 | 0 |
+| 60 hurtige tryk ved bordet | → 42 stykker · 2.031,- | | 0 |
+| tom database, 13 sider | alle **står** | | 0 |
+
+**⚠️ OG DE 33,3 MS ER VÆK.** 4/9 lå de ti designsider på 33,3 ms
+(30 billeder i sekundet) mod de gamle siders 16,7, og mistanken
+faldt på den indlejrede rullerod `#sc`. Noten sagde dengang, at
+det skulle måles på en RIGTIG maskine, før nogen byggede
+rulleroden om. Nu er det målt: **alle tretten sider ligger på
+16,7 ms**, og der er nul billeder over 33. Rullerods-ombygningen
+skal altså IKKE laves — tallet var headless Chromium på en
+container, ikke siden.
+
+**Hele kæden er målt ende til ende — og en vare til nul er
+gratis** (10/9). Kundens ord: *"ja hellere stå gratis"* og *"tjek
+alt om det virker ende til ende, også QR-code-bestillingerne …
+så det virker fuldt funktionelt og er et intelligent og dygtigt
+system, der ikke kan modsiges, crashe eller gå galt."*
+**Ingen SQL i repoet — to skrivninger i produktionen.**
+
+**⚠️ FØRST DEN, DER VAR SYNLIG: "0,-" LÆSES SOM EN FEJL.**
+Glutenfrit brød blev sat til 0 samme dag, fordi to trykte kort
+siger *"samme pris"* — og `kroner(0)` skriver **"0,-"**. Sandt,
+men det ser ud som en manglende pris netop dér, hvor kortet lover,
+at det ikke koster noget.
+
+- **⚠️ OG `kroner` ER IKKE RØRT.** Den er husets ENE talformaterer
+  og bærer også SUMMER: en tom kurv skal sige *"0,-"* og ikke
+  *"Gratis"*, som gæsten ville læse som et tilbud. Reglen handler
+  om en **VARE**, ikke om et tal, og er derfor sin egen:
+  `Butik.varePris`. De tre optegninger spørger den
+  (`bestilling.js` for `bestil/` og bordet, `skal/bestil.js` for
+  forsiden og smørrebrødssiden, `skal/menukort.js` for kortet)
+- **⚠️ TOM ER STADIG TOM.** `null` betyder *"ejeren har ikke sat
+  en pris"* — isbaren og morgenbrødet, hvor hans eget ord er
+  SPØRG. Kun et rigtigt NUL er gratis, og **begge halvdele har
+  hver sin prøve**: uden modstykket ville en regel, der kaldte alt
+  uden pris "Gratis", bestå
+- **Falsificeret begge veje:** nul-grenen fjernet → fire falder;
+  "Gratis" lagt ind i `kroner` selv → sumprøven falder
+
+**HELE KÆDEN: `vaerktoej/ende-til-ende.js`.** Prøverne måler hver
+sin regel; den her måler noget andet — at en gæsts handling
+FAKTISK kommer frem til den skærm, personalet står ved, og kan
+lukkes derfra. Fire led: gæsten sender → rækken ligger i basen med
+det, den skal bære → admin tegner den på den rigtige fane →
+**personalet kan trykke ✓ Færdig, og status skifter**.
+**Kæden slutter ved trykket, ikke ved visningen** — et tryk, der
+ikke skriver, ser ud til at virke (Gendan-knappen 26/8, live-mærket
+31/8).
+
+**Målt på ejerens egne data** (308 varer, 22 kategorier, hans
+åbningstider og flueben): QR-bestilling, bordbooking og
+forespørgsel går alle tre hele vejen, Overblik vokser fra 981 til
+1249 tegn, når sagerne kommer ind, og ✓ Færdig skriver
+`serveret`. **INGEN FUND.** Set fejle: `FAERDIG_TRIN.naeste`
+ændret til `bekraeftet` → måleren råber op.
+
+**⚠️ MEN MÅLEREN MELDTE FIRE FEJL, DER IKKE FANDTES — alle fire
+mine egne, og det er dagens egentlige lære:**
+
+- felterne ved bordet hedder `bestil-navn`/`bestil-telefon`, ikke
+  `navn`/`telefon` — og `fill` fejlede **tavst i en `.catch`**
+- der er **to trin**: `#bestil-send` åbner det sidste kig,
+  `#kig-send` sender. Jeg trykkede den samme knap to gange
+- `#bord-antal` er påkrævet. Uden det sagde rapporten *"bookingen
+  nåede ALDRIG databasen"*, mens siden helt korrekt skrev *"Hvor
+  mange kommer I? Skriv et helt tal."* i `#fejl-antal`
+- og **fanelisten var HÅNDSKREVET**: `p-baglokale` hedder
+  `p-lokale`, og `p-beskeder` og `p-indstillinger` findes ikke
+  længere. Tre falske fund, altså en sjettedel af rapporten —
+  *og en rapport, hvor en sjettedel er støj, læses ikke til ende*
+
+**Fanerne læses af opmærkningen nu**, så en NY fane heller ikke
+kan slippe forbi. Og hver af de fire blev fundet ved at KIGGE —
+et skud, en tælling, felt-fejlene læst af skærmen — ikke ved at
+læse koden igennem igen.
+
+**⚠️ OG SÅ VAR DER TO NULLER, DER IKKE VAR FEJL.** Rapporten sagde
+*"ingen kvittering"* og *"nåede ALDRIG databasen"*. Begge var
+sande sætninger om en måling, der aldrig havde ramt. Husets
+ældste ar, fjerde gang på én dag.
+
+**Resten af gennemgangen, kørt bagefter:**
+
+| Måling | Svar |
+|---|---|
+| `naar-det-gaar-galt.js` (500 · nede · 42703) | **0 af 16 sider har noget** |
+| `overlap.js` (to bredder, alle sider + admin) | **intet ligger oven på noget** |
+| `tilgaengelighed.js` | 20 fund, **alle** `h1 → h3` |
+| `stresstest.js` | 16,7 ms overalt, 0 JS-fejl |
+
+**⚠️ DE 20 ER DEN DOKUMENTEREDE IKKE-RETTELSE FRA 5/9** —
+overskriftsniveauerne i designets 1:1-handoff. Det er 19 + én:
+`handelsbetingelser.html` er ny og arver den SAMME footer, hvis
+overskrift er en `h3`. At give netop den side sin egen ville være
+to udgaver af footeren — husets dyreste mønster — så den følger
+de andre.
+
+**⚠️ OG EN UCITERET HEREDOC ÅD HELE NOTATET ÉN GANG.** Blokken
+her blev skrevet med `<<PY` og ikke `<<'PY'`, så **skallen
+evaluerede hver eneste backtick** i teksten: `kroner`,
+`Butik.varePris`, filnavnene — alle sammen forsvandt, og
+`bestil/` blev til *"permission denied"*. Filen sagde "skrevet",
+og indholdet var hullet. **Citér altid heredoc'en, når teksten
+indeholder kode** — og læs filen bagefter.
+
+**Natten hvor der blev målt i stedet for gættet** (5/9).
+Kundens ord: *"gå ind og kig på hjemmesiden og systemet og bare
+fortsæt improve hele skidtet."* Ingen liste, ingen klage — så
+svaret måtte findes ved at MÅLE, og det blev til to nye værktøjer
+og syv rettelser. **Ingen SQL.**
+
+**⚠️ TO VÆRKTØJER, DER STILLER DET SAMME SPØRGSMÅL PÅ HVER SIDE:**
+
+- **`vaerktoej/tilgaengelighed.js`** — dobbelte id'er, felter uden
+  etiket, knapper uden navn, billeder uden alt, overskrifter der
+  springer, kontrast og sidens hoved. På hver gæsteside i to
+  profiler **og på alle sytten admin-faner**
+- **`vaerktoej/naar-det-gaar-galt.js`** — hver gæsteside i FIRE
+  tilstande: alt virker, databasen svarer 500, databasen svarer
+  ikke, en kolonne mangler (42703). Den leder efter blanke sider,
+  rå fejlbeskeder, engelske ord og JS-fejl
+
+**⚠️ OG BEGGE MÅLTE INGENTING I FØRSTE KØRSEL — det er lærestykket
+i hele runden.** `naar-det-gaar-galt` brugte globalen
+`MOSEDE_CONFIG`; den hedder `MOSEDE_CLOUD`. Altså stod `SKY` på
+false, siderne kørte i øvetilstand, og alle tre fejltilstande
+meldte **"0 af 14 sider har noget"**. Værktøjet tæller nu kaldene
+til den falske adresse og **råber op, hvis en runde aldrig ramte
+databasen**. Det er husets ældste ar i en ny forklædning: *en
+måling, der ikke rammer det, den måler, siger "bestået".*
+
+**⚠️ OG TILGÆNGELIGHEDSMÅLEREN HAVDE FIRE FEJL, DER ALLE SAGDE
+"FEJL" OM NOGET, DER VAR I ORDEN.** 190 fund blev til 20:
+
+- **synlighed skal læses OP GENNEM FORÆLDRENE.** Skuffemenuen har
+  `opacity:0` på `.sheet`, mens hvert link indeni står på 1 — ti
+  "kontrastfejl" pr. side på en menu, ingen kan se
+- **en gradient kan ikke måles som baggrund.** Designets røde
+  knapper er en `linear-gradient`, så `backgroundColor` er
+  gennemsigtig, og målingen gik OP til sidens creme: hvid tekst
+  på creme, **1,00:1 på hver eneste knap**
+- **og en baggrund kan ligge i et `::before`.** Heroen tegner både
+  sit tern og sin mørke tone dér, og `getComputedStyle` på
+  elementet SELV ser dem ikke — overskriften målte 1,06:1 på en
+  flade, der er mørkebrun
+- **`innerText` er TOM for et element, der ikke tegnes.** Otte
+  knapper i en lukket fold blev meldt "uden navn", og deres tekst
+  var der hele tiden. `textContent` er navnet
+
+**Det, målingerne så fandt:**
+
+**1) DEN DÆMPEDE TEKST VAR ULÆSELIG PÅ TI SIDER.** Designets
+`--muted #8b7871` giver **3,93:1 på creme, 3,61:1 på cream2 og
+4,18:1 på hvid** — alle tre under kravet på 4,5:1. Det rammer
+`.fine`, `.hint`, `.tcap`, menukortets datolinje og kalenderens
+manchet, altså den lille skrift, der er sværest at læse i
+forvejen. `css/style.css` fik den runde 22/8 og igen 29/8;
+`havnegrillen.css` fik den aldrig. Farven er nu **#6f5b55**, den
+SAMME som det andet ark bruger — to forskellige dæmpede farver i
+ét hus er to udgaver af den samme regel, og gæsten går imellem
+arkene i ét klik. **Reglen er en prøve nu** i
+`tests/gennemgang.spec.js`, målt på hver udgivet side.
+
+**2) EN NEDE DATABASE SAGDE, AT GÆSTENS BESTILLING IKKE FANDTES.**
+`min-bestilling/` svarede *"Vi kan ikke finde en bestilling med
+den reference"* — og **stoppede takten**, så siden aldrig kom sig
+igen. To skader af én sammenblanding: `bestillingStatus` gjorde
+`r.ok ? r.json() : null` og havde et `.catch`, der også svarede
+null, så *"svarede nej"* og *"kunne ikke spørge"* var det samme.
+Nu kaster den `ikkeSvar`, siden siger sandheden, og takten bliver
+— det er hele forskellen: den her fejl retter sig selv.
+**⚠️ Og den lover ikke, at bestillingen findes:** siden kan åbnes
+med en hvilken som helst reference.
+
+**3) STATUSPILLEN LOVEDE EN ÅBNINGSTID, INGEN HAVDE SAT.**
+`startdata()` har 10-20 hver dag, så siden ikke står tom. Med
+databasen nede sagde pillen *"Åbent nu til 20.00"* med lige så
+stor sikkerhed som en rigtig åbningstid — og en gæst, der kører
+til havnen kl. 19.45 på det løfte, har spildt turen. Flaget
+fandtes i forvejen (`hent()` sætter `_offline`); det havde bare
+**ingen læsere**. Pillen siger *"Ring og hør, om vi har åbent"*
+nu. **Resten af siden bliver stående** — et menukort, der er en
+dag gammelt, er bedre end en tom side. Det er kun PÅSTANDEN OM
+NUET, der ikke må komme fra kode.
+
+**4) ADMIN KUNNE SKRIVE RESERVEDATA IND OVER EJERENS EGNE.** De
+syv lister råber hver især "kunne ikke hentes" — men
+indstillingsfelterne stod pænt udfyldt med navn, adresse, telefon
+og åbningstider fra `startdata()`. Et tryk på Gem ville skrive dem
+ind over hans rigtige, og **autogem ville gøre det uden et tryk
+overhovedet**, 1,2 sekund efter han rørte et felt. Det er *"intet
+må gå tabt"* vendt om.
+
+**⚠️ OG SPÆRREN HØRER I `skriv()`, IKKE I `Admin.gem`.** Første
+udgave sad dér — men fanerne bygger deres løfte FØR de kalder
+`gem()`, så PATCH'en var allerede sendt, når spærren sagde nej.
+**Målt:** en PATCH på `lokationer` slap ud, mens skærmen sagde
+"der kan ikke gemmes". `skriv()` er det ENE sted, hver eneste
+rettelse går igennem — også den fane, nogen bygger i morgen.
+Flaget ryddes ved næste vellykkede hentning, så spærren løfter sig
+selv. **Gæstens bestilling er ikke berørt:** den har sin egen vej
+med tre forsøg og en nødudgang og SKAL prøve.
+
+**5) RESERVEDATAENE BAR DEN GAMLE ADRESSE.** *"Havnevej 20I"* blev
+rettet til 20L på tretten sider 1/9 — men ikke i `startdata()`.
+Altså stod forretningen med et forkert husnummer netop den dag,
+noget var galt. Og den er samtidig dét, et gem ville have skrevet
+tilbage.
+
+**6) 47 FELTER I ADMIN HED INGENTING.** Hverken etiket,
+aria-label eller en `<label>` om sig. For en skærmlæser hedder
+sådan et felt *"redigeringsfelt"* — og det er ikke kun for den,
+der ikke ser: en stemmestyring kan heller ikke ramme
+"prisfeltet". **Navnet siger RÆKKEN med:** "Pris" alene er
+tvetydigt på et kort med 262 varer og syv gange under hinanden i
+åbningstiderne.
+
+**⚠️ OG `for` PÅ ET `<summary>` ER IKKE EN ETIKET.**
+Forespørgselskortets notefelt så rigtigt ud — der stod "📝 Skriv
+en note" lige over, og koden satte `for` på overskriften. Men
+attributten hører til `<label>`, og browseren binder den ikke.
+**Fundet af prøven, ikke af værktøjet:** prøven har data på
+fanerne, det havde værktøjet ikke.
+
+**7) PENGESPORET ER MÅLT HELE VEJEN.** `tests/pengesporet.spec.js`
+lægger noget i kurven, læser BELØBET PÅ SKÆRMEN, sender — og
+lægger den GEMTE rækkes linjer sammen. To tal, to steder. Reglen
+om hvad der er en RET står skrevet i prøven selv; den må ikke
+spørge den funktion, den skal kontrollere. **Og målingen fandt
+noget, jeg ikke ledte efter:** sumlinjen skrev *"kl. 15:00"* med
+kolon, mens tidsvælgeren lige over skriver punktum.
+
+**⚠️ OG TRE SQL-PRØVEFILER LØJ OM PRODUKTIONEN.** Ingen havde
+kørt dem samlet. Alle 45 `proev-`filer blev kørt mod en database
+bygget af `supabase/`-mappens egne filer, og tre faldt — alle tre
+ville have vist **rødt på et helt sundt system**:
+
+- **`proev-bord-noegle.sql`: 8 af 16 fejlede, og ikke på værnet.**
+  `byg-lokal-db.sh` giver bord 7 nøjagtig den nøgle, prøven
+  bruger til sit EGET bord. `borde.kode` er unik, prøvens insert
+  har `on conflict do nothing`, og bordet blev **aldrig
+  oprettet**. Prøven standser nu med ord, hvis dens egen kulisse
+  ikke blev bygget
+- **`proev-menukort-ejerens-liste.sql`: forældet siden 1/9.**
+  `tillaeg-hensyn.sql` døbte kategorien om, og
+  `kortets-priser-3.sql` gav fem varer ejerens egne priser.
+  Kategorien slås op på de tre ORD nu, og prisreglen er FLYTTET
+  til `proev-kortets-priser-3` prøve 12, hvor den kan besvares
+  sandt. **Og rapporten sagde "ALLE 17 AF 18 BESTOD"**, fordi 18
+  stod som et fast tal
+- **`proev-udlejning.sql`: forældet siden 23/8.**
+  `mosede_dagen_er_optaget` kører `before insert` på udlejninger
+  ("Havnen er ÉT sted"), så en NY udlejning på en taget dag
+  afvises — men prøven fra 19/8 påstod det modsatte. **Og filen
+  var vokset til fjorten indsættelser på én forretning**, mens
+  bremsen holder ti pr. time: den udmattede sit eget værn, før
+  den nåede de prøver, der handler om det. Kommentaren sagde
+  stadig "Forretning A har 6 rækker nu"
+
+**⚠️ OG MIN EGEN FØRSTE RETTELSE VAR FORKERT — OG TAVS.**
+Byggerens nye nøgler hed `LOKAL7`/`LOKAL9`, og **L og O er netop
+de tegn, nøglens alfabet forbyder** (`[2-9A-HJ-NP-Z]` — det er
+dem, folk taster forkert af et kradset skilt). CHECK'et afviste
+opdateringen, og scriptet skrev *"Låste borde: 0 (som hos
+ejeren)"*. En garanti, der siger nul og kalder det "som hos
+ejeren", er værre end ingen garanti; scriptet råber op nu.
+
+**Efter rettelserne: 45 filer, 1381 beståede linjer, NUL
+fejlede.** Kør dem samlet, når noget i `supabase/` ændres:
+
+```bash
+vaerktoej/byg-lokal-db.sh
+vaerktoej/sql-runde.sh
+```
+
+**⚠️ OG LØKKEN I HÅNDEN DUER IKKE — DET BLEV MÅLT 9/9.** Der stod
+`for f in supabase/proev-*.sql; do psql -q -d fuld -f "$f"; done`
+her, og resultatet blev læst ved at tælle BESTOD og FEJLEDE. En
+fil, der dør på sin egen kulisse, skriver **nul** linjer og
+forsvinder ud af BEGGE tal: runden sagde *1418 BESTOD, 0 FEJLEDE*,
+mens fire filer knækkede. Scriptet tæller også
+*"transaction is aborted"* og giver `exit 1`. Se afsnittet
+*"En rød SQL-runde læstes som grøn"* under status.
+
+**⚠️ ET SPØRGSMÅL TIL EJEREN FALDT UD AF DET, og det er en
+forretningsbeslutning, ikke en kodefejl:** skal familie nummer to
+kunne SENDE et ønske om en dag, baglokalet allerede er lejet ud
+(og komme på venteliste, hvis den første aflyser) — eller skal
+siden sige nej med det samme? **I dag siger den nej.**
+
+**⚠️ DE 20 TILBAGE ER OVERSKRIFTSNIVEAUER, OG DE RØRES IKKE.**
+`h1 → h3` på designsiderne. Designet er et 1:1-handoff, kunden
+har sagt god for, og at skifte tags på ti sider er en DOM-ændring
+med visuel risiko mod en lille gevinst. Admins egen (`h2 → h4` på
+Borde) ER rettet — den er vores.
+
+**Bestillinger-fanen: dagen, hukommelsen og typen** (6/9).
+Kundens ord: *"in the order tab in the admin it's not clear what
+type of order it is, what they need to do, and when you've pressed
+done, you need to go into like a done bucket for the day, and it
+needs to be remembered."* **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER TO SKÆRMBILLEDER af spiis' egen fane**, som han
+sendte — der er hverken læst i eller kopieret fra deres kode, og
+deres admin kan ikke nås herfra. Samme fremgangsmåde som Overblik
+1/9, bestillingskortet 31/8 og kalenderen 3/9.
+
+**Målt på et skud af VORES fane, før der blev rettet noget:** seks
+kort i træk med *"anna vind"*, *"bettina holm larsen"*, *"klaus
+valentiner"* — alle med småt.
+
+- **⚠️ `Admin.pæntNavn` HAR LIGGET I `kerne.js` SIDEN 1/9, OG
+  OVERBLIK VAR DEN ENESTE FANE, DER SPURGTE DEN.** Nøjagtig som
+  `Admin.kontakt` indtil 3/9 og `Admin.retterI` før 3/9 — **tredje
+  gang, samme mønster.** Fem kort spørger den nu: bestillinger,
+  borde, forespørgsler, tilmeldinger og skraldespanden. Det er
+  navnet, personalet råber ud over en kø
+- **⚠️ OG TYPEN STOD KUN PÅ TRE AF FIRE.** Bord, spis her og
+  levering havde hver sit mærke; **afhentning fik med vilje
+  ingenting** — noten sagde, at et mærke på hver bestilling ikke
+  siger noget. Det er rigtigt med TO typer og forkert med fire:
+  personalet kan ikke se forskel på *"det er to-go"* og *"mærket
+  blev ikke tegnet"*. Kunden bad om det modsatte, og forlægget
+  sætter *To-go* på hvert eneste kort. Vendt, med begge
+  begrundelser skrevet ned
+- **⚠️ OG OVERBLIK HAVDE ALLEREDE "🥡 To-go"** siden 31/8. Det var
+  kun Bestillinger, der manglede det — samme fane, samme mønster,
+  samme dag som navnet
+- **To-go er den STILLESTE af de fire.** Den er den almindelige
+  bestilling; sagde den lige så meget som den, der skal LEVERES,
+  ville de fire typer være lige vigtige, og så er man tilbage ved
+  at læse hvert kort
+
+**⚠️ DAGVALGET HUSKES NU — MEN KUN RESTEN AF DAGEN.** Anden
+halvdel af hans sætning. Fanen landede allerede på i dag ved
+første tegning (min første måling påstod noget andet, fordi jeg
+kun læste variablens startværdi), men valget overlevede ikke en
+genindlæsning.
+
+- **Det gemte bærer sin egen dato**, som `dagens_ret_ingen` (31/8).
+  Uden den ville en medarbejder, der torsdag bladrede tilbage til
+  onsdag, møde ONSDAG fredag morgen og tro, dagen var tom
+- **⚠️ OG DER GEMMES PÅ NØGLEN, IKKE PÅ VÆRDIEN.** *"Alle dage"*
+  er `dato: null`, altså et gyldigt VALG og ikke et fravalg.
+  Prøves der på værdien, er det netop det valg, der ryger
+- **localStorage og ikke databasen med vilje:** hvilken dag DENNE
+  skærm står på, er en egenskab ved skærmen. To iPads i køkkenet
+  skal kunne stå på hver sin dag
+
+**⚠️ OG TRE AF MINE FALSIFIKATIONER MÅLTE INGENTING FØRST:**
+
+- **Farveprøven målte en anden regel.** Den sammenlignede to
+  mærker på FÆRDIGE kort, og `.bestil-kort.b-faerdig .maerke`
+  farver dem alle grønne med vilje. Målt på åbne kort nu
+- **Sammenligningen mellem de to faner kunne ikke fange en FÆLLES
+  fejl.** Fjernes `pæntNavn` begge steder, står navnene stadig
+  ens, og prøven bestod på to forkerte navne. Den kræver nu også,
+  at værdien ER *"Bettina Holm Larsen"*
+- **Og jeg falsificerede den forkerte linje.** `overblik.js` har
+  FIRE steder, der skriver et navn, og vagtlisten bruger
+  `vagtRaekke` (linje 298) — ikke den, jeg ændrede. Prøven bestod,
+  fordi mutationen aldrig lå på den vej, prøven går. Samme lære
+  som lukkedagen 5/9
+
+**Ni falsifikationer, ni fald** efter de tre rettelser.
+
+**⚠️ OG "FOR LANG" VAR IKKE DET, DER VAR GALT PÅ CATERINGSIDEN.**
+Kundens ord: *"hele catering siden er for lang og kedelig og
+statisk og generisk ift telefon udseendet — gør den pænere og
+mere satisfying at se på uden at gå på kompromis."*
+
+**MÅLT på alle fem salgssider på en iPhone 13:**
+
+| side | skærme | side | skærme |
+|---|---|---|---|
+| catering | **4,4** | baglokale | 5,7 |
+| smørrebrød | 4,9 | selskaber | 5,7 |
+| frokost | 5,6 | | |
+
+Cateringsiden er den **korteste** af de fem. Tallet kommer udefra
+— fra de fire andre sider — og det er derfor teksten IKKE er
+rørt: den er hans egne ord, og den er ikke problemet.
+
+**Det, der VAR generisk, kunne måles:** de tre sider med
+`.getlist` havde **26 punkter og ÉT unikt ikon** — det samme
+lille hjerte hele vejen ned. Et mærke, der står ud for hver linje
+uden at skelne dem, siger ingenting; øjet holder op med at se det
+efter to linjer, og listen bliver en søjle med en prik foran.
+
+- **Hvert punkt har sit eget nu:** catering 🥪 🧀 🍢 🔥 🍰 🍦 🌱,
+  baglokalet 🚪 👥 🍺 🍦 🔥 🥪 ✨
+- **Emoji, ikke tegnede ikoner** — kundens beslutning 5/9, efter
+  at et helt tegnet sæt var bygget, udgivet og rullet tilbage
+- **⚠️ MEN KUN DÉR, HVOR LINJERNE ER FORSKELLIGE SLAGS.** Catering
+  og baglokalet svarer på *"hvad kan I gøre for os"* — hver linje
+  er sin egen ting. `m-tapas`' liste svarer på *"hvad ligger der
+  PÅ fadet"*: dér hører punkterne til den SAMME ret, og det
+  fælles hjerte betyder faktisk noget. Den beholder sit svg, og
+  grunden står i prøvens undtagelsesliste — **en undtagelse uden
+  en grund vokser, til prøven måler ingenting**
+- **⚠️ OG TO TEGN BLEV BYTTET EFTER ET SKUD, ikke efter en
+  liste.** 🍽️ tegnes som en tynd HVID tallerken og forsvandt på
+  cremen — samme advarsel som den trykte vejledning fik 5/9 — og
+  *"Platter og pindemad"* ER spyd, så 🍢 er både synligt og
+  sandere. ☕ var bleg ved siden af 🔥 og 🥪
+- **Prøven læser listerne af MAPPEN**, og antallet af unikke tegn
+  måles mod antallet af PUNKTER — ikke mod et tal skrevet af.
+  Tre falsifikationer, tre fald
+
+**⚠️ OG ÉN TING ER MED VILJE IKKE RØRT:** linjen *"Fyld: gæsten
+har ikke valgt – blandet udvalg"* står på hvert eneste
+smørrebrødskort. Den har en skreven grund fra dengang model A
+levede — tomt fyld BETYDER blandet — og at fjerne den er en
+ændring af, hvad køkkenet får at vide, ikke en layoutrettelse.
+Den skal besluttes, ikke ryddes op i.
+
+**Databasen kan ryddes for byggeperioden** (6/9). Kundens ord:
+*"kan vi lave en sql der rydder shittet og gør de helt klar til
+brug og du tester alt der er at teste."*
+
+**⚠️ Kør `supabase/hvad-ligger-der.sql` FØRST — den skriver
+ingenting.** Derefter `supabase/ryd-proevedata.sql` med en dato,
+du selv sætter. `proev-ryd-proevedata.sql` skriver **8 × BESTOD**
+på en lokal Postgres 16, set fejle fire gange.
+
+**⚠️ FØRST DET, MÅLINGEN AFGJORDE: JEG KAN IKKE LÆSE DINE
+BESTILLINGER HERFRA.** Adgangsreglerne lukker anon-nøglen ude af
+de fem gæstetabeller — det er hele meningen — så en oprydningsfil,
+der selv besluttede hvad der var "prøvedata", ville gætte på en
+database i drift. Der ligger en RIGTIG bestilling fra 19. august i
+den. Derfor er det to filer: én der viser, og én der rydder efter
+det, du så.
+
+- **Alle 46 `proev-`filer slutter med `rollback`** — målt, ikke
+  antaget. Prøverne efterlader altså ingenting, og de er ikke
+  "shittet". Det, der ER der, er byggeperiodens egne bestillinger
+  og forespørgsler
+- **⚠️ DET ER SKRALDESPANDEN, IKKE EN SLETNING.** Rækkerne får en
+  dato i `slettet`, præcis som knappen i admin, og kan hentes
+  tilbage i 30 dage. De hårde `delete`-linjer står **kommenteret
+  ud** nederst i filen: en sletning, der ikke kan fortrydes, må
+  ikke ske i det samme tryk som en, der kan
+- **⚠️ OG DEN KAN KØRES IGEN.** Hver opdatering har `slettet is
+  null` i sig. Uden den ville et nyt tryk skrive datoen om på
+  rækker, personalet selv har slettet — og de 30 dage begyndte
+  forfra. Det er prøve 3, og den er set fejle
+- **⚠️ NUMRENE NULSTILLES KUN, NÅR DER IKKE ER LEVENDE RÆKKER.**
+  "Klar til brug" er også, at den første rigtige bestilling hedder
+  #0001. Men er der en gæsts bestilling i systemet, HAR den et
+  nummer, og der er **med vilje ingen unique på kolonnen**
+  (`bestillingsnummer.sql`: et sammenstød skal give to kort med
+  samme tal og ikke en afvist bestilling) — så databasen ville
+  ikke sige fra. Prøve 6 er modstykket
+- **Menukortet, priserne, åbningstiderne, de 55 borde og deres
+  QR-nøgler, indstillingerne, kalenderen og nyhederne røres
+  ALDRIG.** Det ER opsætningen — det er dét, der skal beholdes
+
+**⚠️ OG PÅ VEJEN FANDT MÅLINGEN EN RIGTIG FEJL, DER IKKE HAVDE
+NOGET MED SQL AT GØRE.** `Butik.hentSalg` og
+`Butik.hentUdeblivelser` var de **eneste to** hentninger i
+`store.js` uden `LEVENDE` (`&slettet=is.null`); de seks andre
+havde det. Altså:
+
+- en **slettet bestilling talte stadig som omsætning** på
+  Salg-fanen
+- og en **slettet udeblivelse brandede stadig gæstens nummer** som
+  gænger på hvert nyt bestillingskort
+
+Det er "intet må gå tabt" vendt om: skraldespanden findes for at
+kunne fortryde, og et fortrudt fejltryk skal så også forsvinde fra
+regnskabet. Uden rettelsen ville oprydningen ovenfor heller ikke
+have virket — tallene ville stå tilbage. **Begge grene er rettet,
+også øvetilstanden**, så mocken fejler som skyen.
+
+**⚠️ OG DEN ENE AF DE TO PRØVER MÅLTE INGENTING FØRST.** Den læste
+`#salg-tal` og ledte efter *"1 udeblivelse"* — antallet står i sit
+EGET kort (`#salg-udeblivelser`), og ordlyden er *"udeblevet N
+gange"*. Prøven bestod altså med fejlen i behold. Fundet ved at
+læse, hvad `tegnUdeblivelser` FAKTISK skriver.
+
+**⚠️ TRE TING KOSTEDE TID, ALLE TRE MINE EGNE:**
+
+- **Rapporten stod med et tomt afsnit.** `(select coalesce(naeste,
+  0) from bestillingsnumre …)` svarer **NULL** og ikke 0, når der
+  ikke er nogen række — og `'tekst' || NULL` er NULL, så HELE
+  linjen forsvandt. `coalesce` skal uden om underforespørgslen.
+  Målt: afsnittet "RESTEN" var tomt, første gang filen blev kørt
+- **⚠️ OG FALSIFIKATIONERNE STABLEDE SIG OVEN PÅ HINANDEN.** Den
+  nye prøvefil var ikke i git endnu, så `git checkout -- <fil>`
+  fejlede lydløst mellem hver mutation, og nr. 2-4 målte altså
+  ikke det, de påstod. Værre: jeg committede bagefter, så den
+  MUTEREDE fil blev gemt. Det er `git checkout`-arret fra 4/9 fra
+  den anden side — **commit FØRST, og tjek at rollbacken virkede**
+- **⚠️ OG PRØVE 8 KUNNE IKKE FEJLE.** *"En anden forretnings
+  rækker er urørte"* bestod, også med `lokation_id` fjernet fra
+  opdateringen — der var ingen andre bestillinger i basen at
+  ramme. Det er 2/9-arret fra `roller.sql` ("en prøve på en tom
+  tabel måler tomhed"). Prøven opretter en nabo-forretning med sin
+  egen gamle række nu
+
+**⚠️ OG FILEN HAR SIN EGEN TEKSTVAGT.** `proev-ryd-proevedata.sql`
+prøver REGLERNE ved at gentage sætningerne med sine egne data —
+men den kan ikke se, om selve filen stadig bruger dem. Det er
+hullet mellem *"reglen er rigtig"* og *"filen bruger reglen"*, og
+her koster det en gæsts bestilling. To prøver i
+`tests/sql-mappen.spec.js` læser filen som tekst: hver af de fem
+opdateringer skal have BÅDE `lokation_id = 'mosede'` og `slettet
+is null`, og ingen af de fem gæstetabeller må slettes hårdt.
+Logbogen er undtagelsen, og den har sin grund i filen.
+
+**⚠️ OG PRØVE 7 VAR VACUØS — fundet, fordi Mikkel spurgte.**
+Hans ord: *"nu rydder den her ikke menukortet og alt det der
+vel?"* Svaret stod i filen (otte skrivninger, ingen af dem på
+menukortet), men prøven, der skulle bevise det, spurgte
+`count(*) = (select count(*) from menu_varer) from menu_varer` —
+**det samme tal mod sig selv**. Den kunne aldrig fejle, heller
+ikke hvis oprydningen tømte hele kortet. Nu kommer det ene tal
+UDEFRA: fra før filen kørte, og den måler **ni** tabeller —
+varer, kategorier, åbningstider, borde, indstillinger, kalender,
+nyheder, dagens retter og forretningerne selv. Set fejle med en
+enkelt vare slettet.
+
+Otte falsifikationer, otte fald. **Og hele SQL-runden er kørt
+bagefter: 47 filer, 1403 beståede linjer, NUL fejlede.**
+
+**Den fulde Playwright-runde efter de tre commits: 3206 bestod,
+1 flake.** *"Kortets pladstal følger med"* i
+`arrangementer.spec.js` tog **8,9 sekunder** i runden og **2,9
+alene** — og bestod på telefonprofilen i den SAMME runde. Det er
+den signatur, listen ovenfor holdt op med at være en liste for:
+tiden, ikke navnet. Ingen rettelse, fordi der ikke er noget at
+rette.
+
+**Personalet kunne ikke oprette noget manuelt** (7/9). Kundens
+to spørgsmål: *"hvorfor kan jeg heller ikke manuelt oprette
+bookinger denne dag, alt ryger jo ikke igennem forespørgsler?"* og
+*"hvad fuck administrerer man på den her tilmeldinger side, kan
+ikke trykke på noget."* **Ingen SQL.**
+
+**⚠️ BORDBOOKINGEN VIRKEDE — MÅLT.** En manuel booking til den 18.
+september gik igennem med det samme (*"Bookingen er oprettet og
+bekræftet"*, én række gemt), og produktionen har intet
+`bord_loft_pr_dag`. Det, han ramte, var genvejen, der landede
+**under folden** — se afsnittet nedenfor; den rettelse gik i
+luften samme dag.
+
+**Tilmeldinger var derimod tom for handlinger.** Målt på fanen:
+**ét** klikbart element — knappen, der vælger arrangementet.
+Kortene med ✓ Kommet, Udeblev og Afvis findes kun, når nogen HAR
+meldt sig til, og der var ingen vej ind for den, der ringer.
+Præcis det hul, bordbookingen fik lukket 24/8: så står halvdelen
+af gæstelisten i systemet og halvdelen på en seddel ved lugen, og
+pladstallet på hjemmesiden lyver.
+
+- **Formularen bruger GÆSTENS motor** (`Butik.reserverPlads`), så
+  databasens pladsbremse tæller den med. En anden vej ind i den
+  samme tabel ville være to regelsæt, der langsomt kommer til at
+  sige noget forskelligt
+- **⚠️ OG DEN LANDER SOM *TILMELDT*, IKKE SOM BEKRÆFTET** — modsat
+  telefonbookingen på Borde. Grunden er ORDENE: her betyder
+  `bekraeftet` **"Kommet"**, altså at gæsten står i døren. **Målt
+  på et skud af min egen første udgave:** Henning stod som
+  *KOMMET* et sekund efter opkaldet, tolv dage før festen. Det er
+  en løgn på netop den liste, fanen er til. Prisen er, at mærket
+  i søjlen tæller den med som "ny"
+- **Formularen findes kun, når der ER et arrangement** at skrive
+  dem på. Et felt, man udfylder og først får nej på ved knappen,
+  er et krav, der er skrevet det forkerte sted
+
+**Dagens ret skal have en pris — og det var to klager i én**
+(7/9). Kundens ord: *"jeg kan lægge en dagens ret uden pris, fix
+det"* og, med et skud af bestillingslisten uden blokken, *"når der
+er dagens ret skal den have sin egen eksklusive ting på
+bestillingen."* **Ingen SQL.**
+
+**MÅLT på forsiden med en ret på den valgte dag:**
+
+| | blokken | retten i listen |
+|---|---|---|
+| med pris | 1 | ja |
+| uden pris | **0** | **nej** |
+
+`Butik.retKanBestilles` kræver en pris, så en prisløs dagens ret
+filtreres **helt** ud af bestillingen — uden et ord. Altså er den
+manglende "eksklusive ting" den manglende pris set fra
+gæstesiden, og én regel retter dem begge.
+
+- **Det er ikke det samme som at FINDE PÅ en pris.** Menukortet
+  må gerne bære en vare uden pris — isbaren og morgenbrødet SKAL,
+  fordi ejerens eget svar er "spørg", og gæsten får en
+  ring-og-hør-knap. Dagens ret er den ENE ret, forsiden sælger
+- **⚠️ REGLEN BOR ÉT STED** (`laesPris`) og bruges ALLE TRE veje
+  ind: hurtigfeltet, ugeplanens rækker og "Tilføj" på en dag. To
+  udgaver ville betyde, at den ene vej tog imod det, den anden
+  afviste
+- **Og dampen damper.** Tegnet i "I dag"-blokken stod stille; nu
+  stiger det og tynder ud. **Kun transform og opacity** — husets
+  regel fra 31/8 om aldrig at animere noget, der udløser layout —
+  og den står stille ved `prefers-reduced-motion`
+
+**⚠️ TO GAMLE PRØVER LAGDE EN RET OP UDEN PRIS** og faldt derfor
+på PRISEN og ikke på den regel, de handler om (dubletten og
+vagthunden mod beskeder). Opdateret MED en note; reglerne bag dem
+er urørte.
+
+**⚠️ OG OTTE PRØVER FALDT PÅ PRISREGLEN — FOR TREDJE GANG PÅ ÉN
+DAG KØRTE JEG NABOERNE OG IKKE HELE RUNDEN** (7/9). Runden skrev
+**3273 bestod, 8 fejlede**, alle otte på BEGGE profiler, altså
+ingen flake. Fire i `dagens-retter.spec.js` fandt jeg selv; de
+fire i `admin.spec.js` gjorde jeg ikke, fordi filen ikke var i mit
+nabosæt. Alle otte lagde en dagens ret op UDEN pris og faldt
+derfor på prisen i stedet for på deres egen regel — vagthunden mod
+beskeder og komma-formatet.
+
+**Én af dem er VENDT og ikke bare rettet:** *"prisen tager komma,
+og tom er også et svar"*. Halvdelen om kommaet består, og
+halvdelen om det tomme felt er kundens egen beslutning. Den hedder
+*"prisen tager komma — og tom bliver afvist"* nu, og den måler
+samtidig, at **et afvist gem ikke tømmer den pris, der stod i
+forvejen**.
+
+**Læren er 30/8's, tredje gang i dag:** en runde er ikke færdig,
+før HELE suiten er kørt. Naborunden er til at fange det grove
+hurtigt; den er ikke et svar på, om noget er grønt.
+
+**Programlinjen siger, hvad det ER — og hele linjen kan trykkes**
+(7/9). Kundens ord med et skud: *"gør så man kan klikke ind på
+tingene som fortæller hvad det er eller skal den dag, fx her med
+event."* **Ingen SQL.**
+
+- **Et offentligt arrangement stod som "📅 havne" og intet
+  andet.** `under` blev kun brugt til at sige "kun her —
+  gæsterne ser den ikke". Linjen siger nu 🎟️ pladser (**FULDT**,
+  når den er det), prisen og beskrivelsen — eller *"kig forbi —
+  ingen tilmelding"*, så et arrangement UDEN tilmelding siger
+  DET og ikke bare mangler noget. Pladstallet kommer fra
+  `Admin.pladserTaget`, den samme regel som Tilmeldinger-fanen
+- **⚠️ PILEN STOD PÅ x = 1835** i en linje, hvis tekst begynder
+  på 92. Hele linjen er knappen nu — **som `role="button"` og
+  ikke som `<button>`**: linjen indeholder pilen, og et `<button>`
+  i et `<button>` er ugyldig opmærkning, browseren river fra
+  hinanden. Pilen er en ren markering, og tastaturet får Enter og
+  mellemrum på selve linjen
+- **⚠️ OG MÅLINGEN FANDT EN TREDJE, INGEN LEDTE EFTER: KOLONNEN
+  HEDDER `start_kl`.** Linjen læste `k.tid_fra`, og den kolonne
+  findes **ikke** i tabellen `kalender` — målt i produktionen:
+  `dato`, `start_kl`, `lukker_kl`, `slut_dato`, men intet
+  `tid_fra`. **Hvert arrangement har derfor stået med "—" i
+  stedet for sit klokkeslæt, siden køreplanen blev bygget**, og
+  det så ud som et arrangement uden tid
+- **Et arrangement MED tilmelding fører til Tilmeldinger**, ikke
+  til Kalender: det er dét, man vil se på et arrangement, der
+  tager imod — ikke rækken, man lige har lavet. Og rammerne om
+  dagen ("Køkkenet åbner") er IKKE knapper: en linje, der ser ud
+  som en knap og ikke er det, er værre end en, der ikke gør
+
+**Admin var i stykker på hans telefon — fire fejl, alle målt**
+(7/9). Kundens ord: *"når jeg trykker på kalenderen kan jeg ikke
+åbne dagen i den der menu hvor jeg kan oprette bookinger og
+tingene ... altså hele admin er elendig og fungerer ikke nu."*
+**Ingen SQL.**
+
+**⚠️ FØRST DET, DER GJORDE MÅLINGEN MULIG: EJERENS EGNE DATA.**
+Med `grunddata` var ALT grønt — dagen åbnede sig, ingen JS-fejl,
+alle sytten faner tegnede på ~0,5 sekund. Hans menukort er hentet
+fra produktionen med anon-nøglen (`menu_kategorier`, `menu_varer`,
+`aabningstider`, `indstillinger`, `kalender`) og lagt ind i
+øvetilstanden. **Først dér blev panelet 1797 px højt**, og tre af
+de fire fejl kom frem. Det er husets egen regel om at måle
+virkeligheden, nu på DATA-siden: en efterligning med fem varer
+prøver ikke en side, der skal bære 308.
+
+- **⚠️ BUNDBJÆLKEN VAR LEVENDE AT SE PÅ OG DØD AT TRYKKE PÅ.**
+  `.dag-lag` står på z-index 200 og `.bundbar` på 40, så laget
+  dækker baren — men baren har `backdrop-filter` og blev derfor
+  tegnet som en lys stribe med fem fane-navne UNDER lagets slør.
+  Et `elementFromPoint` midt på "Mere" svarede `P.hjaelp` inde i
+  dagspanelet. Personalet står med en fane-bjælke, der ikke
+  reagerer — og det ligner et system, der er gået i stå, ikke en
+  dialog, man skal lukke først. Baren skjules nu, mens laget er
+  åbent, som en app gør det
+- **⚠️ OG ✕ RULLEDE VÆK MED SIG SELV.** Målt efter 900 px
+  rulning: ✕ stod på **y = −848**. Med baren død var der da INGEN
+  synlig vej ud — Escape findes ikke på en telefon. Hovedet
+  klæber øverst nu
+- **⚠️ OG KVITTERINGEN LÅ BAG LAGET** (z-index 60 mod 200).
+  Panelet er fuldt af felter, der gemmer — noten, tiderne,
+  beskeden til gæsterne — og *"✓ Gemt"* er hele svaret på "kom
+  det med?". 210 nu
+- **⚠️ OG GENVEJEN LANDEDE UNDER FOLDEN.** *"🍽️ Tag imod et
+  bord"* gjorde det HELE: Borde-fanen kom frem, folden åbnede
+  sig, datoen stod udfyldt, markøren stod i navnefeltet. Feltet
+  lå bare på **y = 835 på en skærm på 844**. Personalet ser toppen
+  af Borde-fanen og tror, at knappen ikke gjorde noget — og
+  trykker igen. Folden rulles frem nu (y = 438, overskriften på
+  96). Samme lære som ankerhoppet 5/9: **en side, der skifter
+  under fingeren uden at flytte sig, ser ud som en side, der ikke
+  reagerede.** De to genveje deler én funktion (`tilFold`); to
+  kopier ville være to steder at glemme rulningen
+- **⚠️ OG FOKUS SÆTTES MED `preventScroll`.** En `focus()` ruller
+  selv elementet frem, og så kæmper browserens rulning og vores
+  om det samme sekund — navnefeltet ville lande øverst UDEN
+  foldens overskrift, og overskriften er dét, der siger, hvad man
+  er landet i
+
+**⚠️ OG PRØVEN OM BUNDBJÆLKEN KUNNE IKKE FEJLE.** Falsifikationen
+afslørede det: rettelsen fjernet, prøven bestod. Grunden er, at
+laget ALTID har svaret på et `elementFromPoint` — baren har
+aldrig kunnet trykkes, mens laget er åbent. Fejlen er, at den var
+**SYNLIG**. Prøven måler KASSEN nu (et element uden kasse kan ikke
+tegnes), og tallet kommer udefra: baren skal HAVE en kasse, før
+laget åbnes, og få den igen, når dagen lukkes — ellers ville en
+regel, der skjulte baren for altid, bestå.
+
+**⚠️ OG SELEKTOREN SKULLE VEJE 0,3,0.** `body.lag-aabent .bundbar`
+vejer det samme (0,2,0) som barens egne to regler, og glasreglen
+længere nede i arket vandt på rækkefølgen alene. **Målt: `display`
+kom stadig ud som `grid` efter rettelsen.** Husets egen lov, en
+gang til: mål den BEREGNEDE stil, ikke den regel, du lige har
+skrevet.
+
+**Den første nyhed kunne aldrig få et billede** (7/9). Kundens
+ord: *"som nyhed kan jeg ikke uploade billeder."* **Ingen SQL.**
+
+Papirerne har to kendte årsager til netop det — kolonnen
+`nyheder.billede` mangler, eller storage-spanden findes ikke — og
+**ingen af dem var det.** Målt i produktionen med anon-nøglen:
+
+```
+nyheder.billede   200 OK        spanden "nyheder" findes
+nyheder.slags     200 OK        … og har mappen 2026-08 i sig
+nyheder.vis_fra   200 OK
+```
+
+Den rigtige årsag stod i tallet ved siden af: **tabellen
+`nyheder` er TOM.** Nul rækker. Og `maaBillede()` læste svaret af
+en RÆKKE (`harNoegle(n, 'billede')`), så uden rækker var svaret
+nej, og uploadfeltet fandtes ikke. **Ejeren kunne dermed aldrig få
+et billede på sin FØRSTE nyhed** — og han har ingen.
+
+- **⚠️ NOTEN VED `maaVindue()` KALDTE DET "DEN FEJL, DER RETTER
+  SIG SELV"** — felterne dukker op, så snart der er én række. Det
+  holder for datoerne: tom betyder ALTID, og standarden er
+  rigtig. Det holder **IKKE** for billedet. Et foto er ikke noget,
+  der kommer af sig selv bagefter; det er dét, han sidder og
+  prøver at lægge op nu
+- **`Butik.skrive.harKolonne(tabel, kolonne)`** laver ét `select`
+  på kolonnenavnet, og databasen svarer 200 eller 42703 — **også
+  på en tom tabel.** Den bor i `js/store-skriv.js`, som KUN
+  `admin.html` indlæser: gæstesiderne bærer 701 kB i forvejen og
+  skal ikke betale for et spørgsmål, kun personalet stiller
+- **⚠️ ÉT SPØRGSMÅL, IKKE ÉT PR. OPTEGNING.** Tegnerne kører efter
+  hvert gem; uden et `spurgt`-flag ville admin lægge to kald på
+  nettet, hver gang nogen skrev et bogstav i et felt med autogem
+- **⚠️ OG ET NETVÆRKSUDFALD ER IKKE ET SVAR.** Vi siger ja: er
+  kolonnen der alligevel, kan ejeren arbejde videre, og er den
+  ikke, siger gemmet det med filnavnet i (`Admin.forklarFejl`).
+  Et nej ville skjule feltet, hver gang forbindelsen blinkede
+- **Reglen er ikke svækket**, og det er den tredje prøve: er der
+  rækker, og MANGLER kolonnen, skal felterne stadig være væk. En
+  regel, der bare viste dem altid, ville ellers bestå
+
+**"Mangler pris" talte varer i en slukket kategori** (7/9).
+Kundens spørgsmål: *"hvorfor er der stadig manglende priser?"*
+**Ingen SQL.**
+
+Målt i produktionen: 308 varer, og **34 aktive varer uden pris.**
+32 af dem ligger i kategorien *"Vælg fyld til smørrebrødet"*, som
+blev SLUKKET 1/9, da de 24 navngivne smørrebrød og de 24
+håndmadder afløste den. De står ikke på kortet, ingen gæst kan se
+dem, og de skal ikke have en pris — men de talte med i "Mangler
+pris", og de talte IKKE med i "Skjult".
+
+**Altså sagde fanen 34, hvor det rigtige svar er 2:** isbaren
+(*"alt efter type og størrelse af event"*) og morgenbrødet, hvor
+ejerens eget ord er **SPØRG**. Det er ikke en skæv oplysning — det
+er en opgave, ejeren tror han har, og som ikke findes.
+
+- **Skellet er GÆSTENS.** Både `Butik.smoerrebroed` og udvalgets
+  `ekstraKat` kræver `k.aktiv !== false`, så en slukket kategori
+  findes ikke på hjemmesiden. Derfor er dens varer skjulte her
+- **⚠️ OG `udenPris()` ER IKKE RØRT.** Den er et FAKTUM om rækken,
+  og `visPris()` bruger den til at tegne prisfeltet tomt — blev de
+  to slået sammen, ville en slukket vare få teksten **"null"** i
+  sit prisfelt, og et gem ville skrive den. `manglerPris()` er
+  OPGAVEN og er den, der tælles og filtreres på
+
+**Seks klager på én aften — og fem af dem var ægte fejl** (8/9).
+Kunden sendte dem i træk med skud til hver. **Ingen SQL.**
+
+**1) DAGEN HAVDE FIRE ENS HVIDE CHIPS.** Hans ord, tredje gang:
+*"admin er mainly til computer og det der, men kan stadig ik
+oprette booking — har du overhovedet lavet det?"* med et
+**forlæg**: én udfyldt knap, *"+ Opret booking denne dag"*.
+
+- **Mekanikken virkede hele vejen.** MÅLT på 1440 px med ejerens
+  egne data: folden åbner på y = 96, datoen står udfyldt,
+  markøren i navnefeltet, Opret-knappen på y = 453. Fejlen var,
+  at døren ikke lignede en dør — og den eneste RØDE knap i
+  panelet var *"Gem noten"*
+- **⚠️ OG MIN FØRSTE RETTELSE VIRKEDE IKKE.** Knappen fik sin
+  egen røde på klassen (0,2,1), og `body.personale .knap.lille`
+  (0,3,1) vandt: **målt kom farven ud som `rgba(255,255,255,.6)`**
+  — hvid. Svaret var at fjerne `.lille`: husets `.knap` ER den
+  røde. Klassen `dag-hoved-handling` er kun det, prøven kan pege
+  på. Husets egen lov, igen: **mål den BEREGNEDE stil**
+- **⚠️ OG SELEKTOREN TIL NOTEN VAR TRE GÆT.** `.note-fold .knap`
+  findes ikke i dagskortet, og `.dag-note .knap` ville have taget
+  *"Slet noten"* med, som ER rød med vilje. Knappen har et id
+  (`#gem-dag-note`) — ét id, én knap, intet gæt
+- **Ordene er hans:** *"Opret booking denne dag"* siger, hvad
+  knappen GØR; *"Tag imod et bord"* sagde, hvad der skete i
+  telefonen. *"Luk dagen"* hedder *"Luk dagen for bestilling &
+  booking"* — en dag kan lukkes for den ene måde og køre videre
+  på den anden
+
+**2) DEN SAMME BOOKING STOD TO GANGE I DAGENS PROGRAM.** Hans
+skud: *"🔑 Baglokalet: Mikkel Sten Gersel · 30 pers."* OG
+*"💬 Mikkel Sten Gersel — baglokale · 30 pers."*
+
+Det ER én aftale: *"Book lokalet til dem"* opretter udlejningen
+OG sætter forespørgslen til aftalt, så begge rækker findes
+bagefter med vilje. På programmet læses de to linjer som to
+selskaber, og køkkenet laver mad til tres. **Det er 29/8-arret
+igen** (*"et skud af dagens panel viste den samme booking TO
+gange"*), og kunden så det før os.
+
+- **⚠️ KENDINGEN ER EN LÆNKE, IKKE ET GÆT.** `bookKnap` skriver
+  forespørgslens reference ind i udlejningens `intern_note`,
+  netop så de to kan kendes som ét forløb (`harUdlejning` i
+  `js/admin/kalender.js`). På navn og dato ville to familier
+  Hansen på den samme lørdag slå hinanden ud
+- **Uden en udlejning bag BLIVER forespørgslen stående**, også
+  når den er aftalt — det er netop den tilstand, Baglokalet
+  advarer om
+
+**3) TO JA-KNAPPER, OG DEN GRØNNE VAR DEN SVAGESTE.** Kundens
+spørgsmål: *"der er tre knapper når folk forespørger på
+baglokalerne — der er både 'har kontaktet' og 'book baglokalet'
+og 'aftal og sæt tid'. Hvad tænker du selv der?"*
+
+**MÅLT på et kort i tilstanden *kontaktet*:**
+
+| knap | farve | hvad den GØR |
+|---|---|---|
+| Book lokalet til dem | rød | opretter udlejningen, **låser dagen**, sætter aftalt |
+| ✓ Aftal & sæt tid | grøn | sætter kun status — **dagen er stadig fri** |
+
+Grøn betyder *"det gik godt"* i hele admin, så personalet trykker
+den og går videre fra en dag, der ikke er lukket. Det er præcis
+den dobbeltbooking, hele Baglokale-fanens ⚠️-kort blev bygget for
+at advare om — og kortets egen linje sagde imens *"👉 Ring til
+dem, og book lokalet, hvis I siger ja"*, altså pegede på den røde.
+
+- **Husets form fra 31/8: ét skridt frem, resten bag "···".**
+  På et baglokale er bookingen den ene synlige handling; Aftal,
+  Afvis, Gendan og Slet ligger bag døren, og døren findes kun,
+  når der er noget bag den
+- **⚠️ KENDINGEN ER TYPEN, IKKE FANEN.** Reglen er et faktum om
+  den slags sag, ikke om hvilken skærm den står på
+- **⚠️ OG DEN ER FLYTTET, IKKE FJERNET.** Der ER en dag, hvor man
+  vil sige ja uden at låse — gæsten vil have lokalet, men datoen
+  er ikke afgjort. Knappen hedder *"✓ Aftal uden at låse dagen"*
+  og siger i sin bekræftelse, hvad den IKKE gør
+- **⚠️ OG PÅ VEJEN: 29/8-ARRET IGEN.** `bookKnap` brugte
+  `kort.querySelector('.knap-raekke')` **bart**. Kalender-advarslen
+  har sin EGEN `.knap-raekke` og appendes FØR handlingsrækken, så
+  på en AFTALT forespørgsel ville *"🔒 Lås dagen"* lande inde i
+  den gule advarselsboks. `:scope >` nu
+
+**4) EN RÅ MAILADRESSE I BRØDTEKST.** Hans skud af kvitteringen:
+*"det her er også forkert når man bestiller på selskaber."*
+
+```
+Vil I hellere skrive?
+selskab1@mosedehavnecafe.dk — tag
+referencen med.
+```
+
+**MÅLT på en iPhone 13:** 26 tegn uden ét sted at brække, tre
+linjer, adressen i rødt næsten fra kant til kant og *"— tag"*
+hængende alene. Det var det **ENESTE** sted på hele gæstesiden
+med en adresse som brødtekst — og det brød husets egen regel:
+noten i `js/skal/kontakt.js` siger ordret, at *"etiketten bliver
+stående … en rå adresse i bunden af en side siger ingenting om,
+hvor den fører hen."* Kvitteringens `ekstra`-plads hed endda
+*"mailknappen"* i sin egen note; den var bare aldrig blevet en.
+
+Den er designets `.g` nu — 50 px høj mod brødtekstens 17
+(gennemgangen fælder alt under 30) — og **adressen står ikke på
+knappen**: den skal ikke læses, den skal trykkes. Gælder alle
+fire forespørgselssider; de deler `visTak()`.
+
+**5) EN LEVERING BLEV BEDT OM AT KOMME NED PÅ HAVNEN.** Hans ord
+med et skud af `min-bestilling/`: *"det her fungerer elendigt."*
+
+Roden er ét ord: **siden læste ALDRIG `hvordan`.** MÅLT på en
+levering i tre tilstande:
+
+```
+klar        → "Kom hen til lugen og sig dit nummer."
+afhentet    → "Afhentet · Vi ses igen på havnen."
+hele tiden  → "Betales ved lugen som altid."
+linjerne    → "2× Emballage 20,-" og "1× Levering 79,-"
+              som to retter mellem maden
+```
+
+Hun sidder hjemme og venter på en bil. Samme familie som
+*"Hentes i dag kl. 13.00"* på en AFVIST bestilling (4/9): en
+aftale, der aldrig er indgået, sagt med fuld sikkerhed.
+
+- **⚠️ ADRESSEN VISES IKKE, OG DET ER MED VILJE.**
+  `mosede_bestilling_status` svarer aldrig med
+  `leverings_adresse` — en hjemmeadresse, der kan hentes med en
+  reference, kan hentes af den, der finder en kvittering på
+  gaden. Der er en prøve på det, så ingen *"forbedrer"* siden
+- **⚠️ OG ET TILLÆG ER PENGE, IKKE MAD.** Emballagen og fragten
+  står under maden uden antal. Reglen er `Butik.erEmballage`, og
+  siden er den **femte** skærm, der spørger den — nøjagtig den
+  fejl, Bestillinger-fanen fik rettet 1/9 (*"9 retter"* ved fem).
+  Kronerne er urørte
+- **⚠️ SIDEN HENTER MED VILJE IKKE NOGET**, så reglen får ikke
+  ejerens eget emballage-navn. Nye rækker bærer `emballage: true`,
+  og reserven er husets standardnavn; otte tabeller for ét navn
+  ville koste mere, end siden er værd nede ved vandet
+- **Hver prøve måler BEGGE veje:** leveringen skal have sine ord,
+  OG afhentningen sine uændret. Uden modstykket ville en
+  rettelse, der bare fjernede lugen fra hele siden, bestå
+
+**6) SMØRREBRØDET LIGNEDE HVILKEN SOM HELST BESTILLING.** Hans
+ord: *"når man bestiller smørbrød ud af huset, er det meget
+utydeligt … det skal være tydeligt, hvad det er, hvor det er
+bestilt fra osv."*
+
+Argumentet er tapasfadets, ord for ord: et døgns varsel og mindst
+fire stykker er ikke en pose over lugen. Kortet bærer
+**🥪 Smørrebrød** i den samme plads som 🧀 Tapasfad.
+
+- **⚠️ KENDINGEN ER KATEGORIEN, IKKE NAVNET.** `erTapas()` kan
+  nøjes med navnet; ejerens 48 smørrebrød hedder Leverpostej,
+  Æbleflæsk, Rejemad — der er ikke ét fælles ord.
+  `Butik.smoerrebroed(d).kategoriIds` ER reglen, den SAMME som
+  afgør, hvad gæsten kan vælge tre steder
+- **⚠️ `Admin.vareMaerke` ER DEN FEMTE ÉT-STED-REGEL** efter
+  `statusNavn`, `retterI`, `kontakt` og `typeMaerke`. Overblik og
+  Bestillinger skrev hver sin udgave af tapasmærket (et `<span>`
+  og en tekststreng); med smørrebrødet ville det være kopi tre og
+  fire. Der er **højst ét**, og tapas slår smørrebrød
+- **⚠️ UDEN MENUKORTET ER SVARET NEJ, IKKE EN FEJL.** En regel,
+  der kastede, ville tage HELE fanen med sig — `Admin.tegnere` er
+  én liste, og det er sket tre gange (24/8, 29/8, 31/8)
+
+**⚠️ OG "HVOR DET ER BESTILT FRA" KUNNE KUN SIGES HALVT — det er
+bygget nu** (8/9, kundens ord: *"igang"*). MÅLT først: der var
+**ingen kanalkolonne** på `bestillinger`, og `lavReference('SM')`
+bruges til AL mad. Systemet vidste *bord eller luge* (af
+`bord_nummer`) — ikke om bestillingen kom ind ad `h-smorrebrod`
+eller ad forsiden.
+
+**⚠️ Kør `supabase/bestilling-kanal.sql` +
+`proev-bestilling-kanal.sql`** (7 × BESTOD på en lokal
+Postgres 16).
+
+- **⚠️ KOLONNEN MÅ ALDRIG KUNNE AFVISE EN BESTILLING**, og det er
+  hele dens design: `null`-bar, **ingen** standardværdi, og
+  klienten normaliserer alt ukendt til null (`KANALER` i
+  `js/store.js`), FØR CHECK'et ser det. Havde vi ladet den afvise,
+  ville en tastefejl i ÉN sides `data-kanal` lukke bestilling på
+  netop den side — og gæsten ville få en rå databasefejl at se.
+  En oplysning, der kan spærre for en bestilling, er ikke en
+  oplysning værd at have. Prøve 1, 2 og 3 måler begge veje
+- **⚠️ GAMLE RÆKKER FÅR IKKE ET GÆT.** En bestilling fra
+  19. august kom ind ad en side, vi ikke kan vide hvilken var, og
+  et `'forside'` skrevet på den ville være en påstand, ingen har
+  målt. Migreringen efterudfylder derfor **ingenting**, og admin
+  skriver ingen linje. Prøve 6 måler, at kolonnen ingen `default`
+  har
+- **⚠️ OG DEN ER GÆSTENS EGET ORD, IKKE ET BEVIS.** Feltet kommer
+  fra browseren og kan ændres i en konsol. Det gør ikke noget,
+  fordi kolonnen afgør **intet** — ikke prisen, ikke varslet,
+  ikke om bestillingen tages imod. Prøve 5 er den, der beskytter
+  de andre: kanal `'bord'` giver hverken et bordnummer eller spis
+  her. Det, der ER et bevis, ligger andre steder og er urørt
+  (`bord_nummer` + `bord_kode`)
+- **⚠️ KENDINGEN ER `data-kanal` PÅ FORMULAREN, IKKE `pathname`.**
+  Første udgave udledte kanalen af adressen og var **forkert ved
+  første måling**: `/bord/` blev til `forside`, fordi
+  bordbookingens mappe ikke kan skelnes fra projektroden på
+  GitHub Pages (`/mosedehavnegrill/`). Opmærkningen ved, hvilken
+  side den er
+- **⚠️ OG KORTET VISER IKKE 'bord'.** 🍽️ Bord 7 står der
+  allerede; to udgaver af den samme oplysning er én for meget.
+  Ordet er kun med i tabellen, fordi Salg-fanen ellers skulle
+  særbehandle netop den ene kanal — og en tælling med et hul i er
+  en tælling, ingen stoler på
+- **Salg-fanen deler omsætningen på kanal**, med en egen linje
+  *"Før 8. sep. (ikke registreret)"* til rækkerne uden. Uden den
+  ville summen af kanalerne være mindre end dagens tal, og ingen
+  ville kunne se hvorfor
+
+**⚠️ OG PRØVERNE I ADMIN MÅLTE KUN VISNINGEN — falsifikationen
+fandt det.** Fjernes `kanal: side.kanal` fra afsendelsen i
+`js/skal/bestil.js`, bestod hver eneste kanalprøve i admin (de
+sår rækken med en kanal i fiksturet), og pengesporet sagde
+stadig *"4 passed"*. **Ingen prøve målte, at siden faktisk
+SENDER sin kanal.** To prøver i `tests/skal-bestil.spec.js` går
+nu hele vejen gennem den rigtige formular og læser den GEMTE
+række — og de skal være **to sider**, fordi den SAMME fil bærer
+forsiden og smørrebrødssiden: en konstant i afsendelsen ville
+være rigtig på den ene og forkert på den anden. **Set fejle
+begge veje:** kanalen fjernet (begge falder) og låst til
+`'forside'` (kun smørrebrødssiden falder).
+
+**⚠️ OG PRØVEFILEN FALDT TRE AF SYV — TO GANGE, OG INGEN AF
+GANGENE PÅ KANALEN.** Alle fem indsættelser delte `hent_tid`, så
+`bestilling_ikke_dobbelt` afviste nummer 2-5, og rapporten sagde
+*"1 af 5"* om en kolonne, der var helt i orden. Og de delte
+telefonnummer, så `bestilling_bremse_nummer` (fem pr. nummer pr.
+time) afviste nummer seks — rapporten sagde *"tom kanal
+afvist"*, som om null var ulovligt. **Prøven udmattede sit eget
+værn**, præcis som `proev-udlejning.sql` gjorde 5/9. Hvert
+indlæg har sit eget klokkeslæt og sit eget nummer nu.
+**Og prøve 5 læste med gæstens øjne** (`set local role anon` fra
+indsættelserne), så SELECT'en fandt ingen række, og prøven skrev
+FEJLEDE om en række, der var rigtig — `reset role` først.
+
+**⚠️ OG DEN FULDE RUNDE FANDT ÉN, NABOERNE IKKE GJORDE — FJERDE
+GANG.** Runden skrev **3311 bestod, 4 fejlede**.
+`kontakt-post.spec.js` har sin EGEN prøve på kvitteringens
+maillink, og den krævede, at linkets TEKST var adressen — altså
+præcis det, punkt 4 lavede om. Den faldt på **begge profiler**,
+var i ingen af mine tre nabosæt, og gik i luften rød. De tre
+andre var flaken målt på tiden: begge bestod alene, og
+`dagens-retter:297` bestod på computerprofilen i den SAMME runde.
+
+**⚠️ OG FYLD-LINJEN ER VÆK — kundens beslutning** (8/9, *"igang"*).
+Linjen *"Fyld: gæsten har ikke valgt – blandet udvalg"* stod på
+hvert eneste smørrebrødskort. Den var fra dengang fyld var noget,
+gæsten valgte — og det lukkede kunden 31/8 med *"1 mad er 1 mad"*.
+
+**Den var altså ikke bare overflødig, den var FORKERT:** den
+fortalte køkkenet, at gæsten havde undladt at vælge, og bad dem
+om et blandet udvalg — af en vare, gæsten ikke KAN vælge fyld
+til. Derfor blev den spurgt om og ikke ryddet op i: det er en
+ændring af, hvad køkkenet får at vide.
+
+- **⚠️ FELTET SLETTES IKKE, OG KOLONNEN BLIVER.** Er der fyld på
+  rækken — og det er der på hver bestilling fra før 31/8 — står
+  det stadig på kortet. Det er kun den TOMME linje, der er væk.
+  En sletning ville skjule, hvad de gamle gæster faktisk bad om
+- **⚠️ OG `harSmoerrebroed()` I `bestillinger.js` ER SLETTET MED.**
+  Den fandtes kun for at afgøre, om den tomme linje skulle stå —
+  og den gættede på VARENAVNET. Reglen bor i
+  `Admin.erSmoerrebroed` nu, som slår kategorien op i menukortet;
+  en efterladt kopi ville være en kending, der langsomt kom til
+  at sige noget andet end mærket lige ved siden af
+- **⚠️ DEN GAMLE PRØVE ER VENDT MED GRUNDEN SKREVET NED**, ikke
+  slettet, og den er samtidig blevet **skarpere**: den kræver
+  FØRST, at kortet ER der, og DEREFTER at linjen ikke er — ellers
+  ville den bestå på en fane, der slet ikke tegnede noget
+  (`toBeHidden`-arret fra 30/8)
+
+**Klokkeklart for medarbejderen** (8/9). Kundens ord efter at have
+bestilt lidt af hvert: *"det ligner hinanden alt for meget, det er
+alt for uklart hvad er hvad og hvilken dag og bestilling, og
+bordene er elendige … tænk at du er havnecafeen, du fatter
+ingenting af online ting, og admin er helt nyt — det skal være
+klokkeklart for medarbejderne hvad der sker i overblik og hvad de
+skal, og det samme med køkkenet."* Og bagefter: *"og det er også
+lort på telefon."* **Ingen SQL.**
+
+**⚠️ MÅLT PÅ HANS EGNE DATA, ikke på `grunddata`.** Hans menukort
+er hentet fra produktionen med anon-nøglen og lagt i
+øvetilstanden — samme greb som 7/9. Med fem varer ser hver fane
+fin ud; med 308 er panelet 1797 px.
+
+- **⚠️ DAGEN STÅR PÅ HVERT KORT** (`Admin.dagKort` /
+  `Admin.dagMaerke`, femte ét-sted-regel efter `statusNavn`,
+  `retterI`, `kontakt`, `typeMaerke`, `pæntNavn` og `vareMaerke`).
+  Mærket siger **I DAG**, **I MORGEN** eller *ons 10. sep* — og
+  en dag, der er **gået**, får sin egen farve. Før stod datoen
+  kun i en samlelinje øverst, så et kort fra i går lignede et
+  kort fra i dag
+- **⚠️ OG STATUSMÆRKET BÆRER `data-status`** (`Admin.statusMaerke`,
+  sjette). `m-ny` var BEGGE dele i huset: leveringens røde mærke
+  og statussen "Ny" — så en prøve, der talte typemærker, talte
+  statussen med. Leveringens hedder `m-lev` nu
+- **⚠️ INSTRUKTIONEN ER ÉN SÆTNING PR. FANE**, i egen vægt
+  (`.hjaelp-stor`), og resten ligger i en fold: *"Tryk ✓ Ankommet,
+  når familien er kommet."* · *"Tryk ✓ Færdig, når maden er båret
+  ud."* · *"Tryk ✓ Færdig, når maden er ud ad døren."* En travl
+  medarbejder læser én linje, ikke fire afsnit
+- **⚠️ BORDE-KORTET FIK HUSETS FORM FRA 31/8:** ét skridt frem
+  (✓ Ankommet), og Udeblev, Afvis, Slet, Gendan bag "···". Døren
+  findes kun, når der er noget bag den
+- **⚠️ OVERBLIK ER SORTERET EFTER HVAD MAN SKAL BRUGE FØRST:**
+  stribe → alarm → dagens forløb → færdige → produktion →
+  aftaler → note, og `#overblik-opsaetning` (læg appen på
+  hjemmeskærmen) er flyttet til BUNDEN. Det er 3/9-arret igen: en
+  engangsvejledning over dagens arbejde, hver dag
+- **Dagens tal og produktionen er en fold** på Bestillinger, så
+  det første, man ser, er kortene
+
+**⚠️ OG FANEN HOPPEDE TIL EN FREMTIDIG DAG.** Kundens ord: *"når
+der er nye bestillinger en dag i fremtiden og ikke den dag som i
+dag, så ryger den automatisk hen på den 9. september, hvor der er
+bestillinger, og ikke automatisk på den 8., som er i dag — det
+kan godt forvirre."* Han har ret: `visDato` valgte den nærmeste
+dag MED noget, hvis i dag var tom. Det er nu altid i dag, og
+banneret *"N til andre dage"* er vejen derhen. **Prøven er vendt
+med hans ord skrevet ned** — den vogtede den gamle opførsel, og
+det er en beslutning, ikke en forældet prøve.
+
+**⚠️ OG PÅ TELEFONEN NÅEDE JEG DET IKKE HELT — det skal siges.**
+Målt på en iPhone 13: der står stadig ~900 px kontroller over det
+første kort på Bestillinger, og de tre, der er tilbage,
+**bærer hver sin oplysning**: dagvælgeren (114 px), *"Hvor fra"*
+(44) og banneret om de andre dage (84). At skjule dem ville
+skjule netop det, klagen handlede om. Det er en beslutning,
+ejeren skal træffe, ikke en oprydning.
+
+**Push-beskeden siger hvad og hvornår** (8/9). Kundens ord:
+*"notifikationerne på telefon, når man har appen, skal være
+tydelige hvad det er for noget — det er for uklart, alle
+bestillinger ligner den samme."* **Ingen SQL.**
+
+✅ **OG DEN ER UDGIVET NU** (9/9) — se *"Funktionen kørte på
+20/8-koden"* nedenfor. Her stod i et døgn, at koden var rigtig og
+**udgivelsen manglede**, og det passede: den funktion, der KØRTE
+i Supabase, var udgaven fra før. En rettelse i repoet er ikke en
+rettelse i skyen, når koden bor i en Edge Function.
+
+Titlen leder nu med **type + tid**, fordi det er de to ord, der
+står på en låst skærm: *🍽️ Bord 7 — laves NU* · *🚗 Skal LEVERES
+i morgen kl. 12.30* · *🍽️ Spis her i dag kl. 18.00* ·
+*🥡 Hentes i dag kl. 13.00*.
+
+**Funktionen kørte på 20/8-koden — i tre uger** (9/9). Ordren:
+*"genudgiv send-push … Verify JWT skal være slået FRA."*
+**Ingen SQL.** Udgivet gennem Supabase-MCP'en, ikke i
+dashboardet — hele opskriften i filens hoved gælder stadig for
+den, der gør det i hånden.
+
+**⚠️ FØRST DET, MÅLINGEN AFGJORDE, FOR JEG GÆTTEDE FORKERT
+UNDERVEJS.** Den udgivne funktion stod som **version 1** med
+`verify_jwt: true`, og jeg skrev, at webhooken derfor aldrig
+kunne have nået den — altså at push aldrig havde virket.
+**Det passede ikke.** `net._http_response` siger:
+
+```
+4 kald · alle 200 · {"sendt":2,"ryddet":0} · senest 8/9 18.48
+```
+
+Tre af de fire hooks bærer en `Authorization: Bearer`-header og
+slipper derfor forbi gatewayen. **To telefoner har fået besked
+hele tiden** — de har bare fået 20/8-ordlyden: *"Ny bestilling
+🥪 · har bestilt smørrebrød"* på hver eneste bestilling, også en
+burger og en levering, med rå ISO-datoer. Præcis de tre fejl,
+31/8 rettede i repoet, og 8/9 skrev om igen.
+
+- **⚠️ OG ÉN HOOK HAVDE INGEN `Authorization`-HEADER:**
+  `push_forespoergsler`, som den eneste af de fire. Med JWT-
+  tjekket slået til blev netop den afvist af gatewayen, FØR
+  funktionens egen dør blev spurgt — så et selskab, en catering
+  eller en frokostordning gav aldrig et bip. Det er den, der er
+  lukket op nu. **Skru aldrig `verify_jwt` til igen** uden at
+  give den hook en header; de tre andre ville overleve det, og
+  den fjerde ville falde tavst
+- **⚠️ VERSIONSSTEMPLET ER EN MÅLING NU, IKKE EN PÅSTAND.**
+  Loggen skriver `send-push · udgave 2026-09-09 · ordlyd: bord /
+  levering / spis her / afhentning`. Det var hele grunden til at
+  bygge stemplet 9/9, og det er første gang, det har kunnet
+  læses
+- **⚠️ OG SVARET AFGØR, HVILKEN DØR DER SAGDE NEJ.** Et kald uden
+  hemmeligheden svarer `401` med kroppen **`nej`** — funktionens
+  egen linje. En gateway-afvisning svarer JSON
+  (`{"code":401,"message":"Missing authorization header"}`).
+  **Formen på svaret er dermed prøven på, at `verify_jwt`
+  faktisk er slået fra** — et blik i dashboardet er ikke det
+  samme. Og begge grene af døren svarer `nej`, så prøven kan
+  IKKE se forskel på "forkert nøgle" og "ingen nøgle": at
+  `PUSH_SECRET` stadig står rigtigt, ved vi kun af de 200'ere
+- **⚠️ INDHOLDET ER MÅLT MOD DISKEN, IKKE NÆRLÆST.** Filen blev
+  sendt som JSON og læst tilbage som rå UTF-8, og begge veje gav
+  **samme sha256 som repoets fil** (`1f9863f9…`, 297 linjer). To
+  skærmfulde tekst sammenlignet med øjnene er ikke en måling —
+  det er husets ældste ar
+- **To hooks hedder `\tpush_borde` og `\tpush_udlejninger`** med
+  et **tabulatortegn foran navnet**, en kopieringsrest fra
+  dashboardet. Den gør ingen skade — en trigger fyrer uanset sit
+  navn — og den er IKKE rettet: et navneskifte i produktionen er
+  ikke en oprydning, nogen har bedt om
+- **⚠️ OG SUPABASE-CLI'EN KAN IKKE BRUGES TIL AT EFTERPRØVE
+  DET.** `supabase functions download --project-ref
+  epwyjzakvvbxtpvnhvbn` svarer **403**: den lokale CLI er logget
+  ind på en konto, hvis projektliste **ikke** rummer Mosede — men
+  den rummer **spiis**. Læn dig på MCP'en, og tjek projekt-id'et
+  med `get_project_url`, før du rører noget
+
+**Tapasformularen stod skævt** (8/9). Kundens ord: *"bestillings-
+siden på tapas er dårlig og asymetrisk — fix."* **Ingen SQL.**
+
+Målt: *Dato* og *Tidspunkt* stod som to halve felter, mens
+*Antal personer* stod alene i fuld bredde under dem — altså tre
+felter i to rækker med hullet på det forkerte sted. Nu er datoen
+fuld bredde med sit varsel under, tid og antal deler rækken, og
+*Hvordan?* er fuld bredde. **Antalsfeltet stod med `value="0"`**;
+det er nu en `placeholder`, så gæsten ikke skal slette et nul,
+før hun kan skrive 12.
+
+**⚠️ OG VARSELLINJEN FLYTTEDE — prøven pegede på etiketten.**
+`[data-tapas-varsel]` er en `.hint` under feltet nu. Reglen er
+urørt og den vigtige: teksten skrives af REGLEN, så siden ikke
+kan love ét varsel og formularen holde et andet (sket tre gange:
+catering 30/8, smørrebrød 31/8, tapas 1/9).
+
+**Heroen på `bord/` bærer jeres egen terrasse** (8/9). Kundens ord
+med et skud: *"fix den ikke matchende billed og eventuelt gør det
+lidt lækkert, som f.eks. noget den her stil med de ternede
+borde."* **Ingen SQL.**
+
+Målt: heroen var slet ikke et billede — en mørk blækflade med et
+rødt ternet gitter ovenpå, og det er derfor den ikke matchede
+resten.
+
+- **⚠️ FOTOET ER HANS EGET, IKKE ET GENERERET.**
+  `stemning-terrasse.jpg`, som han selv lagde op 29/8: det røde
+  panel, vinrankerne, lanternerne, døråbningen med vandet og
+  masterne — og de **rød/hvid-ternede borddug**, som husets tern
+  er en stiliseret udgave af. Et genereret terrassefoto ville
+  være en påstand om, hvordan stedet ser ud, og det er samme
+  kategori som et opdigtet tal (historiesidens lære 6/9)
+- **⚠️ TERNET ER SLUKKET BAG FOTOET.** Første udgave dæmpede
+  gitteret fra 30 % til 14 % og lod det ligge, fordi 31/8-prøven
+  kræver en `repeating-linear-gradient`. **På skuddet** stod
+  21 px-banderne som hårde røde blokke hen over terrassen — og
+  min egen kommentar sagde ordret, at *"to gitre oven i hinanden
+  er støj"*, og beholdt så gitteret. **En prøve er ikke en grund
+  til at lade en fejl stå;** reglen fra 31/8 (heroen må ikke være
+  en fremmed sort/hvid flade) svarer fotoet BEDRE på
+- **⚠️ DER OPSKALERES IKKE.** Kilden er 800×631. Første udgave
+  lavede en 1600 px udgave: **188 kB mod 78** for præcis de samme
+  pixels, plus en `image-set(… 2x)`, der løj om, at der var et
+  skarpere billede at hente
+- **⚠️ OG DET ER KUN `bord/`.** Klassen `.hoved-foto` står i
+  bord/s egen opmærkning; `bestil/` deler `.smoer-hoved`, har
+  ingen klage fra kunden og beholder tern-heroen uændret. **Tern-
+  reglen er ikke forsvundet** — den måles på `bestil/` nu
+- **⚠️ KONTRASTEN ER MÅLT PÅ PIXLERNE**, ikke regnet på en farve:
+  `getComputedStyle` kan ikke sige summen af en gradient over et
+  foto. Læst af et skud på en iPhone 13: etiketten 7,14:1,
+  overskriften 18,25:1, manchetten 18,12:1
+
+**⚠️ OG TO PRØVER HAVDE VÆRET RØDE I LUFTEN — FJERDE GANG SAMME
+LÆRE.** `bord.spec.js`s *"et afslag beder om et opkald"* og
+*"kan meldes udeblevet"* klikkede direkte på Afvis og Udeblev,
+som flyttede bag "···" i commit `8497e0a` — og den er udgivet.
+Jeg kørte naboerne og ikke hele runden. De går gennem
+`aabnMere()` nu.
+
+**Bunden er to kort, og navnet viser sig med den hvide bjælke**
+(9/9). Kundens ord med et skærmbillede af spiis' egen bund: *"få
+bundne til at se sådan her ud istedet."* Og bagefter, med to skud
+af hjørnet: *"det her skal først vise sig når man har scrollet
+lidt længere ned hvor den hvide bar begynder at vise sig — den må
+ik stå i vejen og være dårlig."* **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER ET SKÆRMBILLEDE, IKKE KODE.** Der er hverken
+læst i eller kopieret fra spiis' repo. Formen er billedets,
+farverne og tallene er havnens — samme fremgangsmåde som
+personalesidens skabelon 24/8, bestillingskortet 31/8, Overblik
+1/9 og kalenderen 3/9.
+
+**MÅLT FØR:** afsnittet var ÉN stribe på otte hårstregsrækker,
+**610 px høj på en iPhone 13**, hvor *"Søndag (i dag) 10-20"* og
+*"Om din booking · Skriv til os"* så præcis ens ud. Der var ingen
+kasse om nogen af dem, og de to spørgsmål (hvornår har I åbent ·
+hvordan får jeg fat i jer) stod som ÉN liste med en lille etiket
+imellem.
+
+- **To KORT**, som resten af huset bruger: hvidt papir, husets
+  skygge, et tegn i en rund firkant, og hver sit spørgsmål i
+  overskriften. På computer står de side om side (fra 821 px)
+- **⚠️ OVERSKRIFTEN ER AFSNITTETS JOB, IKKE ADRESSEN.** Den var
+  *"Havnevej 20L / 2670 Greve"*, altså stod adressen som h2 i et
+  afsnit, hvis handling er at komme derhen. Adressen står stadig
+  **ÉN gang**, men i det kort, rute-knappen står i, hvor den er
+  svaret på *"hvor skal jeg køre hen"*. Prøven i
+  `kontakt-post.spec.js` er **VENDT** med grunden; dens vigtige
+  halvdel — ét husnummer i afsnittet, ikke to — er målt uændret,
+  og den anden halvdel er skærpet
+- **Statuslinjen er heroens egen regel læst fjerde gang**
+  (`Butik.pilleTekst`, 28/8). Det er IKKE de to *"åbent"* i den
+  samme etiket, som blev rettet 1/9 — det er den SAMME regel i to
+  kort otte skærme fra hinanden, som `Admin.statusNavn` bruges af
+  to faner. **Og den lover ingenting, når databasen er nede:**
+  `Butik.status` læser `_offline` og svarer *"Ring og hør, om vi
+  har åbent"*
+- **Den sidste bestilling skrives af REGLEN**
+  (`R.sidsteBestillingMin`, ejerens eget felt). En halv time
+  skrevet i HTML'en ville være fjerde gang, siden lovede ét
+  varsel og formularen holdt et andet
+- **⚠️ INGEN NY STØRRELSE OG INGEN NY SKYGGE.** Skralden fra 5/9
+  var **målt FULD**, da det her blev skrevet: 30 af 30
+  font-size-værdier og 37 af 37 skygger. Målt efter: stadig 30 og
+  37
+- **⚠️ `visTider` PEGER PÅ `#find-tider`, IKKE PÅ `.hours`.**
+  Afsnittet har TO `.hours`-blokke, og et opslag på klassen tog
+  den FØRSTE — rigtigt, så længe de to stod i den rækkefølge, og
+  præcis den slags, der skrider tavst: bytter nogen om på de to
+  kort, ville åbningstiderne blive skrevet ind over telefonen og
+  de to mailadresser
+
+**⚠️ OG ORDMÆRKET ER SKJULT ØVERST NU — TREDJE RUNDE PÅ DET SAMME
+HJØRNE.** Hvid stod i 1,06:1 på ternet (9/9), blæk blev læsbart —
+og blæk PÅ TERNET er stadig et navn oven i et mønster med røde og
+næsten hvide felter, tre centimeter over heroens egen krans, som
+siger nøjagtig det samme. Toppen har nu kun burgeren, som de ni
+undersider har kun pil og burger.
+
+- **⚠️ `visibility` OG IKKE `display`.** Bjælken er `sticky` og i
+  FLOW, så dens indhold bestemmer, hvor resten af siden begynder.
+  **Målt: h1 står på 260 px både før og efter**, og den skjulte
+  kasse har stadig sine 50 px. Et `display:none` ville flytte
+  hele forsiden ti pixels op — nøjagtig det, `min-height` blev
+  skrevet for
+- **Identiteten går ikke tabt:** heroens fulde krans bærer
+  ringteksten, og navnet står i footeren og i sidens titel
+
+**Tapaslistens hjerter er bølger nu** (9/9). Kundens ord:
+*"hjerterne til små bølger istedet — sådan den her
+emoji-lignende som hjerterne bare med en bølge istedet 🌊."*
+**Ingen SQL.**
+
+**⚠️ UNDTAGELSEN FRA 6/9 STÅR VED MAGT.** Catering og baglokalet
+fik et emoji PR. PUNKT, fordi hver linje dér er sin egen ting.
+Listen på `m-tapas` svarer på *"hvad ligger der PÅ fadet"* —
+punkterne hører til den SAMME ret, og så BETYDER det fælles tegn
+noget. Kun FORMEN skifter.
+
+- **⚠️ OG TEGNET ER TEGNET, IKKE ET EMOJI.** `js/skal/tapas.js`
+  KLONER det første `<span>` som skabelon, når ejerens egen
+  beskrivelse af fadet kommer fra menukortet — et emoji i teksten
+  ville ryge ud med tekstknuderne
+- **⚠️ TO KAMME OG IKKE TRE** — målt på et skud ved 15 px: tre
+  kamme i to linjer bliver en tæt rød klat, og den, der læser
+  listen, ser et hjerte igen
+
+**Menukortet læses i afsnit — maden står samlet øverst** (9/9).
+Kundens ord: *"på menukort delen ift telefonen kan vi ik få
+rækkefølgen lidt anderledes så det er de mest attraktive og
+velkendte ting i toppen som selvfølgelig dagens ret hvis den er
+der, også derefter retter — og du ved blive mindre attraktiv jo
+længere ned man ryger."*
+
+**⚠️ Kør `supabase/menukort-raekkefoelge.sql`** (data, ingen
+prøvefil — se nedenfor).
+
+**MÅLT PÅ HANS EGET KORT** (`menukort/menukort.json`, hentet fra
+produktionen 3/9 med anon-nøglen) på en iPhone 13, FØR noget blev
+rettet — med fem varer ser siden fin ud, med 308 er det en anden
+side:
+
+- **19.760 px = 29,8 skærme**
+- **Morgenmad FØRST**, 1.385 px nede
+- de to **TILKØB-lister 9.124-9.841 px nede**, altså 17 linjer på
+  10 kr. midt i maden
+- og **maden stod i TO BLOKKE:** sortering 1-9 øverst og 30-34
+  nederst, med isen (10-11) og de fem drikke-kort (20-24)
+  imellem. **Tapasfadet lå 15.355 px nede, UNDER "Snacks og
+  slik"**
+
+Den sidste er rettet i KODEN: `Butik.menuAfsnit` deler kortet op
+på `afdeling` — mad, is, drikke — og gæstesiden tegner en
+overskrift pr. afsnit. **Målt efter: tapasfadet 10.262 px**, altså
+7,7 skærme op, og maden står samlet.
+
+- **⚠️ AFDELINGEN ER EJERENS EGET FELT**, og det er hele grunden
+  til, at afsnittene er den her og ikke en rangliste i koden:
+  mad/is/drikke er TRE sande værdier, som han sætter i admin. Tre
+  sande slår enogtyve gættede — samme argument som
+  kategoritegnets farve fik 24/8
+- **⚠️ OG DET ER GRUPPER, IKKE EN NY SORTERING.** Inden for hvert
+  afsnit står kategorierne i EJERENS `sortering`, urørt, så
+  pilene i admin → Menukort bliver ved med at gøre det, de siger.
+  Et kodet *"attraktivitets-tal"* ville betyde, at hans pil ikke
+  slog igennem på gæstesiden — præcis den fejl, admins egne
+  afsnit blev bygget for at undgå (7/9). Prøven bytter de to
+  mad-kategoriers sortering og kræver, at siden bytter med
+- **⚠️ EN UKENDT AFDELING TABER IKKE SIN KATEGORI.** Kategorierne
+  har haft andre navne før (*"grill"*), og en kategori, der
+  falder ud af kortet, fordi dens afdeling ikke findes mere, er
+  varer, ingen kan finde. Der er en rest-spand til sidst
+- **⚠️ ÉT ENKELT AFSNIT GIVER INGEN OVERSKRIFTER.** Uden den
+  halvdel ville en regel, der ALTID skriver overskrifter, bestå
+  de tre prøver ovenfor
+- **21 px og ikke h2'ens 35:** overskriften skal dele en liste op,
+  ikke åbne en side. Og den **klæber IKKE** — hop-båndet klæber
+  allerede under topbjælken (109 px, målt 24/8), og to klæbende
+  lag oven i hinanden kostede en måling på kalenderen 7/9
+
+**De to andre er EJERENS DATA**, og
+`supabase/menukort-raekkefoelge.sql` gør præcis det samme som
+pilene i admin — den sparer atten tryk og tager ingen beslutning
+fra ham. Den slår kategorien op på **NAVN** og ikke på id
+(`kortets-priser-2.sql` skrev `kategori_id = 31` og ramte NUL
+rækker i en frisk database, målt 1/9), den kan køres igen, og en
+kategori, han har døbt om, står i rapporten som **ikke fundet** i
+stedet for at forsvinde. **Kørt på en lokal Postgres 16 bygget af
+`supabase/`-mappens egne filer:** 4 af 14 flyttet på den gamle
+rækkefølge, 0 af 14 ved anden kørsel, og en omdøbt *"Pølser"* gav
+linjen *"Ikke fundet på kortet"*. Den skriver DATA, ikke regler,
+og har derfor med vilje **intet tjek i `er-vi-klar.sql`** — samme
+grund som `kortets-priser.sql` og `borde-55.sql`.
+
+**Variation i afsløringen — tre bevægelser i stedet for én**
+(9/9). Kundens ord: *"gerne gøre brug af sådan nogle her nye
+slags design de steder det giver mening, da det hele er lidt
+kedeligt og ikke så godt som det bør være eller eksklusivt — så
+du ved nye og bedre animationer, rigtig variation af
+animationerne … og husk det skal se godt ud på telefon."*
+**Ingen SQL.**
+
+**MÅLT FØRST:** der er **68 `.rev`-elementer på de ti
+designsider, og de brugte ALLE den samme bevægelse** — stiger
+26 px og toner ind. Den eneste variation var 70/140/210 ms
+forsinkelse. Han har ret: en side, hvor hvert afsnit, hvert kort
+og hver række kommer ind ad den samme vej, læses som ÉN bevægelse
+gentaget otteogtres gange.
+
+- **STIGER 26 px** — overskrifter og afsnit (uændret)
+- **GLIDER 14 px ind fra den ledende kant** — rækkekort,
+  nyhedskort, arrangementkort, jura-blokkene
+- **TONER IND UDEN AT FLYTTE SIG** — fotos og lange tekster. Her
+  er bevægelse ikke elegant; den gør teksten svær at læse, mens
+  den flytter sig. Og den er den billigste af de tre
+
+Plus trin i de gentagne lister (`.week`, `.facts`, `.tiles`),
+stregen under hver overskrift der tegner sig selv med `scaleX`,
+og de fem prikker der kommer én ad gangen.
+
+- **⚠️ OG DER ER INGEN `scale` PÅ NOGET MED INDHOLD I.** Det er
+  husets egen regel fra 30/8, og den er **hans egne ord:**
+  *"animationen der ind med billederne er hakkende og ik clean."*
+  En skalering på 1 % tvinger browseren til at rastere ALT indeni
+  på ny for hvert billede, og på smørrebrødssiden er "alt" tre
+  fotos på flere hundrede kilobyte. Variationen kommer derfor fra
+  RETNING, AFSTAND og TID. Der er en prøve på det nu, målt på fem
+  sider
+- **⚠️ SELEKTOREN ER KONTEKSTEN, IKKE EN NY KLASSE I HTML'EN**
+  (samme greb som admins rækkeknapper 26/8): et nyt rækkekort
+  arver bevægelsen af sig selv, og de ti designsider er ikke
+  redigeret
+- **⚠️ 14 PX OG IKKE 20:** sektionens egen luft er 20 px
+  (`--pad`), og en transform **tæller med** i dokumentets
+  rulleflade — det var spøgelses-rulningen på 63 px 5/9. **Målt
+  på fem sider: NUL sidelæns rulning**
+- **⚠️ OG INTET STÅR SKJULT FOR DEN, DER HAR SLÅET ANIMATIONER
+  FRA.** `.rev{transform:none}` i reduced-motion vejer 0,1,0 og
+  TABER til en variant på 0,2,0, så uden blokken i arket ville
+  halvdelen af siden stå forskudt og usynlig. Det er 4/9-arret.
+  **Målt på fem sider UDEN at rulle: 0 elementer på opacity 0, 0
+  forskudte**
+
+**Målt på en iPhone 13 under et fuldt rul, tre kørsler hver:**
+
+| | median MED | median UDEN |
+|---|---|---|
+| forsiden | 33,9 / 33,4 / 33,8 ms | 36,2 / 35,4 / 34,9 |
+| selskaber | 34,0 / 33,1 / 35,8 | 38,2 / 37,8 / 34,3 |
+
+Altså koster den ingenting — forskellen er mindre end spredningen
+mellem to kørsler af den samme udgave. De ~34 ms er den
+indlejrede rullerod `#sc` fra 4/9, ikke animationerne.
+
+**⚠️ OG TRE AF FIRE TRIN-REGLER VAR DØD CSS — FALSIFIKATIONEN
+FANDT DET, IKKE KØRSLEN.** Prøven *"børnene i en gentaget liste
+kommer forskudt"* BESTOD, også da jeg fjernede trin-reglen. **En
+falsifikation, der ikke falder, er et spørgsmål og ikke et
+bevis.** To fejl på én gang:
+
+1. Reglen var skrevet som en **efterkommer** — `.rev .week>*` —
+   men `.week` bærer SELV klassen (`class="week rev d1"`). **Målt
+   i browseren på fem sider:** `.rev .week>*` = 0,
+   `.rev .facts>*` = 0, `.rev .findgrid>*` = 0. Kun
+   `.rev .tiles>*` (4) virkede. Husets egen lov, for femte gang:
+   **mål den BEREGNEDE stil**
+2. Og prøven målte den **forkerte beholder** — `.findgrid`, hvis
+   BØRN er `.rev` hver for sig med `d1`/`d2`, altså husets GAMLE
+   forsinkelse. Den målte en rytme, der har virket siden 23/8, og
+   sagde god for en regel, der ikke gjorde noget
+
+Rettet: begge former står nu (`.week.rev>*` OG `.rev .week>*`).
+**Målt efter:** `.week.rev>*` = 7 dagskort, `.facts.rev>*` = 3 på
+tre sider, forsinkelserne 0 / 0,07 / 0,14 / 0,21.
+
+**⚠️ OG `git checkout -- .` SLETTEDE EN RETTELSE IGEN — FEMTE
+GANG.** Ordmærke-prøvens `expect.poll` var lavet EFTER commit'en
+og før rollbacken i falsifikations-løkken, så den røg. Den fulde
+naborunde fandt den med **0,429 mod 1 på BEGGE profiler**, altså
+ingen flake. Husets regel siden 4/9 er *"commit FØR du
+falsificerer"*, og den blev fulgt — men så blev der rettet noget
+mere og rullet tilbage uden at committe det. **Den skarpere
+regel: læs `git status` FØR hver rollback, ikke kun efter.**
+
+**En rød SQL-runde læstes som grøn — fire filer målte ingenting**
+(9/9). Kundens ord: *"kør en ordentlig omgang, tjek alt og test og
+gør alt live og så det hele fungerer."* **Ingen SQL** — det var
+prøverne, ikke databasen.
+
+Runden blev hidtil kørt som en løkke i hånden og læst ved at
+tælle ordene BESTOD og FEJLEDE:
+
+```bash
+for f in supabase/proev-*.sql; do psql -q -d fuld -f "$f"; done
+```
+
+**Målt: 1418 BESTOD, 0 FEJLEDE — og FIRE filer knækkede
+undervejs.** Tre af dem skrev **nul** rapportlinjer, fordi den
+første fejl afbrød deres transaktion, og alt derefter blev
+sprunget over med *"current transaction is aborted"*.
+
+**⚠️ EN FIL, DER DØR FØR SIN FØRSTE RAPPORTLINJE, FORSVINDER UD
+AF BEGGE TAL.** Den ligner ikke en fejl — den ligner ingenting.
+Det er husets ældste ar i sin værste form: en måling, der ikke
+rammer det, den måler, siger *"bestået"*.
+
+**`vaerktoej/sql-runde.sh` tæller derfor TRE ting pr. fil** —
+BESTOD-linjer (målte den noget?), FEJLEDE-linjer (faldt en
+regel?) og *"transaction is aborted"* (døde den på sin egen
+kulisse?) — og slutter med `exit 1`, hvis en af de tre ser
+forkert ud. **Antallet af filer kommer fra DISKEN**, så en fil,
+der falder ud af mappen, ikke bare gør summen mindre.
+
+**Roden var den samme i alle fire, og det er 2/9-arret ordret:**
+en prøve, der låner ejerens data, arver alt hvad der står på dem.
+
+- **`proev-restaurant.sql` oprettede bord «7».** Ejeren HAR et
+  bord 7 blandt sine 55, så `borde_nummer_unikt` afviste det — og
+  var nummeret sluppet forbi, ventede `bestilling_bord_noegle`:
+  hans borde er **låst**. Bordet hedder `PROEV-R` nu; hans numre
+  er cifre og kan ikke kollidere. **13 af 13 BESTOD**
+- **`proev-foresp-kontakt.sql` gav alle fem indlæg den samme tomme
+  dato**, og tre af dem den samme tomme telefon.
+  `forespoergsel_bremse` spærrer for samme nummer + type + dato i
+  ti minutter, og den bruger `is not distinct from`, **netop så to
+  NULL-datoer tæller som ens**. Prøve 3 ramte dubletvagten i
+  stedet for kontaktreglen — og et `raise exception` er ikke en
+  `check_violation`, så fejlen slap forbi handleren og tog hele
+  DO-blokken med. Hver række har sin egen dato nu. **5 af 5**
+- **`proev-pris-vaern.sql` satte en pris uden at være ejer.**
+  `roller.sql` lagde 2/9 `menu_vare_pris_ejer` på `menu_varer`, og
+  `er_ejer_for()` spørger `auth.jwt()` — ikke databaserollen, så
+  heller ikke `postgres` slap igennem. Filen skriver nu sin EGEN
+  ejerrække og sætter `request.jwt.claims` for netop den ene
+  opdatering. **8 af 8**
+- **`proev-adgang.sql` bestilte «Æggesalat med bacon»** — ejerens
+  eget fyldnavn, og `smoerrebroed-kortet.sql` slukkede hele
+  kategorien 1/9. En slukket række tæller som *udsolgt eller
+  skjult* i `mosede_udsolgt_vaern` (med vilje), så gæstens
+  indsættelse blev afvist, og **alle fjorten adgangstjek faldt
+  bagefter**. Varen hedder `PRØVEVARE-ADGANG` nu
+
+**⚠️ OG DEN STRAMMERE RAPPORT FANDT EN FEMTE TING PÅ VEJEN.**
+Prøve 5 i foresp-kontakt afvises af `forespoergsel_email_ok` og
+ikke af `kontakt_ok` — de to bærer den **samme** regex, så en skæv
+mail er allerede vraget et lag før. Den gamle prøve spurgte kun
+*"blev den afvist?"* og kunne ikke se forskellen; nu læses
+fejlteksten, og prøven kræver, at **den regel, linjen handler om**,
+er den, der sagde nej. Begge navne er lovlige svar her, med
+grunden skrevet ned: `email_ok` siger *"står der en mail, skal den
+se ud som en"*, `kontakt_ok` siger *"der skal være mindst ÉN vej
+tilbage"*. **Målt: uden `email_ok` består prøve 5 stadig**, fordi
+`kontakt_ok` fanger `anna@` med en tom telefon. Et afslag fra
+dubletvagten er stadig et FEJLEDE.
+
+**⚠️ OG RUNDEN VED NU, AT ÉN FIL RAPPORTERER MED ØJNENE.**
+`proev-adgang.sql` skriver `\echo '--- 2) må IKKE læse dem  → 0'`
+og lader mennesket sammenligne. Den har altså **aldrig** en
+BESTOD-linje, og et 0/0 er dens normale tilstand. **Kendingen
+læses i KILDEN og ikke i udskriften:** står ordet BESTOD i filen,
+er et 0/0 et 💀; står det ikke, skal filen til gengæld have
+`\echo`-linjer at læse. En prøvefil, der hverken rapporterer selv
+eller skriver noget til et menneske, bliver flaget. **En
+undtagelse på et FILNAVN vokser, til prøven måler ingenting** —
+arret fra undtagelseslisten i `sql-mappen.spec.js`.
+
+**Målt efter: 48 filer, 1470 BESTOD, 0 FEJLEDE, exit 0.**
+
+```bash
+vaerktoej/byg-lokal-db.sh     # først: byg databasen
+vaerktoej/sql-runde.sh        # så: kør runden — den siger selv fra
+```
+
+Fire falsifikationer, fire fald — **alle på en KOPI**, så den
+rigtige fil ikke kunne rulles tilbage ved et uheld (arret fra 4/9,
+femte gang 9/9): bordet sat tilbage til «7» → 0 BESTOD og 0
+FEJLEDE; jwt-claims fjernet → 6 af 8 og filen dør; `kontakt_ok`
+droppet → prøve 3 FEJLEDE; `telefon_form_ok` droppet → prøve 4.
+
+**Ved bordet sprang fra h1 til h3 — og to værktøjer målte støj**
+(9/9, samme runde). **Ingen SQL.**
+
+`vaerktoej/tilgaengelighed.js` og `vaerktoej/naar-det-gaar-galt.js`
+er kørt på hver gæsteside og i alle fire fejltilstande.
+
+**FEJLTILSTANDENE: 0 af 15 sider har noget** — hverken blanke
+sider, rå fejlbeskeder, engelske ord eller JS-fejl, når databasen
+svarer 500, slet ikke svarer, eller mangler en kolonne (42703).
+
+**⚠️ MEN ÉN SIDE MÅLTE INGENTING, OG DET VAR DEN VIGTIGSTE.**
+`min-bestilling/` slår kun op, når adressen HAR et `?ref=` — så
+værktøjet skrev *"RAMTE ALDRIG DATABASEN"* på netop den side, hvis
+hele job er at overleve en nede database. Det er 5/9-arret: et
+nedt opslag sagde *"Vi kan ikke finde en bestilling med den
+reference"* og **stoppede takten**, så siden aldrig kom sig igen.
+Den får en opdigtet reference med nu — siden lover ikke, at
+bestillingen findes — og alle 15 sider rammer databasen i alle
+fire tilstande.
+
+**TILGÆNGELIGHEDEN: 27 fund → 19**, og de 19 er den dokumenterede
+ikke-rettelse fra 5/9: `h1 → h3` på de ti designsider, som er
+1:1-handoffet.
+
+**⚠️ ET AF DE OTTE VAR ÆGTE, OG DET ER VORES:** `ved-bordet/`
+sprang fra h1 til h3. To bokse ligger **FØR** formularen i
+opmærkningen — bordvælgeren og *"her er lukket"* — så når en af
+dem er fremme, er dens overskrift den FØRSTE efter sidens h1. En
+skærmlæser, der hopper fra niveau 1 til 3, melder et afsnit, der
+ikke findes, og den, der navigerer på overskrifter, leder efter
+det. Designsidernes `h1→h3` er kundens handoff og røres ikke; den
+her er husets egen, som admins `h2→h4` på Borde var.
+
+- **⚠️ OG STØRRELSEN ER SAT, SÅ TAGGET IKKE FLYTTER UDSEENDET.**
+  Browserens `h3` er 18,72 px og `h2` er 24 — altså et niveau,
+  ingen har bedt om. **Målt før og efter: 19 px** under sidens h1
+  på 23. Kigget på et skud af begge tilstande på en iPhone 13
+- **⚠️ OG KLASSEN HEDDER `bord-afsnit`, IKKE `bord-titel`.** h1
+  har ALLEREDE `id="bord-titel"`, og `js/ved-bordet.js` linje 249
+  slår den op med `getElementById`. To ting med samme navn er
+  husets egen advarsel (`hentBorde`-arret) — og her ville de være
+  en id og en klasse, altså tavse for hinanden
+- **⚠️ OG PRØVEN LÆSER STIGEN, IKKE ÉT ELEMENT.** De synlige
+  overskrifter læses i DOM-rækkefølge, og reglen er, at der ikke
+  må springes et niveau. Et spørgsmål til den ene overskrift om
+  dens eget tag ville bestå, også hvis nogen lagde en h4 ind over
+  den. Begge prøver har en vagt på, at boksen ER fremme først
+  (`toBeHidden`-arret fra 30/8)
+
+**⚠️ OG BEGGE VÆRKTØJER SPRINGER GOOGLES KVITTERING OVER NU — MED
+EN GRUND, OG PÅ FILENS FORM.** `googlea5013725eaf389e0.html` er ÉN
+linje ren tekst, som Search Console henter på dens navn og
+sammenligner med linjen indeni; den har hverken `<html>`, `<head>`
+eller et `lang`, **og den skal ikke have det**. Målt fyldte den
+**seks af de 27 fund** (lang, title, description × to profiler) —
+en fjerdedel af listen, der aldrig kan rettes, og *en rapport, hvor
+en fjerdedel er støj, læses ikke til ende*. Kendingen er Googles
+navnemønster **plus** at filen ingen `<html>`-rod har, som
+`erGoogleKvittering()` i `tests/hjaelp.js`. Filen er ikke uden
+vagt: `udgivelse.spec.js` har fem prøver på præcis den.
+
+Fire falsifikationer, fire fald (to tilstande × to profiler), og
+`git status` læst både før og efter rollbacken.
+
+**Og den fulde runde bagefter: 3476 bestod, 0 fejlede, 0 flakes**
+(49,6 min, 150 sprunget — samme tal som runden før). De TRE, der
+faldt i den forrige runde (`luge-loft:317`,
+`menukort-admin:96` og `:307`, alle 11,2-11,6 s og kun på mobil),
+er grønne nu uden en rettelse: flaken målt på **tiden**, ikke på
+navnet. **Det er første runde i lang tid uden ét eneste rødt navn**
+— tallet er 3472 → 3476, altså præcis de fire nye
+overskrifts-prøver og ingen regression.
+
+**Husnummeret er 20I — og CVR er oplyst** (9/9). Mikkel sendte
+et skud af **årsrapporten for 2020**: *Mosede Havnegrill & Ishus
+ApS, Havnevej 20I, 2670 Greve, CVR-nr 40 26 67 47*. Og bagefter,
+da konflikten blev holdt op for ham: *"ja ændrer til 20i"*.
+**Ingen SQL i repoet — men to felter i admin.**
+
+**⚠️ TREDJE GANG HUSNUMMERET SKIFTER, så hele historikken står
+her. Læs den, før du retter noget:**
+
+| | nummer | kilde |
+|---|---|---|
+| 23/8 – 1/9 | **20I** | designets handoff |
+| 1/9 – 9/9 | **20L** | ejerens håndskrevne svarark, bekræftet ordret: *"alt skal passe, det er 20l/L"* |
+| 9/9 → | **20I** | årsrapporten, indleveret til Erhvervsstyrelsen |
+
+**⚠️ ET DOKUMENT SLÅR ET HÅNDSKREVET ARK, og det er ikke smag:**
+årsrapportens adresse er den, en gæst finder, hvis hun slår
+CVR-nummeret op. To husnumre om den samme dør er ét for meget.
+**Og jeg rettede det IKKE selv** — arket var Mikkels eget ord fem
+dage før, så et gæt kunne kun blive forkert. Konflikten blev lagt
+frem, og han afgjorde den.
+
+**MÅLT: 26 filer bar 20L.** Tolv sider (footeren, forsidens
+adressekort, rute-linket til Google Maps, persondatasidens
+adresse-række, overdragelsen), `js/oplysninger.js`,
+`js/store.js`' reservedata, `supabase/ejerens-oplysninger.sql`,
+fem prøvefiler og papirerne.
+
+- **⚠️ OG DATABASEN SLÅR KODEN.** Målt i produktionen:
+  `lokationer.adresse = 'Havnevej 20L'`, og den vinder over filen
+  (reglen fra 8/9). **Hvilke flader det rammer, blev målt hver
+  for sig:** footeren, adressekortet og persondatasiden er
+  statisk HTML (rettet), JSON-LD læser `M.adresse` i
+  `js/skal/seo.js` linje 98 (altså filen, rettet) — men
+  **"Vis rute" læser DATABASEN**. Altså sagde alt, gæsten LÆSER,
+  20I, mens rute-knappen sendte hende til 20L. Ejeren retter det
+  i admin → Kontakt → Adresse; filen er kun reserven
+- **⚠️ `ejerens-oplysninger.sql` SKULLE MED, selv om den ER kørt.**
+  Den kan køres igen, og stod der stadig 20L, ville et nyt
+  gennemløb skrive det gamle nummer tilbage over ejerens
+  rettelse. Præcis arret fra `forespoergsler.sql`, som skrev det
+  gamle telefonkrav tilbage
+- **⚠️ OG INDEX.HTML'S EGEN KOMMENTAR CITEREDE DET GAMLE NUMMER.**
+  Prøven måler HVERT `Havnevej <nr>` på siden — **også inde i en
+  kommentar** — så et citat af et forældet husnummer fælder den
+  dag, nummeret skifter. Citatet er skrevet om uden husnummer, og
+  grunden står i kommentaren
+- **Fem prøvefiler er VENDT med grunden skrevet ned**, ikke rettet
+  for at blive grønne: `kontakt-post` (hele *Husnummeret*),
+  `struktureret-data` (JSON-LD — det, Google sammenholder med
+  CVR-registret), `jura`, `robusthed` (reservedataene) og
+  fiksturet i `hjaelp.js`. **Reglen er urørt:** der må stå ÉT
+  husnummer på siden, og det skal være det samme overalt. Kun
+  bogstavet er skiftet
+- **Gæsternes egne leveringsadresser i fiksturerne er IKKE rørt**
+  — en gæst må gerne bo på Havnevej 20L
+
+**⚠️ CVR STÅR MED VILJE IKKE I REPOET — OG DET FANDT PRØVEN, IKKE
+JEG.** Første udgave skrev `cvr: '40266747'` i
+`js/oplysninger.js`, og `jura.spec.js` faldt på filens eget flag:
+`godkendt: false` betyder, at listen ikke er gennemgået med
+ejeren, og *"så er et CVR-nummer i filen et gæt — det hører i
+admin"*. Guarden har ret, og den blev bygget netop mod det her:
+et nummer, der ser rigtigt ud, er stadig data og ikke kode.
+Nummeret sættes i **admin → Kontakt → CVR-nummer**, og
+`ejerens-oplysninger.sql` skriver det i databasen sammen med
+resten af hans oplysninger. Rækken på persondatasiden tegner sig
+selv, når det står der (`visCvr` kræver præcis otte cifre og
+sætter selv mellemrummene).
+
+**⚠️ OG ÉN FALSIFIKATION FALDT IKKE — DEN FANDT ET HUL, DER HAVDE
+STÅET SIDEN 8/9.** Fiksturets adresse i `tests/hjaelp.js` bar en
+note om, at *"et fikstur, der er uenigt med produktionen, er en
+prøve, der måler et andet hus"*. **Målt:** fiksturet sat tilbage
+til det gamle nummer, og `jura` + `kontakt-post` +
+`struktureret-data` skrev **alle 101 BESTOD**. Noten var altså
+dokumentation og ikke et værn — og en note er ikke et tjek, nu på
+fikstur-siden. Der er en vagt nu, og **ét af tallene kommer
+udefra**: fiksturet holdes op mod `js/oplysninger.js`' `vej`. Et
+spørgsmål til fiksturet om dets eget indhold ville bestå, uanset
+hvad kilden sagde. Set fejle med begge tal i beskeden.
+
+**⚠️ OG APS-NAVNET KOM IKKE PÅ SIDEN.** Årsrapporten hedder
+*Mosede Havnegrill & Ishus ApS*, og persondatasidens
+ansvarlige-række siger *Mosede Havnecafe*. Det blev lagt frem, og
+Mikkel svarede: *"nej nu hedder de mosedehvanecafe"* — altså er
+det gamle navn overhalet, og rækken er urørt.
+
+**Og `send-push.ts` fik sin egen blok øverst:** *"DEN HER FIL ER
+IKKE SQL"* med den fejl, SQL Editoren svarer (42601 på linje 40).
+Det var **tredje gang** en fil af huset havnede i det forkerte
+vindue — `lokal-stub.sql` 1/9 og `hent-menukort.sh` 3/9 fik
+samme blok af samme grund: **et værktøj, der kun kan bruges én
+bestemt vej, bliver brugt den forkerte.**
+
+Fire falsifikationer: tre fald og ét spørgsmål, som blev besvaret
+med en ny vagt, der så faldt.
+
+**De tre sidste ting i produktionen — og de kunne ikke rettes
+herfra** (9/9). Kundens ord: *"vi skal fixe alt der ikke er på
+plads nu."* **⚠️ Kør `supabase/ret-produktionen-9-9.sql`** i
+Mosede-projektet — ét indsæt i SQL Editoren.
+
+**⚠️ FØRST DET, MÅLINGEN AFGJORDE: ANON KAN IKKE SKRIVE, OG ET
+BLOKERET SKRIV LIGNER ET VELLYKKET.** Rettelsen blev prøvet med
+anon-nøglen fra `js/config.js`:
+
+```
+PATCH /lokationer?id=eq.mosede  {"adresse":"Havnevej 20I"}
+  →  HTTP 200   []
+  →  adressen står stadig 'Havnevej 20L'
+```
+
+RLS filtrerer rækken fra, så PostgREST svarer **200 med en tom
+liste** — ikke en fejl. Det er husets ældste ar i ny forklædning:
+*en handling, der ikke rammer noget, siger "det gik godt"*.
+**Læs rækken bagefter, før du skriver "rettet".**
+
+Filen retter TRE ting og kan køres igen:
+
+- **Adressen → `Havnevej 20I`.** Den vigtigste, fordi
+  **databasen slår koden** på netop det felt: footeren,
+  adressekortet, persondatasiden og JSON-LD'en er statiske og
+  siger 20I, men **"Vis rute" læser `lokationer.adresse`**
+  (`js/skal/kontakt.js` linje 199-204). Gæsten LÆSTE altså 20I
+  og blev sendt til 20L
+- **Nyhedens tre stavefejl** (*ebstiller · forspørger ·
+  arregementer*). **⚠️ Der matches på selve STAVEFEJLEN, ikke på
+  rækkens id.** Et id er rigtigt nu og forkert i morgen, hvis
+  nyheden slettes og skrives igen — og en opdatering på et
+  forkert id rammer en ANDEN nyhed uden at sige det
+- **Prøverækken «Bæ»** i `dagens_retter` fra 7/9. **⚠️ Skjul,
+  ikke slet:** tabellen har ingen `slettet`-kolonne, altså ingen
+  skraldespand og ingen fortrydelse. `aktiv = false` virker
+  (`Butik.dagensRetter` filtrerer på `r.aktiv !== false`,
+  `js/store.js` linje 3325), og den hårde sletning står
+  **kommenteret ud** nederst, som i `ryd-proevedata.sql`
+
+**⚠️ OG TO PÅSTANDE FRA DAGEN FØR VAR FORKERTE — begge målt om:**
+
+- **`ryd-proevedata.sql` rører ALDRIG `dagens_retter`.** Tabellen
+  er én af de **ni**, filen med vilje beskytter som *opsætning*
+  (prøve 7 tæller dem). Den kunne aldrig have fjernet «Bæ», og
+  her stod, at den ville
+- **Salg rører den heller ikke** — nul træffere på "dagens" i
+  `js/admin/salg.js`. Rækken tælles altså ikke med noget sted:
+  den er usynligt affald i en driftstabel (ugeplanen viser syv
+  dage FREM), ikke en fejl, gæsten eller regnskabet kan se.
+  Rettelsen er oprydning, ikke en hastesag
+
+**⚠️ ARRANGEMENTET DEN 17/9 RETTER FILEN MED VILJE IKKE.** Rækken
+har titlen «havne», 40 pladser, prisen 145 og ÅBEN tilmelding —
+men ingen tid, ingen beskrivelse og ingen kategori. Et opfundet
+navn eller et gættet klokkeslæt er præcis dét, huset har en regel
+imod (*"et opdigtet ARRANGEMENT er en aften, folk møder op
+til"*). Filen **siger**, hvad der mangler, og lader ejeren vælge
+mellem to kommenterede linjer: fyld det ud, eller luk for
+tilmeldinger, til det er klar.
+
+**Men admin kan ikke længere skabe den slags række.** Formularen
+kræver et klokkeslæt, når tilmeldingen er slået til — samme
+argument som den tidlige lukning lige ovenfor i filen, og samme
+som dagens ret uden pris fik 7/9: **kan man BOOKE det, skal
+rækken bære den oplysning, bookingen skal bruges med.**
+
+- **⚠️ KUN KLOKKESLÆTTET, ikke beskrivelsen.** Tiden kan måles;
+  *"en rigtig beskrivelse"* kan ikke, og et krav, koden ikke kan
+  afgøre, bliver et felt, man fylder med et punktum
+- **⚠️ OG KUN NÅR KOLONNERNE FINDES.** `maaTilmelding()` er falsk,
+  til `arrangementer.sql` er kørt, og en regel om et felt, der
+  ikke er der, ville spærre for at oprette noget som helst
+- **⚠️ TO PRØVER, OG DE HØRER SAMMEN.** Uden modstykket —
+  *"et «kig forbi» må stadig gemmes uden klokkeslæt"* — ville en
+  regel, der sagde nej til HVERT arrangement, bestå den første.
+  Én gammel prøve fylder nu også en tid ud; reglen, den vogter
+  (at fluebenet KAN slås til bagefter), er urørt
+
+**⚠️ OG PRØVEN PÅ RETTELSESFILEN LÅNER IKKE EJERENS DATA.**
+`proev-ret-produktionen-9-9.sql` opretter en **naboforretning**
+med præcis de samme fejl i sig og kræver, at de står urørte
+bagefter. Uden den nabo kunne prøve 2, 5 og 9 ikke fejle — det er
+arret fra `proev-ryd-proevedata` 6/9: *en prøve på en tom tabel
+måler tomhed*. **11 af 11 BESTOD** på en lokal Postgres 16, og
+fem falsifikationer faldt, alle på en KOPI: `lokation_id` fjernet
+fra adressen (prøve 2), pris-garden fjernet (8), `lokation_id`
+fjernet fra nyheden (5), navn+pris fjernet (7 og 8), og
+`is distinct from` fjernet (10).
+
+**⚠️ OG ÉN FALSIFIKATION MÅLTE INGENTING FØRST — MIN EGEN FEJL,
+OG DEN ER VÆRD AT KENDE.** Tekstvagten i `sql-mappen.spec.js`
+blev falsificeret ved at fjerne forretningen fra migreringen —
+og prøven **bestod**. Grunden var ikke prøven: min `str.replace()`
+ramte ikke, fordi jeg havde skrevet prøvefilens indrykning og
+ikke migreringens, og **`replace()` fejler tavst, når mønstret
+ikke findes**. Jeg printede "fjernet" uden at tjekke.
+**En mutation skal bekræftes, før dens resultat betyder noget** —
+`assert s.count(gammel) == 1` før hver erstatning. Med
+mutationen faktisk anvendt faldt vagten som den skulle.
+
+**Og `send-push.ts` siger nu, hvilken udgave der KØRER.**
+Problemet har hele tiden været, at man ikke kunne
+SE forskel: ordlyden har skelnet mellem bord, levering, spis her
+og afhentning siden 31/8, og den udgave, der kører, er den, der
+sidst blev udgivet. Et `console.log` med en dato ved hver kold
+start kan læses i **Edge Functions → send-push → Logs**; står
+der en ældre dato end i repoet, er den ikke udgivet endnu.
+
+- **⚠️ DEN SVARER IKKE UDADTIL, og det er med vilje.** Døren er
+  headeren `x-mosede-secret`, og den tjekkes som det allerførste.
+  Et svar FØR den dør — også bare et versionsnummer — ville være
+  en ny vej ind i en funktion, hvis hele værn er, at der ikke er
+  nogen. En log kan kun læses af den, der allerede er logget ind
+- **⚠️ OG STEMPLET SKAL FØLGE MED, når ordlyden ændres.** Ellers
+  er det en påstand i stedet for en måling
+
+**Målt efter: 49 filer, 1481 BESTOD, 0 FEJLEDE, exit 0** — præcis
+de elleve nye linjer og ingen regression.
+
+**Og den fulde Playwright-runde: 3482 bestod, 0 fejlede, 0 flakes**
+(39,9 min, 150 sprunget — uændret). 3476 → 3482 er præcis de tre
+nye prøver på to profiler: arrangementets værn, dets modstykke og
+tekstvagten på engangsrettelsen. **Anden runde i træk uden ét
+eneste rødt navn.**
+
+**⚠️ OG GÆSTESIDEN VAR BYTE FOR BYTE UÆNDRET I HELE RUNDEN** —
+kun `js/admin/kalender.js`, to SQL-filer, Edge Function-kilden,
+prøverne og papirerne. Det er værd at skrive ned, fordi det er
+dét, der gjorde udgivelsen ufarlig at lave FØR den fulde runde
+(rækkefølgen fra 30/8): der var ingen gæstevendt kode at gå i
+luften med.
+
+**Fem ægte fejl fra den fulde runde — fire af dem mine egne fra
+dagen før** (9/9). Kundens spørgsmål aftenen før: *"den skal
+lanceres imorgen såååeee er den der ægte nu hved du hvilek
+kriterier den skal leve op til"*. **Ingen SQL.**
+
+Runden skrev **3413 bestod, 18 fejlede**. Fem var ægte, otte var
+prøver, der var blevet forældede af ændringer, vi selv traf, og
+fire var flaken målt på **tiden** (bestod på den anden profil i
+den samme runde).
+
+**⚠️ ORDMÆRKET STOD I 1,06:1 — OG ADVARSLEN STOD FIRE LINJER
+LÆNGERE NEDE I DET SAMME ARK.** Ternet har BÅDE røde og næsten
+hvide felter, så hvid skrift forsvinder i de lyse. Det er nøjagtig
+den fejl, tilbage-pilen fik rettet 5/9, skrevet ind igen lige over
+kommentaren om den. Svaret stod ti linjer nede: `.topbar .g.icn`
+løste det med **ink på en lys flade**. Ordmærket gør nu det samme,
+så navnet og de to knapper ved siden af er én ting.
+
+**⚠️ OG VEJEN HJEM BLEV EN TRYKFLADE PÅ 19 PX** på `bestil/` og
+`bord/`. Da kransen blev afløst af navnet som tekst, gik den fra
+en SVG på 55 px til en tekstlinje på 19 — under gennemgangens gulv
+på 30. Luften er lodret padding med negativ margin; **ikke**
+`inline-block`, som limede footerens links sammen på syv sider
+31/8.
+
+**⚠️ TAPASPRISEN STOD MED TO TAL PÅ DEN SAMME SIDE.** Målt i
+produktionen: fadet koster **179**, heroen sagde **199 kr. pr.
+person**, og sumboksen tyve linjer nede regnede med 179. Forsiden
+fylder sin egen (`visTapasPris`), så gæsten læste 179, trykkede
+*"Se og bestil tapas"* og mødte 199 på den side, hun landede på.
+Kasserne fyldes af menukortet nu, og designets tal er reserven.
+
+- **⚠️ OG TILKØBET SOLGTE ET GLAS.** `findVarer()` tog den FØRSTE
+  boble efter sortering, og ejerens kort har *"Cava, glas"* (69)
+  før *"Cava, flaske"* (299) — mens designets egen tekst hele
+  vejen siger *"en flaske Cava"*. Køkkenet ville sende ét glas ud
+  til et fad, to mennesker deles om
+- **⚠️ OG PAKKEKASSEN FORSVINDER, NÅR DEN IKKE KAN REGNES.**
+  *"548 kr. for 2 personer"* er en pakke; kan vi ikke læse den af
+  kortet, er tallet et løfte, ingen har givet. 548 er i øvrigt
+  2×199+150 — designets egne priser
+- **⚠️ OG SKUFFEMENUEN LOVEDE TO FORKERTE PRISER.** *"Tapas · fra
+  199,-"* stod på **elleve** sider, og forsiden havde også
+  *"Smørrebrød ud af huset · fra 24,-"* — **målt er billigste
+  håndmad 27**. Et tal i en menu er også et løfte, og ingen holder
+  styr på det (samme lære som *"2 dage før"* 31/8). De ti andre
+  sider har slet ingen etiket på smørrebrødet; forsiden følger dem
+
+**⚠️ OG SKYGGE-SKRALDEN VAR SPRUNGET: 39 mod loftet på 37.**
+Jurasiden fik to nye værdier, der kun adskilte sig fra
+eksisterende med en halv pixel og et nul (`rgba(36,26,23,.10)` mod
+`.1`). De genbruger arkets egne nu.
+
+**⚠️ FIRE PRØVER MÅLTE NOGET ANDET END DERES EGEN REGEL:**
+
+- **`bordkort.spec.js`** krævede kransen på `bord/` og `bestil/`.
+  Den er væk på kundens ord (*"måske skriv Mosede Havnecafe i
+  stedet"*). **VENDT med grunden skrevet ned — og de to sider har
+  fået deres EGEN prøve**, så en side, der mistede både kransen og
+  navnet, stadig falder
+- **`intro-boelge.spec.js`** pegede på `.topbar .brandmark`, som
+  ikke findes mere. Den svarede *"ingen topbjælke"* og faldt uden
+  at have målt introen én gang
+- **`ved-bordet.spec.js`** tæller nu kun links, der åbner i den
+  SAMME fane. Jura-linket er et lovkrav netop dér, hvor gæsten
+  skriver en allergi, og `target="_blank"` lader bestillingen stå
+- **`typografi.spec.js` fældede sin egen dokumentation:** jurasiden
+  NÆVNER `fonts.googleapis.com` i en note om, at den ikke henter
+  derfra. Kommentarerne klippes af nu — **fjerde gang samme ar**
+  efter favicon-prøven 29/8 og oplysningsfilen 1/9
+
+**⚠️ OG DEN FJERDE FALSIFIKATION BESTOD FØRST.** Prøven *"tilkøbet
+er flasken, ikke glasset"* brugte `push()`, så flasken lå forrest
+i listen alligevel — og uden reglen vandt den af sig selv.
+**En falsifikation, der ikke falder, er ikke et bevis; det er et
+spørgsmål.** Glasset ligger først nu, som ejerens sortering gør
+det i produktionen.
+
+**⚠️ OG MÅLINGEN AF PRODUKTIONEN FANDT TRE TING, KODEN IKKE KAN
+RETTE** — de er ejerens:
+
+- **Kalenderen har ét offentligt arrangement: "havne" den 17/9**
+  med 40 pladser og åben tilmelding. Musikbanneret viser det
+  næste offentlige arrangement, så det stod på forsiden, og en
+  gæst kunne **reservere en plads** til det
+- **Nyheden på forsiden har tre stavefejl** og står til 12/9
+- **Åbningstiderne står 10-20 alle syv dage** — rigtige rækker i
+  databasen, ikke kodens reserve, men tallet går i Googles
+  JSON-LD, og en gæst, der kører til havnen kl. 19.45 på Googles
+  tid, har spildt turen
+- **Og `dagens_retter` bærer en prøverække ved navn "Bæ"** (7/9,
+  ingen pris). Den er **ikke** synlig — ugeplanen viser syv dage
+  FREM fra i dag — men den ligger der og tælles med i Salg
+
+**⚠️ OG DEN LOVPLIGTIGE OPLYSNING MANGLER STADIG: CVR.** Målt: der
+er ingen `cvr`-nøgle blandt de 28 i `indstillinger`. Feltet er
+bygget i admin → Kontakt, og rækken på persondatasiden er skjult,
+til ejeren skriver det.
+
+**⚠️ OG DEN SJETTE FEJL FANDT JEG IKKE SELV: BJÆLKEN BLEV 10 PX
+LAVERE.** `.topbar` er `sticky` og i **flow** — derfor trækker
+heroen sig op under den — så bjælkens INDHOLD bestemmer, hvor
+resten af siden begynder. Kransen var 50 px; ordmærket er 23,1.
+**Målt: h1 flyttede sig fra 260 til 250 px**, altså hele forsiden
+ti pixels op, uden at nogen havde bedt om det. Rettelsen er
+højden og ikke prøvens tal: designet er godkendt på de afstande,
+og et ordmærke er ikke en aftale om at flytte forsiden.
+
+**⚠️ OG ANKERPRØVEN VENTEDE PÅ ET STOPUR, IKKE PÅ EN TILSTAND.**
+*"ankerhoppet lander lige under bjælken på h-smorrebrod"* faldt
+med **44 px mod loftet på 26** og bestod 4 af 4 gange alene.
+Det er ikke tiden som de kendte flakes — regnestykket går op:
+designets `.rev` flytter målet 26 px og bruger `.78s` PLUS op til
+`.21s` forsinkelse, altså **990 ms**, før den bløde rulning
+overhovedet er regnet med. Prøven ventede **900**, og de 18 px er
+præcis det, transformen havde tilbage. Den venter på afsløringen
+og på at rulningen står stille nu. **Set fejle:** med luften under
+bjælken fjernet i `havnegrillen.js` falder alle seks.
+
+**Runden efter rettelserne: 3436 bestod, 3 fejlede** — og alle tre
+er flaken målt på **tiden**, ikke på navnet: hver af dem faldt på
+`mobil` og bestod på `computer` i den SAMME runde, og alle tre
+bestod alene bagefter.
+
+| prøve | i runden | alene |
+|---|---|---|
+| `admin-forespoergsel:528` | 12,9 s ✘ | 5,8 s ✓ |
+| `bestilling:1011` | 18,0 s ✘ | 10,1 s ✓ |
+| `levering:125` | 10,1 s ✘ | 3,0 s ✓ |
+
+Fem falsifikationer, fem fald — og den sjette, der bestod, er
+rettet og set falde bagefter.
+
+**Delebilledet var det genererede facadebillede** (8/9). **Ingen
+kunde spurgte om det her** — det blev fundet ved at måle, mens
+bord/-heroen blev lavet.
+
+`og:image` pegede på `billeder/facade-1400.jpg` på **alle tolv
+sider** og i JSON-LD'en. Det er dét billede, Facebook, Messenger,
+iMessage, LinkedIn og Google viser, hver gang nogen deler et link
+— altså det mest sete billede på hele hjemmesiden, og det havde
+**aldrig en prøve.**
+
+Og billedet er genereret eller AI-behandlet: skiltet siger
+**"MOSEDE HAVN - Grill & Kiosk"**, mens forretningen hedder
+*Grill & ishus*, og der står *"STEFF ADLNDS / SOVAR OOF STORCE"*
+og *"PACAN-CHERSEPSRIDD"* i den. **Et skilt med et forkert navn
+er en påstand om forretningen** — samme kategori som et opdigtet
+tal.
+
+- **Nu er det hans eget foto:** et 1,91:1-udsnit af
+  `stemning-terrasse.jpg` (`del-terrasse-800.jpg`), altså det
+  SAMME billede som bord/s hero — så delingen og den side,
+  gæsten lander på, siger det samme
+- **⚠️ INGEN MENNESKER I DEN, og det er et valg.**
+  `molen-1200.jpg` var det skarpeste alternativ (1200×628,
+  præcis Facebooks anbefalede mål) og har genkendelige gæster i
+  sig. Den ligger i forsidens galleri på hans egen beslutning,
+  men at gøre den til **delebilledet** er hans valg, ikke vores
+- **⚠️ FACADEBILLEDERNE ER IKKE SLETTET**, men de er forbudt som
+  delebillede. `facade-800` og `facade-2400` indlæses ikke af
+  nogen side
+- **Tre prøver, og tallet kommer udefra:** de læser filen på
+  DISKEN. En `og:image`, der peger på en fil, ingen har lagt ind,
+  er et tomt kort i en Messenger — og opmærkningen ville se helt
+  rigtig ud
+
+**⚠️ OG `tests/doed-kode.spec.js` HAR ET HUL, DER IKKE ER LUKKET
+ENDNU.** Den spørger `html.indexOf(f) === -1` med `f` =
+filnavnet, så **`side.js` består, fordi HTML'en indeholder
+`forside.js`** — en delstreng. Målt: `js/side.js` (den GAMLE
+forsides script, med hero-videoen og tavlen) indlæses af **ingen
+side** og står ikke i `KENDTE`. Vagten kan altså ikke se den, og
+den samme kollision vil skjule enhver ny fil, hvis navn er en
+endelse af en indlæst fils. Det er ikke rettet her, fordi
+rettelsen kræver, at `side.js` får sin note og kommer i listen —
+**men skriv ikke, at vagten dækker js/-mappen, før den gør det.**
+
+**Menukortet er delt op efter, hvor varerne sælges** (7/9).
+Kundens ord: *"kan vi opdele menukort i admin så man kan se
+hvorhenne fx smørbrød ud af huset med hvad man kan bestille der,
+så det er opdelt i kategorier som på siden og mere overskueligt —
+det er alt for kompliceret."* **Ingen SQL.**
+
+22 kategorier og 308 varer i ÉN lang liste. Fanen kunne sige, hvor
+mange der manglede en pris og hvor mange der var udsolgt — men
+ikke det, ejeren spørger om, når han skal rette noget: **hvor står
+den her kategori henne ude på hjemmesiden?** Fire afsnit nu, i den
+rækkefølge gæsten møder dem:
+
+| Afsnit | Hvad det betyder | Hans data |
+|---|---|---|
+| Smørrebrød ud af huset | smørrebrødssiden, forsiden og bordene | 2 |
+| Kan bestilles | forsiden og QR-koden ved bordene | 9 |
+| Kun på menukortet | kan læses, ikke bestilles | 10 |
+| Ikke på kortet | slukket | 1 |
+
+**Og opdelingen viser med det samme noget, papirerne har stået
+med siden 1/9:** *"Tillæg: glutenfri, laktosefri og vegansk"* og
+*"Tilkøb morgenmad"* står under **Kun på menukortet** — fluebenet
+er ikke sat, så gæsten kan se dem og ikke vælge dem.
+
+- **⚠️ REGLEN SKRIVES IKKE AF.** Betingelserne — aktiv, ikke is,
+  rigtig ugedag, fluebenet sat, ikke smørrebrødets egen — står i
+  `Butik.udvalg`, som ALLE tre bestillingsveje bruger. En kopi i
+  admin ville skride fra hinanden den dag en af dem ændrer sig, og
+  hverken admin eller hjemmesiden ville se forkerte ud for sig
+  selv. Derfor rækker `udvalg()` nu sin egen liste ud
+  (`bestilKategorier`), og admin SPØRGER den
+- **⚠️ AFSNITTENE ER GRUPPER, IKKE EN NY SORTERING.** Inden for
+  hvert afsnit står kategorierne i deres egen `sortering` —
+  gæstens rækkefølge — og **pilene bytter med naboen I
+  AFSNITTET**. En pil, der byttede med en kategori i et andet
+  afsnit, ville se ud som om den ikke gjorde noget
+- **⚠️ OG OVERSKRIFTEN SKAL KLÆBE UNDER BJÆLKEN, IKKE BAG DEN.**
+  Målt på en iPhone 13: `.top` er sticky med z-index 20 og 60 px
+  høj, overskriften har z-index 3 — med `top: 0` lå den bag
+  bjælken. **Højden er en VARIABEL nu (`--adm-top`)**, så de to
+  regler deler ét tal; et 60 skrevet af ville skride den dag
+  bjælken bliver højere, og det kunne kun ses ved at rulle
+- **⚠️ OG `--blaek` FINDES IKKE.** Min første udgave brugte den
+  til overskriftens farve. Arket har en note ved `.note-fold`, der
+  siger det ordret: **admins blæk er `--sea`.** En variabel, der
+  ikke findes, arver bare og ser "næsten rigtig" ud — arret fra
+  `--overskrift` 24/8. (Fire ældre regler bruger den stadig; de
+  arver body-farven og er ikke rørt her.)
+
+**⚠️ OG PRØVEN OM DEN KLÆBENDE OVERSKRIFT MÅLTE FØRST INGENTING —
+TO GANGE.** Første udgave brugte `scrollIntoViewIfNeeded()`, og
+så stod overskriften på sin NATURLIGE plads under bjælken;
+prøven bestod med `top: 0` sat tilbage. Anden udgave rullede
+selv — og faldt på to nye ting:
+
+- **`scrollTo(0, y)` LÆSES TILBAGE SOM 0.** `<html>` har
+  `scroll-behavior: smooth`. **Målt: 0 mod 900** i den samme
+  browser på den samme side. Det er husets eget ar fra 4/9, nu i
+  en prøve; `behavior: 'instant'` virker
+- **og alle afsnit klæber ved det SAMME `top`**, så under
+  overleveringen står to overskrifter oven i hinanden, og et
+  `elementFromPoint` svarer den bagerstes note. Prøven ville falde
+  på geometri og ikke på reglen
+
+Den måler derfor **offsettet mod bjælkens egen højde** — tallet er
+stadig udefra, og den kræver også, at bjælken ligger OVER
+overskriften i stakken. Er den ikke det, er problemet et andet, og
+reglen måler ingenting.
+
+**⚠️ OG DEN FULDE RUNDE FANDT TO PRØVER, DER HAVDE VÆRET RØDE I
+EN DAG** (7/9). **3254 bestod, 5 fejlede.** Tre af de fem var
+flaken målt på TIDEN (`ved-bordet.spec.js:278` tog 30,9 sekunder i
+runden og 3,4 alene — og bestod på computerprofilen i den SAMME
+runde; `admin.spec.js:321` faldt i naboranden på 3,1 sekunder og
+kunne ikke genskabes i seks solokørsler eller fire kørsler under
+load). **De to andre var ægte og faldt på BEGGE profiler.**
+
+`skal-forespoergsel.spec.js`s to cateringprøver krævede præcis TRE
+flader — og forretningens egne fotos kom i pladserne kl. 10.04
+samme dag. **Det er 30/8-læren en gang til: jeg kørte NABOERNE og
+ikke hele runden**, og filen var i ingen af de to nabosæt, hverken
+før eller efter udgivelsen. To deploys gik i luften med dem røde.
+
+Reglen er urørt og stadig den vigtige: en `<image-slot>`, der
+bliver stående, tegner sig som en stiplet grå kasse. Det, der er
+lavet om, er at udfaldet kan være to ting, og at hver afløser skal
+have pladsens egen HØJDE. **Og den anden blev SKARPERE:** den
+talte `img.foto-fyldt`, og med tre fotos i repoet ville den bestå,
+uanset hvilket billede der stod — den måler `src` på den plads,
+nøglen hører til, nu.
+
+**Dagens ret-kortet og kapitlets etiket** (7/9). Kundens to
+skærmbilleder: *"d her skal fixes"* om historiesiden, og *"vi
+mangler den her daily dagensret store ting ved dagensret"*.
+**Ingen SQL.**
+
+**⚠️ ETIKETTEN PÅ HISTORIESIDEN ER ET ORD, IKKE KUN ET ÅRSTAL.**
+"Dengang" lå hen over overskriften *"Vaffelis, træterrasse og
+master lige bagved"*. **Målt på 900, 1000, 1280 og 1600 px** — og
+det er den samme fejl alle fire steder, fordi spalten har et fast
+loft: ved 74 px fylder ordet **301 px i en spalte på 210**, altså
+91 px ud over kanten og 37 px ind over h2'en.
+
+- **⚠️ OG DEN FANDTES KUN PÅ ÉT KAPITEL.** *"I dag"* er 164 px,
+  *"1710"* 145, *"Nu"* 99 — alle med luft til overs. Derfor kunne
+  den stå i to uger: man skal rulle til netop det kapitel på
+  netop en computer
+- **Størrelsen er sat efter det LÆNGSTE, spalten skal rumme.** Et
+  årstal er fire tabular-cifre; et ord kan være dobbelt så bredt
+  ved samme størrelse, og **CSS kan ikke tælle tegn**. Spalten er
+  260 px og skriften 58 — "Dengang" fylder 234, altså 26 px luft
+- **⚠️ TELEFONEN ER URØRT.** Dernede er der intet grid: etiketten
+  står over overskriften i fuld bredde
+- **⚠️ PRØVEN MÅLER ALLE KAPITLER**, ikke det ene — ellers vogter
+  den en tastefejl og ikke en regel. Og den læser etikettens egen
+  **tekstbredde** (et `Range`), ikke elementets kasse: kassen er
+  spaltens fulde bredde og ville altid passe
+
+**DAGENS RET-KORTET FIK FORLÆGGETS TRE TING.** Forlægget er et
+skærmbillede, ikke kode — formen er billedets, farverne er
+havnens, samme fremgangsmåde som personalesidens skabelon 24/8.
+
+- **"I dag"-blokken** i venstre kant, i husets røde med ternet.
+  Den har ligget der som en 10 px stribe siden designet kom;
+  blokken er den samme tekstur, bare bred nok til at bære ordet.
+  **⚠️ Først fra 560 px:** målt er kortet **337 px** bredt på en
+  iPhone 13, og en blok på 96 px ville tage næsten en tredjedel
+  fra rettens navn. Dernede bliver striben
+- **Prisen som en pille**, i `--red-tekst` og ikke `--red`: den
+  lille skrift falder under 4,5:1 med mærkefarven selv
+- **Portionerne, der er tilbage.** **⚠️ Tallet er DATABASENS** —
+  `dagens_retter.antal_tilbage` tælles ned af en bremse ved hver
+  bestilling, og ved nul sætter retten sig selv udsolgt.
+  Advarslen mod et håndtalt lager står stadig; det er præcis
+  derfor, tallet ikke regnes i browseren. **Uden et antal findes
+  pillen ikke**, og "Kun 3 tilbage" er flyttet fra manchetten ind
+  i pillen: et tal, der skal afgøre om man skynder sig, skal ikke
+  læses ud af en sætning
+
+**⚠️ OG MÅLINGEN FANDT EN FEJL, JEG IKKE LEDTE EFTER: EN UDSOLGT
+DAGENS RET INVITEREDE STADIG TIL AT BESTILLE.** Kortet viste
+*"Bestil dagens ret"* med `href="#bestil"` — og retten er
+filtreret ud af formularen af `Butik.udvalg`. Gæsten trykker,
+lander i bestillingen og finder ikke den ret, hun kom efter. Samme
+familie som de tre døde knapper 3/9: et **synligt** anker, hvis
+mål ikke kan bruges. Knappen fører til menukortet nu, og ordet
+skiftes i **tekstknuden** — designets `<span class="sheen">`
+ligger inde i knappen (arret fra `pegVidere` 31/8).
+
+**⚠️ TO TING MÅLTE INGENTING FØRST, OG BEGGE VAR MINE EGNE:**
+
+- **Fiksturet daterede retten til I DAG**, mens prøven kører på
+  et ur sat til **7. august**. Rækken fandtes derfor ikke på den
+  mockede dag, `Butik.dagensRetter` faldt tilbage på den GAMLE
+  enkeltindstilling, og de nye felter nåede aldrig kortet — to
+  prøver målte noget helt andet, end de påstod. Datoen kommer fra
+  prøvens eget ur nu. Husets ar fra 2/9: **en prøve, der låner
+  virkeligheden, arver alt hvad der står på den**
+- **Og én prøve havde været RØD siden omrokeringen** — målt på to
+  commits, ikke gættet: *"ingen tom billedplads er synlig for
+  gæsten"* bestod på `3a05e33` og fejlede på `b6102a5`.
+  Ventelinjen lånte **DOM-rækkefølgen**: den første `.foto-felt`
+  var tapasfadets og synlig, men da nyhederne flyttede op over
+  dagens ret, blev den første et NYHEDSKORTS plads — og det
+  afsnit skjuler sig, når der ingen nyheder er. Så ventede prøven
+  på et element, der aldrig kan blive synligt. Den venter på
+  `:visible` nu. **Reglen er urørt, og siden var aldrig
+  forkert** — men den gik i luften rød, og det er værd at vide:
+  en ventelinje er også en antagelse om siden
+
+Fem falsifikationer, fem fald.
+
+**Historiesiden fik billeder — og siger selv, hvad de er** (6/9).
+Kundens ord: *"kan du så ikke bruge internettet og søge omkring
+mosedehavns historie med billeder og generer nogle fede
+cinematiske videoer og materiale til den side via sjinn
+mcp'en?"* — og bagefter *"ja gør det gør alt du kan"*.
+**Ingen SQL.**
+
+De fire pladser på `historien.html` har stået som mørke flader
+siden 31/8. De bærer et billede hver nu — vand og master i blå
+time, et anker i vandkanten, en softice, tovværk på et trædæk.
+
+- **⚠️ DE ER KOMPRIMERET AD SIDENS EGEN VEJ.** Samme canvas,
+  samme 1600 px, samme 16:9-midterbeskæring og samme JPEG 0,82
+  som `komprimer()` i `js/store-skriv.js` bruger, når ejeren
+  lægger et foto op i admin. **6,4 MB blev 91-325 kB**, alle
+  fire 1600×900. En anden komprimering ville betyde, at hans
+  egne uploads så anderledes ud end vores — to udgaver af den
+  samme regel
+- **Versionsstemplet er på** (`?v=__V__`), som
+  `h-smorrebrod.html` har det: et billede uden stempel bliver
+  hængende i browserens cache den dag, det skiftes
+
+**⚠️ MEN DET ER STEMNINGSBILLEDER, IKKE ARKIVFOTOS — OG DET ER
+IKKE EN DETALJE PÅ NETOP DEN SIDE.** Teksten bærer allerede et
+*"efter sigende"*, fordi kilden til ankeret selv er usikker. Et
+billede, der læses som dokumentation, ville være den samme
+påstand som et opdigtet tal, en etage op.
+
+- **Billedteksterne og alt-teksterne siger kun, hvad billedet
+  VISER** — *"Master i blå time"*, *"Tovværk på et trædæk"* —
+  aldrig hvor det er taget
+- **Linjen `#h-stemning` siger det højt**, lige over kildelinjen:
+  *"Billederne på siden er stemningsbilleder fra kysten — ikke
+  arkivfotos fra Mosede Havn."*
+- **⚠️ OG DEN FORSVINDER AF SIG SELV.** Flaget `data-reserve`
+  sættes i `billedplads.js` på det billede, der **faktisk**
+  vises, og `js/skal/historien.js` tænder linjen efter det.
+  Lægger ejeren sine egne op i admin, er sætningen forkert — og
+  en fast linje i HTML'en ville blive stående og lyve den anden
+  vej. **Modstykket er en prøve:** uden *"lægger ejeren ALLE
+  fire op, forsvinder stemningslinjen"* ville en linje, der
+  ALTID står, bestå den første, og så kaldte siden ejerens egne
+  fotos for stemningsbilleder fra kysten
+- **⚠️ OG REGLEN OM STEDET HÆNGER PÅ `data-reserve`, IKKE PÅ
+  PLADSEN.** Ejerens eget foto MÅ gerne sige Mosede — så er det
+  sandt. Prøven skal derfor aldrig lempes den dag, han lægger
+  sine egne op
+- **⚠️ ARKIVFOTOS LÆGGER VI STADIG IKKE IND.** Rettighederne til
+  et arkivbillede er ikke vores at give videre, og siden er en
+  forretnings
+
+**⚠️ OG 1929 OG MOSEDE FORT KOM IKKE MED — MED VILJE.** Hvert
+eneste forsøg på at slå historien op udefra blev afvist af
+udgangsproxyen: Wikipedia, `trap.lex.dk`, `mosedefort.dk` og
+`mosedefiskerihavn.dk`. En årstalsangivelse med en kildelinje
+under, hvor kilden ikke er åbnet, er husets ældste ar i sin
+værste form — **en note er ikke et tjek**, nu om historie. Skal
+de ind, skal siderne kunne nås, eller ejeren bekræfte tallene.
+
+**⚠️ TO FEJL, PRØVERNE FANDT, OG BEGGE VAR HUSETS EGNE AR IGEN:**
+
+- **`.h-kilde` blev TO elementer**, da stemningslinjen lånte
+  klassen for at se ens ud, og den gamle prøve faldt på strict
+  mode. Præcis `.fine`-fælden fra 31/8: kildelinjen bærer
+  `data-kilde` nu, og prøven peger på DET
+- **Og prøven *"billedet kom frem"* målte kun TO af fire.** Den
+  rullede med `window.scrollTo`, og under 820 px ruller
+  DOKUMENTET, mens `#sc` ruller derover — et `scrollTop` på det
+  forkerte element er ikke en fejl, det bliver bare aldrig sat
+  (5/9). Den går gennem `rul()`/`rulleHøjde()` i `tests/hjaelp.js`
+  nu, i trin, fordi `loading="lazy"` henter, når pladsen nærmer
+  sig skærmen — ikke når man lander i bunden. **Og den måler
+  `naturalWidth`, ikke `complete`:** `complete` er sandt for et
+  billede, browseren har opgivet, så en forkert sti ville bestå
+
+**To gamle prøver er VENDT med noter**, ikke slettet: *"uden et
+foto står en flade med tegnet"* vogtede den mørke flade, og
+**reglen er urørt** — den måles stadig på tapassiden,
+cateringsiden og baglokalet, som ingen fotos har. Og *"et foto
+fra admin slår igennem"* krævede ÉT billede på siden; den måler
+nu, at **admin slår repoet**, på selve pladsen.
+
+Otte falsifikationer, otte fald.
+
+**Fraunces afløste Instrument Serif** (6/9). Rapporten 5/9 stillede
+"en serif med mere karakter end Instrument" op som en af tre ting,
+der IKKE blev lavet, fordi de er Mikkels beslutning og ikke en
+rettelse. Han bad om kandidaterne, fik fire skud af heroen —
+nuværende, Fraunces, Young Serif, Playfair Display — og valgte
+**Fraunces**. **Ingen SQL.**
+
+Det er ikonsættets lære fra samme aften, gjort rigtigt: et
+udseende skal VISES og have et ja, før det udgives.
+
+- **Skriften ligger lokalt** i `fonts/fraunces.woff2` (36 kB) og
+  `fonts/fraunces-italic.woff2` (46 kB), OFL, som resten. **⚠️ Den
+  er VARIABEL**, så vægten står som `100 900` i `@font-face`; med
+  et fast 400 ville browseren syntetisere en fed til `h4` i stedet
+  for at bruge aksen. En prøve læser begge ark og kræver spændet
+- **⚠️ OG DER ER TRE FLADER, IKKE TO — det fandt falsifikationen,
+  ikke koden.** `css/style.css` har `--display` skrevet **to**
+  gange: på `:root` (bestil/, bord/, ved-bordet/, min-bestilling/)
+  og på `body.personale` (admin). Min første falsifikation ramte
+  kun den første, admin fik aldrig ændringen, og prøven bestod —
+  altså var den blind for netop den halvdel, der bærer
+  personalesiden. Prøven måler alle tre nu og er set fejle på hver
+  af dem
+- **⚠️ TO PIXELS BRÆKKEDE MÆRKET I SØJLEN.** Fraunces er bredere
+  end Instrument Serif ved samme størrelse. **Målt:** pladsen er
+  197 px, og "Mosede Havnecafe" fylder **199 px** ved 22 px — så
+  navnet gik på to linjer og skubbede fjorten menupunkter à 46 px
+  ned på en bærbar, der i forvejen ikke har plads til overs. Ved
+  20 px fylder det 180. Fundet med øjnene på et skud, ikke ved at
+  læse
+- **⚠️ OG PRØVEN MÅLER MOD FELTET, IKKE MOD 180.** Et tal, jeg
+  skrev af, ville holde op med at måle den dag, søjlen bliver
+  bredere
+
+**⚠️ HEROEN FLYTTEDE SIG IKKE — og det blev målt før og efter, på
+to bredder:**
+
+| | Instrument Serif | Fraunces |
+|---|---|---|
+| 390 px · linjer i h1 | 3 | **4** |
+| 390 px · knappens bund → pillens top | 521 → 669 | 570 → 669 |
+| 320 px · linjer / bund / pille | 4 / 570 / 573 | 4 / 570 / 573 |
+| h1 øverst · sidelæns rulning | 260 px · nej | 260 px · nej |
+
+De 3 px mellem knappen og pillen på 320 px er der i forvejen —
+den nuværende skrift har ALLEREDE fire linjer dernede. Og
+`elementFromPoint` midt på heroens knap svarer knappen selv, ikke
+pillen: det er 31/8-arret målt den vej, en finger faktisk går.
+
+**⚠️ OG DEN TRYKTE VEJLEDNING BLIVER PÅ INSTRUMENT SERIF.**
+`vejledning/vejledning.html` bærer sine skrifter som base64 i
+filen selv, og dens sidetal er MÅLT (`maal-luft.py`: seks sider
+ved 8,6 pt, ~1,0 sides spild). En ny skrift ændrer metrikken og
+dermed sidetallet, så den skal have sin egen målerunde. De to
+gamle skriftfiler bliver derfor liggende i `fonts/` — det står i
+`fonts/LICENS.md`, så det ikke ligner en forglemmelse.
+
+**⚠️ OG FØRSTE UDGAVE AF SELVE FREMVISNINGEN MÅLTE INGENTING.**
+Skuddene blev lavet ved at REDEFINERE familien `"Instrument
+Serif"` med en data-URI — og Chromium beholdt den face, den
+allerede havde indlæst, så **Fraunces-skuddet var byte for byte
+det samme som det nuværende**. Det så ud, som om skriften ikke
+gjorde en forskel, og valget kunne være truffet på et forkert
+grundlag. Prøveskriften har sit eget familienavn nu, og scriptet
+**måler bagefter**, at `h1` faktisk står i den, og stopper, hvis
+ikke. Husets ældste ar i en ny forklædning.
+
+Otte falsifikationer, otte fald.
+
+**Én talstemme i admin også — og to mærker, der modsagde hinanden**
+(6/9). Kundens ord: *"I think you fixed the fonts and text and
+numbers on the public website, but we also need that fixed in
+admin ... they need to see exactly what kind of order it is, which
+has been run ... it looks very generic with the numbers and the
+text, and it's not simplified enough."* **Ingen SQL.**
+
+Gæstesiden fik talstemmen 5/9. Admin fik den ikke, og **målt i
+browseren** stod der tre stemmer for de samme slags tal:
+
+| hvad | før |
+|---|---|
+| klokken på bestillingskortet | serif 400 / 30 px |
+| klokken i vagtskærmens akse | sans 700 / 19 px |
+| dagens seks tal | serif 42 px, **uden** tabular |
+
+- **⚠️ OG SHORTHANDEN VAR SKYLD I DEN TREDJE.** `font: 400 42px/1
+  var(--display)` nulstiller `font-variant-numeric`, så de seks
+  tal i rækken havde hver sin cifferbredde og **sitrede, hver
+  gang takten tegnede om**. Egenskaben skrives EFTER shorthanden
+  nu. Målt: 7 af 17 talelementer i admin manglede den; de fem,
+  der stadig gør, står ikke i en kolonne
+- **Aksen er serif 26 nu**, den samme stemme som kortet. Personalet
+  skifter mellem de to faner hele dagen
+- **55 brøkdels-pixels** (13,5 og 14,5) er snappet, som
+  `havnegrillen.css` fik 5/9. **⚠️ Logoets `.crest .est` er
+  undtaget** — den er TEGNET geometri, ikke sat, og et snap dér
+  ændrer mærket. Første udgave af rettelsen ramte den
+
+**⚠️ OG KLOKKESLÆTTET STOD TO GANGE PÅ DEN SAMME RÆKKE.** Aksen
+til venstre ("kl. 12.15") kom fra hans forlæg 1/9, og kontaktlinjen
+("kl. 12.15 · 📞 …") kom fra det samme forlæg. Hver for sig
+rigtige; **summen** var det samme tal 30 px fra hinanden, to steder
+på hver eneste række — og den slags findes kun ved at kigge på et
+skud. Aksen bliver; den er den, man skimmer ned ad.
+
+**⚠️ OG ALARMSTRIBEN SKREV NAVNET MED SMÅT.** `Admin.pæntNavn`,
+fjerde sted med samme mønster efter de fem kort 6/9. Den røde linje
+øverst er den, personalet læser FØRST.
+
+**⚠️ MEN DET DYRESTE FANDT ØJNENE, IKKE PRØVERNE: TO MÆRKER, DER
+MODSAGDE HINANDEN.** Målt på et skud af Overblik med tre
+bestillinger:
+
+```
+Klaus Valentiner    🥡 To-go   🍽️ Spis her
+Bettina Holm Larsen 🥡 To-go   🚗 Leveres
+```
+
+Vagtskærmen satte **"🥡 To-go" på hver eneste luge-række**, uanset
+`hvordan`, og lagde så det RIGTIGE ord ved siden af som et ekstra
+mærke. Det er ordret kundens klage — *"I can't really tell what
+kind of order it is"* — og grunden var **tre kopier af den samme
+regel**: Bestillinger-fanen læste `bord_nummer` og `hvordan` og
+valgte ét mærke, Overbliks åbne række satte To-go plus `hvordan`,
+og Overbliks **Færdige**-bunke kendte kun bord ELLER to-go (så en
+levering, der var kørt ud, stod som "To-go" bagefter).
+
+- **Reglen bor i `Admin.typeMaerke(b)` nu**, og alle tre spørger
+  den — som `Admin.statusNavn` (31/8), `Admin.retterI` (3/9) og
+  `Admin.kontakt` (3/9). **Fjerde gang, samme mønster.**
+  Rækkefølgen er den strengeste først: bord → levering → spis her
+  → to-go, og to-go er reserven, også for de gamle rækker fra før
+  `spis-her.sql`, hvor `hvordan` er null
+- **⚠️ OG DE SÅ FORSKELLIGE UD OVEN I KØBET.** `.kilde-maerke` på
+  Overblik er RØD — den samme farve som leveringens — mens
+  `.m-togo` på Bestillinger er den stille grå. Altså råbte den
+  mest almindelige bestilling højest på den ene skærm og var den
+  stilleste på den anden. Tapasfadet havde samme skævhed
+  (`favorit` mod `m-tapas`); begge er ens nu
+- **⚠️ BORDBOOKINGEN BEHOLDER SIT EGET `kilde-maerke`.** Den er
+  ikke én af de fire slags mad — den er den anden STRØM (31/8),
+  og den er blå af samme grund
+- **⚠️ OG MÆRKET BÆRER `data-type`, IKKE KUN EN KLASSE.** `m-ny`
+  er BEGGE dele i huset: leveringens røde mærke og statussen "Ny".
+  **Prøven "præcis ét typemærke pr. kort" bestod derfor først** —
+  den talte statusmærkatet med. Samme greb som `data-gaa` (30/8)
+  og `data-vare` (24/8): en prøve skal kunne pege på tingen selv
+- **⚠️ OG TO GAMLE PRØVER FALDT, DA MÆRKERNE BLEV FÆLLES.** De
+  søgte `.maerke.m-togo` på hele siden og fandt 2 — admin tegner
+  alle faner i DOM'en samtidig, og Overblik bruger nu den samme
+  klasse. Scopet til `#bestillinger-liste`. **Det er ikke en
+  svækkelse; det er beviset på, at de to faner deler regel**
+
+Fem falsifikationer, fem fald: det ubetingede To-go sat tilbage
+(to prøver), Færdige-bunkens egen kopi sat tilbage, `data-type`
+fjernet (fem prøver), typen låst til `togo` (rækkefølgen kunne
+ikke længere ses), og Bestillinger givet sit eget ord igen.
+
+**⚠️ OG DEN FULDE RUNDE FANDT ÉN, DE TI FILER IKKE GJORDE.** Jeg
+valgte ti admin-filer at køre efter rettelsen; `admin-bestillinger`
+var ikke en af dem, og dens *"det sidste trin hedder Færdig"* faldt
+på **begge profiler** — altså ikke en flake. Grunden er ligefrem:
+kortet har **to** `.maerke` nu (sin status og sin type), og prøven
+bad om `.maerke` bart, så Playwright faldt på strict mode. Reglen er
+urørt; selektoren er `.maerke.m-afhentet` nu og dermed **skarpere**
+— forsvandt databasens ord, ville prøven falde i stedet for tavst
+at måle et andet mærke. **Læren er 30/8's igen: kør HELE runden.**
+De to øvrige røde (`admin-kalender`s telefonbooking og
+`menukort-admin`s halvskrevne pris) er på den kendte flake-liste og
+bestod alene.
+
+**Mærket ud af undersidernes top — og pilen kunne ikke ses** (5/9).
+Kundens ord: *"det der runde is ikon i øverste venstre hjørne
+konstant skal væk"* og *"tilbage knappen skal være liquid glass
+stadig men forsvinder altså i de hvide environments"*.
+**Ingen SQL.**
+
+**⚠️ MÆRKET ER FLYTTET, IKKE FJERNET — OG DET ER HANS EGET VALG.**
+Han blev spurgt, netop fordi det vender hans ordre fra 29/8
+(*"hvorfor er logoet ikke opdateret på siden som jeg bad dig om 2
+gange"*), og han valgte: **væk fra de ni undersider, bliver på
+forsiden.** Forsiden har stadig både den lille i bjælken og den
+fulde med ringteksten i heroen. Undersidernes top er nu kun
+tilbage-pil og menu.
+
+- **Undersiderne mister ikke deres identitet.** Navnet står som
+  tekst i footeren på hver eneste, og **det er den anden halvdel
+  af prøven** — uden den ville en side helt uden mærke og uden
+  navn bestå
+- **Fire prøver er VENDT med noter**, ikke slettet: `bordkort`s
+  *"Mærket står på alle sider"* måler nu de fire, der HAR det,
+  `kontakt-post`s tælling faldt fra 12 til 4, og
+  *"kransen under 60 px er den lille variant"* måler de tre sider,
+  der stadig har en krans i toppen, og `skal-menukort`s
+  *"mærket i toppen er det samme som på de andre sider"* måler nu,
+  at toppen ER den samme: pil, menu og ingen krans. Reglerne bag
+  dem er urørte — ringteksten er stadig en grå udtværing under
+  60 px, og menukortet skal stadig se ud som resten af huset
+
+**⚠️ OG TILBAGE-PILEN STOD I 1,06:1 PÅ OTTE SIDER.** Målt på en
+iPhone 13, både øverst og efter at bjælken havde fæstnet sig.
+Grunden er, at `.g.dark` med vilje har en næsten gennemsigtig
+flade, så ternet skinner igennem — og **ternet har både røde og
+næsten hvide felter**. En hvid pil forsvandt i de lyse. Det er
+den ENESTE vej tilbage på de sider.
+
+- **Reglen fandtes for burgeren og kun i `.stuck`.**
+  `.topbar.stuck .menu` blev rettet engang; pilen blev glemt, og
+  den var forkert også FØR bjælken fæstnede sig. Nu gælder den
+  begge knapper og hele tiden
+- **Det er stadig liquid glass**, som han bad om: sløringen og
+  linsekanten kommer fra `.g`. Kun fladen og ikonets farve
+  skifter, og en prøve kræver `blur` og `inset` — en solid knap
+  ville bestå kontrastprøven og være en helt anden knap
+- **⚠️ OG MIN EGEN UNDTAGELSE FOR HISTORIEN GJORDE INGENTING.**
+  Jeg skrev `body:not(.hist)` foran reglen. **Falsifikationen
+  afslørede det:** prøven bestod, da garden blev fjernet.
+  `historien.css` har sin egen `.hist .topbar .g.icn.dark`
+  (0,4,0), som vejer tungere end den fælles (0,3,0) — den mørke
+  knap på det sorte måler 16,22:1. Garden er væk igen, og prøven
+  måler nu den regel, der FAKTISK beskytter siden. To garder for
+  det samme er husets egen advarsel om to udgaver af én regel
+- **⚠️ OG ÉN FALSIFIKATION MERE VAR FOR SVAG.** *"En underside
+  uden navnet"* erstattede kun den FØRSTE af syv forekomster, og
+  prøven bestod. Samme lære som serif-kursiven samme aften: en
+  falsifikation, der kun tager den halve regel, beviser ingenting
+
+Seks falsifikationer, seks fald efter de to rettelser.
+
+**⚠️ IKONERNE BLEV BYGGET OG RULLET TILBAGE SAMME AFTEN** (5/9).
+Efter rapporten om det generiske sagde kunden ja til tegnede
+ikoner i stedet for emoji (*"gode, unikke og evt. animationer
+på"*). Sættet blev tegnet — 58 ikoner i havnens streg med én rød
+plet, `js/ikoner.js` + `css/ikoner.css`, nøgler i `menu-emoji.js`,
+bevægelse kun på skærmen — set på skud, prøvet, falsificeret elleve
+gange og udgivet som `c121a2d`. Så så han skuddene: *"ærligt gå
+tilbage men kun med de der pixels til emojier ik det andet fordi
+det der er grimt vi nøjes med emojisne tak."* Committen er vendt om
+i sin helhed, og **emojierne fra 31/8 står igen på alle flader.**
+Talstemmen, skalaen og skrifterne (`24ae5ed`) er ikke rørt.
+
+- **Sættet ligger i historikken** (`git show c121a2d`), hvis det
+  en dag skal frem igen — men det er HANS beslutning at vende,
+  ikke en rettelse, nogen kan lave
+- **Læren:** et ikonsæt er en designbeslutning på linje med
+  serif'en og eyebrows. Den skal vises som SKUD og have et ja,
+  FØR den udgives — ikke udgives på ordren alene. Ordren var der;
+  det var udseendet, han ikke havde set
+
+**Én talstemme, én skala — og skrifterne bor hjemme** (5/9).
+Kundens ord: *"jeg tror det er text fonten også på tallene der gør
+det ser generisk ud ... føler den er generisk og ikke i den high
+end — scan og rapportér hvorfor den ikke er det."* Rapporten gav
+syv målte fund; de tre, der var KODE, sagde han ja til. **Ingen
+SQL.**
+
+**⚠️ FØRST DET, MÅLINGEN SKULLE HAVE, FØR DEN KUNNE MÅLE NOGET:**
+Google Fonts er spærret af udgangsproxyen her, så hvert eneste
+skud af de ti designsider har vist RESERVESKRIFTERNE — Georgia og
+systemets sans — uden at det lignede en fejl. Skrifterne skulle
+lægges lokalt, før noget kunne bedømmes. Det er samme ar som
+stresstestens *"1 JS-fejl"* på hver designside (4/9), set fra den
+anden side.
+
+**1) TALLENE HAVDE FEM STEMMER.** Fem prisformaterere i fem filer,
+og fire af dem skrev **"35,50,-"** — ører OG komma-tankestreg i det
+samme tal, to konventioner, ingen har valgt. Heroens pille sagde
+*"ÅBENT NU TIL 21:00"* med kolon, mens formularen tyve linjer
+nede sagde *"kl. 19.30"*. Og det samme "89,-" stod i serif 700 ved
+bordet, serif 400 på `bestil/` og sans 600 på menukortet — gæsten
+går imellem de tre i ét klik.
+
+- **`Butik.kroner(p, form)` er den ENE prisformaterer.** `35` →
+  "35,-", `35.5` → "35,50" (pladsen til ørerne ER kommaet),
+  `1200, 'kr'` → "1.200 kr." `Butik.pris` og `MosedePris` er
+  ALIASER, ikke kopier, og de fem skal-filer spørger den
+- **`Butik.klokken(t, form)` er den ENE visning af et klokkeslæt**
+  — punktum, og `'kort'` giver "10" for en hel time. **⚠️ `pænTid`
+  ÆNDRER SIG IKKE, og det er med vilje:** `admin/tider.js` sætter
+  den i et `<input type="time">`, og et punktum dér gør feltet
+  BLANKT. Den er en værdi; `klokken` er til øjnene. Prøven holder
+  fast i begge: `pænTid('21:00:00')` skal blive ved med at svare
+  `'21:00'`
+- **⚠️ 14 inline-kopier af `.replace(':', '.')` står tilbage i
+  admin.** De er ikke rørt — personalesiden var uden for ordren —
+  men de er præcis den slags, husets regel om ét sted advarer
+  imod. Gæstesidens otte filer er renset, og en prøve fælder en ny
+- **Priserne ved bordet og tælleren mellem plus og minus er
+  Instrument Sans 600 med `tabular-nums`** — den talstemme,
+  menukortet havde. Prøven måler **to sider mod hinanden**
+  (`.mk-pris` på menukortet mod `.stk-pris` ved bordet); et
+  spørgsmål til den ene om dens egen skrift ville bestå, også
+  hvis den anden var serif
+
+**2) SKALAEN VAR INGEN SKALA.** `havnegrillen.css` havde **38**
+forskellige `font-size` og **45** forskellige `box-shadow`.
+Heriblandt `13.5px`, `12.5px`, `12.8px` — en halv pixel er en
+beslutning, ingen har taget; browseren runder den selv, og to
+naboer ender forskelligt. 55 brøkdele er snappet til hele pixels
+(**logoets `.crest` undtaget** — det er TEGNET, ikke sat), tre
+skyggetokens afløser atten håndskrevne, og priserne har hver sin
+størrelse (20 på kortet, 15 i listen). **Målt bagefter: 30 og 37,
+og heroens h1 står på 260 px på en iPhone 13, som før** — hele
+pointen med at snappe var, at det ikke kan ses.
+
+- **⚠️ SKRALDEN ER ET LOFT, IKKE ET MÅL.** Prøven kræver ≤ 30 og
+  ≤ 37; kommer der en ny værdi, skal den enten være en af de
+  eksisterende, eller loftet skal hæves MED en grund i prøven
+- **⚠️ OVERSKRIFTSSTIGEN ER MED VILJE URØRT.** 18 forskellige
+  størrelser på skærmen er stadig 18. At vælge en stige er en
+  designbeslutning — som at skifte serif eller fjerne eyebrows —
+  og den er Mikkels, ikke en rettelse
+
+**3) SKRIFTERNE KOM FRA GOOGLE — kun på designsiderne.**
+`css/style.css` har haft dem lokalt siden 24/8 (*"admin åbnes på
+en iPad i et køkken"*); de ti designsider bad `fonts.googleapis.com`
+om dem ved hvert besøg. Den gæst, siden er bygget til, står nede
+ved vandet med dårlig dækning, og hendes første indtryk var
+reserveskriften. Fire `@font-face` i `havnegrillen.css` peger på
+`fonts/` nu, kursiven er lagt til (`instrument-serif-italic.woff2`,
+27 kB, OFL — `fonts/LICENS.md`), og Google-linkene er ude af alle
+ti sider. **⚠️ Bebas er `font-display: block`, ikke `swap`:**
+introen MÅLER bogstaverne for at fylde vand i dem, og med swap
+måler den en anden skrift. Samme note står ved `css/style.css`.
+
+- **Prøven måler i BROWSEREN**, ikke i arket: Google spærres helt,
+  og `document.fonts` skal alligevel svare `loaded` for alle tre
+  familier. Et spørgsmål til CSS'en om dens egne `@font-face`
+  ville bestå på en fil, der peger på en woff2, der ikke findes
+
+**⚠️ OG DEN OTTENDE FALSIFIKATION BESTOD FØRST.** Jeg fjernede
+serif-`@font-face`'en — og prøven sagde stadig *indlæst*. Kursiven
+bærer det SAMME familienavn, og `document.fonts` svarede for den.
+Først med BEGGE faces væk faldt prøven. **En falsifikation, der kun
+tager den halve regel, er en bestået prøve, der beviser
+ingenting** — samme lære som `create trigger` inde i en
+transaktion (4/9). Otte regler, otte fald.
+
+**⚠️ OG PRØVEN "INGEN ANDEN FIL REGNER PRISEN UD SELV" VAR FØRST
+FOR BRED.** Den fældede `skal/forespoergsel.js`' `tal()` — som
+skriver *40 pladser* og *1.200* med tusindpunktum, mens "kr." står
+i HTML'en ved siden af. Det er et TAL, ikke en pris, og det rigtige
+værktøj til det. Fingeraftrykket er `toFixed(2)` nu — det, hver
+eneste kopi havde, og det, der skrev "35,50,-".
+
+**⚠️ OG DEN FULDE RUNDE FANDT ÉN TIL, I ADMIN.** *"udeblivelserne
+gøres op i kroner"* i `admin-etape3.spec.js` krævede *"1370 kr."*
+— Salg-fanen skriver *"1.370 kr."* nu, fordi `Butik.pris` er et
+alias for den ene formaterer, og den sætter dansk tusindpunktum.
+Vendt med en note; tallet er det samme, det er formatet, der er
+rettet. Runden: **3169 bestod, 1 flake** (*"en prisløs vare i en
+gammel kurv afvises ved send"* i `uden-pris.spec.js`, computer —
+grøn alene, samme mønster som listen ovenfor).
+
+**⚠️ OG ÉN GAMMEL PRØVE KRÆVEDE KOLON.** *"statuspillen viser den
+rigtige åbningsstatus"* i `skal-forside.spec.js` ledte efter
+*"21:00"* — den målte det rå `pænTid`, altså netop den ene af de to
+former, der stod på samme side. Vendt MED en note; reglen (pillen
+siger det rigtige) er urørt, og typografi-prøven vogter modstykket.
+
+**Det, der IKKE er lavet, fordi det er hans:** ét eyebrow pr. side
+i stedet for fem, tegnede ikoner i stedet for emoji (det vender
+hans egen ordre fra 31/8), og en serif med mere karakter end
+Instrument. Alle tre står i rapporten med målingerne bag.
+
+**Google fandt ikke siden — struktureret data manglede helt**
+(5/9). Kundens spørgsmål: *"hvorfor er hjemmesiden ikke højt op på
+google ift hvis jeg søger mosedehavecafe eller mosedehavn grill og
+ishus?"* **Ingen SQL.**
+
+**⚠️ MÅLT, IKKE GÆTTET: DE TI DESIGNSIDER HAVDE NUL JSON-LD.**
+Kun `bestil/` og `bord/` havde den — to dybe sider — og deres
+blokke var skrevet i HÅNDEN i HTML'en. Da designet afløste de
+gamle sider 23/8, fulgte den strukturerede data ikke med. For en
+lokal forretning er det den største enkelte mangel: navn,
+adresse, telefon, åbningstider og koordinater er præcis det,
+Google bruger til "grillbar i nærheden".
+
+- **⚠️ OG KOPIERNE VAR ALLEREDE SKREDET.** `js/oplysninger.js`
+  skriver i sit eget hoved, at *"JSON-LD til Google"* bygges af
+  den fil. Det passede ikke, og `bestil/` pegede stadig `hasMenu`
+  på `menu.html` — en **vejviser** siden 30/8. Altså sendte vi
+  Google ind i en omdirigering. `js/skal/seo.js` bygger blokken
+  af den ENE kilde nu, på alle tolv indekserbare sider
+- **⚠️ ÅBNINGSTIDERNE KOMMER FRA DATABASEN.** Stod de også i
+  koden, ville Google vise ét sæt tider og hjemmesiden et andet
+  den dag, ejeren rettede dem — og begge ville se rigtige ud hver
+  for sig. Det er dyrere her end de fleste steder: en gæst, der
+  kører til havnen på Googles tid, har spildt turen
+- **⚠️ `alternateName` ER IKKE ET GÆT.** Smiley-rapporten hedder
+  ordret *"Mosede havn grill og ishus"*, og Instagram-profilen
+  hedder `mosedehavngrillogishus`. **Målt stod de ord ingen
+  steder på siden undtagen `historien.html`** — søgte nogen på
+  forretningens andet navn, havde Google intet at matche det til
+- **⚠️ DE TO `noindex`-SIDER FÅR INGEN.** Et mærke på en side,
+  Google ikke må vise, er en påstand uden en modtager — og
+  `ved-bordet/` er netop `noindex`, så en fremmed ikke kan
+  bestille til bord 7
+- **⚠️ OG DER ER MED VILJE INGEN `aggregateRating`.** Huset har
+  en ordret regel om aldrig at bruge opdigtede anmeldelser, og en
+  score i JSON-LD er en påstand til Google om noget, ingen har
+  målt. Designbundtet leverede *"4,8 · 312 anmeldelser"* 21/8
+
+**⚠️ OG MÅLINGEN FANDT EN FEJL I MIN EGEN KODE, DER VILLE HAVE
+VÆRET TAVS OG DYR.** Første udgave skrev `1 = mandag`, fordi det
+er isodow — og det er dét, `kategori-ugedage.sql` bruger.
+**Åbningstiderne gør IKKE:** `js/store.js` regner
+`(getUTCDay() + 6) % 7`, og dens egen `UGEDAGE`-liste begynder med
+*Mandag* på plads **nul**. Hver eneste åbningstid ville have stået
+ét døgn forskudt hos Google, mens hjemmesiden viste de rigtige, og
+ingen af de to skærme ville se forkerte ud for sig selv. Prøven
+giver ÉN dag en tid, ingen anden har.
+
+**⚠️ OG SEO.JS SKAL INDLÆSES EFTER STORE.JS.** På `bestil/` lå
+den før — og motoren spørger `Butik` om tiderne, så de ville
+aldrig komme med dér. Fanget ved at læse rækkefølgen efter
+indsættelsen, ikke af en prøve.
+
+**Titlen begyndte med "Forside ·"**, altså var det første, Google
+viser, en navigationsetiket. Den hedder *"Mosede Havnecafe —
+grill og ishus på Mosede Havn i Greve"* nu (56 tegn; Google
+klipper ved ~60).
+
+**⚠️ MEN DET, DER VEJER TUNGEST, ER IKKE KODE.** Domænet er fem
+dage gammelt, og Google skal selv nå at crawle det. De to ting,
+kun ejeren kan gøre: **Google Virksomhedsprofil** skal have
+`mosedehavnecafe.dk` i feltet "Websted" (det er kortvisningen,
+folk møder), og der skal **linkes til domænet fra Facebook-,
+Instagram- og TikTok-bio** — det er sådan Google finder et nyt
+domæne. Sitemappet er sendt i Search Console 5/9.
+
+Seks falsifikationer, seks fald.
+
+**QR-siden gik ikke fullscreen — og et valg var sort** (5/9).
+Kundens ord: *"tjek gerne selv med telefon POV iphone helst om
+der noget der halter især qr bestillingen."* **Ingen SQL.**
+
+Gennemgangen skete med øjnene på en iPhone-profil, skud for skud
+gennem hele QR-flowet — scanning, kurv, foldet kurv, formular.
+**Ingen JS-fejl nogen steder**, og den første vares plusknap ligger
+inden for det første skærmbillede (643 af 664 px). To ting haltede,
+og begge blev målt:
+
+- **⚠️ DE FIRE GAMLE SIDER FIK ALDRIG `viewport-fit=cover`.**
+  Designsiderne fik det om formiddagen; `bestil/`, `bord/`,
+  `ved-bordet/` og `min-bestilling/` er ældre end designet fra
+  23/8 og kører på `css/style.css`. Altså havde **QR-siden — den,
+  gæsten sidder med ved bordet** — stadig den hvide bjælke i
+  statuslinjen
+- **⚠️ OG `--topbjaelke` SKULLE VOKSE MED. Det var den halvdel,
+  der kostede en måling.** `#hd` er `position:fixed`, så sidens
+  indhold følger ikke bjælken af sig selv. **Målt med et
+  simuleret hak på 47 px:** bjælken voksede til 111 px, mens
+  overskriften blev stående på 114 — **tre px luft**. Alene at
+  give bjælken luften ville have skubbet den ned over sidens eget
+  hoved. Variablen fandtes i forvejen (`body.underside` polstrer
+  med den, `.smoer-hoved` trækker sig op i den) — den skulle bare
+  følge hakket
+- **⚠️ HVERT GRUNDTAL ER SIDENS EGET.** Fire forskellige tal,
+  fordi de fire bjælker har hver sin luft — og de skal se ud
+  præcis som i dag på en telefon uden hak. **Målt før og efter:
+  alle fire uændrede.** Det fælles er MÅDEN: grundtallet plus
+  telefonens eget inset
+
+**⚠️ OG NOTEN FRA 31/8 SAGDE "DEN ENESTE FLADE PÅ HELE
+HJEMMESIDEN".** Det passede ikke. Filterchippen ved bordet (Alt ·
+Favoritter · Smørrebrød) markerede også et valg med SORT:
+**målt beregnet farve `rgb(36,26,23)` mod dagens `rgb(214,42,58)`**
+— to farver for "det her er valgt", og gæsten går imellem de to
+sider i ét klik. Chippen står i den SAMME regel som dagen nu,
+netop så de ikke kan skride fra hinanden igen.
+
+- **⚠️ Selektoren vejer 0,3,0 mod `.kort-chip.on`s 0,2,0**, så
+  den vinder, selv om `ved-bordet.css` indlæses bagefter. Et blik
+  i arket ville ikke have afgjort det; den beregnede farve gjorde
+- **⚠️ OG PRØVEN HOLDER TO SIDER OP MOD HINANDEN**, ikke én mod
+  sig selv: chippens farve mod dagens på `bord/`. Et spørgsmål
+  til chippen om dens egen farve ville bestå, også hvis dagen en
+  dag blev grøn
+
+Tre falsifikationer, tre fald.
+
+**Google Search Console: kvitteringen ligger i roden** (5/9).
+Mikkel hentede ejerskabsfilen fra Search Console.
+**Ingen SQL.**
+
+`googlea5013725eaf389e0.html` ligger i roden og er ÉN linje ren
+tekst. Google henter den på dens navn og sammenligner med linjen
+indeni; passer de to ikke, svarer den *"verifikation
+mislykkedes"* uden at sige hvorfor.
+
+- **⚠️ FIRE PRØVER MÅLTE DEN SOM EN GÆSTESIDE.** Rodmappen læses
+  af favicon-, krans-, canonical- og sitemap-prøverne — netop så
+  en ny side ikke kan slippe forbi. En fil uden hoved, uden krans
+  og uden canonical falder alle fire steder. **Falsificeret:**
+  med undtagelsen fjernet falder favicon og canonical på en fil,
+  der er præcis, som den skal være
+- **⚠️ KENDINGEN ER GOOGLES NAVNEMØNSTER, IKKE ÉT FILNAVN.** En
+  ny ejendom i Search Console giver en ny fil med et nyt tegnsæt,
+  og den skal ikke kræve en kodeændring. `erGoogleKvittering()`
+  bor i `tests/hjaelp.js`; fem kopier ville skride fra hinanden
+- **⚠️ OG DEN ER IKKE BARE SPRUNGET OVER.** Filen har sin EGEN
+  prøve: at den findes, at tegnstrengen indeni svarer til
+  filnavnet (**ét af tallene kommer udefra — fra navnet**), at
+  `robots.txt` ikke spærrer den (Google HENTER den), og at den
+  ikke står i sitemappet. **Slettes den, mister forretningen
+  adgangen til Search Console** — og det opdages først den dag,
+  nogen skal se, hvorfor siden ikke bliver indekseret. Fem
+  falsifikationer, fem fald
+- **Workflowet pakker hele roden** (`path: .`), og
+  versionsstemplingen rører kun filer med `__V__` i — kvitteringen
+  går uberørt igennem. En prøve holder fast i begge dele
+
+**Ternet hele vejen op — og Safaris bjælke folder sig sammen**
+(5/9). Kundens ord med to skud fra hans iPhone: *"det er meningen
+at det ternede skal gå hele vejen op og ikke er sådan en white
+bar og når man scroller ned eller op så du ved der i bunden er
+meningen skal blive mindre så man ligesom får hele hjemmesiden
+som så meget fullscreen som overhovedet muligt."* **Ingen SQL.**
+
+**DEN HVIDE BJÆLKE VAR TO TING, og den ene var fire pixels.**
+
+- **Sikkerhedsområdet.** Uden `viewport-fit=cover` lægger Safari
+  hele siden NEDEN UNDER statuslinjen og fylder stribens plads
+  med sidens baggrundsfarve — og `body` er `var(--cream)`. Det er
+  den brede hvide bjælke. De ti designsider beder om hele skærmen
+  nu
+- **⚠️ OG SÅ FIRE PX TIL, MÅLT PÅ EN iPHONE 13:** `.topbar` er
+  120 px høj (58 luft + 50 mærke + 12), mens `.hero` trak sig
+  **116** op. Fire px creme stod tilbage som en hårfin streg over
+  ternet — også på en computer, hvor ingen havde set den i to uger
+- **⚠️ TALLENE ER ÉN VARIABEL NU.** `--top-luft` er bjælkens luft
+  foroven; de tre sidehoveder (`.hero`, `.thead`, `.phead`)
+  trækker sig `--top-luft + 70` op og lægger det SAMME tal til
+  deres padding, så **indholdet ikke flytter sig en eneste pixel**
+  (-116+132 = 16 før, -128+144 = 16 nu). Målt før og efter: h1
+  står på 260 px begge gange
+- **⚠️ `max(58px, env+10)` OG IKKE `env()` ALENE.** En iPhone 13
+  har 47 px inset, en med dynamisk ø har 59 — designets 58 passer
+  den første og er én px for lidt til den anden. `max()` lader de
+  telefoner, hvor det VIRKER i dag, stå urørt. **Falsificeret:**
+  med heroen løsrevet fra bjælken vokser cremen fra 4 til 36 px,
+  når luften sættes til 90
+- **⚠️ OG DE 70 REGNES PÅ HVERT SIDEHOVED, ikke i en fælles
+  variabel.** En custom property arver sin FÆRDIGT udregnede
+  værdi: en `--hoved-op` på `:root` kunne topstriben ikke sætte
+  ned igen ved at rette `--top-luft`. Skrevet først, målt, skrevet
+  om
+- **⚠️ OG LANDSKAB FIK SIN EGEN LINJE.** `viewport-fit=cover`
+  maler også dér, hvor kameraet sidder — og drejes telefonen,
+  flytter hakket ud i venstre kant. Luften ligger på `.device`, så
+  den gælder alt indeni; lagt på sektionerne skulle hver ny
+  sektion huske den
+
+**⚠️ OG SAFARI FOLDER KUN SIN BUNDBJÆLKE PÅ DOKUMENTETS
+RULNING.** En indlejret rullebeholder rører den aldrig. Det er
+ikke en indstilling — det er browserens regel, og designets
+`.screen#sc` (artboardets ramme fra handoffet 23/8) ER en. Under
+820 px er den derfor ikke længere en rullebeholder.
+
+- **⚠️ OG MÅLT: DOKUMENTET RULLEDE 63 PX I FORVEJEN.** Den
+  flydende pille ligger uden for `.screen` og foldes væk med
+  `transform: translateY(150%)` — og en transform tæller med i
+  dokumentets rulleflade. Altså havde forsiden en
+  **spøgelses-rulning**: nok til at Safari begyndte at folde
+  bjælken sammen og ramte enden med det samme. Det er det værste
+  af de to verdener, og det kunne ikke ses
+- **⚠️ KODEN SPØRGER, HVEM DER RULLER — den vælger ikke.**
+  `scRuller` i `havnegrillen.js` læser `overflow-y` af den
+  BEREGNEDE stil, ikke skærmbredden: et brudpunkt skrevet af i
+  JavaScript er en kopi, der skrider fra stilarket. Artboardet
+  bliver på en computer, hvor al rullelogik hænger på det
+- **⚠️ PILLEN OG SKUFFEN SKAL VÆRE `fixed`.** Med dokumentet som
+  ruller bliver `.device` hele sidens højde, og `bottom:24px`
+  ville lande syv skærme nede
+- **⚠️ OG MENUKORTETS HOP-BÅND MÅLTE MOD EN KASSE PÅ 7500 PX.**
+  Dens iagttager havde `root: $('sc')` skrevet i hånden. **Set på
+  et skud:** båndet markerede *"Vælg fyld til smørrebrødet"*,
+  mens gæsten stod i *"Øl"*. Den slår svaret op nu
+- **⚠️ OG `#sc.scrollTo()` ER EN TAVS INGENTING på en telefon.**
+  To prøver i `skal-forside.spec.js` rullede sådan og ville
+  derefter måle en side, de troede de havde rullet. `rul(page, y)`
+  i `tests/hjaelp.js` er den ene vej, og gennemgangens
+  sidelæns-prøve spørger den samme vej
+
+**⚠️ OG MIN EGEN RETTELSE AF ANKERHOPPET VAR FORKERT TO GANGE —
+begge fundet ved at måle, ingen af dem ved at læse.**
+`el.offsetTop` så ud som en artboard-antagelse, så jeg skrev den
+om. Første udgave (`rect.top + scrollTop`) landede afsnittet
+**43 px** under bjælken på en computer i stedet for 14 — rammens
+egen afstand til vindueskanten. Anden udgave rettede den og ramte
+en anden: **målt på `h-selskaber` og `h-smorrebrod` landede
+afsnittet 11-12 px BAG bjælken**, fordi målet stadig bar designets
+`.rev` — og **en transform flytter rektanglet, mens `offsetTop`
+ikke ved af den**. Et afsnit, der ikke er afsløret endnu, er
+præcis det, man hopper til. `offsetTop` er rigtig i begge verdener,
+fordi `.screen` er `position:relative` og dermed offsetParent
+begge steder. **Prøven måler tre sider**, netop fordi forsiden
+bestod med alle tre udgaver.
+
+Fem falsifikationer, fem fald.
+
+**Fyrre kunne hente kl. 12.00** (4/9). **Ingen kunde spurgte om
+det her** — det blev fundet ved at måle, hvad der faktisk kan gå
+galt ved lugen, og det er den slags, der først opdages den dag,
+det sker.
+
+**⚠️ Kør `supabase/luge-loft.sql` + `proev-luge-loft.sql`**
+(14 × BESTOD på en lokal Postgres 16, ti falsifikationer, ti
+fald). Tjek 134-135.
+
+**Målt, ikke gættet:** `bestillinger` har fjorten udløsere på
+sig, og **ingen af dem kigger på hentetiden**.
+`bord_loft_pr_kvarter` gælder KUN bordene og tæller et rullende
+kvarter i REALTID — den siger intet om, hvor mange der har bedt
+om at hente kl. 12.00 i morgen. Altså kunne fyrre bestillinger
+lande på det samme klokkeslæt, og systemet tog imod dem alle
+sammen uden en linje nogen steder. Køkkenet opdager det, når
+dagen begynder, og gæst nummer fyrre står ved lugen til en tid,
+hun har fået skriftligt.
+
+- **⚠️ LOFTET TÆLLER BESTILLINGER, IKKE RETTER**, og det er et
+  valg. Reglen for hvad der ER en ret (emballagen og fragten
+  tæller ikke med) bor i `Butik.erEmballage` og `Admin.retterI`
+  i browseren; en kopi i SQL ville være husets dyreste mønster.
+  Og `bestillinger.antal` duer ikke som genvej — den er summen
+  af **alle** linjer, altså med emballagen i, og ville tælle en
+  pose som en ret. Det er desuden det tal, ejeren kan svare på:
+  *"hvor mange kan I ekspedere kl. 12.00?"*
+- **Den ENE store bestilling er ikke den, der gør ondt.** Den
+  kommer med et døgns varsel, og køkkenet ser den komme. Det er
+  stimen af små på dagen, der vælter en luge
+- **⚠️ TOM, NUL ELLER NEGATIV = INTET LOFT.** En indstilling,
+  ingen har rørt, må aldrig kunne lukke for noget —
+  `Number(null)`-arret fra bordloftet, nu i SQL
+- **⚠️ ET AFSLAG FRIGIVER TIDEN IGEN**, som reservationernes
+  pladser. Uden det ville ét fejltryk lukke kl. 12.00 for altid
+- **⚠️ OG BORDENE RAMMES IKKE.** Et bord vælger ingen hentetid —
+  den er klokken NU — så et loft pr. tidsrum ville lukke
+  frokosten for dem, der SIDDER der
+- **⚠️ KUN VED INDSÆTTELSE.** Alle husets kapacitetsværn er
+  insert-only, og det er ikke tilfældigt: et værn, der også
+  dømmer ved OPDATERING, spærrer for et statusskift på en gammel
+  række — nøjagtig det, `bestilling_dato_ok` gjorde indtil 3/9
+- **⚠️ `luge_fyldte_tider` MÅ ALDRIG FÅ EN KOLONNE MERE.** Samme
+  lov som `optagne_dage`, `bord_travlhed`, `bord_fyldte_dage` og
+  `arrangement_pladser`: den kører med sin EJERS øjne, så gæsten
+  kan se at kl. 12.00 er fyldt uden at kunne læse HVEM der har
+  taget tiderne. **Og loftet står IKKE i visningen** — det er ét
+  felt, gæstesiden allerede henter, og to udgaver af det samme
+  tal skrider fra hinanden
+- **⚠️ MED VILJE INTET LOFT PR. DAG.** Dagen kan allerede lukkes
+  helt for take-away i `dags_regler`, og en ny kolonne dér skal
+  bæres med af hver eneste skrivning til rækken, ellers tørres
+  den af — arret fra bordloftet 1/9
+
+**⚠️ OG MIN FØRSTE FALSIFIKATION MÅLTE INGENTING.** Jeg
+udkommenterede `create trigger` — og filen har `begin; … commit;`,
+så den efterfølgende syntaksfejl afbrød hele transaktionen, og
+det GAMLE værn overlevede. Rapporten sagde "faldt: INGEN", og det
+lignede et værn, prøven ikke kunne se. **En falsifikation, der
+ikke når at ændre noget, er ikke en falsifikation.**
+
+**⚠️ OG DEN ANDEN FANDT EN PRØVE AF MIN EGEN, DER IKKE KUNNE
+FEJLE.** *"Bordet rammes ikke af loftet"* sendte tre
+bordbestillinger til et **tomt** kl. 14.00 — og de gik
+selvfølgelig igennem, også med springet over bordene fjernet,
+fordi tællingen alligevel kun ser lugens rækker. Nu fylder lugen
+tidsrummet først. To nye prøver faldt ud af den rettelse.
+
+**Bookingen har et nummer nu — og datoreglen ramte tre tabeller
+mere** (4/9). Kundens ord med et skærmbillede af Borde-fanen:
+*"og det her reffereance nummer ka vi ik fix det"* — det der var
+**BO260904-658KG**.
+
+**⚠️ Kør `supabase/dato-vaern-resten.sql` +
+`proev-dato-vaern-resten.sql` (12 × BESTOD) FØR
+`supabase/bordnummer.sql` + `proev-bordnummer.sql`
+(7 × BESTOD)** — begge på en lokal Postgres 16, bygget af
+`vaerktoej/byg-lokal-db.sh`.
+
+Det er nøjagtig samme klage som **SM260831-UBJ7E** fik 31/8, og
+svaret er `bestillingsnummer.sql` kopieret post for post til
+bordene. Referencen røres ikke: den laves i gæstens browser, den
+står i gamle kvitteringer, og den kan slås op som `title` på
+kortet.
+
+- **⚠️ TO TÆLLERE, IKKE ÉN FÆLLES.** *"Bestilling 47"* er mad ved
+  lugen; *"booking 12"* er et bord lørdag aften. Delte de tal,
+  ville bookingerne springe fra 3 til 58, fordi der kom mad
+  imellem — og personalet ville tro, der manglede fem bookinger.
+  Prøve 5 måler netop det og er set fejle med én fælles tæller
+- **Kvitteringen slår sit eget nummer op** med
+  `mosede_bordnummer(ref)` — security definer, svarer kun på en
+  reference, man HAR, og kun en time frem. Svarer den ingenting,
+  står referencen alene, og intet mangler
+
+**⚠️ OG MIGRERINGEN VILLE HAVE FALDET SOM 3/9's — MEN DET ER
+IKKE DET VÆRSTE.** `bordbestillinger`, `forespoergsler` og
+`udlejninger` har **nøjagtig det samme** `current_date`-CHECK,
+som spærrede `bestillingsnummer.sql` hos kunden.
+`bestilling-dato-vaern.sql` rettede kun bestillingerne.
+
+Det er personalets hverdag, og det holdt *"intet må gå tabt"*
+for nar bagud:
+
+- en **booking fra i forgårs**, ingen fik hakket af, kan IKKE
+  sættes til Ankommet, Udeblev eller Afvist
+- en **forespørgsel** om et selskab, datoen er passeret på, kan
+  IKKE lukkes — hverken aftales eller afvises
+- en **udlejning**, der er overstået, kan IKKE bekræftes
+
+Alle fire er statusskift, altså opdateringer, og Postgres
+efterprøver **hvert CHECK på hele rækken** ved enhver
+opdatering. Sagen bliver stående i bunken for evigt, og fejlen
+på skærmen siger *"Vælg en dag der ikke er gået endnu"* om en
+dag, ingen har rørt.
+
+**⚠️ OG FALSIFIKATIONEN FANDT EN FEJL I MIN EGEN PRØVE.** Med
+CHECK'et sat tilbage MED udløseren døde filen på sin egen
+opstilling (den skubber en række bagud i tiden), hele
+transaktionen blev afbrudt, og der kom **ikke én eneste
+rapportlinje** ud — man kunne ikke se, om prøven faldt eller
+aldrig kørte. Præcis arret fra datoen i 2099 (3/9). Opstillingen
+er pakket ind nu, og linjen siger *"CHECK'et står stadig: …"*.
+
+**⚠️ OG FIRE PRØVER HAVDE MÅLT INGENTING SIDEN 31/8.**
+*Leveringsområdet* i `skal-bestil.spec.js` læser `#lev-hint`,
+som forsvandt, da smørrebrødssiden blev en forespørgsel — altså
+var reglen om, at ejerens tal slår designets opdigtede *"150 kr.
+inden for 10 km"*, uden vagt i fire dage. Det er samme familie
+som 30/8's *"seks prøvefiler holdt op med at måle noget"*, men
+en ny variant: her stod prøverne og **fejlede** i suiten hele
+tiden. Linjen er tilbage, tom i opmærkningen og fyldt af
+`Butik.leveringsTekst`.
+
+**Baglokalet: eget tidsrum, tydelig pris og en hel dag i
+køreplanen** (4/9). Kundens ord: *"lad os add noget mere luksus
+sælgene på siden der og gør det tydeligt med pricesen og ændrer
+tidsrum til selv at kunne styrer det istedet for de der
+intervaller ... fix det tydeligt inde i admin ... og overblikket
+skal vi efter havde gjort så det samler alt den dag også hvis der
+er ude af huset osv og ik kun i kalenderen."* **Ingen SQL.**
+
+**TIDSRUMMET ER GÆSTENS EGET.** Der stod fire faste kasser —
+Formiddag 10–14, Eftermiddag 14–18, Aften 17–23, Hele dagen. En
+konfirmation, der slutter kl. 16, og en generalforsamling fra 19
+til 21 måtte begge trykke på noget, der ikke passede, og så blev
+det alligevel aftalt i telefonen bagefter.
+
+- **⚠️ ET SPÆND OVER MIDNAT ER IKKE EN FEJL, DET ER EN FEST.**
+  22–01 er tre timer, ikke minus nitten. Uden regnestykket ville
+  en nytårsaften blive afvist af sin egen formular
+- **Det sendes som ÉN tekst** i `detaljer.tidsrum` ("17.00–21.00"),
+  præcis som chippen gjorde. Admin har allerede etiketten, og der
+  skal ingen SQL til
+- **⚠️ PRISEN FØLGER SPÆNDET**, og det er hele grunden til, at
+  feltet ikke bare er fritekst: "en aften" ER op til fire timer.
+  Svarlinjen siger det, MENS hun vælger — et krav, man først
+  møder som et beløb i telefonen, er skrevet det forkerte sted
+- **⚠️ OG PRISEN LÆSES AF DET, DER STÅR PÅ SKÆRMEN**, altså af
+  `data-vilk`-spanene, som `visVilkaar()` fylder fra ejerens
+  felter. Skrev vi 1.200 og 2.000 i JavaScript OG i HTML'en,
+  ville de skride fra hinanden første gang ejeren rettede sit eget
+  tal. Samme greb som nummeret på `m-tapas.html`
+
+**⚠️ OG "EGET TOILET OG INDGANG" ER TAGET AF SIDEN.** Den kom fra
+designbundlet 21/8 sammen med projektoren, og huset har en ordret
+regel om ikke at oplyse faciliteter uden bekræftelse. Mikkels
+beslutning 23/8 om, at designets pladsholdere står live, gælder
+**tal**, ejeren selv kan rette i admin; **et toilet er ikke et
+tal** — der er intet felt, hvor det kan blive hans, så det ville
+stå som vores påstand for evigt. En prøve fælder nu projektor,
+egen indgang, eget toilet og lærred. **Bekræfter ejeren det,
+kommer linjen ind igen.**
+
+**⚠️ TO FLEX-FEJL, BEGGE MÅLT PÅ ET SKUD.** En flex-beholder gør
+HVERT inline-barn til sit eget element: *"Bestiller I  20  eller
+lokalelejen  ."* stod på én linje og resten under, og *"Op til 40
+siddende"* blev til *"Op  40  siddende / til"*. Teksten pakkes i
+ét barn nu, og `.getlist span` er strammet til `.getlist>span` —
+designets egen brug (m-tapas) har kun direkte børn med ren tekst,
+så fejlen kunne ikke ses dér.
+
+**⚠️ I ADMIN VAR DEN STØRSTE, RØDESTE OG MEST GENTAGNE BESKED
+FORKERT.** Kortet sagde *"Dagen er ikke låst … en gæst på
+hjemmesiden kan stadig tage den"*. Det passer ikke:
+`optagne_dage` forener bekræftede udlejninger MED aftalte
+forespørgsler, og `mosede_dagen_er_optaget` kører `before insert`
+på **begge** tabeller — filen kom 23/8, fem dage før advarslen
+blev skrevet. Og den stod **tre gange** på det samme kort (den
+røde, den gule "👉 Lås dagen" og kalenderboksen). Nu står den én
+gang, og den er sand: **låsen gør jeres ja til en booking, ingen
+kollega kan tage.**
+
+**⚠️ OG MÆRKATET SAGDE "ØNSKE" PÅ EN BOOKING** — også en, der stod
+som *Lejet ud*, altså to ord, der modsagde hinanden om den samme
+række. Det siger **Udlejning** nu, og kortet har fået den samme
+overskrift som forespørgselskortet: to visuelle sprog på én fane
+er blevet ét.
+
+**KØREPLANEN SAMLER HELE DAGEN NU.** Den viste ÉN af de fem slags
+aftaler: baglokalet. Et selskab hos jer, en catering, der skal
+køres ud, eller smørrebrød til fyrre stod ingen steder på den
+skærm, personalet har åben hele dagen.
+
+- **⚠️ UD AF HUSET ER FORSKELLEN, KØKKENET SKAL VIDE.** Catering
+  og smørrebrød kører altid ud; på et **selskab** er det gæstens
+  eget svar (`detaljer.hvor`), og linjen følger hende — ikke
+  slagsen. Ordene bærer beskeden; den røde stribe er kun til at
+  skimme efter
+- **⚠️ KUN DET AFTALTE.** En forespørgsel, der lige er tikket ind
+  til i dag, er et spørgsmål. Stod den her, ville køreplanen love
+  køkkenet mad, ingen har sagt ja til
+- **⚠️ FROKOSTORDNINGEN STÅR IKKE HER.** Dens dato er ØNSKET
+  START, ikke en dag, der skal laves mad til
+- **⚠️ OG NOTEN TIL DAGEN ER IKKE ET ARRANGEMENT.** Kendingen er
+  flyttet til `Admin.erNote`, og slagsens navn til
+  `Admin.typeNavn` — en kopi ville betyde, at en sjette slags fik
+  sit navn på den ene fane og sin rå nøgle på den anden
+
+**⚠️ OG ÉN AF MINE EGNE PRØVER KUNNE IKKE FEJLE.** *"En NY
+forespørgsel er ikke en aftale"* bestod med statusfilteret
+fjernet: `toContainText` er versalfølsom, og linjen går gennem
+`Admin.pæntNavn`, så prøven ledte efter *"må ikke stå her"* mens
+der stod *"Må Ikke Stå Her"*. Samme fælde ramte
+baglokale-prøven en time tidligere med *'Anna Vind'*.
+**Falsifikationen fandt den; kørslen gjorde ikke.** De negative
+prøver bruger `ignoreCase` nu.
+
+**Selskabssiden: én rød knap, og siden siger hvad der sker**
+(4/9). Kundens ord med et skud af kortet: *"fjern den røde knap
+der og lad de to hvide i bunden være der ... forklar processen at
+der går under 24 timer så får de svar og dermed aftale yderlige og
+sætter et i kalenderen ... men hvad den side der er til ... og
+også tydeligt fortælle inde i admin hvad det er for noget."*
+**Ingen SQL.**
+
+**⚠️ DER STOD TO RØDE KNAPPER UNDER HINANDEN.** Formularens
+*"Send forespørgsel"* og en mailto, *"Kontakt og få et tilbud"*,
+der lavede det samme ærinde i gæstens eget mailprogram — altså
+**uden om personalets indbakke**. Rød betyder "det her er
+handlingen" i hele huset, og to røde er to handlinger. Det er
+30/8-reglen én gang til, og de to hvide bliver som second
+options.
+
+**⚠️ OG SELSKABSSIDEN VAR DEN ENESTE AF DE FIRE UDEN "Sådan går
+det videre".** Catering, frokost og baglokalet har haft kortet
+siden 29/8. Uden det tror gæsten, festen er booket, i det sekund
+hun trykker send — og et selskab, hun TROR er booket, er en
+familie, der møder op til en lukket cafe. De tre trin er nu
+hendes: vi kigger i kalenderen → **inden for et døgn** ringer
+eller skriver vi og aftaler pris, tidsrum og mad → er I enige,
+**sætter vi dagen i kalenderen**, og så er den jeres.
+
+- **⚠️ TRE LINJER, TRE FORSKELLIGE FAKTA — ikke tre kopier.**
+  Panelet siger HVAD det er (en forespørgsel, ikke en booking),
+  kortet siger HVAD DER SKER, og linjen under knappen siger HVOR
+  DET LANDER. Linjen gentog døgnet før; det var præcis den slags,
+  trin-striben på forespørgselskortet blev fjernet for (29/8)
+- **⚠️ KLASSEN ER `.note.trin-liste`**, den samme som de tre andre
+  sider bruger — og den får sit look af `.note ol` i
+  `havnegrillen.css`. En klasse, der ikke findes i stilarket, er
+  ingen regel (arret fra `.hvad-sker`)
+
+**⚠️ OG ADMIN SIGER NU DET SAMME.** Fanens hjælpetekst er skrevet
+om: hvad en forespørgsel ER, hvad gæsten er lovet, og de tre trin
+med knappernes egne navne. **Gæsten har den skrevne udgave foran
+sig, når hun ringer** — stod der noget andet i admin, ville
+personalet love én ting i telefonen, mens hjemmesiden havde lovet
+en anden, og ingen af de to skærme ville se forkerte ud for sig
+selv.
+
+- **Trinnene er en LISTE, ikke en sætning.** Første udgave skrev
+  dem med 1) 2) 3) inde i teksten, og **målt på et skud på
+  1280 px** var det fire linjer prosa øverst på kortet, som skal
+  LÆSES for at kunne bruges. Personalet skimmer, når der er travlt
+- **⚠️ `ol.hjaelp-trin` ER SCOPET TIL `body.personale`.**
+  `css/style.css` bærer stadig `bestil/`, `bord/` og
+  `ved-bordet/`; en regel uden scope laver hele huset om. Og admin
+  har sin EGEN regel, fordi `havnegrillen.css` slet ikke indlæses
+  dér — to ark, to regler, men **ordene** er de samme
+
+**⚠️ PRØVEN LÆSER SIDERNE AF MAPPEN.** En femte
+forespørgselsside kan ikke udgives uden at sige, hvad der sker
+efter send: tre regler pr. side (kortet med døgnet og kalenderen,
+ÉN rød knap i panelet, og at Ring/Send en mail stadig står
+nederst) plus en vagt, der falder, hvis listen bliver tom — **en
+tom løkke består hver eneste regel**, arret fra `toBeHidden` 30/8.
+
+**⚠️ OG DEN VIGTIGSTE PRØVE ER SKÆRM MOD SKÆRM.** Den læser
+gæstesidens trin-kort OG admins kort og kræver, at begge nævner
+døgnet og kalenderen, og at admin siger *"ikke en booking"*. Det
+er husets regel om, at ét af tallene skal komme UDEFRA — her
+kommer det fra den anden skærm. Set fejle med kalenderen taget ud
+af admins trin 3.
+
+**⚠️ OG LØFTET OM DØGNET FLYTTEDE, DET FORSVANDT IKKE.** En gammel
+prøve læste `.fine` under knappen og faldt. Den spørger PANELET nu
+og ikke ét element: reglen er, at siden lover et svar inden for et
+døgn, ikke hvor på siden det står — ellers ville nogen rette
+prøven næste gang teksten flytter, i stedet for at tjekke løftet.
+
+**⚠️ OG TRE TING KOSTEDE TID, ALLE TRE MINE EGNE:**
+
+- **JEG REDIGEREDE HTML, MENS RUNDEN KØRTE.** Playwright læser
+  filerne, når prøven kører, så resultatet blev en blanding af før
+  og efter. Runden måtte kasseres og køres igen. Det er samme
+  familie som *"kør ikke en browser, mens runden kører"* (4/9) —
+  **rør ikke filerne heller**
+- **`pkill -f "http.server 4175"` DRÆBTE MIN EGEN SKAL.** `-f`
+  matcher hele kommandolinjen, og min egen indeholdt mønstret.
+  Brug klammetricket, som med grep: `pkill -f "http[.]server 4175"`
+- **OG EN FORÆLDRELØS SERVER HOLDT 4173.** Da runden blev dræbt,
+  overlevede dens `python3 -m http.server 4173` som barn af init
+  — `curl` svarede 000 og `ss` viste ingenting, men `bind()` sagde
+  *"Address already in use"*, og alle prøvekørsler fejlede med
+  *"webServer was not able to start"*. Den findes ved at scanne
+  `/proc/*/cmdline`, ikke med `ss`
+- **OG JEG LÆSTE ET FORÆLDET SKÆRMBILLEDE i tre forsøg.** En `sed`
+  omdøbte skriptets output, men ikke dets log-linje, så jeg åbnede
+  den gamle fil igen og igen og troede, rulningen ikke virkede.
+  Den virkede ikke, fordi `scroll-behavior: smooth` slugte
+  `scrollTo` — men det opdagede jeg først, da jeg **målte
+  `scrollTop` efter rulningen** i stedet for at kigge på et
+  billede, jeg ikke havde tjekket navnet på
+
+**Nedtællingen stod på en dag, gæsten ikke kunne bestille til**
+(4/9). Kundens spørgsmål med et skud af den røde linje: *"de kan
+jo også bestille til andre dage og man kan da ikke bestille
+smørbrød på dagen?"* **Ingen SQL.**
+
+Han har ret i begge dele, og **MÅLT er det værre end det ser ud:**
+`bestilling_varsel_timer` står på **24** i produktionen, og
+dagvælgeren på `h-smorrebrod.html` tilbød fjorten dage fredag kl.
+19.45 — den FØRSTE var i morgen. Alligevel stod der en gul
+nedtælling: *"sidste bestilling i dag er kl. 20.30 · 45 min.
+tilbage"*, og bagefter *"I kan bestille til i morgen"*. Altså en
+hastende frist for noget, gæsten slet ikke kunne bestille — og en
+linje, der snævrede fjorten dage ned til én.
+
+Grunden er, at `R.sidsteTid` kun ved, hvornår KØKKENET lukker for
+ordrer. **Den ved intet om varslet.**
+
+- **⚠️ MEN LINJEN BLIVER, HVOR DEN GØR NYTTE.** Den blev bygget
+  til det øjeblik, hvor i dag FALDER UD af vælgeren, fordi
+  klokken løb. Forskellen på de to er, om i dag **nogensinde**
+  kunne nås: varslet ALENE måles mod dagens sidste ordre. Et døgn
+  (1440 min) er mere end en dag, der lukker 20.30 (1230), så i dag
+  har aldrig været med; grillens halve time er mindre, så den dag
+  ejeren sætter varslet ned, kommer linjen igen af sig selv
+- **⚠️ OG DET SKAL VÆRE `mindsteVarsel`, IKKE `varselTimer`.**
+  Første udgave brugte den sidste, og den er forkert her: den er
+  kanalens døgn, ikke det, dagvælgeren gater på — reglens egen
+  note siger det ordret. Med `varselTimer` forsvandt linjen fra
+  **forsiden** også, hvor den gør nytte. Fanget af den gamle
+  prøve *"tæt på sidste bestilling bliver linjen gul og så rød"*,
+  som faldt med det samme
+- **Ordlyden siger "vælg en anden dag herunder" nu**
+- **⚠️ HVER NY PRØVE MÅLER TO UAFHÆNGIGE TING:** at vælgeren IKKE
+  tilbyder i dag (tallet udefra — beviset for, at der ikke er
+  noget at nå), og at linjen så er væk. Et spørgsmål til linjen
+  alene ville bestå på en side, hvor den aldrig vises
+- **⚠️ OG DEN FØRSTE MÅLTE INGENTING:** den læste `#dato`, som
+  ikke findes på smørrebrødssiden (den hedder `#sdato`) — nul
+  muligheder, og reglen var uden vagt. Vagten *"der ER dage at
+  bestille til"* fangede det
+
+**Kvitteringen lever — gæsten kan følge sin bestilling** (4/9).
+Kundens ord: systemet skal være *"dygtigere, mere intelligent og
+generelt bedre"*.
+
+**⚠️ Kør `supabase/bestilling-status.sql` +
+`proev-bestilling-status.sql`** (9 × BESTOD på en lokal Postgres
+16, set fejle tre gange). Tjek **133**.
+
+**MÅLT, før det blev bygget:** gæsten hører ikke ét ord, efter
+hun har trykket send. Kvitteringen lever kun i den fane, hun står
+i — lukker hun den, er den væk, og der findes ingen adresse, hun
+kan vende tilbage til. Ved bordet får hun *"vi kommer med det"*
+og så stilhed.
+
+**Og det værste: Afvis er et telefonopkald, nogen skal huske.**
+Kan køkkenet ikke lave maden, står beskeden på personalets skærm
+— ikke på gæstens. Nu kan hun SE det, og siden siger, hvad hun
+gør ved det.
+
+- **⚠️ GÆSTEN MÅ STADIG IKKE LÆSE TABELLEN.** Samme greb som
+  `mosede_bestillingsnummer`: en security definer-funktion, der
+  kun svarer på en reference, man HAR. Adgangsreglen på
+  `bestillinger` er URØRT. Svaret bærer nummer, status, dag, tid,
+  bord, hvordan, antal og linjer — **ALDRIG** navn, telefon,
+  mail, personalets `intern_note` eller **`leverings_adresse`**.
+  Den sidste er hendes hjemmeadresse, og en adresse, der kan
+  hentes med en reference, er en adresse, der kan hentes af den,
+  der finder en kvittering på gaden. Prøve 5 tæller kolonnerne —
+  samme regel som `optagne_dage` og `bord_fyldte_dage`
+- **⚠️ VINDUET FØLGER HENTEDAGEN, IKKE OPRETTELSEN.**
+  Nummer-opslaget har en time, fordi det kun skal nå at fylde ét
+  tal i en kvittering på skærmen. Den her skal virke, mens hun
+  **venter** — og hun kan have bestilt fredag til søndag.
+  Hentedagen plus dagen efter: hun henter 19.45 og kigger 00.10,
+  og en reference, der findes om en måned, svarer ingenting
+- **⚠️ TO RIGTIGE FEJL FANDT ØJNENE, IKKE KODEN.** En **afvist**
+  bestilling lovede stadig *"Hentes i dag kl. 13.00"* og sagde
+  *"Betales ved lugen"* — en aftale om mad, der ikke kommer, og
+  en regning for den. Set på et skud. Prøven kræver FØRST, at en
+  åben bestilling HAR en hentetid; ellers målte den ingenting
+- **⚠️ ADRESSEN BOR ÉT STED OG GÆTTES IKKE PÅ MAPPENAVNE.**
+  `Butik.foelgAdresse` udleder vejen af sidens EGEN sti til
+  `js/store.js` — `ved-bordet/` skriver `../js/store.js`,
+  forsiden skriver `js/store.js`. En liste over "hvilke sider
+  ligger i en undermappe" ville skride fra hinanden den dag, der
+  kom en ny, tavst
+- **⚠️ OG ØVETILSTANDEN FEJLER SOM SKYEN:** den håndhæver de
+  samme tre gard som funktionen (slettet, vinduet, findes ikke).
+  En mock, der er mildere end databasen, lader fejlen bestå
+  lokalt og fælde i produktionen — det er sket fire gange her
+- **Siden er `noindex` uden menu og footer**, som `ved-bordet/`:
+  gæsten står og venter på mad, og hvert link væk er en vej ud af
+  det, hun kom for. Takten er 20 sekunder, den stopper, når
+  bestillingen er lukket, og holder pause, mens fanen er skjult
+- **⚠️ OG PRØVEN FALDT PÅ SIG SELV:** den krævede, at *"klar"*
+  aldrig stod på siden — men *"Din mad er klar"* er præcis dét,
+  gæsten skal læse. Reglen gælder de ord, der ALDRIG er gæstens:
+  `tilberedes`, `bekraeftet`, `serveret`
+
+**⚠️ OG BESKEDEN VED AFVIST ER KUNDENS EGNE ORD (4/9):** *"hvis
+vi ikke har ringet til dig, så ring til vores nummer."* Første
+udgave sagde *"vi prøver at fange dig"* — det er et løfte om et
+opkald, personalet skal huske, og det er præcis dét, siden er
+bygget for at holde op med at være. Nu siger den rækkefølgen: vi
+ringer, og har du ikke hørt fra os, så ring. **Nummeret står KUN
+på knappen** — skrevet begge steder ville de skride fra hinanden
+den dag, ejeren skifter det, og prøven fælder et nummer i
+teksten.
+
+**⚠️ OG JEG RETTEDE FILER, MENS RUNDEN KØRTE — den regel, jeg
+selv skrev ned samme dag.** Runden var 480 prøver inde og blev
+en blanding af før og efter; den måtte kasseres og køres forfra.
+Og oprydningen gik i den ANDEN fælde fra samme afsnit: en løkke
+over `/proc/*/cmdline` matchede **min egen skal**, fordi
+kommandolinjen indeholdt mønstret. Springer man sit eget `$$`
+over — eller bruger klammetricket — sker det ikke.
+
+**⚠️ OG GENNEMGANGEN SÅ IKKE DEN NYE SIDE — arret fra 30/8 igen.**
+`sider()` i `tests/gennemgang.spec.js` havde
+`['bestil/', 'bord/', 'ved-bordet/']` **skrevet i hånden**, så
+`min-bestilling/` gled forbi hele fejningen: ingen måling af
+trykflader, sidelæns rulning, døde links eller favicon på en helt
+ny gæsteside. Mapperne læses af DISKEN nu, og **vejviserne
+springes over på det, de GØR** (en refresh plus et
+`location.replace`) — ikke på en liste over navne. Set fejle ved
+at gøre telefonlinket 23 px: gennemgangen råbte
+`/min-bestilling/ :: lille trykflade 23px`.
+
+**Stresstesten er kørt — og den fandt ÉN ting** (4/9). Kundens
+ord: *"og derefter test det til ende, stress test osv."*
+`vaerktoej/stresstest.js` kører 262 varer, 55 borde, 180
+bestillinger, 120 bookinger og 90 forespørgsler gennem tretten
+gæstesider og otte admin-faner, plus hårdhændet brug og en tom
+database.
+
+**Det, der er i orden:**
+
+- **INGEN JS-fejl nogen steder** — hverken med meget data, med
+  tom database eller under 60 hurtige tryk i træk
+- **Alle tretten sider STÅR med en tom database.** Ingen af dem
+  bliver blank
+- **Personalesiden tegner hver af de otte faner på ~0,5 sekund**
+  med 180 bestillinger, og ruller på 16,7 ms (60 billeder i
+  sekundet) hele vejen
+- **Menukortet med 262 varer er 22.401 px højt** og ruller uden
+  en fejl
+
+**⚠️ OG SÅ FANDT DEN, AT GÆSTESIDERNE RULLER PÅ HALV HASTIGHED —
+MÅLT, IKKE GÆTTET.** Designsiderne har en median på **33,3 ms**
+under et fuldt rul (30 billeder i sekundet), mens `bestil/`,
+`bord/` og `ved-bordet/` ligger på **16,7 ms** (60). Forsiden har
+23 billeder over 33 ms; de gamle sider har nul.
+
+Fem mistanker blev udelukket ved at måle, ikke ved at læse:
+
+| Prøvet | Median |
+|---|---|
+| som den er | 33,3 ms |
+| uden topbarens `backdrop-filter` | 33,3 ms |
+| uden topbaren helt | 33,3 ms |
+| uden heroen | 33,3 ms |
+| uden `.rev`-klasserne | 33,3 ms |
+| **rulning lagt ud i DOKUMENTET** | **16,7 ms, 1 over 33** |
+
+**Det er den indlejrede rullerod `#sc`.** Designets
+telefon-artboard (`.device` / `.screen` med `overflow-y: auto`)
+blev bevaret 1:1 fra handoffet 23/8, netop fordi al rullelogik
+hænger på `#sc` — og den koster hvert andet billede. Én linje CSS
+skiller de to tal; alt andet er den samme side, det samme data og
+den samme browser.
+
+- **⚠️ DET ER IKKE DAGENS ARBEJDE.** Nøjagtig de samme fire tal
+  blev målt i en worktree på den UDGIVNE commit (`88c6c74`).
+  Fejlen har ligget der siden designet kom
+- **⚠️ OG DET ER IKKE MÆNGDEN.** Forsiden med `grunddata` giver
+  den samme median. Det er ikke de 262 varer
+- **⚠️ MEN DET ER MÅLT I HEADLESS CHROMIUM PÅ EN CONTAINER.** iOS
+  komponerer normalt en `overflow`-ruller selv, så tallet kan være
+  miljøets og ikke telefonens. **Det skal måles på en rigtig
+  telefon, før nogen bygger rulleroden om** — og det ER en stor
+  ændring: topbarens `.stuck`, pillens to iagttagere,
+  `scroll-padding-top`, `revealFallback`, skuffemenuen og hver
+  eneste prøve, der skriver `document.getElementById('sc').scrollTop`
+
+**⚠️ OG MÅLINGEN VAR FORKERT DE FØRSTE TO KØRSLER.** Den skrev
+*"1 JS-fejl"* på hver af de ti designsider — det var værktøjets
+EGEN spærring af `fonts.googleapis.com`, som browseren skriver
+`ERR_FAILED` for. Nul fejl på de tre gamle sider, som har
+skrifterne lokalt, var beviset. Og *"(ingen kurvbjælke)"* var to
+forkerte selektorer: bjælken hedder `#bestil-kurv`, og plusknappen
+er `button.glass.rund` inde i `.taeller`. **En måling, der leder
+efter et element, der ikke findes, måler ingenting — og siger det
+som en fejl.**
+
+**Cateringsiden er én knap til mailen** (4/9). Kundens ord:
+*"hele catering fanen skal altså bare være en knap til mailen
+booking men gør det pænt og ordentligt og der kommer billeder men
+det er der bare ikke endnu men hvor man kan læse om det og vi
+elsker det og vores personale er dygtige maden er god og vi holder
+alt og skræddersyr præcis til jeres behov"* — og *"samme ting med
+processen"*. **Ingen SQL.**
+
+**⚠️ FORMULAREN ER VÆK, OG DET KOSTER NOGET, DER SKAL VIDES:** en
+forespørgsel landede i tabellen `forespoergsler`, altså på
+Forespørgsler-fanen, hvor den kunne tælles, få en reference og
+blive lagt i kalenderen. En mail lander i en indbakke. Det er
+kundens beslutning, truffet efter at være sagt højt — men den
+betyder, at cateringens sager holder op med at stå i admin.
+
+- **⚠️ DERFOR BÆRER KNAPPEN ET FÆRDIGSKREVET BREV.** Formularens
+  egne felter — anledning, dato, antal kuverter, levering,
+  adresse, tidspunkt, ønsker, hensyn — står som linjer i mailen.
+  Uden brevet ville personalet få *"hej, hvad koster catering?"*
+  og skulle ringe for at spørge om alt det, en formular spurgte om
+  på ét skærmbillede. Samme greb som forsidens selskabsknap
+- **⚠️ `data-post="booking"` ER KUNDENS EGET VALG.**
+  `VEJLEDNING.md` deler adresserne efter ÆRINDE — booking@ er
+  spørgsmål om en booking, gæsten allerede HAR, og selskab1@ er
+  tilbud. Han bad udtrykkeligt om booking her, samme sted som
+  forsidens selskabsknap røg hen samme dag
+- **⚠️ ÉN MAILVEJ, IKKE TO.** `.anden-vej` har kun telefonen. To
+  mailadresser for det samme ærinde ville være to postkasser at
+  vælge imellem — og gæsten ville vælge forkert halvdelen af
+  gangene
+- **⚠️ `SIDER.cdato` ER SLETTET, IKKE EFTERLADT.** Otte
+  JavaScript-filer i repoet indlæses ikke af én eneste side
+  (30/8), og de er en fælde for den, der læser koden om et halvt
+  år. **Men typen `catering` lever videre** i databasen, i
+  `FORESPOERGSEL_TYPER` og på Forespørgsler-fanen: gamle sager
+  skal stadig kunne åbnes, aftales og afvises
+- **⚠️ OG DÆKNINGEN FLYTTEDE MED, DEN FORSVANDT IKKE.** Hver regel,
+  cateringens prøver bar, har fået et hjem på en side, der stadig
+  kører: segmentets markering og adressen, der ryger ved
+  afhentning, er **frokostens** nu; *"ud af huset optager
+  ingenting"* er selskabernes og frokostens. De to fjernede prøver
+  har hver sin note om, hvor reglen gik hen — dækning forsvinder
+  ved, at en fil holder op med at blive kørt (30/8)
+- **⚠️ MAPPEPRØVEN ER DELT I TO LISTER:** formularsiderne (tre) og
+  afleveringssiderne (fire, cateringen med). Kortet *"Sådan går
+  det videre"* gælder dem alle; den ene røde knap og
+  `.anden-vej`s to hvide gælder kun dem med en formular. Lagt i
+  den samme løkke ville cateringen falde på en formular, den med
+  vilje ikke har — og så ville nogen lempe prøven for alle fire
+- **Billederne er ikke kommet endnu**, så pladserne er flader med
+  et tegn. **⚠️ De har fået felter i admin** (`foto_catering_1-3`);
+  uden dem kunne fotoerne kun lægges ind ved at rette i koden
+- **Leveringslinjen lovede opstilling, ingen har bekræftet**, og
+  ikke ét ord om hvor eller hvad det koster. Den skrives af
+  `Butik.leveringsTekst` nu — den SAMME funktion, forsiden og
+  smørrebrødssiden spørger — og **er levering slået fra i admin,
+  ryger hele rækken**: en faktalinje med *"Vi leverer"* er et
+  løfte på ejerens vegne
+
+**Det sælgende kom på alle faner** (4/9). Kundens ord: *"det
+sælgende må godt komme på alle faner og gøre dem flotte og pæne
+med animationer og frokostordninger og det hele."* **Ingen SQL.**
+
+Selskaber, smørrebrød ud af huset og frokostordningen har fået det
+samme afsnit som cateringen: forretningens egne ord om sig selv,
+som kunden gav dem — vi elsker det, vores folk er dygtige, maden er
+god, vi holder alt, vi skræddersyr præcis til jeres behov.
+
+- **⚠️ OG DET ER EN PRØVE NU, IKKE EN GOD HENSIGT.** Designbundtet
+  fra 21/8 leverede *"4,8 · 312 anmeldelser på Google"* og
+  *"Bedste fiskefilet på hele Sydkysten"*; ingen af delene var
+  sande. `tests/gennemgang.spec.js` læser hvert `.saelg`-afsnit og
+  fælder en anmeldelsesscore, et antal anmeldelser, et antal år,
+  en pris pr. kuvert, ordet *bedste* og et antal afholdte
+  selskaber. **Afsnittene læses af MAPPEN**, så en femte side ikke
+  kan udgives uden vagten
+- **⚠️ OG DEN FANDT MIN EGEN TEKST, FØRSTE GANG DEN KØRTE.**
+  Frokostsiden sagde *"en frokostordning er den bedste udgave af
+  det"* — om arbejdet, ikke om markedet, men *bedste* på en
+  forretningsside læses som en påstand. Sætningen er skrevet om;
+  reglen står
+- **⚠️ PRØVEN MÅLER KUN `.saelg`,** og det er med vilje. Designets
+  EGNE pladsholdere (4,8 på Google, 40 pers., 199 kr. pr. person)
+  står live på Mikkels beslutning fra 23/8, og designbundt-vagten
+  er parkeret imens. Den her vogter det, VI skriver
+- **Animationen er designets egen `.rev`,** med punkterne i "Det
+  får I" forskudt. **⚠️ Forsinkelsen sidder på PUNKTET, ikke på en
+  ny iagttager** — to iagttagere på det samme element har allerede
+  kostet en runde (pillen, 31/8). Prøven læser den BEREGNEDE
+  forsinkelse og kræver, at punkt fem ikke har den samme som punkt
+  ét
+- **⚠️ OG DEN ANDEN HALVDEL ER DEN VIGTIGE:** punkterne begynder på
+  `opacity: 0`. Virker reduced-motion-blokken ikke, står listen som
+  en TOM flade for netop den, der har bedt om mindre bevægelse.
+  Målt UDEN at rulle — ruller man først, redder `.in` den, og
+  prøven måler ingenting
+- **⚠️ ET INLINE-LINK I BRØDTEKST ER 17 PX HØJT**, og gennemgangen
+  fælder alt under 30. Rettelsen er husets egen fra 31/8: lodret
+  padding med negativ margin. **IKKE `display:inline-block`** —
+  dét limede footerens links sammen til *"Bestil madMenukort"* på
+  syv sider
+
+**Den mørke sektion er historiens alene** (4/9). Kundens ord:
+*"efter skal vi have taget den der brune section vi har med ting —
+det skal kun være til deres historie man kan læse om."*
+**Ingen SQL.**
+
+Sektionen var tre ting på én gang: *"Hvem er vi?"* med manchet og
+underskrift, historien om ankeret, og tre værdikort. Husets egen
+regel siden 23/8 er ÉN ting pr. afsnit.
+
+- **⚠️ OG DE TO TAL, DER RØG MED, VAR DESIGNBUNDTETS EGNE.** *"I 15
+  år har vi lavet mad til havnens gæster"* og kortet *"15 år på
+  havnen"* kom fra bundtet 21/8 sammen med de 312 anmeldelser.
+  Ingen har bekræftet dem, og de står IKKE på historiesiden —
+  netop fordi vi ikke ved det
+- **⚠️ MANCHETTEN ER HISTORIESIDENS EGEN, ORD FOR ORD.** Skrev vi
+  en ny her, ville de to sider langsomt sige hver sit om den samme
+  havn — og gæsten går imellem dem i ét klik
+- **De tre kort er kapitlerne** (1710 · Søslaget, Dengang ·
+  Ishuset, Nu · Havnen) og siger kun det, der står på
+  historiesiden. **De er IKKE links:** sektionens ene handling er
+  knappen, og tre kort, der førte samme sted hen, ville være fire
+  veje til den samme side
+- **⚠️ TO IKONER VAR FORKERTE — SET PÅ ET SKUD, ikke læst.**
+  "1710 · Søslaget" havde en kasse med en pil op (den lignede en
+  upload-knap), og "Nu · Havnen" en pil gennem en bølge
+- **⚠️ MØNSTRET I PRØVEN RAMMER PÅSTANDEN, IKKE ETHVERT ÅRSTAL.**
+  Historien SKAL kunne sige *"1710"* og *"i næsten 270 år, før det
+  blev fundet"* — det er kilderne. Det forbudte er en påstand om,
+  hvor længe FORRETNINGEN har ligget her
+
+**Én kvittering alle steder man bestiller** (4/9). Kundens ord
+efter et skud af den nye smørrebrødskvittering: *"hvad er
+referance og kan vi få animationen og kvitteringen til at være
+bedre og dermed få den slags animation og kvittering alle steder
+man bestiller."* **Ingen SQL.**
+
+Der var **seks** kvitteringer i koden med hver sin form —
+`js/skal/bestil.js` (forsiden, smørrebrød, tapas),
+`js/bestilling.js` (`bestil/`, `ved-bordet/`), `js/bord.js`,
+`js/skal/forespoergsel.js` (fire sider) og `js/skal/kalender.js`.
+De sagde det samme og så forskellige ud, og hver rettelse skulle
+laves seks gange. De bygges af **`js/skal/kvittering.js`** nu, og
+formen står i **`css/kvittering.css`**.
+
+- **⚠️ SVARET PÅ "HVAD ER REFERANCE" ER, AT DER KUN ER ÉN KODE.**
+  Han har bygget systemet — kunne HAN ikke se, hvad den var til,
+  kan gæsten ikke. Kom nummeret, er det **det store**, og
+  referencen står under med ordet *Reference* foran. Findes der
+  slet ikke et nummer — de fire forespørgsler og reservationen —
+  træder referencen frem som det store med *Jeres reference* over
+  sig. Der er altid **ÉN** ting at sige, aldrig to og aldrig nul
+- **⚠️ ARKET HÆNGER IKKE PÅ ÉT TEMAS VARIABLER.**
+  `havnegrillen.css` og `css/style.css` har hver sit sæt navne
+  (`--cream2` mod `--sand2`, `--red-d` mod `--red-dyb`), og de to
+  verdener deles om bestillingssiderne. Hver farve står med sin
+  egen reserve: `var(--cream2, var(--sand2, #f7ede1))`. Det er
+  ikke pænt, men det er ÉT ark — arret fra `--overskrift` (24/8)
+  og fra `--r`/`--display` (4/9) set fra den anden side
+- **⚠️ BYGGEREN VED INTET OM FORRETNINGEN.** Den kender ikke
+  bestillinger, borde eller forespørgsler — den får en
+  overskrift, en sætning, en kode og nogle linjer. Vidste den,
+  hvad en bestilling var, skulle den rettes hver gang en tabel
+  fik en kolonne, og så var vi tilbage ved seks udgaver
+- **⚠️ OG DEN TØMMER BOKSEN SELV.** De tre designsider har intet
+  skjult-lag: panelet ER formularen. Stod tømningen ude i hver
+  side, ville den, der glemte den, få en kvittering **oven på**
+  en udfyldt formular — og en gæst, der ser sin egen bestilling
+  stå klar til at sendes igen, sender igen. Prøven måler to
+  uafhængige ting: kvitteringen er der, OG send-knappen er væk
+
+**⚠️ OG `bord/` HAVDE INGEN KVITTERING OVERHOVEDET.** Tre fejl i
+den samme funktion, og de skjulte hinanden: `K` var aldrig
+erklæret, den gamle opmærkning blev bygget og derefter revet ned
+af byggeren, og variablen `besked` fandtes ikke. `visTak` kastede,
+`#bord-tak` blev hængende **skjult**, og gæsten så ingenting efter
+en booking, der **var** gemt i databasen. Det er
+`git checkout -- js/bord.js`-arret fra samme dag: filen var halvt
+rullet tilbage, og halvdelene så rigtige ud hver for sig. **Fundet
+af tre prøver i `bord.spec.js`, ingen af dem ved at læse.**
+
+**⚠️ OG ORDET "BOOKET" VAR RØGET MED.** Den gamle kvittering havde
+*"Bordet er booket"* som eyebrow; den nye sagde *"Vi ses,
+Familien."* og ikke andet. **Booket er booket** — kunden har sagt
+det fire gange, senest 23/8 (*"det er det, jeg har prøvet at sige
+100 gange"*). Det står i beskeden nu, og prøven er set fejle uden
+det.
+
+**⚠️ OG "Reference" STOD I ET `::before`.** Det så rigtigt ud på
+et skud og var **usynligt for `textContent`** — altså for enhver
+prøve — og upålideligt for en skærmlæser. Husets egen regel: læs
+det, browseren GØR. **Et ord, der kun findes i et stilark, er
+ikke et ord på siden.** Det står i DOM'en nu, og det fjernes i
+den tomme udgave, hvor overskriften allerede siger det.
+
+**⚠️ OG TO STEDER SKREV KLOKKESLÆT MED KOLON.** `js/skal/bestil.js`
+sagde *"kl. 13:00"* og kalenderens `klokken()` *"kl. 18:00"*, mens
+`bord.js`, `bestilling.js` og `bestil-regler.js` altid har skrevet
+punktum. Kalenderens funktion bruges **både på kortet og i
+kvitteringen**, så gæsten ville have set begge former på den
+SAMME side. Fundet på et skud, ikke ved at læse. Kortets prøve er
+rettet MED en note: det er husets format, den følger nu.
+
+**MÅLT PÅ BEGGE BREDDER**, som han bad om (*"både desktop og
+telefon"*): på 1280 px strakte kodeboksen sig over hele panelet,
+så det ene tal, gæsten skal sige, stod som en lille streg midt i
+en meget bred flade. Den har et loft på 340 px nu og er centreret.
+
+Fem falsifikationer, fem fald: hakkets animation fjernet,
+nummeret sat til 14 px, tømningen fjernet (formularen blev stående
+under kvitteringen), `kvit-nr-tom` fjernet (referencen blev aldrig
+det store), og `K` fjernet igen (bord/ faldt som den gjorde).
+
+**Smørrebrødssiden bestiller igen** (4/9). Kundens ord: siden
+*"blir næsten om det er en forkostordning — det er helt
+almindelig bestilling"*, *"opdelingen imellem smørbrødne skal
+være bedre"*, *"der skal komme hvad man har valgt, og pris ...
+og generelt alle steder man bestiller"*, *"minimum 1 dag
+før"*, *"tjekke at det er en rigtig addresse it omegnen de
+levere i"*, *"regne fragten oveni ... plus maden som står og
+eventuelt embelage"*, *"minimum bestille 4 smørrebrød ... og
+ikke må kunne gå under"* og *"langt pænere ... især i
+bunden"*.
+
+**⚠️ Kør `supabase/levering-og-mindsteantal.sql`** — fire
+rækker data (79 kr., postnumrene, sætningen uden
+200-kroners-reglen, mindst 4). Ingen nye kolonner.
+
+Siden var en **forespørgsel** fra 31/8 til 4/9. Den er husets
+egen bestillingsmotor igen — `js/skal/bestil.js`, den samme fil
+som forsiden, ikke en kopi; forskellene står som opsætning i
+`SIDER`. Grunden til at vende beslutningen er ejerens data:
+hele smørrebrødskortet har haft priser siden 1/9, så der er
+ikke noget at spørge om for den, der skal bruge otte stykker
+på fredag. **Tilbud-kortet bliver** — det er flyttet UNDER
+formularen som "second option" (30/8-reglen), for den, der
+skal bruge et helt fad til fyrre, har brug for et menneske.
+
+- **To folder: Smørrebrød og Håndmadder.** 48 rækker i én
+  liste er over 3000 px på en telefon, og de to halvdele
+  ligner hinanden på en prik. Folden er husets egen fra
+  forsiden og `bestil/` — vi opfinder ikke en ny form
+- **Adressen får et svar, MENS hun taster** (`R.leveringSvar`).
+  ⚠️ **Tre udfald, ikke to:** ejeren skriver selv "længere ude
+  efter aftale", så et postnummer uden for listen er et
+  SPØRGSMÅL og ikke et nej. Et blankt afslag ville sende en
+  kunde væk, forretningen gerne ville have haft — samme
+  afvejning som mindstebeløbet på 200 kr. fik 1/9. Og derfor
+  er linjen gul og ikke rød: rød betyder afvist i hele huset
+- **Mindsteantallet står OVER listen** og siger, hvor langt
+  der er ("I mangler 2"). Reglen har holdt siden 30/8 — den
+  svarede bare først på Send-knappen, altså efter dag, tid,
+  navn og nummer. **Et krav, man møder som et afslag, er
+  skrevet det forkerte sted**
+
+**⚠️ TO FEJL, DER KUN KOM FREM VED AT KLIKKE PÅ SIDEN:**
+
+- **Segmentet sendte det modsatte.** `hvordan()` slår knappens
+  PLADS op i `segSvar`, og opmærkningen havde "Vi henter"
+  først, mens listen sagde `['levering','afhentning']`. Et tryk
+  på "Vi henter" blev altså sendt som en **levering** — og
+  gæsten fik "Skriv adressen" på et felt, der var foldet væk.
+  ⚠️ **"Vi henter" står først med vilje:** levering koster 79
+  kr., og et forvalg ville lægge et gebyr på, ingen har bedt
+  om. Det er en anden rækkefølge end catering og frokost
+- **`data-show` manglede.** `havnegrillen.js` skjuler målet ved
+  hvert tryk uden det (`t.hidden = b.dataset.show !== '1'`), så
+  "Leveres" gjorde adressefeltet **usynligt** i stedet for
+  synligt
+
+**⚠️ OG FRAGTEN VAR RIGTIG OG USYNLIG.** Fire stykker à 55 med
+emballage sagde *"i alt 339,-"*, mens linjerne kun forklarede
+260 af dem — de 79 talte med i totalen uden at stå nogen
+steder. Et beløb, gæsten ikke kan regne efter, er et
+spørgsmål ved lugen. Den står som sin egen linje nu **begge
+steder**: også i kurven på `bestil/`, som havde det samme hul.
+
+**⚠️ OG `emballage: true` NÅEDE ALDRIG DATABASEN.** `bestil()` i
+`js/store.js` byggede linjen af navn, antal, pris og variant, så
+flaget blev tørret af på vejen ind, og `Butik.erEmballage` måtte
+falde tilbage på **NAVNET** — reserven for rækker fra før 1/9.
+Det gik godt for emballagen, som hedder "Emballage". Det gik
+IKKE godt for fragten: *"Levering"* matcher intet navn, så
+køkkenet ville få **"lav 1 Levering"** i produktionslisten, og
+dagens tal sagde én ret for meget. **Præcis arret fra 1/9, en
+gang mere** — og fundet af den prøve, der læser den GEMTE række
+og ikke kurven på skærmen.
+
+**⚠️ OG JEG GAV REGLEN ET NIVEAU FOR MEGET.**
+`R.leveringSvar(data.indstillinger, …)` i stedet for
+`R.leveringSvar(data, …)`. Reglen slår selv ned i
+indstillingerne, så den faldt tilbage på husets **standard**
+postnumre i stedet for ejerens liste. Fejlen var tavs: Greve
+står i begge lister, så siden svarede rigtigt på det, jeg selv
+prøvede. Fanget af den prøve, der sætter ejerens liste til noget
+**andet** end standarden — husets regel om, at ét af tallene
+skal komme udefra.
+
+**⚠️ OG ÉN GAMMEL PRØVE BESTOD VACUØST, DA FORMULAREN
+FORSVANDT.** *"En udsolgt slags kan ikke vælges"* spurgte kun,
+om der var NUL knapper med det navn — og det er sandt for en
+vælger, der slet ikke findes. Præcis den fælde, filen selv fik
+en note om 30/8 (`toBeHidden` er sandt for et element, der ikke
+findes). Den ville have stået grøn i månedsvis og målt
+ingenting. Seks prøver i `skal-smoerrebroed-tilbud.spec.js` er
+fjernet MED en note om hvorfor; de to, der stadig måler noget
+(mailknappen), og admin-halvdelen bliver.
+
+**⚠️ OG TO FÆLDER I PRØVENS EGEN FOLD-HJÆLPER, hver med sin
+kørsel:** designets skabelonrække i HTML'en har OGSÅ en `.add`,
+der siger "+ tilføj" (derfor `[data-add]`), og teksten
+**skjules**, så snart kategorien har noget i kurven — så står
+der "2 valgt" i stedet. En "vent til den er synlig" hang
+derfor for evigt på anden runde.
+
+Syv falsifikationer, syv fald.
+
+**Kalenderen fik forlæggets runde** (3/9). Kundens ord med et
+skærmbillede af en færdig kalenderfane: *"du har fået alle
+priserne, og kalenderen som den skal se ud skal komme med til
+systemet og med folk booker — se sådan her ud."* **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER ET SKÆRMBILLEDE, IKKE KODE.** Der er hverken
+læst i eller kopieret fra spiis' repo. Formen er billedets,
+farverne er havnens — samme fremgangsmåde som personalesidens
+skabelon 24/8, bestillingskortet 31/8 og Overblik 1/9.
+
+**Feltet svarede på det forkerte spørgsmål.** Det bar seks tegn
+med tal — 🥪 3 🍽️ 2 📅 1 — og de siger *hvor travlt*. En
+kalender bliver spurgt om **hvad der er den dag**, og det svar
+kan kun gives med et NAVN. Et tal kan man tælle sig til i dagens
+panel; et navn kunne man kun se ved at åbne hver eneste dag, og
+så gør man det ikke.
+
+- **Navnene står som piller:** arrangementets egen titel med sit
+  emoji, baglokalets lejer, notens første ord. Tallene er ikke
+  væk — de er flyttet ned under navnene, hvor de svarer på
+  *hvor meget*
+- **Dagens ret har sin egen linje** (🍲 + navn + "+ 1 ret mere").
+  ⚠️ **Ikke en pille:** dagens ret er ikke noget, der SKER — det
+  er dét, der bliver lavet. Ugeplanen skrives én gang om ugen, og
+  hullet på torsdag skal kunne ses uden syv klik
+- **⚠️ NABOMÅNEDENS DAGE ER MED**, dæmpet. Der stod tomme felter
+  før, og det kostede en oplysning, ingen kunne få øje på: den 1.
+  i næste måned kan have tre borde og et selskab, og står man den
+  28. og planlægger, var de usynlige. Et tryk på naboens dag
+  **skifter måned først** — ellers stod panelet med en dato, der
+  ikke findes i det net, man kigger på
+- **Notelisten siger, hvad den er:** *"3 dage har noter denne
+  måned — tryk på en note for at åbne dagen og skrive videre."*
+
+**⚠️ OG DEN ANDEN HALVDEL AF ORDREN VAR BOOKINGERNE.** Er
+lørdagens loft tre borde, og er de tre taget, siger gæsten
+**FULDT** på `bord/` — og indtil nu stod der **ingen steder i
+personalets kalender**, at lørdagen var lukket for flere.
+Feltet siger `🍽️ 2/2` i rødt nu.
+
+- **⚠️ TALLET ER GÆSTENS.** `Admin.bordLoftFor` er den samme
+  regel, `bord/` spørger. To udgaver ville skride fra hinanden
+  den dag, ejeren nedlægger et bord — og begge skærme ville se
+  rigtige ud for sig selv
+- **⚠️ INGEN BORDE OPRETTET = INTET LOFT, IKKE NUL.** Uden
+  null-tjekket ville `Number(null)` blive 0, og et `1/0` i nettet
+  ville sige, at dagen var overbooket, mens hjemmesiden tog glad
+  imod. Samme fælde som `isFinite(null)` 1/9, nu i browseren
+- **⚠️ OG ARRANGEMENTET ER DEN TREDJE VEJ, FOLK BOOKER.** Et
+  arrangement med tilmelding har sit eget loft, og gæsten får nej
+  på kalendersiden, når det er nået. Feltet siger `🎟️ 12/40`.
+  Tallet kommer fra `Admin.pladserTaget` — Tilmeldinger-fanens
+  egen regel, som **springer de afviste over**, fordi et afslag
+  frigiver pladsen igen. Talte de med, ville personalet se fuldt,
+  mens hjemmesiden stadig tog imod
+
+**⚠️ OG TÆLLINGEN AF RETTER FLYTTEDE, FØR DEN BLEV KOPIERET.**
+Nettet er den **femte** skærm, der skal vide, at **emballagen
+ikke er en ret** — og de fem linjer stod skrevet ud på
+Bestillinger-fanen. En kopi mere ville være præcis dét, der fik
+dagen til at sige *"9 retter"* på fem 1/9. Reglen bor i
+`Admin.retterI` nu; begge skærme spørger den.
+
+**⚠️ EN NOTE GIVER INGEN GRØN KANT.** Kanten siger "der er et
+program den dag", og en note er personalets egen seddel — *"kun
+to på arbejde"* er ikke et arrangement. Første udgave farvede
+dem ens, og **målt på et skud** stod en personaledag med nøjagtig
+samme grønne kant som livemusikken. Grøn er i øvrigt mærket
+`m-aftalt`s grønne — husets *"det her er på plads"* — og ikke
+knappernes ✓ Færdig-grønne.
+
+**⚠️ RÆKKEFØLGEN AF KANTERNE ER REGLEN.** Alle fire vejer det
+samme (0,2,1), så den SIDSTE slår igennem, og de står efter, hvor
+alvorlige de er: egne tider → program → halvt lukket → lukket.
+En dag med fest OG "kun ud af huset" viser den røde — festen kan
+læses i pillen, men lukningen er dét, personalet skal svare på i
+telefonen.
+
+**⚠️ OG TELEFONEN VÆLTEDE PÅ ÉN TEKSTKNUDE.** **Målt på en iPhone
+13:** `"🥡 Kun ud af huset"` som én tekst brækkede over **tre
+linjer** i et felt på 44 px og gjorde hele ugerækken 200 px høj —
+måneden blev fem skærme. Tegnet og ordene er to elementer nu
+(`stand()`), ordene skjules under 560 px, og farven sidder
+stadig på `.maaned-stand` selv, så kontrastprøven fra 26/8 måler
+det samme.
+
+**⚠️ OG AFKORTNINGEN ER CSS'ENS ARBEJDE.** Første udgave skar
+navnet af ved 26 tegn i koden, og **målt på 1280 px** stod der
+*"Sensommer…"* i et felt, hvor der var plads til hele ordet.
+Feltets bredde afhænger af skærmen; `text-overflow: ellipsis`
+ved det, en talkonstant gør ikke.
+
+Tolv falsifikationer, tolv fald.
+
+**Kalenderen er en kalender nu** (24/8). Kundens ord: *"kalenderen
+skal være en kalender ... alt skal kunne administreres ift at have
+styr på alle ting derinde ... køreplanen får præcis den, skrive
+notater til den dag osv som selvfølgelig kommer ind i overblik"*.
+
+Fanen var en LISTE over arrangementer og lukkedage, og den vidste
+ikke, at der lå bestillinger, borde, forespørgsler eller en
+udlejning samme dag. **Ingen SQL** — dataene var hentet i forvejen.
+
+- **Månedsnet** med alt, der rører en dag: 🥪 bestillinger,
+  🍽️ borde, 💬 forespørgsler, 🔑 baglokalet, 📅 kalenderen,
+  📝 noten. Tryk på en dag → hele dagen skrevet ud
+- **Dagens panel retter INTET.** Hver ting hører til sin egen fane,
+  og en knap fører derhen. To steder at ændre en bestilling er to
+  steder, der kan skride fra hinanden
+- **Køreplanen står øverst på Overblik**: er der åbent, er
+  baglokalet lejet ud i dag, og hvad har personalet skrevet
+
+**⚠️ Noten til dagen kendes på TITLEN.** Den bor i kalenderen som
+en intern arrangement-række med titlen `Note til dagen`
+(`NOTE_TITEL` i `js/admin/kalender.js`). Databasen har tre typer og
+ingen fjerde, og en kolonne mere er en SQL-fil, ejeren skal køre.
+**Skift aldrig teksten** — de skrevne noter ville blive til
+arrangementer på dagen.
+
+**⚠️ `Admin.data` kan være `null`, når `efterHent` kører.** Fanerne
+melder deres lister ind, så snart de har hentet, og det kan ske før
+første `Butik.hent()`. Uden gardet kastede `tegnMaaned` — og da
+**alle tegnere ligger i den samme liste**, blev de faner, der stod
+efter kalenderen, aldrig tegnet: Overblik og Bestillinger stod
+tomme uden en fejl på skærmen. Elleve prøver faldt.
+
+**⚠️ Køreplanen er den første del af Overblik, der læser
+`Admin.data`.** Resten lever af `Admin.lister`. Derfor står
+`tegnKoereplan` også i `Admin.tegnere` — uden den blev en gemt note
+først synlig, næste gang en fane meldte noget ind.
+
+**⚠️ `body.personale .knap` vejer tungere end `.knap.lille`.** Da
+admin fik gæstesidens tema, blev pilene op/ned og månedsskiftet
+røde — præcis det, noten ved `.knap.lille` advarer imod. Prøven
+læser den beregnede farve.
+
+**Personalet kan tage en booking i telefonen** (24/8). Ringer nogen
+og bestiller et bord, fandtes der ingen vej ind — så stod halvdelen
+af dagen i systemet og halvdelen på en seddel ved lugen, og dagens
+billede løj om, hvor mange pladser der var tilbage. Formularen står
+foldet sammen på Borde-fanen. **Ingen SQL.**
+
+**Den bruger gæstens egen motor.** `Butik.bookBord()` er den samme
+funktion, hjemmesiden kalder, og dermed de samme værn. En anden vej
+ind i den samme tabel ville være to regelsæt, der langsomt kommer
+til at sige noget forskelligt — og ingen ville opdage det, før to
+familier stod ved det samme bord. Den oprettes som **bekræftet**
+(personalet har sagt ja i røret) med noten "Taget i telefonen".
+
+**Frokostordningen er den fjerde forespørgsel** (24/8). Designet
+tegnede den som et B2B-tilbud — firma, CVR, faste ugedage,
+fakturamail, "Få et tilbud" — og dét er et spørgsmål, ikke en
+bestilling. **Der bygges ingen abonnementsmotor**; det blev afvist
+20/8, og forsidens bestilling dækker den mad, man bestiller dagen
+før. `h-frokost.html` bruger nu det samme modul som selskaber,
+catering og baglokalet.
+
+**⚠️ Kør `supabase/frokost.sql` + `proev-frokost.sql`** (8 × BESTOD
+på en lokal Postgres 16). Den udvider kun den tilladte liste over
+slags forespørgsler. **Køres `forespoergsler.sql` igen bagefter,
+skriver den listen tilbage til tre** — og så får et firma, der
+trykker "Få et tilbud", en fejl, personalet aldrig hører om.
+`er-vi-klar.sql` linje 70 fanger det.
+
+**Frokosten optager INGEN dage.** Datoen er ønsket start, ikke en
+enkelt dag, og maden kører ud af huset. Optog den dagen, kunne ét
+firma med en fast onsdag lukke hver eneste onsdag for selskaber og
+udlejning.
+
+**⚠️ Listen over slags står TO steder:** `forespoergsel_type_ok` i
+databasen og `FORESPOERGSEL_TYPER` i `js/store.js`. Rettes kun det
+ene, tager øvetilstanden imod, hvad den rigtige database afviser.
+
+**Felterne gemmer sig selv** (24/8). Der var otte Gem-knapper. En
+travl medarbejder, der retter tavlen kl. 11.55 og går uden at
+trykke, havde rettet **ingenting** — og det opdages om onsdagen.
+`Admin.autogem(rod, saml)` er to linjer pr. fane. **Ingen SQL.**
+
+- **`change` gemmer straks**, når feltet forlades. Det er dét, der
+  fanger den, der taster og går. `input` gemmer 1,2 sekund efter
+  sidste tastetryk
+- **⚠️ Den gemmer STILLE.** `Admin.gem` tegner alle faner om, og en
+  optegning midt i en sætning river feltet ud af siden under
+  fingeren. Autogem skriver kun til databasen; skærmen viser
+  allerede det skrevne
+- **Knapperne bliver stående** — de skal bare ikke være det eneste,
+  der virker. `saml()` returnerer et løfte, eller en TEKST hvis
+  noget mangler: knappen brøler den, autogem viser den i sit mærke
+- **⚠️ Roden skal være KORTET, ikke en boks, der tegnes om.**
+  Første udgave hang på `#tider-felter`, som `tegnTider` bygger om
+  ved hver hentning — og så blev mærket revet ned med
+
+**Nyheder tænder og slukker sig selv** (24/8). "Live musik på molen
+· lørdag 22. august" skulle væk om søndagen, og det er den slags,
+ingen husker, når der er travlt. To valgfrie datoer: **tom betyder
+altid**, så alt det, der allerede står, bliver stående.
+
+**⚠️ Kør `supabase/nyheder-fra-til.sql` + `proev-nyheder-fra-til.sql`**
+(7 × BESTOD lokalt).
+
+**Reglen står ét sted: `Butik.nyhedSynlig`.** Forsiden, den gamle
+forside, nyhedssiden og admin spørger den samme funktion — tre
+kopier ville langsomt vise tre forskellige ting. Og der er
+**ingen filtrering i databasen**: rækkerne hentes alle sammen, så
+personalet kan SE i admin, at en nyhed *venter* eller er *udløbet*.
+`Butik.nyhedStatus` giver ordet.
+
+**Dagens ret fik en tabel** (24/8). Den var ÉN indstilling: ét
+navn, én dag, én pris — derfor stod menukortets ugeplan halvt tom,
+derfor blev to retter til ét langt navn med én pris, og derfor
+kunne en udsolgt ret bestilles videre.
+
+**⚠️ Kør `supabase/dagens-retter.sql` + `proev-dagens-retter.sql`**
+(11 × BESTOD lokalt).
+
+**Antal tilbage tælles nu — af DATABASEN.** Advarslen ovenfor mod
+et håndtalt lager gælder stadig; det er præcis derfor, tællingen
+ligger i en bremse på `bestillinger` og ikke i browseren. Ved nul
+sætter retten sig selv udsolgt. `greatest(antal - stk, 0)`: et
+negativt tal ville gøre en udsolgt ret bestilbar igen.
+
+**⚠️ Nøglen skal sammenligne som bremsen gør.** Første udgave var
+`unique (lokation_id, dato, navn)`, mens bremsen matcher på
+`lower(btrim(navn))` — så kunne "Stegt flæsk" og "stegt flæsk "
+ligge side om side og BEGGE blive talt ned. Prøve 5 fandt det.
+
+**Den gamle indstilling lever videre.** Er tabellen tom for i dag,
+vises `dagens_ret` som før — ellers ville dagens ret forsvinde i
+det sekund, filen blev kørt. Reglen bor i `Butik.dagensRetter`.
+
+**⚠️ Antallet sendes kun med fra admin, når nogen har rørt feltet.**
+Ellers ville et gem midt i en frokost skrive morgenens tal tilbage.
+
+**⚠️ `lokalt()` fangede ikke sit eget tilbagekald.** Skrivelaget
+efterligner databasens regler i øvetilstand ved at KASTE, og fejlen
+røg synkront ud FØR `Admin.gem` fik et løfte at hænge sin catch på
+— skærmen stod uændret uden en linje om hvorfor. Den fanges nu.
+
+**Køkken-køen er bygget** (25/8). Briefen bad om en
+"Restaurant-mode", hvor personalet KUN ser bestillingerne fra
+bordene, med ét tryk pr. trin og en ventetid, der bliver rød. Den
+ligger på fanen **Køkken-kø** under gruppen *Restaurant* i søjlen.
+
+**⚠️ Kør `supabase/restaurant.sql` + `proev-restaurant.sql`**
+(13 × BESTOD lokalt) — **efter `skraldespand.sql`**.
+
+**Det er en egen SKÆRM, ikke en egen tabel.** Køkkenet har ÉN kø;
+to tabeller ville være to lister, nogen skal huske at kigge i — og
+den dag begge har travlt, er det den ene, der bliver glemt. Salget,
+udeblivelserne og dagens omsætning regner allerede på
+`bestillinger`. **Bordnummeret ER adskillelsen**: skærmen
+filtrerer, dataene deler sig ikke.
+
+**⚠️ Køres `setup.sql` eller `udeblivelser.sql` igen bagefter,**
+snævres statuslisten ind, og køkkenet kan ikke trykke "Tilberedes"
+mere. Fejlen ser ud som en knap, der ikke virker. `er-vi-klar.sql`
+linje 91 fanger det.
+
+**⚠️ Dubletvagten gælder ikke bordene længere.** En
+bordbestilling vælger ingen hentetid — `hent_tid` er klokken NU.
+Selskabet ved bord 7 bestiller is efter maden og rammer det samme
+minut, og de fik *"Du har allerede sendt en bestilling til det
+tidspunkt"*, som om de havde dobbeltklikket. Nøglen er nu
+`where slettet is null and bord_nummer is null`. **Køres
+`skraldespand.sql` igen, skal `restaurant.sql` også køres igen** —
+linje 93 fanger det.
+
+**⚠️ Og anden runde mistede bordnummeret.** Efter et gennemført
+køb nulstilles kurven, og den stod på `hvordan: 'afhentning'` —
+`spis_her` sættes kun i `start()`. Et bordnummer kræver spis her,
+så `store.js` tog det af, og isen landede som en almindelig
+afhentning med hentetid **nu**: køkkenet vidste ikke, hvilket bord
+den skulle hen til. **Begge fejl blev fundet af prøver, ingen af
+dem ved at læse.**
+
+**Omsætningen tæller `serveret` med nu.** En bordbestilling ender
+dér og aldrig på `afhentet`; talte vi kun det sidste, ville hver
+krone fra bordene være væk fra regnskabet uden en fejl. De to ord
+er den samme begivenhed set fra hver sin side af lugen.
+
+**Zonen på bordet er FRI TEKST** (`borde.zone`) og noget andet end
+`placering` (ude/inde). `print/bordkort.html` sorterer skiltene
+efter den og begynder et nyt ark, hver gang zonen skifter.
+
+**⚠️ BETALING BYGGES IKKE. Afklaret af Mikkel 25/8:** *"det skal
+ikke være med mobilpay — de gør det via kassen ved at tage
+tingene ind manuelt."* Det holder 19/8-beslutningen og designet
+bag `ved-bordet/` ("Ingen betaling, ingen løbende regning"), og
+det fjerner refusionerne og hele spørgsmålet om
+salgsregistrering: **kassen ved lugen ER registreringen.**
+Skulle det laves om, kræver det ejerens egen aftale med en
+indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
+må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
+betalt.
+
+**Smiley-rapporten er på siden — linket er ejerens eget** (31/8).
+Mikkel oplyste `findsmiley.dk/app/1480560` ("Mosede havn grill og
+ishus", glad smiley, seneste kontrol 26-02-2026). Den stod på
+"Ejeren skal bekræfte"-listen som tom siden foråret. Chippen står
+i footeren på alle sider med en footer — **listen læses af
+MAPPEN** — og kilden står i `js/oplysninger.js`. **Ingen SQL.**
+
+**Emoji-fliserne og nødden** (31/8, kundens skærmbillede): de fire
+streg-ikoner på forsidens menukort-kort er emoji nu (🍲 🍔 🥗 🥤),
+knappen bærer 📖, og allergilinjen 🥜. Fliserne er `aria-hidden` —
+en skærmlæser skal ikke sige "gryde burger salat sodavand" før
+knappen.
+
+**⚠️ FACEBOOK-KORTET FANDTES ALLEREDE** (31/8). Kunden bad om et
+Facebook-banner "samme sted som arrangementerne i toppen" — og
+første udgave BYGGEDE et, hvorefter der stod TO blå kort med hver
+sin tekst om den samme side. Designets eget kort (`.promo.fb`) har
+ligget der siden 23/8 og venter kun på, at linket sættes i admin →
+Indstillinger → Facebook; `js/skal/kontakt.js` fjerner det, så
+længe linket mangler. Dubletten er fjernet igen, og en prøve
+vogter, at kortet findes, når linket er sat — **og at der kun er
+ét af dem.**
+
+**Ét tryk på Færdig — kæden er lagt bag døren** (31/8). Kundens
+ord: *"man skal bare trykke færdig, ikke det der dobbeltknap-noget,
+når man afstemmer bestillingerne."* **Ingen SQL.**
+
+Kæden var ny → bekræftet → klar → færdig: tre tryk på en
+bestilling, der bare var hentet. Nu er knappen **altid ✓ Færdig**,
+uanset hvor i kæden bestillingen står — på Bestillinger OG på
+Overblik, for begge spørger `Admin.naesteTrin`, og det er hele
+pointen med, at kæden bor ét sted.
+
+- **⚠️ MELLEMTRINNENE ER IKKE FJERNET.** "Bekræft" og "Sæt som
+  klar" ligger bag "···" (`Admin.mellemTrin`) — den, der vil
+  markere "maden er lavet, den venter", kan stadig
+- **⚠️ DE ÅBNE STATUSSER ER SKREVET UD** (`AABNE`), ikke udledt
+  af "alt, der ikke er færdigt": et nyt ord i databasen ville
+  ellers tavst få en Færdig-knap
+- **⚠️ FEM PRØVER VOGTEDE DEN GAMLE KÆDE** og blev vendt MED
+  noter: vagtskærmens "en NY skal bekræftes først" var en regel,
+  kunden nu har truffet om — prøven vogter i stedet, at de to
+  skærme giver det SAMME ene tryk. Logbogens tre og
+  bestilling.spec's kædeprøve går gennem `aabnMere()` nu — kæden
+  er stadig bevist, bare ad den vej, personalet går
+
+**Fiskefileten er ude af stemningsgalleriet** (31/8, kundens
+ønske). Filen ligger stadig i `billeder/`, og alt-teksten står
+tilbage i `forside.js` med en note — sættes fotoet ind i
+`data-filer` igen, følger teksten med af sig selv. **Og
+fartprøvens loft læses af PULJEN nu:** der stod 7, og prøven
+bestod stadig med 6 i puljen — et tal, der er skrevet af én gang,
+holder op med at måle, når virkeligheden ændrer sig.
+
+**Bestillingskortet fik ÉN handling frem** (31/8). Kunden sendte
+et **skærmbillede** af, hvordan kortet skal se ud — *"det skal se
+sådan her ud … agtig"* — og bad tidligere om, at man skulle kunne
+se *"når de er kørt"*. **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER ET SKÆRMBILLEDE, IKKE KODE.** Der er hverken
+læst i eller kopieret fra spiis' repo — det må ikke røres. Formen
+er skærmbilledets, farverne er havnens. Samme fremgangsmåde som
+personalesidens skabelon 24/8.
+
+Kortet havde **tre knapper i fuld bredde under maden** — Bekræft,
+Udeblev, Afvis — så hvert kort blev en halv skærm, og den ene
+knap, personalet trykker på ni gange ud af ti, stod side om side
+med to, de næsten aldrig bruger. Nu:
+
+- **Én knap fremad**, til højre fra 900 px (samme greb som
+  forespørgselskortet og Overblik fik). Under 900 px falder den
+  under maden igen
+- **Den sidste er grøn med et hak** — *✓ Færdig*. De to trin før
+  er husets røde: de flytter sagen videre, men lukker den ikke
+- **⚠️ INGENTING ER FJERNET.** Udeblev, Afvis, Slet og Gendan
+  ligger bag **"···"**. En knap, der er væk, er en sag,
+  personalet ikke kan lukke
+- **Panelet ligger OVEN PÅ kortet** og skubber ingenting — ellers
+  ville listen hoppe, hver gang nogen kigger efter en knap
+- **Døren findes kun, når der er noget bag den.** En "···", der
+  åbner ingenting, trykker man på én gang og aldrig igen
+
+**⚠️ OG FIRE PRØVER PEGEDE DIREKTE PÅ DE SKJULTE KNAPPER.**
+`admin.spec`, `skraldespand.spec` og `logbog.spec` klikkede på
+Udeblev og Slet, som en finger ikke længere kan nå. De går gennem
+`aabnMere(kort)` i `tests/hjaelp.js` nu — den vej, personalet går,
+og samtidig en prøve på, at vejen findes. Samme greb som
+`visFane()` fik 30/8. Og `vagtskaerm.spec` ledte efter knappen
+"Afhentet" på Overblik: **kæden bor ét sted**, så ordet skiftede
+begge steder på én gang — det er hele pointen med den.
+
+**Bevægelsen: to ting, der kostede billeder** (31/8). Kundens
+ord: *"optimering af sidens smoothness, satisfying og sådan — lad
+den føles 120 fps, også i start animationen."* **Ingen SQL.**
+
+**⚠️ TRE IKKE-PASSIVE `wheel`-LYTTERE PÅ FORSIDEN.** Sådan en
+lytter tvinger browseren til at VENTE på JavaScript, før den
+overhovedet må rulle. De sad på hver `<image-slot>` — tapasfadet
+og de to nyhedsbilleder — fordi `image-slot.js` registrerer en
+zoom med `{ passive: false }` ved opstart. Zoomen virker kun inde
+i **reframe**, som en gæst aldrig går ind i, så de ventede på
+ingenting. Den hægtes på i `_enterReframe()` og af igen i
+`_exitReframe()` nu — præcis som Escape- og
+klik-udenfor-lytterne ved siden af. **Funktionen er urørt.**
+
+**⚠️ OG `.topbar` ANIMEREDE `padding`.** 58 → 52 px over 450 ms
+med en fjeder — **seks pixels**, betalt med en ombrydning af hele
+bjælken i et halvt sekund, netop mens fingeren ruller (bjælken
+skifter til `.stuck` ved y > 300). Sluttilstanden er den samme;
+de 6 px skifter bare med det samme, mens baggrund, slør og skygge
+stadig toner ind på kompositoren. Samme rettelse på `#hd` for de
+gamle sider, og den dekorative streg under overskrifterne vokser
+med `transform: scaleX()` i stedet for med `width`.
+
+**Målt på forsiden, iPhone 13, under et fuldt rul:**
+
+| | før | efter |
+|---|---|---|
+| værste billede | 62,2 ms | **26,8 ms** |
+| p95 | 24,9 ms | 24,0 ms |
+| billeder over 33 ms | 2 | **0** |
+
+`bestil/` ligger på 17,1 ms i værste fald. **Introen var i
+forvejen jævn** — median og p95 begge 16,7 ms over 243 billeder,
+kun 2 over 33.
+
+**⚠️ OG ÉN MISTANKE VAR FORKERT.** Jeg troede, `revealFallback()`
+kostede: den slår hele DOM'en op og læser geometri ved hvert
+rullebillede. **Målt: 0,035 ms pr. kald.** Den blev ikke rørt.
+Det er hele grunden til at måle først — en "optimering" af den
+ville have været arbejde uden gevinst og en risiko for at bryde
+noget, der virker.
+
+**⚠️ DE TO REGLER ER PRØVER NU**, begge i
+`tests/gennemgang.spec.js`: ingen gæsteside må registrere en
+ikke-passiv `wheel`/`touchmove`-lytter (prøven instrumenterer
+`addEventListener` FØR sidens egne scripts kører — et spørgsmål
+til koden ville bestå, hvis en ny lytter kom til et andet sted),
+og **intet stilark** må animere en egenskab, der udløser layout.
+Den sidste læser arkene, ikke en enkelt side, så reglen også
+gælder den næste fil, der bliver skrevet. Set fejle begge veje.
+
+**En færdig bestilling så ud som en afvist** (31/8). Kundens ord
+med to skærmbilleder af Bestillinger-fanen: *"der skal stå
+færdig, og når de er kørt skal det tydeligt ses."* **Ingen SQL.**
+
+To ting var galt, og de forstærkede hinanden:
+
+- **ORDET.** Det sidste trin hed *Afhentet*, bunken hedder
+  *✅ Færdige*, og tælleren øverst siger *0 færdige*. Tre ord for
+  den samme tilstand er ét for meget midt i en frokost. Knappen og
+  mærket hedder **Færdig** nu
+- **FARVEN.** `.b-afhentet` var grå og halvgennemsigtig — den
+  **samme** stil som `.b-afvist` og `.b-udeblevet`. "Maden kom ud
+  ad døren" og "det blev aldrig til noget" lignede altså hinanden
+  på en skærm, personalet skimmer. Den gennemførte er grøn og
+  fuldt synlig nu; det afviste og udeblevne bliver gråt
+
+**⚠️ KUN ORDET PÅ SKÆRMEN SKIFTER.** Databasens status hedder
+stadig `afhentet` (og `serveret` ved bordene) — salgstallene
+tæller på netop de ord, og en ændring dér ville stoppe
+omsætningen uden en eneste fejl.
+
+**⚠️ OG `erFaerdig()` VAR DEN FORKERTE PRØVE AT HÆNGE STILEN PÅ.**
+Den er sand for en **afvist** bestilling — den betyder "ikke mere
+arbejde", ikke "det gik godt". Hængt på den ville et afslag blive
+farvet grønt. Derfor er der en `erGennemfoert()` ved siden af, og
+en prøve holder fast i, at de to ikke må smelte sammen.
+
+**⚠️ OG OVERBLIK HAVDE SIN EGEN ORDLISTE.** `js/admin/overblik.js`
+havde en kopi med *Afhentet*/*Serveret*, så i det sekund ordet
+skiftede, ville de to skærme sige hver sit om den SAMME
+bestilling — og personalet skifter mellem dem hele dagen. Ordene
+bor i `Admin.statusNavn` nu. **Rækkefølgen er ikke ligegyldig:**
+`overblik.js` indlæses FØR `bestillinger.js`; det går, fordi ordet
+først slås op ved optegningen, og en prøve siger til, hvis nogen
+flytter opslaget op i indlæsningen.
+
+**Siden ved bordet kunne ikke overskues** (31/8). Kundens ord:
+*"hele siden på qr code bestil er rodet og dårlig og skal
+fungere langt bedre, bedre overblik, klarhed over hvad man har
+bestilt."* **Ingen SQL.**
+
+Jeg scannede en kode selv og målte, i stedet for at læse:
+
+- **⚠️ RODEN VAR ÉN GENERISK REGEL.** `section { padding-block:
+  clamp(56px, 7vw, 104px) }` i `css/style.css` — og
+  `.kort-gruppe` **ER** et `<section>`. Hver eneste kategori fik
+  56 px foroven OG forneden, som ingen havde bedt om; med ejerens
+  21 kategorier er det over **2.000 px tomt sand** ned gennem
+  menuen. Tallet står slet ikke i `css/ved-bordet.css` — det blev
+  fundet ved at spørge browseren, hvilken regel der gav de 56 px
+- **Målt på en iPhone 13 (390×664): den første vare, gæsten kunne
+  trykke på, lå 626 px nede** — 94 % af det første skærmbillede
+  var overskrifter, og hun har lige scannet et mærkat: hun SIDDER
+  ved bordet. Den ligger **507 px** nede nu, og plusknappen er
+  inden for skærmen
+- **⚠️ MEN BORDNUMMERET BLIVER.** Det er kvitteringen for, at hun
+  scannede det rigtige mærkat — maden bæres ud efter dét nummer.
+  Det, der røg, er GENTAGELSEN: nummeret stod i mærket, i
+  overskriften og i manchetten
+- **Søgefeltets pladsholder var klippet af** — gæsten så
+  *"…softice, fad"*. Prøven måler TEKSTENS bredde mod feltets, ikke
+  antallet af tegn
+
+**⚠️ OG KURVEN SAGDE IKKE HVAD.** Den sagde *"2 stykker · 178,-"*
+og intet andet. Med 242 varer på kortet og fire mennesker om et
+bord kunne gæsten ikke se, HVAD hun havde valgt, uden at rulle
+hele menuen igennem igen. Bjælken folder nu en liste ud med hver
+vare, dens **egen** sum (2 sodavand = 50,-, ikke "2 × 25") og et
+plus og minus pr. linje.
+
+- **⚠️ TO KNAPPER, IKKE ÉN.** Bjælken VAR selv knappen, der førte
+  videre. Skulle den også folde kurven ud, ville ét tryk gøre to
+  ting — og gæsten, der ville se sin bestilling, blev sendt ned i
+  formularen. Summen åbner listen; **Videre** fører videre
+- **⚠️ ET TRYK I KURVEN TEGNER IKKE HELE LISTEN OM.** Første
+  udgave kaldte `visStykker()`: 242 rækker revet ned og bygget op
+  for at ændre ét tal fra 2 til 1, midt i en liste gæsten ruller
+  i. Rækkerne bærer `data-vare` nu, og `saetAntal()` retter den
+  ene
+- **⚠️ OG `var kurvBar` MÅ IKKE FJERNES.** Den bruges også af
+  iagttageren, der folder kurven væk ved Send-knappen. Første
+  udgave tog den med, da klik-lytteren blev delt i to, og **hele
+  bordsiden faldt** med `kurvBar is not defined`: gæsten fik *"Vi
+  kan ikke hente kortet lige nu"* på en side, hvor alt var i
+  orden. Fejlen var tavs i konsollen — den blev fanget af sidens
+  egen `.catch` og skrevet som en `console.warn`
+
+**⚠️ OG DEN FØRSTE PRØVE MÅLTE INGENTING.** *"Den første vare er
+på det første skærmbillede"* spurgte, om varens TOP lå over
+skærmens bund — og den bestod med fejlen genindført: varen lå 626
+px nede på en skærm på 664, altså med 38 px synlige og
+plusknappen under folden. Den måler **plusknappens nederste kant**
+nu — det, gæsten skal kunne trykke på.
+
+**Emballagen gjaldt kun den halve side** (31/8). Kundens ord:
+*"vi mangler at lave emballagetillæg på bestillinger, det er 10
+kroner oveni."* **Ingen SQL** — `indstillinger` er nøgle/værdi.
+
+Motoren HAR været bygget siden 30/8, men **kun `js/skal/bestil.js`
+brugte den.** `js/bestilling.js`, som bærer `bestil/` OG
+`ved-bordet/`, regnede den ikke med — så det **samme smørrebrød
+kostede forskelligt alt efter, hvilken side gæsten kom ind ad**,
+og ingen af siderne så forkerte ud for sig selv. Det var
+forskellen MELLEM dem, der var fejlen.
+
+- **Reglen er den samme fil, ikke en kopi.** `R.emballage` i
+  `js/bestil-regler.js` afgør prisen, hvilke kategorier den
+  gælder, og at den **aldrig** lægges på spis her — så bordet
+  slipper af sig selv
+- **Den står som sin egen linje** i kurven og i bestillingen, med
+  ejerens eget navn, hvis han har skrevet et. Et tillæg, gæsten
+  først møder på totalen, er et tal, hun spørger til ved lugen
+- **⚠️ DE TO PRØVER HØRER SAMMEN.** *"Et bord betaler aldrig
+  emballage"* ville også bestå på en side, hvor emballagen slet
+  ikke fandtes. Modstykket — *"to portioner ud af huset koster to
+  gange emballage"* — står i `tests/bestilling.spec.js`
+- **Prisen sættes i admin → Åbningstider → Emballage ved to-go.**
+  Tom pris = ingen emballage; vi finder ikke på et tal på
+  forretningens vegne
+
+**En lukket kategori siger HVORFOR — og reglen blev overhovedet
+ikke spurgt før** (31/8). Kundens ord: *"når klokken er over
+lukke, så lad der stå: klokken er over 13, vi sælger ikke
+morgenmad længere."* **Ingen SQL.**
+
+- **⚠️ MÅLT, IKKE LÆST: `bestil/` og `ved-bordet/` spurgte ALDRIG
+  med klokkeslæt.** `js/bestilling.js` kaldte `Butik.udvalg` uden
+  tid og hvordan, og `kategoriPaaTid` springer hele sit tjek
+  over, når tiden er null. Gæsten ved bordet kunne bestille
+  morgenmad kl. 13.05, selv om ejeren lukkede den 12.30 — reglen
+  fandtes (30/8), den blev bare aldrig spurgt. Beskeden, han bad
+  om, var kun halvdelen af hullet
+- **To grunde, ikke én.** Er dagen i dag OG uret selv forbi
+  lukketiden: *"klokken er over 12.30 — sælges ikke mere i dag"*.
+  Har gæsten bare valgt et sent klokkeslæt på en dag, hvor
+  kategorien kan nås: *"kun til kl. 12.30"* som før
+- **⚠️ VED BORDET GÆLDER VARSLET IKKE.** Første udgave lukkede
+  HELE kortet ved bordet: tiden dér ER klokken nu, og
+  smørrebrødets 24 timer satte "bestilles 24 timer før" på hver
+  eneste række. Et varsel er et krav til en AFTALT tid; en tid,
+  der ikke ligger ude i fremtiden, er ikke aftalt. Garden er
+  `m > nu.minutter` i `kategoriPaaTid` — lugens vælgere tilbyder
+  aldrig et passeret klokkeslæt, så den rammer kun bordet
+- **⚠️ VÆLGERNE SPØRGER UDEN KLOKKESLÆT** (`''`, samme greb som
+  `js/skal/bestil.js`): fik dag- og tidsvælgeren tiden med, bed
+  filteret sig selv i halen — hvilke dage der KAN vælges, ville
+  afhænge af det klokkeslæt, der allerede stod i feltet
+- **Linjen `#bestil-lukkede` står over listen** på begge sider
+  ("Ikke lige nu: Morgenmad (…)"), og en liste, der er tom, fordi
+  ALT er uden for sit tidsrum, siger det — ikke "vi kan ikke
+  hente udvalget", som lover mad over telefonen, køkkenet lige
+  har lukket for
+- **Tiderne tegnes FØR listen** (start() og dagskiftet), og et
+  tidsskifte tegner listen om — ellers stod morgenmaden på
+  skærmen, mens reglen først sagde nej ved afsendelsen
+- **⚠️ OG NAVNEFÆLDEN RAMTE IGEN:** den nye `udvalgNu(d, iso)`
+  kolliderede med en gammel no-arg `udvalgNu()` længere nede i
+  filen — to funktioner med samme navn, den sidste vinder tavst
+  (hentBorde-arret). Den gamle er slettet; fanget med grep, før
+  den nåede browseren
+
+**"Ingen dagens ret i dag" kan trykkes** (31/8). Kundens ord:
+*"gør så man kan trykke ingen dagensret idag inde på dagensret
+sectionen og ik bar at der står får kunderne dagensret følger
+snart."* **Ingen SQL** — `dagens_ret_ingen` i `indstillinger`
+gemmer DAGENS dato, så trykket nulstiller sig selv i morgen, og
+ingen skal huske at trykke det fra.
+
+- **Reglen bor ét sted:** `Butik.ingenDagensRet(d, iso)`.
+  Menukortets uge og forsidens uge siger *"Ingen dagens ret i
+  dag"* i stedet for *"Følger snart…"* — det sidste er kun sandt,
+  så længe ingen har besluttet noget
+- **En SKREVET ret vinder altid** over trykket: står der en ret
+  på dagen, er den det nyeste, nogen har sagt. Knappen i admin
+  siger det i stedet for at lade som om ("slet dem først") —
+  og **hurtigfeltet ryddes MED**, for det gælder også kun i dag
+- **Kortet står på Dagens ret-fanen** mellem ugeplanen og
+  hurtigfeltet; når trykket er aktivt, hedder knappen Fortryd,
+  og mærket siger, hvad siden viser
+- **⚠️ PRØVEN "EN SKREVEN RET VINDER" BESTOD FØRST MED GARDEN
+  FJERNET** — på menukortet skærmer grenrækkefølgen (retten
+  tegnes, FØR der spørges), så prøven målte ingenting om garden.
+  Admin-knappen spørger reglen ALENE, og garden har sin egen
+  prøve dér: uden den stod knappen som "Fortryd", mens siden
+  viste retten. Set fejle begge veje
+
+**Admin: kvitteringen svæver, og knappen svarer straks** (31/8).
+Kundens ord: *"alting, når man gemmer, ændrer inde på siden.
+Knapperne og udseendet er simpelthen forældet ... boksen med alt
+det der, det er grimt. Det skal være liquid glass, instant
+responsivt admin-system og fungere."* **Ingen SQL.**
+
+To ting var galt på én gang, og den værste var ikke den, der så
+grimt ud:
+
+- **KVITTERINGEN STOD I FLOWET** og skubbede kortet, felterne og
+  den knap, man lige havde trykket på, ~60 px ned. Nu svæver den
+  (`position: fixed`, over bundbaren på telefonen, nederst til
+  højre fra 900 px) — **målt: kortet flytter sig 0 px**
+- **OG SIDEN RULLEDE SELV TIL TOPPEN** (`window.scrollTo` i
+  `kvitter()` og `brøl()`). Gemmer man en pris nederst på et
+  menukort med 242 varer, skal man finde tilbage til rækken
+  bagefter. Linjen er væk; prøven måler `scrollY` før og efter
+- **Knappen kvitterer på stedet:** "Gemmer…" straks, "✓ Gemt"
+  bagefter, slået fra imens (et dobbelttryk er en skrivning
+  mere). `svarStraks()` i kerne.js finder knappen på
+  `document.activeElement` — den behøver ikke sendes med gennem
+  tyve kald. **⚠️ Teksten lægges tilbage, også når det går galt:**
+  en knap, der bliver stående på "Gemmer…", ser ud som et system,
+  der hænger
+- **⚠️ ID'ERNE ER DE SAMME.** Tyve prøvefiler læser `#kvittering`
+  og `#fejl`; en omdøbning ville være tyve prøver, der målte noget
+  andet end det, personalet ser
+
+**⚠️ OG GLASSET VENDER EN BESLUTNING FRA 24/8 — DET ER HANS.**
+Dengang stod her, at admin med vilje IKKE har glasknapper:
+"sløring uden et foto bagved koster billeder i sekundet på en
+iPad". Grunden var rigtig, så den er ikke kastet væk — den er
+blevet en **grænse**:
+
+- `backdrop-filter` KUN på de flader, der ligger oven på noget,
+  der ruller forbi: bundbaren og kvitteringen. To elementer, ikke
+  to hundrede
+- Kort og knapper får glassets UDSEENDE — lag, linsekant,
+  indvendigt lys — men ingen sløring. Det koster ingenting at
+  tegne
+- **MÅLT på et menukort med 252 varer under et fuldt rul: værste
+  billede 17,4 ms, p95 16,9, 0 billeder over 33 ms.** Glasset er
+  gratis dér, hvor det er sat
+- **⚠️ OG `.knap[disabled]` DÆMPEDE "✓ GEMT" TIL 50 %.** Målt på
+  et skud: knappen stod blegt grønt og lignede en, der ikke
+  virkede — mens den lige HAVDE virket. De to nye tilstande har
+  deres eget svar tilbage
+- **⚠️ OG PRØVEN MÅLTE FØRST RULNINGEN, IKKE REGLEN.**
+  `boundingBox().y` er skærm-relativ, og et klik på en knap langt
+  nede ruller den selv frem: tallet flyttede sig 1073 px, uden at
+  noget var skubbet. Den måler `getBoundingClientRect().top +
+  scrollY` nu
+
+**Historien om havnen har sin egen side — og sin egen stil**
+(31/8). Kundens ord: i den mørke info-sektion skal der være
+historie om cafeen med en knap, og bag den *"en helt anden slags
+stil, end vi har kørt med — nærmest cinematisk"*. Plus:
+*"bestil-knappen skal væk for telefonen, når man læser."*
+**Ingen SQL.**
+
+- **`historien.html` + `historien.css` er sidens eget sprog:**
+  sort grund, filmkorn, Instrument Serif i clamp op til 104 px,
+  fuldbredde-billeder og **messing** i stedet for husets røde.
+  Farverne bor i `historien.css` og IKKE i `havnegrillen.css` —
+  lagt i det fælles ark ville de kunne sive ud på de ni andre
+  sider, og så var "en anden slags" væk
+- **⚠️ MESSING, FORDI RØD BETYDER "TRYK HER" I HELE HUSET.** Et
+  rødt 1710 ville se ud som et link, og et rødt telefonnummer i
+  kildelinjen målte dårligt på sort. Årstallene skal læses som
+  noget, der er ridset i metal
+- **⚠️ INGEN FLYDENDE PILLE.** Prøven tæller den til nul på
+  historiesiden — og til ÉN på forsiden, ellers målte den kun, om
+  klassenavnet var stavet rigtigt
+- **⚠️ KILDELINJEN ER HUSETS EGEN REGEL GJORT SYNLIG.** Halvdelen
+  af historien er lokalhistorie, ikke noget forretningen har
+  målt. Ankerets ophav står som *"efter sigende"*, fordi kilden
+  selv skriver "sandsynligvis", og bunden siger, hvor det kommer
+  fra, og hvordan man retter os. En prøve holder fast i begge
+- **⚠️ ARKIVFOTOENE LÆGGER VI IKKE IND.** Rettighederne til et
+  arkivbillede er ikke vores at give videre, og siden er en
+  forretnings. Fire pladser i admin → Forside (`foto_historie_1-4`),
+  som ejeren fylder med det, han har lov til. Uden et foto står en
+  MØRK flade med pladsens tegn — samme regel som `billedplads.js`
+- **⚠️ OG SCROLL-MARGIN VAR IKKE PROBLEMET.** Et skud viste et
+  kapitel bag topbjælken, og jeg var ved at skrive reglen igen —
+  `#sc { scroll-padding-top: 128px }` har stået der siden 31/8.
+  Det var Playwrights `scrollIntoViewIfNeeded`, som ikke
+  respekterer scroll-padding. **Mål den vej, gæsten går**, ikke
+  prøvens genvej
+
+**"Intet må gå tabt"-eftersynet er kørt** (31/8). Kundens ord:
+*"absolut intet må gå tabt af bestillinger ift. databasen eller
+forespørgsler — alt skal virke og kunne ses uanset hvad."*
+Hele kæden formular → database → skærm er gået efter for alle
+fem gæstetabeller. **Ingen SQL.**
+
+- **Hver tabel har synlige bunker for ALLE statusser** (også
+  afvist/udeblevet), **en fortryd-vej** (Gendan på bestillinger
+  og forespørgsler kom i samme runde; borde, udlejninger og
+  reservationer havde deres), og **Slet er skraldespanden** —
+  30 dages gendannelse, aldrig en sletning
+- **Sendekæden holder:** tre forsøg med ventetid, netfejl siger
+  "IKKE sendt endnu", reference-sammenstød får ét nyt nummer, og
+  hver DB-afvisning oversættes til dansk med en handling i
+- **Hver hentning i admin har en synlig fejl** — ingen tom liste,
+  der LIGNER "ingen bestillinger", mens kaldet fejlede
+- **⚠️ DET ENE HUL, EFTERSYNET FANDT, VAR BAGUD:** andre-dage-
+  linjen på Bestillinger tæller alt uafsluttet på alle andre dage
+  — men ingen prøve målte en bestilling fra I GÅR, ingen nåede at
+  lukke. Den findes nu og er set fejle med fortidsdage filtreret
+  fra. Koden var rigtig; det var dækningen, der manglede
+
+**Arrangementet har en kategori nu — og filterknapperne virker**
+(31/8). Kundens ord: *"når man opretter et arrangement skal man
+jo også vælge kategorien, som så skal opdateres og virke korrekt
+på siden."* Siden GÆTTEDE ud fra titlen, og alt ukendt blev
+Musik — han så selv "MUSIK · 145" på et arrangement, der ikke
+var musik.
+
+**⚠️ Kør `supabase/arrangement-kategori.sql` +
+`proev-arrangement-kategori.sql`** (4 × BESTOD på en lokal
+Postgres 16, set fejle med værnet fjernet). Tjek 122 i
+`er-vi-klar.sql`.
+
+- **Null = ikke valgt, og så gætter siden som før** — de gamle
+  rækker står som i går, og ejeren kan give dem en kategori med
+  Ret → Gem ændringer. Ejerens valg SLÅR gættet
+  (`slagsFor` i `js/skal/kalender.js`)
+- **De tre lovlige er FILTRETS egne knapper** (Musik · Spisning ·
+  Fest) — en fjerde slags er en ny knap på siden, ikke bare en
+  værdi. Derfor et check og ikke fri tekst, og `store-skriv`
+  laver alt ukendt om til null
+- **⚠️ FILTERKNAPPERNE VIRKEDE ALDRIG PÅ EJERENS EGNE KORT.**
+  Designets script fangede `.evcard`-listen ved indlæsning — og
+  dér er den tom, for `js/skal/kalender.js` fylder den bagefter.
+  Knapperne så ud til at virke og filtrerede ingenting. Kortene
+  slås op ved hvert tryk nu
+- **⚠️ OG TO PRØVER MÅLTE INGENTING I FØRSTE HUG.** "Ejerens valg
+  slår gættet" hed *"Koncertaften med fællesspisning"* — så
+  gættede regexen OGSÅ spisning, og prøven bestod med rangordenen
+  fjernet (gæt og valg skal være UENIGE). Og filterprøven kunne
+  ikke falde, fordi øvetilstanden når at fylde listen, FØR
+  designets script kigger — den lægger nu et kort til EFTER
+  indlæsningen, som produktionen gør. Begge set fejle bagefter
+
+**Bestillingen har et nummer, man kan sige højt** (31/8).
+Kundens ord med et skærmbillede af kortet: *"kan
+bestillings-ordrenummeret ikke være fra #0000 af, lidt pænere
+end det der"* (SM260831-UBJ7E) — og *"intet må gå tabt af
+bestillingerne"* og *"oplys også bestillingsnumre til når folk
+bestiller … det er professionelt"*.
+
+**⚠️ Kør `supabase/bestillingsnummer.sql` +
+`proev-bestillingsnummer.sql`** (7 × BESTOD på en lokal Postgres
+16 med bremsen og dubletvagten slået til i stubben; set fejle med
+triggeren fjernet og med tidsvinduet fjernet). Tjek 120-121.
+
+- **⚠️ NUMMERET LÆGGES VED SIDEN AF REFERENCEN — den røres
+  ikke.** Referencen er rækkens nøgle: lavet i gæstens browser,
+  står i gamle kvitteringer og mails. Nummeret er det, øjne og
+  telefoner bruger. På kortet i admin står `#0047` med referencen
+  som title; gamle rækker uden nummer viser referencen som før,
+  og migreringen giver dem numre i den rækkefølge, de kom ind
+- **⚠️ TÆLLES I DATABASEN** (`bestillingsnumre`, én række pr.
+  forretning, låst af opdateringen) — to gæster samtidig får
+  aldrig samme tal. **Og gæstens eget bud smides ALTID væk** i
+  triggeren, samme lov som bordets nøgle
+- **⚠️ MED VILJE INGEN unique på kolonnen:** et sammenstød skal
+  give to kort med samme tal — ikke en AFVIST bestilling
+- **⚠️ GÆSTEN MÅ STADIG IKKE LÆSE TABELLEN.** Kvitteringen slår
+  sit eget nummer op med `mosede_bestillingsnummer(ref)` —
+  security definer, svarer kun på en reference, man HAR, og kun
+  en time frem. Svarer den ingenting, står referencen alene, og
+  intet mangler. Øvetilstanden tæller selv (`gemt.nummer`), så
+  flowet kan øves uden nøgle
+- Kvitteringen på `bestil/`, `ved-bordet/` og forsiden viser
+  "Bestillingsnummer #0001"; bord- og forespørgselskvitteringerne
+  viser deres reference (BO-/FO-), som de har gjort siden 23/8
+
+**Åbningstider & kontakt står samlet nederst på forsiden** (31/8).
+Kundens ord med spiis' bund som forlæg: *"add det her nederst på
+siden, bare med havnegrillens oplysninger, men samme design."*
+**Ingen SQL.**
+
+- Find-afsnittet har en KONTAKT-blok i tidernes eget panelsprog:
+  Ring til os · Selskaber & catering · Om din booking · Adresse.
+  Mail-linkene går gennem den SAMME `data-post`-kanal som
+  footeren — en rettet adresse i admin slår igennem begge steder
+- **⚠️ EN NEDLAGT ADRESSE TAGER SIN RÆKKE MED SIG**
+  (`data-post-raekke`): en etiket uden link er et spørgsmål uden
+  svar. Footeren er urørt — dér ER linket hele linjen. Set fejle
+- **⚠️ OG GENNEMGANGEN FANGEDE MINE EGNE LINKS PÅ 16 PX** —
+  nøjagtig footer-fejlen fra tidligere samme dag. Trykfladen er
+  lodret padding med negativ margin (rækkens højde vokser ikke),
+  IKKE display-skift: inline-block var det, der limede footerens
+  links sammen til "Bestil madMenukort"
+- To prøver i kontakt-post og én i skal-forside er SCOPET til
+  footeren med en note — `a[data-post]` findes to steder nu, og
+  `.hours` er to paneler
+
+**Push-beskederne siger hvad og hvornår — og lyver ikke** (31/8).
+Kundens ord: notifikationerne skal være *"bedre og pænere, og
+forklar hvad det er og hvad tid"*. **Ingen SQL.**
+⚠️ Ordlyden her nåede først i luften **9/9** — se *"Funktionen
+kørte på 20/8-koden"* under status.
+
+Tre ting var direkte forkerte, og de er prøver nu (kommentarerne
+klippes af før målingen — favicon-prøvens egen lære):
+
+- **"har bestilt smørrebrød" stod på HVER bestilling** — også en
+  burger og en levering. Nu: bordets kort siger "skal laves nu og
+  bæres ud", leveringen råber "skal LEVERES" og lover ingen
+  automatik, resten siger "N retter i dag/i morgen kl. X"
+- **"Ring og bekræft" på bordønsket** stred mod kundens egen
+  regel (booket er booket, sagt fire gange): opkaldet hører til
+  Afvis. Teksten siger det nu
+- **Frokostordningen fandtes ikke i typelisten** og blev til
+  "noget"
+- Datoen skrives "i dag"/"i morgen"/"lørdag 5/9" i DANSK tid —
+  funktionen kører på UTC i skyen, og "i dag" må ikke skifte ved
+  22-tiden. Og der står aldrig "betalt" (køkkenskærmens regel)
+
+**Fortryd kan altid lade sig gøre — og mailen kan ses** (31/8).
+Kundens ord: *"gendannelse af bestillinger det skal man kunne,
+hvis man klikker forkert; nummer og email skal stå tydelig —
+gælder også forespørgselsdelen."* **Ingen SQL** — statusserne er
+kun CHECK-værdier, adgangsreglen har ingen retning.
+
+- **↩ Gendan bag "···" på Bestillinger-fanen** for alt færdigt
+  (Færdig, Afvist, Udeblevet — også bordenes serveret). Den
+  fandtes kun i Overbliks Færdige-fold før; et fejltryk på selve
+  fanen kunne ikke fortrydes uden at skifte fane og lede. Gendan
+  fører til `bekraeftet`, ikke `ny` — rækken HAR været set
+- **↩ Gendan på forespørgselskortet:** et afslag føres til `ny`
+  (vi VED ikke, hvor langt sagen var, og "Venter på jer" er
+  bunken, hvor intet bliver glemt); et fejltryk på Aftal føres
+  til `kontaktet` — dér kom den fra, kæden har kun den ene vej
+- **Mailen på bestillingskortet er et LINK** i samme vægt som
+  nummeret (📞/✉, klassen `.bestil-tlf`) — den stod som dæmpet
+  brødtekst, og en kontaktvej, man ikke kan se, er en, ingen
+  bruger. Forespørgselskortet havde begge som links siden 29/8
+- Tre falsifikationer, fem fald (Gendan slået fra begge steder,
+  maillinket rullet tilbage) — og prøven "en ny har ingen Gendan"
+  holder fast i, at knappen ikke breder sig til åbne kort
+
+**Gennemgangen af alle gæstesider er en PRØVE nu** (31/8).
+Kundens ord: *"UI's og animation optimizing ... fix hjemmesiden
+telefon og kunde mæssigt."* **Ingen SQL.**
+
+`tests/gennemgang.spec.js` åbner HVER udgivet gæsteside på en
+telefon og leder efter det, der er svært at se med øjnene, fordi
+det kun rammer én side ad gangen: sidelæns rulning, noget der
+stikker ud over en forælder der klipper, døde links, manglende
+favicon, billeder uden alt, trykflader under 30 px, og **ankre
+uden et mål på siden**. **Siderne læses af MAPPEN**, så en ny side
+ikke kan slippe forbi.
+
+**Den fandt fem ting, første gang den blev kørt:**
+
+- **⚠️ `m-menukort.html`s "Bestil smørrebrød" pegede på
+  `#bestil`, som ikke findes på siden.** Menukortsidens ENESTE
+  handling gjorde præcis ingenting — nøjagtig samme fejl som den
+  flydende pille på kalenderen. Den peger på
+  `h-smorrebrod.html` nu
+- **Footerens links var 15-22 px høje** på ti sider
+- **Forsidens "…eller ring til os på 28 87 13 43" var 17 px** —
+  det mindste trykmål på siden, og det er et telefonnummer
+- `bestil/` og `bord/` havde det samme i deres egne footere
+- De to sætninger under bordformularen var 16 px
+
+**⚠️ `.sheen` ER IKKE EN FEJL.** Designets glans er bredere end
+sin knap med vilje og klippes af den — det er effekten. Uden den
+undtagelse råber prøven på ti sider hver gang.
+
+**⚠️ OG SELEKTOREN SKAL RAMME FOOTEREN, IKKE `.foot`.** `.foot`
+er noget HELT andet i designet: prisrækken med "199 kr. pr.
+person" og knappen "Se og bestil tapas". En regel på `.foot a`
+ville have lagt luft i en designknap.
+
+Tre falsifikationer, tre fald (og én skærpet: `display:inline`
+ændrer ikke en trykflade, når der er lodret padding — den rigtige
+fejl er at fjerne luften).
+
+**⚠️ OG SÅ FANDT ØJNENE TO TING, PRØVEN IKKE KUNNE** (31/8) —
+begge på et skud, ingen af dem ved at læse.
+
+**⚠️ DEN FLYDENDE PILLE DÆKKEDE HEROENS ANDEN KNAP HELT.**
+**Målt på en iPhone 13 (390×664):** pillen står 24 px over
+bunden og er 58 px høj, altså 582-640. Heroens "Selskab &
+catering" ligger 579,5-633,5. Et `elementFromPoint` midt i
+pillen, med pillen selv slået fra, svarede
+*"A.g ghost Selskab & catering"* — altså kunne gæsten **slet
+ikke trykke på den knap på det første skærmbillede, hun ser**.
+Trykkede hun, hvor den står, blev hun sendt ned i
+bestillingsformularen. **Målt på 320 px er det værre:** dér
+dækker pillen "Bestil mad", heroens primære knap.
+
+Hver regel er rigtig for sig — pillen skal stå i bunden, og
+heroen skal fylde sin skærm. **Det er summen, der er forkert, og
+den findes kun ved at måle på flere skærmhøjder.** Nøjagtig
+samme slags fejl som pillen oven i heroens manchet 23/8.
+
+- **⚠️ RETTELSEN ER PILLENS EGEN REGEL, IKKE EN NY.** Den folder
+  sig allerede væk, når det, den er en genvej TIL, er i syne —
+  og heroens "Bestil mad" ER den handling. Vi giver derfor ikke
+  heroen 70 px luft i bunden; det ville lave om på designets
+  afstande på hver eneste skærmhøjde
+- **⚠️ TO IAGTTAGERE MÅ IKKE OVERSKRIVE HINANDEN.** Skrev de
+  begge `toggle('tuck', e.isIntersecting)`, ville den, der
+  udløste sidst, vinde: heroen ruller ud af syne og folder
+  pillen FREM — oven i formularen. De synlige mål holdes i et
+  sæt, og pillen er væk, så længe sættet ikke er tomt
+- **Målt hele vejen ned:** tucket ved y=0 (heroen), tucket
+  y=400-1200 (formularen), og **fremme fra y=1800**. Genvejen er
+  ikke fjernet, den er flyttet derhen, hvor den mangler
+- **⚠️ KUN `index.html` HAR `.hero-cta`** (målt) — de syv andre
+  sider med en pille opfører sig præcis som før
+
+**⚠️ OG FODLINKENE VAR MIN EGEN FEJL, LAVET SAMME AFTEN.**
+Trykfladerne blev rettet med `display:inline-block` på
+`.fcols a` — men de var **block i forvejen**, én pr. linje. Med
+inline-block flød de sammen, og footerens "Havnen"-søjle kom til
+at stå **"Bestil madMenukort"** og **"SelskaberCatering"**: to
+links læst som ét ord, på **syv sider**. Kontakt-søjlen slap,
+fordi dens links er lange nok til at brække alligevel — og
+derfor så halvdelen af footeren helt rigtig ud.
+
+**Højdemålingen bestod hele vejen igennem.** Den spurgte om
+trykfladen, ikke om linjen. Gennemgangen har reglen nu, og den
+er set fejle på syv sider. **En rettelse, der måles på ét tal,
+kan gå galt på et andet.**
+
+**⚠️ OG `åbnSkal` PÅSTOD, AT DE NYE SIDER IKKE HAR EN INTRO.**
+`index.html` har en — den eneste af de ni (målt). Hjælperen
+fjerner den ikke, så introens `<canvas>` ligger hen over hele
+forsiden, når en prøve begynder at måle. Det ses ikke i de
+fleste prøver, fordi `textContent` og attributter kan læses
+gennem et overliggende lag — men alt, der måler det ØJET ser
+(`elementFromPoint`, klik, synlighed), rammer lærredet i stedet.
+Prøven her sagde *"noget ligger oven på knappen: CANVAS"*, hvilket
+var sandt og ikke det, den handlede om. **Måler du visuelt på
+forsiden, så kald `springIntroOver(page)` først.**
+
+**Forsiden fik den samme blok — og to fejl faldt ud af det**
+(5/9). **Ingen SQL.**
+
+`bestil/` og `ved-bordet/` fik dagens ret-blokken først; forsiden
+kører sin egen fil (`js/skal/bestil.js`), og uden den ville den
+SAMME regel se forskellig ud på to af de tre bestillingsveje.
+
+- **⚠️ MÆRKATET SIGER IKKE "DAGENS RET" MERE.** Blokken siger det
+  med sin overskrift, og **målt på en iPhone 13** brækkede
+  *"DAGENS RET · 95,-"* over to linjer, så prisen stod alene
+  under ordene
+- **⚠️ OG RÆKKEN ER IKKE FREMHÆVET INDE I BLOKKEN.** Designets
+  `.hi` giver rækken sin egen røde ring, og **målt** blev det til
+  et kort i et kort — to røde rammer om den samme ret
+
+**⚠️ OG `--red-tekst` VAR ALDRIG DEFINERET I `havnegrillen.css`.**
+Tre regler BRUGTE den — tapasfadets pris, tidssvarets fejlfarve
+og *"kun 3 tilbage"* — og en `var()` uden værdi og uden reserve
+falder tilbage til det arvede. **Målt: farven kom ud som blækket
+`#241a17`**, altså var fejlbeskeden ved tiden ikke rød, og ingen
+kunne se det, fordi teksten stod der pænt. Samme ar som
+`--overskrift` 24/8. Den er defineret nu som designets egen mørke
+røde, og en prøve læser den **beregnede** farve.
+
+**⚠️ OG MIN EGEN BLOK VÆLTEDE OPTEGNINGEN.** `visVarer()` ryddede
+med `alle('.item', liste).forEach(r => liste.removeChild(r))` —
+som slår ALLE `.item` op i hele undertræet. Blokkens række er
+ikke et direkte barn af listen, og `removeChild` på en knude, der
+ikke er ens eget barn, **kaster**. Første optegning gik godt
+(blokken fandtes ikke endnu), men det NÆSTE tryk på en tæller
+væltede `visVarer()` midtvejs, så kategorifoldene aldrig blev
+tegnet: **gæsten trykkede "+ tilføj", og der skete ingenting.**
+Fejlen stod kun i konsollen. Fundet af to gamle prøver, ikke ved
+at læse — og bekræftet ved at køre dem på `HEAD~1`.
+
+**Tre gamle prøver er VENDT med noter**: de vogtede `.item.hi` og
+det helrøde mærkat. Reglen er ikke svækket — den måler nu, at
+blokken findes, at retten ligger i den, at en almindelig række
+IKKE gør, og at blokkens ramme er tykkere end rækkens; alt sammen
+mod uafhængige elementer.
+
+**Sortimentet kan sættes pr. ugedag** (5/9). Kundens ord:
+*"derudover skal de vælge hvilket mad der f.eks er de
+forskellige dage — sådan fx weekenderne er det kun friture eller
+det 'nemme' … eller mandag til torsdag have alt sortiment men
+ikke dürüm."*
+
+**⚠️ Kør `supabase/kategori-ugedage.sql` +
+`proev-kategori-ugedage.sql`** (12 × BESTOD på en lokal
+Postgres 16, set fejle begge veje).
+
+**⚠️ MANDAG TIL TORSDAG VAR IKKE MULIGT.** Kolonnen `dage` kunne
+tre ting — `alle` | `hverdage` | `weekend` — og `hverdage` er
+man-**fre**. Fredag er netop den dag, en grillbar har travlt, så
+ejeren kunne ikke skrive det, han bad om.
+
+- **Formatet er cifre i stigende rækkefølge** (isodow): `'1234'`
+  = man-tors, `'67'` = weekend. **⚠️ De tre gamle ord bliver** —
+  der står rækker med dem i produktionen, og en migrering, der
+  byttede dem ud, ville ændre, hvad der kan bestilles på en
+  forretning i drift
+- **⚠️ CIFRE OG IKKE SYV BOOLEAN-KOLONNER.** Syv kolonner skal
+  bæres med af HVER skrivning til rækken, ellers tørres de af —
+  arret fra bordloftet 1/9 og fra `vis_fra` 28/8. Én tekstkolonne
+  kan ikke komme i det uføre
+- **⚠️ EN TOM DAGLISTE AFVISES.** Ingen dage betyder "kan aldrig
+  bestilles", og det er hvad fluebenet *aktiv* er til. Admin
+  spærrer den sidste dag, så ejeren ikke møder en rå SQL-fejl
+- **Alle syv gemmes som `'alle'`**, ikke `'1234567'` — det
+  korteste, der er sandt
+
+**⚠️ OG DER LÅ TO TAVSE FEJL BAG, BEGGE FUNDET VED AT MÅLE:**
+
+- **Ugedagen gjaldt aldrig smørrebrødet.** `kategoriPaaDag` blev
+  kun spurgt om ejerens ØVRIGE kategorier; smørrebrødets egne
+  blev kun spurgt om KLOKKESLÆTTET. En smørrebrødskategori sat
+  til `hverdage` stod altså på kortet om lørdagen, og gæsten
+  kunne bestille — først databasens `mosede_kategori_dag_vaern`
+  sagde nej ved afsendelsen. Hullet har været der, siden
+  dage-kolonnen kom 26/8
+- **⚠️ OG SKRIVELAGET KASTEDE EJERENS VALG VÆK.**
+  `js/store-skriv.js` normaliserede alt andet end de tre ord til
+  `'alle'`. Ejeren kunne slå fredag fra, trykke Gem, se **✓
+  Gemt** — og få en kategori, der stod åben hver dag. Ingen fejl
+  nogen steder
+
+**⚠️ OG DEN ANDEN FEJL BLEV FUNDET AF EN FALSIFIKATION, DER IKKE
+VILLE FALDE.** Prøven *"alle syv gemmes som alle"* bestod, også
+med `dageTekst` sat til at svare `'MUTERET'`. Grunden var netop
+normaliseringen: værdien nåede aldrig frem. **En falsifikation,
+der ikke falder, er ikke et bevis på, at koden er rigtig — det er
+et spørgsmål, der skal besvares.** Prøven måler nu `'124'`
+(mandag, tirsdag, torsdag), som ingen normalisering kan lave om
+til et af de tre ord.
+
+**⚠️ OG `git checkout -- <fil>` TOG RETTELSEN IGEN.** Anden gang
+på to dage: jeg committede en wip FØR rettelsen og rullede så
+tilbage til HEAD efter en falsifikation. **Commit rettelsen, ikke
+kun det, der var før den.**
+
+Fem falsifikationer i browseren, fire fald og ét spørgsmål; to i
+SQL, begge fald. **To gamle prøver er VENDT med noter** — de
+vogtede rullelistens `#kat-dage-1`, og reglen er ikke svækket:
+vælgeren skal stadig kun findes, når kolonnen gør, og det valgte
+skal stadig gemmes.
+
+**En lukket dag sagde det ingen steder** (5/9). Kundens ord:
+der skal *"eventuelt komme en lille besked ting derude at i dag
+er der lukket for køkkenet eller lukket for to-go, spisning"*.
+**Ingen SQL** — `dags_regler` har haft `luk_takeaway` og
+`luk_spis_her` siden `dagsregler.sql`.
+
+**⚠️ OG DER LÅ EN RIGTIG FEJL BAG, MÅLT PÅ `bestil/`.**
+`visDage()` kaldte `muligeDage(data)` **uden måden**, og
+`tiderFor` springer hele sit tjek af `luk_takeaway` /
+`luk_spis_her` over, når `hvordan` er `undefined`
+(`bestil-regler.js` linje 481). Altså blev en dag, ejeren havde
+lukket for mad ud af huset, **tilbudt i vælgeren**: gæsten valgte
+den, fyldte kurven, skrev navn og nummer — og fik først
+databasens `bestilling_takeaway_lukket` at se, da hun trykkede
+send. Husets egen regel: **et krav, man møder som et afslag, er
+skrevet det forkerte sted.**
+
+- **⚠️ OG MIN FØRSTE ANTAGELSE VAR FORKERT — MÅLINGEN RETTEDE
+  DEN.** Jeg skrev, at dagen kunne vælges alle tre steder, og
+  byggede en spærring (`o.disabled`) ind i begge dagvælgere. På
+  forsiden var den **uopnåelig kode**: dér sendes måden med, så
+  dagen forsvinder helt fra listen. Det, der manglede dér, var
+  ikke en spærring — det var et SVAR
+- **En dag, der MANGLER, ligner en fejl**, og gæsten leder efter
+  i dag i stedet for at vælge en anden dag. Derfor står linjen
+  *"I dag: Vi laver ikke mad ud af huset den dag — men I er
+  velkomne til at spise her"*
+- **⚠️ BESKEDEN SIGER, HVAD DER ER MULIGT.** Er kun to-go lukket,
+  kan hun spise her; er kun spisningen lukket, kan maden komme
+  med hjem. Kun når BEGGE er lukket, står der *"Køkkenet er
+  lukket den dag"* — dér er der ikke noget at love i stedet.
+  Prøven falder, hvis beskeden bliver et bart nej
+- **⚠️ VED BORDET ER DER INGEN DAGVÆLGER.** Dagen ER i dag, og
+  måden ER spis her, så beskeden kan ikke stå i en vælger, gæsten
+  ikke har. Uden linjen ville hun scanne mærkatet, læse hele
+  kortet, fylde kurven og først få nej ved afsendelsen. Den står
+  i `#bestil-lukkede` — og **kun** ved bordet: to steder med den
+  samme besked ville være to udgaver at holde ved lige
+- **⚠️ OG DAGENE SKAL TEGNES OM VED SKIFT AF MÅDE.** En dag kan
+  være lukket for to-go og åben for spis her; uden det stod de
+  spærrede dage tilbage fra det forrige valg
+- **Reglen bor ét sted:** `Butik.dagLukketFor(d, iso, hvordan)`.
+  `Butik.maaBestille` havde til gengæld **ingen læsere på
+  gæstesiden overhovedet** — det var måling, ikke læsning, der
+  fandt det
+
+Fem falsifikationer, fem fald. **⚠️ Og den fjerde målte først
+ingenting:** jeg lod funktionen svare på dage UDEN en regelrække,
+og prøven har en. Mutationen skal ramme den vej, prøven faktisk
+går.
+
+**Et gensendt forsøg, der ramte dubletvagten, blev læst som en
+fejl** (5/9). **Ingen SQL.**
+
+Sendekæden har siden 22/8 haft den rigtige regel for referencen:
+landede første forsøg, uden at svaret nåede frem, svarer
+databasen `bestillinger_reference_key`, og **det svar betyder
+"den ER inde"**, ikke "prøv igen". Noten ved siden af siger
+ordret, at 'Prøv at sende igen.' på netop det svar var
+"opskriften på en dublet".
+
+**⚠️ MEN RÆKKEN BRYDER TO UNIK-INDEKSER, IKKE ÉT.** Sendes den
+igen, kolliderer den både på referencen OG på
+`bestilling_ikke_dobbelt` (samme forretning, samme nummer, samme
+hentetid) — og hvilket af de to Postgres nævner i sit svar,
+afhænger af **den rækkefølge, indekserne blev oprettet i**, altså
+af hvilke SQL-filer der er kørt hvornår. Reglen hang dermed på en
+tavs afhængighed: nævnte svaret dubletvagten, læste vi vores
+**egen** første afsendelse som *"Du har allerede sendt en
+bestilling til det tidspunkt"* — og gæsten, hvis mad ligger i
+køkkenet, tror det slog fejl og ringer eller bestiller igen.
+
+- **⚠️ KUN PÅ ET GENSENDT FORSØG.** Kommer svaret i FØRSTE forsøg,
+  har gæsten faktisk sendt to gange, og så SKAL hun have beskeden.
+  Begge halvdele har hver sin prøve, og **uden den anden målte den
+  første ingenting**: en regel, der siger ja til hver eneste
+  dublet, ville bestå den
+- **⚠️ OG 'Prøv at sende igen.' STOD STADIG FIRE STEDER** som
+  generisk svar på et ukendt unik-indeks — i forespørgslen,
+  bordbookingen, udlejningen og reservationen. Det er den samme
+  opskrift, bestillingen fik lukket, og de fire siger nu, hvad der
+  ER sandt: *"Vi kan ikke se, om den kom igennem. Ring til os, så
+  tjekker vi — send den ikke igen."* Et gensendt ønske er to
+  sager, personalet skal ringe om, eller to af dagens borde
+
+**Booket er booket — også i fejlbeskederne** (5/9). **Ingen SQL.**
+
+Kvitteringen på `bord/` har sagt *"Bordet er booket"* siden 23/8,
+og en prøve vogter den. **Men fejlbeskeden på den samme side sagde
+*"Du har allerede SPURGT om et bord på det tidspunkt"***, bremsen
+sagde *"der er allerede spurgt om flere borde"*, de to sidste
+udveje sagde *"Ønsket kunne ikke sendes"*, og manchetten under
+formularen sagde *"ØNSKET lander på køkkenets skærm"*.
+
+Altså fortalte siden gæsten to forskellige ting om, hvad hun lige
+havde gjort — og det er netop dén halvdel, ingen kigger på: man
+skal ramme en fejl for at se den. Kunden har sagt fire gange, at
+man **bestiller** et bord, ikke spørger om det.
+
+- **⚠️ ORDET BLIVER PÅ BAGLOKALET.** `h-baglokale.html` ER en
+  forespørgsel siden 29/8 (gæsten spørger, personalet booker), så
+  *"spurgt om lokalet"* og *"Ønsket kunne ikke sendes"* er sande
+  dér og er urørte
+- **⚠️ PRØVEN LÆSER DET, GÆSTEN SER.** Den lader en booking gå
+  igennem sidens EGEN motor, sender så den samme igen og læser
+  **fejlboksen på skærmen** — og kræver samtidig, at der kun står
+  ÉN række. Uden det målte den kun en tekst og ikke en regel
+- **⚠️ OG DEN MÅ IKKE RELOADE.** Prøvernes `sætData` skriver
+  fiksturet tilbage ved **hver** navigation, så en genindlæsning
+  tørrer den første booking af — og dubletvagten bliver aldrig
+  spurgt. Målt: kvitteringen kom frem, der stod én række, og
+  fejlboksen var tom. Det lignede en fejl i koden og var i
+  målingen
+
+**Vejledningen ligger i `VEJLEDNING.md`** (31/8, kundens
+bestilling): hvem der står i hvilken fane, hvad hver fane gør,
+hvordan QR-skiltene printes, og en tabel over "det ser sådan ud →
+det er som regel". Skrevet til personalet, ikke til en udvikler.
+
+**Og den kan printes** (`vejledning/`): én selvbærende HTML-fil med
+husets egne skrifter lagt ind som base64 — Google Fonts er spærret
+af udgangsproxyen, og en PDF skal bære sine skrifter med. Chromium
+tegner PDF'en; `lav-pdf.js` og `maal-luft.py` står i mappen.
+
+- **⚠️ SKRIFTSTØRRELSEN ER MÅLT FREM, IKKE VALGT.** `maal-luft.py`
+  finder nederste række med blæk på hver side og siger, hvor meget
+  tomt papir der bliver. **Tallet er 8,6 pt**, og vejledningen er
+  **seks sider med ~1,0 sides spild** (målt 5/9)
+- **⚠️ OG DET TAL VAR EN PÅSTAND I FIRE DAGE.** Her stod, at 8,6
+  pt holdt **fem** sider med 0,5 spildt. Målt forfra 5/9 er den
+  seks — den sjette kom af tekst, der voksede over flere dage, og
+  ingen kørte målingen bagefter. Det er husets ældste ar i endnu
+  en forklædning: **en note er ikke et tjek**, heller ikke om
+  papir. Og skriften kan ikke hente siden tilbage: 8,4, 8,3 og
+  8,2 pt er stadig seks sider og spilder MERE, fordi hele blokke
+  flytter i stedet for at pakke tættere (se reglen nedenfor).
+  8,6 er derfor stadig den største, der ikke spilder mere.
+  **Hver gang teksten vokser, skal målingen køres igen**
+- **⚠️ INTET FANEKORT OG INGEN TABEL DELES AF ET SIDESKIFT.**
+  Målt: den sidste tabel efterlod ÉN række med gentaget hoved på
+  en side for sig selv — en opslagstabel, hvis sidste svar står
+  alene på næste ark, er dét, man leder efter og ikke finder
+- **⚠️ EMOJIERNE ER ADMINS EGNE.** 🍽️ Borde ser bleg ud på papir,
+  fordi Noto tegner den som en hvid tallerken. Det er ikke en
+  manglende glyf — det blev efterprøvet mod fontens cmap OG mod et
+  browserskud, før noget blev "rettet". Byttede vi tegnet, ville
+  vejledningen lyve om skærmen; ordet står lige efter det
+- **`noindex`**, som admin: den beskriver personalesiden
+
+**⚠️ ÉN FEJLENDE FANE VÆLTEDE ALLE DE ANDRE — for tredje gang**
+(31/8). `Admin.tegnere` er ÉN liste, og alle faner tegner fra
+den. Kastede én af dem, blev resten aldrig kørt — og fejlen pegede
+et helt tredje sted hen.
+
+- 24/8: kalenderens `tegnMaaned` lod Overblik og Bestillinger stå
+  tomme
+- 29/8: `udlejning.js`' `insertBefore` tog Forespørgsler og Borde
+  med sig ned
+- 31/8: en nyhed uden `dato` kastede på `.slice`, og
+  **uploadfeltet på Nyheder blev ved med at være skjult**, selv om
+  kolonnen var der. Jeg ledte efter en fejl i CSS'en i en halv
+  time
+
+Løkken fanger nu hver tegner for sig. **Fejlen skjules ikke** —
+den skrives i konsollen — men den fane, der fejler, er den
+eneste, der fejler.
+
+**⚠️ OG PRØVEN MÅLTE FØRST INGENTING.** Den åbnede Åbningstider
+efter en fejl i nyhederne og bestod med værnet fjernet: `tider.js`
+indlæses FØR `nyheder.js`, så den fane var allerede tegnet.
+Rækkefølgen i `Admin.tegnere` er script-rækkefølgen i admin.html.
+Den måler Indstillinger nu, som står efter.
+
+**Beskæringen kan styres** (31/8). Kundens spørgsmål: *"hvad hvis
+billederne de lægger op ikke ser godt ud — hvordan retter den det,
+eller skal der stå brug kun 9:16 billeder eller beskær?"*
+**Ingen SQL.**
+
+Svaret er, at systemet **altid** beskærer til 16:9, og at det er
+den eneste ærlige måde: et kort med en fast form kan ikke tage
+imod hvad som helst. Det, der manglede, var at SIGE det — og at
+lade ejeren bestemme, hvilken tredjedel af et højt billede der
+overlever. Et foto af en tallerken taget oppefra har motivet lavt;
+et af en scene har det højt.
+
+- **Toppen · Midten · Bunden** står som en segmenteret gruppe FØR
+  filfeltet — beskæringen sker i det sekund, filen vælges
+- **Kun høje billeder.** Er billedet for bredt, tages midten; dér
+  er motivet næsten altid
+- **⚠️ PRØVEN MÅLER PIXELS, IKKE INDSTILLINGEN.** Et billede med
+  et rødt, et grønt og et blåt bånd lægges op tre gange, og der
+  måles hvilken farve der kom med. Et spørgsmål til knappen om
+  dens eget `aria-pressed` ville bestå, også hvis beskæringen
+  aldrig flyttede sig
+
+**Et hop landede bag topbjælken — på alle ni designsider**
+(31/8). Kundens ord: *"tapas bestillings delen på telefon er
+elendigt ift layoutet — det skævt."* **Ingen SQL.**
+
+**Målt på en iPhone 13:** det var ikke layoutet. Designets egen
+rullefunktion i `havnegrillen.js` trak en fast konstant på **40
+px** fra, når man hopper til et afsnit — og `.topbar` er FAST og
+**115 px** høj. Altså lå afsnittets øverste **75 px bag
+bjælken**. På tapassiden betød det, at panelets overskrift og
+hele den første række (Dag og Tidspunkt) var skjult, i det sekund
+man trykkede på knappen, der førte derhen.
+
+Det rammer **hvert eneste anker på de ni nye sider**: "Reservér
+plads" på kalenderen, den flydende pille på forsiden, alle
+punkter i skuffemenuen. Ét tal, ni sider.
+
+- **⚠️ HØJDEN LÆSES AF BJÆLKEN**, ikke skrevet som et nyt tal —
+  ellers skrider de to fra hinanden, den dag bjælken bliver
+  højere. `css/style.css` har haft `scroll-margin-top: 96px` for
+  de gamle sider siden foråret; designets stilark fik den aldrig
+- **⚠️ OG PRØVEN SAMMENLIGNER TO UAFHÆNGIGE ELEMENTER:** panelets
+  top mod bjælkens bund. Et spørgsmål til koden om dens egen
+  konstant ville bestå, også hvis bjælken var 200 px
+
+**⚠️ OG MÅLINGEN VAR FORKERT DE FØRSTE FEM FORSØG.** Uden et
+tapasfad i menuen **skjuler panelet sig med vilje** — og et
+`display:none`-element har hverken `offsetTop` eller en kasse, så
+alt målte 0, og det så ud som om intet ryllede. Det er
+"øvetilstanden er ikke virkeligheden" i en ny forklædning: jeg
+målte en tilstand, gæsten ikke er i. Prøven kræver derfor FØRST,
+at panelet er synligt.
+
+**Tapassidens sum regner fint** — målt: fire personer × 199 =
+**796 kr.** Ser ejeren "Vælg antal personer", er det, fordi
+tapasfadet ikke har en pris i admin endnu.
+
+**`bord/` og `bestil/` fik havnens tema** (31/8). Kundens ord:
+*"book et bord ved vandet — den side er elendig, den er sort og
+hvid, får dårligt layout msæssigt og bare ik god nok."*
+**Ingen SQL.**
+
+Han har ret, og grunden er historisk: de to sider er **ældre end
+designet fra 23/8**. De kørte videre på `css/style.css`, hvor
+heroen er en mørk blækflade uden ét rødt element — mens hver
+eneste anden side har det rød/hvide tern. Gæsten går imellem dem
+med ét klik.
+
+- **Heroen bærer ternet nu**, tegnet af `::before` så teksten kan
+  ligge oven på det. Mønsteret er dæmpet til 30 %: designets egne
+  55 % ville trække kontrasten på den hvide overskrift under
+  kravet
+- **Den valgte dag er RØD, ikke sort.** Det var den eneste flade
+  på hjemmesiden, hvor et valg markeres med sort — gæsten, der
+  lige har valgt "Spis her" i rødt, skal ikke lære en ny farve
+  for at vælge en dag
+- **Dagstriben toner ud i højre kant.** Målt: den fjerde dag stod
+  halvt uden for som "Man…", og intet sagde, at man kunne swipe.
+  ⚠️ Her er sidelæns rulning det RIGTIGE svar (modsat admins
+  fanestribe): dagene er en tidslinje, og enhver forstår, at i
+  overmorgen ligger til højre for i morgen. Kanten fjernes fra
+  700 px, hvor alt er synligt — ellers ser den sidste dag slukket
+  ud
+- **⚠️ OG DET ER KUN DE TO SIDER.** Selektorerne hænger på
+  `.smoer-hoved`/`.mork-top`, som **kun** `bestil/` og `bord/`
+  bruger (målt). En ændring af `.hero` ville have ramt ni sider,
+  der allerede ser rigtige ud
+
+Tre falsifikationer, tre fald: ternet fjernet, dagen sat sort
+igen, og indholdets `z-index` taget væk, så overskriften faldt
+bag gitteret.
+
+**Admin på telefonen — knapperne fra 1850'erne** (31/8).
+Kundens ord: *"knapperne i admin ligner noget for 1850'erne, det
+skal vi også have fixet ... gennemgå det lige på telefonskærm for
+at se hvad jeg mener."* **Ingen SQL.**
+
+**Målt på en iPhone 13**, og det var værre end det så ud: det
+FØRSTE felt, personalet kunne røre på Åbningstider, lå **391 px
+nede på en skærm på 664** — 59 % var hoved og gentagelser.
+
+- **Sidens navn stod to gange.** `.dobbelt-titel` skjulte
+  kortets overskrift, men kun fra 900 px og op, fordi reglen blev
+  skrevet dengang telefonen ikke havde et hoved. Hovedet kom på
+  alle skærme samme aften, og siden da har telefonen sagt
+  "Åbningstider" to gange med 200 px imellem
+- **⚠️ MEN KUN OVERSKRIFTEN — NOTEN BLIVER, OG DET AFGJORDE
+  PRØVERNE.** Første udgave skjulte hele `.kort-hoved`, fordi
+  noten står med lille begyndelsesbogstav og fortsætter titlen.
+  Så faldt prøven "siden siger, at det ikke er butikkens
+  omsætning": Salg-kortets note bærer forbeholdet om, at tallet
+  KUN er bestilt gennem hjemmesiden, og at der ikke er nogen
+  kasse i systemet. **At rydde op i udseendet ved at skjule en
+  advarsel om penge er en dyrere fejl end den, det retter**
+- **Fem løse piller i tre rækker blev to segmenterede grupper.**
+  "I dag / Alle dage" og "Alle / Lugen / Bordene" er TO
+  forskellige filtre, men de så ens ud — man kunne ikke se, at de
+  hørte til hvert sit spørgsmål. Grupperne har hver sin etiket
+  (Dag · Hvor fra)
+- **⚠️ DEN VALGTE ER HVID, IKKE RØD.** Rød betyder "det her er
+  handlingen" i hele admin — Gem, Afvis, Slet. Et filter er ikke
+  en handling; det er et sted, man står
+- **⚠️ `aria-pressed` OG IKKE EN KLASSE.** Stilen hænger på
+  attributten, så øjet og en skærmlæser får det samme at vide —
+  og en prøve kan måle dét, der styrer udseendet
+- **Emojierne røg ud af filtrene** (📅 📚 🥡 🍽️). De brød linjen
+  og sagde ikke noget, ordet ikke allerede sagde
+- **Fluebenene er husets egne nu**, ikke browserens firkant med
+  `accent-color`. Formen er stadig en checkbox og ikke en
+  kontakt: en kontakt betyder "det sker NU", et flueben betyder
+  "det her er sandt, når du gemmer" — og menukortets Udsolgt
+  gemmes ikke automatisk. **Selve `input`'et bliver:** en `<div>`,
+  der ligner en checkbox, er ubrugelig for den, der bruger
+  tastatur
+- **En ugedag fylder to linjer, ikke tre.** De to klokkeslæt stod
+  under hinanden, så syv dage var over tre skærme
+
+**⚠️ OG ÉN REGEL SLOG ALDRIG IGENNEM — FUNDET VED AT MÅLE.**
+`.kort-hoved:has(> .dobbelt-titel)` vejer 0,2,0; kortets egen
+`body.personale .kort-hoved` vejer 0,2,1 og vandt. Klassen sad
+korrekt på overskriften hele tiden. Det er husets egen regel:
+**mål den BEREGNEDE stil, ikke klassen.**
+
+**⚠️ OG EN AF PRØVERNE MÅLTE OPMÆRKNINGEN, IKKE UDSEENDET.**
+"Filtrene er segmenterede grupper" bestod, da `.adm-seg` blev
+sat til `display:contents` — altså da gruppen holdt op med at
+have en flade, og knapperne igen lå løst. Den måler gruppens EGEN
+kasse nu: har den ingen højde, er der ingen gruppe.
+
+Fem falsifikationer, fem fald (og to prøver skærpet undervejs).
+
+**Admin fik et komponentsystem** (26/8). Kundens ord: udseendet
+i fanerne "er elendigt, hvor spiis ... er langt kønnere". Målt:
+58 blokke forklarende prosa stod som brødtekst i kortene, og
+overskrifterne var op til 34 px serif. Nu:
+
+- **`.kort-hoved`**: navnet til venstre (22 px), konsekvensen
+  dæmpet til højre (`.kort-note`) — hvad kortet styrer UDE på
+  siden, ikke hvad felterne hedder. Alle 24 kort har den
+- **Højst ÉN blok løs prosa pr. kort.** Resten er hjaelp-linjer
+  ved felterne eller slettet. En prøve tæller
+- **Felterne er 44 px høje** med blød runding og sandfarvet fyld
+  — til fedtede fingre, scopet til `body.personale`. Gæstens
+  formular (spiis-formen, 52 px/14 px) er URØRT, og en prøve
+  læser begge sider
+- **Rækkens knapper er STILLE, panelets hovedhandling er rød.**
+  Menukortets 21+242 røde Gem-knapper var en væg — nu er
+  `.admin-raekke`/`.kat-hoved`-knapper hvide med blækkant, og
+  rød betyder noget igen. Selektoren er KONTEKSTEN, ikke en ny
+  klasse: en ny liste arver reglen af sig selv
+- **Footeren er væk, når man arbejder** — den sagde kun "Se
+  hjemmesiden", som søjlen og topbjælken allerede gør
+- **Menukort står ØVERST i Forretningen-gruppen**: udsolgt
+  skifter flere gange om dagen, åbningstiderne to gange om året
+- **⚠️ To prosalinjer var direkte FORÆLDEDE og er rettet:**
+  "Ring og bekræft — gæsten har fået at vide at vi gør det" på
+  Bestillinger (auto_bekraeft har været TIL siden 23/8), og
+  menukortets "tom pris = tankestreg" (en vare uden pris kan
+  ikke bestilles længere)
+
+Prøverne bor i `tests/admin-design.spec.js` og læser den
+BEREGNEDE stil — en klasse, der ikke slår igennem, er ingen
+regel.
+
+**En vare uden pris kan ses, men ikke bestilles** (26/8). Den
+kunne bestilles før — "??" på listen, og gæsten fik prisen, "når
+vi ringer og bekræfter" (23/8). Men opkaldet forsvandt SAMME dag:
+`auto_bekraeft` blev slået til, og så var der ingen til at sige
+prisen. Bestillingen gik igennem, gæsten anede ikke, hvad den
+kostede, og i salgstallene talte varen som **0 kr.** Præcis den
+fejl stod fire dage i spiis' produktionsdatabase, før nogen så
+den — og hos os står over halvdelen af kortet uden pris.
+
+Reglen er nu fyldets (model A) for hele kortet: kan vi prissætte
+det, kan det bestilles — kan vi ikke, kan der ringes. Rækken
+VISES uden plusknap med "Ring og hør prisen" som telefonlink
+(`.spoerg-chip`), listen hedder `spoergPris` i `Butik.udvalg`, og
+dagens ret uden pris følger samme regel. Salg-fanen advarer, når
+en periode har linjer uden pris, i stedet for at lægge nul til.
+
+**⚠️ Kør `supabase/pris-vaern.sql` + `proev-pris-vaern.sql`**
+(8 × BESTOD lokalt) — efter menukort-filerne. Værnet siger kun
+nej til navne, der FINDES på kortet (dagens ret har sin egen
+tabel), og rører ALDRIG fyldlisten: fyld uden pris er ønsker.
+`er-vi-klar.sql` linje 98 fanger det.
+
+**Tillægget til briefen er gennemgået** (25/8). Det var skrevet
+ud fra betaling i appen, så punkt 1, refusionerne og
+revisor-spørgsmålet faldt væk med den. **Fem punkter stod
+tilbage, og to bliver VÆRRE uden betaling** — en bestilling, der
+ikke koster noget at sende, er lettere at lave, ikke sværere.
+
+**⚠️ Kør `supabase/bord-loft.sql` + `proev-bord-loft.sql`**
+(15 × BESTOD lokalt) — efter `restaurant.sql`.
+
+**Udsolgt afgøres i DATABASEN nu.** Personalet melder en vare
+udsolgt; gæsten, der åbnede kortet fem minutter før, har den
+stadig på skærmen og kunne bestille den. `mosede_udsolgt_vaern`
+afviser den, og beskeden siger HVILKEN vare — ellers skal hun
+gætte, hvad af otte ting hun skal tage af. **⚠️ Værnet siger kun
+nej til navne, der FINDES på kortet:** dagens ret bor i sin egen
+tabel, og afviste værnet alt, det ikke kunne finde, ville en ret,
+ejeren skrev i hånden, blive umulig at bestille. Prøve 5.
+
+**Loftet pr. kvarter** (`bord_loft_pr_kvarter`, sættes på
+Køkken-kø): der var kun åben eller lukket, og ved run på var
+eneste udvej at lukke HELT. Vinduet er RULLENDE — et fast kvarter
+betyder, at otte kl. 12.14 og otte kl. 12.16 er seksten ordrer på
+to minutter. **Tomt og nul betyder begge intet loft**, og det
+gælder **kun bordene**: mad ud af huset bestilles dagen før.
+
+**Ventetiden kan vokse med køen — men kun med EJERENS tal**
+(`bord_ventetid_pr_ordre_min`). Fandt siden selv på "tre minutter
+pr. ordre", ville den love noget på køkkenets vegne, som ingen
+havde sagt.
+
+**⚠️ Visningen `bord_travlhed` må ALDRIG få en kolonne mere.**
+Samme regel som `optagne_dage`: den kører med sin ejers øjne og
+springer adgangsreglerne over. Kommer der et navn eller et
+telefonnummer med, er køkkenets liste åben for internettet — og
+siden ville se helt rigtig ud imens. Prøve 12 tæller kolonnerne.
+
+**Lyden skal slås til med en finger.** Browsere blokerer lyd,
+til nogen har rørt skærmen; en iPad, der har stået urørt siden
+morgenmaden, siger INGENTING ved dagens første ordre. Knappen ER
+tilladelsen, så tonen spilles med det samme. **Og lyden er aldrig
+alene** — der er larm i et køkken, så nye kort markerer sig
+synligt, og markeringen bliver STÅENDE til kortet trykkes videre.
+
+**⚠️ To fejl i den markering, og de var hinandens modsætning:**
+uden en nulstilling ved tom kø blev dagens første ordre
+behandlet som en førstegangsindlæsning (ingen markering, intet
+pling); MED nulstillingen uden et gard blev hele køen ved login
+til "nyt" (tredive kort lyste op). Forskellen er, om listen er
+MELDT ind: `Admin.lister.bestillinger` er `undefined`, til den er.
+
+**⚠️ Søjlen er delt i FEM grupper, og en overskrift lukker ikke
+sig selv.** Første udgave havde én — "Restaurant" — og så læste
+øjet de otte faner bagefter som en del af den: Baglokalet, Salg,
+Menukort, Nyheder, Beskeder, Forside, Kontakt og Historik stod
+alle sammen under Restaurant. Det kunne ikke ses i koden, kun på
+skærmen. Grupperne er **Dagen · Restaurant · Forretningen ·
+Hjemmesiden · Log**. **Der må ikke ligge faner efter den sidste
+gruppe** — skal der en fane til, hører den til i en af de fem,
+ellers skal der en sjette overskrift til. En prøve læser søjlen i
+rækkefølge og falder på begge dele.
+
+**Menukort og Salg ligger IKKE under Restaurant**, selv om briefen
+bad om det: de dækker hele forretningen, og en kopi ville være to
+steder at rette den samme pris. Bordenes andel af omsætningen står
+som sit eget felt på Salg-fanen i stedet.
+
+**⚠️ Uden betaling er `?bord=7` en større risiko, ikke en
+mindre.** Tillægget skrev, at det ikke er gratis at bestille til
+bord 4 fra parkeringspladsen. Nu ER det gratis. Værnene er
+personalets: "Kan ikke laves" på hvert kort, loftet pr. kvarter,
+og at et bord kan slukkes i admin.
+
+**⚠️ Menuen har ÉN kilde, og det er `menu_varer`.** Briefen
+foreslår at starte fra `bord-menu.js`. Det ville lave en ANDEN
+kilde ved siden af de 242 varer, ejeren selv administrerer, og to
+lister over det samme sortiment skrider fra hinanden. Filens
+priser kan bruges som et **spørgeark** til ejeren — aldrig som en
+tavs import.
+
+**Fire små fra spiis-gennemgangen — uden én linje SQL** (26/8).
+Skærmbillederne af spiis' admin viste fire ting, vores manglede:
+
+- **Skjul er ikke Slet.** Kolonnen `aktiv` har ligget på nyheder
+  siden setup.sql — det var KNAPPEN, der manglede, og uden den
+  var Slet den eneste vej af siden. "Skjul"/"Vis igen" pr. række;
+  mærket siger Skjult (ikke "slukket" — ordet følger knappen)
+- **Månedens noter som liste** under kalendernettet
+  (`tegnNoter`). Kun rækker, `erNote()` kender — et offentligt
+  arrangement må ALDRIG stå i notelisten. Tryk åbner dagen
+- **Salg taler i kroner.** Udeblivelser gøres op i det, gæsten
+  SKULLE have betalt, og snittet pr. bestilling står som felt —
+  kun når der ER solgt noget: et snit af ingenting er en
+  division med nul klædt ud som et tal
+- **Sikkerhedskopien** på Historik: én JSON-fil af `Admin.data` +
+  `Admin.lister` — ingen nye kald, filen er præcis det, skærmen
+  viser. Datoen i filnavnet, så to kopier ikke overskriver
+  hinanden
+
+**Ugeplanen kunne allerede flere retter samme dag** — spiis-
+dokumentets punkt var dækket af `dagens_retter` + `nyRetFelt`.
+
+**Tre ting fra gennemgangen er bevidst IKKE bygget:** billede på
+nyheder (kræver en storage-spand og policies, ejeren skal sætte
+op — samme slags beslutning som push), tider som undtagelse pr.
+dag ud over tidlig lukning (kræver ny kalendertype + omskrivning
+af lukkedag-værnet), og offentlig dagsbesked (gæsten må ikke
+læse ikke-offentlige kalenderrækker, så en "offentlig note"
+kræver et adgangsvalg først — samme slags som live status til
+bordet).
+
+**⚠️ ÉN MANGLENDE TABEL VÆLTEDE HELE MENUEN** (26/8) — den
+dyreste fejl i projektet indtil nu, og den var helt tavs.
+
+`supabase/dagens-retter.sql` var aldrig kørt i Mosede-projektet.
+Tabellen svarede 404. `Butik.hent()` henter otte tabeller med
+`Promise.all`, og den ene, der kastede, væltede dem alle — så
+gæsten fik **nødmenuen med to varer**, mens der stod 242 i
+databasen. Siden så helt normal ud imens: intet tomt felt, ingen
+fejl på skærmen, bare et menukort med "Smørrebrød 55,-".
+
+**Der stod endda i koden, at det degraderede pænt** — *"fejler
+tabellen, giver hentTabel en tom liste"*. Det gjorde den ikke;
+`hentTabel` kaster på alt andet end 200. **En kommentar er ikke
+en prøve.**
+
+`dagens_retter` er den ENESTE tabel med en `.catch`: den kom til,
+efter siden var i luften, og er valgfri af design. De syv andre
+er sidens fundament — svarer `menu_varer` 404, ER nødmenuen det
+rigtige svar, og en prøve holder det fast, så ingen "løser" det
+ved at pakke alle otte ind i en catch.
+
+**⚠️ Og `er-vi-klar.sql` sagde ALT ER KLAR imens.** Dens
+tabelliste kendte hverken `dagens_retter` eller `borde` — en
+tjekliste, der ikke kender en tabel, siger god for dens fravær.
+Den tæller 17 nu. **Står der en tabel i `hent()`, SKAL den stå i
+listen.**
+
+**Og præcis den fejl gentog sig i papirerne** (27/8). Fem SQL-filer
+fra 26.–27. august stod hverken i README eller her, og to af dem
+stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
+— alle fem SKAL køres i Mosede-projektet:
+
+```
+… → pris-vaern.sql → dagsregler.sql → dagsbesked-og-qr.sql
+  → menukort-antal-og-dage.sql → nyheder-slags-og-billede.sql
+  → kortets-priser.sql → nyheder-fra-til.sql → bord-udeblev.sql
+  → foresp-kontakt.sql → borde-55.sql → arrangementer.sql
+  → bord-noegle.sql → arrangement-info.sql
+  → arrangement-kategori.sql → bestilling-dato-vaern.sql
+  → bestillingsnummer.sql
+  → smoerrebroed-forespoergsel.sql → bord-uden-telefon.sql
+  → vare-billede.sql → bord-loft-pr-dag.sql
+  → kortets-priser-3.sql → smoerrebroed-kortet.sql
+  → ejerens-oplysninger.sql → tillaeg-hensyn.sql
+  → kategori-dag-vaern-aktiv.sql → roller.sql
+  → levering-og-mindsteantal.sql
+  → dato-vaern-resten.sql → bordnummer.sql
+  → bestilling-status.sql → luge-loft.sql
+  → kategori-ugedage.sql → bestilling-kanal.sql
+  → menukort-raekkefoelge.sql → sagsnummer.sql
+  → aabent-og-antal-vaern.sql → ugepaamindelse.sql
+  → gaestens-regler.sql → vare-valg.sql
+```
+
+**⚠️ `ugepaamindelse.sql` (14/9) slår pg_cron til** og sender lørdag
+og søndag kl. 10 en push til personalet: *"husk ugens dagens retter,
+tjek at intet står til salg, I ikke har, og at I er klar til ugen"* —
+kundens ord. Klokken i admin viser den samme post med tallet for, hvor
+mange af næste uges dage der har en ret. **Hemmeligheden læses af
+webhooken `push_bestillinger`, når jobbet kører** — der er ingen kopi,
+så en ny PUSH_SECRET i de fire webhooks følger med af sig selv. Tjek
+138-139. Og `send-push` er udgivet med beskeden og med `url:
+"admin.html"`: den gamle `/mosedehavnegrill/admin.html` var en 404 på
+det nye domæne.
+
+**⚠️ `aabent-og-antal-vaern.sql` ER KØRT I PRODUKTIONEN (13/9)**, og
+`proev-aabent-og-antal-vaern.sql` skrev **8 × BESTOD** mod de udgivne
+værn (rullet tilbage). Kundens ord: *"alt var lukket lørdag til
+søndag, men alligevel var der en dame, der bestilte 2 nachos to go —
+det må ikke ske"* og *"selvom jeg har sat dagens ret til 20
+portioner, kan jeg vælge 20+ (27)"*. **MÅLT før:** `mosede_dag_aaben`
+kendte lukkedage, sæson og dagsregler, men IKKE åbningstiderne — kun
+dagvælgeren i browseren holdt en lukket ugedag ude. Og dagens ret
+havde intet loft ved indsættelse. Begge står i databasen nu (tjek
+136-137). **⚠️ Køres `dagsregler.sql`, `lukkedag-vaern.sql` eller
+`dagsbesked-og-qr.sql` igen, skrives åbningstiderne ud af værnet** —
+så skal filen køres igen. Ingen lokal Postgres her; prøven blev kørt
+i én DO-blok i produktionen, der sluttede med `raise exception`, og
+falsificeret mod de gamle værn (1, 3, 4 og 6 faldt).
+
+**⚠️ `sagsnummer.sql` ER KØRT I PRODUKTIONEN (10/9)** — og den er
+skrevet efter `bestillingsnummer.sql` og `bordnummer.sql` post for
+post. Kundens ord: *"reference nummer er korrekt til
+forespørgsler, men nummeret skal være ordentligt og huskbart."*
+Forespørgsler, baglokalet og tilmeldinger har hver sit løbenummer
+nu, og `mosede_sagsnummer(ref)` lader gæsten se sit eget på
+kvitteringen uden at kunne læse tabellen.
+
+**⚠️ DEN BLEV IKKE PRØVET PÅ EN LOKAL POSTGRES** — der er ingen
+på maskinen. I stedet en **prøveflyvning i produktionen, der
+rullede sig selv tilbage**: `update ... set navn = navn` på alle
+tre tabeller efterprøver HVERT check på hver række, altså præcis
+det, `bestillingsnummer.sql` faldt på 3/9. Den bestod, og de tre
+tabeller havde i forvejen ingen `current_date`-CHECK (de blev til
+udløsere med `dato-vaern-resten.sql`). Målt efter: 3/3, 1/1, 1/1
+med nummer, og et frisk indlæg i en rullet transaktion fik nr. 4
+og kunne læses af `mosede_sagsnummer` — en falsk reference fik
+`null`.
+
+**⚠️ OG LISTEN HER ER EN PRØVE NU (5/9).**
+`tests/sql-mappen.spec.js` holder de TRE håndskrevne lister over
+mappen op mod mappen selv: byggerens `FILER`, rækkefølgen her, og
+filerne på disken. Den fælder en migrering, byggeren ikke kører
+(så måler hver eneste `proev-`fil på en database uden den), en
+fil i `FILER`, der er væk, en `proev-`fil uden en migrering, og —
+vigtigst — **en fil, byggeren kører, som CLAUDE.md ikke nævner**.
+Den sidste er papirernes egen: Mikkel kører filerne herfra, så en
+migrering, der ikke står her, bliver aldrig kørt i produktionen,
+og så virker admin lokalt og fejler hos ham. Det er sket to gange
+(`dagens_retter` 26/8, `nyheder-fra-til` 28/8).
+
+**⚠️ TI FILER STÅR SOM UNDTAGELSER — MED EN GRUND HVER.** En
+undtagelsesliste uden grunde vokser bare, og så måler prøven
+ingenting igen; derfor fælder en tom grund prøven. De ti er
+tjeklisterne, demoen, oprydningerne, engangsrettelserne — og to,
+der er overhalet: `kortets-priser-2.sql` (matchede på
+`kategori_id` og ramte nul rækker i en frisk database) og
+`udeblivelser.sql` (`restaurant.sql` sætter den samme statusliste
+bredere bagefter).
+
+**⚠️ `dato-vaern-resten.sql` SKAL KØRES FØR `bordnummer.sql`** —
+ellers falder efterudfyldningen med `23514` på en rigtig booking,
+hvis dag er gået. Præcis som `bestillingsnummer.sql` gjorde hos
+kunden 3/9.
+
+**⚠️ `levering-og-mindsteantal.sql` HAR MED VILJE INTET TJEK i
+`er-vi-klar.sql`** — samme grund som `kortets-priser.sql`,
+`borde-55.sql`, `ejerens-oplysninger.sql` og
+`tillaeg-hensyn.sql`: den skriver DATA, ikke regler. Et tjek på
+"fragten = 79" ville sige ❌ den dag, ejeren retter sit eget tal
+i admin, og tjeklisten er til de ting, der fejler stille.
+
+**✅ DE TO SIDSTE ER KØRT** (2/9). `ejerens-oplysninger.sql` og
+`tillaeg-hensyn.sql` gik igennem samme dag, og
+`proev-tillaeg-hensyn.sql` skrev **7 × BESTOD** i produktionen
+(Mikkel: *"alle 7 bestod"*).
+
+**✅ OG DET SIDSTE ÅBNE PUNKT ER LUKKET** (2/9, bekræftet af
+Mikkel: *"alle bestod"*). `proev-bord-uden-telefon.sql` skrev
+**8 × BESTOD** i Mosede-projektet efter tre fald og tre
+rettelser. Dermed er **en QR-bestilling uden telefonnummer
+bevist i produktionen** — kundens beslutning 31/8 (*"bare navn er
+ok, fordi de sidder der"*) holder hele vejen ned i databasen.
+
+**✅ HELE RÆKKEFØLGEN ER KØRT — MÅLT, IKKE HUSKET** (4/9).
+Kundens spørgsmål: *"send sql'erne og er alt live?"* og bagefter
+*"sql'erne er kørt og bestod"*.
+
+Svaret blev **læst ud af produktionen** med anon-nøglen i stedet
+for af papirerne: en forespørgsel på en kolonne, der ikke findes,
+svarer `42703`, en tabel, der ikke findes, svarer `PGRST205`, og en
+kolonne, gæsten ikke må læse, svarer `42501`.
+`vaerktoej/maal-databasen.py` skriver **34 ✅ og ét værn**, og de
+sidste to blev målt for sig:
+
+| Fil | Målt i produktionen |
+|---|---|
+| `levering-og-mindsteantal.sql` | ✅ 79 kr., syv postnumre, mindst 4 |
+| `dato-vaern-resten.sql` | ✅ kørt (12 × BESTOD, Mikkel 4/9) |
+| `bordnummer.sql` | ✅ `bordbestillinger.nummer` + `bordnumre` findes |
+
+**⚠️ OG PAPIRERNE TOG FEJL OM DEN FØRSTE.** Her stod, at
+`levering-og-mindsteantal.sql` manglede — den var kørt.
+Målingen fandt de fire nøgler med ejerens egne tal. Det er husets
+ældste ar én gang til: **en note er ikke et tjek.** Skriv aldrig
+"mangler" eller "kørt" uden en måling eller en BESTOD-linje.
+
+*(Listen over de fire, der manglede 3/9 — `arrangement-kategori`,
+`bestilling-dato-vaern`, `bestillingsnummer`, `vare-billede`,
+`bord-loft-pr-dag` — er alle målt på plads nu.)*
+
+**⚠️ OG MÅLINGEN KAN KUN SE KOLONNER, TABELLER OG VISNINGER.**
+Funktioner, udløsere, CHECK-krav og adgangsregler er usynlige
+udefra — så `kategori-dag-vaern-aktiv.sql`, `lukkedag-vaern.sql`s
+hærdning, `realtime.sql` og `pris-vaern.sql` kan ikke bekræftes
+herfra. **`er-vi-klar.sql` er den fil, der svarer på dem**; den
+skriver ingenting og siger ✅/❌ pr. linje.
+
+**⚠️ MEN SKRIV STADIG IKKE "HELE RÆKKEFØLGEN ER KØRT" UDEN AT
+EFTERPRØVE DET.** Hver enkelt fil er ikke tjekket én for én
+herfra, og det er præcis den slags note, filen her har ar efter.
+`er-vi-klar.sql` er svaret: den skriver ingenting og svarer ✅/❌
+pr. linje.
+
+**En levering var lovet et opkald, som frem-knappen ikke nævnte**
+(3/9). Kundens spørgsmål: *"hvad skal admin bede om at kontakte
+kunder inden afstemmelse på de forskellige tabs med?"*
+**Ingen SQL.**
+
+Svaret blev **målt**, ikke husket: hver afstemmende handling på
+hver fane blev læst ud af koden. **Og de er der næsten alle** —
+Afvis på bestillinger, borde, tilmeldinger og baglokalet beder om
+et opkald, hver med sin egen begrundelse, og køkken-køens
+*"Kan ikke laves"* siger *"gå ud og sig det"*. Borde-fanens
+Udeblev siger endda **eksplicit** *"der skal ikke ringes"*.
+
+**⚠️ MEN ÉT HUL, OG DET VAR PÅ DEN KNAP, DER TRYKKES OFTEST.**
+Gæstesiden lover ordret: *"Vi ringer til dig på [nr] og
+bekræfter, at vi kan køre til adressen"* — en levering bekræftes
+**aldrig** automatisk (23/8: vi kender hverken zone eller pris).
+Admins **✓ Færdig** spurgte om ingenting. Altså kunne maden gå ud
+ad døren mod en adresse, ingen havde aftalt, mens gæsten sad
+hjemme og ventede på et opkald.
+
+- **Reglen bor i `Admin.spoergFoerst`**, fordi **to** skærme
+  spørger den. Overblik og Bestillinger har hver sin frem-knap;
+  skrev de spørgsmålet hver for sig, ville de langsomt sige noget
+  forskelligt om den SAMME bestilling — og personalet skifter
+  mellem dem hele dagen. Samme greb som `Admin.statusNavn` fik
+  31/8, og `overblik.js` indlæses igen FØR `bestillinger.js`, så
+  kaldet er garderet
+- **⚠️ NULL BETYDER SPØRG IKKE, og modstykket er en prøve.** Et
+  spørgsmål på hver eneste bestilling er et, man klikker væk uden
+  at læse — så prøven kræver også, at en almindelig afhentning
+  **ikke** spørger. Uden den ville den første prøve bestå på et
+  system, der spørger om alt. Falsificeret begge veje
+
+**Og adresserne fik en side i vejledningen.** `booking@` er
+spørgsmål om en booking, gæsten ALLEREDE har (aldrig til at lave
+eller aflyse en — det er telefonen, 28/8), og `bogholderi@` er
+penge og papir og hører **ikke** på en gæsteside: et firma, der
+vil have et tilbud, skal bruge formularen, så ærindet lander i
+admin med en sag bag sig. Hele "hvad siger I, før I afstemmer"
+står nu som en tabel i `VEJLEDNING.md`, skrevet til personalet.
+
+**Tre knapper pegede på ingenting** (3/9). Kundens spørgsmål:
+*"hvilke sektioner eller sider på hjemmesiden har en knap, der
+bare linker til hjemmesiden uden at lave en forespørgsel eller
+ordre?"* **Ingen SQL.**
+
+Svaret blev **målt**: hver knap på hver af de 13 udgivne
+gæstesider blev læst af DOM'en og klassificeret — sender,
+hopper, linker videre, ringer, mailer eller dødt. De fleste
+"links videre" er designets egen struktur og helt i orden
+(forsidens *"Book jeres selskab"* → `h-selskaber.html`,
+menukortets fire udgange — **man skal netop ikke kunne bestille
+derinde**, 24/8).
+
+**⚠️ MEN TO KNAPPER GJORDE ABSOLUT INGENTING, OG DEN ENE VAR EN
+SIDES ENESTE HANDLING.**
+
+- **Tapassidens store røde "Bestil tapas"** peger på
+  `#bestil-tapas`, som **skjuler sig med vilje**, når fadet ikke
+  står i menukortet. **Set på et skud:** hero, manchet, fotoplads
+  og en knap, der ikke rører sig. Ingen fejl, ingen bevægelse,
+  ingen linje om hvorfor. Den siger **"Ring og hør om et fad"** og
+  peger på nummeret nu (`pegVidere`, samme greb som kalenderen fik
+  31/8)
+- **⚠️ OG NOTEN VED SKJULNINGEN PÅSTOD, AT DET VAR DÆKKET** —
+  *"ring-kortet har et telefonnummer, der virker"*. Kortet ligger
+  langt nede; knappen står lige for øjnene. **En kommentar er ikke
+  et værn**, endnu en gang
+- **⚠️ OG FADET KAN FORSVINDE MED ÉT TRYK I ADMIN.** Melder
+  køkkenet det udsolgt, eller slukker ejeren kategorien, står
+  siden med en død knap. Det er ikke en teoretisk tilstand
+- **Skuffemenuens "Nyheder" på forsiden** pegede på `#nyheder`,
+  som skjuler sig, når der ikke er nyheder. Gæsten åbner menuen,
+  trykker, og intet sker. **Reglen bor nu i `skjul()`** — det ENE
+  sted, forsidens afsnit forsvinder — så den gælder dem alle, også
+  det næste, nogen bygger
+- **⚠️ DEN FLYDENDE PILLE RØRES IKKE af `glemVejen`.** Den har sin
+  egen regel (er der intet at bestille, peger den på `bestil/`).
+  To regler på den samme knap ville betyde, at den sidste vandt
+  tavst — `hentBorde`-arret
+
+**⚠️ OG NUMMERET LÆSES AF SIDEN, IKKE AF `window.MOSEDE`.**
+`js/oplysninger.js` indlæses **ikke** af `m-tapas.html` — så min
+første udgave af `pegVidere` gjorde ingenting, fordi dens egen
+gard mod et tomt nummer slog til. **Fundet ved at måle
+rettelsen**, ikke ved at læse den. Nummeret tages af sidens eget
+`tel:`-link, som forespørgselssiderne gør med mailen: kontaktvejen
+står ÉT sted, og `js/skal/kontakt.js` har allerede byttet den, hvis
+ejeren har skrevet et andet nummer i admin.
+
+**⚠️ OG REGLEN ER EN PRØVE NU — DEN ANDEN HALVDEL AF EN, DER
+FANDTES.** `tests/gennemgang.spec.js` har siden 31/8 fældet et
+anker, hvis mål **ikke findes**. Det her er den anden halvdel:
+et **synligt** anker, hvis mål findes og er **skjult**. Den fandt
+begge fejl, første gang den blev kørt — og den ene var på en side,
+jeg ikke havde mistanke til. Set fejle hver for sig: `pegVidere`
+fjernet (tapassiden falder), `glemVejen` fjernet (forsiden falder).
+
+**Admin gået igennem fane for fane — med øjnene** (3/9). Kundens
+spørgsmål: *"hvad med udseendet og overskueligheden imellem
+tabsne og admin"*. **Ingen SQL.**
+
+Strukturen holder, og det blev **målt** i stedet for læst: alle
+17 faner, hvert eneste synlige kort har et `.kort-hoved` med sin
+`.kort-note`, og højst én blok løs prosa pr. kort —
+komponentsystemet fra 26/8 er ikke skredet. Og Åbningstiders
+fire røde knapper er **én pr. kort**, ikke en væg.
+
+**⚠️ MEN TO TING STOD PÅ SKÆRMEN, SOM INGEN PRØVE MÅLTE.**
+
+**1) `📞 null` PÅ TO FANER.** Bestillingskortet skrev nummeret
+ubetinget, og en QR-bestilling uden nummer er kundens egen
+beslutning fra 31/8 (*"bare navn er ok, fordi de sidder der"*,
+`bord-uden-telefon.sql`). Forespørgselskortet gjorde det samme
+på en gæst, der kun havde givet sin mail — `foresp-kontakt.sql`
+(28/8) tillader netop det, og det er den gæst, fase 2 er bygget
+for.
+
+- **⚠️ REGLEN FANDTES ALLEREDE.** `Admin.kontakt` i `kerne.js`
+  garderer et manglende nummer og har en note om præcis den sag.
+  **Kortene spurgte den bare aldrig** — Overblik var den ENESTE
+  fane, der brugte den, og dens egen kommentar siger *"så de to
+  faner ikke kan komme til at vise"* hver sit. Alle seks kort
+  spørger den nu (bestillinger, forespørgsler, tilmeldinger,
+  borde, baglokalet, skraldespanden); klassen sendes med, så
+  hvert kort beholder sit udseende
+- **⚠️ TO KORT SÅ FORSKELLIGE UD PÅ DEN SAMME BOOKING.** Borde og
+  Baglokalet skrev nummeret **nøgent** uden 📞, og Borde havde
+  mailen som dæmpet brødtekst i stedet for et link — kundens
+  regel fra 31/8. Databasen har `not null` på begge, så der var
+  ingen fejl at rette; det var udseendet mellem fanerne
+- **⚠️ FORESPØRGSELSKORTET BRUGER IKKE `Admin.kontakt`, med
+  vilje:** dens mailknap bærer emne og krop (23/8), altså mere
+  end den fælles linje kan. Kun betingelsen er den samme
+- **⚠️ OG FIKSTURET HAVDE `telefon: null` HELE TIDEN.**
+  `admin-gennemgang.spec.js` har tegnet den fejlbehæftede
+  bestilling i hver eneste kørsel siden 31/8. Der var bare ingen
+  regel, der kiggede efter den. Nu falder enhver fane, der
+  skriver `null`, `undefined` eller `NaN` ud på skærmen — målt på
+  `innerText`, ikke på koden. Set fejle på begge faner
+
+**2) DAGEN LÅ UNDER FOLDEN PÅ EN TELEFON.**
+`#overblik-opsaetning` (læg appen på hjemmeskærmen · slå
+beskeder til) stod FØR dagens tal. **Målt på en iPhone 13
+(390×664):** boksen er 408 px høj, så dagens første tal lå
+**589 px** nede — 75 px af det synligt. Personalet møder ind og
+ser en vejledning til at installere en app, ikke dagen. Den
+ligger **169 px** nede nu.
+
+- **⚠️ OG PÅ EN iPHONE I SAFARI FORSVINDER KORTET ALDRIG AF SIG
+  SELV.** iOS har ingen vej for kode til at installere en side,
+  så *"Læg på hjemmeskærmen"* står, til et menneske gør det i
+  delemenuen. Et engangsærinde over dagens arbejde, hver dag
+- **⚠️ BESLUTNINGEN STOD SKREVET I FORVEJEN.** Noten i
+  `admin.html` lige under boksen siger *"dagens tal er det, man
+  kigger efter, når man møder ind"* — og boksen stod ovenover
+  den. Det er ikke en ny beslutning; det er den, der stod
+- **Prøven sammenligner to uafhængige elementer** (tallenes top
+  mod boksens) OG måler mod profilens egne 664 px. Set fejle:
+  **882 px mod 664** med boksen sat tilbage
+
+**⚠️ OG MINE EGNE TELEFONBILLEDER MÅLTE OVERBLIK SEKSTEN GANGE.**
+Skriptet skiftede fane ved at klikke `[data-panel]` — sidemenuen,
+som en finger ikke kan nå på en telefon. Det er arret fra 30/8
+(*"127 prøver pegede direkte på `[data-panel]`"*) i en ny
+forklædning: bundbaren bærer `data-gaa`, og prøverne går gennem
+`visFane()`. **Skal du kigge på admin på en telefon, så skift
+fane den vej, personalet går.**
+
+**⚠️ OG ÉN MISTANKE VAR FORKERT.** Overskriften *"Åbningstider"*
+så klippet ud på skuddet — Å'ets ring lå løsrevet over teksten.
+Målt: `overflow: visible` hele vejen op, `line-height` 43,4 px
+på 41 px skrift. Intet klipper; ringen rækker bare højt i en
+serif. Samme lære som scroll-margin 31/8: **mål, før du retter
+noget, der ser forkert ud.**
+
+**⚠️ TJEKLISTEN RÅBTE PÅ EN REGEL, DER LIGE VAR BLEVET
+STRAMMERE** (3/9). Mikkel kørte `er-vi-klar.sql` og fik ét ❌:
+*"Kun personalet kan læse logbogen"*. **Ingen SQL** — det var
+tjeklinjen, der var forældet, ikke databasen.
+
+`roller.sql` skrev 2/9 logbogens læseregel om fra `is_admin_for`
+til **`er_ejer_for`**: logbogen er ejerens redskab, og en
+medarbejder, der kan læse den, kan se, hvad chefen har rettet.
+Linje 84 ledte efter ordet `is_admin`, fandt det ikke — og
+retningen sagde *"kør filen igen"*, hvilket ville have **løsnet
+reglen igen**.
+
+- **⚠️ DET ER SAMME FÆLDE SOM LINJE 40 GIK I 30/8** med
+  `borde.kode`: en tjeklinje, der beder om det modsatte af det,
+  den skal beskytte, er værre end ingen tjeklinje. Nu er der **to
+  lovlige porte** (`is_admin|er_ejer`) — begge vores egne
+  security definer-funktioner, begge slår op i `admin_adgang`.
+  **Falsificeret alle tre steder** (logbogen, de fire
+  gæstetabeller, push): en regel med `using (true)` fælder dem
+  stadig
+- **⚠️ OG DEN KUNNE IKKE SES LOKALT, FORDI BYGGEREN MANGLEDE TO
+  FILER.** `byg-lokal-db.sh` kørte hverken `roller.sql` eller
+  `kategori-dag-vaern-aktiv.sql` — så den lokale database havde
+  stadig den GAMLE logbogsregel, og tjeklisten sagde ✅. Det er
+  filens egen note gjort sand: *"en fil, der mangler her, er en
+  fil, prøverne ikke ved eksisterer."* Begge er i listen nu, og
+  ❌'et er **genskabt lokalt** med Mikkels egen ordlyd, før det
+  blev rettet
+- **⚠️ OG SAMME MÅLING SAGDE FRA OM ANDRE FALSKE ❌:** med de to
+  filer på plads står den lokale kørsel på **kun de to
+  ejer-punkter** (VAPID og billedspanden), altså er der ikke
+  flere tjeklinjer, `roller.sql` har overhalet
+
+**⚠️ OG MÅLINGEN AF PRODUKTIONEN GIK SELV I DEN FÆLDE, FØRSTE
+GANG DEN KØRTE** (3/9). `vaerktoej/maal-databasen.py` læser
+skematilstanden ud af produktionen med anon-nøglen — `42703` for
+en kolonne, der ikke findes, `PGRST205` for en tabel. Den fandt
+tre huller (`menu_varer.billede` og `bord-loft-pr-dag.sql`s to),
+**og påstod et fjerde:** *"tabellen borde findes ikke"*.
+
+Den spurgte `borde?select=*`, som svarer **42501** for en gæst,
+fordi `bord-noegle.sql` med vilje har taget kolonnen `kode` fra
+anon. Rapporten læste det som en manglende tabel og skrev
+**"kør bordkort.sql"** — filen, der giver anon HELE tabellen
+tilbage og dermed alle 55 QR-adresser. Den spørger på `nummer`
+nu, og `kode` står som et **værn**, hvor et nej er det rigtige
+svar. **Målt begge veje på den samme tabel.**
+
+**⚠️ EN RIGTIG BESTILLING FRA 19. AUGUST SPÆRREDE MIGRERINGEN —
+OG DEN SAMME SPÆRRE RAMTE PERSONALET** (3/9). Mikkels ord: *"var
+nået til besttilingsnummer sql"*, med skærmbilledet:
+
+```
+ERROR: 23514: new row for relation "bestillinger" violates
+check constraint "bestilling_dato_ok"
+DETAIL: ... (17, SM260819-VV788, mosede, ..., 2026-08-21, ...)
+```
+
+**⚠️ Kør `supabase/bestilling-dato-vaern.sql` +
+`proev-bestilling-dato-vaern.sql` FØR `bestillingsnummer.sql`**
+(6 × BESTOD på en lokal Postgres 16, set fejle tre gange).
+Tjek 129-130.
+
+Rækken er ikke en prøverække. Det er en bestilling, en gæst sendte
+den 19. august til den 21. — og `bestillingsnummer.sql`'s
+efterudfyldning giver hver gammel række et nummer, altså en
+**opdatering** af den.
+
+- **⚠️ `current_date` ER IKKE EN FAST VÆRDI, OG ET CHECK ER
+  FASTFROSSET FORVENTNING.** `setup.sql` linje 334 har haft
+  datoreglen som `check (hent_dato between current_date - 1 and
+  current_date + 120)`. Postgres efterprøver **hvert CHECK på hele
+  den nye række** ved enhver opdatering — også når man kun rører
+  én kolonne. Altså holder den SAMME række op med at være gyldig,
+  når kalenderen går videre. Den var rigtig, da gæsten sendte den;
+  den er det ikke i dag
+- **⚠️ OG DET ER VÆRRE END EN MIGRERING.** Bestillinger-fanen
+  lister alt uafsluttet på ANDRE dage, netop så intet går tabt —
+  og en note fra 31/8 siger, at det ene hul, eftersynet fandt,
+  var bagud. Det var det stadig: står der en bestilling fra i
+  forgårs, som ingen fik lukket, kunne personalet **ikke trykke
+  ✓ Færdig** på den. Statusskiftet er en opdatering.
+  *"Intet må gå tabt"* holdt ikke bagud
+- **Reglen forsvinder ikke, den flytter.** En udløser dømmer ved
+  INDSÆTTELSE og når datoen FAKTISK ændres (`is not distinct
+  from`); en gammel række, hvis dato ingen rører, går fri. Gæsten
+  kan stadig ikke bestille til en dag, der er gået — prøve 3 og 4
+  måler netop det
+- **⚠️ OG BESKEDEN HEDDER STADIG `bestilling_dato_ok`.**
+  `js/store.js` linje 1759 oversætter præcis det ord til *"Vælg en
+  dag der ikke er gået endnu"*, og `proev-adgang.sql` prøve 8
+  leder efter det. Skiftede navnet, ville gæsten få den rå
+  SQL-fejl at se
+- **⚠️ CHECK'ET BLIVER STÅENDE I `setup.sql`**, fordi filen er
+  første lag og skal kunne køres på en tom database — reglen skal
+  gælde fra det sekund, tabellen findes. **Køres den igen
+  bagefter, kommer CHECK'et tilbage**, og så skal datoværnet køres
+  igen. Samme mønster som `borde.sql`/`bord-udeblev.sql`. Tjek
+  129 fanger det, og noten står nu ved selve linjen i `setup.sql`
+
+**⚠️ OG `proev-bestillingsnummer.sql` KUNNE IKKE BESTÅ I
+PRODUKTIONEN — FEMTE GANG, SAMME MØNSTER.** Den blev fundet på
+vejen, ikke af en kørsel: tre fejl, og alle tre var, at prøven
+lånte virkeligheden i stedet for at have sin egen.
+
+- **`antal` manglede.** Kolonnen er `not null` (`setup.sql` linje
+  309) og udfyldes af **ingen** udløser — klienten regner den ud
+  af linjerne. **Falsificeret:** uden den falder fire prøver på
+  `23502`, altså på noget helt andet end nummereringen
+- **`hent_dato = '2099-01-01'`** ligger 73 år ude. **Falsificeret:**
+  den gamle fil dør på linje 65, hele transaktionen afbrydes, og
+  **ikke én rapportlinje kommer ud** — man kan ikke se, om prøven
+  faldt eller aldrig kørte. Datoen regnes ud nu (`current_date +
+  2`), for et fast årstal er en prøve, der holder op med at virke,
+  når kalenderen går videre
+- **Varen hed "Rejemad", og forretningen var `'mosede'`.** Så
+  dømmer ejerens menukort, hans lukkedage og hans sæson med.
+  Prøven har **to egne forretninger** nu (tælleren er pr.
+  forretning, og det kan kun ses med to) og den samme umulige
+  vare som datoprøven. **⚠️ Og prøve 4 måler stadig forskellen:**
+  med én global tæller ville nummer to forretnings første
+  bestilling være nummer 4 og ikke 1 — falsificeret
+- **Rapporten siger `Proevens dato:` og hvilke forretninger der
+  blev brugt.** Filen faldt hos kunden med en dato i 2099; kunne
+  man ikke se datoen i rapporten, ville en gammel fane i browseren
+  ligne den rettede fil. Læren fra 2/9
+
+**⚠️ ET FALD MERE, OG DET ÆNDREDE FREMGANGSMÅDEN — FJERDE GANG**
+(2/9). Mikkel kørte `proev-bord-uden-telefon.sql` og fik **6 af 8
+FEJLEDE**. Filen bestod 8 af 8 lokalt.
+
+**Og det var IKKE telefonen.** Prøven bestilte til `current_date`
+kl. 12.00 med varen **"Håndmad"** — tre gæt om ejerens
+virkelighed. `smoerrebroed-kortet.sql` slukkede den vare 1/9
+(erstattet af de 24 navngivne à 27), og
+`mosede_kategori_dag_vaern` afviste derfor hver eneste
+indsættelse med `bestilling_ikke_den_dag`. Prøve 3 og 4 bestod
+imens — de SKAL afvises, og de blev det af den forkerte grund.
+
+- **⚠️ TABELLEN HAR TRETTEN UDLØSERE. Stubben havde ÉN.** Ni af
+  dem kan sige nej til en helt almindelig bestilling: lukkedagen,
+  sæsonen, lukketiden, kategoriens dage, antallet på lager,
+  prisen, det udsolgte, bremsen og dubletvagten. En prøve, der
+  vælger sin dag og sin vare i hånden, prøver dem alle sammen ved
+  siden af den ene, den er skrevet for
+- **⚠️ NU LÆSES DAGEN OG TIDEN AF ÅBNINGSTIDERNE**, og varen er
+  et navn, der med vilje ikke kan stå på kortet — de tre
+  navneværn rører aldrig et navn, der ikke er en menuvare
+- **⚠️ OG `best()` SIGER HVORFOR.** Første udgave slugte fejlen,
+  så en rød linje kun sagde "det gik ikke". Grunden står i
+  rapporten nu — også for de prøver, der SKAL afvises, for det er
+  dér, man ser, om de bestod af den rigtige årsag. Det er præcis
+  den lære, prøve 6 fik 1/9; den gjaldt bare kun én prøve
+- **⚠️ OG SÅ ER STUBBEN AFLØST:
+  `vaerktoej/byg-lokal-db.sh`.** Den bygger databasen af
+  `supabase/`-mappens EGNE filer i rækkefølge, så værnene er
+  produktionens kode og ikke en gengivelse af den. Den tæller
+  udløserne til sidst og siger fra, hvis der er færre end 13.
+  **Falsificeret:** med de gamle valg sat tilbage skriver den
+  nøjagtig Mikkels fald — 6 fejlede, 3 og 4 bestod, grund
+  `bestilling_ikke_den_dag: Håndmad`
+
+**⚠️ OG SÅ FALDT DEN IGEN — SAMME DAG, NY GRUND: EJERENS BORDE ER
+LÅST.** Anden kørsel skrev **5 af 8 FEJLEDE** med
+`bord_kode_mangler`. Prøven oprettede bord "7" og "9", hvis de
+manglede — men i Mosede-projektet FINDES de, og ejeren har
+trykket **"Lås QR-koderne"**. `bestilling_bord_noegle` kræver da
+en `bord_kode` på hver bestilling til dem, og filen sendte ingen.
+Fem prøver faldt på en nøgle, filen slet ikke handler om.
+
+- **Prøven har sine egne borde nu** (`PRØVE-A`, `PRØVE-B`).
+  Ejerens numre er tal, så de kan ikke kollidere — og filen
+  skriver ikke længere i hans rækker. Det er den samme lære som
+  dagen og varen: **en prøve, der låner ejerens data, arver alt,
+  hvad der står på dem**
+- **⚠️ OG BYGGEREN LÅSER TO BORDE**, netop fordi en tom database
+  er mildere end produktionen. `byg-lokal-db.sh` skriver
+  *"Låste borde: 2 (som hos ejeren)"*, og en prøve, der bruger
+  ejerens numre, falder nu LOKALT i stedet for hos kunden
+- **Falsificeret mod den gengivne tilstand:** med `'7'`/`'9'`
+  sat tilbage skriver den nøjagtig Mikkels andet fald — 5
+  fejlede, 3, 4 og 5 bestod, grund `bord_kode_mangler`
+- **⚠️ OG DEN SENDER NØGLEN, HVIS BORDET HAR EN.** Egne borde
+  gør den ikke afhængig af låsen — men `pg_temp.noeglen()` slår
+  koden op og sender den med, så filen også virker, hvis nogen
+  peger den på et låst bord. Det er samtidig dét, gæstens
+  browser gør: koden står i QR-adressen og sendes med. **Målt
+  begge veje:** med prøvens EGNE borde låst består den 8 af 8, og
+  uden opslaget falder de samme fem med `bord_kode_mangler`
+- **⚠️ OG RAPPORTEN SIGER NU, HVILKEN UDGAVE DER KØRTE.** Filen
+  faldt to gange hos kunden med den samme besked, og ingen kunne
+  se af rapporten, om det var den rettede fil eller den gamle i
+  en åben fane. Linjen **"Bordene: …"** afgør det:
+  `PRØVE-A/PRØVE-B` er den nye, `7/9` er den gamle
+
+**✅ OG DERMED VED VI NOGET, VI IKKE VIDSTE: QR-KODERNE ER LÅST I
+PRODUKTIONEN.** Ejeren har trykket knappen, så skiltene SKAL bære
+`?bord=7&n=XXXXXX`. Et skilt med bare `?bord=7` virker ikke
+længere — se afsnittet om bordets nøgle.
+
+**✅ OG SKÆVHEDEN, MÅLINGEN FANDT, ER RETTET** (2/9, kundens ja).
+**⚠️ Kør `supabase/kategori-dag-vaern-aktiv.sql` +
+`proev-kategori-dag-vaern-aktiv.sql`** (4 × BESTOD, set fejle
+fire gange).
+
+`mosede_kategori_dag_vaern` spurgte, om navnet fandtes på kortet,
+**uden** at kræve `v.aktiv` — mens `mosede_pris_vaern` kræver det
+i begge sine led. Et navn, der KUN fandtes som en slukket række,
+blev derfor afvist med *"laves ikke den dag"*, stik imod
+funktionens egen note (*"Navne, der ikke står på kortet, røres
+ikke"*). En slukket række står ikke på kortet.
+
+Det var netop dét, der kostede en runde 2/9: prøven bestilte
+"Håndmad", som `smoerrebroed-kortet.sql` slukkede 1/9, og fik en
+besked, der pegede et helt forkert sted hen.
+
+- **⚠️ INTET SLIPPER IGENNEM, DER IKKE GJORDE FØR — og det er
+  prøve 2.** `mosede_udsolgt_vaern` tæller en slukket række som
+  *"udsolgt eller skjult"* MED VILJE, og dens besked passer
+  (`bestilling_udsolgt_vare`). Varen afvises altså stadig;
+  forskellen er kun, HVILKET værn der svarer, og at svaret nu er
+  sandt. **Uden den prøve kunne rettelsen have åbnet for en vare,
+  ejeren har slået fra**
+- **⚠️ DEN ANDEN HALVDEL ER URØRT** (prøve 3 og 4): en TÆNDT vare
+  på en forkert ugedag afvises som før, og den samme vare går
+  igennem på sin egen dag. Uden prøve 4 målte prøve 3 ingenting —
+  en vare, der aldrig kan bestilles, afvises altid
+- **⚠️ `dage` HAR KUN TRE LOVLIGE VÆRDIER** (`alle`, `hverdage`,
+  `weekend`), og `kategori_dage_ok` fælder hele arket ved et gæt
+  som `'1,2,3'`. Prøven sætter den MODSATTE af sin egen dag, så
+  reglen bider, uanset hvornår filen køres
+- **Falsificeret fire gange:** den gamle funktion tilbage (1 og 2
+  falder), udsolgt-værnet fjernet (2 falder), dagsværnet fjernet
+  (3 falder) — og prøve 4 er selv falsifikationen af prøve 3
+
+- **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
+  for KUN take-away eller KUN spis her; før var valget hele dagen
+  eller ingenting, og på en dag med selskab er begge dele forkerte.
+  Tjek 99-101
+- **`dagsbesked-og-qr.sql`** — `dags_regler.besked_titel` og
+  QR-spærren i `mosede_dag_aaben`. Tjek 106-107
+- **`menukort-antal-og-dage.sql`** — `menu_varer.antal_tilbage` og
+  `menu_kategorier.dage`. Tjek 102-105
+- **`nyheder-slags-og-billede.sql`** — `nyheder.slags`, `detaljer`
+  og `billede` plus fire adgangsregler på storage-spanden.
+  Tjek 108-110
+- **`kortets-priser.sql`** — navnet Mosede Havnecafe og priserne
+  fra de fire trykte kort. Den har med vilje INTET tjek: priserne
+  rettes i admin bagefter, og et tjek på et tal ville sige ❌ på
+  ejerens egen rettelse
+- **`bord-udeblev.sql`** + **`proev-bord-udeblev.sql`** —
+  `udeblevet` bliver et lovligt ord på bordene. Tjek 111.
+  ⚠️ Køres `borde.sql` igen bagefter, snævres listen ind, og
+  knappen Udeblev gør ingenting
+- **`nyheder-fra-til.sql`** + **`proev-nyheder-fra-til.sql`** —
+  `vis_fra`/`vis_til`. Tjek 112-113
+- **`foresp-kontakt.sql`** + **`proev-foresp-kontakt.sql`** —
+  mail ELLER nummer på en forespørgsel. Tjek 114 (set fejle på en
+  lokal Postgres 16 begge veje: uden den nye regel OG med den
+  gamle skrevet tilbage). ⚠️ Køres `forespoergsler.sql` igen
+  bagefter, kommer det gamle telefonkrav tilbage
+- **`arrangementer.sql`** + **`proev-arrangementer.sql`** —
+  tilmelding og pladser på kalenderens arrangementer, tabellen
+  `reservationer` og visningen `arrangement_pladser`
+  (11 × BESTOD lokalt, set fejle med bremsen slået fra og med en
+  navnekolonne lagt i visningen). Tjek 115-117
+- **`borde-55.sql`** + **`proev-borde-55.sql`** — ejerens 55
+  borde, så skiltene kan printes (7 × BESTOD lokalt, set fejle
+  med seks borde slettet). Den har med vilje **intet tjek i
+  `er-vi-klar.sql`**, af samme grund som `kortets-priser.sql`:
+  ejeren må gerne have 56 borde eller kalde dem `T1`, og et tjek
+  på tallet 55 ville sige ❌ på hans egen rettelse
+
+**⚠️ DE 55 BORDE SÆTTER KUN NUMMERET.** `pladser` og `zone` er
+`null`, og det er ikke en forglemmelse: vi ved ikke, hvor mange
+der kan sidde ved hvert bord, og et tal her ville stå på skiltet
+OG blive regnet med i dagens billede på Borde-fanen, som om
+ejeren havde sagt det. Skiltet skriver hverken pladser eller
+ude/inde, når feltet er tomt. Filen kan køres igen: ejerens egne
+rettelser overlever (prøve 6), og den **sletter ingenting** —
+demo-bordene ryddes af `ryd-demo.sql`, som tager demo-indholdet
+under ét. Rapporten siger til, hvis der stadig står nogen.
+
+**⚠️ `dagsbesked-og-qr.sql` PÅSTOD SELV, AT DEN VAR DÆKKET.** Der
+stod "er-vi-klar.sql fanger det" i filen ved QR-spærren, og det
+gjorde den ikke — i et døgn. Køres `dagsregler.sql` eller
+`lukkedag-vaern.sql` igen bagefter, skrives spærren væk, og så
+står fluebenet "Tag ikke imod fra bordene" slået fra, mens
+databasen tager imod alligevel. **En kommentar er ikke et tjek** —
+den er en påstand om, at et tjek findes. Skriver du, at noget
+fanges, så åbn `er-vi-klar.sql` og se linjen stå der.
+
+**⚠️ Og `nyheder-slags-og-billede.sql` springer sine fire
+adgangsregler over i stilhed**, hvis storage-spanden ikke findes
+endnu — med vilje, så filen kan køres på en tom database. Køres
+den før spanden er oprettet i dashboardet, står kolonnerne der,
+mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
+der ❌, skal spanden oprettes, og **filen køres igen**.
+
+**Ti fiktive kunder gik siden igennem** (1/9). Kundens ord: *"lav 10
+forskellige fiktive kunder og test siden blandt det og opdager og
+finder huller — du skal teste og derefter dokumentere, også med
+admin."* Rapporten står i **`GENNEMGANG-TI-KUNDER.md`**.
+
+Otte gæster og to på personalesiden, hver som en rigtig browser
+med sit eget ærinde. Fire huller, tre rettet:
+
+- **✅ HUL 1 ER LUKKET** (2/9). Det stod som databasens og ikke
+  kodens: gæsten ved bordet må undlade sit telefonnummer (din
+  beslutning 31/8), klienten sender `telefon: null`, og
+  `bord-uden-telefon.sql` var ikke kørt — så **hver eneste
+  QR-bestilling uden et nummer blev afvist**. Filen ER kørt nu,
+  og `proev-bord-uden-telefon.sql` skriver **8 × BESTOD** i
+  produktionen. ⚠️ Prøven kostede TRE fald undervejs, alle med
+  samme rod: den lånte ejerens dag, hans vare og hans borde. Se
+  afsnittet om rækkefølgen
+- **404 PÅ FEM GÆSTESIDER.** `image-slot.js` hentede
+  designværktøjets eget sidekatalog ved hver indlæsning — en fil,
+  der aldrig kan findes. Prøven læser BROWSERENS svarkoder, ikke
+  koden, og er set fejle på fire sider
+- **TAPASSIDEN LOVEDE "SENEST DAGEN FØR"**, mens reglen er 48
+  timer — tredje gang samme fejl (catering 30/8, smørrebrød 31/8).
+  `[data-varsel]` fyldes af reglen nu
+- **HEROEN SAGDE "ÅBENT" TO GANGE** ("Åbent nu · Åbent til kl.
+  21:00"). ⚠️ **Rettelsen fandtes i forvejen:** `Butik.pilleTekst`
+  har kortet detaljen ned siden 28/8, og noten ved den siger
+  ordret "nu står den her, så alle tre sider skriver det samme".
+  Forsiden fra designet blev bare aldrig den fjerde
+
+**⚠️ OG JEG MÅLTE FORKERT TO GANGE, FØR JEG MÅLTE RIGTIGT.** Begge
+står i rapporten, så tallene kan efterprøves: send-knappen ved
+bordet er **to trin** (jeg klikkede én gang og skrev "blev ikke
+sendt"), og **`offsetParent` er null for `position: fixed`** — så
+"Bestil tapas" så skjult ud i en måling og stod tydeligt på
+skærmbilledet. **Kig på billedet, før du skriver et hul ned.**
+
+**⚠️ EN PRØVEFIL BESTOD LOKALT OG FALDT HOS KUNDEN — FOR TREDJE
+GANG** (1/9). Mikkel kørte `proev-bord-uden-telefon.sql` i
+Mosede-projektet og fik **4 af 8 FEJLEDE**. Alle fire havde et
+bordnummer i sig.
+
+**Årsagen var stubben, ikke migreringen.** `mosede_bord_findes`
+(`bordkort.sql`) afviser enhver bestilling til et bord, der ikke
+står som AKTIVT i tabellen `borde` — og prøvefilen oprettede
+aldrig bord 7. Den lokale stub havde hverken tabellen eller
+værnet, så filen bestod 8 af 8. **De seks andre proev-filer, der
+bestiller til et bord, opretter alle deres eget; kun den her
+gjorde ikke.**
+
+- **⚠️ OG PRØVE 6 BESTOD AF DEN FORKERTE GRUND.** *"Ved bordet
+  afvises '12' stadig"* spurgte kun "blev den afvist?" — og det
+  blev den, fordi bordet ikke fandtes. Den spørger nu, om
+  afslaget nævner `bestilling_telefon_ok`. Uden bordene falder
+  **fem** prøver nu i stedet for fire
+- **⚠️ OG DEN SAMME FEJL LÅ I BORDLOFT-PRØVEN**, som Mikkel var
+  på vej til at køre: den regnede med, at ejeren har præcis 55
+  borde, og med at `(lokation_id, dato)` på `dags_regler` er et
+  UNIKT indeks (det er et almindeligt — `on conflict` på det
+  svarer *"there is no unique or exclusion constraint matching
+  the ON CONFLICT specification"* og vælter hele arket). Tre fejl
+  i den fil, alle tre fundet af en strengere stub, ingen af dem
+  ved at læse. Den **måler forskellen** nu — opretter sine egne
+  tre borde og ser loftet stige med tre — og er kørt igennem med
+  **0, 7 og 55 borde**: 21 af 21 alle tre gange
+- **⚠️ STUBBEN LIGGER I REPOET NU:
+  `vaerktoej/lokal-stub.sql`.** Den bærer produktionens værn
+  (`mosede_bord_findes`, `bord_bremse`, det delvise
+  dubletindeks, `lokationer`s tre `not null`, `indstillinger`s
+  rigtige primærnøgle). En stub, der bygges forfra i hånden hver
+  gang, driver fra skyen — og det er nu sket tre gange:
+  `dagens_retter` 26/8, `lokationer.adresse` 30/8, og den her
+- **⚠️ DEN LIGGER I `vaerktoej/` OG IKKE I `supabase/`, OG DEN
+  HAR EN SPÆRRE.** Filen kaster med det samme, hvis den ser
+  `auth.users` — altså hvis nogen har åbnet det forkerte vindue
+  og kørt den i Supabase. En efterligning i mappen med de
+  filer, ejeren kopierer ind i SQL Editor, er et uheld, der
+  venter
+- **⚠️ SKRIVER DIN PRØVE I EN TABEL, SÅ SLÅ UDLØSERNE OP FØRST:**
+  `grep -rn "on public.DIN_TABEL" supabase/*.sql | grep trigger`.
+  Står der en, stubben ikke har, beviser prøven ingenting om
+  lige den regel
+
+**Emballagen talte som mad** (1/9). Kunden sendte et skærmbillede
+af forlæggets Bestillinger-fane: *"bestillings tabben skal se
+præcis sådan her ud, når man har kørt en ordre."* **Ingen SQL** —
+`linjer` er jsonb.
+
+**⚠️ OG SKÆRMBILLEDET FANDT EN ÆGTE FEJL, IKKE EN SMAGSSAG.**
+**Målt på fanen, ikke læst:** en bestilling på fem portioner med
+emballagetillæg sagde **"9 retter"**, og køkkenets produktionsliste
+bad om at lave **"4 Emballage"**. Fire poser talte som mad. I
+forlægget står emballagen som sin EGEN linje uden for maden — og
+dét er grunden: **et tillæg er penge, ikke arbejde.**
+
+- **Reglen bor ét sted: `Butik.erEmballage(d, linje)`.** Fire
+  skærme spørger den — dagens linje og produktionen på
+  Bestillinger, produktionen på Overblik, og "mest solgte" på
+  Salg. **Kronerne tæller den stadig med alle steder**; det ER
+  omsætning, og `kronerAf` på Salg er urørt
+- **⚠️ TO KENDETEGN, OG RÆKKEFØLGEN ER MED VILJE.** Nye
+  bestillinger bærer `emballage: true` på linjen; **gamle rækker
+  kendes på NAVNET**, for de ligger i databasen uden flaget og
+  skal opføre sig rigtigt uden en migrering. Navnet er ejerens
+  eget (`emballage_navn`), ellers husets standard — samme greb som
+  `Admin.erTapas`, der kender fadet på navnet
+- **⚠️ OG DER MATCHES PÅ HELE NAVNET.** Et delvist match ville
+  fjerne en ret, der hed "Emballage til fest", fra køkkenets
+  liste. Set fejle
+- **Chippen står under maden** (`.bestil-emballage`): *"📦
+  Emballage: 4 stk. (40 kr.)"* — den forklarer totalen uden at
+  lade som om der skal laves fire af noget
+
+**⚠️ OG ↩ GENDAN VAR IKKE TIL AT SE.** Bunken sagde *"tryk … hvis
+noget var en fejl"* — de tre prikker var ment som "···"-knappen,
+men de læses som en afbrudt sætning, og knappen lå bag en dør.
+Reglen fra 31/8 er den samme (ét skridt frem, resten bag "···") —
+men **et færdigt kort HAR ikke et skridt frem**, og så stod der
+ingen knap. Gendan er den ene handling frem på et færdigt kort nu,
+**hvid og ikke grøn** (grøn betyder "det gik godt" i hele admin),
+og overskriften siger knappens navn. Døren har stadig Slet bag
+sig.
+
+**⚠️ OG EN GRID-CELLE STRÆKKER SIG, HVAD DER END STÅR I
+`display`.** Chippen fik `display: inline-flex` og blev **748 px
+bred i et kort på 974** — kortet er et grid fra 900 px, og en
+grid-celle blokificerer inline-flex. `getComputedStyle` svarede
+`flex` og ikke `inline-flex`. Det er `justify-self: start`, der
+skal sige det. Husets egen regel igen: **mål den BEREGNEDE stil.**
+
+**Loftet pr. dag: hvor mange af de 55 må bookes** (1/9). Kundens
+ord: *"altså er vi ik enige om, det bare er den fane, folk booker
+bord? hvis ja, så skal man altså bare kunne booke bord til den og
+den dag — og måske som det eneste administrere, hvor mange borde
+man kan bestille ud af de 55 på i dag eller dit og dat dag."*
+
+**⚠️ Kør `supabase/bord-loft-pr-dag.sql` +
+`proev-bord-loft-pr-dag.sql`** (21 × BESTOD på en lokal
+Postgres 16). Tjek 126-128.
+
+Indtil nu kunne ALT bookes. `bord_pladser` var et tal, personalet
+skrev selv, og det blev kun VIST — en lørdag kunne tage tres
+bookinger til femoghalvtreds borde, og ingen ville opdage det,
+før folk stod på molen.
+
+- **Tre lag, det snævreste vinder:** dagens eget loft
+  (`dags_regler.bord_loft`) → ejerens almindelige
+  (`bord_loft_pr_dag`) → **antallet af AKTIVE borde**. Grundtallet
+  er data, ejeren selv styrer; et hårdkodet 55 skulle rettes to
+  steder den dag, han nedlægger et bord
+- **⚠️ INGEN BORDE OPRETTET = INTET LOFT, IKKE NUL.** `bord/` har
+  taget imod bookinger siden fase 4 — længe før tabellen `borde`
+  fandtes. Talte grundtallet nul som et loft, ville hver eneste
+  booking blive afvist i det sekund, filen blev kørt, og ejeren
+  kunne ikke se hvorfor. Ejerens EGNE nul lukker stadig dagen:
+  dét er en beslutning. Fundet af syv prøver i `bord.spec.js`,
+  ikke ved at læse
+- **⚠️ OG `isFinite(null)` ER SANDT** (Number(null) er 0). Uden et
+  eksplicit null-tjek ville "intet loft" blive læst som "nul
+  borde" — den samme lukning ad bagvejen, denne gang i browseren
+- **⚠️ VISNINGEN SKAL HAVE ÉN RÆKKE PR. DAG, OGSÅ DE TOMME.**
+  Første udgave grupperede BOOKINGERNE, så en dag fandtes kun,
+  hvis nogen allerede havde booket den — og et loft på nul kunne
+  aldrig ses på hjemmesiden: dagen manglede i svaret, striben
+  tilbød den, og gæsten fik først nej ved afsendelsen. Præcis den
+  lukkede lørdag, ejeren bad om. Prøve 17 er set fejle med den
+  gamle visning
+- **⚠️ `bord_fyldte_dage` MÅ ALDRIG FÅ EN KOLONNE MERE.** Samme
+  regel som `optagne_dage` og `arrangement_pladser`: den kører med
+  sin EJERS øjne og springer adgangsreglerne over, så gæsten kan
+  se *"den dag er fuld"* uden at kunne læse HVEM der har taget
+  bordene. Prøve 14 tæller kolonnerne
+- **En fuld dag STÅR i striben**, streget over med **FULDT** på
+  knappen — en dag, der mangler, ligner en fejl, og gæsten leder
+  efter den i stedet for at vælge en anden. Og den valgte dag
+  flyttes væk fra en fuld dag, så ingen fylder formularen ud og
+  først får nej ved afsendelsen
+- **⚠️ LOFTET STÅR I DAGS_REGLER SAMMEN MED LUKKETIDERNE**, og
+  `dagsregel()` skriver HELE rækken. Bar Kalender-fanen det ikke
+  med, ville et bordloft blive tørret af, i det sekund nogen
+  lukkede for take-away på den lørdag — og forsvinde HELT, når
+  lukningen blev åbnet igen (så er der "ikke noget særligt"
+  tilbage, og rækken slettes). Reglen bor i
+  `Butik.skrive.medBordloft`, og nøglen sendes KUN, når rækken
+  HAR den: `vis_fra`-arret fra 28/8
+- **⚠️ TO REGLER DÆKKEDE HINANDEN, OG PRØVEN MÅLTE INGENTING.**
+  Øvetilstandens fletning holdt loftet i live uden linjen i
+  `kalender.js`, og omvendt — begge falsifikationer bestod.
+  Prøven måler SLETNINGEN nu, som kun den ene kan redde
+- **⚠️ OG PRØVERNE PEGEDE PÅ TEKSTEN "7. aug"** — som også rammer
+  "17. aug.". Dagene bærer `data-dato` nu, som menukortets rækker
+  bærer `data-vare`
+- **Dagens billede siger begge tal:** *"2 af 3 borde booket · 24
+  af 40 pladser sagt ja til"*. **⚠️ De to LIGNER hinanden og er
+  ikke det samme:** pladser er MENNESKER, borde er bookinger mod
+  dagens loft. Personalet siger ja på den skærm; sagde den kun
+  "pladser", kunne den se rolig ud på en dag, hjemmesiden for
+  længst havde lukket
+- **⚠️ OG BORDENE LIGGER IKKE I `Admin.data`.** De hentes for sig
+  (`Admin.lister.bordliste`), og loftets grundtal ER dem — uden
+  dem regner personalets skærm med nul borde. Reglen spørges ét
+  sted: `Butik.bordLoft(d, iso)`, den samme som gæsten bruger
+
+**Glutenfri, laktosefri og vegansk er et TILLÆG** (1/9).
+Svararket, punkt 7: vi spurgte om en pris på fem ting; ejeren
+stregede *"Glutenfri mad"* ud og satte i stedet et flueben ved
+linjen nedenunder — **"Tillæg: 10 kr. pr. stk."** Mikkel
+bekræftede med ét ord: *"10 yes."*
+**✅ KØRT I MOSEDE-PROJEKTET** (2/9, bekræftet af Mikkel:
+*"alle 7 bestod"*). `supabase/tillaeg-hensyn.sql` +
+`proev-tillaeg-hensyn.sql` skrev **7 × BESTOD** i produktionen —
+seks af dem er falsificeret enkeltvis lokalt først.
+
+**Dermed er HELE menuen ejerens og prissat i databasen**, på nær
+de to, der SKAL stå uden pris: isbaren (*"alt efter type og
+størrelse af event"*) og morgenbrødet, hvor ejerens eget ord er
+**SPØRG**. Prøve 5 falder, hvis der kommer en tredje.
+
+**⚠️ INGEN AF DE TO FILER HAR ET TJEK I `er-vi-klar.sql`, og det
+er med vilje** — samme grund som `kortets-priser.sql` og
+`borde-55.sql`: de skriver DATA, ikke regler. Et tjek på
+*"Vegansk mad (tillæg) = 10"* eller på adressen ville sige ❌ den
+dag, ejeren retter sit eget tal i admin. Tjeklisten er til de
+ting, der fejler stille; en pris, ejeren har ændret, er ikke en
+fejl.
+
+**⚠️ ET TILLÆG ER EN VARE, IKKE EN NY MASKINE.** Huset har ét
+tillæg i forvejen — emballagen — og den er bygget som en REGEL,
+fordi den kommer af sig selv: gæsten vælger den ikke. Det her
+gør hun. Så det er en almindelig række med en pris, som
+"Ekstra tilbehør 10 kr." har været hele tiden, og den følger med
+i kurven, i summen, på bonen og i salgstallene **uden en eneste
+linje ny kode**. En egen mekanik ville være et andet sted, det
+samme kunne gå galt.
+
+- **⚠️ MEN NAVNET SKAL SIGE DET.** *"Vegansk mad 10 kr."* på et
+  menukort læses som vegansk mad TIL ti kroner — præcis den slags,
+  huset ellers kalder en opdigtet pris. Derfor "(tillæg)" i
+  navnet og ejerens eget "pr. stk." i beskrivelsen
+- **To af de fem er slukket, ikke prissat.** *"Glutenfri mad"*
+  stregede ejeren selv ud, og *"Vegansk smørrebrød"* var en
+  VEJVISER — dens beskrivelse listede tomatmad, kartoffelmad og
+  avokadomad, som nu er rigtige varer med hver sin pris. Rækken
+  ville være en fjerde måde at bestille de samme tre på
+- **⚠️ ET SPØRGSMÅL I RAPPORTEN I STEDET FOR ET GÆT:**
+  håndmadskortet skriver *"GLUTENFRIT BRØD — SAMME PRIS"*, mens
+  arket siger 10 kr. Arket er nyere og svarer direkte på vores
+  spørgsmål, så det vinder — men ejeren skal SE, at de to siger
+  hver sit, som tartaren (95/99) og platten (189/179) gjorde
+- **⚠️ KATEGORIEN SKAL ÅBNES I ADMIN.** Uden et flueben under
+  Bestillinger kan tillægget ses, men ikke vælges. Rapporten
+  siger det
+
+**Dermed har HELE menuen en pris på nær to varer**, og prøve 5
+falder, hvis der kommer en tredje: isbaren ("alt efter type og
+størrelse af event") og morgenbrødet, hvor ejerens eget ord er
+**SPØRG**. Begge skal blive ved med at stå uden pris — prøve 6
+måler netop det.
+
+**⚠️ SITEMAPPET VAR ET KORT OVER DEN GAMLE HJEMMESIDE** (1/9).
+Mikkel sagde ja til at flytte canonical og sitemap til
+`mosedehavnecafe.dk`, og dét var den lille del af arbejdet.
+
+**Målt:** seks af sitemappets ti adresser blev VEJVISERE 30/8,
+da de to udgaver af siden blev lagt sammen — og **ingen af de ni
+nye designsider stod på kortet.** Altså fortalte vi Google, at
+hjemmesiden bestod af seks omdirigeringer og fire sider, mens
+`h-smorrebrod`, `h-selskaber`, `m-menukort` og resten ikke
+fandtes. Det er arret fra 30/8 ("der stod to udgaver af
+hjemmesiden i luften") et sted, ingen kiggede — og der har
+**aldrig** været en prøve på sitemappet.
+
+- **Siderne har haft den rigtige canonical hele tiden.** Det var
+  KUN `sitemap.xml`, `robots.txt` og `domaene` i
+  `js/oplysninger.js`, der stod på Pages-adressen
+- **En vejviser hører ikke på kortet.** Den sender videre; et
+  sitemap skal pege på det, der ER siden. De bliver stående som
+  adresser — folk har dem i bogmærker — men ikke i kortet
+- **⚠️ FORSIDEN STÅR SOM `/` OG IKKE `/index.html`**, fordi det
+  er dens canonical. To adresser for den samme side er dét,
+  canonical findes for
+- **Fem prøver nu**, og listerne læses af MAPPEN: en ny side kan
+  ikke udgives uden at komme på kortet, og en side, der bliver
+  til en vejviser, falder
+
+**⚠️ OG DEPLOY.YML SKULLE FØLGE MED.** `udgivelse.spec.js`
+sammenligner workflowets tophjørne med sitemappets første
+adresse — så den fangede med det samme, at de to nu sagde hver
+sit. Toppen siger `mosedehavnecafe.dk` med en note om, at
+Pages-adressen er vejen og ikke huset.
+
+**Ejerens egne oplysninger er på siden nu** (1/9). Fra det
+håndskrevne svarark (punkt G og H) og Mikkels præciseringer.
+**✅ `supabase/ejerens-oplysninger.sql` ER KØRT** (2/9, samme
+runde som tillægget) — den sætter adressen på forretningen og
+fem nøgler i `indstillinger`.
+
+**⚠️ DEN HAR INGEN `proev-`FIL, og det er værd at vide.** Den
+skriver kun data, ikke regler, så der er ingen BESTOD-linje at
+læse. Vil man se, at den slog igennem, er svaret på SIDEN:
+leveringslinjen (79 kr., Ishøj til Køge) står kun, når
+`levering` er slået til i databasen, og TikTok-linket kun, når
+`social_tiktok` er sat.
+
+- **⚠️ ADRESSEN VAR 20L HER — DEN ER 20I IGEN FRA 9/9.** Ejeren
+  skrev 20L med hånden, og Mikkel bekræftede det ordret: *"alt
+  skal passe, det er 20l/L."* Så kom årsrapporten, og nummeret
+  vendte tilbage til 20I. **Hele historikken og hvorfor står
+  under "Husnummeret er 20I" nederst i filen** — læs den, før du
+  retter noget: nummeret har skiftet tre gange
+- **Hovedmailen er `kontakt@mosedehavnecafe.dk`.** Svararket
+  skrev *"Bestilling@"* uden domæne, og et gæt på halvdelen af
+  en adresse er en mail, ingen får. `selskab1@` og `booking1@`
+  er urørte — de er delt efter ÆRINDE, ikke afdeling
+- **Tre sociale profiler**, og **⚠️ uden sporingshaler**:
+  linkene kom med `?utm_source=chatgpt.com` og
+  `?is_from_webapp=1&sender_device=pc` bagpå. Sådan en hale
+  hører til i den browser, den blev kopieret fra
+- **⚠️ TIKTOK ER EN NY KANAL.** Der var kun felter til Facebook
+  og Instagram; uden et felt kan ejeren hverken sætte den eller
+  rette den. Feltet står på Kontakt-fanen, og linket følger
+  samme lov som de andre: tom adresse → linket ryger AF siden
+- **Levering er slået TIL** med ejerens egne tal: 79 kr., Ishøj
+  til Køge (og længere efter aftale), alt kan leveres. Den har
+  været slået FRA siden 23/8, netop fordi vi ikke vidste hvad,
+  hvortil og hvad det kostede
+
+**⚠️ MINDSTEBELØBET ER IKKE ET VÆRN, OG DET ER MED VILJE.**
+Ejeren skrev *"200,- kr. ELLERS AFTALES"*. Altså er de 200 ikke
+en grænse, der må afvise en bestilling — det er dét, de normalt
+siger ja til, og under det tager de en snak. Et hårdt værn ville
+afvise en ordre, forretningen gerne ville have haft. Beløbet
+står derfor i den tekst, gæsten LÆSER, og ikke i en regel, der
+siger nej.
+
+**⚠️ OG PRØVEN FÆLDEDE SIN EGEN DOKUMENTATION.** *"Oplysningsfilen
+siger det samme"* faldt på noten ved feltet, som fortæller om det
+forrige husnummer. Kommentarerne klippes af før målingen —
+nøjagtig samme fælde som favicon-prøven 29/8. Og
+*"de sider, der har en adresse"* tog først alt efter
+ordet "Havnevej" og faldt på `historien.html`, som skriver *"…ude
+ad Havnevej. Der er både…"* i brødteksten: reglen er
+husnummeret, ikke ordet.
+
+**✅ OG DOMÆNET ER FLYTTET MED** (2/9, Mikkels ja). `MOSEDE.domaene`
+er `https://mosedehavnecafe.dk` nu, så canonical og sitemap peger
+derhen på hver eneste side. **Og sitemappet var et kort over den
+GAMLE hjemmeside:** det listede seks af de syv vejvisere fra 30/8
+og ingen af de ni designsider — altså bad vi Google om at
+indeksere seks omdirigeringer og sprang forsidens efterfølgere
+over. Det er skrevet om til de 12 sider, der findes.
+
+**Roller i admin: ejer og medarbejder** (2/9). Kundens ja til
+punkt 4 på "hvad mangler"-listen. **✅ `supabase/roller.sql` ER
+KØRT i Mosede-projektet** (3/9, bekræftet af Mikkel:
+*"18 ud af 18 bestod"*) — `proev-roller.sql` skrev **ALLE 18 AF
+18 BESTOD i produktionen**, og hvert værn er set fejle lokalt
+først.
+
+Logbogen har registreret HVEM siden 20/8 — men alle logger ind
+som den samme, så den kunne ikke skelne. Og der var ingen vej til
+at lukke en medarbejder ude: `admin_adgang` er en tabel,
+`authenticated` slet ikke har rettigheder på, så ejeren skulle
+ind i Supabases dashboard.
+
+- **⚠️ ALLE, DER HAR ADGANG I DAG, BLIVER EJERE.** `rolle` har
+  `default 'ejer'`, og det er ikke en tilfældig standard: en
+  migrering, der gjorde nogen til medarbejder, ville tage
+  rettigheder fra et menneske, der havde dem i går — midt i en
+  frokost, uden en linje om hvorfor
+- **⚠️ `is_admin_for` KRÆVER NU `aktiv`.** Dét er det, der gør
+  "deaktivér" til andet end en farve i en liste — og det virker
+  på ALLE 18 tabellers politikker på én gang, uden at en eneste
+  af dem skal skrives om
+- **Skellet går ved det, der koster penge eller lover noget ud af
+  huset.** Dagen er medarbejderens (bestillinger, borde, køkken,
+  forespørgsler, kalenderen, dagens ret, **og at melde udsolgt**);
+  forretningen er ejerens (priser, åbningstider, indstillinger,
+  hvem der har adgang, logbogen)
+- **⚠️ KOLONNERETTIGHEDER DUER IKKE TIL PRISEN.** De gælder pr.
+  DATABASEROLLE, og både ejer og medarbejder er `authenticated`.
+  (Det er ellers netop dem, `borde.kode` er beskyttet med — dér
+  går skellet mellem gæst og personale.) Prisen har derfor en
+  udløser, der ser på, hvad der FAKTISK ændrede sig
+- **⚠️ DEN SIDSTE EJER KAN IKKE FJERNES — heller ikke af sig
+  selv.** Uden spærren kunne ét fejltryk efterlade en forretning,
+  hvor ingen kan rette en pris, og vejen tilbage går gennem
+  Supabases dashboard. Den tæller EFTER ændringen, så den fanger
+  sletning, deaktivering OG degradering. **Prøve 18 er dens
+  modstykke:** er der to ejere, må den ene gerne gå — uden den
+  ville en spærre, der bare sagde nej til alt, bestå de tre
+  ovenfor
+
+**⚠️ OG TRE FÆLDER KOSTEDE TID — alle tre fundet ved at måle:**
+
+- **POLITIKKER LÆGGES SAMMEN MED ELLER, OG NAVNE MÅ IKKE GÆTTES.**
+  Migreringen skrev `drop policy if exists
+  indstillinger_skriv_admin`; den hed `_opret_admin`, så den
+  overlevede, og en medarbejder kunne stadig indsætte. **En
+  `drop ... if exists` på et forkert navn er tavs af design.** De
+  fjernes ved OPSLAG i `pg_policies` nu
+- **⚠️ ET STATEMENT SER SIT EGET ØJEBLIKSBILLEDE FRA FØR.** Fire
+  prøver gjorde forsøget og aflæsningen i ÉN `select` — og
+  aflæsningen gav derfor altid det GAMLE tal. De bestod med
+  værnet slået fra. Forsøget er sin egen sætning nu; det er
+  husets regel om, at ét af tallene skal komme udefra, i en ny
+  forklædning
+- **⚠️ OG EN PRØVE PÅ EN TOM TABEL MÅLER TOMHED.** *"Medarbejderen
+  kan ikke læse logbogen"* talte til nul på en logbog uden rækker.
+  Der lægges en ind først
+
+**⚠️ OG DEN LOKALE DATABASE VAR MILDERE DEN FORKERTE VEJ.**
+Supabase giver `anon` og `authenticated` rettigheder på hele
+`public`-skemaet som standard; det er RLS, der begrænser dem.
+Uden de linjer nægtede den lokale database ALT — og så bestod
+hver negativ prøve, fordi ingen kunne noget, mens EJEREN faldt på
+5 af 18. `byg-lokal-db.sh` sætter dem nu, **før** filerne køres,
+præcis som i skyen: så vinder en senere `revoke` i en migrering
+(`borde.kode`) over standarden i stedet for at blive skyllet væk.
+Scriptet tjekker netop dét til sidst.
+
+**Og skærmen til rollerne: Personale-fanen** (2/9). **Ingen ny
+SQL** — `roller.sql` var hele databasedelen.
+
+Fanen ligger i **Log**-gruppen ved siden af Historik: *"hvem
+gjorde hvad"* og *"hvem må hvad"* er det samme spørgsmål set fra
+hver sin side, og begge er ejerens.
+
+- **⚠️ SKÆRMEN ER PYNT, POLITIKKERNE ER VÆRNET.** En skjult fane
+  er stadig en fane, en nysgerrig kan kalde forbi. Det, der
+  siger nej, er RLS og udløserne — prøvet for sig i
+  `proev-roller.sql`
+- **Fem faner forsvinder for en medarbejder:** Åbningstider,
+  Indstillinger, Historik, Personale — og **Salg**. ⚠️ **De fire
+  første er databasens; Salg er KUN en skærmbeslutning.** Tallene
+  regnes af bestillingerne, som personalet skal kunne læse for at
+  lave maden, så der er ingen politik bag. Skal omsætningen
+  virkelig være lukket land, kræver det en visning med ejerens
+  øjne, som `optagne_dage` har
+- **⚠️ "LUK UDE" ER IKKE "SLET", og det er hele pointen med to
+  knapper.** Rækken bliver stående, så logbogens navne stadig kan
+  slås op. En slettet medarbejder er en logbog med en e-mail,
+  ingen kan sætte et ansigt på
+- **⚠️ EN NY BLIVER MEDARBEJDER SOM STANDARD.** Den, der tilføjer
+  en ny, tilføjer som regel en, der skal stå ved lugen. Et
+  fejltryk dér giver en ekstra ejer, og det opdager ingen
+- **⚠️ KAN ROLLEN IKKE HENTES, ER MAN EJER.** Filen er måske ikke
+  kørt endnu, og et system, der låser sin egen ejer ude, fordi et
+  kald fejlede, er værre end et uden roller. Databasen dømmer
+  alligevel til sidst
+- **⚠️ OG PERSONEN SKAL OGSÅ OPRETTES I SUPABASE.** Adgangen her
+  siger, hvad e-mailen MÅ; selve loginet laves under
+  Authentication → Users. Står der kun en linje her, kan hun ikke
+  logge ind — og det er ikke til at gætte. Kortet siger det
+
+**⚠️ TRE TING FANDT PRØVEN OG SKUDDET, IKKE KODEN:**
+
+- **Personale-fanen skjulte ikke sig selv.** Den stod på prøvens
+  liste, men ikke i `KUN_EJER` — så en medarbejder kunne åbne den
+  og møde et tomt panel, fordi kun kortet indeni var skjult
+- **`Admin.aabenFane` FINDES IKKE.** Jeg skrev den, som om den
+  gjorde. Den åbne fane læses af skærmen (`aria-selected`) nu —
+  den samme tilstand, `visFane` sætter, og den ene, en prøve også
+  kan se
+- **Og navnet løb sammen med e-mailen** til
+  *"Lonelone@mosedehavnecafe.dk"* — ét ord, der ligner en
+  tastefejl i databasen. **Målt på et skud.** Klassen `b-maerke`,
+  jeg gav mærkatet, findes heller ikke i noget stilark; det er
+  husets egen `.maerke.udsolgt` nu, den samme som nyhedernes
+  skjulte
+
+**Og så blev scriptet kørt i SQL Editoren** (3/9). Mikkel satte
+`hent-menukort.sh` ind i Supabase og fik
+`ERROR: 42601: syntax error at or near "#!/"`. **Intet gik galt**
+— den fejler på linje 1, før noget kan køre — men det er
+**anden gang**, en fil er havnet i det forkerte vindue
+(`lokal-stub.sql` fik sin egen spærre 1/9 af samme grund).
+
+**⚠️ ET VÆRKTØJ, DER KUN KAN BRUGES ÉN BESTEMT VEJ, BLIVER BRUGT
+DEN FORKERTE.** Svaret er derfor ikke en advarsel mere — det er en
+anden vej: **admin → Menukort → "Hent regneark (CSV)"**. Samme
+kolonner, ingen terminal, intet script, ingen nøgle.
+
+- **⚠️ INGEN NYE KALD.** Filen bygges af `Admin.data`, altså
+  præcis det, skærmen viser — samme greb som sikkerhedskopien på
+  Historik. Den virker derfor også den dag, forbindelsen driller
+- **⚠️ SEMIKOLON, IKKE KOMMA.** Et dansk Excel deler på
+  semikolon, og halvdelen af ejerens beskrivelser har komma i sig
+  ("ost, skinke, spejlæg") — med komma som skilletegn blev hver af
+  dem tre kolonner. Reglen er todelt, og prøven måler begge
+  halvdele: et komma står bart, et semikolon pakkes ind
+- **⚠️ OG BOM FORAN.** Uden den læser et dansk Excel filen som
+  Latin-1, og hvert æ, ø og å bliver til krims-krams i et
+  menukort, nogen skal trykke
+- **⚠️ TOM PRIS ER IKKE 0.** Samme lov som resten af huset, og den
+  har sin egen prøve
+- Scriptet i `vaerktoej/` bliver — det er den vej, der kan hentes
+  friske filer TIL repoet — men det bærer nu en blok øverst, der
+  siger, at det ikke er SQL
+
+**⚠️ OG ÉN FALSIFIKATION BESTOD FØRST.** *"Isen kan ikke
+bestilles"* kunne ikke fejle: iskategorien manglede alligevel
+fluebenet, så den var ude af to grunde. Fluebenet er SAT i
+prøvedataene nu, så afdelingsreglen er det eneste, der holder
+isen ude — og så falder prøven, når den fjernes.
+
+**De syv trykte kort er en facitliste nu** (3/9). Mikkel
+afleverede sine færdige kort som billeder: Grillen, Burgere/pølser,
+Smørrebrød, Håndmadder, Is, Kaffe/koldt og Øl/vin/bar. Kundens ord:
+*"kan du give mig de endelige menukort og priser, så jeg kan give
+dem til Claude Code?"* **Ingen SQL.**
+
+Kortene står som data i `vaerktoej/kortene.py`, og
+`vaerktoej/sammenlign-kort.py` holder dem op mod databasen post for
+post og skriver `menukort/KORTENE-FACITLISTE.md`.
+**⚠️ FACITLISTEN GENERERES**; en håndskrevet kopi ville skride fra
+kortene, første gang et navn blev rettet — og så var den den fjerde
+udgave af det samme.
+
+**⚠️ OG DEN VIGTIGSTE PRØVE ER KORT MOD KORT, IKKE KORT MOD
+DATABASE.** Tartaren står **99 på grillkortet og 95 på
+smørrebrødskortet** — Mikkels egne to kort. Den slags findes ikke
+ved at holde ét kort op mod databasen: begge kort ser rigtige ud
+for sig selv, og først ved lugen bliver det en diskussion. Det er
+husets egen regel om, at **ét af tallene skal komme udefra**, flyttet
+et lag op. Set fejle med tartaren rettet til 99 begge steder.
+
+**✅ OG BEGGE PRISER ER RETTET SAMME DAG** (3/9). Mikkel sendte
+kortene igen med **Platte 179** og **Tartar 99 på begge kort**.
+Sammenligningen skriver nu `A · ingen` og `A2 · ingen`: de syv
+trykte kort og databasen siger det samme om hver eneste pris.
+
+Målingen fandt tre slags, da den blev kørt første gang:
+
+- **To priser passede ikke:** Platte **189** på kortet mod **179** i
+  databasen (og ejeren sagde 179 den 1/9), og tartarens 95/99
+- **30 varer med pris står på INTET kort** — de kan bestilles på
+  hjemmesiden, ved lugen og fra bordet, men gæsten med et trykt kort
+  i hånden ser dem ikke. Bl.a. Brunchtallerken 349, Pitabrød 65,
+  fire burgere (Bearnaise, Chilinaise, Flæskestegs, Frikadelle),
+  otte pølser (Dürüm 80, Hansen fransk vaffel, Pistolpølse),
+  Tomatmad 55, Æbleflæsk 75 og laktosefri/vegansk tillæg
+- **Fire påstande er ikke varer** og kan derfor ikke måles.
+  **⚠️ Den ene er et af designbundtets opdigtede tal fra 21/8:**
+  *"op til 40 personer"* i baglokalet. `lokale_pladser` står stadig
+  tom, netop fordi ejeren aldrig har bekræftet tallet — og nu er det
+  på vej i tryk. Den anden er *"en gratis sodavand for en
+  anmeldelse"*, som binder forretningen og er i strid med Googles
+  egne regler for anmeldelser
+
+**⚠️ OG MIN EGEN MÅLING VAR FORKERT I ET MINUT.** Python gemmer en
+oversat udgave af `kortene.py` i `__pycache__` og genbruger den,
+hvis mtime **og størrelse** er uændret — og en rettelse fra 95 til
+99 ændrer ingen af delene. Rapporten sagde *"ingen uenighed"*, mens
+filen på disken sagde 95 og 99. `sys.dont_write_bytecode = True`
+lukker den; det er husets regel om at måle virkeligheden, nu i
+Pythons forklædning.
+
+**Menukortet er MÅLT, ikke husket — og det er filer nu** (3/9).
+Kundens spørgsmål: *"ift menukortet og retterne, hvordan er der
+stadig tvivl? det skal vi altså have på plads."* Og bagefter:
+*"giv mig det hele som filer, da jeg skal lave menukort."*
+**Ingen SQL.**
+
+**⚠️ SVARET BLEV LÆST UD AF PRODUKTIONEN, IKKE AF PAPIRERNE.**
+`vaerktoej/hent-menukort.sh` henter menukortet med **anon-nøglen
+fra `js/config.js`** — den offentlige, som gæstesiden selv bruger.
+Det er hele grunden til, at tallene kan efterprøves: der stod
+"syv varer uden pris" i noterne fra 1/9, og målingen siger **to**.
+
+- **262 varer på kortet, 260 med pris.** De to sidste skal ikke
+  have en: **Morgenbrød** (ejerens eget ord er SPØRG) og
+  **Isbaren** ("alt efter type og størrelse af event")
+- **Filerne ligger i `menukort/`**: `.csv` til et regneark, `.md`
+  til at designe efter, `.json` til en maskine, plus
+  `SPØRGSMÅL-TIL-EJEREN.md`
+- **⚠️ FILERNE ER ET FOTO, IKKE EN KILDE.** Der er med vilje
+  **ingen vej tilbage** — en import ville være to steder at rette
+  den samme pris, og de ville skride fra hinanden uden at nogen af
+  dem så forkerte ud. Datoen står øverst i `.md`, og scriptet
+  køres igen i stedet for at rette i filen
+- **⚠️ OG SCRIPTET NÆGTER ALT ANDET END anon.** `service_role`
+  ligger i dashboardet lige UNDER anon og ligner den til
+  forveksling. Havnede den i `js/config.js` ved et uheld, ville
+  scriptet ellers læse videre, som om intet var sket — og så var
+  det det første sted, hele databasen kunne trækkes ud af. Rollen
+  står i nøglens egen nyttelast, og den **læses**. Set fejle med
+  en falsk `service_role`-nøgle
+
+**Og målingen fandt seks steder, hvor der FAKTISK står tvivl** —
+ingen af dem er en manglende pris:
+
+- **Slushicen har to priser:** 35/25 over lugen mod 25/20 som
+  tilkøb til catering. Navnene er skrevet forskelligt ("Slush Ice"
+  mod "Slushice"), så værnene forveksler dem ikke — men gæsten kan
+  se begge tal
+- **⚠️ "Sauce, topping eller guf" står i BÅDE Kugleis og Softice**
+  til 7 kr. Melder personalet den udsolgt under softicen, kan den
+  **stadig bestilles**: værnet slår op på NAVNET og siger kun nej,
+  når hver eneste række med det navn er væk. Det er arret fra
+  31/8 (de 24 håndmadder fik suffikset ", håndmad" af netop den
+  grund) i en ny forklædning
+- **Tre par, der ligner hinanden** med samme pris: Lun delle eller
+  steg / Hjemmelavet lun frikadelle, Juice eller Capri-Sun / Brik
+  juice eller cacao, og Cheesebaconburger mod kortets Baconburger
+- **Glutenfrit brød:** arket siger 10 kr. (og det står i
+  databasen), håndmadskortet siger "SAMME PRIS"
+- **⚠️ OG TO KATEGORIER KAN SES, MEN IKKE BESTILLES:** *Tillæg:
+  glutenfri, laktosefri og vegansk* (3 varer) og *Tilkøb
+  morgenmad* (12 varer à 10 kr.). **Tillægget er det, ejeren selv
+  bad om**, og en gæst kan ikke vælge det i dag — fluebenet under
+  Menukort er ikke sat. Det er ét tryk, ingen kode
+- **Cateringens fem kategorier er lukkede med vilje** (46 varer,
+  mindst 10 personer). **⚠️ Der er kun ÉN liste** over, hvad der
+  kan bestilles, og den gælder hjemmesiden, lugen OG QR-koden ved
+  bordet: åbnes Sliders, kan en gæst ved bordet købe én slider til
+  40 kr.
+
+**DE TRE BESTILLINGSVEJE ER MÅLT OP MOD HINANDEN** (2/9).
+Kundens ord, da de sidste menukort kom: *"bestillingen online
+takeaway eller spis her skal passe med det her, og
+QR-kode-bestillingen skal også samme priser, samme menukort
+præcis."* **Ingen SQL.**
+
+`tests/tre-veje.spec.js` åbner de tre sider, folder kategorierne
+ud som en finger gør det, og læser navn og pris af **DOM'en**.
+⚠️ **Ikke af `Butik.udvalg`:** reglen bor ét sted, men
+OPTEGNINGEN er skrevet fire — og det er dér, to lister over det
+samme sortiment skrider fra hinanden, uden at nogen af siderne
+ser forkerte ud for sig selv.
+
+**Den fandt fire ting, første gang den blev kørt:**
+
+- **⚠️ EN UDSOLGT VARE FORSVANDT HELT FRA FORSIDEN**, mens den
+  stod gennemstreget på `bestil/` og ved bordet. Meldte køkkenet
+  burgeren udsolgt, var den væk fra den ene af tre lister — og
+  gæsten, der lige havde set den på menukortet, troede kortet var
+  blevet mindre. Præcis samme fejl som prisløse varer havde
+  indtil 31/8, og svaret er det samme: rækken STÅR, gennemstreget,
+  uden tæller. ⚠️ **Den er streget, ikke bare dæmpet** — dæmpet
+  betyder "vi kender ikke prisen"
+- **⚠️ SØGNINGEN VED BORDET SKJULTE DET, GÆSTEN LEDTE EFTER.**
+  **Målt, ikke læst:** `.spoerg-pris`-rækken havde intet
+  `data-soeg`, og `''.indexOf('morgen')` er -1 — så "Morgenbrød"
+  forsvandt i det sekund, hun søgte på "morgen"
+- **⚠️ OG DEN UDSOLGTE BURGER BLEV STÅENDE ALENE.** De udsolgte
+  ligger NEDERST i boksen og ikke inde i et `.kort-gruppe`-afsnit,
+  så filterets løkke over afsnittene nåede dem aldrig. **Målt:**
+  gæsten søgte "morgen", alt andet forsvandt, og tilbage stod én
+  udsolgt burger. Det værst tænkelige par. Rækken bærer sit
+  `data-gruppe` nu, og filteret har fået en løkke over det, der
+  ligger uden for et afsnit — **med reglen skrevet ÉN gang**
+- **Og forsidens prisløse række manglede sit ansigt.**
+  `js/bestilling.js` har haft tegnet på alle tre rækketyper siden
+  1/9; forsidens `spoergRække` fik det aldrig. **Fundet på et
+  skud:** "Morgenbrød" stod nøgen mellem to naboer med hver sit
+  tegn
+
+**✅ OG MENUKORTET ER DEN FJERDE LISTE — den viser dem nu**
+(2/9, kundens ja: *"ja lad dem se det også"*).
+`m-menukort.html` sorterede det udsolgte HELT fra, med grunden fra
+23/8: *"et kort, der tilbyder noget, køkkenet ikke har, er værre
+end et kort med én ret mindre."* Retningen var den ufarlige — men
+argumentet trækker begge veje, og prøven gjorde skævheden synlig:
+en gæst, der har hørt om burgeren og ikke finder den på kortet,
+tror, den er taget af menuen.
+
+- **Kortet lover stadig ingenting**, og det er hele
+  forudsætningen for at vende reglen: rækken er streget over og
+  bærer **ordet i stedet for prisen**. ⚠️ En pris på en ret,
+  køkkenet ikke har, er et tal, gæsten regner med
+- **⚠️ FORMEN ER BESTILLINGSSIDERNES, IKKE DAGENS RETS.** Dagens
+  ret dæmpes (`opacity: .55`); en dæmpet linje midt i en liste på
+  24 læses som "her mangler der noget", ikke som "den er væk i
+  dag". Og ordet er det SAMME de fire steder — *"Udsolgt i dag"*
+  to steder og *"Udsolgt"* et tredje ville være tre udgaver af
+  den samme oplysning
+- **⚠️ EN KATEGORI, HVOR ALT ER UDSOLGT, FORSVINDER IKKE MERE.**
+  Samme regel én gang til: en kategori, der forsvinder, ligner en
+  kategori, der er nedlagt. Hop-båndets prøve er **vendt** med en
+  note — den vogter stadig, at båndet læser SKÆRMEN og ikke
+  databasen, og at en kategori helt uden varer ikke tegnes
+- **⚠️ ANTALLET TÆLLER DET, DER STÅR PÅ KORTET.** Et tal, der
+  siger 14, over en liste med 16 rækker, er en tæller, gæsten
+  holder op med at stole på
+- **Noten "der er ingen udsolgt-tilstand i designet" var
+  forældet** — dagens ret har haft `.mk-udsolgt` siden 24/8
+
+Seks falsifikationer, seks fald; **tre** gamle prøver vendt MED
+noter om, at det er kundens beslutning og ikke en forældet prøve.
+Den tredje fandt den fulde runde: `admin.spec.js`' *"Udsolgt kan
+slås til og slår igennem på menukortet"* krævede, at varen blev
+TAGET AF kortet — dens egen note pegede endda på den linje, der
+blev vendt. **Reglen, den vogter, er urørt og vigtigere end
+formen:** slår personalet en vare fra, må gæsten ikke kunne
+BESTILLE den. Den bevises nu ved, at rækken er mærket og bærer
+ordet i stedet for prisen.
+
+**⚠️ DE TRE VEJE VISER IKKE DET SAMME UDVALG, og det er med
+vilje.** `bestil/` er smørrebrødets side (`kun-smoer`); forsiden
+og bordet sælger hele lugens kort (`uden-fyld`). Prøven måler
+derfor tre ting hver for sig: forsiden og bordet skal være
+**identiske**, `bestil/` skal være en **delmængde**, og et navn må
+**aldrig** bære to priser. Syv falsifikationer, syv fald.
+
+**Et ansigt pr. ret** (1/9). Kundens ord: *"prop emojis derinde,
+så det ser lidt attraktivt ud at vælge nogle retter i stedet for
+det der."* **Ingen SQL.**
+
+Kategorierne har haft et tegn siden 24/8; nu har varerne det
+også — på `bestil/`, `ved-bordet/`, forsiden og menukortet.
+
+- **⚠️ REGLEN BOR ÉT STED.** `MosedeEmoji.forVare(v, kategori)`
+  ligger ved siden af `forKategori` i `js/menu-emoji.js`. Fire
+  skærme spørger den; en kopi ville betyde, at den samme burger
+  fik to ansigter på vejen fra kortet til bestillingen
+- **⚠️ TEGNET MÅ ALDRIG BLIVE EN DEL AF NAVNET.** Det er sit
+  eget element ved siden af `.navn`/`<h4>` — skrevet ind i
+  navnet ville varen hedde "🐟Hvide sild", og det er DEN tekst,
+  `data-vare`, kurven, bonen og databasens to værn slår op på.
+  Samme ar som kategoritegnet fik 29/8. `aria-hidden`, så en
+  skærmlæser ikke siger "fisk hvide sild"
+- **⚠️ ALDRIG BÅDE FOTO OG TEGN.** Har ejeren lagt et billede
+  op, er dét varens ansigt
+- **En ret uden et kendt ord arver kategoriens tegn** — 84 af
+  ejerens 264 gør det. En liste, hvor hver anden række mangler
+  et tegn, ser mere i stykker ud end en, hvor nogle deler
+- **⚠️ OG TEGNET MÅ IKKE SIGE NOGET, NAVNET IKKE SIGER.** Samme
+  lov som kategorierne: 🌱 fyrer kun på ordene "vegansk" og
+  "vegetar". "Hvide sild" er fisk, fordi der står sild
+
+**⚠️ FEM FEJL FALDT UD AF AT KØRE EJERENS 264 VARER GENNEM
+GÆTTET — ingen af dem ved at læse regexerne:**
+
+- **"Platte til 1 person" fik ☕**, fordi PLATTE INDEHOLDER
+  "LATTE". Begge platter fik en kop kaffe
+- **"Rundstykke med pålæg" fik 🥚**, fordi PÅLÆG INDEHOLDER "ÆG"
+- **"Hansen fransk vaffel" er en PØLSE** og fik 🧇
+- **"Isvand" fik 🍨**, fordi jeg selv havde skrevet ordet ind
+  blandt isen
+- **"Råkost" ville få 🧀** af et bart `/ost/`
+
+Alle fem har deres egen prøve nu. **Det er hele grunden til at
+måle mod rigtige data i stedet for at læse en liste igennem.**
+
+**⚠️ OG SÅ FANDT MÅLINGEN EN FEJL, DER HAR LIGGET DER SIDEN
+31/8.** Tegnet stod yderst til HØJRE på telefonen, efter prisen,
+selv om det var første barn i DOM'en. Grunden: under 640 px er
+`.stk-linje` sat med **navngivne områder**
+(`"tekst pris" / "taeller taeller"`), ikke kolonner — og et barn
+uden et område bliver auto-placeret i den første ledige celle,
+altså efter alt andet. **Kolonnereglen ovenfor gælder slet ikke
+dernede.** `.stk-foto` har præcis samme fejl og har haft den,
+siden billederne kom; den har bare aldrig kunnet ses, fordi
+ingen har lagt et foto op endnu. Begge har deres eget område nu.
+
+**⚠️ OG PRØVEN BESTOD FØRST MED FEJLEN GENINDFØRT.** Jeg
+falsificerede ved at fjerne `.stk-tegn { grid-area: tegn }` — og
+den bestod, fordi auto-placeringen fylder første celle, og
+tegnet er første barn. Det er `grid-template-areas`, der gør
+arbejdet. Falsificeret rigtigt (kolonnen fjernet) faldt den med
+**336 px mod ≤ 55**.
+
+**HELE MENUEN ER EJERENS NU — syv kort og et svarark** (1/9).
+Mikkel afleverede de sidste to menukort (KAFFE, KOLDT & KNAS og
+ØL, VIN & BAR) og ejerens håndskrevne svar på de seks sider, vi
+sendte 27/8. Dermed er der pris på alt, og kundens ord er
+ordren: *"bestillingen online takeaway eller spis her skal passe
+med det her, og QR-kode-bestillingen skal også samme priser,
+samme menukort præcis."*
+
+**⚠️ Kør `supabase/kortets-priser-3.sql` +
+`proev-kortets-priser-3.sql` (21 × BESTOD) og derefter
+`supabase/smoerrebroed-kortet.sql` +
+`proev-smoerrebroed-kortet.sql` (13 × BESTOD).** Begge er kørt
+og falsificeret på en lokal Postgres 16.
+
+**⚠️ DEN DYRESTE OPDAGELSE: `kortets-priser-2.sql` MATCHEDE PÅ
+`kategori_id`.** Filen skrev `kategori_id = 31` og
+`(13, 'Rejemad …', 85)`. De tal gjaldt produktionens
+rækkefølge — bygges de samme filer op i en tom database, er 13
+"Sodavand, juice og kakao" og 17 "Sliders", altså to HELT andre
+kategorier. **Målt 1/9: to af de tre priser, filen påstod at
+rette 30/8, stod stadig på det gamle tal** (rejemaden 75 i
+stedet for 85, kaffe med pandekage 85 i stedet for 65). En
+opdatering, der rammer nul rækker, fejler ikke — den er bare
+tavs. Om produktionens id'er passede, kan ikke ses herfra.
+**Loven er derfor: en menufil slår kategorien op på NAVN.**
+De to priser rettes nu på navn, og prøve 5b er sat til at fange
+det, hvis det sker igen.
+
+- **33 priser sat, 33 varer i tre hele kategorier** (sliders 40,
+  pindemad 50, tilkøb morgenmad 10), **10 priser rettet**,
+  **12 nye varer** og **8 dubletter slukket** — aldrig slettet,
+  så de kan tændes igen i admin
+- **⚠️ HVER ENESTE VARE UDEN PRIS HAR EN KENDT GRUND.** Efter de
+  to filer står **7** tilbage, og prøve 12 falder, hvis der
+  kommer én mere: fem er glutenfri/laktosefri/vegansk (det er et
+  **tillæg på 10 kr.**, ikke en pris — trin 3), isbaren
+  ("alt efter type og størrelse af event") og morgenbrødet, hvor
+  ejerens eget ord er **SPØRG**
+- **Ejerens rettelser slår kortene:** tartaren er 99 (ikke 95),
+  platten 179 (de 189 på grillkortet er forældede, ejeren 1/9),
+  vinflasken 249, cava i glas 69, RTD 40. Belgisk vaffel er ude
+  ("har aldrig haft det — vi har bubblewaffle"), tomatmaden ind
+  til 55, og brunchtallerkenen ER brunchplatten til 349
+- **⚠️ TRE SPØRGSMÅL STÅR I RAPPORTEN I STEDET FOR ET GÆT:**
+  "Lun delle eller steg" mod "Hjemmelavet lun frikadelle",
+  "Cheesebaconburger" mod kortets "Baconburger", og
+  "Juice eller Capri-Sun". Ingen af dem koster penge (samme
+  pris), og et gæt ville lave enten en dublet eller en forkert
+  vare
+
+**Smørrebrødet er 48 varer nu — 24 slags × to størrelser.**
+Kortene SMØRREBRØD og HÅNDMADDER lister det SAMME fyld; prisen
+sidder på størrelsen (55 for hel skive, 27 for håndmad). Det er
+"1 mad er 1 mad" gjort to gange: ingen størrelsesvælger, ingen
+fyldliste. Den gamle `Vælg fyld til smørrebrødet` er slukket, og
+rapporten skriver de **fjorten** fyldnavne, der ikke står på et
+trykt kort, så ejeren kan tænde dem igen.
+
+**⚠️ DE 24 NAVNE MÅ IKKE VÆRE ENS I DE TO KATEGORIER, og det er
+ikke smag.** Både `mosede_pris_vaern` og `mosede_udsolgt_vaern`
+slår op på `lower(btrim(navn))` PÅ TVÆRS af kategorier, og begge
+afviser kun, når HVER ENESTE række med det navn er væk. To
+rækker "Flæskesteg med surt" ville betyde:
+
+- melder køkkenet den HELE skive udsolgt, kan gæsten bestille
+  den alligevel — håndmad-rækken holder navnet i live, og der
+  kommer ingen fejl nogen steder
+- og bonen ville sige *"3 × Flæskesteg med surt"* uden at sige
+  hel eller halv. Det er arret fra 31/8 i ny forklædning
+
+Derfor bærer håndmadden suffikset **", håndmad"**. Redundant
+under overskriften HÅNDMADDER — og det er netop dét, der gør den
+utvetydig på en bon. **Prøve 6 spørger værnets EGEN betingelse**
+og læser ikke navnene: den melder den hele skive udsolgt og ser
+efter, om værnet så ville afvise navnet.
+
+**⚠️ OG KODEN SKULLE FØLGE MED TO STEDER — begge tavse:**
+
+- `Butik.smoerrebroed` finder sine kategorier med en regex på
+  NAVNET, og "Håndmadder" indeholder hverken "smørrebrød" eller
+  "fyld". Uden ordet i regexen falder de 24 ud af smørrebrødets
+  lister og **helt væk fra `bestil/`**, som kun viser
+  smørrebrødets kategorier
+- bestillingssidens faste rækkefølge blev bygget af ÉT
+  gruppenavn (`stykkeGruppe`). Med to kategorier stod den ene
+  ikke i rækkefølgen, og dens varer blev aldrig tegnet — de
+  ligger i `liste`, men ingen gruppe henter dem. Den hedder
+  `stykkeGrupper` og er en liste nu
+
+**⚠️ OG SORTERINGEN BEGYNDER PÅ 100 FOR HÅNDMADDERNE, MÅLT PÅ ET
+SKUD.** Forsidens bestilling grupperer efter VARENS sorteringstal
+og ikke efter kategoriens — med 1..24 begge steder afgjorde
+tilfældet rækkefølgen, og en iPhone 13 viste HÅNDMADDER øverst
+med den hele skive under. På `bestil/` betød det ingenting; dér
+kommer rækkefølgen fra kategoriens eget tal. **En regel kan være
+rigtig ét sted og forkert et andet, og det findes kun ved at
+kigge.**
+
+**Målt bagefter med ejerens rigtige menu i øvetilstand:**
+`bestil/` viser to grupper og 52 linjer, `ved-bordet/` hele
+kortet med 243 linjer i 19 grupper, forsiden Smørrebrød før
+Håndmadder — ingen JS-fejl nogen af stederne.
+
+**⚠️ EN TING TIL EJEREN:** cateringens kategorier (Sliders,
+Pindemad, Platter, Tapasfad, Tilkøb ud af huset) har priser nu og
+kan derfor åbnes for bestilling — men de har mindsteantal på
+10 personer. De skal **ikke** sættes til bestilling ved lugen
+eller ved bordet; dér ville en gæst kunne købe én slider til 40.
+
+**Overblik er bygget om efter kundens egen skærm** (1/9).
+Kundens ord med to skærmbilleder: *"det her er stadig ik godt
+nok og det gælder de fleste tabs, telefon nummer besitlling
+emojis skrift alt er ik som spiis og det skal det være"*, og
+derefter *"præcis sådan her på telefonen okay ik stor før det
+nærmest er identisk men med anderledes farver"* og *"og sådan
+her neden under"*. **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER TO SKÆRMBILLEDER, IKKE KODE.** Der er hverken
+læst i eller kopieret fra spiis' repo. Formen er billedets,
+farverne er havnens — samme fremgangsmåde som personalesidens
+skabelon 24/8 og bestillingskortet 31/8.
+
+- **Rækken er et KORT med kant**, og tiden står uden for det som
+  aksen: **"kl." over "16.00"**, så en travl dag kan skimmes ned
+  ad venstre kant uden at læse kortene. Kanten er rød for lugen,
+  blå for en bordbooking og grøn, når maden er ud ad døren
+- **⚠️ ÉN VARE PR. LINJE MED ET PUNKT FORAN.** Før stod maden
+  som én sætning: *"1 × Flæskestegssandwich · 1 × Bøfsandwich ·
+  1 × Cheeseburger"*. Den skal LÆSES for at tælles, og køkkenet
+  skimmer. Antallet er sit eget element (`.vagt-antal`) i
+  mærkefarven
+- **Emballagen har sin egen kasse**, ikke en varelinje — samme
+  regel og samme klasse som bestillingskortet fik samme dag. Et
+  tillæg er penge, ikke arbejde
+- **Telefonen er et LINK på rækken.** Kunden nævnte den først af
+  alt: en kontaktvej, man skal læse op af én skærm og taste ind
+  i en anden, er en, ingen bruger
+- **⚠️ NAVNET FÅR STORE FORBOGSTAVER** (`Admin.pæntNavn`).
+  Gæsten skriver "lone hansen" i sin telefon, og personalet råber
+  det ud over en kø. Det er ikke pynt — det er dét, der gør
+  linjen til et navn
+- **⚠️ TIDSAKSEN BYGGES ÉT STED** (`tidsAkse()`). Den færdige
+  række skrev sin egen — ren tekst uden "kl." — og **målt på et
+  skud** stod "12.00" under et "kl. 17.30" i den samme liste. To
+  udgaver af den samme akse, og den ene så ud som en eftertanke
+
+**⚠️ OG `grid-row: 1 / -1` GJORDE RÆKKEN HØJERE END DEN FEJL,
+DEN SKULLE RETTE.** Knapkolonnen skal spænde over hele kortet.
+Men grid'et har ingen EKSPLICITTE rækker — de skabes af
+indholdet — og så peger `-1` på den samme linje som `1`.
+Knappen lå altså i **række ét alene** og gjorde den 82 px høj.
+**Målt på 1280 px: hele rækken blev 179 px** mod arret fra 30/8
+på 166. `1 / span 50` dækker de rækker, der FINDES; de tomme
+fylder nul. Prøvens loft er hævet fra 130 til 150 (kortet har
+kant og luft nu — 30 px, den flade række ikke havde) og er set
+fejle med `1 / -1`: **178,6 px**.
+
+**⚠️ OG SAMME VÆGT I OG UDEN FOR EN @media AFGØRES AF
+RÆKKEFØLGEN.** `body.personale .vagt-handling` stod BÅDE inde i
+`@media (min-width: 900px)` og under den — begge 0,2,1 — så
+telefonens `margin-top: 10px` og `gap: 10px` vandt også på en
+iPad. Telefonens blok står før bruddet nu, med en note om
+hvorfor. Husets egen regel: **mål den beregnede stil.**
+
+**To ruder under forløbet** (kundens andet billede):
+
+- **🍲 Dagens ret i dag** med rettens navn, prisen og *"2/30
+  solgt"*. **⚠️ Loftet REGNES af `antal_tilbage + solgt`** og
+  skrives ikke af fra ejerens `antal`: det felt er dagens
+  oprindelige tal og følger ikke med, når nogen retter. Og
+  **ingen pris er ikke 0 kr.** — der står "Pris følger", husets
+  regel siden 26/8
+- **📅 Bookinger** med en rød stribe, *"⏳ 1 venter på svar –
+  ring og få dem på plads →"*. **⚠️ Striben findes KUN, når der
+  er noget.** En fast boks, der som regel siger "alt er fint",
+  bliver til udsmykning på en uge — og så ses den heller ikke den
+  dag, den siger noget. Samme regel som baglokalets ⚠️-kort 28/8
+- **⚠️ BEGGE KORT RETTER INGENTING.** De er ruder ind i en anden
+  fane, og knappen fører derhen. Samme regel som kalenderens
+  dagspanel fik 24/8: to steder at ændre den samme ting er to
+  steder, der kan skride fra hinanden
+
+**⚠️ OG EN KNAP I `.kort-hoved` ER IKKE EN `.kort-note`.**
+Forlægget har "Redigér ugeplan →" oppe ved overskriften, og de to
+nye kort fik den — men husets regel fra 26/8 siger, at hvert
+korthoved bærer sin KONSEKVENS: hvad kortet styrer ude på siden.
+`admin-design.spec.js` fældede det. Begge kort har noten nu, og
+knappen er `.lille`.
+
+**⚠️ OTTE PRØVER VAR FORÆLDEDE MOD ÆNDRINGER, VI SELV TRAF**, og
+de er repointet MED noter, ikke gemt væk: `.vagt-tid` rummer
+"kl." nu (de læser `.vagt-tid-tal`), Gendan og "Bestillinger →"
+er husets `.knap` bag "···" (de går gennem `aabnMere()`, som
+`admin.spec` og `logbog.spec` fik 31/8), og 900 px-prøven måler
+mod VARELINJERNE, fordi handlingen ligger inde i kortet nu — to
+uafhængige elementer stadig. Fjorten nye prøver, alle fjorten set
+fejle.
+
+**1 mad er 1 mad — og admin opdaterer sig selv** (31/8).
+Kundens to beskeder samme aften. **✅ `bord-uden-telefon.sql` ER
+KØRT**, og `proev-bord-uden-telefon.sql` skrev **8 × BESTOD i
+produktionen** (2/9) — efter tre fald, der alle skyldtes, at
+prøven lånte ejerens dag, vare og borde.
+
+**⚠️ MEN `vare-billede.sql` VAR IKKE KØRT, og linjen her sagde, at
+den var** (rettet 3/9). **MÅLT i produktionen** med anon-nøglen:
+`menu_varer?select=billede` svarer **42703 — kolonnen findes
+ikke**. Fluebenet til at lægge et foto på en vare kan altså ikke
+virke, uanset hvad admin gør.
+
+Det er husets ældste ar én gang til: *en note er ikke et tjek.*
+Tre filer blev afleveret i samme åndedrag, og linjen satte ✅ på
+alle tre, fordi ÉN af dem var bekræftet. **Skriv aldrig ✅ på en
+fil, du ikke har set en BESTOD-linje eller en måling for.**
+
+- **Størrelsesmodellen og ønskefyldet er VÆK.** Kundens ord:
+  *"alle smørbrødene sælges som de er, ikke noget med valg af
+  brød og derefter pålæg — nej, 1 mad er som 1 mad, og de skal
+  allesammen kunne vælges i smørbrød ud af huset, normale
+  bestillinger og QR-kode-bestillinger."* `Butik.udvalg` har ÉN
+  liste nu; `'skiver'` og `'uden-fyld'` er blevet det samme som
+  `'kun-smoer'`. Et stykke uden pris er ikke et ønske — det er en
+  vare med "Ring og hør prisen", husets regel for alle andre
+  siden 26/8. **Fordi reglen bor ét sted, var ændringen tre
+  linjer og ikke tre formularer.** Tre prøver er VENDT med noter
+  (ønskefolden, kæden i køkkenet)
+- **⚠️ DEN DYRESTE MÅLING: KURVBJÆLKEN LÅ MIDT PÅ SKÆRMEN.**
+  Kundens ord: *"den flyder bare lidt midt i det hele og er i
+  vejen."* **Målt på en iPhone 13 (390×664) med to varer i
+  kurven: 522-588 px nede**, altså hen over den række, gæsten
+  lige havde trykket på. Årsagen var
+  `bottom: calc(76px + safe-area)` med noten *"over bådstriben
+  på 66 px"* — **og bådstriben findes ikke i nogen fil mere.**
+  En regel, der er plads til et element, ingen har slettet
+  reglen for. Den er i bunden nu, i liquid glass, og
+  sikkerhedsafstanden er telefonens egen `env()` og ikke et tal,
+  vi har skrevet af
+- **⚠️ OG SPECIFICITETEN VANDT OVER MIG.** "Videre" fik en rød
+  gradient, som ikke slog igennem: `body:not(.personale)
+  button.kurv-videre` (0,2,2) står længere oppe i arket og slog
+  min `.kurv-videre` (0,2,1). **Målt på `background-image:
+  none`**, mens `color` gik igennem — knappen var hvid tekst på
+  ingenting. Husets egen regel: mål den BEREGNEDE stil
+- **⚠️ "ÅBEN" ER IKKE "BÆRER".** `js/admin/live.js` sagde
+  *"forbindelse åben"*, i det sekund websocketen svarede, og
+  læste ALDRIG svaret på sin egen tilmelding. Blev den afvist
+  (realtime.sql ikke kørt, token, tjenesten slået fra), stod
+  skærmen stille, mens konsollen sagde, alt var godt — og det er
+  præcis det, kunden mødte: *"det registreres ikke inde i admin,
+  jeg skal refreshe."* `phx_reply` læses nu, `Admin.liveOppe()`
+  ved besked, live-mærket bliver gult og siger det, og takten er
+  **8 sekunder uden live, 30 med** i stedet for ét minut. Et
+  faneskift henter altid
+- **Køkken-kø har ÉN knap: ✓ Færdig.** *"ik noget med start
+  tilberedning, bare en done eller færdig knap og ik mere end
+  det."* Mellemtrinnene ligger bag "···" — køkkenet vil gerne
+  kunne markere "den er i gang", så to kokke ikke laver den
+  samme ret. **Samme knapper og klasser som bestillingskortet**
+  (`.knap.gron`, `.knap-mere`, `.bestil-mere`): to skærme, ét
+  sprog. Databasens ord er urørte — salgstallene tæller på dem
+- **Overblik siger, hvor rækken kommer fra** (🥡 Online
+  bestilling / 📅 Bordbooking) med en farvet stribe i kanten.
+  **Mærkatet bærer ordet; farven er kun hjælpen** — en farvet
+  kant alene er ubrugelig for den, der ikke ser forskel på dem
+- **Telefonen er FRIVILLIG ved bordet.** *"bare navn er ok, fordi
+  de sidder der, og admin kan jo se hvilket bord."* Kravet
+  forsvinder ikke, det **flytter**: uden et bordnummer er
+  opkaldet den eneste vej tilbage, og dér er nummeret stadig
+  påkrævet. Databasen håndhæver netop den forskel
+  (`bestilling_telefon_ok` hænger på `bord_nummer`), og prøven er
+  set fejle begge veje
+- **Bekræft-knappen bærer beløbet** ("Send bestilling · 178,-")
+  og husets glans. **"I alt" står kun ved mere end én priset
+  linje** — ét stykke gav det samme tal to gange under hinanden.
+  Og kurvbjælken forsvinder, mens kigget er fremme: to veje
+  videre på den samme bestilling er én for meget
+- **Hver vare kan få et billede** (`menu_varer.billede`, samme
+  storage-spand som nyhederne — en ny spand er fire
+  adgangsregler, ejeren skal oprette i hånden). **Flisen på
+  rækken ER knappen**, 44 px, og den gemmer med det samme som
+  udsolgt-knappen. **⚠️ INGEN PLADSHOLDER:** en vare uden foto
+  ser ud som i dag. **⚠️ OG BILLEDET SENDES KUN, NÅR NOGEN HAR
+  RØRT DET** — samme lov som `vis_fra` og bordets nøgle
+- **⚠️ OG DEN PRØVE MÅLTE FØRST INGENTING.** "Et gem af PRISEN
+  rører ikke billedet" bestod med fejlen genindført, fordi
+  prisknappen gemmer med `Object.assign({}, v, {pris})` — altså
+  MED databasens eget billede. Faren er `byg()` på rækken, og
+  prøven går den vej nu
+- **⚠️ FIRE PRØVER HOLDT OP MED AT MÅLE, DA SMØRREBRØDSSIDEN
+  BLEV EN FORESPØRGSEL.** Leveringsområdet (ejerens egne felter,
+  aldrig designets opdigtede "150 kr. inden for 10 km") blev
+  skrevet af `js/skal/bestil.js`, som siden ikke længere
+  indlæser. Reglen bor i `Butik.leveringsTekst` nu, og begge
+  sider spørger den
+
+**Skærmen står stille, til noget ændrer sig** (31/8, samme
+runde). Da takten blev sat ned fra ét minut til 8-30 sekunder,
+blev en gammel svaghed pludselig dyr: `tegnForloeb` på Overblik
+kaldte `Admin.tøm()` og byggede HELE listen op igen ved hver
+hentning. Med den nye takt ville skærmen blinke hele dagen, og
+det kort, fingeren var på vej ned mod, ville forsvinde under
+den. Den bruger `Admin.tegnRaekker` nu — samme rettelse som
+Bestillinger-fanen fik 31/8 — og **nye sager lyser op**
+(`.linje-ny`), som i køkken-køen. **Prøven sætter et mærke
+UDEFRA på DOM-knuden** og ser efter, om den overlever en
+hentning; et spørgsmål til koden om dens egen `tegnRaekker`
+ville bestå, også hvis listen blev revet ned.
+
+**⚠️ OG "✓ GEMT" SKREV DEN GAMLE TEKST TILBAGE.** `svarStraks`
+gemte knappens ord ved klikket og satte dem tilbage 1,4 sekund
+senere — men `faerdig()` kører EFTER `genindlæs()`, altså efter
+at fanens tegnere har skiftet ordene. **Målt af en prøve:**
+ejeren trykker "Ingen dagens ret i dag", knappen skal hedde
+"Fortryd" bagefter — og den sagde "Ingen dagens ret i dag" igen.
+Den tekst, der skal tilbage, er den, optegningen har skrevet;
+står der stadig "Gemmer…", er den gamle den rigtige.
+
+**⚠️ SEKS PRØVER FALDT PÅ `.fine`** (31/8). Designet har ikke
+tegnet et fejlfelt, så forespørgselsmotoren låner den lille linje
+under knappen. Da tilbud-kortet kom ind i panelet, var der TO
+`.fine`, og prøverne røg på *"strict mode violation: resolved to
+2 elements"*. Koden mærker nu sit eget element med
+`data-fejllinje`, og prøverne peger på DET — i stedet for at både
+kode og prøve gætter på en klasse, designet bruger til flere
+ting.
+
+**Hele personalesiden er gået igennem — som en PRØVE** (31/8).
+Kundens ord: *"alle tabs alle faner gå dem personligt igennem,
+ikke stop før."* Det gjorde jeg — men et menneskes øjne ser én
+fane ad gangen, og der er seksten.
+`tests/admin-gennemgang.spec.js` åbner HVER fane på en telefon
+og leder efter en JS-fejl, sidelæns rulning, noget der stikker ud
+over en klippende forælder, og trykflader under 30 px.
+**Fanelisten læses af opmærkningen**, så en ny fane ikke kan
+slippe forbi — samme regel som gæstesidens gennemgang.
+
+**⚠️ OG DEN MÅLER MED ARBEJDE PÅ FANERNE.** Første udgave kørte
+på grunddata: en tom fane har ingen kort, ingen knapper og intet
+at stikke ud over noget — den ville bestå på ingenting. Med
+bestillinger, et bord, en booking og en forespørgsel fandt den
+**to ting med det samme:** et link på 16 px midt i en
+hjælpelinje på Baglokalet, og notefoldens `📝 Skriv en note` på
+**28 px** — dét, personalet trykker på hver gang de skriver på en
+bestilling.
+
+**⚠️ TRE PRØVER SAGDE HVER SIT OM UDSOLGT** (31/8). *"Udsolgt
+vises, ikke skjules"* (`spiis-laere`) mod *"en udsolgt vare står
+IKKE på listen ved bordet"* (`bord-loft`) og *"en udsolgt vare
+kan ikke bestilles fra bordet"* (`ved-bordet`), som begge krævede,
+at rækken forsvandt helt.
+
+De to sidste bestod på et **hul** i `js/bestilling.js`: et gard
+skjulte den udsolgte, hvis dens læsegruppe ikke havde noget
+bestilbart. Gardet var overflødigt — `s.udsolgt` kommer fra
+`Butik.udvalg` og er allerede filtreret til sidens eget udvalg —
+og det blev synligt, da ønskefyldet forsvandt. Nu måler alle tre
+det samme: rækken **står** i listen, gennemstreget, **uden
+plusknap**. *"Kan ikke bestilles" er ikke det samme som "er
+væk".*
+
+**Fanens ikon er kransen nu — det blev glemt TO gange** (29/8).
+Kundens ord: *"hvorfor er logoet ikke opdateret på siden som jeg
+bad dig om 2 gange."* Kransen kom på alle sider (nedenfor), men
+`favicon.svg` blev stående som det GAMLE mærke — båden i
+marineblå — og **de ni nye sider havde slet ingen favicon**:
+forsiden viste browserens blanke ark, mens de gamle sider viste
+båden. **Ingen SQL.**
+
+- `favicon.svg` er kransens eget mærke nu (isen og de to bægre) i
+  logoets røde `#d62a3a` — tykkere streger end kransens, for 4,6
+  px i et 300-net er en kvart pixel på en browserfane
+- **Alle sider har linket** — også admin (søjlen har ankeret, men
+  browserfanen er forretningens), `ved-bordet/` og printsiden
+- **PWA-ikonerne** (`ikoner/ikon-192/512.png`) er tegnet om fra
+  den nye favicon — de var også båden, og de er det, der står på
+  telefonens hjemmeskærm, når admin lægges som app
+- ⚠️ To prøver: hver udgivet side har linket (listen læses af
+  MAPPEN), og filen indeholder logoets røde og INGEN af bådens
+  farver. Prøven fældede først sin egen dokumentation: kommentaren
+  i SVG'en nævnte de gamle hex-koder
+
+**Logoet er hovedversionen nu — og topbjælken fik den lille**
+(3/9). Mikkel afleverede den opdaterede hovedversion sammen med sin
+nye intro-animation. **Ingen SQL.**
+
+**⚠️ GEOMETRIEN ER HANS, IKKE TEGNET EFTER ET SKUD.** Jeg var ved at
+trace mærkerne i siden af et skærmbillede og læste dem som **π** —
+de er **et J og dets spejlbillede**, hvilket først stod klart, da
+intro-filen kom. En krans, der er en smule forkert, ser rigtig ud;
+det er den samme lære som QR-koderne fik 23/8. **Bed om vektoren,
+før du tegner et logo efter et billede.**
+
+Tre ting skiftede: **bægrene med pommes** og **bølgen** er ude,
+**JI-mærkerne** og **EST. 2025** er inde. Alt andet — ringene,
+ringteksten, isen, keglen — er uændret.
+
+- **15 kranse i 13 filer**, plus favicon og de to PWA-ikoner.
+  **⚠️ Ikonerne tegnes AF `favicon.svg`** (`vaerktoej/`-scriptet i
+  runden), så de tre flader ikke kan skride fra hinanden — arret fra
+  29/8, hvor kransen kom på siderne, men favicon og app-ikon blev
+  det gamle mærke
+- **EST. 2025 er logoets egen blå** (`#2a5f8f`, inderringens). Hele
+  den marineblå familie er ellers forbudt i stilarkene siden 29/8;
+  her hører den til, for et logo skifter ikke farve med et tema
+- **⚠️ FAVICON OG APP-IKON HAR IKKE EST. 2025**, af samme grund som
+  de ikke har ringteksten: ni tegn i bunden af et ikon på 16 px er
+  en grå udtværing
+
+**⚠️ OG TOPBJÆLKENS KRANS VAR ULÆSELIG — MÅLT, IKKE SET.** Briefen
+siger *"under ca. 60 px bliver ringteksten ulæselig — brug altid
+den lille variant der"*, og målingen gav ham ret: **de tolv kranse
+i topbjælkerne stod på 28-50 px**, hvor "MOSEDE HAVNECAFE" var en
+grå ring hele vejen rundt. De er den **lille variant** nu (kun rød
+ring og is, tykkere streger, ingen tekst, ingen J'er). Heroens
+(108-140 px), introens og skiltets (80 px på papir) er den fulde.
+
+- **⚠️ ORDMÆRKET VED SIDEN AF ER IKKE BYGGET.** Briefens egen
+  topbjælke har `.mini` PLUS "Mosede Havnecafe" som HTML-tekst.
+  Vores topbjælker har aldrig haft et ordmærke, og at lægge et til
+  på tolv sider er en layoutændring, ejeren ikke har bedt om.
+  Navnet står i `aria-label` og i sidens titel. **Spørg, før du
+  bygger det**
+- **⚠️ OG PRØVEN TÆLLER BEGGE VARIANTER.** Mappeprøven ledte efter
+  `class="crest"` og fandt 2 i stedet for 12, i det sekund den lille
+  variant kom ind — det så ud, som om mærket var røget af ti sider.
+  Den matcher `class="crest` nu
+- **⚠️ OG DEN FULDE SKAL STADIG FINDES.** Ellers kunne man "bestå"
+  størrelsesreglen ved at gøre hver eneste krans lille, og så stod
+  navnet ingen steder i mærket. Heroens har sin egen prøve med
+  ringtekst, EST. 2025 og de to farver målt
+
+**⚠️ TO PRØVER ER VENDT MED NOTER** — det er kundens beslutning om
+sit eget logo, ikke forældede prøver: favicon-prøven krævede
+**bølgen** som kending, og mappeprøven kendte kun den fulde krans.
+Reglen, de vogter, er den samme og den vigtigste: at ikonet er
+LOGOET og ikke en forenklet efterligning. Det er bare J'et og ikke
+bølgen, der er kendingen nu — og bølgen og bægrene er **forbudt**
+begge steder, så den gamle krans ikke kan snige sig tilbage.
+
+Fire falsifikationer, fire fald: den fulde krans sat tilbage i en
+topbjælke, bølgen lagt i favicon, J-mærkerne fjernet fra favicon,
+og heroens krans gjort 40 px.
+
+**⚠️ OG EN ANDEN MAPPEVAGT VÆLTEDE — 24 PRØVER, FUNDET AF DEN FULDE
+RUNDE OG IKKE AF FILERNE, JEG RØRTE.** `bordkort.spec.js` har sin
+egen *"Mærket står på alle sider"*, og den krævede, at den FØRSTE
+krans på siden **indeholder** "MOSEDE HAVNECAFE" — altså præcis
+det, topbjælkens krans ikke må. Én prøve × tolv sider × to profiler.
+
+Den er vendt med en note: reglen er kundens egen fra 29/8 — mærket
+skal være på hver side — og navnet er der stadig i `aria-label`,
+som en skærmlæser læser op. Ringteksten har sin egen prøve på
+heroens krans. **Set fejle to gange:** mærket taget helt af siden,
+og `aria-label` ændret til "Logo".
+
+**⚠️ OG SYV AF DENS TOLV SIDER ER VEJVISERE SIDEN 30/8.** De
+omdirigerer, så prøven har målt MÅLSIDEN og ikke den, den hedder —
+det samme sted flere gange. Det er arret fra 30/8 (*"seks
+prøvefiler holdt op med at måle noget"*) i en fil, ingen kiggede i.
+De bliver stående med en note: her er de en kontrol af, at en gæst,
+der lander på en gammel adresse, ender et sted med mærket.
+
+**Læren er den samme som 30/8: kør HELE runden.** De to filer, jeg
+rørte, var grønne; den tredje vagt lå et sted, jeg ikke vidste
+fandtes.
+
+**✅ INTRO-ANIMATIONEN ER BYGGET IND** — og linjen her sagde det
+modsatte i et døgn (rettet 3/9). **Målt, ikke læst:**
+`js/intro-boelge.js` linje 71 er byte for byte den samme
+`const P={fall:620,…}` som Mikkels egen fil, opmærkningen i
+`index.html` er bundtets (`#water`, `#fx`, `.clipe`, `#film`,
+`#sheen`), `#replay` findes ikke, og `tests/intro-boelge.spec.js`
+har ti prøver.
+
+Det er husets ældste ar én gang til: **en note er ikke et tjek.**
+Samme dag stod der ✅ på `vare-billede.sql`, som aldrig var kørt.
+Skriv aldrig en status ned uden en måling eller en BESTOD-linje.
+
+**⚠️ ÉN TING AFVIGER FRA BRIEFEN MED VILJE, OG DET ER KUNDENS
+EGEN BESLUTNING.** Briefens punkt 1 vil have et
+`sessionStorage`-flag, så introen kun kører ved FØRSTE besøg.
+Den kører ved **hvert** besøg: Mikkel sagde 27/8 *"hver gang man
+kommer ind på hjemmesiden"*, og det er tredje gang, han beder om
+netop det. Kundens ord vinder over bundtets — og prøven vogter
+det, så ingen "retter" det tilbage.
+
+To ting er lagt til oven på briefen, begge uden at røre
+animationen: **Escape** lukker også (klik-hvor-som-helst er
+bevaret, men det er hverken synligt eller noget, et tastatur kan
+nå), og **et direkte link med `#anker` springer introen helt
+over** — en animation, der dækker netop det sted, gæsten bad om
+at komme til, er en fejl, uanset hvor kort den er.
+
+**Mærket står på alle sider nu** (29/8). Kundens ord: *"vi
+aldrig fik logo tingen live med det nye logo der alle steder."*
+**Ingen SQL.**
+
+**Målt:** den ovale krans lå på de NI sider fra designbundtet,
+mens de otte ældre — `bestil/`, `menu.html`, `bord/`,
+`selskaber/`, `nyheder/`, `arrangementer/`, `baglokale/`,
+`catering/`, `smoerrebroed-ud-af-huset/` — stod med "MOSEDE
+HAVNECAFE" som ren tekst. To mærker på det samme hus, og gæsten
+går mellem dem i ét klik. Skiltet på bordet bærer det også nu.
+
+**⚠️ FARVEN ER LOGOETS, IKKE SIDENS.** Kransen bruger
+`var(--red)` på de nye sider, men i `css/style.css` er `--red`
+**#d1462f** og ikke designets **#d62a3a** — så ringteksten ville
+få én rød og stregerne en anden i det SAMME mærke. Et logo
+skifter ikke farve med et tema; tallet står fast i
+`.crest .ct`.
+
+**Admin beholder ankeret.** Kransen er hvid indeni og tegnet til
+et foto eller en lys bjælke; på personalesidens mørke søjle ville
+den være en hvid klat. Mærket dér er navnet plus ⚓ og siger
+"personale", hvilket er hele pointen.
+
+**Mærket er den RUNDE krans fra intro-animationen nu — overalt**
+(29/8). Kundens ord: logoet *"skal skiftes til dette som afspiles
+i before landing animations videoen"*. Ovalen med undertitlen
+"OG ISHUS · MOSEDE HAVN" er væk fra alle 19 steder — topbjælker,
+hero-badge, de otte ældre sider og printsidens skilte. Den runde
+(300-net, blå inderring `#2a5f8f` og bølge) er en 1:1-kopi af
+introens egen SVG i `index.html`; kun textPath-id'et er sidens
+eget, så to skilte aldrig deler defs. **Ingen SQL.**
+
+- **⚠️ Bredderne er sat efter HØJDEN, ikke bredden.** Den runde er
+  kvadratisk, hvor ovalen var 200×140. Beholdes bredden, vokser
+  mærket 43 % i højden — og topbjælken med, og menukortets
+  hop-bånd klæber på topbjælkens MÅLTE højde. Alle bredder er
+  derfor gammel bredde × 0,7. **Målt efter: topbjælken på
+  `m-menukort.html` er stadig 109 px, når den fryser til**
+- `.crest .ct` er 18,5 px/.19em i alle tre stilark (introens egne
+  tal), og `.crest .cs` findes ikke længere — den runde har ingen
+  undertitel
+- Favicon og PWA-ikonerne var allerede tegnet fra den runde
+  (afsnittet ovenfor) og er ikke rørt. Admin beholder ankeret
+- En prøve i `tests/kontakt-post.spec.js` læser MAPPEN: hver
+  krans skal være den runde, ovalen og undertitlen må aldrig
+  komme igen, og der skal være mindst 19. Set fejle
+
+**ÉT HUS, ÉN SKRIFT, ÉN RØD** (29/8). Kundens bøn: gå hele
+hjemmesiden igennem, hold den op mod spiis.dk's overskuelighed og
+ret layout, skrift og tegn — uden at røre indholdet eller
+mulighederne. Målt på skærmbilleder af alle 19 gæstesider: kløften
+var ikke i de enkelte sider, men MELLEM dem. De ni gamle sider +
+`ved-bordet/` stod i Bebas-versaler og den GAMLE orange-røde
+`#d1462f`, mens designsiderne står i Instrument Serif og logoets
+`#d62a3a` — og gæsten går mellem de to verdener i ét klik.
+**Ingen SQL.**
+
+- **`--display` i `css/style.css` er Instrument Serif nu.** HTML'en
+  stod hele tiden i blandede bogstaver — Bebas TEGNEDE dem bare
+  som versaler, så intet indhold er rørt. Linjehøjden fulgte med
+  (.88 → 1.04): Bebas' .88 klipper en serifs over- og
+  underlængder — det er admin-afsnittets egen lære. Skriftfilen
+  lå allerede lokalt i `fonts/`. `.logo`-sperringen faldt fra
+  .15em (Bebas' tal) til .04em
+- **Hele den røde familie skiftede til logoets:** `--red #d62a3a`,
+  `--red-tekst #b6202f`, `--red-dyb #9e1b28` — begge tekst-røde
+  MØRKERE end før, så hvert kontrasttal steg (målt: 4,94 hvid på
+  knap; 5,16/5,73 lille tekst; 5,98 på den lyserøde flade).
+  Knappernes gradienter står i samme familie med designets mørke
+  stop `#c11f2f` i bunden
+- **Bebas' @font-face BLIVER:** admins vagtskærm (`.vagt-tid`)
+  bruger den stadig
+- **De fire kort på `bestil/` ("Så tager vi den i telefonen") har
+  tegnfliser nu** — forsidens egen 44 px-flise (`.row-card .ic`),
+  samme streg-ikoner, så gæsten genkender ærindet fra side til
+  side. Det var det eneste sted i bestillingsflowet uden et tegn
+  at scanne efter
+- **OG DET BLÅ RØG HELT UD, samme dag.** Kundens ord, da han så
+  skærmbillederne: *"ved ikke lige hvor du har de blå ting fra —
+  hele hjemmesiden har det ternede og rød/hvide tema."* Målt på
+  den UDGIVNE side: `--sea` var stadig marineblå `#0f2c44` i
+  `css/style.css`, og ti undersider stod med blå heroer, footere
+  og theme-color. Hele den blå familie er byttet til designets
+  varme: `--sea #241a17` (admins egen blæk), `--sea2/--sea3` i
+  samme familie, sand/sand2 er designets creme `#fdf7ef/#f7ede1`,
+  `--muted` er admins varme `#6f5b55`, og alle `rgba(15,44,68,…)`
+  (skygger, hårstreger) blev `rgba(36,26,23,…)`. Kontrasten er
+  regnet efter på de nye grunde: 5,50–17,0, alt over kravet.
+  Printsidens skilte og QR-kodernes mørke fulgte med
+  (`js/qr.js`-standarden er `#241a17` nu), og ti siders
+  `theme-color` skiftede fra marineblå til creme. **Kransens blå
+  ring (`#2a5f8f`) er logoets og bliver** — et logo skifter ikke
+  farve med et tema. Admins SEMANTISKE statusfarver (grøn/blå på
+  mærkerne) er heller ikke rørt
+- **En prøve vogter BEGGE familier:** den gamle orange-røde
+  (`#d1462f`, `#bb3a25`, `#a8321f`, `rgba(209,70,47,…)`) OG
+  marineblå (`#0f2c44`, `#1a4763`, `#2c6180`, `#4e6985`,
+  `#526e8b`, `rgba(15,44,68,…)`) må aldrig komme tilbage i den
+  VIRKSOMME CSS — kommentarer klippes af før målingen, for
+  favicon-prøven har allerede én gang fældet sin egen
+  dokumentation. Set fejle
+- **⚠️ spiis.dk kan ikke nås fra det her miljø** — udgangsproxyen
+  afviser domænet (både browser og WebFetch). Gennemgangen er
+  målt mod spiis-principperne, som allerede står i README/CLAUDE
+  fra kundens egne skærmbilleder. Skal der kigges live, skal
+  domænet åbnes i miljøets netværkspolitik på claude.ai/code
+- **Efterset på skærmbilleder bagefter:** alle ti gamle sider på
+  telefonbredde og fire på 1440 — serif-clampene (op til 104 px)
+  holder, admin er urørt (egne overrides), og topbjælkens højde
+  skred ikke
+
+**Stemningsgalleriet i selskabsafsnittet** (29/8). Kundens egen
+bestilling med seks fotos fra havnen og spiis som forlæg: *"prop
+dem her hvor de sådan flasher stille og roligt imellem hinanden
+nede ved lad os holde jeres næste selskab."* Tre fliser i
+`.gal`-skelettet (det store billedes format sætter højden — læren
+fra hullet på 212 px), og hver flise blænder ROLIGT mellem sine to
+fotos, forskudt i tid, så de skifter hver for sig. **Ingen SQL.**
+
+- **⚠️ ADMIN FØRST, SÅ EJERENS EGNE FRA REPOET.** Kundens fotos
+  kunne ikke følge med chatten som filer, så han lagde SYV op via
+  GitHub ("de er lagt ind nu", commit `506e191` direkte på
+  udgivelsesgrenen) — komprimeret fra 2-3 MB PNG til ~100-200 kB
+  JPEG ad admins egen kanal (canvas), omdøbt til
+  `billeder/stemning-*.jpg`. Ansigterne på jule- og musikfotoene
+  var sløret af kunden selv før upload
+- **⚠️ ÉN PULJE, IKKE PAR** (kundens andet ønske samme aften:
+  *"smoothly skifter billed ... forskellige"*). Alle syv ligger i
+  én pulje (`data-filer` på galleriet), og fliserne skiftes til
+  at blænde over til puljens næste — én ad gangen hvert ~4,6
+  sekund, aldrig det samme foto to steder på skærmen, og det
+  gamle foto står, til det nye er HENTET og oppe (ingen huller).
+  Skiftet er en CSS-overgang styret af `.vis`, ikke keyframes;
+  reduced motion slår både overgang og rotation fra.
+  **Admin-fotos (`foto_stemning_1`–`6`) lægger sig FORREST i
+  puljen** og ruller med — ét nyt foto tømmer ikke galleriet.
+  Uden noget som helst findes galleriet ikke (`style.display`,
+  som `.music`). **⚠️ Alt-teksterne bor i `forside.js` SAMMEN med
+  rotationen:** teksten skal følge FOTOET, ikke flisen, når
+  fotoene vandrer
+- **⚠️ Fartprøven er skrevet om MED reglen i behold:** intet
+  foto hentes FØR gæsten ruller, og efter fuldt rul må der komme
+  præcis galleriets seks — `loading="lazy"` er stadig det ene
+  ord, alt hænger på. Set fejle med `eager`
+- **⚠️ KUN DET FORRESTE BILLEDE ANIMERER** (`.stem-a`). To
+  modsatrettede animationer kunne lande med begge på nul og vise
+  fladen bagved som et glimt. En flise med kun ét foto får slet
+  ingen animation (klassen `.to` sættes af koblingen): et billede,
+  der blænder over i sig selv, ser ud som et blink.
+  `prefers-reduced-motion` slukker det hele — forreste står
+- **Fartprøven består uændret:** admin-fotos er lagerets adresser,
+  ikke `/billeder/`, og prøvernes egne fotos er data-URI'er.
+  Grunddata har ingen nøgler → galleriet findes ikke i de andre
+  prøver
+- Tre prøver i `tests/skal-forside.spec.js` (blænder/står
+  stille/findes ikke), set fejle med `.to`-tildelingen fjernet
+
+**Dagens ret har sin egen fane i admin** (29/8). Kundens ord med
+spiis' admin som forlæg: dagens ret skal være *"en sektion helt
+for sig selv, som hænger sammen med retterne"*. Ugeplanen og
+hurtigfeltet boede nederst på Forside-fanen, hvor ingen ledte
+efter dem — retten skrives hver morgen og hører til i
+**Dagen-gruppen** (🍲, efter Kalender). **Ingen SQL** — motoren
+(`dagens_retter`, nedtælling, udsolgt-ved-nul) fandtes; det var
+DØREN, der manglede.
+
+- Koden er flyttet 1:1 til `js/admin/dagensret.js` (én fane, én
+  fil); Forside-fanen beholder kuglerne og billederne, og
+  `forside.js`' filhoved siger, hvor resten blev af
+- **⚠️ INTET "I dag"-mærke ved siden af datoen:** `Admin.pænDato`
+  sætter selv "I DAG ·" på dagens dato for hele admin. Første
+  udgave lagde et mærke til, og der stod "I DAG · Lørdag … I dag"
+  — målt på et skud, ikke læst
+- **Gæstesiden var allerede koblet** — menukortets uge og
+  forsidens afsnit læser `dagens_retter` dag for dag, så fanen
+  behøvede ingen ny kobling. Skriv torsdagens ret, og den står på
+  torsdag hos gæsten
+- Prøverne fulgte med (`p-forside` → `p-dagensret` i admin.spec og
+  dagens-retter.spec), og en ny prøve holder fanen og "I DAG" på
+  ugens første dag — set fejle med mærket taget ud
+
+**Havnens tapas er et kort øverst på Menukort-fanen** (29/8).
+Spiis' menukort-fane var forlægget: *"a la sådan her, også med
+tapas ... mere opdelt i fast sortiment."* Sortimentskortet hedder
+**Fast sortiment** nu, og tapaskortet står over det med pris pr.
+person, cavaens pris, "Det får I — én linje pr. punkt" og fadets
+varsel (som slet ikke kunne sættes i admin før). **Ingen SQL.**
+
+- **⚠️ KORTET ER EN RUDE, IKKE ET LAGER.** Fadet og cavaen ER
+  varer i `menu_varer` (kendingen er NAVNET, samme regexer som
+  `js/skal/tapas.js`), og listen er fadets beskrivelse gemt
+  "·"-adskilt, som ejerens liste skrev den. Prøven beviser det
+  ved at læse VAREN i det gemte — ikke en ny nøgle. To steder at
+  rette den samme pris ville skride fra hinanden
+- **Cava-feltet findes kun, når varen findes**, og uden fadet på
+  kortet står vejen til `menukort-ud-af-huset.sql` — samme regler
+  som tapassiden selv
+- **Optegningen rører ikke kortet, mens der skrives i det**
+  (activeElement-gardet) — tegnere kører efter hvert gem, og
+  autogem gemmer 1,2 sekund efter sidste tastetryk. Samme fælde
+  som køreplanens notefelt
+- **Gæstens "Det får I"-liste er ejerens nu:** tapassiden læser
+  fadets beskrivelse og kloner designets eget hjerte-span pr.
+  punkt; uden beskrivelse står designets liste. **⚠️ Fælden,
+  fundet ved at MÅLE:** tapas-filens `find()` søger i
+  BESTILLINGSPANELET som standard, og listen står OVER panelet —
+  med standard-roden fandtes den aldrig, og siden så helt rigtig
+  ud imens (jeg havde endda givet prøvedataene designets egne
+  tal, 199/150, så sumboksen "bekræftede" en kobling, der aldrig
+  kørte). `find('.getlist', document)` er rettelsen
+- Fem nye prøver (menukort-admin + skal-tapas), alle set fejle
+
+**Ledighedskalenderen på selskabs- og baglokalesiden** (29/8).
+Kundens ord: *"en kalender som admin styrer men kunderne kan se
+ift hvis der allerede er booket eller reserveret den dag."*
+Motoren fandtes (visningen `optagne_dage` + databasens værn) —
+gæsten opdagede det bare først, når hun valgte en optaget dato og
+fik nej ved afsendelsen. Nu står et månedsnet over datofeltet på
+`h-baglokale` og `h-selskaber`. **Ingen SQL.**
+
+- **En optaget dag STÅR i nettet, streget** — en dag, der
+  mangler, ligner en fejl i kalenderen, ikke et lokale, der er
+  lejet ud. Klik på en ledig sætter datofeltet (via et rigtigt
+  change-event, så datospærrens lyttere ser det); klik på en
+  optaget gør ingenting, og databasens værn dømmer stadig ved
+  afsendelsen
+- **Admin styrer den derved, at kun AFTALT + LÅST optager** (eller
+  en bekræftet udlejning) — reglen fra fase 2/trin 3 er urørt: en
+  ny forespørgsel spærrer ingenting, ellers kunne én person med
+  et telefonnummer lukke hele efteråret
+- **På selskabssiden skjuler nettet sig ved "ud af huset"** —
+  dér optages ingen dage (`side.optagerDagen`), og en kalender,
+  hvor alt er ledigt, ville bare fylde. Designets segmenter
+  flytter ikke `.on`, så der lyttes på klikket og tegnes efter
+- Højst 18 måneder frem, aldrig bagud — længere ude er svaret
+  alligevel et telefonopkald. To prøver, set fejle med
+  `kalStart()`-kaldet fjernet
+
+**Selskabsforespørgslen blev klogere — og hænger sammen med
+kalenderen** (29/8). Kundens liste, punkt for punkt. **Ingen SQL.**
+
+**På gæstesiden (`h-selskaber`):**
+
+- **Anledning og mad er FRITEKST**, ikke chips: *"man skal kunne
+  skrive i stedet for at have valgmuligheder"* og *"det aftaler I
+  i fremtiden"*. Seks knapper kunne ikke rumme "min mors 80-års,
+  men som frokost", og en gæst, der ikke så sin anledning,
+  trykkede "Andet" — som ikke fortæller personalet noget
+- **⚠️ FIRE DAGES VARSEL** (`varselDage` på siden): *"de kan ikke
+  nå det på 1-3 dage"*. Både datofeltets `min` OG
+  ledighedskalenderen respekterer det, og beskeden siger, hvad
+  man gør i stedet (ring). De andre forespørgsler har intet
+  varsel — et spørgsmål om catering til november er ikke for
+  tidligt
+- **Stedvalget er klogere:** hos jer → *hvor på havnen* (ved I
+  ikke endnu / baglokalet / cafeen / dækket) og *skal dækket
+  med*. Havnen er ikke ét rum. **Felterne findes KUN ved "hos
+  jer"** — spørger vi om lokalevalg til en fest ud af huset,
+  giver vi et løfte om at holde den for dem
+- **Navn, telefon OG mail er påkrævede** og tjekkes. Mailen er
+  et løfte, ikke et felt: siden siger, vi vender tilbage **inden
+  for et døgn**, og en gæst, der ikke tager telefonen, skal kunne
+  nås på skrift
+
+**På personalesiden (Forespørgsler-fanen):**
+
+- **⚠️ FANEN ER SKRUET EFTER SPIIS' BOOKINGER** (kundens andet
+  bud samme aften: *"layoutet og udseendet er grimt og
+  uoverskueligt — lad det ligne resten"*). Tællere øverst
+  (⏳ venter på jer · ✅ på plads · 🎉 i dag; **kun den med et tal
+  råber**), to bunker med hver sit spørgsmål — **Venter på jer**
+  (ældste øverst) og **På plads** — og kort på tre linjer i
+  stedet for en halv skærm. Kontakten er ÉN linje med ikoner:
+  📅 dato · navn · 👥 antal · 📞 nummer · ✉ mail, som man læser
+  den højt i en telefon. **Etiketten "Kontakt" var med i en
+  time og røg ud igen:** rigtigt tænkt, men den gjorde kortet en
+  linje højere, hvilket var netop klagen
+- **⚠️ Overskrifterne er egne RÆKKER** i `Admin.tegnRaekker` med
+  egne nøgler — bygges de som en beholder om kortene, tegnes hele
+  bunken om, hver gang ét kort ændrer sig, og en note, nogen er i
+  gang med at skrive, ryger under fingeren
+- **Trin 2 hedder "📞 Jeg har kontaktet dem", trin 3
+  "✓ Aftal & sæt tid"** (grøn, som i forlægget). Ordet
+  "kontaktet" dækker begge veje — prøven fra 26/8 ("svaret og
+  ikke ringet") er opdateret, for kunden har nu sagt begge dele
+- **⚠️ TRIN-STRIBEN ER VÆK** (kundens tredje bud: *"de to grønne
+  og ene røde ting inde i kortet er ass ... det er stadig ikke
+  nemt at se det hele"*). De tre piller sagde det samme som
+  statusmærket og knappen nedenunder — **tre gange den samme
+  oplysning i tre former**, og øjet skulle læse dem alle for at
+  finde ud af, hvad der manglede. Det, striben KUNNE, som intet
+  andet kan — minde om kalenderen — er ikke fjernet: det er den
+  røde advarsel med felterne. `trinStribe`/`trinFor`/`TRIN3` er
+  slettet som død kode
+- **Kortet har en OVERSKRIFT i stedet**: gæstens egen anledning
+  plus antallet ("Barnedåb · 65 pers."), som forlægget gør det —
+  den ene linje, man skimmer en liste på. Anledningen står derfor
+  ikke i detaljerne igen
+- **⚠️ Ventetiden står KUN, når den er et problem** (fra 1 dag,
+  rød fra 3). Et kort, der altid siger "har ventet 0 dage", er
+  støj — og så ses tallet heller ikke den dag, det er 25
+- **Detaljerne er ÉN linje**, ikke en tabelrække pr. felt: fem
+  rækker skubbede besked og knapper under folden. Reglen fra 23/8
+  står ved magt — hver detalje har stadig sit NAVN foran, så de
+  ikke ligger begravet i gæstens beskedtekst — men formen fulgte
+  ordren. Den tomme note er foldet væk som på bestillingskortene
+- **Knapperne står til HØJRE fra 900 px** (grid), som i
+  forlægget: sagen læses fra venstre, og handlingen ligger, hvor
+  øjet ender. På en telefon falder de under igen — to kolonner
+  ville give en 90 px knapsøjle med ordene brækket over fire
+  linjer
+- **⚠️ ÉN ÅBNING PR. PRØVE.** `hjaelp.js`' `sætDataEngang` skriver
+  kun i localStorage, HVIS den er tom. Åbner en prøve fanen to
+  gange med forskellige data, ser den de FØRSTE data begge gange
+  — og måler noget andet, end den tror. Kostede en runde her
+- **⚠️ AFTALEN SKRIVES I KALENDEREN FRA KORTET.** Kundens ord:
+  *"efter trykket af det komme i deres kalender og vælge hvilken
+  dag og skrive note ... så det ligesom hænger sammen."* Før
+  førte påmindelsen kun HEN til Kalender-fanen, og personalet
+  skulle skrive dag, titel og note af fra skærmen bag sig. Nu
+  står felterne i selve advarslen: dagen er forespørgslens (men
+  kan rettes — aftalen kan lande på en anden dato), titlen er
+  foreslået, og noten er det, gæsten HAR oplyst
+- **⚠️ RÆKKEN ER ALDRIG OFFENTLIG.** Et selskab er som regel en
+  privat fest; en kalenderrække, der lander på hjemmesiden, fordi
+  nogen trykkede "aftalt", ville sætte fru Hansens 80-års
+  fødselsdag på internettet. Prøven vogter netop den linje
+- **⚠️ `Admin.gem` genindlæser OG fanger fejl selv** — et `.catch`
+  efter den kører aldrig, og knappen ville blive låst for evigt
+  den dag skrivningen fejler
+- **⚠️ "sted" og "daekket" stod som RÅ NØGLER på kortet**, i det
+  øjeblik de blev sendt — fundet på et skærmbillede, ikke ved at
+  læse. Samme fejl som frokostens "dage"/"indhold" 24/8:
+  `DETALJE_NAVNE` skal have de nøgler, vi selv sender
+- **⚠️ INGEN "ÅBN KALENDEREN"-KNAP** (*"nej, i admin ikke noget
+  med åben kalenderen"*). En knap, der fører VÆK til en anden
+  fane, er et arbejde, der skal huskes. Prøven fra 26/8 er
+  **vendt**: den vogter nu, at genvejen ikke kommer tilbage, og
+  at felterne står i stedet
+- **⚠️ TO FEJL, DER VÆLTEDE ANDRE FANER — begge fundet ved at
+  MÅLE, ingen af dem ved at læse:**
+  1. `udlejning.js` byggede sin "næste skridt"-linje med
+     `kort.querySelector('.knap-raekke')`, som leder i HELE
+     undertræet. Da kalenderfelterne fik deres egen `.knap-raekke`
+     inde i advarslen, fandt den DEN først, og `insertBefore`
+     kastede. Og fordi alle tegnere kører i den SAMME løkke, tog
+     fejlen **Forespørgsler og Borde med sig ned** — to faner stod
+     tomme med en fejl, der pegede et helt tredje sted hen.
+     `:scope > .knap-raekke` er rettelsen
+  2. `borde.js`' fejlbehandler ryddede `$('borde-liste')` — **det
+     element har aldrig eksisteret** (fanen har `borde-venter`).
+     Fejlbehandleren kastede altså SELV, præcis når den skulle
+     vise en fejl, så personalet så en tom fane uden en linje om
+     hvorfor
+- Ti nye prøver på tværs af de to sider, to af dem set fejle
+  (varslet sat til 0, og rækken gjort offentlig); tre gamle
+  prøver er opdateret eller vendt, hver med en note om hvorfor
+
+**⚠️ BORDBOOKING KUNNE IKKE FINDES** (29/8). Kundens spørgsmål:
+*"hvorhenne booker jeg bord?"* — og han havde ret i at spørge:
+**målt på alle ni designsider var der ikke ét eneste link til
+`bord/`.** Siden har været i luften siden fase 4 og virker; men
+menukortsidens "Book spisning"-knap forsvandt, da siden blev
+skrevet om 24/8, og ingen af de nye sider havde en indgang.
+Kun de GAMLE siders topmenu førte derhen. **Ingen SQL.**
+
+- **Rækken står ØVERST i "Hvad skal vi hjælpe med?"** — at sikre
+  sig en plads er det mest hverdagsagtige af de syv ærinder;
+  resten planlægger man. Samme form og tegnflise som de andre
+- **"Book et bord" i skuffemenuen på alle ni sider**, lige før
+  smørrebrødet, så madbestilling og bordbooking står side om side
+- **⚠️ CLAUDE.md PÅSTOD, AT KNAPPEN VAR DER** i fem dage. Det er
+  den samme slags fejl som "er-vi-klar.sql fanger det": en note
+  om noget, ingen efterprøvede. Linjen er rettet, og en prøve
+  tæller nu indgangene på hver udgivet side — så en side uden en
+  vej til bordbooking falder, og listen læses af MAPPEN
+- **⚠️ De to ting er IKKE det samme, og det er med vilje:**
+  bordbooking er en PLADS (`bord/`, to timers varsel, sidste tid
+  en halv time før luk), "spis her" i madbestillingen er MADEN
+  (hentes ved lugen, anrettet til at spise på stedet). Koblede vi
+  dem, ville hver is-med-guf spærre et bord, der står frit to
+  minutter efter — og dagens billede på Borde-fanen ville lyve.
+  QR-koden er den tredje vej: den er for dem, der ALLEREDE
+  sidder ved bordet
+
+**⚠️ DEN SAMME GÆST TO STEDER** (29/8). Kundens spørgsmål: Lone
+bestiller to burgere til kl. 14 på hjemmesiden — den står i
+Bestillinger, personalet ser den. Så kommer hun ned, får et bord,
+scanner QR-koden og bestiller dér. Nu ligger hun BÅDE i
+Bestillinger og i Køkken-køen. *"Hvad gør man der, og er det
+personalet eller systemet?"* **Ingen SQL.**
+
+**Svaret er begge dele, og systemet har den lette halvdel.**
+Systemet kan ikke VIDE, om de to er den samme mad bestilt to
+gange (hun var i tvivl, om den første gik igennem) eller to
+runder (frokost nu, is bagefter). At slå dem sammen ville slette
+en rigtig bestilling; at afvise den anden ville spærre for et
+bord, der bare vil have mere. **Så systemet peger, og mennesket
+dømmer** — samme beslutning som "2 vil have lørdag den 12." på
+Baglokalet.
+
+`Admin.sammeGaest` finder andre ÅBNE bestillinger fra det samme
+nummer den samme dag, og begge skærme siger det: lugekortet
+skriver *"Samme nummer har også bestilt fra bord 7"*, og
+køkkenkortet *"Samme nummer har også en bestilling ved lugen kl.
+14.00"*.
+
+**⚠️ NUMMERET SAMMENLIGNES PÅ CIFRENE.** "+45 20 30 40 50" og
+"20304050" er den samme telefon, og en sammenligning på teksten
+ville aldrig finde noget. De sidste otte cifre er nøglen.
+
+**⚠️ OG KUN DET ÅBNE TÆLLER.** En serveret eller afhentet
+bestilling er ikke en dublet — den er mad, gæsten har fået. Stod
+advarslen der, ville hvert eneste gengangerbord få den, og så
+læses den ikke den dag, den betyder noget.
+
+**Bestillingskortet er blevet tydeligere** (29/8). Kundens ord:
+*"det er utydeligt hvad for noget mad der er bestilt hvor mange
+hvornår."* **Ingen SQL.**
+
+- **Antallet er tallet, man ser først** (19 px, egen kolonne).
+  Det stod i samme størrelse som varenavnet, og prisen i den
+  modsatte kant — på en bred skærm er der 500 px imellem, så øjet
+  skal rejse for hver linje
+- **Prisen er dæmpet.** Køkkenet skal lave maden, ikke regne
+- **"I ALT" står til sidst**, fordi det er DEN, der siges ved
+  lugen — men kun når der er mere end én linje med pris, ellers
+  ville totalen være den samme tekst to gange under hinanden
+- **Den tomme note er foldet væk.** På en travl fredag er det ti
+  kort, og ti åbne notefelter med den samme grå pladsholder
+  fylder lige så meget som ti gange navn, tid og mad tilsammen
+
+**⚠️ EN BORDBESTILLING GÅR ALDRIG GENNEM EN MAIL** (28/8).
+Kundens ord: *"bordbestilling skal foregå igennem systemet og
+admin og ikke igennem mail."*
+
+Han har ret, og det er den SAMME fejl, telefonbookingen på
+Borde-fanen blev bygget for at lukke (24/8): en booking, der
+kommer i en indbakke, står ikke i tabellen. Den tæller ikke med i
+dagens billede, den optager ingen pladser, og den findes ikke på
+skærmen, når familien møder op. Så står halvdelen af dagen i
+systemet og halvdelen i en mail, ingen har åbnet.
+
+- **`bord/` har ingen mailadresse** — hverken ved formularen
+  eller på kvitteringen. Telefonen er vejen: dér kan personalet
+  rette det i admin, mens gæsten er i røret, og bordet er frit i
+  samme sekund
+- **Det gælder også ÆNDRINGER.** En aflysning i en indbakke er et
+  bord, der står reserveret hele aftenen, fordi ingen nåede at
+  åbne mailen. Skal ændringer kunne klares uden et opkald, er
+  svaret en vej ind i SYSTEMET — ikke en postkasse
+- **Etiketten i footeren hedder "Om din booking"**, ikke
+  "Bordbestilling". En etiket, der lover det modsatte, giver
+  bookinger, ingen ser. Adressen er til spørgsmål om en booking,
+  gæsten allerede HAR
+
+**En mail-knap ved siden af telefonen** (28/8). Kundens ord:
+*"sådan knap, også rammer man mailen instantly og den
+korrekte."* **Ingen SQL.**
+
+Adressen i footeren virkede, men den er en linje i en bund. Den,
+der står og skal spørge om et selskab, skal have en KNAP ved
+siden af "Ring til os". Alle fire forespørgselssider har nu den
+samme række — `h-catering` og `h-frokost` fik den, `h-selskaber`
+og `h-baglokale` havde den i forvejen — og `bord/` har en linje
+til bookingadressen.
+
+**⚠️ KNAPPEN VED BORDET SKRIVER TIL BOOKINGEN, IKKE TIL
+SELSKABERNE.** En gæst, der spørger om sit bord hos den, der
+sidder med tilbud, får svar af den forkerte. Det er `data-post`,
+der afgør det — den samme attribut, footeren bruger, så en rettet
+adresse i admin slår igennem på begge steder uden en linje mere
+kode.
+
+**Emnet står på knappen** (`data-emne`): fire sider skriver til
+den SAMME postkasse, og personalet skal kunne se, hvad mailen
+handler om, uden at åbne den.
+
+**⚠️ OG EMNET MÅ IKKE LÆGGES OVEN I ET ANDET.** `postadresse()`
+på forespørgselssiderne læser adressen af knappen — som nu HAR et
+`?subject=` — og satte sit eget på med referencen. Resultatet var
+`mailto:…?subject=Selskab…?subject=Forespørgsel FO…`, og
+mailprogrammet fik den anden halvdel af adressen som emne.
+Adressen skæres nu ved `?`. Prøven fældede det.
+
+**⚠️ SKILTENES ADRESSE KAN SÆTTES** (28/8). Kundens spørgsmål:
+*"men url'en skal jo så fungere korrekt og QR-koderne til den
+tid."* **Ingen SQL.**
+
+Koderne har hele tiden peget på `location.origin` — den adresse,
+printsiden er åbnet fra — så et domæneskifte ikke kræver en
+kodeændring. Men **et mærkat kan ikke laves om, når det sidder på
+bordet**, og den dag forretningen får sit eget domæne, skal 55
+skilte kunne printes med DET uden at nogen redigerer en fil.
+
+Feltet står øverst på `print/bordkort.html`, og hele arket tegnes
+om, når adressen ændres. `https://` og skråstregen sættes selv —
+uden dem bliver adressen til `…dkved-bordet/`, og koden peger
+ingen steder hen.
+
+**⚠️ Der advares, når de to ikke er den samme.** Et skilt, der
+peger et sted hen, siden ikke selv ligger, virker først den dag
+domænet er sat op — og opdager man det, når 55 mærkater sidder på
+bordene, skal de printes og klistres om alle sammen. Beskeden
+siger: *"Print dem ikke, før du har prøvet en af koderne med en
+telefon."*
+
+**Feltet printes IKKE med.** Det er styringen, ikke skiltet — en
+halv side af det første ark ville gå til en indstilling.
+
+**55 borde oprettes på én gang** (28/8). Ejeren oplyste, at der
+er **55 borde**, hver med sin QR-kode. Ét ad gangen var 55 gange
+navn + pladser + ude/inde + zone + Tilføj — og den, der taster
+nummer 40, taster forkert. **En tastefejl her er en QR-kode, der
+peger på et bord, der ikke findes**, og gæsten møder "bordet
+kendes ikke", mens hun sidder ved det. **Ingen SQL.**
+
+Folden på Borde-fanen tager fra-nummer, til-nummer og en frivillig
+forstavelse (`T` → T1, T2, T3 — hedder de sådan ude på molen, skal
+systemet også sige det, ellers går maden det forkerte sted hen).
+
+- **De, der findes i forvejen, springes over**, og linjen siger
+  det, FØR man trykker. En serie, der stoppede på det første
+  sammenstød, ville efterlade halvdelen oprettet uden at sige
+  hvilke — og så skal nogen tælle sig frem gennem 55 rækker.
+  Serien kan derfor køres igen efter en udvidelse
+- **Ét bord ad gangen, i rækkefølge.** 55 skrivninger på én gang
+  ville ramme databasens bremse, og halvdelen ville blive afvist,
+  uden at nogen kunne se hvilke
+- **Højst 200 ad gangen.** 900 borde er ikke en cafe — det er en
+  tastefejl, og den tager fanen ned, mens nogen kigger
+
+**⚠️ RESTEN AF ØNSKET VAR ALLEREDE BYGGET.** `ved-bordet/?bord=42`
+viser BORD 42 øverst, kører telefon-først med søgefelt og chips
+(`data-visning="kort"` — åbne afsnit i stedet for folde, fordi
+gæsten skal finde ÉN vare blandt 242), har allergifeltet med sin
+egen røde boks, "Andet"-feltet til *"uden remoulade"*, og siger
+selv, at der ikke er betalt noget. Køkken-kø viser hvad, hvornår,
+hvilket bord og allergien. **Det eneste, der mangler, er billeder
+af maden — se listen over det, ejeren skal bekræfte.**
+
+**⚠️ NYHEDER KUNNE IKKE LÆGGES OP I PRODUKTIONEN** (28/8), og
+det var to fejl i én. Skærmen sagde:
+
+```
+Kunne ikke gemme (400). {"code":"PGRST204", … "message":
+"Could not find the 'vis_fra' column of 'nyheder' in the
+schema cache"}
+```
+
+1. **`supabase/nyheder-fra-til.sql` var ikke kørt.**
+2. **Og koden sendte kolonnen med alligevel.** `vis_fra` og
+   `vis_til` stod som FASTE linjer i `Butik.skrive.nyhed` — lige
+   over de tre felter (`slags`, `detaljer`, `billede`), der gør
+   det rigtigt med `!== undefined`, og lige under en note, der
+   advarede ordret mod præcis den fejl. **En note ved siden af er
+   ikke et værn.**
+
+Begge dele er rettet. `maaVindue()` i `js/admin/nyheder.js` læser
+— som `maaAntal()` på Menukort — hvad DATABASEN har svaret, og
+datofelterne findes kun, når kolonnen gør.
+
+**⚠️ UDEN RÆKKER SKJULES FELTERNE, modsat `maaSlags()`.** De to
+valg fejler hver sin vej, og den ene er dyrere: viser vi
+felterne, og kolonnen mangler, kan der slet ikke oprettes en
+nyhed, og det kræver en SQL-fil at komme videre. Skjuler vi dem,
+og kolonnen ER der, bliver den første nyhed oprettet uden datoer
+— altså "altid", som er den rigtige standard — og felterne dukker
+op af sig selv, så snart der er én række at læse nøglen af.
+**Den anden fejl retter sig selv. Den første gør ikke.**
+
+**Fejlen siger nu, hvad man gør ved den.** `Admin.forklarFejl`
+oversætter PostgREST' "Could not find the 'X' column of 'Y'" til
+**"Kør supabase/…​.sql i Supabase"** ud fra en tabel over,
+hvilken fil der lægger hvilken kolonne ind. Den **gætter ikke et
+filnavn**: kender vi ikke kolonnen, siger vi tabellen og lader
+den rå besked stå — et opfundet filnavn sender nogen ud at lede
+efter en fil, der ikke findes. Samme greb som
+`bestilling_status_ok` i `koekken.js`, nu ét sted for alle faner.
+
+**⚠️ Og `er-vi-klar.sql` sagde ALT ER KLAR imens — igen.**
+`nyheder-fra-til.sql` har stået i papirerne siden 24/8, men ikke
+i tjeklisten. **En tjekliste, der ikke kender en kolonne, siger
+god for dens fravær** — nøjagtig samme fejl som `dagens_retter`
+26/8, og den gentog sig. Tjek **112 og 113** er tilføjet, prøvet
+på en lokal Postgres 16, og set fejle: droppes de to kolonner,
+skriver begge ❌ med filnavnet.
+
+**To rigtige e-mailadresser — og en opdigtet er væk** (28/8).
+Mikkel oplyste `selskab1@mosedehavnecafe.dk` og
+`booking1@mosedehavnecafe.dk`. **Ingen SQL.**
+
+**⚠️ Der stod `hej@mosedehavnegrill.dk` i bunden af NI sider.**
+Den var designets pladsholder, den er på et forkert domæne
+(-grill, ikke -cafe), og en gæst, der skrev til den, nåede ingen.
+**Ret den aldrig tilbage.** Samme regel som telefonen og
+adressen. En prøve læser mappen og falder på hver side, der har
+den.
+
+**⚠️ Og de to sociale links pegede på `#`.** Gæsten trykker,
+siden hopper til toppen, og hun tror, det er hende, der gør noget
+forkert. Reglen stod i `js/oplysninger.js` hele tiden — "tomme
+felter vises ikke" — men footeren fra designet fulgte den ikke.
+De er væk, til ejeren giver rigtige adresser.
+
+**Adresserne er delt efter ÆRINDE, ikke efter afdeling.** En
+gæst, der skriver om sin bordbestilling til selskabsadressen, får
+svar af den, der sidder med tilbud — og omvendt. Derfor står de
+med hver sin etiket ("Selskaber & catering" / "Bordbestilling")
+og ikke som to rå adresser.
+
+**⚠️ Adressen står i HTML'en, ikke i JavaScript.**
+`js/skal/kontakt.js` bytter den kun ud, hvis personalet har
+skrevet noget andet i admin → Kontakt
+(`kontakt_email_selskab`, `kontakt_email_booking`). Samme regel
+som baglokalets vilkår: skrev vi hele linjen i kode, skulle de
+rigtige adresser stå to steder, og den ene ville blive glemt.
+`h-kalender.html` henter slet ikke data — dér står HTML'ens
+adresse alene, og det er netop derfor den skal stå der.
+
+**⚠️ TOM ER IKKE DET SAMME SOM ALDRIG SAT.** Er nøglen ikke i
+databasen, står HTML'ens adresse. Er den sat til **tomt**, HAR
+nogen nedlagt adressen, og linket ryger helt af siden — et mailto
+til en nedlagt adresse er præcis den blindgyde, `#`-linkene var.
+Prøven er set fejle: skrives gardet om til `if (!vaerdi) return`,
+falder den.
+
+**Kvitteringerne har en vej tilbage, der ikke er et opkald.**
+Forespørgslen peger på selskabsadressen med referencen i emnet
+(så personalet ved, hvilken sag mailen hører til), og
+bordbestillingen på bookingadressen. Halvdelen af dem, der
+spørger, sidder på et arbejde, hvor de ikke kan ringe.
+
+**⚠️ Forespørgselssiden læser adressen af LINKET i footeren**,
+ikke af indstillingen. Adressen står ét sted, og `kontakt.js` har
+allerede byttet den. To opslag ville være to steder, der kunne
+komme til at sige hver sit.
+
+**Menukortet er blevet til et overblik** (28/8). Kundens ord:
+fanen skal være "mere overskuelig" og kunne *"passe med antal,
+melde udsolgt, få antal tilbage."* **Ingen SQL** — kolonnerne kom
+med `menukort-antal-og-dage.sql`.
+
+Fanen kunne det hele i forvejen, men den kunne kun SIGE én ting:
+hvor mange priser der manglede. Til daglig er spørgsmålet et
+andet — hvad er udsolgt, hvad er ved at slippe op, og hvor er den
+pølse henne.
+
+- **Fem tal øverst**, og hvert af dem er en KNAP: Alle · Udsolgt ·
+  Få tilbage · Mangler pris · Skjult. Et tryk filtrerer, så tallet
+  også er vejen hen til arbejdet
+- **Et søgefelt.** Det vigtigste redskab på et kort med 242 varer;
+  der søges i både navn og beskrivelse, for ejeren husker ikke
+  altid, hvad varen hedder, men han husker, hvad der er i den
+- **Kategorierne folder sig**, når kortet er langt. **Målt:** 242
+  varer i 21 kategorier er ~280 rækker felter. Grænsen er 30
+  varer — under den fylder hele kortet to skærme, og en fold er
+  bare et tryk mere. Et filter eller en søgning åbner dem selv
+- **Folden er ÉN linje:** navn + "14 varer · 2 udsolgt · 4 uden
+  pris". **⚠️ Første udgave foldede kun VARERNE væk** og lod
+  navnefelt, afdeling, dage, pile, Gem og et tomt notefelt stå —
+  målt: 21 lukkede kategorier fyldte stadig fire skærme
+- **Antalsfeltet farves** ved få tilbage og fyldes rødt ved nul.
+  Et tal i et felt ligner enhver anden værdi, og med 242 rækker
+  ruller man forbi det
+- **"Sæt alle til salg igen"** står KUN, når man kigger på de
+  udsolgte. Tolv udsolgte varer om morgenen er ellers tolv tryk
+  plus tolv gange at finde rækken
+
+**⚠️ FÅ TILBAGE ER IKKE NUL TILBAGE.** En vare, der er talt ned
+til nul, ER udsolgt — databasen sætter selv fluebenet — og hører
+under Udsolgt. Stod den begge steder, ville de to tal tilsammen
+være større end antallet af varer, og så holder man op med at
+stole på dem.
+
+**⚠️ Og masseknappen rører ALDRIG dem, der er talt ned til nul.**
+Satte vi bare fluebenet fra, kunne gæsten lægge varen i kurven —
+og bremsen ville afvise hele bestillingen ved afsendelsen. Hun
+ville ikke ane hvorfor. De skal have et nyt antal, og linjen
+siger det.
+
+**⚠️ Grænsen for "få" er GÆSTESIDENS.** `js/skal/menukort.js`
+skriver "Kun N tilbage" fra og med fem. To udgaver af "hvornår er
+det ved at slippe op" ville betyde, at hjemmesiden advarede
+gæsten, mens admin sagde, alt var fint.
+
+**⚠️ "Få tilbage"-feltet findes ikke, før kolonnen gør.** Samme
+regel som før: `maaAntal()` læser det, DATABASEN har svaret, og
+et felt uden en kolonne bag sig er værre end intet felt.
+
+**⚠️ `#pris-filter` beholder sit id og sin plads.** Den var vejen
+igennem 242 varer på en eftermiddag, og selv om "Mangler pris" nu
+også er et af de fem tal, går begge gennem `saetFilter` — så de
+ikke kan komme til at være uenige om, hvad der er slået til.
+
+**⚠️ Prøvernes `åbnMenufanen` venter på `#menu-status`**, ikke på
+`.kat-hoved`: et stort kort har ingen kategorihoveder, før nogen
+åbner en fold.
+
+**Køkkenskærmen er skruet efter forlægget** (28/8). Kundens ord:
+bordbestillinger *"er jo en hel anden ting end online
+bestillinger og skal være bl.a. den køkkenet står og kigger på og
+skal være dygtig og intelligent."* **Ingen SQL.**
+
+- **Hovedet tikker**: "QR-bestillinger fra bordene · 12.40 · 4
+  bestillinger skal ud", og "LUKKET for bordene", når kontakten
+  er slået fra. Uret tegner fanen om hvert minut i forvejen
+- **⚠️-kortet "Gå ud og sig noget"** findes kun, når der er
+  noget, og linjerne har **ingen knapper med vilje**: systemet
+  kan ikke tale med bordet. Der er ingen skærm hos gæsten, ingen
+  besked og ingen betaling — det eneste, der virker, er et
+  menneske, der går derud
+- **Zonestriben** (Alle zoner · Molen · Terrassen) vises kun ved
+  **to eller flere** zoner i køen. "Alle zoner" ved siden af én
+  knap, der hedder "Terrassen", er to knapper, der gør det samme
+- **Runde 2** står på kortet, når bordet har bestilt før i dag.
+  Den tæller de **serverede** med — ellers ville runde 2 hedde
+  runde 1, i det sekund den første var båret ud — men **ikke de
+  afviste**: den mad er aldrig lavet
+- **Uret er en pille**, og den bliver rød med hvid skrift. Ét
+  tryk, én stor knap i fuld bredde: skærmen bruges med en fedtet
+  finger, mens den anden hånd holder en tallerken
+
+**⚠️ EJERENS VENTETID SLÅR BRIEFENS KVARTER.** "Forventet
+ventetid" er dét, gæsten får at se, når hun scanner. Er den sat
+til 10, HAR vi lovet 10, og så er 12 minutter for længe. Er den
+ikke sat, er der ikke lovet noget — og så skriver skærmen heller
+ikke "den burde tage N", som om nogen havde sagt det.
+`FOR_LAENGE_MIN = 15` er kun reserven.
+
+**⚠️ DER MÅ ALDRIG KOMME TIL AT STÅ "BETALT".** Forlægget skrev
+*"bestilt 12.12 · betalt 280,-"* under hvert kort. Der er ingen
+betaling i systemet (Mikkel 25/8: *"de gør det via kassen ved at
+tage tingene ind manuelt"*), og en tallerken, der bæres ud til et
+bord, som personalet TROR har betalt, er penge ud ad døren. Der
+står **"280 kr. · betales ved lugen"**, og en prøve slår ned på
+ordet *betalt*.
+
+**⚠️ Alarmen siger det ÉN gang.** Målt på en travl frokost med
+ventetiden sat til ti minutter: tre borde over grænsen gav tre
+næsten ens linjer, der fyldte hele kortet. Det værste bord står
+med sit tal; resten er et antal — hvilke borde det er, står på
+kortene nedenunder, som i forvejen er sorteret ældste først.
+
+**Bordstriben er en genvej nu, ikke en gentagelse.** Den sagde
+det samme som kortet lige nedenunder ("Bord 1 · 1 ordre · 28 min"
+over et kort, der hedder Bord 1 og siger 28 min). Felterne er
+knapper: et tryk ruller ned til bordets ældste åbne kort og
+markerer det halvandet sekund.
+
+**⚠️ Fanens tal tæller HELE køen, ikke det filtrerede.** Et
+zonefilter, der også skruede ned for tallet i søjlen, ville
+skjule tre borde på molen for den, der kigger på terrassen — og
+så holder man op med at stole på tallet.
+
+**⚠️ Et urtegn, ikke et emoji.** Pillen bliver rød med hvid
+skrift, og et farvet emoji på rød bund er en klat. Første udgave
+affarvede det med et CSS-filter, og **målt på et skud** blev 🕐
+til en hvid cirkel uden visere. Tegningen arver `currentColor` nu.
+
+**Og et ødelagt `</details>` er rettet** på den samme fane: taggen
+stod inde i `<div class="lyd-raekke">`, så browseren lukkede
+begge dele og lod knappen falde ud af folden. Det så tilfældigvis
+rigtigt ud.
+
+**Baglokalet er et forløb nu, ikke tre lister** (28/8). Kunden
+sendte fire skærmbilleder af en færdig udlejningsside: *"det er
+godt begrundet af det holder styr på det hele … hele fanen skal
+være dygtig og intelligent og gerne bedre end hvad du ser på de
+billeder."* **Ingen SQL.**
+
+Fanen havde tre kasser — Venter på svar, I hus, Færdige — og det
+er tre steder at kigge for et lokale, der lejes ud nogle gange om
+måneden. Den, der har travlt, kigger i den øverste. Nu er den fem
+kort med hvert sit spørgsmål: **hvad går galt af sig selv**
+(⚠️-kortet), **hvor langt er sagerne** (forløbet), **har vi
+lokalet den 12.** (nettet), **hvad skal jeg lave nu** (ÉN liste,
+hastet først) og **hvad koster det** (vilkårene).
+
+**⚠️ ET "AFTALT" JA ER IKKE ET LÅST JA — fanens vigtigste nye
+oplysning, og den var usynlig før.** Databasens indeks
+`udlejning_dagen_er_taget` tæller kun UDLEJNINGER. En
+forespørgsel sat til `aftalt` ser ud som et ja på skærmen, men så
+længe der ikke står en udlejning bag den, kan en gæst på
+hjemmesiden stadig tage dagen — og ingen ville opdage det, før
+nummer to ringede. Derfor har hver sag et felt `laast`, derfor
+har trin 3 sit eget røde tal, derfor står dagen **stiplet** i
+nettet i stedet for som lejet ud, og derfor hedder knappen
+**Lås dagen**. Prøven er set fejle: sættes `laast` til
+`f.status === 'aftalt'`, falder tre prøver.
+
+**"Ældst først" var ikke godt nok.** En fest på LØRDAG er noget
+andet end en til maj, også selv om maj-manden skrev først.
+`haster()` er trin og ikke point: 0 = festen er inden for en uge,
+5 = sagt ja uden at låse dagen, 10 = har ventet over fristen,
+20 = resten, 50 = i hus, 90 = færdigt. **5 er med vilje højt
+oppe:** det tager to klik at lukke hullet, og hullet er en
+dobbeltbooking på vej.
+
+**⚠️ Kortet øverst findes KUN, når der er noget.** En fast boks,
+der som regel siger "alt er fint", bliver til udsmykning på en
+uge — og så ses den heller ikke den dag, den siger noget. Ingen
+af linjerne kan kvitteres for; de forsvinder kun ved, at arbejdet
+bliver gjort.
+
+**Det er et TAL, ikke en dom.** Forlægget havde en dagstilstand,
+der hed *"travl i cafeen"*, og der findes ikke noget mål for
+travlhed i systemet. Antallet af **bordbestilte pladser** samme
+dag ved vi derimod, og det er den oplysning, der faktisk skal
+bruges: mad til 40 i baglokalet OG servering for 12 i cafeen er
+et bemandingsspørgsmål. Afviste og udeblevne borde tæller ikke.
+
+**⚠️ Lukkedagen skal spørges to steder.** `Butik.lukketDen`
+(kalenderens rækker, som også dækker en hel vinterlukning) og
+`Butik.dagenHeltLukket` (dagsreglerne). Spurgte vi kun det ene,
+ville en almindelig lukkedag stå som åben, og advarslen "cafeen
+er lukket, og nogen har lokalet" ville aldrig komme.
+
+**Vilkårene er ejerens tal — ikke designets** (28/8). Ingen SQL:
+`indstillinger` er nøgle/værdi. Syv felter, og de er **tomme,
+til ejeren skriver i dem**: `lokale_pladser`, `lokale_staaende`,
+`lokale_pris_aften`, `lokale_pris_dag`, `lokale_gratis_fra`,
+`lokale_depositum`, `lokale_svarfrist_dage` plus fritekst
+`lokale_vilkaar`.
+
+`h-baglokale.html` blev leveret med designets pladsholdere — 40
+siddende, 60 stående, 1.200 kr. for en aften, 2.000 for dagen,
+gratis fra 20 kuverter — og de har stået i luften siden 23/8,
+fordi Mikkel bad om det. **Indtil nu kunne de kun rettes ved at
+redigere HTML.** Nu er hvert tal pakket i sit eget
+`<span data-vilk>`, og `js/skal/forespoergsel.js` bytter det ud.
+
+**⚠️ TALLET BYTTES DÉR, HVOR DET STÅR.** Byggede vi hele
+sætningen om i JavaScript, skulle designets egne tal stå i koden
+som reserve — og så var der to steder, den samme pladsholder
+skulle rettes. Reserven er den tekst, der allerede står i filen,
+og et tomt felt lader linjen stå. Depositum og "hvad er med i
+prisen" har ingen plads i designet og står i et skjult felt, der
+kun tændes, når ejeren skriver noget.
+
+**⚠️ Skriv aldrig ⚠️ foran en `.fejl`.** Klassen har sit eget
+`::before { content: "⚠ " }`, og linjen kom på skærmen som
+"⚠ ⚠️ Dagen er ikke låst". Det lignede en fejl i systemet, ikke
+en advarsel om noget. **Fundet med øjnene på et skud** — ingen
+prøve læser et tegn foran en sætning.
+
+**Forsiden var kedelig, og det kunne ses** (29/8). Kundens ord:
+*"kig på layoutet hvor det nogensteder bar mangler også emojis på
+front siden hjemmesiden altså får kunderne det kedeligt hele
+vejen ned man."* **Ingen SQL.**
+
+Tre ting, alle sammen fundet ved at **kigge på siden** i stedet
+for i koden.
+
+**Seks stiplede grå kasser.** Designet leverede `<image-slot>` som
+pladsholdere til fotos. **Målt på en iPhone 13:** en tom plads
+tegner sig som en stiplet grå kasse med "Foto: anretning" i
+midten, og galleriet på forsiden alene var **740 px stiplet
+ingenting**. Nyhedskortene fik lukket den fejl 26/8 — den stod
+bare stadig **seks** steder til: fire på forsiden, ét på
+`m-tapas.html` og ét på `h-baglokale.html`.
+
+- **Reglen bor ét sted: `js/skal/billedplads.js`.** Foto → flade
+  → uberørt, i den rækkefølge. Tre kopier ville langsomt tegne
+  tre forskellige flader, og det ville ingen opdage: hver side
+  ser jo rigtig ud for sig selv
+- **⚠️ Tegnet står i HTML'en (`data-tegn`)**, ikke i en tabel i
+  koden. Flytter nogen galleriet, følger tegnet med — en liste i
+  JavaScript ville efterlade den nye plads grå
+- **⚠️ Det er IKKE et pladsholderbillede.** En farvet flade med
+  et tegn lover ingenting; et stockfoto af en anretning ville
+  love en anretning
+- **⚠️ Fladerne skal op, også når hentningen fejler.** De har
+  ingen data bag sig. Blev de stående, ville en side med en nede
+  database være den side med FLEST grå kasser — og det er lige
+  præcis den dag, den skal se hel ud. Alle tre sider fylder
+  pladserne i deres `.catch`
+- **Kortet *Billeder på forsiden*** på Forside-fanen tager de fem
+  rigtige billeder. Ingen SQL: adresserne bor i `indstillinger`,
+  og uploaden bruger `Butik.skrive.nyhedBillede` — nyhedernes
+  egen spand, egen komprimering
+- **⚠️ Tapasfadet er ÉT foto på to sider.** To felter til det
+  samme fad ville betyde, at ejeren skiftede det ene og glemte
+  det andet, og gæsten så to forskellige fade på vejen fra
+  forsiden til bestillingen
+- **⚠️ Kortet i admin står ALTID.** Findes spanden ikke, siger
+  uploaden det selv med den linje, der fortæller, hvad ejeren
+  skal gøre i dashboardet. Et skjult kort ville skjule netop den
+  besked
+
+**En fejl fra 26/8 faldt ud undervejs:** en nyhed **uden slags**
+lod pladsen stå — og slagsen mangler, indtil
+`nyheder-slags-og-billede.sql` er kørt. Altså stod der en grå
+kasse netop i den situation, hvor kolonnen ikke er der. Den får
+📣 nu.
+
+**Og så kom de rigtige billeder** (29/8). Mikkel sendte **tre
+fotos af forretningens eget smørrebrød** samme dag. De ligger i
+`billeder/` og fylder galleriet på **`h-smorrebrod.html` — og kun
+dér.** **Ingen SQL.**
+
+**⚠️ FØRSTE UDGAVE LAGDE DEM PÅ FORSIDEN**, i designets galleri
+under "Lad os holde jeres næste arrangement". Kunden flyttede
+dem: *"det skal være inde på smørbrød ud af huset fanen kun …
+så fjern det ude på lad os holde jeres næste arrangement."*
+
+Han har ret i mere end placeringen: de tre fotos **er**
+smørrebrød. Stod de under overskriften om selskaber, lovede de,
+at et selskab ser sådan ud — og det eneste, vi VED, er, at
+forretningen laver det smørrebrød. Designets tre `<image-slot>`
+gik med dem; havde vi kun taget billederne, ville afsnittet have
+fået tre stiplede grå kasser i stedet. En prøve tæller dem til
+nul.
+
+**⚠️ NØGLERNE HEDDER STADIG `foto_selskab_*`.** Et navneskifte
+ville betyde, at et foto, ejeren allerede HAVDE lagt op,
+forsvandt fra siden uden en fejl — nøglen ville ikke længere
+blive slået op.
+
+- **Beskåret med den SAMME midterbeskæring, admin bruger**
+  (`komprimer()` i `js/store-skriv.js`). Et portrætfoto af en
+  tallerken har motivet i midten; klippede vi fra toppen,
+  forsvandt halvdelen af maden
+- **⚠️ ADMIN SLÅR REPOET.** Rækkefølgen er admin-indstilling →
+  filen i repoet → fladen. Filerne er ejerens egne, lagt ind af
+  os første gang — men den dag han tager et bedre billede, skal
+  han kunne skifte det i admin uden at nogen rører koden. Var
+  rækkefølgen omvendt, ville hans upload se ud, som om den ikke
+  virkede
+- **⚠️ ALT-TEKSTEN ER FOTOETS, IKKE PLADSENS.** Designets
+  `placeholder` siger, hvad pladsen var TÆNKT til — "Foto:
+  tapasfad" — og der ligger nu **tartar** i den. En skærmlæser,
+  der siger "tapasfad" over tartar, oplyser forkert om maden.
+  Teksten står i `data-alt`; uden den er alt tomt, for et forkert
+  alt er værre end intet alt
+- **⚠️ SMØRREBRØDSSIDEN HAVDE INTET BILLEDE OVERHOVEDET.**
+  Designet gav den ingen. Galleriet står EFTER overskriften; et
+  foto før ville skubbe "Smørrebrød ud af huset" under folden
+- **⚠️ RÆKKERNE PASSEDE KUN PÅ EN TELEFON.** Designet gav det
+  store billede `height:100%` + `min-height:250px` og de to små
+  en FAST `height:120px`. På en telefon gik det tilfældigvis op:
+  120 + 9 + 120 = 249, og det store landede på sin min-height,
+  250. **Målt på 1440 px**, hvor spalten er 346 px bred: det
+  store blev **461 px** højt af sin egen billedhøjde, mens de to
+  små blev stående på 120 — et **hul på 212 px**. Hver regel så
+  rigtig ud for sig; det er summen, der er forkert, og den
+  findes kun ved at måle. Nu bestemmer det store billedes format
+  højden (`aspect-ratio`), rækkerne deler den (`1fr 1fr`), og de
+  to små fylder deres række ud. Prøven sammenligner **to
+  uafhængige elementer** og fejler kun på computerprofilen —
+  præcis som fejlen selv gjorde
+- **Tapasfadet og baglokalet har stadig en flade.** Vi har ikke
+  fået fotos af dem, og vi finder ikke på et billede af mad,
+  forretningen ikke har vist os
+
+**⚠️ OG FORSIDEN ER LETTERE END FØR.** **Målt på en iPhone 13:**
+den henter **319 kB** og vokser ikke, når man ruller — den
+henter ikke ét foto, fordi den ikke viser ét. Smørrebrødssiden
+henter 544 kB, og de tre billeder er hele grunden til at gå
+derind. Den gamle forside lå på 650 kB FØR introen slap siden.
+En prøve tæller de forespørgsler, BROWSEREN har sendt, og falder,
+hvis forsiden en dag begynder at hente et billede, den ikke
+viser — et spørgsmål til elementet om dets eget
+`loading`-attribut ville bestå, selv hvis browseren hentede det
+alligevel.
+
+**Et ansigt pr. kategori i bestillingen.** **Målt:** fem rækker
+ren tekst på forsiden — Grill fra pladen, Smørrebrød, Is og
+desserter … — hvor menukortet og bordsiden for længst havde tegn
+på de SAMME kategorier. Tegnet kommer fra `js/menu-emoji.js`, den
+ENE liste. **⚠️ Det er sit eget element ved siden af `<h4>`, ikke
+inde i den** — ellers ville overskriftens tekst hedde
+"🍔Grill fra pladen", og både prøverne og en skærmlæser læser
+netop den tekst.
+
+**Fem døde links på forsiden.** Facebook, Instagram, Anmeldelser,
+"Følg os →" og "Læs anmeldelserne på Google →" pegede alle på
+`#` — nøjagtig den fejl, der blev fjernet i footeren 28/8.
+Adresserne sættes i admin → Kontakt; indtil da ryger linkene AF
+siden. **⚠️ Et kort, der kun er en knap, går med** (`.promo.fb`),
+**men stjernelinjen bliver** — den bærer også Mikkels
+pladsholdertal, og at tage hele linjen ville være at træffe hans
+beslutning om igen. **Og striben bliver:** "Musik på havnen" er
+et rigtigt link til kalendersiden, ikke en profil.
+
+**Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
+lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
+tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på
+personalesiden, så Overblik, Bestillinger, Salg, Forespørgsler, Borde og
+Baglokalet alle har noget at vise. `supabase/ryd-demo.sql` tager det hele
+igen. **Livemusik-banneret kommer herfra**: det viser næste offentlige
+arrangement, og var det væk, var kalenderen bare tom.
+
+**Demoen åbner også kategorierne** og sætter varslet ned til 2 timer
+(23/8) — ellers er forsidens bestillingsafsnit tomt og skjuler sig selv,
+og med 24 timers varsel kan dagens ret ikke bestilles i dag.
+`ryd-demo.sql` tager begge dele igen.
+
+**Filen standser kun ét sted: forkert forretning.** De to andre værn —
+lukket sæson og bestillinger slået fra — RYDDEDE den ikke af vejen før,
+den kastede en exception. Og en exception ruller hele transaktionen
+tilbage, så filen gjorde ingenting: rød fejl, uændret side, "den gider
+ik loade demo indholdet" (kunden 23/8). Nu slår den dem til og skriver
+det med ⚠️ i rapportens kolonne `aendret_paa_forretningen`. Reglen var
+aldrig "lad være" — den var **"ingen må kunne gøre det uden at opdage
+det"**. Den åbner IKKE sæsonen af sig selv — en fil, der
+lydløst åbner en lukket forretning på dens egen hjemmeside, må ikke findes.
+Demo-rækkerne kendes på referencen (`SM-DEMO-*`) og på telefonnumre, der
+begynder med `0000` og derfor ikke kan ringes op. Se README-afsnittet
+"Demo-indhold: hele siden op at køre på ét kald".
+
+**Runden 23/8 — bestillingen flyttede ind på forsiden.** Kunden så
+skærmbilledet af det gamle dagens ret-panel og spurgte, om det ikke var
+meningen, at maden skulle rulle ned dér, hvor den står. Det var det.
+
+- **`js/dagens.js` er slettet** (465 linjer). Den byggede en ringere
+  udgave af den formular, `js/bestilling.js` allerede havde
+- **Smørrebrødet har sit eget afsnit og sin egen side.** `bestil/`
+  hedder stadig `bestil/`, men den er smørrebrødets nu
+- **Isen kan ikke bestilles noget sted.** Heller ikke med et gammelt
+  flueben i databasen — filteret ligger i `Butik.udvalg`
+- **"Vi ringer og bekræfter" er væk som standard**
+- **Menukortet og sortimentet har fået spiis' kortstil**
+- **Menukortet kan administreres helt** — beskrivelse, rækkefølge og
+  kategorier
+
+Tre fejl faldt ud undervejs, og ingen af dem kunne ses ved at læse:
+
+1. **Formularen på forsiden var tom uden en eneste fejl i konsollen.**
+   `js/side.js` kalder `MosedeBestilling.start(d)` inde i
+   `Butik.hent().then()`, og i øvetilstand svarer `hent()` med det
+   samme — så kørte `.then` FØR browseren nåede at læse det næste
+   `<script>`-tag. Med skyen slået til gik det tilfældigvis godt.
+   **`bestilling.js` skal indlæses FØR `side.js`**
+2. **Dagens rets pris fulgte ikke med.** Retten blev kun lagt ind i
+   TEGNINGEN af listen, så kurven skrev "pris følger" på en ret med en
+   pris, og køkkenet fik den uden kroner. Nu ligger den i
+   `bestilbare()`, som både summen, kurven og afsendelsen bruger
+3. **Den flydende pille lå oven i heroens manchet på en telefon.**
+   Heroen havde 67 px luft i bunden, pillen fyldte 70. Hver regel så
+   rigtig ud for sig; det er summen, der er forkert — og den findes
+   kun ved at måle
+
+
+## Hvad ejeren har bestilt
+
+Mikkel har aftalt hele opgaven med ejerne direkte. Det er ét system i
+samme form som spiis.dk, og det er større end en hjemmeside:
+
+- **administrerende app** — personalesiden, ét sted til det hele
+- **smørrebrød takeaway**
+- **book spisning** — det er **BORDE**, ikke selskaber
+- **udleje af baglokale** — lokalet **findes**, det er ejerens eget ønske
+- **levering af frokostordning** — de **leverer** (i hvert fald frokosten)
+- **catering**
+- **eventkalender** og **generel kalender**
+- MobilePay: **ikke nu.** Besluttet 19/8 — brug ikke tid på at regne på det
+
+**Spiis er forbillede, ikke kilde.** Vi må hverken læse eller kopiere fra
+det repo (se advarslen øverst). Mikkel kan fortælle, hvad der virker dér;
+koden skrives her.
+
+### Det hele har den samme form
+
+Det er værd at se, før man bygger noget nyt: smørrebrød, forespørgsler,
+borde og lokaleudlejning er **det samme skelet**. En gæst skriver noget →
+personalet ser det i admin → status går én vej → sagen er lukket. Gæsten
+må skrive, men ikke læse. Bremsen er den samme. Prøven er den samme.
+
+Derfor er en ny funktion ikke et nyt system. Det er en tabel, et sæt
+adgangsregler, en prøve, en fil i `js/admin/` og en side. Afvig fra det
+mønster, når der er en grund — ikke fordi det er nyt.
+
+**Det ene, der er anderledes, er kalenderen.** Borde og baglokale kan
+være **optaget**, og to gæster må ikke få ja til det samme. Derfor skal
+kalenderen bygges før dem — ellers får vi to steder at holde styr på,
+hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
+
+---
+
+## Planen herfra
+
+| Fase | Hvad | Status |
+|---|---|---|
+| 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden **og i databasen** — 23 × BESTOD i Mosede-projektet 18/8 |
+| 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
+| 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | ✅ i koden **og i databasen** — 23 × BESTOD 19/8 |
+| 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Er samtidig event- og driftskalenderen, og fundamentet under fase 4 og 5 | ✅ i koden **og i databasen** — kørt 19/8, forsiden kører på den |
+| 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten BOOKER; personalet ringer kun, hvis de ikke kan skaffe bordet. Antal pladser sættes i admin | ✅ i koden **og i databasen** — 26 × BESTOD i Mosede-projektet 19/8 |
+| 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | ✅ i koden **og i databasen** — 27 × BESTOD i Mosede-projektet 19/8 |
+| 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
+| 5c | **Push** — `push.sql` + Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden **og i luften** — `push.sql` er kørt, `send-push` er version 2 fra 9/9, fire webhooks svarer 200, to telefoner får besked |
+| 6 | ~~Frokostordning som abonnement~~ — **misforstået, se nedenfor.** Det er almindelig mad ud af huset med et døgns varsel | ✅ dækket af forsidens bestilling |
+| 7 | **Bordbestilling med QR** — mærkat på bordet, `ved-bordet/`, bordet med i admin. **Ingen betaling og ingen løbende regning** | ✅ i koden — kræver `bordkort.sql` kørt og mindst ét bord oprettet i admin |
+
+### Frokostordningen er IKKE et abonnement
+
+Den stod som fase 6 med "tilbagevendende levering, pauser, helligdage".
+**Det var en misforståelse**, og Mikkel rettede den 20/8: det er
+almindelig **mad ud af huset**, som man også kan bestille — og som skal
+kunne bestilles **senest dagen før**.
+
+Det er præcis det, forsidens bestilling gør. Varslet står i admin som
+`bestilling_varsel_timer` (24 timer som standard), formularen klipper
+dagvælgeren efter det, og forsiden skriver "Bestil senest dagen før" ud
+fra det samme tal. Der skal altså **ikke** bygges en abonnementsmotor,
+og der skal ikke laves en tabel til tilbagevendende leveringer.
+
+Det, der stadig mangler, er ejerens svar: **hvad leveres, og til hvilket
+område?** Se listen "Ejeren skal bekræfte" i README. Indtil da siger
+siden, at man henter — for det er det eneste, vi ved.
+
+**Udskudt:** MobilePay. Betaling online trækker refusioner, kvitteringer
+og bogføring med sig, og ejeren har ikke bedt om det endnu.
+
+Fase 1 er lavet, så alt det herover bygger oven på `js/admin/` — en ny
+fane er én ny fil, ikke en længere blok i admin.html.
+
+**Hold øje med antallet af faner.** Der er fire nu, og der kommer tre
+mere. Bliver personalesiden en række af lister, man skal huske at kigge i,
+er det tid til én indbakke med filtre — ikke syv faner med hver sit tal.
+
+---
+
+## Det, ejeren stadig skal svare på
+
+- Resten af listen "Ejeren skal bekræfte" nederst i README
+
+---
+
+## Om økonomien, hvis det kommer op
+
+Lesreg er ikke timelønnet på det her. Prisen skal dække driften og give mening
+— 700–1000 kr./md. er aftalt som rimeligt. Brug ikke tid på at regne
+forretningsmodeller ud, med mindre der bliver spurgt direkte.
+

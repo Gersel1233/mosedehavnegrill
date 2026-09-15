@@ -135,5 +135,5 @@ læs nøglen bagefter, hvis du vil se, hvad der faktisk blev gemt.
 
 Har du lavet noget om, så **send billedet med**, når du fortæller om det.
 Mikkel afgør tingene på skærmbilleder — han skal kunne se det, ikke læse
-om det. Og fandt du en fejl på et billede: skriv i CLAUDE.md, at den blev
+om det. Og fandt du en fejl på et billede: skriv øverst i docs/HISTORIK.md, at den blev
 fundet med øjnene, så den næste ved, hvad der ikke kan læses frem.

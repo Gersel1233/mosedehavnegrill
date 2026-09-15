@@ -6,7 +6,7 @@
 
      · vaerktoej/byg-lokal-db.sh  — bygger den lokale database,
        som HVER eneste proev-fil måles på
-     · CLAUDE.md's rækkefølge     — dét, Mikkel kopierer ind i
+     · docs/SQL-RAEKKEFOELGE.md   — dét, Mikkel kopierer ind i
        Supabase, i den orden filerne skal køres
      · og filerne selv, på disken
 
@@ -111,22 +111,28 @@ test('hver prøvefil har en migrering at prøve', () => {
     .toEqual([]);
 });
 
-test('hver fil, byggeren kører, står også i CLAUDE.md', () => {
+/* ⚠️ RÆKKEFØLGEN BOR I docs/SQL-RAEKKEFOELGE.md NU (15/9). CLAUDE.md
+   læses ind ved hver session og var vokset til 12.579 linjer, så
+   rækkefølgen flyttede ud i sit eget dokument. Reglen er urørt: den
+   fil, Mikkel kører SQL'en efter, skal nævne hver fil, byggeren kører. */
+const RAEKKEFOELGE = 'docs/SQL-RAEKKEFOELGE.md';
+
+test('hver fil, byggeren kører, står også i SQL-rækkefølgen', () => {
   /* ⚠️ DET ER PAPIRERNE, DER ER LEVERANCEN HER. Mikkel kører
-     filerne i Supabase efter CLAUDE.md; en migrering, der ikke
+     filerne i Supabase efter rækkefølgen; en migrering, der ikke
      står der, bliver aldrig kørt i produktionen — og så virker
      admin lokalt og fejler hos ham. Det er sket flere gange
      (dagens-retter 26/8, nyheder-fra-til 28/8). */
-  const md = fs.readFileSync('CLAUDE.md', 'utf8');
+  const md = fs.readFileSync(RAEKKEFOELGE, 'utf8');
   const mangler = byggerensListe().filter((f) => md.indexOf(f + '.sql') === -1);
-  expect(mangler, 'de her filer køres lokalt, men CLAUDE.md nævner dem ikke — '
+  expect(mangler, 'de her filer køres lokalt, men ' + RAEKKEFOELGE + ' nævner dem ikke — '
     + 'så bliver de aldrig kørt i Mosede-projektet').toEqual([]);
 });
 
-test('rækkefølgen i CLAUDE.md peger kun på filer, der findes', () => {
-  const md = fs.readFileSync('CLAUDE.md', 'utf8');
+test('rækkefølgen peger kun på filer, der findes', () => {
+  const md = fs.readFileSync(RAEKKEFOELGE, 'utf8');
   const blok = md.match(/```\n(… → pris-vaern\.sql[\s\S]*?)\n```/);
-  expect(blok, 'rækkefølge-blokken kunne ikke findes i CLAUDE.md').not.toBeNull();
+  expect(blok, 'rækkefølge-blokken kunne ikke findes i ' + RAEKKEFOELGE).not.toBeNull();
 
   const nævnt = (blok[1].match(/[a-z0-9-]+\.sql/g) || []).map((s) => s.slice(0, -4));
   expect(nævnt.length, 'rækkefølgen nævner ingen filer — prøven måler ingenting')
@@ -134,7 +140,7 @@ test('rækkefølgen i CLAUDE.md peger kun på filer, der findes', () => {
 
   const alle = sqlFiler();
   const findesIkke = nævnt.filter((f) => alle.indexOf(f) === -1);
-  expect(findesIkke, 'rækkefølgen i CLAUDE.md beder om filer, der ikke findes — '
+  expect(findesIkke, 'rækkefølgen i ' + RAEKKEFOELGE + ' beder om filer, der ikke findes — '
     + 'Mikkel leder efter dem i Supabase og kan ikke finde dem').toEqual([]);
 });
 

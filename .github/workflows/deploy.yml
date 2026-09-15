@@ -117,8 +117,23 @@ jobs:
       # Vaerktoejsfiler hoerer ikke til paa restaurantens hjemmeside.
       # Deployet lagger hele mappen op, saa de fjernes her - kun fra
       # kopien paa byggeserveren, aldrig fra selve repoet.
+      #
+      # ⚠️ rm -rf SPØRGER IKKE. Et forkert mellemrum eller en stjerne
+      # på linjen tømmer hele siden, og så udgives en tom mappe. Derfor:
+      #  1. Simulér en ændring af linjen på en kopi, FØR den skrives ind:
+      #     git archive HEAD | tar -x -C /tmp/kopi && cd /tmp/kopi && <linjen>
+      #     — og se at index.html og CNAME står der bagefter
+      #  2. Værnet lige nedenunder stopper udgivelsen, hvis sidefilerne
+      #     er væk. Det er set virke (15/9): "rm -rf * .claude" gav exit 1.
+      #     Fjern det ikke
+      # docs/ er historikken og reglerne, flyttet ud af CLAUDE.md 15/9.
       - name: Fjern udviklingsfiler
-        run: rm -rf .claude CLAUDE.md LAERT-AF-SPIIS.md
+        run: |
+          rm -rf .claude CLAUDE.md LAERT-AF-SPIIS.md docs supabase tests tests-gamle overdragelse vaerktoej menukort GENNEMGANG-TI-KUNDER.md VEJLEDNING.md havnegrillen-handoff.md README.md playwright.config.js package.json package-lock.json kig-dage.png kig-dagens.png .mcp.json .gitignore
+          for f in index.html CNAME admin.html ved-bordet/index.html min-bestilling/index.html js/store.js; do
+            test -f "$f" || { echo "::error::$f mangler efter oprydningen — udgiver IKKE"; exit 1; }
+          done
+          echo "Oprydningen er i orden — sidefilerne står der."
 
       - name: Pak siden
         uses: actions/upload-pages-artifact@v3

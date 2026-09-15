@@ -86,7 +86,8 @@ trap 'rm -rf "$TMP"' EXIT
 sed "s/'UDFYLD-CHEFENS-EMAIL@eksempel.dk'/'lokal@proeve.dk'/" supabase/setup.sql > "$TMP/setup.sql"
 $Q -d "$DB" -f "$TMP/setup.sql" || exit 1
 
-# Rækkefølgen er CLAUDE.md's. En fil, der mangler her, er en fil,
+# Rækkefølgen er docs/SQL-RAEKKEFOELGE.md's (flyttet ud af CLAUDE.md
+# 15/9). En fil, der mangler her, er en fil,
 # prøverne ikke ved eksisterer — se noten om er-vi-klar.sql.
 FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   realtime spis-her levering skraldespand logbog bordkort restaurant
