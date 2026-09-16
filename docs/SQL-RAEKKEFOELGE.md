@@ -58,6 +58,12 @@ skrive BESTOD.
 rigtige database, begge gange med en måling, der rullede sig selv tilbage).
 Status for den enkelte fil står i `docs/HISTORIK.md`.
 
+⚠️ **`arrangement-kategori.sql` blev KØRT IGEN 16/9** — CHECK-reglen tager nu imod
+en fjerde slags (`andet`) ud over musik, spisning og fest. Filen kan køres igen
+uden skade (den smider værnet væk og sætter det på ny), og ingen eksisterende
+række rammes. Målt i produktionen bagefter med en måling, der rullede sig selv
+tilbage: `andet` tages imod, og en opfunden værdi (`banko`) afvises stadig.
+
 ## Det, der skal køres igen bagefter
 
 En fil, der køres igen, kan skrive en ældre regel tilbage over en nyere. Det sker
