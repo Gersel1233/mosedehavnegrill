@@ -46,6 +46,53 @@
     });
   }
 
+  /* ⚠️ FELTET FINDES IKKE, FØR KOLONNEN GØR (16/9). Samme greb som
+     menukortets maaAntal() og nyhedernes maaVindue(): vi læser, hvad
+     DATABASEN har svaret, i stedet for at antage. Er
+     supabase/bord-plads.sql ikke kørt, ville hvert gem fejle med
+     PGRST204 på en fil, ejeren ikke ved eksisterer. */
+  function harNoegle(raekker, noegle) {
+    return (raekker || []).some(function (r) {
+      return Object.prototype.hasOwnProperty.call(r, noegle);
+    });
+  }
+
+  /* Er bordet lovet væk omkring det tidspunkt? Spejler databasens
+     regel (mosede_bord_plads_vaern), så vælgeren siger det samme som
+     afsendelsen — men ⚠️ VÆRNET ER DATABASENS. To medarbejdere, der
+     tildeler i samme sekund, ser begge det gamle billede; her
+     hjælper vi øjet, dér siges der nej.
+
+     Opholdet er ejerens eget (bord_ophold_min). Vi ved ikke, hvor
+     længe en middag varer, og et tal, vi selv fandt på, ville spærre
+     et bord, personalet sagtens kunne bruge. */
+  function opholdMin() {
+    var v = Number(((Admin.data || {}).indstillinger || {}).bord_ophold_min);
+    return isFinite(v) && v > 0 ? v : 120;
+  }
+
+  function minutter(t) {
+    var m = /^(\d{1,2}):(\d{2})/.exec(String(t || ''));
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  }
+
+  function bordOptaget(bordId, denne) {
+    var vindue = opholdMin();
+    var min = minutter(denne.tid);
+    var ramt = null;
+    borde.forEach(function (b) {
+      if (ramt || String(b.id) === String(denne.id)) return;
+      if (String(b.bord_id || '') !== String(bordId)) return;
+      if (b.slettet || b.status === 'afvist' || b.status === 'udeblevet') return;
+      if (b.dato !== denne.dato) return;
+      var m = minutter(b.tid);
+      if (min === null || m === null || Math.abs(m - min) >= vindue) return;
+      ramt = 'kl. ' + String(b.tid || '').slice(0, 5).replace(':', '.')
+        + ' · ' + (Admin.pæntNavn ? Admin.pæntNavn(b.navn) : b.navn);
+    });
+    return ramt;
+  }
+
   function pladser() {
     var v = Number((Admin.data.indstillinger || {}).bord_pladser);
     return isFinite(v) && v >= 1 ? Math.round(v) : null;
@@ -195,6 +242,32 @@
     if (kort) kort.classList.toggle('skjult', !slut.length);
   }
 
+  /* ⚠️ BORDVÆLGEREN STÅR PÅ TAL UDEFRA (16/9, målt).
+     Aftrykket var JSON.stringify(bookingen) alene — og kortet
+     tegnes kun om, når aftrykket ændrer sig. Men vælgerens indhold
+     kommer to andre steder fra: BORDLISTEN (som hentes for sig og
+     lander efter kortet) og DE ANDRE BOOKINGER (som afgør, hvilke
+     borde der står som optaget). Uden dem her stod vælgeren tom for
+     personalet, der åbnede fanen først — prøven i
+     tests/bord-plads.spec.js fandt det.
+
+     Samme ar som zonen i køkkenets kø (se noten dér). Kun dagens
+     egne bookinger tælles med: ellers ville hvert kort blive tegnet
+     om, hver gang en hvilken som helst booking i huset ændrede sig,
+     og noten, nogen sad og skrev i, ville miste fokus. */
+  function pladsAftryk(b) {
+    var borde_ = (Admin.lister.bordliste || []).map(function (x) {
+      return x.id + ':' + x.nummer + ':' + (x.pladser || '')
+        + ':' + (x.aktiv === false ? 0 : 1);
+    }).join(',');
+    var naboer = borde.filter(function (o) {
+      return o.dato === b.dato && String(o.id) !== String(b.id);
+    }).map(function (o) {
+      return o.id + ':' + (o.tid || '') + ':' + (o.bord_id || '') + ':' + o.status;
+    }).join(',');
+    return borde_ + '|' + naboer;
+  }
+
   function liste(id, raekker, tomTekst) {
     var boks = $(id);
     if (!boks) return;
@@ -208,7 +281,7 @@
     Admin.tegnRaekker(boks, raekker.map(function (b) {
       return {
         noegle: 'bord-' + b.id,
-        aftryk: JSON.stringify(b),
+        aftryk: JSON.stringify(b) + '|' + pladsAftryk(b),
         byg: function () { return bordKort(b); },
       };
     }));
@@ -278,6 +351,70 @@
     note.appendChild(etiket);
     note.appendChild(felt);
     k.appendChild(note);
+
+    /* ============================================================
+       HVILKET BORD FÅR DE?  (16/9, supabase/bord-plads.sql)
+       ------------------------------------------------------------
+       Ejerens ord: bordbestillingen skal kunne styres ordentligt.
+       Før stod bordet i NOTEN ovenfor ("Fx: bord 4 ved vinduet"),
+       altså i fri tekst — og så kan systemet ikke se, at to
+       familier har fået det samme bord kl. 18.
+
+       ⚠️ VÆLGEREN FINDES IKKE, FØR KOLONNEN GØR. Samme greb som
+       menukortets billede og nyhedernes datoer: vi læser, hvad
+       DATABASEN har svaret. Uden det ville hvert gem fejle med
+       PGRST204 på en fil, ejeren ikke ved eksisterer.
+
+       ⚠️ OG DEN HER LISTE ER EN HJÆLP, IKKE VÆRNET. Databasen
+       dømmer (bordbestilling_plads): to medarbejdere, der tildeler
+       det samme bord i samme sekund, ser begge det gamle billede.
+       Derfor er et optaget bord spærret HER, og afvist alligevel
+       DÉR. */
+    if (harNoegle(borde, 'bord_id')) {
+      var pladsBoks = lav('div', 'felt bord-plads');
+      var pladsEtiket = lav('label', null, 'Bord');
+      pladsEtiket.setAttribute('for', 'bord-plads-' + b.id);
+      var vaelger = document.createElement('select');
+      vaelger.id = 'bord-plads-' + b.id;
+
+      var tom = document.createElement('option');
+      tom.value = '';
+      tom.textContent = 'Intet bord valgt endnu';
+      vaelger.appendChild(tom);
+
+      (Admin.lister.bordliste || []).forEach(function (bord) {
+        /* Et slukket bord står der ikke — undtagen hvis det ER det
+           valgte: så skal personalet kunne se, hvad der står, og
+           tage det af. */
+        if (bord.aktiv === false && String(bord.id) !== String(b.bord_id)) return;
+        var o = document.createElement('option');
+        o.value = bord.id;
+        var dele = ['Bord ' + bord.nummer];
+        if (bord.pladser) dele.push(bord.pladser + ' pl.');
+        if (bord.zone) dele.push(bord.zone);
+        /* ⚠️ ET FOR LILLE BORD SPÆRRES IKKE, DET MÆRKES. To borde kan
+           sættes sammen, og en vælger, der er strengere end
+           virkeligheden, er en vælger, personalet arbejder udenom. */
+        if (bord.pladser && b.antal_personer > bord.pladser) dele.push('for lille');
+        var optaget = bordOptaget(bord.id, b);
+        if (optaget) {
+          dele.push('optaget ' + optaget);
+          o.disabled = true;
+        }
+        o.textContent = dele.join(' · ');
+        if (String(bord.id) === String(b.bord_id)) o.selected = true;
+        vaelger.appendChild(o);
+      });
+
+      vaelger.addEventListener('change', function () {
+        gemBord(Butik.skrive.bordPlads(b.id, vaelger.value),
+          vaelger.value ? 'Bordet er sat.' : 'Bordet er taget af igen.');
+      });
+
+      pladsBoks.appendChild(pladsEtiket);
+      pladsBoks.appendChild(vaelger);
+      k.appendChild(pladsBoks);
+    }
 
     /* ⚠️ SAMME FORM SOM DE TO ANDRE KORT — ét skridt frem, resten
        bag "···" (31/8 paa bestillingskortet, 8/9 paa
@@ -712,6 +849,12 @@
      to oplysninger og var et sekund bagud. */
   Admin.tegnere.push(tegnPladser);
   Admin.tegnere.push(tegnLoft);
+
+  /* ⚠️ OG KORTENE SKAL TEGNES OM, NÅR BORDLISTEN LANDER. Bordene
+     hentes af bordkort.js og meldes ind bagefter (Admin.meld
+     'bordliste'); indtil da kender bordvælgeren på kortet ingen
+     borde. tegnBorde går selv fra igen, hvis fanen ikke findes. */
+  Admin.efterHent.push(tegnBorde);
 
   /* ---- LOFTET FOR ALLE DAGE ---- */
   $('gem-bord-loft').addEventListener('click', function () {

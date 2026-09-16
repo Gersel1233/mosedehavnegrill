@@ -1112,6 +1112,31 @@
       return skriv('DELETE', 'forespoergsler', 'id=eq.' + encodeURIComponent(id));
     },
 
+    /* ⚠️ BORDET ER PERSONALETS FELT (16/9, supabase/bord-plads.sql).
+       Den skrives for sig og ALDRIG sammen med statussen: en
+       ubetinget kolonne ville tømme bordet, hver gang nogen trykkede
+       ✓ Ankommet — samme lov som `vis_fra` på nyhederne.
+       null er den normale tilstand og vejen til at tage bordet af
+       igen; databasen dømmer resten (optaget, slukket, gæstens
+       forsøg). */
+    bordPlads: function (id, bordId) {
+      var ren = {
+        bord_id: (bordId === '' || bordId === undefined || bordId === null)
+          ? null : Number(bordId),
+        aendret: new Date().toISOString(),
+      };
+
+      if (!SKY) return lokalt(function (d) {
+        d.bordbestillinger = (d.bordbestillinger || []).map(function (b) {
+          if (String(b.id) !== String(id)) return b;
+          var ny = Object.assign({}, b, ren);
+          logLokalt(d, 'bordbestillinger', b, ny);
+          return ny;
+        });
+      });
+      return skriv('PATCH', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id), ren);
+    },
+
     bordStatus: function (id, status, note) {
       var ren = { status: status, aendret: new Date().toISOString() };
       if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;

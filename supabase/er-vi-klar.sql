@@ -1260,7 +1260,19 @@ with tjek(nr, del, hvad, ok, retning) as (values
      where tgrelid = to_regclass('public.bestillinger')
        and tgname = 'bestilling_kanal_vaern'),
    'En gæst kan bestille fra en kategori, der ikke er åben nogen steder — '
-   || 'fx cateringens. Kør supabase/kanal-vaern.sql.')
+   || 'fx cateringens. Kør supabase/kanal-vaern.sql.'),
+
+  /* ⚠️ BORDET STOD I FRI TEKST (16/9). Personalet skrev "bord 4 ved
+     vinduet" i noten, og så kan systemet ikke se, at to familier har
+     fået det samme bord kl. 18. Kolonnen gør det til andet end en
+     note, og værnet holder det samme bord fra at blive lovet væk to
+     gange inden for opholdet. */
+  (148, 'Borde', 'En booking kan få et bord — og det kan ikke loves væk to gange',
+   (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bordbestillinger')
+       and tgname = 'bordbestilling_plads'),
+   'Bordvælgeren i admin kan ikke gemme, og to bookinger kan få det samme '
+   || 'bord på samme tid. Kør supabase/bord-plads.sql.')
 ),
 
 samlet as (

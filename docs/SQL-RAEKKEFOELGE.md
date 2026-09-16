@@ -44,6 +44,7 @@ og derfra:
   → menukort-raekkefoelge.sql → sagsnummer.sql
   → aabent-og-antal-vaern.sql → ugepaamindelse.sql
   → gaestens-regler.sql → vare-valg.sql → kanal-vaern.sql
+  → bord-plads.sql
 ```
 
 Fire filer står ikke i blokkene, men køres af byggeren på deres plads:
