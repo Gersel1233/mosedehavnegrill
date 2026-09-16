@@ -192,6 +192,69 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
     expect((await gemteData(page)).reservationer).toHaveLength(1);
   });
 
+  /* ============================================================
+     ET ARRANGEMENT, DER ER SLUT, TAGER IKKE IMOD  (16/9)
+     ------------------------------------------------------------
+     Ejerens ord: "vi skal have en sluttidskolonne". Bremsen
+     afviste kun på DATO — `coalesce(slut_dato, dato) < current_date`
+     — og det er sandt HELE dagen: en koncert, der sluttede kl. 22,
+     tog stadig imod kl. 23.30, og gæsten fik en kvittering til
+     noget, der var forbi.
+
+     ⚠️ TOM slut_kl BETYDER SOM FØR. Et heldagsarrangement har ingen
+     sluttid, og et gæt ("slut = start") ville lukke en tilmelding,
+     ejeren aldrig har lukket. Vi finder ikke på et tidspunkt på
+     forretningens vegne.
+
+     ⚠️ TIDERNE HAR BRED MARGIN med vilje: 14:00 og 23:30 mod et ur
+     kl. 20 dansk tid. En prøve, der kan vippe på, om huset regner
+     i UTC eller lokal tid, måler noget andet, end den påstår.
+     ============================================================ */
+  const ARR_I_DAG = '2026-09-05';
+  const UR_KL_20 = ARR_I_DAG + 'T18:00:00Z';
+
+  test('er sluttidspunktet passeret, kan man ikke melde sig til', async ({ page }) => {
+    await åbnKalender(page, {
+      ur: UR_KL_20,
+      data: med([arr({ dato: ARR_I_DAG, slut_kl: '14:00' })], []),
+    });
+    await page.fill('#knavn', 'For Sent');
+    await page.fill('#ktlf', '28871343');
+    await page.locator('#reserver button.g.solid.blk').click();
+
+    await expect(page.locator('#reserver .fine')).toContainText('overstået');
+    expect((await gemteData(page)).reservationer).toHaveLength(0);
+  });
+
+  /* ⚠️ KONTROLMÅLINGEN. Uden den ville et værn, der ALTID afviser,
+     bestå prøven ovenfor — og så kunne ingen melde sig til noget. */
+  test('men inden sluttidspunktet kan man godt', async ({ page }) => {
+    await åbnKalender(page, {
+      ur: UR_KL_20,
+      data: med([arr({ dato: ARR_I_DAG, slut_kl: '23:30' })], []),
+    });
+    await page.fill('#knavn', 'I God Tid');
+    await page.fill('#ktlf', '28871343');
+    await page.locator('#reserver button.g.solid.blk').click();
+
+    expect((await gemteData(page)).reservationer).toHaveLength(1);
+  });
+
+  /* ⚠️ DET ANDET MODSTYKKE, og det er det vigtigste: en tom
+     kolonne må ikke lukke noget. Går den her i stykker, holder
+     alle de gamle arrangementer op med at tage imod. */
+  test('og uden sluttid gælder hele dagen som før', async ({ page }) => {
+    await åbnKalender(page, {
+      ur: UR_KL_20,
+      data: med([arr({ dato: ARR_I_DAG, slut_kl: null })], []),
+    });
+    await page.fill('#knavn', 'Hele Dagen');
+    await page.fill('#ktlf', '28871343');
+    await page.locator('#reserver button.g.solid.blk').click();
+
+    expect((await gemteData(page)).reservationer).toHaveLength(1);
+  });
+
   test('samme nummer kan ikke melde sig til to gange', async ({ page }) => {
     await åbnKalender(page, {
       data: med([arr()], [res({ telefon: '28871343' })]),

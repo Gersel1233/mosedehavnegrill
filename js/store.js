@@ -3528,6 +3528,29 @@
         return Promise.reject(new Error('Det arrangement er overstået.'));
       }
 
+      /* ⚠️ OG SLUTTIDSPUNKTET, NÅR DAGEN ER I DAG (16/9). Ejerens
+         ord: "vi skal have en sluttidskolonne". Datoen alene er sand
+         HELE dagen, så en koncert, der sluttede kl. 22, tog stadig
+         imod kl. 23.30 — og gæsten fik en kvittering til noget, der
+         var forbi.
+
+         ⚠️ TOM slut_kl BETYDER SOM FØR: åben dagen ud. Et
+         heldagsarrangement har ingen sluttid, og et gæt ("slut =
+         start") ville lukke en tilmelding, ejeren aldrig har lukket.
+
+         ⚠️ SAMMENLIGN PÅ MINUTTER, ikke på tekst. nu() giver både
+         `tid` ("HH:MM") og `minutter` siden midnat i dansk tid;
+         minuttallet kan ikke skride på et manglende nul. Samme regel
+         som reservation_bremse i supabase/arrangement-sluttid.sql —
+         databasen skal afvise det samme som siden. */
+      if (arr.slut_kl && (arr.slut_dato || arr.dato) === nu().dato) {
+        var s = String(arr.slut_kl);
+        var slutMin = parseInt(s.slice(0, 2), 10) * 60 + parseInt(s.slice(3, 5), 10);
+        if (isFinite(slutMin) && nu().minutter > slutMin) {
+          return Promise.reject(new Error('Det arrangement er overstået.'));
+        }
+      }
+
       var dobbelt = d.reservationer.some(function (x) {
         return !x.slettet && x.status !== 'afvist'
           && String(x.kalender_id) === String(raekke.kalender_id)

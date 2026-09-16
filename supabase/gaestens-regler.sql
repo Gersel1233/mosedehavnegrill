@@ -645,6 +645,24 @@ begin
     raise exception 'reservation_overstaaet';
   end if;
 
+  /* ⚠️ OG SLUTTIDSPUNKTET, NÅR DAGEN ER I DAG (16/9). Ejerens ord:
+     "vi skal have en sluttidskolonne". Datoen alene er sand HELE
+     dagen, så en koncert, der sluttede kl. 22, tog stadig imod kl.
+     23.30. Tom slut_kl betyder som før: åben dagen ud.
+
+     ⚠️ DANSK TID, IKKE UTC. current_date/current_time er UTC, og en
+     naiv sammenligning ville lukke to timer for tidligt om sommeren.
+
+     ⚠️ STÅR OGSÅ I supabase/arrangement-sluttid.sql, som ejer
+     kolonnen. Køres denne fil igen, er tjekket med — det var netop
+     dét, der kunne skride. */
+  if arr.slut_kl is not null
+     and coalesce(arr.slut_dato, arr.dato)
+         = (now() at time zone 'Europe/Copenhagen')::date
+     and (now() at time zone 'Europe/Copenhagen')::time > arr.slut_kl then
+    raise exception 'reservation_overstaaet';
+  end if;
+
   /* ⚠️ PLADSERNE TÆLLES HER, IKKE I BROWSEREN. Kun det, der ikke er
      afvist eller slettet, tæller: et afslag skal frigive pladsen
      igen. Udeblevne tæller MED. */

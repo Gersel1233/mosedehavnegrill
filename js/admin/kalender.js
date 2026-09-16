@@ -216,6 +216,18 @@
     return Object.prototype.hasOwnProperty.call(liste[0], 'tilmelding');
   }
 
+  /* Samme greb som maaTilmelding, for sin egen kolonne: kalender.slut_kl
+     kommer med supabase/arrangement-sluttid.sql (16/9). Er filen ikke
+     kørt, svarer PostgREST PGRST204 på kolonnen — og så kan ejeren ikke
+     gemme et arrangement overhovedet. En tom kalender er et "måske": så
+     sender vi feltet, og fejler det, siger Admin.forklarFejl hvilken fil
+     der mangler. En høj fejl med en løsning slår en tavs. */
+  function maaSluttid() {
+    var liste = (Admin.data && Admin.data.kalender) || [];
+    if (!liste.length) return true;
+    return Object.prototype.hasOwnProperty.call(liste[0], 'slut_kl');
+  }
+
   /* Samme greb som maaTilmelding, for sin egen kolonne:
      kalender.billede kommer med supabase/arrangement-info.sql. */
   function maaBillede() {
@@ -309,7 +321,7 @@
 
   function ryd() {
     ['kal-dato', 'kal-slut', 'kal-titel', 'kal-emoji', 'kal-tid',
-      'kal-pladser', 'kal-pris', 'kal-start', 'kal-beskrivelse',
+      'kal-pladser', 'kal-pris', 'kal-start', 'kal-slut', 'kal-beskrivelse',
       'kal-kategori'].forEach(function (id) {
       if ($(id)) $(id).value = '';
     });
@@ -343,6 +355,7 @@
     $('kal-pladser').value = k.pladser === null || k.pladser === undefined ? '' : k.pladser;
     $('kal-pris').value = k.pris_tekst || '';
     if ($('kal-start')) $('kal-start').value = k.start_kl ? String(k.start_kl).slice(0, 5) : '';
+    if ($('kal-slut')) $('kal-slut').value = k.slut_kl ? String(k.slut_kl).slice(0, 5) : '';
     if ($('kal-beskrivelse')) $('kal-beskrivelse').value = k.beskrivelse || '';
     if ($('kal-kategori')) $('kal-kategori').value = k.kategori || '';
 
@@ -456,6 +469,18 @@
         + 'gæsten skal vide, hvornår hun skal møde op.');
     }
 
+    /* ⚠️ SLUT EFTER START (16/9). Et arrangement, der slutter før det
+       begynder, lukker tilmeldingen i samme sekund, det oprettes — og
+       ejeren ville lede efter fejlen på hjemmesiden. To felter ved
+       siden af hinanden inviterer til at bytte om på dem. */
+    if (nyType === 'arrangement' && maaSluttid()
+      && $('kal-start') && $('kal-start').value
+      && $('kal-slut') && $('kal-slut').value
+      && $('kal-slut').value <= $('kal-start').value) {
+      return Admin.brøl('Sluttidspunktet skal ligge efter starten. '
+        + 'Slutter arrangementet efter midnat, så lad feltet stå tomt.');
+    }
+
     /* ⚠️ EN HEL LUKNING SPØRGER FØRST, HVIS DEN RAMMER NOGET (16/9).
        Den aflyser ingenting af sig selv — bookinger og bestillinger står,
        og et offentligt arrangement står stadig på hjemmesiden. Det er
@@ -515,6 +540,15 @@
          arrangementerne blev bygget — men ejeren kunne ikke
          skrive dem. Han lagde et arrangement op, og på siden stod
          en dato og en titel og ikke andet. */
+      /* ⚠️ EGEN NØGLE, EGEN KOLONNE. slut_kl kommer med
+         supabase/arrangement-sluttid.sql; maaSluttid() spørger
+         databasen, om den er der, præcis som maaTilmelding gør for
+         sin. Sender vi kolonnen, før den findes, svarer PostgREST
+         PGRST204, og så kan der ikke oprettes et arrangement
+         overhovedet — for en fil, ejeren ikke ved eksisterer. */
+      slut_kl: maaSluttid()
+        ? (erArr && $('kal-slut') && $('kal-slut').value ? $('kal-slut').value : null)
+        : undefined,
       start_kl: maaTilmelding()
         ? (erArr && $('kal-start') && $('kal-start').value ? $('kal-start').value : null)
         : undefined,
