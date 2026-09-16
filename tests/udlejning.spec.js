@@ -641,7 +641,13 @@ test.describe('Baglokalet har ÉN vej frem, og den låser dagen', () => {
      regel, der gemte HVER ✓ Aftal bag døren, ville bestå dem
      begge — og så mistede selskaber, catering og frokost deres
      ene handling. Dér er der ikke noget lokale at låse. */
-  test('et selskab har stadig ✓ Aftal & sæt tid som sin handling', async ({ page }) => {
+  /* ⚠️ VENDT 16/9, OG REGLEN ER DEN SAMME. Et selskab har stadig
+     PRÆCIS ÉN synlig vej frem — den hedder bare "✓ Bekræft aftalen"
+     nu og gør mere: den skriver dagen, tiden og lukningen og sætter
+     status. Den gamle "✓ Aftal & sæt tid" satte kun status, og to
+     ja-knapper ved siden af hinanden er dét, hele afsnittet her
+     findes for. Den ligger bag "···" og siger, hvad den ikke gør. */
+  test('et selskab har stadig ÉN synlig handling — nu Bekræft aftalen', async ({ page }) => {
     await åbnAdmin(page, {
       data: grunddata({ forespoergsler: [selskabForesp({ status: 'kontaktet' })] }),
     });
@@ -649,8 +655,14 @@ test.describe('Baglokalet har ÉN vej frem, og den låser dagen', () => {
     const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
     const synlige = kort.locator('.knap-raekke .knap:visible');
     await expect(synlige).toHaveCount(1);
-    await expect(synlige.first()).toContainText('Aftal & sæt tid');
-    await expect(synlige.first()).not.toContainText('uden at låse');
+    await expect(synlige.first()).toContainText('Bekræft aftalen');
+    await expect(synlige.first()).not.toContainText('uden at');
+
+    /* Modstykket: den stille vej findes stadig, bag døren. */
+    const stille = kort.getByRole('button', { name: /Aftal uden at sætte i kalenderen/ });
+    await expect(stille).toBeHidden();
+    await aabnMere(kort);
+    await expect(stille).toBeVisible();
   });
 });
 

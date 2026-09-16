@@ -141,7 +141,14 @@
        være lukket". Før kom felterne FØRST, når sagen allerede stod
        som aftalt — altså efter beslutningen var truffet, og med
        gæstens ønske et andet sted på kortet. */
+    /* ⚠️ IKKE BAGLOKALET (16/9, fundet af den fulde runde). Lokalet
+       har sin EGEN vej frem — "Book lokalet til dem", som opretter
+       udlejningen OG låser dagen — og den skal stå alene. Med boksen
+       her fik kortet to ja-veje igen, præcis det, 8/9 lukkede: den
+       ene låser dagen, den anden gør ikke, og de ligner hinanden.
+       Prøven i udlejning.spec.js tæller de SYNLIGE knapper. */
     if (f.status === 'kontaktet' && !f.slettet && f.dato
+        && f.type !== 'baglokale'
         && f.dato >= Butik.nu().dato) return 'bekraeft';
     if (f.status !== 'aftalt' || f.slettet) return 'ikke-relevant';
     if (!f.dato) return 'uden-dato';
