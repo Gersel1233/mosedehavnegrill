@@ -37,6 +37,28 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
   Dagens billede talte kun ankomne som "sagt ja" (en fuld lørdag stod som
   "0 sagt ja · 12 venter"); nu tæller alle bookede pladser. Nye står efter
   dag og tid. bord/ har − og + ved antallet
+- **`bestil/` ved nu, om vi kører derud** (16/9, ingen SQL). Ejerens ord: de
+  leverer i en radius — Greve, Karlslunde, Tune, Køge og det ind imellem — *"så
+  adresse skal der være, og den skal kende til, om det ligger inden for"*.
+  ⚠️ **Reglen fandtes hele tiden:** `R.leveringSvar`, ejerens egen liste
+  (2635, 2670, 2680, 2690, 4030, 4600, 4623) og smørrebrødssidens kobling. `bestil/`
+  spurgte den bare aldrig — dér stod kun en fast sætning, og en gæst uden for
+  området udfyldte hele formularen og fik først nej i et opkald. Nu: tre udfald med
+  smørrebrødssidens ord tegn for tegn, spærring ved `spoerg` (ejerens beslutning fra
+  4/9, Frederiksberg-sagen), **ingen** spærring ved `ukendt` (en adresse uden
+  postnummer må ikke afvises), og en input-lytter, fordi svaret ellers stod
+  forældet, mens gæsten tastede. Stilen **flyttet** fra `havnegrillen.css` til
+  `style.css` — tredje gang samme dag at en regel lå i ét ark og manglede i det
+  andet. ⚠️ **Og en kommentar, der løj:** `js/skal/bestil.js` sagde *"Afsendelsen
+  kræver stadig kun, at der STÅR en adresse"* — sandt indtil 4/9, hvor spærringen
+  kom ind længere nede; linjen blev aldrig rettet, så filen sagde det modsatte af
+  sin egen kode. ⚠️ **Og en prøve, der ikke kunne skelne:** "et postnummer i området
+  siger ja" målte delstrengen "kører derud", som står i TO af de tre svar — med
+  svaret tvunget til `ukendt` bestod den alligevel. Måler nu klassen `lev-ja` og
+  hakket. **Bordloftet blev IKKE ændret:** alle 55 borde har `pladser = null`, og
+  `bord_pladser` = 55 er bordantallet tastet i et felt, der siger "mennesker, ikke
+  borde" — der er intet at regne bordækvivalenter ud fra, og et gæt ville være et
+  tal uden belæg
 - **Bølge 1: tolv agenter læste hele huset igennem** (16/9). Tolv kun-læsende
   agenter fik hver sit område — seks på gæstesiden, seks på admin — og samme
   opgaveform: fund med fil:linje, den kundesituation der knækker, og hvad der
