@@ -47,6 +47,28 @@ bor på bordet, ikke på bookingen, og "7" ville kollidere med sagsnummer 7.
 ord tre centimeter over), og at equalizeren overhovedet var forkert. Ingen
 tekstpåstand fangede nogen af dem.
 
+⚠️ **OG DEN FULDE RUNDE FANGEDE EN REGRESSION, MINE EGNE PRØVER IKKE SÅ.**
+`roller.spec.js:242` ("rollen kan skiftes, og det står i databasen") er ældre
+end forfremmelses-værnet: den klikker Ejer-pillen og venter på kvitteringen,
+men håndterer ingen dialog — og **Playwright afviser dialoger af sig selv**, så
+klikket returnerede, intet blev gemt, og kvitteringen udeblev. Fejlen lå i
+fremgangsmåden: der blev kun kørt de tre NYE prøver (`-g "til Ejer"`), aldrig
+hele den fil, der var rørt. **Rører du en prøvefil, så kør HELE filen — ikke
+kun dine egne prøver i den.** Tilføjer du et `window.confirm` et sted, så grep
+efter alle prøver, der klikker på den knap: her var det præcis én, men det
+vidste jeg først efter at have set efter.
+
+⚠️ **RUNDEN MÅTTE KØRES I NI BIDDER** (16/9). To arbejdere blev dræbt af
+hukommelsen, *før én eneste prøve nåede at køre* — Chrome stod med 127
+processer og 11,4 GB, og der var 56 MB fri. Det, der kom igennem: computer i
+4 bidder og telefon i 6, alle med `--workers=1` (~6 min pr. bid). Og da en
+bid ikke kunne gentages uden at blive dræbt, blev dens 32 filer kørt som tre
+navngivne grupper i stedet — hele filer, så det kan ses, hvad der er kørt.
+⚠️ **GEM HELE LOGGEN TIL EN FIL.** Første forsøg brugte `| tail -4`, så da en
+bid meldte "1 failed", var prøvens NAVN kasseret ved kilden — og
+`test-results/` var ryddet af næste kørsel, `.last-run.json` fandtes ikke.
+Beviset var væk, og biden måtte køres om.
+
 **Admin hænger sammen, billederne passer, og bordbookingen er booket** (16/9).
 Ejerens liste: forespørgslerne er utydelige, bordbestilling er ikke god nok
 (alle tre flader), billeder skal passe af sig selv, admin skal hænge sammen
