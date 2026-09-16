@@ -148,7 +148,20 @@ test.describe('Smørrebrød ud af huset: hentes eller leveres', () => {
     await laegIKurv(page);
     await page.locator('#bestil-hvordan .type-knap', { hasText: 'I leverer' }).click();
     await page.locator('#bestil-adresse').fill('Havnevej 20I, 2670 Greve');
-    await expect(page.locator('#lev-svar')).toContainText('kører derud');
+    /* ⚠️ MÅL KLASSEN OG HAKKET, IKKE "kører derud" (rettet 16/9).
+       Første udgave spurgte kun toContainText('kører derud') — og
+       den streng står i TO af de tre svar:
+         "✓ Vi kører derud."
+         "Skriv postnummeret med, så kan vi sige med det samme, om
+          vi kører derud."
+       MÅLT: med svaret tvunget til 'ukendt' bestod prøven
+       alligevel. Den kunne ikke skelne et ja fra et "skriv
+       postnummeret" — samme klasse som et "ikke lig X", der
+       opfyldes af noget andet end det, prøven handler om. */
+    const linje = page.locator('#lev-svar');
+    await expect(linje).toHaveClass(/lev-ja/);
+    await expect(linje).not.toHaveClass(/lev-spoerg/);
+    await expect(linje).toContainText('✓ Vi kører derud.');
   });
 
   test('zonen: et postnummer udenfor siger det — og kan ikke sendes', async ({ page }) => {
@@ -176,7 +189,12 @@ test.describe('Smørrebrød ud af huset: hentes eller leveres', () => {
     await laegIKurv(page);
     await page.locator('#bestil-hvordan .type-knap', { hasText: 'I leverer' }).click();
     await page.locator('#bestil-adresse').fill('Storegade 1, 8000 Aarhus');
-    await expect(page.locator('#lev-svar')).toContainText('kører derud');
+    /* Samme skelnen som ovenfor: klassen er entydig, delstrengen
+       "kører derud" er det ikke. Og tallet kommer udefra — ejerens
+       liste er sat til 8000, som ikke står i husets standard. */
+    const linje = page.locator('#lev-svar');
+    await expect(linje).toHaveClass(/lev-ja/);
+    await expect(linje).toContainText('✓ Vi kører derud.');
   });
 
   /* ⚠️ MODSTYKKET: en adresse UDEN postnummer må ikke spærre.
