@@ -30,6 +30,16 @@ læse `borde.kode`, så `har_kode` er kun afledt, og dommen falder i databasen.
 rejser `bord_kode_forkert`. Adressen på skiltet er
 `ved-bordet/?bord=<nummer>&n=<nøgle>` — nummeret i `bord`, nøglen i `n`.
 
+⚠️ **OG SKILTET SAGDE DET SAMME TO GANGE.** Da de 14 skilte blev tegnet med
+produktionens data, stod der `Inde · 5 pladser · inde` og `Ude · 5 pladser · ude`
+— på **ti af fjorten**. Zonen og placeringen blev begge skubbet på linjen, uden
+at nogen spurgte, om de sagde det samme. Rettelsen sidder i **skiltet**, ikke i
+dataene: jeg kunne have omdøbt zonerne, men "Molen" og "Terrassen" er ejerens
+ord, ikke vores (`borde-55.sql`) — døber han dem om, står placeringen der igen
+af sig selv. `Ved lugen · 2 pladser · ude` er urørt, for dér **tilføjer** zonen
+noget. Fire prøver, to af dem modstykker; 124 grønne på tværs af de tre filer,
+der rører printsiden (`bordkort`, `bord-noegle`, `kontakt-post`).
+
 **Sluttid, borde og "bord 12"** (16/9, sent — ejerens tre svar). ⚠️ **ÉN SQL-fil
 skal køres: `supabase/arrangement-sluttid.sql`** (kørt i produktionen 16/9).
 
