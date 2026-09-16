@@ -76,7 +76,19 @@ ellers skal dataene være tydelige: *"det, de ansøger om i forvejen"*.
 - **⚠️ OG BESKEDFELTET DELTE KLASSE MED KALENDERNOTEN**, så en gammel prøve
   fandt to felter i stedet for ét. Feltet har sit eget navn nu (`kal-besked`) —
   en prøve skal kunne pege på tingen selv
-- Seks prøver i `tests/foresp-bekraeft.spec.js`, fire falsifikationer, fire fald
+- **⚠️ OG SÅ STOD DER TO JA-KNAPPER IGEN — MÅLT PÅ ET SKUD.** Kortet havde
+  BÅDE den grønne "✓ Aftal & sæt tid" øverst (sætter kun status) og den røde
+  "✓ Bekræft aftalen" i boksen. Grøn betyder "det gik godt" i hele admin, så
+  personalet trykker den — og går videre fra en dag, der ikke står nogen
+  steder. **Det er nøjagtig den fælde, baglokalet fik lukket 8/9.** Den grønne
+  ligger bag "···" nu og hedder *"✓ Aftal uden at sætte i kalenderen"*; den
+  siger, hvad den IKKE gør. Og kalendertitlen går gennem `Admin.pæntNavn`
+  (ottende sted), så "susanne dahl" ikke står med småt i kalenderen
+- **⚠️ FIRE GAMLE PRØVER KLIKKEDE PÅ DEN FLYTTEDE KNAP** og løb tør for tid.
+  De er rettet MED en note: boksen står nu af sig selv, så der skal ikke
+  trykkes først. Reglerne, de vogter, er urørte — to lukninger, intet sat på
+  forhånd, og en eksisterende regel må ikke tørres af
+- Otte prøver i `tests/foresp-bekraeft.spec.js`, seks falsifikationer, seks fald
 
 **Køkken-kø og Borde er én fane: Køkkenet** (16/9, sent). Ejerens ord: *"hvad er
 forskel på køkken-kø og borde — de skal da bare slås sammen til primært

@@ -1153,8 +1153,13 @@
       .catch(function (e) { Admin.brøl(e.message || String(e)); });
   }
 
+  /* ⚠️ HUSKES, TIL FANEN FORLADES (16/9). Takten (Admin.friske) og
+     hvert gem henter listen igen — uden flaget her ville de ældre
+     sager forsvinde igen to sekunder efter, nogen bad om dem. */
+  var visAeldre = false;
+
   function hentForespoergsler() {
-    return Butik.hentForespoergsler().then(function (liste) {
+    return Butik.hentForespoergsler(visAeldre).then(function (liste) {
       forespoergsler = liste || [];
       Admin.meld('forespoergsler', forespoergsler);
       tegnForespoergsler();
@@ -1194,6 +1199,28 @@
 
   Admin.forespoergselKort = forespoergselKort;
   Admin.forespoergselManglerIKalender = manglerIKalender;
+
+  /* ⚠️ KNAPPEN HENTER, DEN FILTRERER IKKE. De ældre sager er ikke
+     gemt væk i browseren — de er slet ikke hentet (se noten ved
+     Butik.hentForespoergsler). Derfor skifter knappen til en linje,
+     der siger, at alt er med: en knap, man kan trykke på igen og
+     igen uden at der sker noget, holder man op med at stole på. */
+  var aeldreKnap = $('foresp-aeldre');
+  if (aeldreKnap) {
+    aeldreKnap.addEventListener('click', function () {
+      visAeldre = true;
+      aeldreKnap.disabled = true;
+      aeldreKnap.textContent = 'Henter …';
+      hentForespoergsler().then(function () {
+        var note = $('foresp-aeldre-note');
+        if (note) note.textContent = 'Alle sager er med — også dem fra tidligere år.';
+        aeldreKnap.remove();
+      }).catch(function () {
+        aeldreKnap.disabled = false;
+        aeldreKnap.textContent = 'Vis også ældre sager';
+      });
+    });
+  }
 
   Admin.vedLogin.push(hentForespoergsler);
   Admin.friske.push(hentForespoergsler);

@@ -4972,7 +4972,15 @@
        er afsluttet eller opgivet. Filtrerede vi på arrangementets
        dato, ville de forespørgsler, hvor gæsten ikke har oplyst en
        dato, falde helt ud af listen. */
-    hentForespoergsler: function () {
+    /* ⚠️ `alt` HENTER OGSÅ DE ÆLDRE (16/9). Ejerens ord: man skal
+       "altid kunne finde det, hvis det bliver væk". MÅLT: grænsen på
+       180 dage gjaldt HENTNINGEN, så en sag fra i fjor hverken stod
+       på fanen ELLER kunne søges frem — den fandtes ikke i browseren.
+
+       Standarden bliver: en fane, der henter alt fra tidernes morgen
+       hver gang admin åbnes, er langsom for ingenting. Knappen på
+       fanen beder om resten, når nogen leder. */
+    hentForespoergsler: function (alt) {
       if (!SKY) {
         var d = læsLokalt();
         return Promise.resolve((d.forespoergsler || []).filter(levende));
@@ -4980,7 +4988,8 @@
       var graense = new Date(nu().dato + 'T12:00:00Z');
       graense.setUTCDate(graense.getUTCDate() - 180);
       return hentTabel('forespoergsler',
-        'select=*' + MIT + LEVENDE + '&oprettet=gte.' + graense.toISOString().slice(0, 10)
+        'select=*' + MIT + LEVENDE
+        + (alt ? '' : '&oprettet=gte.' + graense.toISOString().slice(0, 10))
         + '&order=oprettet.desc');
     },
 
