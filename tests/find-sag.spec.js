@@ -104,6 +104,49 @@ test('et telefonnummer samler gæstens sager på tværs af faner', async ({ page
   await expect(traef.filter({ hasText: 'Tilmelding' })).toHaveCount(1);
 });
 
+/* ============================================================
+   DE SIDSTE CIFRE ER NOK  (16/9)
+   ------------------------------------------------------------
+   Feltet lover "navn, telefon, dato, nummer eller reference", og
+   porten i findsag.js lukker seks cifre ind (length >= 6). Men
+   sammenligningen nedenunder er
+       tlf.slice(-8) === sogt.slice(-8)
+   og for seks cifre bliver det "20304050" === "304050" — falsk.
+   Porten lover altså noget, sammenligningen ikke holder: seks og
+   syv cifre kunne ALDRIG ramme, kun præcis otte.
+
+   Det er den situation, feltet er til for: gæsten står i røret og
+   læser de cifre, hun kan huske.
+
+   ⚠️ MODSTYKKERNE ER DET VIGTIGE. Sammenligner man bare "de
+   sidste N", bliver enhver kort talrække et bredt net — "4050"
+   ville hente hver eneste gæst, hvis nummer ender sådan. Porten
+   på seks skal blive stående.
+   ============================================================ */
+test('de sidste seks cifre finder gæsten', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  const traef = await soeg(page, '304050');
+  await expect(traef, 'seks cifre af 20304050 fandt ingen').toHaveCount(2);
+});
+
+test('og de sidste syv gør det også', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  await expect(await soeg(page, '0304050')).toHaveCount(2);
+});
+
+test('men fire cifre er ikke et opslag — det er et net', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  /* ⚠️ Fire cifre må ikke ramme telefonen. Ingen sag har nummeret
+     4050, så et træf her kunne kun komme fra en for løs
+     nummersammenligning. */
+  await expect(await soeg(page, '4050')).toHaveCount(0);
+});
+
+test('og seks cifre, der ikke passer, finder ingenting', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  await expect(await soeg(page, '999999')).toHaveCount(0);
+});
+
 test('hver slags sag har sit eget bogstav i nummeret', async ({ page }) => {
   await H.åbnAdmin(page, { data: femSager() });
 

@@ -63,7 +63,20 @@
        Admin.sammeGaest 29/8). */
     if (sogt !== null && String(sogt).length >= 6) {
       var tlf = taller(sag.telefon);
-      if (tlf !== null && String(tlf).slice(-8) === String(sogt).slice(-8)) return true;
+      /* ⚠️ SÅ MANGE CIFRE, SOM DER BLEV SKREVET (16/9). Her stod
+         `slice(-8)` på BEGGE sider, og for seks cifre blev det
+         "20304050" === "304050" — falsk. Porten lige ovenfor
+         lukker seks ind, og feltet lover "telefon"; sammenligningen
+         holdt kun for præcis otte. Seks og syv kunne aldrig ramme,
+         og det er netop dem, gæsten læser op i røret.
+
+         ⚠️ LOFTET PÅ OTTE BLIVER: skriver nogen nummeret med
+         landekode ("+45 20 30 40 50" → 4520304050), skal de sidste
+         otte stadig være dem, der sammenlignes. Og porten på seks
+         holder de korte søgninger ude — uden den ville "4050"
+         hente hver eneste gæst, hvis nummer ender sådan. */
+      var n = Math.min(String(sogt).length, 8);
+      if (tlf !== null && String(tlf).slice(-n) === String(sogt).slice(-n)) return true;
     }
 
     /* ⚠️ OG NAVNET OG DATOEN (16/9). Ejerens ord: det skal være "nemt
