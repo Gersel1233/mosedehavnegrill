@@ -57,6 +57,32 @@
       if (taller(sag.nummer) === sogt) return true;
     }
 
+    /* ⚠️ "BORD 12" — OG IKKE BARE "12"  (16/9). Ejerens ønske: det
+       skal være nemt at finde tingene, og personalet står ved et
+       bord og vil se, hvem der har booket det.
+
+       ORDET "bord" ER KRAVET, ikke pynt. Et tal alene er allerede et
+       SAGSNUMMER, og lod vi det slå op i bordene, ville ét opslag
+       give to svar om to forskellige ting — samme grund som noten
+       lige ovenfor: "Kun HELE tal må matche nummeret."
+
+       ⚠️ NUMMERET BOR PÅ BORDET, ikke på bookingen. Rækken har et
+       bord_id, og nummeret slås op i Admin.lister.bordliste, som
+       bordkort.js melder ind ved login (Admin.vedLogin). Er listen
+       ikke hentet endnu, finder vi ingenting — og det er den
+       rigtige fejl at lave: et forkert bordnummer ville sende
+       personalet hen til det forkerte bord.
+
+       taller() på begge sider, så "bord 07" og "bord 7" er det
+       samme bord. */
+    var bordOrd = /^bord\s*([0-9]+)$/i.exec(ord);
+    if (bordOrd && sag.bord_id) {
+      var bordet = (Admin.lister.bordliste || []).filter(function (x) {
+        return String(x.id) === String(sag.bord_id);
+      })[0];
+      if (bordet && taller(bordet.nummer) === taller(bordOrd[1])) return true;
+    }
+
     /* Telefonnummeret er den tredje ting, gæsten kan sige. Otte
        cifre, sammenlignet som cifre — "+45 20 30 40 50" og
        "20304050" er det samme menneske (samme regel som

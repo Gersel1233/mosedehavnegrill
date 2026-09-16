@@ -157,6 +157,62 @@ test('og seks cifre, der ikke passer, finder ingenting', async ({ page }) => {
   await expect(await soeg(page, '999999')).toHaveCount(0);
 });
 
+/* ============================================================
+   "BORD 7" FINDER BORDET  (16/9)
+   ------------------------------------------------------------
+   Ejerens ønske: det skal være nemt at finde tingene. Personalet
+   står ved et bord og vil se, hvem der har booket det — men
+   bordnummeret var ikke blandt de felter, registret kiggede i.
+
+   ⚠️ ORDET "BORD" SKAL MED, og det er hele pointen. Et tal alene er
+   allerede et SAGSNUMMER, og lod vi det slå op i bordene, ville ét
+   opslag pludselig give to svar om to forskellige ting. Husets egen
+   note ved nummer-matchet siger det samme: "Kun HELE tal må matche
+   nummeret. Ellers ville '4' hente hver eneste bestilling fra 4 til
+   400 frem."
+
+   ⚠️ TALLET ER 12 OG IKKE 7, OG DET ER MÅLT (16/9). Første udgave
+   brugte bord 7 og søgte på "7" — men findsag.js viser INTET for et
+   søgeord på under to tegn (linje 191), så modstykket fik nul træf
+   og målte ingenting. Skærmbilledet af den faldne prøve viste det:
+   "7" i feltet, tom svarboks. Ingen reference i fikstureret
+   indeholder "12", så tallet giver et rent nul at måle på.
+
+   ⚠️ BORDNUMMERET BOR PÅ BORDET, ikke på bookingen: rækken har et
+   bord_id, og nummeret slås op i Admin.lister.bordliste, som
+   bordkort.js melder ind ved login.
+   ============================================================ */
+function medBord() {
+  const d = femSager();
+  d.borde = [
+    { id: 1, lokation_id: 'mosede', nummer: '12', sortering: 120, pladser: 5, aktiv: true },
+    { id: 2, lokation_id: 'mosede', nummer: '13', sortering: 130, pladser: 5, aktiv: true },
+  ];
+  d.bordbestillinger[0].bord_id = 1;
+  return d;
+}
+
+test('"bord 12" finder bookingen ved det bord', async ({ page }) => {
+  await H.åbnAdmin(page, { data: medBord() });
+  const traef = await soeg(page, 'bord 12');
+  await expect(traef).toHaveCount(1);
+  await expect(traef).toContainText('Bordbooking');
+});
+
+/* ⚠️ MODSTYKKET, OG DET VIGTIGSTE. Uden det ville en rettelse, der
+   lod ethvert tal slå op i bordene, bestå prøven ovenfor — og så
+   ville et sagsnummer og et bordnummer blive blandet sammen i ét
+   svar, uden at personalet kan se hvorfor. */
+test('men et blankt "12" slår ikke op i bordene', async ({ page }) => {
+  await H.åbnAdmin(page, { data: medBord() });
+  await expect(await soeg(page, '12')).toHaveCount(0);
+});
+
+test('og et bord, ingen har booket, finder ingenting', async ({ page }) => {
+  await H.åbnAdmin(page, { data: medBord() });
+  await expect(await soeg(page, 'bord 13')).toHaveCount(0);
+});
+
 test('hver slags sag har sit eget bogstav i nummeret', async ({ page }) => {
   await H.åbnAdmin(page, { data: femSager() });
 
