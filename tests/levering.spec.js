@@ -197,6 +197,43 @@ test.describe('Smørrebrød ud af huset: hentes eller leveres', () => {
     await expect(linje).toContainText('✓ Vi kører derud.');
   });
 
+  /* ⚠️ TO BESKEDER, DER SIGER HVER SIT (set på et skud 16/9).
+
+     Noten under feltet siger "Vi ringer og bekræfter, at vi kan
+     køre til adressen". Da zonesvaret kom til, stod de to
+     samtidig — og modsagde hinanden:
+
+       noten:   "Vi ringer og bekræfter …"
+       svaret:  "Vi kører ikke fast derud. RING TIL OS …"
+
+     Den ene lover, at VI ringer; den anden beder gæsten ringe. Og
+     ved et ja er noten overflødig: siden har lige sagt, at vi
+     kører derud.
+
+     Reglen: har zonen svaret, er noten væk. Er der endnu intet
+     postnummer, er "vi ringer og bekræfter" stadig det ærlige —
+     og det er netop dér, gæsten ikke har fået et svar endnu. */
+  test('zonen: noten forsvinder, når svaret er givet', async ({ page }) => {
+    await åbn(page, '/bestil/', { data: medSmoerrebroed({ levering: true }) });
+    await laegIKurv(page);
+    await page.locator('#bestil-hvordan .type-knap', { hasText: 'I leverer' }).click();
+
+    const note = page.locator('#bestil-adresse-note');
+    /* Uden et postnummer har zonen intet svar — så står noten. */
+    await page.locator('#bestil-adresse').fill('Strandvejen 4, Greve');
+    await expect(note).toContainText('Vi ringer og bekræfter');
+
+    /* Svarer zonen ja, er noten overflødig. */
+    await page.locator('#bestil-adresse').fill('Havnevej 20I, 2670 Greve');
+    await expect(note).toHaveText('');
+
+    /* Og siger zonen "ring til os", må noten ikke samtidig love,
+       at VI ringer. */
+    await page.locator('#bestil-adresse').fill('Storegade 1, 8000 Aarhus');
+    await expect(note).toHaveText('');
+    await expect(page.locator('#lev-svar')).toContainText('Ring til os');
+  });
+
   /* ⚠️ MODSTYKKET: en adresse UDEN postnummer må ikke spærre.
      Gæsten kan skrive "Strandvejen 4, Greve", og et nej dér ville
      afvise en adresse, forretningen kører til hver dag. */

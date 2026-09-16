@@ -1670,8 +1670,11 @@
      ville svaret stå og være forældet, mens hun taster
      postnummeret. Sat én gang; feltet findes fra sidens start. */
   (function lytPaaAdresse() {
+    /* ⚠️ visAdresse OG IKKE visLeveringsSvar (16/9). Noten skal
+       følge med, når zonen svarer — kaldte vi kun svarlinjen, ville
+       "Vi ringer og bekræfter" blive stående og modsige den. */
     var felt = $('bestil-adresse');
-    if (felt) felt.addEventListener('input', visLeveringsSvar);
+    if (felt) felt.addEventListener('input', visAdresse);
   })();
 
   function visAdresse() {
@@ -1683,9 +1686,26 @@
     var felt = $('bestil-adresse');
     if (felt) felt.required = skalLeveres;
 
+    /* ⚠️ NOTEN OG ZONESVARET MÅ IKKE SIGE HVER SIT (16/9, set på et
+       skud). Da zonesvaret kom til, stod de to samtidig:
+
+         noten:  "Vi ringer og bekræfter, at vi kan køre til …"
+         svaret: "Vi kører ikke fast derud. RING TIL OS …"
+
+       Den ene lover, at VI ringer; den anden beder gæsten ringe. Og
+       ved et ja er noten overflødig — siden har lige sagt, at vi
+       kører derud.
+
+       Reglen: har zonen svaret, er noten væk. Er der endnu intet
+       postnummer at slå op, er "vi ringer og bekræfter" stadig det
+       ærlige — og det er netop dér, gæsten ikke har fået et svar. */
     var note = $('bestil-adresse-note');
     if (note) {
-      note.textContent = skalLeveres
+      var felt = $('bestil-adresse');
+      var adr = felt ? felt.value : '';
+      var zonenHarSvaret = skalLeveres && adr.trim() && R && R.leveringSvar
+        && R.leveringSvar(data, adr) !== 'ukendt';
+      note.textContent = (skalLeveres && !zonenHarSvaret)
         ? 'Vi ringer og bekræfter, at vi kan køre til adressen.'
         : '';
     }
