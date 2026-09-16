@@ -45,7 +45,28 @@
      ⚠️ Admin.data kan være null, når efterHent kører. */
   function arrangementer() {
     return ((Admin.data && Admin.data.kalender) || []).filter(function (k) {
-      return k.type === 'arrangement' && k.tilmelding;
+      if (k.type !== 'arrangement') return false;
+      /* ⚠️ DEM, DER ALLEREDE STÅR I KØEN, FORSVINDER IKKE (16/9).
+         Her stod `&& k.tilmelding` alene. Fjernede ejeren hakket
+         "Gæsterne skal kunne reservere plads" på et arrangement,
+         der ALLEREDE havde tilmeldte, faldt det ud af fanen — og
+         gæster med en kvittering i hånden mødte op uden at stå
+         nogen steder. Fanen sagde oven i købet "Ingen
+         arrangementer tager imod tilmeldinger endnu".
+
+         At lukke for TILGANGEN er noget andet end at slette dem,
+         der allerede er tilmeldt. Rækkerne har hele tiden ligget i
+         databasen; det var kun skærmen, der tabte dem.
+
+         ⚠️ OG KUN DEM MED TILMELDTE. Ellers ville fanen fyldes med
+         "kig forbi"-arrangementer, der aldrig har taget imod en
+         tilmelding — og så var listen ubrugelig en travl fredag.
+
+         `forArrangement` står længere nede i filen; funktioner
+         hejses, så kaldet er trygt. Reservationerne hentes for sig
+         (hent() → tegnAlt()), så listen kan være tom ved allerførste
+         tegning — næste tegning har dem med. */
+      return !!k.tilmelding || forArrangement(k.id).length > 0;
     }).sort(function (a, b) { return a.dato < b.dato ? -1 : 1; });
   }
 

@@ -233,6 +233,50 @@ test.describe('Tilmeldingerne lander i admin', () => {
     await expect(page.locator('#tilmeld-tael')).toContainText('0 af 40 pladser');
   });
 
+  /* ============================================================
+     ET ARRANGEMENT MED TILMELDTE FORSVINDER IKKE  (16/9)
+     ------------------------------------------------------------
+     Fanens arrangementer() filtrerer på k.tilmelding. Fjerner
+     ejeren hakket "Gæsterne skal kunne reservere plads" på et
+     arrangement, der ALLEREDE har tilmeldte, falder det ud af
+     fanen — og de gæster, der har en kvittering og møder op, kan
+     personalet ikke se. At lukke for TILGANGEN er noget andet end
+     at slette dem, der allerede står i køen.
+
+     ⚠️ OG DEN TOMME FANE LYVER OVEN I: "Ingen arrangementer tager
+     imod tilmeldinger endnu" — mens der står fire mennesker i
+     døren.
+
+     Reservationerne overlever i databasen; det er KUN skærmen,
+     der taber dem. Derfor er det skærmen, der rettes.
+     ============================================================ */
+  test('lukkes tilmeldingen, bliver de allerede tilmeldte stående', async ({ page }) => {
+    await åbnFanen(page, med([arr({ tilmelding: false })], [res()]));
+
+    await expect(page.locator('#tilmeld-arrangementer'),
+      'fanen sagde, at ingen tager imod tilmeldinger — med fire tilmeldte')
+      .not.toContainText('Ingen arrangementer tager imod tilmeldinger');
+    await expect(page.locator('#tilmeld-liste'),
+      'de allerede tilmeldte blev usynlige for personalet').toContainText('Anna Vind');
+  });
+
+  /* ⚠️ KONTROLMÅLINGEN. Med hakket sat står det der i forvejen —
+     ellers måler prøven ovenfor ikke en forskel. */
+  test('med hakket sat står de der som før', async ({ page }) => {
+    await åbnFanen(page, med([arr()], [res()]));
+    await expect(page.locator('#tilmeld-liste')).toContainText('Anna Vind');
+  });
+
+  /* ⚠️ MODSTYKKET, OG DET ER DET VIGTIGE. Uden det ville en
+     rettelse, der viste ALLE arrangementer, bestå prøven ovenfor
+     — og så ville fanen fyldes med "kig forbi"-arrangementer, der
+     aldrig har taget imod en tilmelding. */
+  test('men uden tilmelding OG uden tilmeldte står det der ikke', async ({ page }) => {
+    await åbnFanen(page, med([arr({ tilmelding: false })], []));
+    await expect(page.locator('#tilmeld-arrangementer'))
+      .toContainText('Ingen arrangementer tager imod tilmeldinger');
+  });
+
   test('personalet kan krydse af i døren', async ({ page }) => {
     await åbnFanen(page, med([arr()], [res()]));
     await page.locator('#tilmeld-liste').getByRole('button', { name: 'Kommet' }).click();
