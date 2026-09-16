@@ -262,3 +262,52 @@ test.describe('Felterne i admin har et navn', () => {
     expect(uden, 'felter uden et navn, nogen kan læse op').toEqual([]);
   });
 });
+
+/* ============================================================
+   ET ID BRUGES ÉN GANG  (16/9)
+   ------------------------------------------------------------
+   MÅLT PÅ MIN EGEN FEJL. Et nyt felt "Slutter kl." fik id'et
+   `kal-slut`, som allerede var taget af lukkeperiodens "Til og
+   med"-dato tyve linjer oppe i den samme formular. Så stod der
+   TO elementer med samme id: getElementById gav det første,
+   sluttidspunktet blev skrevet ind i lukkeperiodens DATOfelt, og
+   tre prøver faldt — seks minutter inde i en fuld runde, ikke i
+   det sekund feltet blev skrevet.
+
+   ⚠️ ADMIN ER ÉN SIDE MED SEKSTEN PANELER, der alle ligger i
+   DOM'en samtidig — også de skjulte. Derfor er et dobbelt id
+   ikke en teoretisk ting: to felter i to faner kan nemt få
+   samme navn, og så holder det ene op med at virke TAVST. Det
+   er den værste slags: alt ser rigtigt ud.
+
+   ⚠️ ID'ERNE LÆSES AF OPMÆRKNINGEN, ikke skrevet af i hånden —
+   samme regel som fanelisten øverst i filen. En liste ville kun
+   fange de dubletter, vi allerede kender, og det er aldrig dem,
+   der gør skade.
+   ============================================================ */
+test('hvert id i admin bruges kun én gang', async ({ page }) => {
+  await åbnAdmin(page, { data: medArbejde() });
+
+  const dubletter = await page.evaluate(() => {
+    const set = {};
+    const ud = [];
+    document.querySelectorAll('[id]').forEach((el) => {
+      const id = el.getAttribute('id');
+      if (!id) return;
+      const hvad = el.tagName.toLowerCase()
+        + (el.getAttribute('type') ? '[' + el.getAttribute('type') + ']' : '');
+      (set[id] = set[id] || []).push(hvad);
+    });
+    Object.keys(set).forEach((id) => {
+      if (set[id].length > 1) {
+        ud.push(id + ' × ' + set[id].length + ' (' + set[id].join(' + ') + ')');
+      }
+    });
+    return ud.sort();
+  });
+
+  expect(dubletter,
+    'to elementer deler et id — getElementById giver kun det FØRSTE, '
+    + 'og det andet felt holder op med at virke uden at sige fra')
+    .toEqual([]);
+});

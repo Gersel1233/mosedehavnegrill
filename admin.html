@@ -1000,8 +1000,15 @@
                arrangement har ingen sluttid, og vi finder ikke på
                et tidspunkt på forretningens vegne. -->
           <div class="felt felt-smal">
-            <label for="kal-slut">Slutter kl. <span class="hjaelp">(valgfrit)</span></label>
-            <input type="time" id="kal-slut">
+            <!-- ⚠️ ID'ET HEDDER kal-slut-KL OG IKKE kal-slut (16/9).
+                 kal-slut er TAGET af lukkeperiodens "Til og med"-dato
+                 tyve linjer oppe. Første udgave brugte det samme id, og
+                 så stod der TO elementer med samme id i admin:
+                 getElementById gav datofeltet, sluttidspunktet blev
+                 skrevet ind i lukkeperioden, og tre prøver faldt.
+                 Omdøb det ikke "tilbage". -->
+            <label for="kal-slut-kl">Slutter kl. <span class="hjaelp">(valgfrit)</span></label>
+            <input type="time" id="kal-slut-kl">
             <p class="hjaelp">
               Når tiden er passeret, kan gæsterne ikke længere melde
               sig til. Tomt = tilmeldingen er åben dagen ud.

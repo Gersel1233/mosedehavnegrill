@@ -321,7 +321,7 @@
 
   function ryd() {
     ['kal-dato', 'kal-slut', 'kal-titel', 'kal-emoji', 'kal-tid',
-      'kal-pladser', 'kal-pris', 'kal-start', 'kal-slut', 'kal-beskrivelse',
+      'kal-pladser', 'kal-pris', 'kal-start', 'kal-slut-kl', 'kal-beskrivelse',
       'kal-kategori'].forEach(function (id) {
       if ($(id)) $(id).value = '';
     });
@@ -355,7 +355,10 @@
     $('kal-pladser').value = k.pladser === null || k.pladser === undefined ? '' : k.pladser;
     $('kal-pris').value = k.pris_tekst || '';
     if ($('kal-start')) $('kal-start').value = k.start_kl ? String(k.start_kl).slice(0, 5) : '';
-    if ($('kal-slut')) $('kal-slut').value = k.slut_kl ? String(k.slut_kl).slice(0, 5) : '';
+    /* ⚠️ kal-slut-KL, ikke kal-slut: det sidste er lukkeperiodens dato
+       (linjen ovenfor). To felter med samme id gav getElementById
+       datofeltet, og sluttidspunktet havnede i lukkeperioden. */
+    if ($('kal-slut-kl')) $('kal-slut-kl').value = k.slut_kl ? String(k.slut_kl).slice(0, 5) : '';
     if ($('kal-beskrivelse')) $('kal-beskrivelse').value = k.beskrivelse || '';
     if ($('kal-kategori')) $('kal-kategori').value = k.kategori || '';
 
@@ -475,8 +478,8 @@
        siden af hinanden inviterer til at bytte om på dem. */
     if (nyType === 'arrangement' && maaSluttid()
       && $('kal-start') && $('kal-start').value
-      && $('kal-slut') && $('kal-slut').value
-      && $('kal-slut').value <= $('kal-start').value) {
+      && $('kal-slut-kl') && $('kal-slut-kl').value
+      && $('kal-slut-kl').value <= $('kal-start').value) {
       return Admin.brøl('Sluttidspunktet skal ligge efter starten. '
         + 'Slutter arrangementet efter midnat, så lad feltet stå tomt.');
     }
@@ -547,7 +550,7 @@
          PGRST204, og så kan der ikke oprettes et arrangement
          overhovedet — for en fil, ejeren ikke ved eksisterer. */
       slut_kl: maaSluttid()
-        ? (erArr && $('kal-slut') && $('kal-slut').value ? $('kal-slut').value : null)
+        ? (erArr && $('kal-slut-kl') && $('kal-slut-kl').value ? $('kal-slut-kl').value : null)
         : undefined,
       start_kl: maaTilmelding()
         ? (erArr && $('kal-start') && $('kal-start').value ? $('kal-start').value : null)
