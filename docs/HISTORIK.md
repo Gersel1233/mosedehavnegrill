@@ -7,6 +7,42 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**Sluttid, borde og "bord 12"** (16/9, sent — ejerens tre svar). ⚠️ **ÉN SQL-fil
+skal køres: `supabase/arrangement-sluttid.sql`** (kørt i produktionen 16/9).
+
+- **Arrangementet har fået `slut_kl`.** Ejerens ord: *"vi skal have en
+  sluttidskolonne"*. Bremsen afviste kun på DATO, og det er sandt HELE dagen —
+  en koncert, der sluttede kl. 22, tog stadig imod kl. 23.30. Feltet "Slutter
+  kl." står ved siden af "Starter kl."; en sluttid før starten afvises.
+  ⚠️ **Tom = åben dagen ud**, som før: et heldagsarrangement har ingen sluttid,
+  og vi finder ikke på et tidspunkt. ⚠️ **Dansk tid, ikke UTC** — databasens
+  `current_time` er UTC, og en naiv sammenligning ville lukke to timer for
+  tidligt om sommeren. Reglen står BEGGE steder i SQL (den nye fil og
+  `gaestens-regler.sql`, som ejer funktionen), så en gentagelse ikke fjerner den
+- **Bordene er 14, ikke 55.** Numrene er **1–14**; **58 er PLADSER (mennesker)**.
+  "55" kom fra en oplysning 30/8 om antal *borde* (`borde-55.sql`), som ejerens
+  eget besøg 16/9 afkræftede. Nr. 1–4: 2 pl. "Ved lugen" · 5–8: 5 pl. "Ude" ·
+  9–14: 5 pl. "Inde". Zonerne manglede på ti af dem og er sat.
+  ⚠️ **0 af 14 har QR-kode endnu** — ejeren låser dem i admin → Borde og printer
+  skiltene. Der var 0 bookinger, da bordene blev rettet
+- **Søgningen finder "bord 12".** Ordet *bord* er kravet: et tal alene er et
+  sagsnummer, og lod vi det slå op i bordene, ville ét opslag give to svar om to
+  ting. Nummeret bor på BORDET (`bord_id` → `Admin.lister.bordliste`)
+
+⚠️ **EN NY SQL-FIL SKAL REGISTRERES TRE STEDER**, og det kostede en runde at
+lære: `vaerktoej/byg-lokal-db.sh` (ellers kender den lokale database ikke
+kolonnen, og prøven kan aldrig køre), `docs/SQL-RAEKKEFOELGE.md` (ellers
+springer en ny opsætning den over) og `supabase/er-vi-klar.sql`. Første kørsel af
+`proev-arrangementer.sql` døde med *"column slut_kl does not exist"* → *"current
+transaction is aborted"*, og **ingen af de 14 svar blev skrevet** — i en
+optælling ligner det 0 BESTOD, 0 FEJLEDE. Nu: 14 af 14 BESTOD.
+
+⚠️ **ÉT TEGN SØGER IKKE** (`findsag.js`, "'2' ville hente halvdelen af huset
+frem"). En prøve, der søgte på `"7"`, fik nul træf og målte ingenting — og det
+kunne **kun ses på skærmbilledet** af den faldne prøve: "7" i feltet, tom
+svarboks. To fejldiagnoser gik forud, begge fordi jeg gættede i stedet for at
+kigge.
+
 **Seks ting, der lovede noget, de ikke holdt** (16/9, bølge 1's batch 2 — ingen
 SQL). Fælles for dem alle: skærmen sagde ét, og koden gjorde et andet.
 
