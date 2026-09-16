@@ -90,6 +90,33 @@ ellers skal dataene være tydelige: *"det, de ansøger om i forvejen"*.
   forhånd, og en eksisterende regel må ikke tørres af
 - Otte prøver i `tests/foresp-bekraeft.spec.js`, seks falsifikationer, seks fald
 
+**Én vej til at lægge en begivenhed op — og menukortet siger, hvor tingene
+havner** (16/9, sent). Ejerens spørgsmål: *"i tilmeldinger, hvad er det til
+udover at se hvem der har reserveret? Hvordan opretter jeg de ting med musik,
+og hvad hvis det er noget helt andet unikt? Det skal havne inde i «hvad sker
+der» og gå automatisk ind i «tidligere på havnen» med dato."* Og om menukortet:
+*"hvis de vil tilføje noget eller en kategori — hvor skal den stå henne på
+forsiden i rækkefølgen."* **Ingen SQL.**
+
+- **Tilmeldinger siger nu, hvad den ER:** listen, I krydser af i døren. Selve
+  arrangementet oprettes på Kalender — også når det er noget helt andet end
+  musik — og knappen **"+ Opret et arrangement"** fører derhen
+- **Den samme knap står på Nyheder**, med linjen om forskellen: en nyhed har
+  ingen dato, systemet kan regne med; et arrangement har en dag, kan tage imod
+  tilmeldinger og **flytter selv ned i arkivet**, når dagen er gået
+- **⚠️ HANDLINGEN BOR I KALENDEREN** (`Admin.opretArrangement`), ikke i de to
+  faner. To formularer for det samme ville skride fra hinanden, første gang der
+  kom et felt mere
+- **⚠️ TYPEN ER DET FARLIGE: standarden er LUKKEDAG.** En knap, der bare åbnede
+  fanen, ville lade den, der fulgte den, oprette en lukkedag — og så er der
+  lukket den dag, musikken spiller. Knappen sætter typen og slår "vis for
+  gæsterne" til. **Prøven måler den GEMTE række**, ikke fluebenene; begge
+  mutationer falder
+- **Menukortet siger, hvor en ny kategori havner:** nederst under sin afdeling
+  og under "Kun på menukortet", til fluebenene sættes — og at pilene flytter
+  den, også på forsiden. **Varefotoet siger "tag det på tværs"**: det vises kun
+  ved QR-bestillingen, og et foto på højkant mister to tredjedele i 16:9
+
 **Ingen sag forsvinder: "Vis også ældre sager"** (16/9, sent). Ejerens ord: man
 skal *"altid kunne finde det, hvis det bliver væk"*, og det gælder alle slags.
 **Ingen SQL.**
