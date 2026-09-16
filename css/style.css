@@ -6689,6 +6689,22 @@ label .valgfri { font-weight: 400; color: var(--muted); }
      vægten. Tallene var grønne, billedet var ikke. */
   font-weight: 400;
 }
+
+/* ⚠️ OG DEN HER LINJE ER DEN, DER FAKTISK BIDER (16/9, MÅLT).
+   `.felt-allergi .allergi-ja` er (0,2,0) og TABER til
+   `#bestil-form label` (1,0,1) længere nede i filen — begge sider
+   lægger formularen i #bestil-form. Målt på den beregnede stil:
+   vægten var stadig 600, efter jeg havde skrevet 400 ovenfor.
+
+   Det er husets egen lov for syvende gang: mål den BEREGNEDE stil,
+   ikke den regel, du lige har skrevet. Forsiden har præcis samme
+   trappe (`.field > label.allergi-ja` i havnegrillen.css), og jeg
+   gik i fælden alligevel.
+
+   Reglen ovenfor bliver stående: den gælder de steder, blokken
+   ikke ligger i #bestil-form. */
+#bestil-form label.allergi-ja { font-weight: 400; }
+
 .felt-allergi .allergi-ja input { margin-top: 3px; flex: none; }
 
 /* CHIP-RÆKKEN "HVAD SKAL DET VÆRE?" ER SLETTET.
