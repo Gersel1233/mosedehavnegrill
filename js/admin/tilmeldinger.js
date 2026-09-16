@@ -93,6 +93,9 @@
         noegle: 'tom', aftryk: 'tom',
         byg: function () {
           var p = lav('p', 'vare-tekst');
+          /* ⚠️ EN TOM FANE SKAL SIGE VEJEN VIDERE (16/9). Ejerens
+             spørgsmål var netop "hvad er den til, og hvordan opretter
+             jeg de ting" — og svaret stod ikke, hvor fanen var tom. */
           p.textContent = 'Ingen arrangementer tager imod tilmeldinger endnu. '
             + 'Opret et på fanen Kalender, sæt hak i "Vis det for gæsterne" '
             + 'og i "Gæsterne skal kunne reservere plads".';

@@ -2547,6 +2547,32 @@
     <!-- Nyheder -->
     <div id="p-nyheder" class="panel skjult">
 
+      <!-- ============ ER DET EN BEGIVENHED? ==============
+           ⚠️ TO STEDER AT LÆGGE NOGET OP ER ÉT FOR MEGET (16/9).
+           Ejerens ord om nyhederne: "det er så forældet … hvordan
+           opretter jeg de ting med musik, og det skal havne inde i
+           «hvad sker der» og gå automatisk ind i «tidligere på
+           havnen» med dato."
+
+           En NYHED har ingen dato, systemet kan regne med — den
+           tænder og slukker sig selv efter vis_fra/vis_til. Et
+           ARRANGEMENT har en dag: det står under "Hvad sker der",
+           kan tage imod tilmeldinger, og når dagen er gået, flytter
+           det SELV ned i arkivet (Butik.tidligereArrangementer).
+
+           Derfor står vejen her, hvor folk leder: har det en dato,
+           hører det til på Kalender. Knappen åbner formularen dér. -->
+      <p class="hjaelp luft-top" id="nyhed-begivenhed">
+        <strong>Skal det ske en bestemt dag?</strong>
+        Livemusik, quizaften, torskegilde — så er det et arrangement og ikke
+        en nyhed: det står under <em>Hvad sker der</em> på siden, kan tage imod
+        tilmeldinger, og flytter selv ned under <em>Tidligere på havnen</em>,
+        når dagen er gået.
+        <button class="knap sekundaer lille" id="nyhed-opret-arr" type="button">
+          + Opret et arrangement
+        </button>
+      </p>
+
       <!-- ============ DAGENS BESKED ======================
            ⚠️ FLYTTET HERTIL FRA FANEN "BESKEDER" (30/8), IKKE
            SLETTET. Kundens ord: "fjern beskeder, den er
@@ -2794,9 +2820,27 @@
           <h2>Tilmeldinger</h2>
           <span class="kort-note">hvem kommer — og er der plads</span>
         </div>
+        <!-- ⚠️ FANEN SIGER NU, HVAD DEN ER TIL (16/9). Ejerens
+             spørgsmål: "hvad er den til udover at se hvem der har
+             reserveret — hvordan opretter jeg de ting med musik, og
+             hvad hvis det er noget helt andet unikt?" Svaret er, at
+             fanen er DØRLISTEN, og at alt oprettes ét sted: på
+             Kalender. Knappen fører derhen og åbner formularen, så
+             det ikke er noget, man skal huske vejen til. -->
         <p class="hjaelp" id="tilmeld-hjaelp">
-          Gæsterne melder sig til på kalendersiden. Pladser og pris
-          sætter du på fanen Kalender, når du opretter arrangementet.
+          Det her er <strong>listen, I krydser af i døren</strong> — hvem der
+          kommer, og om der er plads. Selve arrangementet opretter I på
+          <strong>Kalender</strong>: dag, klokkeslæt, pladser, pris og billede.
+          Det gælder også noget helt andet end musik — en quizaften, et
+          torskegilde, en enkelt lørdag med noget særligt.
+        </p>
+        <p class="hjaelp">
+          <button class="knap sekundaer lille" id="tilmeld-opret" type="button">
+            + Opret et arrangement
+          </button>
+          Sæt flueben ved <em>Tager imod tilmeldinger</em>, så står gæsterne her.
+          Når dagen er gået, flytter arrangementet selv ned under
+          <em>Tidligere på havnen</em> på forsiden.
         </p>
         <div id="tilmeld-arrangementer"></div>
       </div>

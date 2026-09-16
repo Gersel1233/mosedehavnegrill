@@ -90,6 +90,26 @@ ellers skal dataene være tydelige: *"det, de ansøger om i forvejen"*.
   forhånd, og en eksisterende regel må ikke tørres af
 - Otte prøver i `tests/foresp-bekraeft.spec.js`, seks falsifikationer, seks fald
 
+**Ingen sag forsvinder: "Vis også ældre sager"** (16/9, sent). Ejerens ord: man
+skal *"altid kunne finde det, hvis det bliver væk"*, og det gælder alle slags.
+**Ingen SQL.**
+
+- **MÅLT:** `Butik.hentForespoergsler` hentede kun de sidste 180 dage. Grænsen
+  sad på HENTNINGEN, så en sag fra i fjor hverken stod på fanen ELLER kunne
+  søges frem med Find en sag — den fandtes ikke i browseren
+- **Knappen står UNDER listen** (dér, man leder, når noget mangler) og henter
+  først, når nogen beder om det: en fane, der trækker alt fra tidernes morgen
+  ved hver opdatering, er langsom for ingenting. Bagefter forsvinder knappen,
+  og linjen siger, at alt er med — en knap, man kan trykke på igen og igen
+  uden at der sker noget, holder man op med at stole på
+- **Flaget huskes**, til fanen forlades: takten (`Admin.friske`) og hvert gem
+  henter listen igen, og ellers ville de ældre forsvinde to sekunder efter
+- **⚠️ OG DEN TREDJE FALSIFIKATION BESTOD — DET VAR FUNDET.** Fjernes flaget
+  fra kaldet (`Butik.hentForespoergsler()` uden argument), bestod begge prøver:
+  øvetilstanden ser aldrig argumentet, og sky-prøven kalder funktionen uden om
+  knappen. Reglen stod uden vagt. Nu måles selve sømmen — hvad admin FAKTISK
+  beder om — og begge mutationer falder
+
 **Køkken-kø og Borde er én fane: Køkkenet** (16/9, sent). Ejerens ord: *"hvad er
 forskel på køkken-kø og borde — de skal da bare slås sammen til primært
 borde-delen, det er praktisk det samme, men køkken-kø er bare grimmere, og et

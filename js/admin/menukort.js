@@ -1487,6 +1487,18 @@
     boks.appendChild(lav('p', 'hjaelp',
       'En kategori er en overskrift på menukortet — "Burgere", '
       + '"Vinterretter". Afdelingen bestemmer, hvor på menukortet den står.'));
+    /* ⚠️ HVOR HAVNER DEN SÅ? (16/9) Ejerens ord: når han tilføjer
+       noget, skal han vide, "hvor skal den stå henne på forsiden i
+       rækkefølgen". MÅLT: en ny kategori får højeste sortering + 1 og
+       står på INGEN af de tre salgslister — altså nederst på
+       menukortet og slet ikke i bestillingen. Det er den rigtige
+       standard (en tom kategori må ikke stå til salg), men det stod
+       ingen steder, og så leder man efter den på forsiden. */
+    boks.appendChild(lav('p', 'hjaelp',
+      'Den lægger sig NEDERST på menukortet under sin afdeling, og den kan '
+      + 'ikke bestilles endnu: den står under "Kun på menukortet", til I '
+      + 'sætter fluebenene "Kan bestilles". Rækkefølgen flytter I med pilene '
+      + '— på forsiden står kategorierne i den samme rækkefølge som her.'));
 
     var r = lav('div', 'admin-raekke');
     var navn = document.createElement('input');
@@ -1965,8 +1977,16 @@
       /* Fotoet vises KUN ved QR-bestillingen ved bordene (13/9) —
          det skal stå på flisen, ellers leder ejeren efter det på
          forsiden. */
+      /* ⚠️ OG "TAG DET PÅ TVÆRS" STÅR PÅ FLISEN (16/9). Ejerens ord:
+         billederne skal tages med telefonen "sidelæns", og så skal
+         beskæringen bare være i orden. Den ER i orden — hvert foto
+         skæres til 16:9 om midten — men et billede på højkant mister
+         to tredjedele, og det opdager man først, når det står på
+         rækken ved bordet. Et ord her koster ingenting. */
       billedFlise.title = 'Billede af ' + v.navn
-        + ' — vises kun, når gæsten bestiller med QR-koden ved bordet';
+        + ' — tag det på tværs (16:9). Vises kun, når gæsten bestiller '
+        + 'med QR-koden ved bordet; et foto på højkant bliver beskåret '
+        + 'om midten.';
       var fotoUrl = String(v.billede || '').trim();
 
       var visFoto = lav('span', 'vare-foto-flade');

@@ -2198,6 +2198,42 @@
      spørgsmål ville skride fra hinanden. */
   Admin.hvadRammerLukning = hvadRammerLukning;
 
+  /* ⚠️ ÉN VEJ TIL AT OPRETTE ET ARRANGEMENT (16/9). Ejerens ord:
+     "hvordan opretter jeg de ting med musik, og hvad hvis det er
+     noget helt andet unikt — det skal havne inde i «hvad sker der»".
+     Knapperne på Tilmeldinger og Nyheder peger HERIND i stedet for at
+     bygge hver sin formular: to udgaver af den samme formular ville
+     skride fra hinanden, første gang der kom et felt mere.
+
+     ⚠️ TYPEN SÆTTES, FORDI STANDARDEN ER LUKKEDAG. Åbnede knappen
+     bare fanen, ville den, der fulgte den, oprette en lukkedag uden
+     at opdage det. "Vis for gæsterne" slås til af samme grund: et
+     arrangement, ingen kan se, er ikke det, knappen lovede. */
+  Admin.opretArrangement = function () {
+    Admin.visFane('p-kalender');
+    var type = document.querySelector('#kalender-typer [data-type="arrangement"]');
+    if (type) type.click();
+    var offentlig = $('kal-offentlig');
+    if (offentlig && !offentlig.checked) {
+      offentlig.checked = true;
+      offentlig.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    var titel = $('kal-titel');
+    var fold = titel && titel.closest ? titel.closest('details') : null;
+    if (fold) fold.open = true;
+    if (titel) {
+      /* preventScroll: browserens egen rulning og vores kæmper ellers
+         om det samme sekund — arret fra genvejene 7/9. */
+      try { titel.focus({ preventScroll: true }); } catch (e) { titel.focus(); }
+      titel.scrollIntoView({ block: 'center' });
+    }
+  };
+
+  ['tilmeld-opret', 'nyhed-opret-arr'].forEach(function (id) {
+    var k = $(id);
+    if (k) k.addEventListener('click', function () { Admin.opretArrangement(); });
+  });
+
   Admin.kalenderHar = function (dag) {
     if (!Admin.data) return undefined;
     if (!dag) return null;
