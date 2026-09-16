@@ -798,9 +798,18 @@ test.describe('Arrangementets kategori', () => {
      dem. Nu er der en fjerde, med sin egen knap.
      ============================================================ */
 
+  /* ⚠️ TITLEN SKAL SIGE NOGET ANDET END VALGET — ellers måler
+     prøven ingenting (målt 16/9: den bestod med godkendt-listen
+     pillet fra hinanden).
+
+     "Quizaften" rammer intet af gættets ord, så den faldt videre
+     ned i bagstopperen, som OGSÅ svarer 'andet'. Kortet stod
+     rigtigt af den forkerte grund. Med "Koncert" er gæt og valg
+     uenige: sker der noget med godkendt-listen, siger siden Musik,
+     og prøven falder. Samme ar som nabo-prøven ovenfor. */
   test('ejeren kan vælge Andet, og det står på kortet', async ({ page }) => {
     await åbnKalender(page, {
-      data: med([arr({ titel: 'Quizaften i baglokalet', kategori: 'andet' })]),
+      data: med([arr({ titel: 'Koncert i baglokalet', kategori: 'andet' })]),
     });
     const kort = page.locator('.evcard');
     await expect(kort.locator('.kind')).toContainText('Andet');
@@ -896,7 +905,11 @@ test.describe('Arrangementets kategori', () => {
       .toBeHidden();
   });
 
-  test('admin gemmer det valgte — og kun de tre lovlige', async ({ page }) => {
+  /* Hed "og kun de tre lovlige" til 16/9. Prøven har aldrig målt
+     antallet — og efter den fjerde kasse var navnet blevet en
+     påstand, der ikke passede. Et prøvenavn, der lyver, er værre
+     end ingen prøve: den næste tror, dækningen er der. */
+  test('admin gemmer den valgte kategori', async ({ page }) => {
     await åbnAdmin(page, { data: med([]) });
     await visFane(page, 'p-kalender');
 

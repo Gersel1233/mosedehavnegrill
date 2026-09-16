@@ -37,6 +37,21 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
   Dagens billede talte kun ankomne som "sagt ja" (en fuld lørdag stod som
   "0 sagt ja · 12 venter"); nu tæller alle bookede pladser. Nye står efter
   dag og tid. bord/ har − og + ved antallet
+- **En fjerde kasse: Andet** (16/9, `arrangement-kategori.sql` skal køres igen).
+  Ejerens ord: *"hvad hvis det er noget helt andet unikt, men skal havne inde i
+  hvad sker der?"* ⚠️ **Og det var ikke bare en manglende mulighed:** gættet på
+  gæstesiden kaldte alt ukendt for `musik`, så en fiskekonkurrence stod med
+  MUSIK over titlen og lå under musik-knappen. Bagstopperen svarer nu `andet`.
+  Syv steder, så den fjerde ikke findes ét sted og mangler et andet: CHECK-reglen
+  og dens prøvefil, option i admin, filterknap på "Hvad sker der", godkendt-listen,
+  navnet på kortet og prøverne. Fri tekst er stadig ikke svaret — to stavemåder af
+  samme ord ville give to knapper. ⚠️ **En falsifikation afslørede en prøve, der
+  målte ingenting:** "ejeren kan vælge Andet" bestod, selv med godkendt-listen
+  pillet fra hinanden, fordi titlen ("Quizaften") ikke ramte gættets ord og faldt
+  videre ned i den nye bagstopper, som også svarer `andet`. Titlen hedder nu
+  "Koncert", så gæt og valg er UENIGE. Og prøven "admin gemmer det valgte — og kun
+  de tre lovlige" har aldrig målt antallet; navnet er rettet, for et prøvenavn, der
+  lyver, er værre end ingen prøve
 - **Lukkedagen kan sige noget — på alle fire sider** (16/9, ingen SQL). Ejerens
   ord: *"en lukkedag giver ikke muligheden for at sige noget på siden"*. Genvejen
   "Luk dagen" kvitterede endda med *"Skriv, hvad der skal stå på hjemmesiden den
