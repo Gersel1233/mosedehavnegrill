@@ -134,6 +134,16 @@ test('og de sidste syv gør det også', async ({ page }) => {
   await expect(await soeg(page, '0304050')).toHaveCount(2);
 });
 
+/* ⚠️ LOFTET PÅ OTTE HAVDE INGEN PRØVE. Rettelsen skærer med
+   min(længde, 8) netop for at bevare det her tilfælde — men uden
+   en prøve ville den, der fjernede loftet i morgen, ikke mærke
+   noget. Gæsten læser nummeret op med landekode, som det står i
+   hendes telefon. */
+test('et nummer med landekode finder stadig gæsten', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  await expect(await soeg(page, '4520304050')).toHaveCount(2);
+});
+
 test('men fire cifre er ikke et opslag — det er et net', async ({ page }) => {
   await H.åbnAdmin(page, { data: femSager() });
   /* ⚠️ Fire cifre må ikke ramme telefonen. Ingen sag har nummeret

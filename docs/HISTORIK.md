@@ -7,6 +7,46 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**Seks ting, der lovede noget, de ikke holdt** (16/9, bølge 1's batch 2 — ingen
+SQL). Fælles for dem alle: skærmen sagde ét, og koden gjorde et andet.
+
+- **Dagens ret:** prisfeltet stod som *"frivilligt"*, mens hjælpelinjen sagde,
+  at retten uden pris ikke kan bestilles. Ejerens ord: *"Prisen SKAL være der —
+  ret teksten"*. Adfærden er uændret; det var ordet, der løj
+- **Reservedata lover ikke tider og priser:** kunne databasen ikke nås, viste
+  forsiden kodens egen startdata — en ærlig pille ("Ring og hør") og en
+  **opdigtet åbningsuge på samme skærm**, plus ispriser, ingen har sat.
+  Tilstanden hedder nu `Butik.reservedata`, og `bestillingNede` læser den, så
+  betingelsen bor ét sted. ⚠️ Boksen **tømmes**, ikke springes over:
+  `index.html` har fem reserverækker (10–20, 10–21 …) stående
+- **Equalizeren pulser kun for musik:** "Loppemarked på havnen" stod med de
+  fire pulserende lydbjælker. `slagsFor` flyttede fra `js/skal/kalender.js` til
+  `Butik.arrangementSlags` i `store.js` — index.html loader ikke kalender.js, så
+  forsiden kunne ikke spørge. Tegnet er husets eget kalender-ikon, ikke et emoji
+  (ejeren vendte emoji-fliserne 13/9)
+- **En forfremmelse til Ejer spørger først:** rollepillerne gemte ved ét klik.
+  Kun opad — "Luk ude" er reversibel og spørger fortsat ikke
+- **Lukkes tilmeldingen, bliver de tilmeldte stående:** fjernede ejeren hakket
+  på et arrangement med tilmeldte, faldt det ud af fanen, som så sagde "Ingen
+  arrangementer tager imod tilmeldinger endnu" — med fire mennesker i døren
+- **Søgningen finder på 6 og 7 cifre:** porten lukkede seks ind, men
+  sammenligningen var `slice(-8)` på **begge** sider, så kun præcis otte kunne
+  ramme. Alle andre flader med samme nøgle (`sammeGaest`, `nummerNoegle`,
+  `salg.js`) er tjekket — de normaliserer begge sider og har ikke fejlen
+
+**Tre punkter blev afskrevet med belæg** — de så ud som fejl på listen, men var
+det ikke: tapasprisens `199` er designets bevidste reserve (prøvedækket 23/8);
+`tegnTider` mangler ikke et `activeElement`-værn, for den hænger kun i
+`Admin.tegnere`, som takten aldrig kører; og at reservere et **overstået**
+arrangement kræver ejerens beslutning + `reservation_bremse` i SQL, da der ikke
+findes en sluttidskolonne. **Bordnummer i søgningen** venter af samme grund: det
+bor på bordet, ikke på bookingen, og "7" ville kollidere med sagsnummer 7.
+
+⚠️ **To prøver kom af et SKUD, ikke af en måling:** at beskeden står ÉN gang på
+åbningskortet (første rettelse skrev den ind i tabellen — pillen sagde de samme
+ord tre centimeter over), og at equalizeren overhovedet var forkert. Ingen
+tekstpåstand fangede nogen af dem.
+
 **Admin hænger sammen, billederne passer, og bordbookingen er booket** (16/9).
 Ejerens liste: forespørgslerne er utydelige, bordbestilling er ikke god nok
 (alle tre flader), billeder skal passe af sig selv, admin skal hænge sammen
