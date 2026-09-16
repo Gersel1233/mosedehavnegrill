@@ -43,6 +43,41 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
 - **Ikke gjort, med vilje:** bordet på en booking (kræver SQL), tidsrum pr.
   bord, klokkeslæt som knapper på bord/ (prøverne vælger i `<select>`)
 
+**Bekræft aftalen — dagen, tiden, hvad der lukkes, og hvad siden siger**
+(16/9, sent). Ejerens ord: når man tager imod en forespørgsel, skal man kunne
+*"justere eller bekræfte den første omgang foreslået tid og datoønske"*, vælge
+*"hvad der skal være lukket"*, og *"skal siden sige noget automatisk?"* — og
+ellers skal dataene være tydelige: *"det, de ansøger om i forvejen"*.
+**Ingen SQL.**
+
+- **⚠️ FELTERNE KOM FØRST EFTER JAET.** MÅLT i koden: kalenderboksen stod kun,
+  når sagen ALLEREDE var sat til aftalt — altså efter beslutningen var truffet.
+  Nu står **Bekræft aftalen** på en sag, personalet har kontaktet, og knappen
+  gør det hele: skriver dagsreglen, skriver kalenderen og sætter status
+- **Gæstens eget ønske står i boksen** (`badOmTekst`): dagen, antallet og hvert
+  eneste `detaljer`-felt — så man ikke skal kigge op på kortet og huske
+- **Tiden foreslås af hendes eget tidsrum** (`tidsrumFra`, "17.00–21.00" →
+  17:00 og 21:00) og kan rettes. ⚠️ Kan teksten ikke læses, står felterne
+  TOMME: et gæt på et klokkeslæt er værre end et tomt felt
+- **"🔒 Hele dagen" er de to flueben sammen**, ikke en tredje tilstand i
+  databasen
+- **Advarslen er kalenderens egen** (`Admin.hvadRammerLukning`, eksporteret
+  16/9): lukker man en dag med bookinger, arrangementer eller en udlejning på,
+  står de dér, hvor der trykkes. **Intet aflyses af sig selv**
+- **Beskeden til gæsterne** skrives på dagsreglen (`besked_titel` +
+  `besked_til_gaester`) og står på forsiden den dag. Tom = siden siger intet
+- **⚠️ STATUS SÆTTES TIL SIDST.** Rækkefølgen er dagsregel → kalender → status:
+  fejler noget undervejs, står sagen stadig som "kontaktet", og personalet kan
+  prøve igen. Sattes status først, ville en fejl efterlade et ja uden en dag
+  nogen steder
+- **⚠️ OG DEN FØRSTE UDGAVE KASTEDE PÅ `felt.value`** — kortets notefelt, som
+  `kalenderFelter` ikke kan se. Dagen blev skrevet, og sagen stod stadig som
+  kontaktet. **Fundet af prøven, ikke set i koden**
+- **⚠️ OG BESKEDFELTET DELTE KLASSE MED KALENDERNOTEN**, så en gammel prøve
+  fandt to felter i stedet for ét. Feltet har sit eget navn nu (`kal-besked`) —
+  en prøve skal kunne pege på tingen selv
+- Seks prøver i `tests/foresp-bekraeft.spec.js`, fire falsifikationer, fire fald
+
 **Køkken-kø og Borde er én fane: Køkkenet** (16/9, sent). Ejerens ord: *"hvad er
 forskel på køkken-kø og borde — de skal da bare slås sammen til primært
 borde-delen, det er praktisk det samme, men køkken-kø er bare grimmere, og et
