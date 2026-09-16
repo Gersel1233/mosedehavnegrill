@@ -789,6 +789,65 @@ test.describe('Arrangementets kategori', () => {
     await expect(page.locator('.evcard .kind')).toContainText('Spisning');
   });
 
+  /* ============================================================
+     DEN FJERDE KASSE  (16/9)
+     ------------------------------------------------------------
+     Ejerens ord: "hvad hvis det er noget helt andet unikt, men
+     skal havne inde i hvad sker der?" Der var tre kasser — Musik,
+     Spisning, Fest — og en quizaften hørte ikke til i nogen af
+     dem. Nu er der en fjerde, med sin egen knap.
+     ============================================================ */
+
+  test('ejeren kan vælge Andet, og det står på kortet', async ({ page }) => {
+    await åbnKalender(page, {
+      data: med([arr({ titel: 'Quizaften i baglokalet', kategori: 'andet' })]),
+    });
+    const kort = page.locator('.evcard');
+    await expect(kort.locator('.kind')).toContainText('Andet');
+    expect(await kort.getAttribute('data-kind')).toBe('andet');
+  });
+
+  /* ⚠️ BAGSTOPPEREN LØJ. Rammer intet af gættets ord, stod kortet
+     som MUSIK — en fiskekonkurrence lå under musik-knappen, og
+     der stod MUSIK over titlen. Det er ikke et manglende valg,
+     det er en forkert oplysning på hjemmesiden. */
+  test('et arrangement, intet ord rammer, står som Andet — ikke som Musik',
+    async ({ page }) => {
+      await åbnKalender(page, {
+        data: med([arr({ titel: 'Fiskekonkurrence fra molen', kategori: null })]),
+      });
+      const kort = page.locator('.evcard');
+      await expect(kort.locator('.kind')).toContainText('Andet');
+      await expect(kort.locator('.kind')).not.toContainText('Musik');
+      expect(await kort.getAttribute('data-kind')).toBe('andet');
+    });
+
+  test('knappen Andet sorterer efter den', async ({ page }) => {
+    await åbnKalender(page, {
+      data: med([
+        arr({ id: 21, titel: 'Havnejam', kategori: 'musik' }),
+        arr({ id: 22, dato: '2026-09-12', titel: 'Loppemarked', kategori: 'andet' }),
+      ]),
+    });
+    await expect(page.locator('.evcard')).toHaveCount(2);
+    await page.locator('.chipset button', { hasText: 'Andet' }).click();
+
+    /* Knappen læser sit eget navn og sammenligner med kortets
+       slags — derfor virker den fjerde uden en linje ny kode.
+       Prøven er her, fordi DET er let at glemme, når nogen
+       omskriver filtret. */
+    await expect(page.locator('.evcard[data-kind="andet"]')).toBeVisible();
+    await expect(page.locator('.evcard[data-kind="musik"]')).toBeHidden({ timeout: 4000 });
+  });
+
+  test('Andet står som et valg i admin', async ({ page }) => {
+    await åbnAdmin(page, { data: med([]) });
+    await visFane(page, 'p-kalender');
+    await page.locator('#kalender-typer [data-type="arrangement"]').click();
+    await expect(page.locator('#kal-kategori option[value="andet"]'))
+      .toHaveText('Andet');
+  });
+
   /* ⚠️ FILTERKNAPPERNE VIRKEDE ALDRIG PÅ EJERENS EGNE KORT.
      Designets script fangede .evcard-listen ved indlæsning — og
      dér er den tom, for js/skal/kalender.js fylder den bagefter.

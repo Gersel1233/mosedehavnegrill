@@ -29,10 +29,18 @@
 --  nye, og kan rette de gamle med to tryk (Ret → kategori →
 --  Gem ændringer).
 --
---  De tre lovlige værdier er FILTRETS egne knapper på
---  h-kalender.html: Musik · Spisning · Fest. En fjerde slags er
---  en designbeslutning (en knap mere på siden), ikke bare en
---  værdi — derfor et check og ikke fri tekst.
+--  De lovlige værdier er FILTRETS egne knapper på
+--  h-kalender.html. En slags mere er en designbeslutning (en knap
+--  mere på siden), ikke bare en værdi — derfor et check og ikke
+--  fri tekst.
+--
+--  ⚠️ OG DEN BESLUTNING ER TAGET (16/9). Ejerens ord: "hvad hvis
+--  det er noget helt andet unikt?" En quizaften, et loppemarked
+--  eller en fiskekonkurrence hører ikke til i Musik, Spisning
+--  eller Fest — og med et gæt, der kaldte alt ukendt for musik,
+--  stod de med MUSIK på kalendersiden. Derfor en fjerde: 'andet',
+--  med sin egen knap. Fri tekst er stadig ikke svaret: to
+--  stavemåder af det samme ord ville give to knapper.
 -- ============================================================
 
 alter table public.kalender
@@ -44,7 +52,7 @@ alter table public.kalender
 
 alter table public.kalender
   add constraint kalender_kategori_ok
-  check (kategori is null or kategori in ('musik', 'spisning', 'fest'));
+  check (kategori is null or kategori in ('musik', 'spisning', 'fest', 'andet'));
 
 -- Editoren viser kun den sidste sætnings svar — derfor en select.
 select

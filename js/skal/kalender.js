@@ -85,10 +85,9 @@
   function tøm(el) { while (el && el.firstChild) el.removeChild(el.firstChild); }
   function id(n) { return document.getElementById(n); }
 
-  /* Designets tre chips hedder Musik, Spisning og Fest, og de
-     filtrerer på data-kind. Ejeren skriver ikke en "slags" i
-     admin — han skriver en titel og en beskrivelse — så slagsen
-     gættes af ordene, præcis som menukortets emoji gør det.
+  /* Chipsene hedder Musik, Spisning, Fest og Andet, og de
+     filtrerer på data-kind. Vælger ejeren ikke en slags, gættes
+     den af ordene, præcis som menukortets emoji gør det.
 
      ⚠️ DET FØRSTE MØNSTER VINDER, og rækkefølgen er derfor ikke
      tilfældig: "fællesspisning med levende musik" er en spisning
@@ -107,12 +106,18 @@
        supabase/arrangement-kategori.sql; null = ikke valgt, og så
        gætter vi som før, så de gamle rækker står som i går. */
     var valgt = String(k.kategori || '');
-    if (valgt === 'musik' || valgt === 'spisning' || valgt === 'fest') return valgt;
+    if (valgt === 'musik' || valgt === 'spisning' || valgt === 'fest'
+      || valgt === 'andet') return valgt;
     var t = (k.titel || '') + ' ' + (k.beskrivelse || '');
     for (var i = 0; i < SLAGS.length; i++) {
       if (SLAGS[i][0].test(t)) return SLAGS[i][1];
     }
-    return 'musik';
+    /* ⚠️ BAGSTOPPEREN LØJ (rettet 16/9). Her stod 'musik', og så
+       stod en fiskekonkurrence eller et loppemarked med MUSIK på
+       kalendersiden — og under musik-knappen. Nu findes der en
+       fjerde kasse, og så er det ærlige svar på "jeg ved det
+       ikke" ANDET og ikke et gæt, der lyder som et løfte. */
+    return 'andet';
   }
 
   function dagsTal(iso) {
@@ -139,8 +144,8 @@
      ville se ud, som om der var. Har han ikke skrevet noget, står
      der bare slagsen. */
   function kindTekst(k, slags) {
-    var navn = slags === 'spisning' ? 'Spisning'
-      : (slags === 'fest' ? 'Fest' : 'Musik');
+    var NAVNE = { musik: 'Musik', spisning: 'Spisning', fest: 'Fest', andet: 'Andet' };
+    var navn = NAVNE[slags] || 'Andet';
     var pris = String(k.pris_tekst || '').trim();
     return pris ? navn + ' · ' + pris : navn;
   }

@@ -37,6 +37,25 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
   Dagens billede talte kun ankomne som "sagt ja" (en fuld lørdag stod som
   "0 sagt ja · 12 venter"); nu tæller alle bookede pladser. Nye står efter
   dag og tid. bord/ har − og + ved antallet
+- **Lukkedagen kan sige noget — på alle fire sider** (16/9, ingen SQL). Ejerens
+  ord: *"en lukkedag giver ikke muligheden for at sige noget på siden"*. Genvejen
+  "Luk dagen" kvitterede endda med *"Skriv, hvad der skal stå på hjemmesiden den
+  dag"* — og det eneste felt, der kom frem, var en overskrift på 120 tegn.
+  Beskrivelsesfeltet **fandtes**, men var skjult for alt andet end et arrangement;
+  nu vises det også på en lukkedag, med ord der skifter med typen (en tidlig
+  lukning har det ikke). `afledLukkedage` i store.js tabte teksten på vejen ud.
+  Beskeden bærer **hele perioden** — modsat `dags_regler`, der er én række pr. dag,
+  og hvor en vinterlukning ville være halvfems rækker. ⚠️ **Og banneret stod kun
+  på forsiden, fordi STILEN kun fandtes i forsidens eget ark:** tegningen er nu
+  `js/dagsbesked.js` og stilen `css/dagsbesked.css`, som `bestil/`, `bord/` og
+  `ved-bordet/` også indlæser. Rækkefølgen bor ét sted: dagens egen besked slår
+  lukkedagens. **Fundet undervejs, ikke ledt efter:** `gemRegel` byggede dagens
+  række **uden** `besked_titel`, og hele rækken sendes — så et tryk på "Luk for
+  spis her" satte overskriften til null, mens teksten blev stående, og banneret
+  skiftede til "I dag". Ingen fejl, ingen linje nogen steder. 24 prøver, fire
+  falsifikationer (⚠️ den vigtigste blev først kørt i anden omgang: filtret var
+  skrevet "staar paa forsiden" mod en prøve, der hedder "står på forsiden", og
+  Playwright melder det som en vejledning, ikke som en fejl)
 - **Bordet står på bookingen, ikke i noten** (`supabase/bord-plads.sql`, kørt i
   produktionen 16/9): kolonnen `bord_id` + værnet `bordbestilling_plads`, som
   låser pr. bord (`pg_advisory_xact_lock`) og afviser det samme bord inden for

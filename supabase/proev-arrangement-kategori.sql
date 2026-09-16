@@ -29,10 +29,11 @@ begin
     ('mosede', 'arrangement', '2099-01-01', 'PRØVE musik',    'musik'),
     ('mosede', 'arrangement', '2099-01-02', 'PRØVE spisning', 'spisning'),
     ('mosede', 'arrangement', '2099-01-03', 'PRØVE fest',     'fest'),
+    ('mosede', 'arrangement', '2099-01-06', 'PRØVE andet',    'andet'),
     ('mosede', 'arrangement', '2099-01-04', 'PRØVE uden',     null);
-  insert into _svar values (2, 'musik/spisning/fest og null tages imod', true);
+  insert into _svar values (2, 'de fire slags og null tages imod', true);
 exception when others then
-  insert into _svar values (2, 'musik/spisning/fest og null tages imod', false);
+  insert into _svar values (2, 'de fire slags og null tages imod', false);
 end $$;
 
 -- 3) En opfunden kategori afvises. Fri tekst her ville være en
