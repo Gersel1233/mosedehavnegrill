@@ -207,6 +207,70 @@ test.describe('Skiltene printes af listen', () => {
   }
 
   /* ============================================================
+     SKILTET SIGER IKKE DET SAMME TO GANGE  (17/9)
+     ------------------------------------------------------------
+     MÅLT PÅ DE 14 SKILTE, der skulle printes: der stod
+     "Inde · 5 pladser · inde" og "Ude · 5 pladser · ude" — på ti
+     af fjorten. Zonen og placeringen blev begge skubbet på
+     linjen, uden at nogen spurgte, om de sagde det samme.
+
+     ⚠️ ZONEN FJERNES IKKE. Den bunker skiltene ved print (et nyt
+     ark pr. zone) og filtrerer køkkenkøen, og "Ved lugen · 2
+     pladser · ude" TILFØJER noget. Det er kun gentagelsen, der
+     skal væk.
+
+     ⚠️ OG REGLEN HOLDER, UANSET HVAD ZONERNE KOMMER TIL AT HEDDE.
+     Ejeren kan kalde dem "Molen" og "Terrassen" i morgen — vi
+     finder ikke navnene på for ham (se supabase/borde-55.sql), og
+     så skal placeringen stå der igen af sig selv.
+     ============================================================ */
+  test('zonen og placeringen siger ikke det samme to gange', async ({ page }) => {
+    await åbnPrint(page, [
+      { id: 1, lokation_id: 'mosede', nummer: '9', pladser: 5,
+        zone: 'Inde', placering: 'inde', aktiv: true, sortering: 10 },
+    ]);
+    const hvor = await page.locator('.kort .hvor').first().innerText();
+    expect(hvor.toLowerCase().split('inde').length - 1,
+      'skiltet skriver "inde" to gange: ' + hvor).toBe(1);
+  });
+
+  test('det gælder også ude', async ({ page }) => {
+    await åbnPrint(page, [
+      { id: 1, lokation_id: 'mosede', nummer: '5', pladser: 5,
+        zone: 'Ude', placering: 'ude', aktiv: true, sortering: 10 },
+    ]);
+    const hvor = await page.locator('.kort .hvor').first().innerText();
+    expect(hvor.toLowerCase().split('ude').length - 1,
+      'skiltet skriver "ude" to gange: ' + hvor).toBe(1);
+  });
+
+  /* ⚠️ MODSTYKKET, OG DET VIGTIGE. Uden det ville en rettelse, der
+     bare droppede placeringen, bestå prøverne ovenfor — og så
+     mistede den, der bærer bunken ud, at vide om bordet står inde
+     eller ude. */
+  test('men en zone, der siger noget andet, står stadig ved siden af', async ({ page }) => {
+    await åbnPrint(page, [
+      { id: 1, lokation_id: 'mosede', nummer: '1', pladser: 2,
+        zone: 'Ved lugen', placering: 'ude', aktiv: true, sortering: 10 },
+    ]);
+    const hvor = await page.locator('.kort .hvor').first().innerText();
+    expect(hvor).toContain('Ved lugen');
+    expect(hvor).toContain('ude');
+    expect(hvor).toContain('2 pladser');
+  });
+
+  /* ⚠️ OG ET BORD UDEN ZONE SKAL STADIG SIGE, HVOR DET STÅR. */
+  test('uden zone står placeringen der som før', async ({ page }) => {
+    await åbnPrint(page, [
+      { id: 1, lokation_id: 'mosede', nummer: '3', pladser: 4,
+        zone: null, placering: 'inde', aktiv: true, sortering: 10 },
+    ]);
+    const hvor = await page.locator('.kort .hvor').first().innerText();
+    expect(hvor).toContain('4 pladser');
+    expect(hvor).toContain('inde');
+  });
+
+  /* ============================================================
      ET ARK ER EN A4, OG DER ER TO SKILTE PÅ DET  (30/8)
      ------------------------------------------------------------
      Siden har lovet "to skilte pr. ark" med en klippelinje

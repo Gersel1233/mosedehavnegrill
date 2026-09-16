@@ -440,7 +440,23 @@ body {
       if (zonen(b)) under.push(zonen(b));
       if (b.pladser) {
         under.push(b.pladser + ' pladser');
-        under.push(b.placering === 'inde' ? 'inde' : 'ude');
+        /* ⚠️ IKKE DET SAMME ORD TO GANGE (17/9). Zonen og
+           placeringen blev begge skubbet på linjen, og på TI af de
+           fjorten skilte sagde de det samme: "Inde · 5 pladser ·
+           inde" og "Ude · 5 pladser · ude". MÅLT på de skilte, der
+           skulle printes.
+
+           ⚠️ ZONEN BLIVER. Den bunker skiltene ved print (et nyt
+           ark pr. zone) og filtrerer køkkenkøen, og "Ved lugen · 2
+           pladser · ude" TILFØJER noget. Det er kun gentagelsen,
+           der ryger.
+
+           Og reglen holder, uanset hvad zonerne kommer til at
+           hedde: døber ejeren dem "Molen" og "Terrassen" — hans
+           ord, ikke vores, se supabase/borde-55.sql — står
+           placeringen der igen af sig selv. */
+        var staarHvor = b.placering === 'inde' ? 'inde' : 'ude';
+        if (zonen(b).toLowerCase() !== staarHvor) under.push(staarHvor);
       }
       if (under.length) kort.appendChild(lav('div', 'hvor', under.join(' · ')));
 
