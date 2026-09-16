@@ -182,6 +182,47 @@ test.describe('Feltet i admin', () => {
     }).toBe('Vi er tilbage tirsdag kl. 11.');
   });
 
+  /* ⚠️ OVERSKRIFTEN BLEV TØRRET AF (fundet 16/9, ikke ledt efter).
+
+     gemRegel byggede dagens række uden besked_titel, og HELE
+     rækken sendes. Så i det sekund nogen trykkede "Luk for spis
+     her" på en dag, hvor personalet havde skrevet en overskrift,
+     blev den sat til null — teksten blev stående, og banneret
+     skiftede til "I dag". Ingen fejl, ingen linje nogen steder.
+
+     Samme lov som bordloftet: et felt, der ikke er med i rækken,
+     er et felt, der bliver slettet. */
+  test('en overskrift overlever et tryk på "Luk for spis her"', async ({ page }) => {
+    await åbnAdmin(page, {
+      ur: UR,
+      data: data({
+        dags_regler: [dagsregel({
+          besked_titel: 'Kun mad ud af huset i dag',
+          besked_til_gaester: 'Vi har selskab på trædækket til kl. 16.',
+        })],
+        /* Knappen findes kun, når havnen ER optaget den dag —
+           det er hele forslagets forudsætning. */
+        udlejninger: [{
+          id: 1, lokation_id: 'mosede', reference: 'BL260807-AAAAA',
+          navn: 'Karen Sø', telefon: '50607080', email: null, dato: I_DAG,
+          antal_personer: 30, besked: null, status: 'aftalt',
+          intern_note: null, oprettet: '2026-08-01T10:00:00Z',
+        }],
+      }),
+    });
+    await visFane(page, 'p-kalender');
+    await page.locator('#maaned-net .maaned-dag[data-dag="' + I_DAG + '"]').click();
+    await page.getByRole('button', { name: 'Luk for spis her' }).click();
+
+    /* Modstykket først: lukningen SKAL være gemt, ellers måler
+       prøven bare en knap, der ikke gjorde noget. */
+    await expect.poll(async () =>
+      ((await gemteData(page)).dags_regler || [{}])[0].luk_spis_her).toBe(true);
+    await expect.poll(async () =>
+      ((await gemteData(page)).dags_regler || [{}])[0].besked_titel)
+      .toBe('Kun mad ud af huset i dag');
+  });
+
   /* ⚠️ OG EN TIDLIG LUKNING HAR DEN IKKE. Den har sit klokkeslæt,
      og resten står i åbningstiderne. Et felt, der ikke betyder
      noget, er et felt, nogen udfylder alligevel. */
