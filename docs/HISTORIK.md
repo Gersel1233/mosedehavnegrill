@@ -37,6 +37,36 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
   Dagens billede talte kun ankomne som "sagt ja" (en fuld lørdag stod som
   "0 sagt ja · 12 venter"); nu tæller alle bookede pladser. Nye står efter
   dag og tid. bord/ har − og + ved antallet
+- **Bølge 1: tolv agenter læste hele huset igennem** (16/9). Tolv kun-læsende
+  agenter fik hver sit område — seks på gæstesiden, seks på admin — og samme
+  opgaveform: fund med fil:linje, den kundesituation der knækker, og hvad der
+  FAKTISK sker i koden. 67 fund; jeg målte 18 af dem selv, før noget blev rettet.
+  ⚠️ **Agenter må ikke køre browser parallelt:** en runde, der delte maskinen,
+  meldte seks fejl, der ikke fandtes, og tog 44 min mod 14 alene. Derfor læser de
+  parallelt, og alt med en browser står i kø.
+- **Batch 1 — det, der kostede penge eller tabte oplysninger** (16/9):
+  · ⚠️ **Vejen tilbage fandtes ikke.** Et ja til et selskab lukkede dagen; et
+  fortrudt ja rørte den ikke. `bestil-regler.js:493` gav så gæsten en TOM liste
+  tider — fuldt hus af ledig kapacitet, og hjemmesiden sagde nej til alle, uden
+  at nogen opdagede det. Nu **tilbydes** dagen åbnet (`Admin.tilbydAabenDag`), og
+  den åbner aldrig af sig selv: lukningen OR'es ind, så dagen kan være lukket af
+  en helt anden grund.
+  · **Allergien tabtes på 2 af 4 bestillingsveje.** `bestil/` havde intet felt,
+  men beskedfeltet sagde "Fx allergier…" — og køkkenet markerer kun `ALLERGI:`,
+  som kun sættes fra et rigtigt felt. Frokostsidens felt blev aldrig læst (ordet
+  "allergi" fandtes 0 gange i `forespoergsel.js`), og samtykkelinjen kunne aldrig
+  vises. Nu virker alle fire veje.
+  · **Leveringszonen på `bestil/` blev IKKE bygget** — den er en beslutning, ikke
+  en fejl: noten dér lover med vilje ingen zone ("et gæt her bliver til et løfte
+  på en kvittering"). Ligger hos ejeren sammen med bordloftet.
+  ⚠️ **Fire fælder på én dag, alle samme form — noget så grønt ud uden at måle:**
+  en prøve, der lovede at læse "af MAPPEN", læste kun roden (bestil/, bord/ og
+  ved-bordet/ var aldrig blevet set); `font-weight: 400` på en klasse, som en
+  id-regel slog (målt 600 bagefter); en farve kopieret ordret ind i et vogtet ark;
+  og **to falsifikationer, der aldrig blev kørt** — først spiste skallen
+  anførselstegnene, så kolliderede perls afgrænser med mønstret. Begge gange stod
+  der "passed" på uændret kode. **Lære: print at mutationen ER sat, før du tror på
+  det grønne.**
 - **Nyhederne: intet billedfelt uden et billede** (16/9, ingen SQL). Ejerens ord:
   nyhederne er *"så forældet og ikke pænt nok og dygtigt nok — hvordan idk"*.
   ⚠️ **Målt på et skud, ikke gættet:** af fire nyheder var TRE af kortene 170 px
