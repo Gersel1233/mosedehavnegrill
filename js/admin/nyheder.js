@@ -546,15 +546,23 @@
       top.src = forhaandBillede || valgtBillede;
       top.alt = '';
     } else {
-      /* ⚠️ DET DESIGNEDE FELT — filens vigtigste bidrag til
-         udseendet. Gæstekortet har en <image-slot>, som uden et
-         foto er en 170 px høj TOM beige firkant. Slagsens tegn på
-         en farvet flade er ikke et pladsholderbillede; det er en
-         forside, der ser lavet ud, også når der ikke er et foto. */
-      top = lav('div', 'fh-felt s-' + valgtSlags);
-      top.appendChild(lav('span', 'fh-tegn', s.tegn));
+      /* ⚠️ INTET FELT UDEN ET FOTO (16/9, ejerens valg efter et
+         skud) — OG FORHÅNDSVISNINGEN SKAL VISE DET SAMME SOM
+         GÆSTEN SER.
+
+         Her stod slagsens tegn på en farvet flade. Det var en
+         rettelse af noget værre (en tom beige firkant), men målt
+         på et skærmbillede af fire nyheder var TRE af gæstens kort
+         170 px pastel med ét emoji, og ejeren kaldte det
+         "forældet og ikke pænt nok". Gæstekortet dropper nu feltet
+         helt (js/skal/forside.js).
+
+         ⚠️ OG DERFOR SKAL DET VÆK HER OGSÅ. En forhåndsvisning,
+         der viser et felt, gæsten aldrig får, er værre end ingen
+         forhåndsvisning: den lyver i ejerens eget værktøj. */
+      top = null;
     }
-    kort.appendChild(top);
+    if (top) kort.appendChild(top);
 
     var krop = lav('div', 'fh-krop');
     krop.appendChild(lav('div', 'fh-naar', Admin.pænDato(Butik.nu().dato)));

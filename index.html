@@ -267,8 +267,14 @@
 <section class="nyheder" id="nyheder">
   <div class="mid rev"><div class="eyebrow red">Nyt fra havnen</div><h2>Nyheder</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
     <div class="newslist">
-    <a class="nw rev d1" href="#nyheder"><image-slot id="nyhed-1" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">21. august</div><h3>Havnens tapas er landet</h3><p>Vores nye tapasfad med oste, charcuteri og hjemmebagt brød kan nu bestilles til afhentning.</p><span class="more">Læs mere ↓</span></div></a>
-    <a class="nw rev d2" href="#nyheder"><image-slot id="nyhed-2" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">14. august</div><h3>Længere åbent i weekenden</h3><p>Fra september holder vi åbent til 21 fredag og lørdag. Ishuset lukker en halv time efter grillen.</p><span class="more">Læs mere ↓</span></div></a>
+    <!-- ⚠️ EN BOKS, IKKE ET LINK (16/9). Kortet var et <a href="#nyheder">
+         — altså et link til det afsnit, det selv står i. havnegrillen.js
+         binder et rullehop på hvert a[href^="#"], så et tryk på en nyhed
+         hoppede hen til nyhederne: et spring, der føles som en fejl. Der
+         findes ingen nyhedsside at gå til, og "Læs mere" er væk af samme
+         grund. En boks lover ingenting og holder det. -->
+    <div class="nw rev d1"><image-slot id="nyhed-1" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">21. august</div><h3>Havnens tapas er landet</h3><p>Vores nye tapasfad med oste, charcuteri og hjemmebagt brød kan nu bestilles til afhentning.</p></div></div>
+    <div class="nw rev d2"><image-slot id="nyhed-2" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">14. august</div><h3>Længere åbent i weekenden</h3><p>Fra september holder vi åbent til 21 fredag og lørdag. Ishuset lukker en halv time efter grillen.</p></div></div>
   </div>
 </section>
 

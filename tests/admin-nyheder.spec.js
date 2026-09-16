@@ -345,12 +345,22 @@ test.describe('Forhåndsvisningen', () => {
       .toHaveText('Havnens tapas er landet');
   });
 
-  test('og slagsens felt i stedet for en tom firkant', async ({ page }) => {
+  /* ⚠️ VENDT 16/9 — OG DET ER HELE POINTEN MED EN FORHÅNDSVISNING.
+     Prøven krævede før, at et valg af slags gav et farvefelt med
+     slagsens tegn. Gæstekortet har ikke længere sådan et felt
+     (ejerens valg efter et skud: tre af fire kort var 170 px
+     pastel med ét emoji). En forhåndsvisning, der viser noget,
+     gæsten aldrig får, lyver i ejerens eget værktøj. */
+  test('uden et foto viser forhåndsvisningen intet billedfelt', async ({ page }) => {
     await nyhedsfanen(page, [medSlags()]);
     await page.locator('#ny-slags [data-slags="musik"]').click();
-    const felt = page.locator('#ny-forhaand .fh-felt');
-    await expect(felt).toHaveClass(/s-musik/);
-    await expect(felt).toHaveText('🎵');
+    await expect(page.locator('#ny-forhaand .fh-felt')).toHaveCount(0);
+    /* ⚠️ MODSTYKKET: forhåndsvisningen skal stadig VÆRE der.
+       Uden den her linje ville en visning, der slet ikke blev
+       tegnet, bestå prøven. */
+    await page.locator('#ny-titel').fill('Live musik på molen');
+    await expect(page.locator('#ny-forhaand .fh-titel'))
+      .toHaveText('Live musik på molen');
   });
 });
 
@@ -363,15 +373,55 @@ test.describe('Forhåndsvisningen', () => {
    ============================================================ */
 test.describe('Gæstens nyhedskort', () => {
 
-  test('en nyhed med slags får slagsens felt, ikke en tom kasse', async ({ page }) => {
+  /* ⚠️ VENDT 16/9 — EJERENS VALG EFTER ET SKUD.
+
+     Prøven krævede før, at en nyhed med en slags fik slagsens
+     farvefelt. Feltet var en rettelse af noget værre (den
+     stiplede grå kasse), men målt på et skærmbillede af fire
+     nyheder var TRE af kortene 170 px pastel med ét emoji i
+     midten — og det var dét, ejeren kaldte "forældet og ikke pænt
+     nok". Et billedfelt uden et billede ligner et hul, ikke et
+     design.
+
+     Uden et foto er der nu INTET billedfelt. Kortet er et rent
+     tekstopslag, og det er stadig prøvens opgave at vogte, at den
+     stiplede kasse ikke kommer tilbage. */
+  test('uden et foto har kortet intet billedfelt — heller ikke slagsens', async ({ page }) => {
     await åbnSkal(page, '/', {
       data: grunddata({ nyheder: [medSlags({ slags: 'musik' })] }),
     });
     const kort = page.locator('#nyheder .nw').first();
-    await expect(kort.locator('.nw-felt')).toHaveClass(/s-musik/);
-    await expect(kort.locator('.nw-felt')).toHaveText('🎵');
+    await expect(kort.locator('.nw-felt')).toHaveCount(0);
     await expect(kort.locator('image-slot')).toHaveCount(0);
+    /* ⚠️ MODSTYKKET: kortet skal stadig VÆRE der med sin tekst.
+       Uden den her linje ville et kort, der slet ikke blev tegnet,
+       bestå prøven. */
+    await expect(kort.locator('h3')).toHaveText(medSlags().titel);
   });
+
+  /* ⚠️ OG KORTET ER IKKE ET LINK (16/9, målt).
+
+     Det var et <a href="#nyheder"> — et link til det afsnit, det
+     selv står i. Og havnegrillen.js binder et rullehop på HVERT
+     a[href^="#"], så et tryk på en nyhed hoppede hen til
+     nyhederne: ikke et dødt link, men et spring, der føles som en
+     fejl. Der findes ingen nyhedsside at gå til, og "Læs mere" er
+     væk af samme grund.
+
+     Prøven vogter begge dele, fordi skabelonen i index.html er
+     det eneste sted, adressen stod — og den slags kommer tilbage,
+     næste gang nogen retter i opmærkningen. */
+  test('kortet er en boks, ikke et link, der hopper ingen steder hen',
+    async ({ page }) => {
+      await åbnSkal(page, '/', {
+        data: grunddata({ nyheder: [medSlags({ slags: 'musik' })] }),
+      });
+      const kort = page.locator('#nyheder .nw').first();
+      await expect(kort).toHaveCount(1);
+      expect(await kort.evaluate((el) => el.tagName)).not.toBe('A');
+      await expect(page.locator('#nyheder a[href="#nyheder"]')).toHaveCount(0);
+      await expect(kort.locator('.more')).toHaveCount(0);
+    });
 
   test('en nyhed med foto får fotoet', async ({ page }) => {
     await åbnSkal(page, '/', {
@@ -398,16 +448,25 @@ test.describe('Gæstens nyhedskort', () => {
      📣 lover ingenting om nyhedens indhold, og det er derfor,
      det er det rigtige tegn at falde ned på. Kortet er helt,
      også før SQL-filen er kørt. */
-  test('uden slags får kortet det neutrale tegn — ikke en tom kasse', async ({ page }) => {
+  /* ⚠️ OG DET GÆLDER OGSÅ UDEN EN SLAGS (vendt 16/9). Her stod, at
+     kortet skulle falde ned på 📣 på en neutral flade. Det var
+     rigtigt, så længe svaret på "intet foto" var et felt — nu er
+     svaret ingenting. Den gamle fejl, prøven blev skrevet imod,
+     vogtes stadig: <image-slot> må ikke stå tilbage som en
+     stiplet grå kasse, og kortet skal stadig bære sin tekst. */
+  test('uden slags og uden foto står kortet som ren tekst', async ({ page }) => {
     await åbnSkal(page, '/', {
       data: grunddata({ nyheder: [udenSlags()] }),
     });
     const kort = page.locator('#nyheder .nw').first();
     await expect(kort.locator('image-slot')).toHaveCount(0);
-    await expect(kort.locator('.nw-felt')).toHaveText('📣');
-    // Slagsens egen farve kan vi ikke kende — så falder den ned
-    // på den neutrale flade, ikke på en gættet.
-    await expect(kort.locator('.nw-felt')).toHaveClass(/s-andet/);
+    await expect(kort.locator('.nw-felt')).toHaveCount(0);
+    await expect(kort.locator('h3')).toHaveText(udenSlags().titel);
+    /* "Læs mere" er væk (16/9): den pegede på #nyheder — altså på
+       afsnittet selv — og der findes ingen nyhedsside at gå til.
+       En knap, der ikke gør noget, er det, der får en side til at
+       virke ufærdig. */
+    await expect(kort.locator('.more')).toHaveCount(0);
   });
 });
 

@@ -581,11 +581,15 @@
          en tom kasse på forsiden, og det var dét, kunden kaldte
          "bare standard billede og tekst" (26/8).
 
+         ⚠️ OG SVARET BLEV ET ANDET 16/9. I mellemtiden stod der
+         slagsens eget farvefelt med et emoji — og målt på et skud
+         af fire nyheder var TRE af dem sådan et felt. Ejerens dom:
+         "forældet og ikke pænt nok". Et billedfelt uden et billede
+         ligner et hul, ikke et design.
+
          Nu to udfald:
          · er der et FOTO, står det
-         · ellers slagsens eget felt — tegnet på en flade i
-           havnens farver. Ikke et pladsholderbillede: en forside,
-           der ser lavet ud, også uden et foto
+         · ellers INTET billedfelt — kortet er et rent tekstopslag
 
          ⚠️ OG EN NYHED UDEN SLAGS FÅR OGSÅ ET FELT (29/8).
          Første udgave lod pladsen stå, når slagsen manglede — og
@@ -609,18 +613,25 @@
           foto.loading = 'lazy';
           plads.parentNode.replaceChild(foto, plads);
         } else {
-          /* ⚠️ ELEMENTET SKIFTES UD, ikke fyldes. <image-slot> er
-             en rigtig komponent med sin egen indmad — sætter man
-             tekst i den, står tegnet oven i dens "Foto eller
-             opslag / or browse files / Replace / Remove". Målt af
-             prøven: kortet viste 🎵 efterfulgt af hele
-             pladsholderens brugerflade. */
-          var slags = n.slags || 'andet';
-          var felt = document.createElement('div');
-          felt.className = 'nw-felt s-' + slags;
-          felt.setAttribute('aria-hidden', 'true');
-          felt.textContent = NYHED_TEGN[slags] || NYHED_TEGN.andet;
-          plads.parentNode.replaceChild(felt, plads);
+          /* ⚠️ INTET FELT UDEN ET FOTO (16/9, ejerens valg efter et
+             skud). Her stod slagsens eget farvefelt med et emoji i
+             midten — 170 px pastel med 🍽️, 🕐 eller 🎉. På et
+             skærmbillede af fire nyheder var tre af dem sådan et
+             felt, og DET var det, ejeren kaldte "forældet og ikke
+             pænt nok": et billedfelt uden et billede ligner et hul,
+             nogen glemte at fylde.
+
+             Nu falder feltet helt væk, og kortet bliver et rent
+             tekstopslag med dato, overskrift og hans egen tekst —
+             noget, der ser MENT sådan ud. Arkivet nedenunder
+             beholder sine små felter (.tidl-felt): dér er de 88 px
+             og bærer en liste, ikke en forside.
+
+             ⚠️ ELEMENTET FJERNES OG TØMMES IKKE. <image-slot> er en
+             rigtig komponent med sin egen indmad — lades den stå
+             tom, tegner den stadig sin egen brugerflade ("Foto
+             eller opslag / or browse files / Replace / Remove"). */
+          plads.parentNode.removeChild(plads);
         }
       }
       skriv(find('.when', kort), pænDato(n.dato));

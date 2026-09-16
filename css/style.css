@@ -4215,32 +4215,22 @@ body.personale .fh-kort {
    bliver smallere. MÅLT: knappen under den holdt aldrig op med
    at flytte sig, og Playwright gav op med "element is not
    stable". */
-body.personale .fh-foto,
-body.personale .fh-felt {
+body.personale .fh-foto {
   display: block;
   width: 100%;
   height: 170px;
   object-fit: cover;
 }
 
-/* ⚠️ DET DESIGNEDE FELT — filens vigtigste bidrag til udseendet.
-   Gæstekortet har en <image-slot>, som UDEN et foto er en 170 px
-   høj, tom, beigefarvet firkant. Slagsens tegn på en farvet
-   flade er ikke et pladsholderbillede: det er en forside, der
-   ser lavet ud, også når der ikke er et foto.
-
-   Farverne er havnens egne — ingen nye. */
-body.personale .fh-felt {
-  display: grid;
-  place-items: center;
-  background: var(--sand2);
-}
-body.personale .fh-tegn { font-size: 46px; line-height: 1; }
-body.personale .fh-felt.s-musik      { background: linear-gradient(135deg, #f3dfe2, #e7c9cf); }
-body.personale .fh-felt.s-ret        { background: linear-gradient(135deg, #f6e6d4, #eed3b6); }
-body.personale .fh-felt.s-tider      { background: linear-gradient(135deg, #dde7ee, #c6d7e4); }
-body.personale .fh-felt.s-begivenhed { background: linear-gradient(135deg, #f0e2ef, #dfc9dd); }
-body.personale .fh-felt.s-andet      { background: linear-gradient(135deg, #ece5dc, #ddd2c4); }
+/* ⚠️ DET DESIGNEDE FELT ER FJERNET (16/9). Her stod slagsens tegn
+   på en farvet flade — svaret på, at gæstekortet uden et foto var
+   en tom beige firkant. Målt på et skud af fire nyheder var TRE af
+   kortene 170 px pastel med ét emoji, og ejerens dom var
+   "forældet og ikke pænt nok". Uden et foto har gæstekortet nu
+   INTET billedfelt, og forhåndsvisningen viser det samme — en
+   forhåndsvisning, der viser noget, gæsten aldrig får, lyver i
+   ejerens eget værktøj. Arkivets små felter (.tidl-felt i
+   havnegrillen.css) er urørte: dér er de 88 px og bærer en liste. */
 
 body.personale .fh-krop { padding: 15px 16px 17px; }
 body.personale .fh-naar {

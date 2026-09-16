@@ -970,7 +970,16 @@ test.describe('Forsidens tomme billedpladser', () => {
 
     await expect(page.locator('.nw h3')).toHaveText('Længere åbent');
     await expect(page.locator('.nw image-slot')).toHaveCount(0);
-    await expect(page.locator('.nw .nw-felt')).toHaveCount(1);
+    /* ⚠️ VENDT 16/9 — EJERENS VALG EFTER ET SKUD. Her stod, at
+       kortet skulle have slagsens farvefelt i stedet for den
+       stiplede kasse. Feltet løste den ene fejl og lavede en ny:
+       på et skud af fire nyheder var TRE af dem 170 px pastel med
+       ét emoji i midten, og det var dét, ejeren kaldte "forældet
+       og ikke pænt nok". Uden et foto er der nu INTET billedfelt —
+       kortet er et rent tekstopslag. Den stiplede kasse er stadig
+       væk; det er linjen ovenfor, der vogter den. */
+    await expect(page.locator('.nw .nw-felt')).toHaveCount(0);
+    await expect(page.locator('.nw p')).toContainText('åbent til 21');
   });
 
   /* Forretningens egne fotos, lagt ind af os. Prøven er den, der

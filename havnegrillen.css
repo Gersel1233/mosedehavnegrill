@@ -1743,12 +1743,11 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    en tom kasse paa forsiden. Nu enten et foto eller slagsens eget
    felt — se js/skal/forside.js. Farverne er havnens egne. */
 .nw .nw-foto{display:block;width:100%;height:170px;object-fit:cover}
-.nw .nw-felt{display:grid;place-items:center;width:100%;height:170px;font-size:46px;line-height:1;background:var(--cream2)}
-.nw .nw-felt.s-musik,.tidl-felt.s-musik{background:linear-gradient(135deg,#f3dfe2,#e7c9cf)}
-.nw .nw-felt.s-ret,.tidl-felt.s-ret{background:linear-gradient(135deg,#f6e6d4,#eed3b6)}
-.nw .nw-felt.s-tider,.tidl-felt.s-tider{background:linear-gradient(135deg,#dde7ee,#c6d7e4)}
-.nw .nw-felt.s-begivenhed,.tidl-felt.s-begivenhed{background:linear-gradient(135deg,#f0e2ef,#dfc9dd)}
-.nw .nw-felt.s-andet,.tidl-felt.s-andet{background:linear-gradient(135deg,#ece5dc,#ddd2c4)}
+.tidl-felt.s-musik{background:linear-gradient(135deg,#f3dfe2,#e7c9cf)}
+.tidl-felt.s-ret{background:linear-gradient(135deg,#f6e6d4,#eed3b6)}
+.tidl-felt.s-tider{background:linear-gradient(135deg,#dde7ee,#c6d7e4)}
+.tidl-felt.s-begivenhed{background:linear-gradient(135deg,#f0e2ef,#dfc9dd)}
+.tidl-felt.s-andet{background:linear-gradient(135deg,#ece5dc,#ddd2c4)}
 .nw .body{padding:16px}
 .nw .when{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600}
 .nw h3{font-size:25px;margin-top:8px}
@@ -1797,7 +1796,6 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .tidl-vindue h3{margin:6px 0 0;font-size:22px;line-height:1.2}
 .tidl-vindue .tekst{margin:10px 0 0;font-size:15px;line-height:1.55;color:var(--ink2);white-space:pre-line}
 .tidl-vindue .stat{margin:12px 0 0;font-size:15px;font-weight:600}
-.nw .more{display:inline-block;margin-top:11px;font-size:13px;font-weight:600;color:var(--red);border-bottom:1.5px solid rgba(214,42,58,.35)}
 
 /* service-rækker */
 .rows{display:grid;gap:9px;margin-top:20px}
