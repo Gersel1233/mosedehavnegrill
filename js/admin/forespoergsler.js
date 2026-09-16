@@ -135,6 +135,14 @@
      ville de tre langsomt komme til at sige noget forskelligt.
      Så ville striben stå på "gjort", mens advarslen råbte. */
   function kalenderStand(f) {
+    /* ⚠️ BEKRÆFT-TRINNET STÅR FØR JAET (16/9). Ejerens ord: når man
+       tager imod, skal man kunne "justere eller bekræfte den første
+       omgang foreslået tid og datoønske" og vælge, "hvad der skal
+       være lukket". Før kom felterne FØRST, når sagen allerede stod
+       som aftalt — altså efter beslutningen var truffet, og med
+       gæstens ønske et andet sted på kortet. */
+    if (f.status === 'kontaktet' && !f.slettet && f.dato
+        && f.dato >= Butik.nu().dato) return 'bekraeft';
     if (f.status !== 'aftalt' || f.slettet) return 'ikke-relevant';
     if (!f.dato) return 'uden-dato';
     if (f.dato < Butik.nu().dato) return 'overstaaet';
@@ -485,19 +493,95 @@
       return m;
     }
 
+    /* ⚠️ HVAD BAD GÆSTEN OM? (16/9) Ejerens ord: dataene på
+       forespørgslen skal være tydelige — "det, de ansøger om i
+       forvejen". Linjen står HER, hvor aftalen skrives, så man ikke
+       skal kigge op på kortet og huske. */
+    var bad = lav('p', 'hjaelp kal-bad-om', 'Gæsten bad om: ' + badOmTekst(f));
+
+    /* DEN AFTALTE TID. Gæstens eget ønske står som forslag — det er
+       netop dét, der skulle kunne "justeres eller bekræftes". Kun
+       baglokalet sender et tidsrum; de andre står tomme. */
+    var oensket = tidsrumFra(f);
+    var fra = document.createElement('input');
+    fra.type = 'time';
+    fra.className = 'smal';
+    fra.value = oensket[0] || '';
+    fra.setAttribute('aria-label', 'Aftalt fra');
+    var til = document.createElement('input');
+    til.type = 'time';
+    til.className = 'smal';
+    til.value = oensket[1] || '';
+    til.setAttribute('aria-label', 'Aftalt til');
+    var tidBoks = lav('div', 'kal-tid');
+    tidBoks.appendChild(lav('span', 'kal-luk-navn', 'Aftalt tid:'));
+    tidBoks.appendChild(fra);
+    tidBoks.appendChild(document.createTextNode(' – '));
+    tidBoks.appendChild(til);
+
     var lukBoks = lav('div', 'kal-luk');
     lukBoks.appendChild(lav('span', 'kal-luk-navn', 'Luk dagen for:'));
     lukBoks.appendChild(afkryds(lukTogo, '🥡 mad ud af huset'));
     lukBoks.appendChild(afkryds(lukHer, '🍽️ spisning her'));
+    /* ⚠️ "HELE DAGEN" ER DE TO SAMMEN, ikke en tredje tilstand i
+       databasen. Ejeren skal kunne vælge det uden at regne det ud. */
+    var helDag = document.createElement('input');
+    helDag.type = 'checkbox';
+    helDag.addEventListener('change', function () {
+      lukTogo.checked = helDag.checked;
+      lukHer.checked = helDag.checked;
+      visRammer();
+    });
+    lukBoks.appendChild(afkryds(helDag, '🔒 hele dagen'));
     lukBoks.appendChild(lav('span', 'hjaelp',
       'Gæsten kan ikke bestille det, der er lukket — og siden siger hvorfor, '
-      + 'hvis I skriver en besked på dagen i kalenderen.'));
+      + 'hvis I skriver en besked til gæsterne herunder.'));
 
-    var gem = lav('button', 'knap', '📅 Skriv i kalenderen');
+    /* ⚠️ HVAD RAMMER LUKNINGEN? Kalenderen regner det ud
+       (Admin.hvadRammerLukning), og svaret hører til HER, hvor der
+       trykkes: en lukning aflyser INTET af sig selv. */
+    var rammer = lav('p', 'hjaelp kal-rammer');
+    rammer.style.display = 'none';
+    function visRammer() {
+      var liste = (lukTogo.checked || lukHer.checked) && Admin.hvadRammerLukning && dag.value
+        ? Admin.hvadRammerLukning(dag.value, dag.value) : [];
+      rammer.textContent = liste.length
+        ? '⚠️ Den dag står der allerede: ' + liste.join(' · ')
+          + '. Intet bliver aflyst af sig selv.'
+        : '';
+      rammer.style.display = liste.length ? '' : 'none';
+    }
+    lukTogo.addEventListener('change', visRammer);
+    lukHer.addEventListener('change', visRammer);
+    dag.addEventListener('change', visRammer);
+
+    /* SKAL SIDEN SIGE NOGET? Ejerens eget spørgsmål. Beskeden er
+       dagsreglens egen (besked_titel + besked_til_gaester) og står på
+       forsiden den dag — tom = siden siger ingenting. */
+    var bTitel = document.createElement('input');
+    bTitel.type = 'text';
+    bTitel.className = 'smal';
+    bTitel.maxLength = 80;
+    bTitel.placeholder = 'Overskrift på siden (valgfri)';
+    var bTekst = document.createElement('input');
+    bTekst.type = 'text';
+    /* ⚠️ SIN EGEN KLASSE, IKKE notens (16/9). Kalendernoten er
+       `vare-tekst-felt`, og en prøve peger på netop den klasse inde i
+       boksen — to felter med samme navn gjorde den tvetydig. Bredden
+       kommer fra `.kal-opret input` og er den samme. */
+    bTekst.className = 'kal-besked';
+    bTekst.maxLength = 300;
+    bTekst.placeholder = 'Besked til gæsterne den dag (valgfri) — fx: lukket for selskab';
+
+    var gem = lav('button', 'knap',
+      f.status === 'aftalt' ? '📅 Skriv i kalenderen' : '✓ Bekræft aftalen');
     gem.type = 'button';
     gem.addEventListener('click', function () {
       if (!dag.value) return Admin.brøl('Vælg hvilken dag den skal stå på.');
       if (!titel.value.trim()) return Admin.brøl('Skriv hvad der skal stå i kalenderen.');
+      /* ⚠️ EN TID, DER SLUTTER FØR DEN BEGYNDER, ER EN TASTEFEJL —
+         undtagen over midnat, som ER en fest (samme regel som
+         baglokalets eget tidsrum). Der spørges kun, når begge står. */
       gem.disabled = true;
 
       /* ⚠️ DAGSREGLEN SKRIVES FØRST OG SLETTER IKKE NOGET.
@@ -517,20 +601,52 @@
           tidligst: nu.tidligst,
           senest_togo: nu.senest_togo,
           senest_spis_her: nu.senest_spis_her,
-          besked_til_gaester: nu.besked_til_gaester,
-          besked_titel: nu.besked_titel,
+          /* Beskeden er ejerens egne ord, når han har skrevet nogle —
+             ellers står dagens gamle besked urørt. */
+          besked_til_gaester: bTekst.value.trim() || nu.besked_til_gaester,
+          besked_titel: bTitel.value.trim() || nu.besked_titel,
         }))
         : Promise.resolve();
+
+      /* Den aftalte tid står to steder, og de siger det samme:
+         start_kl er kalenderens eget felt, og noten siger hele
+         spændet, som personalet læser det på dagen. */
+      var tidTekst = fra.value
+        ? 'Aftalt kl. ' + fra.value.replace(':', '.')
+          + (til.value ? '–' + til.value.replace(':', '.') : '')
+        : '';
+      var noten = [note.value, tidTekst].filter(function (x) {
+        return String(x || '').trim();
+      }).join(' · ');
 
       Admin.gem(kaede.then(function () {
         return Butik.skrive.kalender({
           type: 'arrangement',
           dato: dag.value,
           titel: titel.value,
-          beskrivelse: note.value,
+          beskrivelse: noten,
+          start_kl: fra.value || null,
           offentlig: false,
         });
-      }), 'Skrevet i kalenderen ' + Admin.pænDato(dag.value) + '.'
+      }).then(function () {
+        /* ⚠️ STATUS SÆTTES TIL SIDST OG KUN, NÅR DEN IKKE ER SAT.
+           Rækkefølgen er dagsregel → kalender → status: fejler noget
+           undervejs, står sagen stadig som "kontaktet", og personalet
+           kan prøve igen. Sattes status først, ville en fejl
+           efterlade et ja uden en dag nogen steder. */
+        if (f.status === 'aftalt') return null;
+        /* ⚠️ RÆKKENS EGEN NOTE, IKKE KORTETS FELT (16/9). Her stod
+           felt.value — og `felt` er notefeltet på KORTET, som hører
+           til en anden funktion. kalenderFelter kan ikke se den, så
+           kaldet kastede, og kæden nåede aldrig statussen: dagen blev
+           skrevet, men sagen stod stadig som "kontaktet". Målt af
+           prøven, ikke set i koden. */
+        return Butik.skrive.forespoergselStatus(f.id, 'aftalt',
+          [f.intern_note, tidTekst].filter(function (x) {
+            return String(x || '').trim();
+          }).join(' · '));
+      }), (f.status === 'aftalt' ? 'Skrevet i kalenderen ' : 'Aftalen er bekræftet — ')
+        + Admin.pænDato(dag.value) + '.'
         + (lukTogo.checked || lukHer.checked ? ' Dagen er lukket for det valgte.' : ''))
         /* ⚠️ Admin.gem genindlæser OG fanger fejlen selv — et
            .catch her ville aldrig køre, og knappen ville blive
@@ -546,14 +662,53 @@
        en anden fane, er et arbejde, der skal huskes; felterne her
        gør arbejdet færdigt, hvor det står. Kalender-fanen er der
        stadig for den, der vil se hele måneden. */
-    boks.appendChild(lukBoks);
+    /* Rækkefølgen er samtalens: hvad bad de om → hvilken dag og hvad
+       hedder det → hvornår → noten → hvad lukkes → hvad rammer det →
+       hvad siger siden → gem. */
+    boks.appendChild(bad);
     boks.appendChild(dag);
     boks.appendChild(titel);
+    boks.appendChild(tidBoks);
     boks.appendChild(note);
+    boks.appendChild(lukBoks);
+    boks.appendChild(rammer);
+    boks.appendChild(bTitel);
+    boks.appendChild(bTekst);
     var knapper = lav('div', 'knap-raekke');
     knapper.appendChild(gem);
     boks.appendChild(knapper);
     return boks;
+  }
+
+  /* ⚠️ GÆSTENS EGET ØNSKE, SKREVET UD (16/9). Ejerens ord: dataene på
+     forespørgslen skal være tydelige — "det, de ansøger om i
+     forvejen". Kun det, hun FAKTISK har oplyst: en linje med "Antal:
+     ikke oplyst" er støj, og det er den samme regel som kalendernoten
+     nedenfor. */
+  function badOmTekst(f) {
+    var dele = [];
+    if (f.dato) dele.push(Admin.pænDato(f.dato));
+    if (f.antal_personer) dele.push(f.antal_personer + ' pers.');
+    detaljeLinjer(f.detaljer).forEach(function (par) {
+      dele.push(par[0] + ': ' + par[1]);
+    });
+    return dele.length ? dele.join(' · ') : 'ikke andet end det, der står ovenfor';
+  }
+
+  /* Tidsrummet, gæsten bad om, som [fra, til]. Baglokalet sender det
+     som ÉN tekst ("17.00–21.00", js/skal/forespoergsel.js), fordi det
+     er dét, admin viser på kortet — her deles det op, så det kan
+     stå i to tidsfelter.
+
+     ⚠️ BÅDE PUNKTUM OG KOLON, OG BÅDE - OG –. Teksten er gæstens
+     egen fra en formular, ikke et klokkeslæt fra databasen. Kan den
+     ikke læses, står felterne tomme — et gæt på en tid er værre end
+     et tomt felt. */
+  function tidsrumFra(f) {
+    var t = String(((f.detaljer || {}).tidsrum) || '');
+    var m = t.match(/(\d{1,2})[.:](\d{2})\s*[–—-]\s*(\d{1,2})[.:](\d{2})/);
+    if (!m) return ['', ''];
+    return [('0' + m[1]).slice(-2) + ':' + m[2], ('0' + m[3]).slice(-2) + ':' + m[4]];
   }
 
   /* Forslaget til noten: det, gæsten HAR oplyst, og intet andet.
@@ -811,7 +966,16 @@
        en privat fest. Knappen fører derhen; mennesket skriver.
        ============================================================ */
     var stand = kalenderStand(f);
-    if (stand === 'mangler' || stand === 'gjort') {
+    if (stand === 'bekraeft') {
+      var bek = lav('div', 'kalender-bekraeft');
+      bek.appendChild(lav('strong', null, '✅ Bekræft aftalen'));
+      bek.appendChild(lav('span', 'vare-tekst',
+        'Ret dagen og tiden, hvis I har aftalt noget andet, og vælg hvad der '
+        + 'lukkes. Når I gemmer, står sagen som aftalt, dagen står i kalenderen, '
+        + 'og personalet kan se den dér.'));
+      bek.appendChild(kalenderFelter(f));
+      k.appendChild(bek);
+    } else if (stand === 'mangler' || stand === 'gjort') {
       if (stand === 'mangler') {
         var advar = lav('div', 'kalender-mangler');
         advar.appendChild(lav('strong', null, '⚠️ Den står ikke i kalenderen'));

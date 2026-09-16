@@ -2192,6 +2192,12 @@
      svaret er nej. Første udgave krævede også nøglen, og så
      svarede den undefined altid: påmindelsen kunne aldrig komme
      frem. Fundet af prøven, ikke ved at læse. */
+  /* ⚠️ FORESPØRGSELSKORTET SPØRGER DEN SAMME (16/9). "Hvad rammer en
+     lukning" er regnet ud her, og den, der lukker en dag, sidder lige
+     så ofte på Forespørgsler som på Kalender. To udgaver af det
+     spørgsmål ville skride fra hinanden. */
+  Admin.hvadRammerLukning = hvadRammerLukning;
+
   Admin.kalenderHar = function (dag) {
     if (!Admin.data) return undefined;
     if (!dag) return null;
