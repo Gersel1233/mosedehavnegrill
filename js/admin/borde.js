@@ -343,7 +343,14 @@
     felt.id = 'bord-note-' + b.id;
     felt.maxLength = 1000;
     felt.value = b.intern_note || '';
-    felt.placeholder = 'Fx: bord 4 ved vinduet';
+    /* ⚠️ HJÆLPETEKSTEN BAD OM BORDET (rettet 16/9, set på et skud).
+       Her stod "Fx: bord 4 ved vinduet" — og lige under står nu
+       bordVÆLGEREN. To steder at skrive det samme er præcis den
+       tvetydighed, kolonnen skulle fjerne: en travl medarbejder
+       skriver bordet i noten, og så kan systemet stadig ikke se, at
+       to familier har fået bord 7 kl. 18. Noten er til det, der
+       ikke har sit eget felt. */
+    felt.placeholder = 'Fx: barnestol, kørestol, fejrer fødselsdag';
     felt.addEventListener('change', function () {
       if (felt.value === (b.intern_note || '')) return;
       gemBord(Butik.skrive.bordStatus(b.id, b.status, felt.value), 'Noten er gemt.');

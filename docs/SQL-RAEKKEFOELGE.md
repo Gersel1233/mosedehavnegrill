@@ -53,8 +53,10 @@ Fire filer står ikke i blokkene, men køres af byggeren på deres plads:
 `menukort-raekkefoelge.sql`). Til hver migrering hører en `proev-`fil, der skal
 skrive BESTOD.
 
-**Alt til og med `vare-valg.sql` er kørt i produktionen** (målt 13.–15/9). Status
-for den enkelte fil står i `docs/HISTORIK.md`.
+**Alt til og med `bord-plads.sql` er kørt i produktionen** (målt 13.–16/9 —
+`kanal-vaern.sql` og `bord-plads.sql` blev lagt på 16/9 og målt bagefter i den
+rigtige database, begge gange med en måling, der rullede sig selv tilbage).
+Status for den enkelte fil står i `docs/HISTORIK.md`.
 
 ## Det, der skal køres igen bagefter
 

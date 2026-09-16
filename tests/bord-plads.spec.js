@@ -100,6 +100,18 @@ test('et slukket bord står ikke i listen', async ({ page }) => {
     .toHaveCount(0);
 });
 
+/* ⚠️ OG KUN ÉT STED AT SKRIVE BORDET (set på et skud 16/9).
+   Notens hjælpetekst sagde "Fx: bord 4 ved vinduet" — fri tekst,
+   lige over den nye vælger. Vælgeren er intet værd, hvis feltet
+   ovenover stadig beder om det samme: systemet kan ikke læse en
+   note, og så er vi tilbage ved to familier på bord 7 kl. 18. */
+test('noten beder ikke længere om bordet', async ({ page }) => {
+  const kort = await aabn(page, [booking()]);
+  const note = kort.locator('input[placeholder^="Fx:"]');
+  await expect(note).toHaveCount(1);
+  await expect(note).not.toHaveAttribute('placeholder', /bord/i);
+});
+
 /* ⚠️ OG FELTET FINDES IKKE, FØR KOLONNEN GØR. Er bord-plads.sql ikke
    kørt, ville hvert gem fejle med PGRST204 på en fil, ejeren ikke ved
    eksisterer — og han ville se en vælger, der ikke virker. */

@@ -37,6 +37,21 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
   Dagens billede talte kun ankomne som "sagt ja" (en fuld lørdag stod som
   "0 sagt ja · 12 venter"); nu tæller alle bookede pladser. Nye står efter
   dag og tid. bord/ har − og + ved antallet
+- **Bordet står på bookingen, ikke i noten** (`supabase/bord-plads.sql`, kørt i
+  produktionen 16/9): kolonnen `bord_id` + værnet `bordbestilling_plads`, som
+  låser pr. bord (`pg_advisory_xact_lock`) og afviser det samme bord inden for
+  ejerens eget ophold (`bord_ophold_min`, 120 min. som standard). Gæsten kan
+  ikke sætte feltet (anon afvises). Vælgeren på kortet mærker et for lille bord
+  uden at spærre det (to borde kan sættes sammen), spærrer et optaget og
+  udelader et slukket. Målt i produktionen bagefter med en måling, der rullede
+  sig selv tilbage: tildeling ✓, samme bord 15 min. efter afvist, bordet af
+  igen ✓ — 0 rækker tilbage. ⚠️ **To fejl fundet undervejs:** vælgeren stod TOM
+  for den, der åbnede fanen, før bordlisten var hentet (kortets aftryk var
+  bookingen alene, så `Admin.tegnRaekker` lod kortet stå — samme ar som zonen i
+  køkkenets kø; aftrykket kender nu bordlisten og dagens øvrige bookinger, og
+  `tegnBorde` hænger på `Admin.efterHent`). Og **set på et skud:** notens
+  hjælpetekst sagde stadig "Fx: bord 4 ved vinduet" lige over vælgeren — to
+  steder at skrive det samme, altså den tvetydighed, kolonnen skulle fjerne
 - **QR-kurven** smed dagens ret ud ved genindlæsning (læste den gamle nøgle)
 - Hver ny prøve er set falde (i alt 32 falsifikationer). ⚠️ To målte
   ingenting første gang: `-g "+ i et tomt felt"` — `+` er regex. Igen.
