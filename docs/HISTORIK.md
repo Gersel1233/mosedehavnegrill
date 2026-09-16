@@ -7,6 +7,29 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**De 14 borde er låst — QR-koderne er sat** (17/9, nat). Ejerens ord: *"ja gør
+det tag dem"*. Alle 14 borde havde `kode = null`, så bestilling ved bordet
+virkede ikke for ét eneste bord. Koderne er nu skrevet: **14 af 14 unikke**, 6
+tegn fra husets egen tabel `23456789ABCDEFGHJKLMNPQRSTUVWXYZ` (uden 0/1/I/O, som
+kan forveksles på et skilt), alle inden for `borde_kode_form_ok`.
+
+⚠️ **KODERNE KAN IKKE GENERERES I ÉN SQL-SÆTNING.** Både en skalar-subquery og
+`cross join lateral` gav **samme kode til alle 14** — Postgres foldede udtrykket
+og evaluerede det én gang for hele sætningen. Det unikke indeks `borde_kode_unik`
+ville have afvist skrivningen, men fejlen blev fanget, fordi generatoren blev
+**kørt som en ren select først**. Koderne laves nu lokalt med `crypto.randomBytes`
+(samme algoritme som `nyNøgle()` i bordkort.js) og skrives med en eksplicit
+`VALUES`-liste, så hver kode er set, før den skrives.
+
+⚠️ **QR-KÆDEN ER MÅLT ENDE-TIL-ENDE PÅ DEN LIVE SIDE** (ur stillet til åbningstid,
+for kl. 00:28 er siden korrekt lukket): rigtig nøgle → "Bord 1"/"Bord 14" med
+formularen åben · ingen nøgle → afvist i browseren ("Scan QR-koden på bordet") ·
+**forkert nøgle → browseren lukker IKKE**, og det er med vilje: gæsten må ikke
+læse `borde.kode`, så `har_kode` er kun afledt, og dommen falder i databasen.
+`mosede_bord_noegle` på `bestillinger` er bekræftet **aktiv i produktionen** og
+rejser `bord_kode_forkert`. Adressen på skiltet er
+`ved-bordet/?bord=<nummer>&n=<nøgle>` — nummeret i `bord`, nøglen i `n`.
+
 **Sluttid, borde og "bord 12"** (16/9, sent — ejerens tre svar). ⚠️ **ÉN SQL-fil
 skal køres: `supabase/arrangement-sluttid.sql`** (kørt i produktionen 16/9).
 
