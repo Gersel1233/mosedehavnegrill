@@ -15,7 +15,7 @@
 
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
-const { åbnSkal, grunddata } = require('./hjaelp');
+const { åbnSkal, grunddata, gemteData } = require('./hjaelp');
 
 function medCatering() {
   const d = grunddata();
@@ -80,6 +80,66 @@ test.describe('Frokostsiden', () => {
     const hoejder = await page.locator('.foto-galleri .gal > *')
       .evaluateAll((ns) => ns.map((n) => Math.round(n.getBoundingClientRect().height)));
     for (const h of hoejder) expect(h, 'en ramme er faldet sammen').toBeGreaterThan(80);
+  });
+
+  /* ============================================================
+     FROKOSTENS ALLERGIFELT BLEV ALDRIG LÆST  (16/9)
+     ------------------------------------------------------------
+     MÅLT af en gennemgang og bekræftet i koden: h-frokost.html HAR
+     et allergifelt (#fallergi) og en samtykkelinje — men ordet
+     "allergi" optræder NUL gange i js/skal/forespoergsel.js, og
+     frokostens opsætning kender kun adresse, firma og cvr.
+
+     Et firma skriver "nødder", trykker send, og oplysningen findes
+     ikke bagefter. Samtykkelinjen ligger med klassen `skjult`, og
+     intet fjerner den nogensinde — så gæsten har heller aldrig
+     haft mulighed for at sige ja.
+
+     ⚠️ MÅLES GENNEM SKÆRMEN. Et spørgsmål til Butik.medAllergi
+     ville bestå: reglen har været i orden hele tiden. Det var
+     siden, der aldrig spurgte den.
+     ============================================================ */
+  async function udfyldFrokost(page, allergi, sigJa) {
+    await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
+    await page.locator('#fnavn').fill('Bogholderiet');
+    await page.locator('#ftlf').fill('20304050');
+    /* Uret i åbnSkal står 7. august 2026, og frokosten har tre
+       dages varsel — datoen skal være langt nok ude, ellers
+       spærrer et HELT andet værn, og prøven måler ikke sit eget. */
+    await page.locator('#fstart').fill('2026-08-20');
+    if (allergi) {
+      await page.locator('#fallergi').fill(allergi);
+      if (sigJa) await page.locator('#fallergi-samtykke').check();
+    }
+    await page.locator('button.g.solid.blk').click();
+  }
+
+  test('frokost: fluebenet dukker op, når der skrives en allergi', async ({ page }) => {
+    await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
+    const linje = page.locator('#fallergi-samtykke-linje');
+    await expect(linje).toBeHidden();
+    await page.locator('#fallergi').fill('nødder');
+    await expect(linje).toBeVisible();
+    /* Og det nulstilles igen — ellers står et gammelt ja og gælder
+       en allergi, gæsten har slettet. */
+    await page.locator('#fallergi').fill('');
+    await expect(linje).toBeHidden();
+  });
+
+  test('frokost: allergien kommer med — forrest, med ordet ALLERGI:', async ({ page }) => {
+    await udfyldFrokost(page, 'nødder', true);
+    await expect.poll(async () =>
+      ((await gemteData(page)).forespoergsler || [{}])[0].besked || '')
+      .toMatch(/^ALLERGI: nødder/);
+  });
+
+  /* ⚠️ MODSTYKKET: uden en allergi må ingenting spærre. Kan man
+     ikke sende uden at sige ja til at få gemt en helbredsoplysning,
+     er samtykket ikke frivilligt — og så er det ikke gyldigt. */
+  test('frokost: uden en allergi spærrer ingenting', async ({ page }) => {
+    await udfyldFrokost(page, null, false);
+    await expect.poll(async () =>
+      ((await gemteData(page)).forespoergsler || []).length).toBe(1);
   });
 
   test('startdatoen står ikke fast på en dag, der er gået', () => {

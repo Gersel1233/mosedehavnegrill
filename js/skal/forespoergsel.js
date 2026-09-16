@@ -205,8 +205,20 @@
     fstart: {
       type: 'frokost',
       panel: 'tilbud',
+      /* ⚠️ allergi HØRER I `felter` OG IKKE I `ekstra` (16/9).
+         Fluebenets id udledes af FELTETS id + "-samtykke" — samme
+         greb som smørrebrødssiden (js/skal/bestil.js). Står navnet
+         kun i `ekstra`, findes værdien godt nok, men spærringen
+         ville slå op på et id, der ikke findes, og så bed den
+         tavst aldrig.
+
+         MÅLT FØR: ordet "allergi" optrådte NUL gange i den her fil.
+         Et firma skrev "nødder" i #fallergi, trykkede send, og
+         oplysningen fandtes ikke bagefter. Samtykkelinjen lå med
+         klassen `skjult`, og intet fjernede den nogensinde. */
       felter: { dato: 'fstart', antal: 'fantal', navn: 'fnavn',
-        tlf: 'ftlf', mail: 'fmail', besked: 'fbesked' },
+        tlf: 'ftlf', mail: 'fmail', besked: 'fbesked',
+        allergi: 'fallergi' },
       /* ⚠️ HVOR OFTE STÅR FØRST, fordi chipsene læses efter
          RÆKKEFØLGEN i opmærkningen: første [data-chips] på siden
          er "Hvor tit?", så "Hvilke dage?", så indholdet. Bytter
@@ -908,6 +920,30 @@
       }
     }
 
+    /* ⚠️ SAMTYKKET TIL HELBREDSOPLYSNINGEN (16/9). Reglen bor i
+       Butik.allergiMangler, og fem skærme spørger den nu. En
+       allergi er en oplysning efter artikel 9, og dér er "vi har
+       en aftale" ikke hjemmel nok: stk. 2, litra a kræver et
+       UDTRYKKELIGT samtykke.
+
+       ⚠️ OG DET MÅ ALDRIG SPÆRRE FOR EN FORESPØRGSEL UDEN ALLERGI.
+       Kan man ikke sende uden at sige ja til at få gemt en
+       helbredsoplysning, er samtykket ikke frivilligt — og så er
+       det ikke gyldigt. allergiMangler svarer derfor kun, når der
+       FAKTISK står noget i feltet.
+
+       Fluebenets id udledes af feltets, ikke af `felter`: det ER
+       ikke et felt, vi sender — det er en betingelse for at måtte
+       sende. Samme note som i js/skal/bestil.js. */
+    var allergi = værdi('allergi');
+    var aId = side.felter.allergi;
+    var aFlueben = aId ? document.getElementById(aId + '-samtykke') : null;
+    var savn = Butik.allergiMangler(allergi, aFlueben && aFlueben.checked);
+    if (savn) {
+      if (aFlueben && aFlueben.focus) aFlueben.focus();
+      return sigFejl(savn);
+    }
+
     var knap = find('button.g.solid.blk');
     if (knap) knap.disabled = true;
 
@@ -918,7 +954,11 @@
       email: mail,
       dato: værdi('dato') || null,
       antal_personer: værdi('antal') || null,
-      besked: værdi('besked'),
+      /* Allergien lægges FORREST i beskeden med ordet ALLERGI:.
+         Det er den samme ene regel, de fire andre veje bruger
+         (Butik.medAllergi) — og den er grunden til, at admin og
+         køkkenet kan kende en allergi fra en almindelig note. */
+      besked: Butik.medAllergi(værdi('besked'), allergi),
       detaljer: detaljer(),
     }).then(function (raekke) {
       visTak(raekke);
@@ -1124,6 +1164,28 @@
   if (knap) {
     knap.type = 'button';
     knap.addEventListener('click', send);
+
+    /* ⚠️ FLUEBENET FINDES KUN, NÅR DER ER SKREVET NOGET (16/9).
+       Linjen ligger med klassen `skjult` i opmærkningen, og INTET
+       fjernede den før nu — så gæsten kunne skrive en allergi og
+       aldrig få mulighed for at sige ja til, at vi gemmer den.
+
+       ⚠️ OG DET NULSTILLES, NÅR TEKSTEN RYDDES. Ellers stod et
+       gammelt ja og gjaldt en allergi, gæsten havde slettet.
+       Samme mønster som js/bestilling.js og js/skal/bestil.js. */
+    var aFelt = felt('allergi');
+    var aLinje = side.felter.allergi
+      ? document.getElementById(side.felter.allergi + '-samtykke-linje') : null;
+    if (aFelt && aLinje) {
+      aFelt.addEventListener('input', function () {
+        var harTekst = !!aFelt.value.trim();
+        aLinje.classList.toggle('skjult', !harTekst);
+        if (!harTekst) {
+          var boks = document.getElementById(side.felter.allergi + '-samtykke');
+          if (boks) boks.checked = false;
+        }
+      });
+    }
   }
 
   ['navn', 'tlf', 'mail'].forEach(function (n) {
