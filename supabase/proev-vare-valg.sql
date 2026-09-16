@@ -40,6 +40,20 @@ with k as (
   values ('proev-vv', 'PRØVE Retter', true, 'mad') returning id)
 select id from k;
 
+/* ⚠️ PRØVENS KATEGORI SKAL VÆRE BESTILBAR (tilføjet 16/9).
+
+   Kanal-værnet (supabase/kanal-vaern.sql) kom til samme dag og
+   spørger, om varens kategori er åben ét eller andet sted. Uden
+   en liste blev PRØVE-PITA og PRØVE-COLA afvist med
+   bestilling_kategori_lukket — og værnet havde ret:
+   Butik.salgsKategorier viser kun smørrebrødets kategorier, når
+   ingen liste er sat. Kulissen var en forretning, der ikke
+   fandtes. */
+insert into public.indstillinger (lokation_id, noegle, vaerdi)
+select 'proev-vv', 'bestilbare_kategorier', coalesce(jsonb_agg(k.id), '[]'::jsonb)
+  from _kat k
+on conflict (lokation_id, noegle) do update set vaerdi = excluded.vaerdi;
+
 insert into public.menu_varer (kategori_id, lokation_id, navn, pris, aktiv, udsolgt, valg) values
   ((select id from _kat), 'proev-vv', 'PRØVE-PITA', 65, true, false, '["Kebab","Kylling","Tun"]'::jsonb),
   ((select id from _kat), 'proev-vv', 'PRØVE-COLA', 25, true, false, null);

@@ -96,6 +96,28 @@ insert into public.indstillinger (lokation_id, noegle, vaerdi) values
   ('proev-gr2', 'koekken_lukker',        '"19:00"'::jsonb),
   ('proev-gr2', 'sidste_bestilling_min', '30'::jsonb);
 
+/* ⚠️ PRØVENS KATEGORIER SKAL VÆRE BESTILBARE (tilføjet 16/9).
+
+   Kanal-værnet (supabase/kanal-vaern.sql) kom til samme dag, og
+   det spørger, om varens kategori overhovedet er åben ét eller
+   andet sted. Uden en liste her blev HVER linje i filen afvist
+   med bestilling_kategori_lukket — og det var værnet, der havde
+   ret: Butik.salgsKategorier viser kun smørrebrødets kategorier,
+   når ingen liste er sat, så siden ville heller ikke sælge en
+   PRØVE-BURGER. Kulissen var altså en forretning, der ikke
+   fandtes. Nu ligner den ejerens: et kort med en liste. */
+insert into public.indstillinger (lokation_id, noegle, vaerdi)
+select 'proev-gr', 'bestilbare_kategorier',
+       coalesce(jsonb_agg(k.id), '[]'::jsonb)
+  from _kat k where k.hvad <> 'grill2'
+on conflict (lokation_id, noegle) do update set vaerdi = excluded.vaerdi;
+
+insert into public.indstillinger (lokation_id, noegle, vaerdi)
+select 'proev-gr2', 'bestilbare_kategorier',
+       coalesce(jsonb_agg(k.id), '[]'::jsonb)
+  from _kat k where k.hvad = 'grill2'
+on conflict (lokation_id, noegle) do update set vaerdi = excluded.vaerdi;
+
 insert into public.borde (lokation_id, nummer, aktiv) values ('proev-gr', 'PRØVE-GR', true);
 
 insert into public.dagens_retter (lokation_id, dato, navn, pris, aktiv, sortering, antal_tilbage, udsolgt) values
