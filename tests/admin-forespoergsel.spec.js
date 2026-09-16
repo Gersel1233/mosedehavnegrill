@@ -419,11 +419,15 @@ test.describe('Luk dagen fra forespørgslen', () => {
     return d;
   }
 
+  /* ⚠️ DER SKAL IKKE TRYKKES FØRST LÆNGERE (16/9). Felterne stod før
+     bag "✓ Aftal & sæt tid", altså EFTER jaet var sagt. Ejerens ord
+     var, at man skal kunne justere og bekræfte, mens man tager imod —
+     så boksen står af sig selv på en sag, personalet har kontaktet.
+     Reglerne herunder er urørte: to lukninger, intet sat på forhånd,
+     og en eksisterende regel må ikke tørres af. */
   async function aabnKort(page) {
     await åbnAdmin(page, { data: aftalt() });
     await visFane(page, 'p-forespoergsler');
-    const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
-    await kort.locator('button', { hasText: 'Aftal & sæt tid' }).click();
     return page.locator('#forespoergsler-liste .bestil-kort').first();
   }
 
@@ -441,7 +445,7 @@ test.describe('Luk dagen fra forespørgslen', () => {
      først, når en gæst ikke kan bestille. */
   test('uden et hak lukkes der ingenting', async ({ page }) => {
     const kort = await aabnKort(page);
-    await kort.locator('button', { hasText: 'Skriv i kalenderen' }).click();
+    await kort.locator('button', { hasText: 'Bekræft aftalen' }).click();
     await expect(page.locator('#kvittering')).toContainText('kalenderen');
 
     const gemt = await gemteData(page);
@@ -453,7 +457,7 @@ test.describe('Luk dagen fra forespørgslen', () => {
   test('et hak lukker dagen for spisning — og kun for den', async ({ page }) => {
     const kort = await aabnKort(page);
     await kort.locator('.kal-luk label', { hasText: 'spisning her' }).locator('input').check();
-    await kort.locator('button', { hasText: 'Skriv i kalenderen' }).click();
+    await kort.locator('button', { hasText: 'Bekræft aftalen' }).click();
     await expect(page.locator('#kvittering')).toContainText('lukket');
 
     const regler = (await gemteData(page)).dags_regler || [];
@@ -482,9 +486,8 @@ test.describe('Luk dagen fra forespørgslen', () => {
     await åbnAdmin(page, { data: d });
     await visFane(page, 'p-forespoergsler');
     const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
-    await kort.locator('button', { hasText: 'Aftal & sæt tid' }).click();
     await kort.locator('.kal-luk label', { hasText: 'spisning her' }).locator('input').check();
-    await kort.locator('button', { hasText: 'Skriv i kalenderen' }).click();
+    await kort.locator('button', { hasText: 'Bekræft aftalen' }).click();
 
     const r = ((await gemteData(page)).dags_regler || [])[0];
     expect(r.luk_spis_her).toBe(true);

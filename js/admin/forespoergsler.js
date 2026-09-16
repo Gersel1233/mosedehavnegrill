@@ -445,7 +445,12 @@
     titel.type = 'text';
     titel.className = 'navn';
     titel.maxLength = 120;
-    titel.value = (TYPE_NAVNE[f.type] || 'Selskab') + ': ' + f.navn
+    /* ⚠️ NAVNET GÅR GENNEM Admin.pæntNavn (16/9, målt på et skud).
+       Gæsten skriver "susanne dahl" i sin telefon, og titlen står i
+       kalenderen, hvor personalet læser den på dagen — ottende sted,
+       samme regel. */
+    titel.value = (TYPE_NAVNE[f.type] || 'Selskab') + ': '
+      + ((Admin.pæntNavn ? Admin.pæntNavn(f.navn) : f.navn) || '')
       + (f.antal_personer ? ' (' + f.antal_personer + ' pers.)' : '');
     titel.setAttribute('aria-label', 'Titel i kalenderen');
 
@@ -645,7 +650,9 @@
           [f.intern_note, tidTekst].filter(function (x) {
             return String(x || '').trim();
           }).join(' · '));
-      }), (f.status === 'aftalt' ? 'Skrevet i kalenderen ' : 'Aftalen er bekræftet — ')
+      }), (f.status === 'aftalt'
+        ? 'Skrevet i kalenderen '
+        : 'Aftalen er bekræftet — dagen står i kalenderen ')
         + Admin.pænDato(dag.value) + '.'
         + (lukTogo.checked || lukHer.checked ? ' Dagen er lukket for det valgte.' : ''))
         /* ⚠️ Admin.gem genindlæser OG fanger fejlen selv — et
@@ -1043,13 +1050,30 @@
 
     var n = NAESTE[f.status];
     if (n) {
-      var stille = f.type === 'baglokale' && n[0] === 'aftalt';
+      /* ⚠️ ÉN JA-KNAP AD GANGEN (16/9) — samme fælde som baglokalet
+         fik lukket 8/9, og den kom igen med Bekræft aftalen. MÅLT på
+         et skud: kortet havde BÅDE den grønne "✓ Aftal & sæt tid"
+         øverst (sætter kun status) og den røde "✓ Bekræft aftalen" i
+         boksen (skriver dagen, tiden og lukningen). Grøn betyder "det
+         gik godt" i hele admin, så personalet trykker den — og går
+         videre fra en dag, der ikke står nogen steder.
+
+         Den er FLYTTET, ikke fjernet: der ER en dag, hvor man vil
+         sige ja uden at binde en dato endnu. Den ligger bag "···" og
+         siger, hvad den IKKE gør. */
+      var bekraefter = stand === 'bekraeft' && n[0] === 'aftalt';
+      var stille = bekraefter || (f.type === 'baglokale' && n[0] === 'aftalt');
       var frem = lav('button',
         'knap' + (stille ? ' sekundaer' : (n[0] === 'aftalt' ? ' foresp-aftal' : '')),
-        stille ? '✓ Aftal uden at låse dagen' : n[1]);
+        bekraefter ? '✓ Aftal uden at sætte i kalenderen'
+          : (stille ? '✓ Aftal uden at låse dagen' : n[1]));
       frem.type = 'button';
       frem.addEventListener('click', function () {
-        if (stille && !confirm('Sæt forespørgslen fra ' + f.navn + ' til aftalt?\n\n'
+        if (bekraefter && !confirm('Sæt forespørgslen fra ' + f.navn + ' til aftalt?\n\n'
+          + 'Dagen kommer IKKE i kalenderen, og der lukkes ikke for noget.\n'
+          + 'Brug "Bekræft aftalen" herunder, hvis I har aftalt dag og tid.')) return;
+        if (!bekraefter && stille
+          && !confirm('Sæt forespørgslen fra ' + f.navn + ' til aftalt?\n\n'
           + 'Dagen bliver IKKE låst — en anden kan stadig tage den.\n'
           + 'Skal lokalet være deres, så brug "Book lokalet til dem".')) return;
         gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, n[0], felt.value),

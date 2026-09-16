@@ -125,3 +125,35 @@ test('lukningen siger, hvad den rammer', async ({ page }) => {
   await expect(rammer).toBeVisible();
   await expect(rammer).toContainText('Ole Berg');
 });
+
+/* ⚠️ ÉN JA-KNAP AD GANGEN (16/9). Med bekræft-boksen stod der TO:
+   den grønne "✓ Aftal & sæt tid" øverst, som kun sætter status, og
+   den røde "✓ Bekræft aftalen", som skriver dagen, tiden og
+   lukningen. Grøn betyder "det gik godt" i hele admin, så personalet
+   trykker den — og går videre fra en dag, der ikke står nogen steder.
+   Det er den samme fælde, baglokalet fik lukket 8/9.
+
+   Den er FLYTTET, ikke fjernet: modstykket er, at den stadig kan nås
+   bag "···", for der er dage, hvor man siger ja uden en dato. */
+test('kun én vej frem: den grønne ligger bag ···', async ({ page }) => {
+  const boks = await aabn(page);
+  const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
+  const raekke = kort.locator('.knap-raekke.bestil-handling');
+
+  await expect(raekke.locator('button', { hasText: 'Aftal & sæt tid' })).toHaveCount(0);
+  await expect(boks.locator('button', { hasText: 'Bekræft aftalen' })).toHaveCount(1);
+
+  // Og den stille vej findes stadig — bag døren.
+  const skjult = kort.locator('.bestil-mere button', { hasText: 'Aftal uden at sætte i kalenderen' });
+  await expect(skjult).toHaveCount(1);
+  await expect(skjult).toBeHidden();
+  await kort.locator('.knap-mere').click();
+  await expect(skjult).toBeVisible();
+});
+
+/* Navnet står i kalenderen, hvor personalet læser det på dagen.
+   Gæsten skriver "susanne dahl" i sin telefon. */
+test('titlen i kalenderen skriver navnet pænt', async ({ page }) => {
+  const boks = await aabn(page);
+  await expect(boks.locator('input.navn')).toHaveValue('Selskab: Susanne Dahl (40 pers.)');
+});
