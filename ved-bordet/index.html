@@ -23,7 +23,7 @@
 
 <link rel="preload" href="../fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../css/style.css?v=__V__"><link rel="stylesheet" href="../css/kvittering.css?v=__V__">
+<link rel="stylesheet" href="../css/style.css?v=__V__"><link rel="stylesheet" href="../css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="../css/kvittering.css?v=__V__">
 <!-- ⚠️ havnegrillen.css MÅ IKKE INDLÆSES HER, selv om siden skal
      ligne den. Filen er designbundtets, og dens body-regel er
      ARTBOARDETS: mørk baggrund, display:grid og place-items:center,
@@ -92,6 +92,20 @@
       <p id="bord-manchet">Vælg det, I vil have. Vi kommer med det —
          og I betaler ved lugen bagefter.</p>
     </div>
+
+    <!-- ⚠️ PERSONALETS EGEN BESKED FOR DAGEN (16/9). Ikke at
+         forveksle med #bestil-besked nedenfor: DEN er den faste
+         besked fra indstillingerne, den her hører til én dag og
+         skrives på kalenderen. Gæsten sidder ved bordet og kan
+         ikke se opslaget ved lugen — står der noget om i dag,
+         skal det stå her. js/dagsbesked.js fylder den ud. -->
+    <section class="dagsbesked" id="dagsbesked" hidden>
+      <div class="dagsbesked-ind">
+        <div class="dagsbesked-dag" id="dagsbesked-dag"></div>
+        <h2 id="dagsbesked-titel"></h2>
+        <p id="dagsbesked-tekst"></p>
+      </div>
+    </section>
 
     <!-- HVILKET BORD? Vises kun, når mærkatet ikke har sagt det:
          en scanning uden ?bord=, en kode fra et bord, der er
@@ -332,6 +346,7 @@
 <script src="../js/menu-emoji.js?v=__V__"></script>
 <script src="../js/bestil-regler.js?v=__V__"></script>
 <script src="../js/bestilling.js?v=__V__"></script>
+<script src="../js/dagsbesked.js?v=__V__"></script>
 <script src="../js/ved-bordet.js?v=__V__"></script>
 </body>
 </html>

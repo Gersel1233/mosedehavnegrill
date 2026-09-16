@@ -695,6 +695,13 @@
           // det en årsag. Læserne kender kun det sidste.
           aarsag: k.titel,
           emoji: k.emoji || null,
+          /* ⚠️ BESKEDEN BLEV TABT HER (16/9). Ejerens ord: "en
+             lukkedag giver ikke muligheden for at sige noget på
+             siden". Det kunne den godt — teksten stod bare aldrig
+             med ud af den her funktion, så ingen læser kunne finde
+             den. Den bærer hele perioden, modsat dags_regler, der
+             er én række pr. dag. */
+          besked: k.beskrivelse || null,
         };
       });
     return d;

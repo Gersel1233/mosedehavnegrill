@@ -1023,10 +1023,15 @@
         </div>
 
         <div class="felt" id="kal-tekst-felt" hidden>
-          <label for="kal-beskrivelse">Hvad sker der? <span class="hjaelp">(valgfrit)</span></label>
+          <!-- ⚠️ ORDENE SKIFTER MED TYPEN (16/9). Feltet er det
+               samme, men på et arrangement er det en historie, og
+               på en lukkedag er det beskeden til dem, der kommer
+               forgæves. js/admin/kalender.js skriver etiketten,
+               hjælpelinjen og eksemplet om i visTilmelding(). -->
+          <label for="kal-beskrivelse"><span id="kal-tekst-etiket">Hvad sker der? </span><span class="hjaelp">(valgfrit)</span></label>
           <textarea id="kal-beskrivelse" rows="3" maxlength="2000"
                     placeholder="Langborde, én ret og fælles snak. Tag naboen med."></textarea>
-          <p class="hjaelp">
+          <p class="hjaelp" id="kal-tekst-hjaelp">
             Listen på kalendersiden viser den første linje; gæsten
             får det hele, når hun trykker på arrangementet.
           </p>

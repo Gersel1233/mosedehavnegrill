@@ -209,43 +209,15 @@
   //  indhold er en side, der ser i stykker ud. Samme regel som
   //  musikbanneret nedenfor.
   //
-  //  ⚠️ Og der skrives med textContent, ikke innerHTML. Feltet er
-  //  personalets frie tekst, og den skal kunne indeholde hvad som
-  //  helst uden at kunne lave om på siden.
+  //  ⚠️ TEGNINGEN ER FLYTTET TIL js/dagsbesked.js (16/9).
+  //  Den var forsidens egen — og derfor var BESKEDEN forsidens
+  //  egen: en gæst på bestil/, bord/ eller QR-siden så den aldrig.
+  //  Nu tegner alle fire sider den samme besked med den samme
+  //  kode. Noterne om textContent og om en fejl, der ikke må tage
+  //  siden med sig, står i filen.
   // ----------------------------------------------------------
   function visDagsbesked(d) {
-    var boks = document.getElementById('dagsbesked');
-    if (!boks) return;
-
-    var r = Butik.dagsregel ? Butik.dagsregel(d, Butik.nu().dato) : null;
-    var tekst = r && String(r.besked_til_gaester || '').trim();
-    if (!tekst) { boks.hidden = true; return; }
-
-    var titel = document.getElementById('dagsbesked-titel');
-    var krop = document.getElementById('dagsbesked-tekst');
-    var dag = document.getElementById('dagsbesked-dag');
-
-    /* Titlen er personalets egen. Har de ikke skrevet en, står
-       der "I dag" — og ikke en tom overskrift, som ville efterlade
-       et hul over teksten. */
-    if (titel) titel.textContent = String(r.besked_titel || '').trim() || 'I dag';
-    if (krop) krop.textContent = tekst;
-    if (dag) dag.textContent = pænDag(Butik.nu().dato);
-
-    boks.hidden = false;
-  }
-
-  /* "Torsdag d. 27. august". Skrevet her og ikke hentet fra
-     Admin.pænDato: den bor i personalesiden, og gæstesiden må
-     ikke afhænge af en fil, den ikke indlæser. */
-  function pænDag(iso) {
-    var UGE = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag',
-      'Fredag', 'Lørdag'];
-    var MDR = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli',
-      'august', 'september', 'oktober', 'november', 'december'];
-    var t = iso.split('-');
-    var dato = new Date(Date.UTC(+t[0], +t[1] - 1, +t[2]));
-    return UGE[dato.getUTCDay()] + ' d. ' + (+t[2]) + '. ' + MDR[+t[1] - 1];
+    if (window.MosedeDagsbesked) MosedeDagsbesked.vis(d);
   }
 
   // ----------------------------------------------------------

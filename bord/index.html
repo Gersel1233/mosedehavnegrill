@@ -31,7 +31,7 @@
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../css/style.css?v=__V__"><link rel="stylesheet" href="../css/kvittering.css?v=__V__">
+<link rel="stylesheet" href="../css/style.css?v=__V__"><link rel="stylesheet" href="../css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="../css/kvittering.css?v=__V__">
 
 <!-- JSON-LD. Se noten i index.html om hvorfor den er skrevet ind i
      siden og ikke bygget af JavaScript.
@@ -158,6 +158,18 @@
       </p>
     </div>
   </header>
+
+  <!-- ⚠️ PERSONALETS EGEN BESKED (16/9). "Vi har selskab på
+       trædækket til kl. 16" hører til, FØR man vælger dag og tid —
+       ikke i en sætning, koden selv fandt på. Tom og skjult, til
+       der er noget at sige; js/dagsbesked.js fylder den ud. -->
+  <section class="dagsbesked" id="dagsbesked" hidden>
+    <div class="dagsbesked-ind">
+      <div class="dagsbesked-dag" id="dagsbesked-dag"></div>
+      <h2 id="dagsbesked-titel"></h2>
+      <p id="dagsbesked-tekst"></p>
+    </div>
+  </section>
 
   <section class="wrap rev" id="bord">
 
@@ -326,6 +338,7 @@
 <script src="../js/skal/kvittering.js?v=__V__"></script>
 <script src="../js/skal/kontakt.js?v=__V__"></script>
 <script src="../js/faelles.js?v=__V__"></script>
+<script src="../js/dagsbesked.js?v=__V__"></script>
 <script src="../js/bord.js?v=__V__"></script>
 
 </body>

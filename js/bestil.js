@@ -77,6 +77,9 @@
   Butik.hent().then(function (d) {
     visStatus(d);
     visNote(d);
+    /* Personalets besked for dagen — samme tegning som forsiden,
+       så den ser ens ud, hvor gæsten end møder den (16/9). */
+    if (window.MosedeDagsbesked) MosedeDagsbesked.vis(d);
 
     /* Formularen får DE SAMME data. To Butik.hent() på samme side
        ville hente de samme syv tabeller to gange over en

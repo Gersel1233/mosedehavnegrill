@@ -248,7 +248,37 @@
        molen kl. 19 med et foto af scenen er præcis dét, folk
        kommer efter — og det har ingen formular. */
     $('kal-info-felt').hidden = !erArr;
-    $('kal-tekst-felt').hidden = !erArr;
+
+    /* ⚠️ OG BESKRIVELSEN HØRER OGSÅ TIL EN LUKKEDAG (16/9).
+       Ejerens ord: "en lukkedag giver ikke muligheden for at sige
+       noget på siden". Genvejen "Luk dagen" kvitterede endda med
+       "Skriv, hvad der skal stå på hjemmesiden den dag" — og så
+       var det eneste felt, der kom frem, en overskrift på 120
+       tegn. Feltet her FANDTES; det var bare skjult for typen.
+
+       Ordene skifter med typen: på et arrangement er det en
+       historie, på en lukkedag er det en besked til dem, der
+       kommer forgæves. Et felt, der kan læses på to måder, er en
+       fejl. */
+    var erLuk = nyType === 'lukkedag';
+    $('kal-tekst-felt').hidden = !(erArr || erLuk);
+    if ($('kal-tekst-etiket')) {
+      $('kal-tekst-etiket').textContent = erLuk
+        ? 'Besked til gæsterne ' : 'Hvad sker der? ';
+    }
+    if ($('kal-tekst-hjaelp')) {
+      $('kal-tekst-hjaelp').textContent = erLuk
+        ? 'Står på hjemmesiden alle dagene — også på bestillingssiden, '
+          + 'bordbookingen og QR-koden ved bordet. Overskriften ovenfor '
+          + 'er beskedens overskrift.'
+        : 'Listen på kalendersiden viser den første linje; gæsten '
+          + 'får det hele, når hun trykker på arrangementet.';
+    }
+    if ($('kal-beskrivelse')) {
+      $('kal-beskrivelse').placeholder = erLuk
+        ? 'Fx "Vi holder lukket for et privat selskab — vi er tilbage i morgen kl. 11."'
+        : 'Langborde, én ret og fælles snak. Tag naboen med.';
+    }
     if ($('kal-kategori-felt')) {
       $('kal-kategori-felt').hidden = !(erArr && maaKategori());
     }
@@ -494,7 +524,11 @@
       kategori: (maaKategori() && $('kal-kategori'))
         ? (erArr ? ($('kal-kategori').value || null) : null)
         : undefined,
-      beskrivelse: erArr && $('kal-beskrivelse') ? $('kal-beskrivelse').value : '',
+      /* Også på en lukkedag (16/9): dér ER den beskeden, gæsten
+         møder på alle fire sider. En tidlig lukning har den ikke —
+         den har sit klokkeslæt, og resten står i åbningstiderne. */
+      beskrivelse: (erArr || nyType === 'lukkedag') && $('kal-beskrivelse')
+        ? $('kal-beskrivelse').value : '',
 
       /* ⚠️ KUN NÅR NOGEN HAR RØRT DET. undefined = "lad billedet
          være". Sendte vi det ubetinget, ville en rettelse af
@@ -1257,6 +1291,14 @@
       senest_togo: r.senest_togo || '',
       senest_spis_her: r.senest_spis_her || '',
       besked_til_gaester: r.besked_til_gaester || '',
+      /* ⚠️ OVERSKRIFTEN MANGLEDE HER (fundet 16/9). Hele rækken
+         sendes, og et felt, der ikke er med, skrives til null. Så
+         i det sekund nogen trykkede "luk for spis her" på en dag,
+         hvor personalet havde skrevet "Kun mad ud af huset i dag",
+         mistede beskeden sin overskrift — teksten blev stående, og
+         banneret skiftede til "I dag". Ingen fejl, ingen linje
+         nogen steder. Samme lov som bordloftet lige nedenfor. */
+      besked_titel: r.besked_titel || '',
     };
     Object.keys(aendringer || {}).forEach(function (k) { ny[k] = aendringer[k]; });
     /* ⚠️ Dagens bordloft hører ikke til på den her fane, men det

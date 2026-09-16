@@ -268,6 +268,10 @@
     var bel = $('bestil-besked');
     if (besked && bel) { bel.textContent = besked; bel.classList.remove('skjult'); }
 
+    /* Dagens besked fra kalenderen — ikke den faste fra
+       indstillingerne ovenfor. Samme tegning som forsiden (16/9). */
+    if (window.MosedeDagsbesked) MosedeDagsbesked.vis(d);
+
     var s = visStatus(d);
 
     /* DER SKAL VÆRE BORDE, FØR DER KAN BESTILLES FRA ET.
