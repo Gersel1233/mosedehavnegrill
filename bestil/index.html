@@ -365,10 +365,49 @@
         </div>
       </div>
 
+      <!-- ============ ALLERGIEN HAR SIT EGET FELT  (16/9) ========
+           MÅLT: siden havde INTET allergifelt — men beskedfeltets
+           pladsholder sagde "Fx allergier eller særlige ønsker".
+           Vi inviterede altså til en helbredsoplysning i en fri
+           tekst uden et sted at sige ja.
+
+           Og værre på køkkenets skærm: den slår kun rødt op på
+           ordet ALLERGI:, som Butik.medAllergi kun sætter foran,
+           når der kom noget fra et RIGTIGT felt. "Nøddeallergi!!"
+           i beskeden blev en helt almindelig note.
+
+           ⚠️ ID'ERNE ER DE SAMME SOM VED BORDET, og det er hele
+           pointen: de to sider deler js/bestilling.js, som allerede
+           leder efter #bestil-allergi og #allergi-samtykke. Koden
+           var i orden hele tiden — opmærkningen manglede. Derfor
+           er der ikke rørt en linje JS.
+
+           ⚠️ OG SAMTYKKET MÅ ALDRIG SPÆRRE FOR EN BESTILLING. Kan
+           man ikke bestille uden at sige ja til at få gemt en
+           helbredsoplysning, er samtykket ikke frivilligt — og så
+           er det ikke gyldigt. Fluebenet kræves KUN, når der står
+           noget i feltet. ================================= -->
+      <div class="felt felt-allergi">
+        <label for="bestil-allergi">⚠️ Allergi eller noget, vi skal vide?
+          <span class="valgfri">(valgfrit)</span></label>
+        <input id="bestil-allergi" type="text" maxlength="200"
+               autocomplete="off"
+               placeholder="Fx nødder, gluten, laktose, skaldyr">
+        <p class="hjaelp">Det står med rødt på køkkenets skærm.
+          <strong>Er allergien alvorlig, så sig det til os ved lugen</strong> —
+          vi vil hellere tale med dig om det end at gætte.</p>
+
+        <label class="allergi-ja skjult" id="allergi-samtykke-linje">
+          <input type="checkbox" id="allergi-samtykke">
+          <span>Ja, køkkenet må gemme det her på min bestilling, så de
+            kan tage hensyn. Det slettes med bestillingen.</span>
+        </label>
+      </div>
+
       <div class="felt">
         <label for="bestil-besked-felt">Besked <span class="valgfri">(valgfrit)</span></label>
         <textarea id="bestil-besked-felt" name="besked" rows="3" maxlength="1000"
-                  placeholder="Fx allergier eller særlige ønsker"></textarea>
+                  placeholder="Fx uden remoulade, eller hvornår I kommer"></textarea>
       </div>
 
       <button class="knap send" id="bestil-send" type="submit">Send bestilling</button>

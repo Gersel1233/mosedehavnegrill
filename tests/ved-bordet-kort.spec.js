@@ -636,11 +636,38 @@ test.describe('De to andre sider er URØRTE', () => {
     await expect(page.locator('.kort-gruppe')).toHaveCount(0);
   });
 
-  /* Allergifeltet er bordets. De to andre steder har gæsten en
-     hentetid og en luge at komme op til, og et felt mere i en
-     formular, ingen udfylder, er et felt, der skjuler de andre. */
-  test('allergifeltet findes kun ved bordet', async ({ page }) => {
+  /* ⚠️ VENDT 16/9 — OG DEN GAMLE BEGRUNDELSE VAR IKKE FORKERT, BARE
+     OVERHALET.
+
+     Her stod: "Allergifeltet er bordets. De to andre steder har
+     gæsten en hentetid og en luge at komme op til, og et felt mere
+     i en formular, ingen udfylder, er et felt, der skjuler de
+     andre." Argumentet holder for et felt, ingen har brug for.
+
+     MÅLT: bestil/ havde intet allergifelt — men beskedfeltets
+     pladsholder sagde ordret "Fx allergier eller særlige ønsker".
+     Vi INVITEREDE altså til en helbredsoplysning i en fri tekst
+     uden et sted at sige ja. Og køkkenets skærm slår kun rødt op
+     på ordet ALLERGI:, som Butik.medAllergi kun sætter foran, når
+     der kom noget fra et rigtigt felt — så "Nøddeallergi!!" blev
+     en helt almindelig note.
+
+     Feltet skjuler altså ikke de andre: det samler noget, gæsten
+     allerede skrev, og giver hende et sted at samtykke. */
+  test('bestil/ har allergifeltet — og beskedfeltet inviterer ikke til det',
+    async ({ page }) => {
+      await åbn(page, '/bestil/', { ur: UR, data: menudata() });
+      await expect(page.locator('#bestil-allergi')).toHaveCount(1);
+      await expect(page.locator('#bestil-besked-felt'))
+        .not.toHaveAttribute('placeholder', /allergi/i);
+    });
+
+  /* ⚠️ MODSTYKKET: bordets EGEN tegning må stadig ikke sive over.
+     Det var den oprindelige pointe med afsnittet her, og den
+     gælder uændret — det er kun allergifeltet, der har skiftet
+     side. */
+  test('men bordets kortvisning er stadig bordets alene', async ({ page }) => {
     await åbn(page, '/bestil/', { ur: UR, data: menudata() });
-    await expect(page.locator('#bestil-allergi')).toHaveCount(0);
+    await expect(page.locator('.kort-visning')).toHaveCount(0);
   });
 });

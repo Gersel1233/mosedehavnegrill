@@ -6639,6 +6639,58 @@ body:not(.personale) .nede-note {
    hedder Besked og ikke en hel sætning. */
 label .valgfri { font-weight: 400; color: var(--muted); }
 
+/* ============================================================
+   ALLERGIFELTET — FÆLLES FOR DE SIDER, DER BESTILLER MAD (16/9)
+   ------------------------------------------------------------
+   Reglerne lå i css/ved-bordet.css og var scopet til
+   `.kort-visning`, som kun findes ved bordet. Da bestil/ fik sit
+   eget allergifelt, stod blokken derfor NØGEN: ingen ramme, ingen
+   markering — bare et input mellem to andre.
+
+   Præcis samme fælde som dagsbeskeden tidligere samme dag: stilen
+   boede i ét ark, og siden, der manglede den, indlæste det ikke.
+   Derfor bor de fælles regler her, i det ark BEGGE sider har.
+
+   ⚠️ UDEN `.kort-visning` FORAN. Scopet hørte til bordets
+   kortvisning; feltet skal se ens ud, uanset hvor man bestiller.
+   Den mørke variant ved bordet (body.ved-bordet …) bliver i
+   ved-bordet.css og vinder stadig: det ark indlæses efter dette.
+
+   ⚠️ En rigtig klasse i opmærkningen og IKKE :has(#bestil-allergi).
+   :has() virker i alle nye browsere, men det her er allergifeltet:
+   dét er ikke stedet, hvor udseendet skal hænge på, hvor gammel
+   gæstens telefon er. En klasse virker i dem alle.
+   ============================================================ */
+.felt-allergi {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: var(--r-flade, 14px);
+  border: 1px solid rgba(209, 70, 47, .35);
+  background: rgba(209, 70, 47, .05);
+}
+
+/* Fluebenet står inde i det røde allergifelt og skal se ud som en
+   del af det — ikke som en ny sektion. Trykfladen er hele linjen
+   (label'en), så den er nem at ramme med en finger; 44 px er
+   husets mindste mål. */
+.felt-allergi .allergi-ja {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 10px 0 0; min-height: 44px; padding: 6px 0;
+  font-size: 14px; line-height: 1.4; cursor: pointer;
+  /* ⚠️ NORMAL VÆGT, OG DET ER MÅLT PÅ ET SKUD (16/9). Linjen er en
+     <label>, og style.css giver alle labels font-weight 600. Uden
+     den her linje stod samtykket lige så fedt som feltets eget
+     navn — og så læses de to som to overskrifter, og gæsten
+     springer netop dén tekst over, der er hele pointen.
+
+     Forsiden har den samme linje med den samme begrundelse
+     (havnegrillen.css). Den blev fundet dér en gang før; jeg gik i
+     den igen, fordi jeg målte ramme, flade og trykflade, men ikke
+     vægten. Tallene var grønne, billedet var ikke. */
+  font-weight: 400;
+}
+.felt-allergi .allergi-ja input { margin-top: 3px; flex: none; }
+
 /* CHIP-RÆKKEN "HVAD SKAL DET VÆRE?" ER SLETTET.
 
    Her lå .slags-valg, .slags-knap og .slags-tal: en vandret

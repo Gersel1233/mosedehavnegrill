@@ -62,8 +62,30 @@ test.describe('Allergien har sit eget felt', () => {
      ellers står på siden. Læses af MAPPEN, så en ny formular
      ikke kan slippe forbi. */
   test('ingen formular inviterer til allergier i et beskedfelt', () => {
-    const filer = fs.readdirSync(ROD).filter((f) => f.endsWith('.html'))
-      .filter((f) => !/^google[a-z0-9]+\.html$/.test(f));
+    /* ⚠️ OGSÅ UNDERMAPPERNE (16/9, MÅLT).
+
+       Her stod `fs.readdirSync(ROD)` — altså KUN rodens filer —
+       mens kommentaren ovenfor lovede, at den læste "af MAPPEN, så
+       en ny formular ikke kan slippe forbi". De tre vigtigste
+       bestillingsformularer ligger i undermapper (bestil/, bord/,
+       ved-bordet/) og er derfor ALDRIG blevet set af prøven.
+
+       Målt: bestil/index.html:371 har ordret
+       `placeholder="Fx allergier eller særlige ønsker"` — præcis
+       det, prøven findes for at forhindre — og prøven meldte
+       grønt hele vejen. En prøve, der lover mere, end den måler,
+       er farligere end ingen prøve: den næste tror, dækningen er
+       der. */
+    const mapper = ['', 'bestil', 'bord', 'ved-bordet'];
+    const filer = [];
+    mapper.forEach((m) => {
+      const sti = m ? path.join(ROD, m) : ROD;
+      if (!fs.existsSync(sti)) return;
+      fs.readdirSync(sti)
+        .filter((f) => f.endsWith('.html'))
+        .filter((f) => !/^google[a-z0-9]+\.html$/.test(f))
+        .forEach((f) => filer.push(m ? m + '/' + f : f));
+    });
     const synder = [];
     filer.forEach((f) => {
       const s = fs.readFileSync(path.join(ROD, f), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
@@ -85,6 +107,46 @@ test.describe('Allergien har sit eget felt', () => {
       if (m.length && !undtaget) synder.push(f + ': ' + m[0]);
     });
     expect(synder, 'beskedfelter, der beder om allergier').toEqual([]);
+  });
+
+  /* ============================================================
+     OG SMØRREBRØDSSIDEN bestil/ SKAL HAVE DET SAMME  (16/9)
+     ------------------------------------------------------------
+     MÅLT: bestil/ havde INTET allergifelt — men beskedfeltets
+     pladsholder sagde "Fx allergier eller særlige ønsker". Gæsten
+     blev altså inviteret til en helbredsoplysning i en fri tekst,
+     uden et sted at sige ja.
+
+     Og værre på køkkenets skærm: den slår kun rødt op på ordet
+     ALLERGI:, som Butik.medAllergi kun sætter foran, når der kom
+     noget fra et RIGTIGT felt. En gæst, der skrev "Nøddeallergi!!"
+     i beskeden, blev en helt almindelig note.
+
+     ⚠️ SIDEN DELER js/bestilling.js MED ved-bordet/. Koden leder
+     efter #bestil-allergi og #allergi-samtykke — de findes bare
+     kun i den ene sides opmærkning. Derfor måler prøven her
+     SKÆRMEN og ikke funktionen: et spørgsmål til koden ville
+     bestå, netop fordi koden var i orden hele tiden.
+     ============================================================ */
+  test('bestil/ har et rigtigt allergifelt — ikke kun en pladsholder', async ({ page }) => {
+    await åbnSkal(page, '/bestil/', { ur: FREDAG, data: data() });
+    await expect(page.locator('#bestil-allergi')).toHaveCount(1);
+    /* Modstykket: beskedfeltet må ikke længere invitere til det,
+       feltet ovenfor nu spørger om. */
+    await expect(page.locator('#bestil-besked-felt'))
+      .not.toHaveAttribute('placeholder', /allergi/i);
+  });
+
+  test('bestil/: fluebenet dukker op, når der skrives en allergi', async ({ page }) => {
+    await åbnSkal(page, '/bestil/', { ur: FREDAG, data: data() });
+    const linje = page.locator('#allergi-samtykke-linje');
+    await expect(linje).toBeHidden();
+    await page.locator('#bestil-allergi').fill('nødder');
+    await expect(linje).toBeVisible();
+    /* Og det nulstilles igen — ellers stod et gammelt ja og gjaldt
+       en allergi, gæsten havde slettet. */
+    await page.locator('#bestil-allergi').fill('');
+    await expect(linje).toBeHidden();
   });
 
   test('fluebenet findes kun, når der ER skrevet en allergi', async ({ page }) => {

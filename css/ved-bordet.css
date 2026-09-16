@@ -351,13 +351,12 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
    :has() virker i alle nye browsere, men det her er allergifeltet:
    dét er ikke stedet, hvor udseendet skal hænge på, hvor gammel
    gæstens telefon er. En klasse virker i dem alle. */
-.kort-visning .felt-allergi {
-  margin-top: 18px;
-  padding: 14px 16px;
-  border-radius: var(--r-flade);
-  border: 1px solid rgba(209, 70, 47, .35);
-  background: rgba(209, 70, 47, .05);
-}
+/* ⚠️ FLYTTET TIL css/style.css (16/9). Reglen var scopet til
+   `.kort-visning`, som kun findes her — så da bestil/ fik sit eget
+   allergifelt, stod blokken nøgen dér. Feltet skal se ens ud,
+   uanset hvor man bestiller, så den fælles ramme og fluebenets
+   linje bor nu i det ark, begge sider indlæser. Kun den MØRKE
+   variant nedenfor er bordets egen. */
 
 /* De to bokse, der kan stå som sidens FØRSTE afsnit — bordvælgeren
    og "her er lukket" — bærer h2 af hensyn til overskriftsstigen
@@ -378,12 +377,9 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
    del af det — ikke som en ny sektion. Trykfladen er hele linjen
    (label'en), så den er nem at ramme med en finger ved bordet;
    44 px er husets mindste mål. */
-.felt-allergi .allergi-ja {
-  display: flex; align-items: flex-start; gap: 10px;
-  margin: 10px 0 0; min-height: 44px; padding: 6px 0;
-  font-size: 14px; line-height: 1.4; cursor: pointer;
-}
-.felt-allergi .allergi-ja input { margin-top: 3px; flex: none; }
+/* ⚠️ OGSÅ FLYTTET TIL css/style.css (16/9) — sammen med rammen
+   ovenfor. Stod de to steder, ville de skride fra hinanden første
+   gang nogen rettede trykfladen ét af dem. */
 
 /* ============================================================
    LUGENS FOTO OG MØRKT GLAS  (12/9)
