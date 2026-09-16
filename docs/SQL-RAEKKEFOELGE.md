@@ -30,7 +30,7 @@ og derfra:
   → kortets-priser.sql → nyheder-fra-til.sql → bord-udeblev.sql
   → foresp-kontakt.sql → borde-55.sql → arrangementer.sql
   → bord-noegle.sql → arrangement-info.sql
-  → arrangement-kategori.sql → bestilling-dato-vaern.sql
+  → arrangement-kategori.sql → arrangement-sluttid.sql → bestilling-dato-vaern.sql
   → bestillingsnummer.sql
   → smoerrebroed-forespoergsel.sql → bord-uden-telefon.sql
   → vare-billede.sql → bord-loft-pr-dag.sql

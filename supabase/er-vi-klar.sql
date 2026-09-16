@@ -1272,7 +1272,18 @@ with tjek(nr, del, hvad, ok, retning) as (values
      where tgrelid = to_regclass('public.bordbestillinger')
        and tgname = 'bordbestilling_plads'),
    'Bordvælgeren i admin kan ikke gemme, og to bookinger kan få det samme '
-   || 'bord på samme tid. Kør supabase/bord-plads.sql.')
+   || 'bord på samme tid. Kør supabase/bord-plads.sql.'),
+
+  /* Uden kolonnen lukker tilmeldingen først ved midnat. Ejerens ord
+     16/9: "vi skal have en sluttidskolonne". Feltet "Slutter kl." i
+     admin kan ikke gemmes, før filen er kørt — PostgREST svarer
+     PGRST204, og maaSluttid() skjuler feltet i mellemtiden. */
+  (149, 'Arrangementer', 'Et arrangement kan have et sluttidspunkt',
+   (pg_temp.tal($$select count(*) from information_schema.columns
+      where table_schema = 'public' and table_name = 'kalender'
+        and column_name = 'slut_kl'$$) = 1),
+   'En koncert, der sluttede kl. 22, tager stadig imod tilmeldinger kl. 23.30. '
+   || 'Kør supabase/arrangement-sluttid.sql.')
 ),
 
 samlet as (

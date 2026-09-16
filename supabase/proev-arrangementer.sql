@@ -24,6 +24,9 @@ declare
   kigforbi bigint;
   intern   bigint;
   igaar    bigint;
+  slut_forbi  bigint;
+  slut_senere bigint;
+  slut_ingen  bigint;
   ok       boolean;
   n        int;
 begin
@@ -183,6 +186,78 @@ begin
   end;
   insert into proev_svar values (11, 'tredive personer paa en tilmelding afvises',
     case when ok then '❌ FEJLEDE' else '✅ BESTOD' end);
+
+  /* ------------------------------------------------------------
+     12-14) SLUTTIDSPUNKTET  (16/9)
+     Ejerens ord: "vi skal have en sluttidskolonne". Bremsen
+     afviste kun paa DATO, og det er sandt HELE dagen: en koncert,
+     der sluttede kl. 22, tog stadig imod kl. 23.30.
+
+     ⚠️ TIDERNE ER 00:00:01 OG 23:59:59 MED VILJE. Proeven kan
+     koeres naar som helst paa doegnet, og en relativ tid ("nu
+     minus to timer") ville skride over midnat og maale noget
+     andet, end den paastaar.
+
+     ⚠️ DATOEN REGNES I DANSK TID, som bremsen selv goer.
+     current_date er UTC, og mellem midnat og kl. 02 dansk tid er
+     de to ikke den samme dag.
+     ------------------------------------------------------------ */
+  insert into public.kalender (lokation_id, type, dato, titel, offentlig,
+                               tilmelding, pladser, slut_kl)
+    values ('proev-arr', 'arrangement',
+            (now() at time zone 'Europe/Copenhagen')::date,
+            'Slut for i dag', true, true, 10, '00:00:01')
+    returning id into slut_forbi;
+
+  begin
+    insert into public.reservationer (reference, lokation_id, kalender_id,
+                                      navn, telefon, antal_personer)
+      values ('RE-P13', 'proev-arr', slut_forbi, 'For Sent', '20304060', 1);
+    ok := true;
+  exception when others then ok := false;
+  end;
+  insert into proev_svar values (12, 'efter sluttidspunktet afvises en tilmelding',
+    case when ok then '❌ FEJLEDE' else '✅ BESTOD' end);
+
+  /* ⚠️ KONTROLMAALINGEN. Uden den ville et vaern, der ALTID
+     afviser, bestaa proeve 12 — og saa kunne ingen melde sig til
+     noget som helst. */
+  insert into public.kalender (lokation_id, type, dato, titel, offentlig,
+                               tilmelding, pladser, slut_kl)
+    values ('proev-arr', 'arrangement',
+            (now() at time zone 'Europe/Copenhagen')::date,
+            'Slutter i aften', true, true, 10, '23:59:59')
+    returning id into slut_senere;
+
+  begin
+    insert into public.reservationer (reference, lokation_id, kalender_id,
+                                      navn, telefon, antal_personer)
+      values ('RE-P14', 'proev-arr', slut_senere, 'I God Tid', '20304061', 1);
+    ok := true;
+  exception when others then ok := false;
+  end;
+  insert into proev_svar values (13, 'foer sluttidspunktet gaar tilmeldingen igennem',
+    case when ok then '✅ BESTOD' else '❌ FEJLEDE' end);
+
+  /* ⚠️ DET ANDET MODSTYKKE, OG DET VIGTIGSTE: en TOM slut_kl maa
+     ikke lukke noget. Gaar den her i stykker, holder alle de
+     gamle arrangementer op med at tage imod paa een gang. */
+  insert into public.kalender (lokation_id, type, dato, titel, offentlig,
+                               tilmelding, pladser, slut_kl)
+    values ('proev-arr', 'arrangement',
+            (now() at time zone 'Europe/Copenhagen')::date,
+            'Hele dagen', true, true, 10, null)
+    returning id into slut_ingen;
+
+  begin
+    insert into public.reservationer (reference, lokation_id, kalender_id,
+                                      navn, telefon, antal_personer)
+      values ('RE-P15', 'proev-arr', slut_ingen, 'Hele Dagen', '20304062', 1);
+    ok := true;
+  exception when others then ok := false;
+  end;
+  insert into proev_svar values (14, 'uden sluttid gaelder hele dagen som foer',
+    case when ok then '✅ BESTOD' else '❌ FEJLEDE' end);
 end $$;
 
 select nr, hvad, resultat from proev_svar order by nr;

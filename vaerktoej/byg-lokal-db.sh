@@ -95,7 +95,8 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   dagens-retter nyheder-fra-til pris-vaern dagsregler lukkedag-vaern
   dagsbesked-og-qr menukort-antal-og-dage nyheder-slags-og-billede
   kortets-priser bord-udeblev foresp-kontakt borde-55 arrangementer
-  bord-noegle arrangement-info arrangement-kategori bestilling-dato-vaern bestillingsnummer
+  bord-noegle arrangement-info arrangement-kategori arrangement-sluttid
+  bestilling-dato-vaern bestillingsnummer
   forespoergsel-kalender frokost smoerrebroed-forespoergsel
   bord-uden-telefon vare-billede bord-loft-pr-dag kortets-priser-3
   smoerrebroed-kortet ejerens-oplysninger tillaeg-hensyn
