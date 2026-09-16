@@ -636,6 +636,78 @@ test.describe('Forsidens kobling', () => {
     await expect(page.locator('.music')).toBeHidden();
   });
 
+  /* ============================================================
+     EQUALIZEREN ER LYD — OG SIGER DET OM ALT  (16/9)
+     ------------------------------------------------------------
+     MÅLT PÅ ET SKUD: "Loppemarked på havnen" stod med de fire
+     pulserende bjælker, præcis som koncerten. `visMusik` viser
+     næste arrangement uanset slags, og `.eq i` animerer altid.
+     Et loppemarked og en quizaften er ikke musik, og boblen
+     påstår det.
+
+     ⚠️ SLAGSEN AFGØRES AF KALENDERENS EGEN REGEL og ikke af en
+     ny på forsiden. `slagsFor` (js/skal/kalender.js) kender både
+     ejerens valgte kategori OG gættet på titlen — og index.html
+     loader ikke kalender.js, så reglen skal flytte et fælles
+     sted hen. To regler ville give forsiden og kalendersiden hver
+     sin mening om, hvad musik er.
+     ============================================================ */
+  function medArrangement(titel, kategori, beskrivelse) {
+    const data = grunddata();
+    data.kalender = [{
+      id: 1, lokation_id: 'mosede', type: 'arrangement', dato: '2026-08-29',
+      slut_dato: null, titel, beskrivelse: beskrivelse || '', kategori,
+      emoji: '', lukker_kl: null, offentlig: true, start_kl: '19:00',
+    }];
+    return data;
+  }
+
+  test.describe('Equalizeren pulser kun for musik', () => {
+
+    test('koncerten har bjælkerne', async ({ page }) => {
+      await åbn(page, '/index.html', {
+        ur: FREDAG_MIDT_PÅ_DAGEN,
+        data: medArrangement('Ronni & de Salte på molen', 'musik', 'Spiller 19–22.'),
+      });
+      /* Kontrolmåling: banneret SKAL stå, ellers måler resten intet. */
+      await expect(page.locator('.music')).toBeVisible();
+      await expect(page.locator('.music .eq')).toBeVisible();
+    });
+
+    test('loppemarkedet har dem ikke — men boblen er ikke tom', async ({ page }) => {
+      await åbn(page, '/index.html', {
+        ur: FREDAG_MIDT_PÅ_DAGEN,
+        data: medArrangement('Loppemarked på havnen', 'andet', 'Stader fra kl. 10.'),
+      });
+      await expect(page.locator('.music')).toBeVisible();
+      await expect(page.locator('.music .eq')).toHaveCount(0);
+      /* ⚠️ OG DER STÅR NOGET I STEDET. En tom 36×36-boble ligner et
+         billede, der ikke kom — værre end det forkerte ikon. */
+      await expect(page.locator('.music .bic svg')).toBeVisible();
+    });
+
+    /* ⚠️ DE TO HER ER DET EGENTLIGE: de beviser, at forsiden bruger
+       KALENDERENS regel og ikke sin egen. Uden kategori gætter
+       huset på ordene — og gættets bagstopper er 'andet' (rettet
+       16/9), ikke musik. */
+    test('uden kategori gætter huset på titlen: "koncert" er musik', async ({ page }) => {
+      await åbn(page, '/index.html', {
+        ur: FREDAG_MIDT_PÅ_DAGEN,
+        data: medArrangement('Sommerkoncert på molen', null, ''),
+      });
+      await expect(page.locator('.music .eq')).toBeVisible();
+    });
+
+    test('og et ukendt ord bliver ikke til musik', async ({ page }) => {
+      await åbn(page, '/index.html', {
+        ur: FREDAG_MIDT_PÅ_DAGEN,
+        data: medArrangement('Fiskekonkurrence ved molen', null, 'Vi vejer ind kl. 14.'),
+      });
+      await expect(page.locator('.music')).toBeVisible();
+      await expect(page.locator('.music .eq')).toHaveCount(0);
+    });
+  });
+
   test('tapasprisen skrives kun, når forretningen har sat den', async ({ page }) => {
     // Ejerens liste kom uden ét eneste tal (23/8). Uden en pris
     // skal designets pladsholder blive stående.

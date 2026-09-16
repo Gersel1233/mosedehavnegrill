@@ -227,6 +227,40 @@
   //  Er der ingen, findes banneret ikke: et banner om musik på
   //  havnen, hvor der ikke er nogen musik, sender folk forgæves.
   // ----------------------------------------------------------
+  /* ============================================================
+     BOBLEN SIGER, HVAD DET ER  (16/9)
+     ------------------------------------------------------------
+     MÅLT PÅ ET SKUD: "Loppemarked på havnen" stod med de fire
+     pulserende equalizer-bjælker, præcis som koncerten. Bjælkerne
+     BETYDER lyd — som pillens prik betyder "lige nu" — og et
+     loppemarked er ikke musik.
+
+     ⚠️ SLAGSEN SPØRGES AF Butik.arrangementSlags, kalenderens egen
+     regel. Skrev forsiden sit eget gæt, ville de to sider være
+     uenige om, hvad musik er.
+
+     ⚠️ OG DET ER ET STREG-IKON, IKKE ET EMOJI. Ejeren vendte
+     emoji-fliserne 13/9 ("noget er forældet … kedelige"): fire
+     tilfældige emojier sagde ingenting. Tegnet her er husets eget
+     kalender-ikon fra m-tapas.html, samme stroke-width 1.8 som de
+     23 andre streg-ikoner på forsiden.
+
+     Strengene er kodens egne konstanter — ingen gæstedata går
+     gennem innerHTML. */
+  var EQ_HTML = '<div class="eq"><i></i><i></i><i></i><i></i></div>';
+  var KALENDER_HTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+    + ' stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'
+    + '<path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg>';
+
+  function visBannerTegn(boks, k) {
+    var boble = find('.bic', boks);
+    if (!boble) return;
+    var erMusik = Butik.arrangementSlags
+      ? Butik.arrangementSlags(k) === 'musik'
+      : true;   /* kan reglen ikke nås, står banneret som før */
+    boble.innerHTML = erMusik ? EQ_HTML : KALENDER_HTML;
+  }
+
   function visMusik(d) {
     var boks = find('.music');
     if (!boks) return;
@@ -241,6 +275,7 @@
 
     if (!næste) return skjul(boks);
 
+    visBannerTegn(boks, næste);
     skriv(find('h4', boks), næste.titel + ' · ' + pænDato(næste.dato, true));
     var p = find('p', boks);
     if (p) {

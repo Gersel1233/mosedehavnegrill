@@ -92,32 +92,15 @@
      ⚠️ DET FØRSTE MØNSTER VINDER, og rækkefølgen er derfor ikke
      tilfældig: "fællesspisning med levende musik" er en spisning
      med musik til, ikke en koncert med mad. */
-  var SLAGS = [
-    [/spis|brunch|middag|gilde|buffet|frokost|menu/i, 'spisning'],
-    [/musik|koncert|jam|band|live|dj|sang/i, 'musik'],
-    [/fest|gilde|jul|nytår|fastelavn|halloween|bal/i, 'fest'],
-  ];
+  /* ⚠️ REGLEN FLYTTEDE TIL Butik.arrangementSlags (16/9) — den
+     stod her, og index.html loader ikke denne fil, så forsidens
+     musikbanner kunne ikke spørge og lod equalizeren pulse for et
+     loppemarked. Begrundelserne (ejerens valg slår gættet, og
+     bagstopperen er 'andet' og ikke 'musik') står nu ved
+     funktionen i js/store.js. Indpakningen her holder de to
+     kaldsteder nedenfor uændrede. */
   function slagsFor(k) {
-    /* ⚠️ EJERENS VALG SLÅR GÆTTET (31/8). Kundens ord: "når man
-       opretter et arrangement, skal man jo også vælge kategorien,
-       som så skal opdateres og virke korrekt på siden." Gættet
-       nedenfor gjorde alt ukendt til Musik — han så selv et
-       arrangement stå som "MUSIK · 145". Kolonnen kommer med
-       supabase/arrangement-kategori.sql; null = ikke valgt, og så
-       gætter vi som før, så de gamle rækker står som i går. */
-    var valgt = String(k.kategori || '');
-    if (valgt === 'musik' || valgt === 'spisning' || valgt === 'fest'
-      || valgt === 'andet') return valgt;
-    var t = (k.titel || '') + ' ' + (k.beskrivelse || '');
-    for (var i = 0; i < SLAGS.length; i++) {
-      if (SLAGS[i][0].test(t)) return SLAGS[i][1];
-    }
-    /* ⚠️ BAGSTOPPEREN LØJ (rettet 16/9). Her stod 'musik', og så
-       stod en fiskekonkurrence eller et loppemarked med MUSIK på
-       kalendersiden — og under musik-knappen. Nu findes der en
-       fjerde kasse, og så er det ærlige svar på "jeg ved det
-       ikke" ANDET og ikke et gæt, der lyder som et løfte. */
-    return 'andet';
+    return Butik.arrangementSlags(k);
   }
 
   function dagsTal(iso) {

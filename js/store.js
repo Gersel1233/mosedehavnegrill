@@ -738,6 +738,45 @@
     });
   }
 
+  /* ============================================================
+     HVAD SLAGS ARRANGEMENT ER DET?  (flyttet hertil 16/9)
+     ------------------------------------------------------------
+     Reglen boede i js/skal/kalender.js, og index.html loader ikke
+     den fil. Forsidens musikbanner kunne derfor ikke spørge — så
+     den equalizer, der hører til musik, pulsede også for et
+     loppemarked. MÅLT PÅ ET SKUD.
+
+     Reglen flyttede i stedet for at blive kopieret: to udgaver
+     ville give forsiden og kalendersiden hver sin mening om, hvad
+     musik er, og begge ville se rigtige ud for sig selv.
+
+     ⚠️ EJERENS VALG SLÅR GÆTTET (31/8). Kundens ord: "når man
+     opretter et arrangement, skal man jo også vælge kategorien,
+     som så skal opdateres og virke korrekt på siden." Kolonnen
+     kommer med supabase/arrangement-kategori.sql; null = ikke
+     valgt, og så gætter vi som før, så de gamle rækker står som i
+     går.
+
+     ⚠️ OG BAGSTOPPEREN ER 'andet' OG IKKE 'musik' (16/9). Stod
+     der musik, ville en fiskekonkurrence stå under musik-knappen
+     på kalendersiden — et gæt, der lyder som et løfte. */
+  var ARRANGEMENT_SLAGS = [
+    [/spis|brunch|middag|gilde|buffet|frokost|menu/i, 'spisning'],
+    [/musik|koncert|jam|band|live|dj|sang/i, 'musik'],
+    [/fest|gilde|jul|nytår|fastelavn|halloween|bal/i, 'fest'],
+  ];
+  function arrangementSlags(k) {
+    if (!k) return 'andet';
+    var valgt = String(k.kategori || '');
+    if (valgt === 'musik' || valgt === 'spisning' || valgt === 'fest'
+      || valgt === 'andet') return valgt;
+    var t = (k.titel || '') + ' ' + (k.beskrivelse || '');
+    for (var i = 0; i < ARRANGEMENT_SLAGS.length; i++) {
+      if (ARRANGEMENT_SLAGS[i][0].test(t)) return ARRANGEMENT_SLAGS[i][1];
+    }
+    return 'andet';
+  }
+
   /* Hvor mange pladser er der tilbage? Visningen kører med sin
      ejers øjne, så gæsten kan se TALLET uden at kunne se, HVEM der
      har taget de andre — se noten ved arrangement_pladser i
@@ -4441,6 +4480,7 @@
     lejLokale: lejLokale,
     reserverPlads: reserverPlads,
     arrangementer: arrangementer,
+    arrangementSlags: arrangementSlags,
     hentPladser: hentPladser,
     FORESPOERGSEL_TYPER: FORESPOERGSEL_TYPER,
     nyhedSynlig: nyhedSynlig,
