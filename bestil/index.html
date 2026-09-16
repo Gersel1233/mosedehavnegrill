@@ -346,6 +346,18 @@
                autocomplete="street-address" maxlength="300"
                placeholder="Vej og nummer, postnr. og by">
         <p class="desc" id="bestil-adresse-note"></p>
+        <!-- ⚠️ SVARET ER TRE TILSTANDE, IKKE TO (16/9). Ejerens ord:
+             de leverer i en radius — Greve, Karlslunde, Tune, Køge
+             og det ind imellem — "så adresse skal der være, og den
+             skal kende til, om det ligger inden for".
+
+             Et postnummer udenfor er et SPØRGSMÅL og ikke et blankt
+             nej: han kører "længere ude efter aftale". Men
+             afsendelsen spærres, for en levering, forretningen ikke
+             kan køre, ender i køkkenets liste med en tid, ingen kan
+             holde (ejerens egen beslutning 4/9). Samme linje og
+             samme ord som h-smorrebrod.html — se R.leveringSvar. -->
+        <p class="hint" id="lev-svar"></p>
         <p class="fejl skjult" id="fejl-adresse"></p>
       </div>
 

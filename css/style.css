@@ -12504,3 +12504,24 @@ body:not(.personale) .stk-valg-linje {
   gap: 12px;
 }
 body:not(.personale) .stk-valg-navn { font-weight: 600; }
+
+/* ============================================================
+   KØRER VI DERUD? — SVARET UNDER ADRESSEN  (16/9)
+   ------------------------------------------------------------
+   Flyttet fra havnegrillen.css, som bestil/ ikke indlæser. Da
+   siden fik sit eget zonesvar, ville linjen ellers stå nøgen —
+   tredje gang på én dag, at en regel lå i ét ark og manglede i
+   det andet (dagsbeskeden, allergifeltet, og nu denne).
+
+   ⚠️ GUL OG IKKE RØD. Et postnummer uden for området er et
+   SPØRGSMÅL — ejeren kører "længere ude efter aftale". Farvede vi
+   det rødt, ville det ligne en formular, der har sagt nej.
+   ============================================================ */
+#lev-svar.lev-spoerg {
+  margin-top: 8px; padding: 9px 13px; border-radius: 13px; font-weight: 600;
+  background: rgba(240, 160, 60, .18); color: #7a4a10;
+}
+#lev-svar.lev-ja {
+  margin-top: 8px; padding: 9px 13px; border-radius: 13px; font-weight: 600;
+  background: rgba(60, 150, 90, .16); color: #1f6b3c;
+}

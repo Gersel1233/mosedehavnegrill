@@ -1461,7 +1461,16 @@
      listen er et SPØRGSMÅL, ikke et nej. Et hårdt afslag her
      ville sende en kunde væk, forretningen gerne ville have
      haft — samme afvejning som mindstebeløbet på 200 kr. fik
-     1/9. Afsendelsen kræver stadig kun, at der STÅR en adresse.
+     1/9.
+
+     ⚠️ MEN AFSENDELSEN SPÆRRES ALLIGEVEL (rettet 16/9). Her stod
+     "Afsendelsen kræver stadig kun, at der STÅR en adresse" — og
+     det var sandt, indtil kunden samme dag (4/9) skrev, at man
+     kunne bestille til Frederiksberg. Spærringen kom ind længere
+     nede i send(), men linjen her blev aldrig rettet, så filen
+     har siden sagt det modsatte af sin egen kode. Et felt, der
+     kan læses på to måder, er en fejl — det gælder også en
+     kommentar.
 
      ⚠️ OG OMRÅDET ER EJERENS EGET FELT. Reglen bor i
      bestil-regler.js, som forsiden og bestil/ også spørger —

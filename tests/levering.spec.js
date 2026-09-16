@@ -122,6 +122,77 @@ test.describe('Smørrebrød ud af huset: hentes eller leveres', () => {
     await expect(page.locator('#bestil-kig')).toHaveClass(/skjult/);
   });
 
+  /* ============================================================
+     KØRER VI DERUD?  (16/9)
+     ------------------------------------------------------------
+     Ejerens ord: de leverer i en radius — Greve, Karlslunde, Tune,
+     Køge og det ind imellem — *"så adresse skal der være, og den
+     skal kende til, om det ligger inden for."*
+
+     MÅLT: reglen fandtes (R.leveringSvar), listen fandtes i
+     produktionen (2635, 2670, 2680, 2690, 4030, 4600, 4623), og
+     smørrebrødssiden spurgte den. bestil/ gjorde ALDRIG — der stod
+     kun en fast sætning: "Vi ringer og bekræfter, at vi kan køre
+     til adressen." En gæst uden for området udfyldte hele
+     formularen og fik først nej i et opkald bagefter.
+
+     ⚠️ TRE UDFALD, IKKE TO. Et postnummer udenfor er et SPØRGSMÅL,
+     ikke et blankt nej — ejeren kører "længere ude efter aftale".
+     Men afsendelsen spærres, fordi en levering, forretningen ikke
+     kan køre, ender i køkkenets liste med en tid, ingen kan holde.
+     Det er ejerens egen beslutning fra 4/9 (Frederiksberg-sagen),
+     og bestil/ skal sige NØJAGTIG det samme som smørrebrødssiden.
+     ============================================================ */
+  test('zonen: et postnummer i området siger ja', async ({ page }) => {
+    await åbn(page, '/bestil/', { data: medSmoerrebroed({ levering: true }) });
+    await laegIKurv(page);
+    await page.locator('#bestil-hvordan .type-knap', { hasText: 'I leverer' }).click();
+    await page.locator('#bestil-adresse').fill('Havnevej 20I, 2670 Greve');
+    await expect(page.locator('#lev-svar')).toContainText('kører derud');
+  });
+
+  test('zonen: et postnummer udenfor siger det — og kan ikke sendes', async ({ page }) => {
+    await åbn(page, '/bestil/', { data: medSmoerrebroed({ levering: true }) });
+    await laegIKurv(page);
+    await page.locator('#bestil-hvordan .type-knap', { hasText: 'I leverer' }).click();
+    await page.locator('#bestil-adresse').fill('Storegade 1, 8000 Aarhus');
+    await expect(page.locator('#lev-svar')).toContainText('kører ikke fast');
+
+    await page.locator('#bestil-navn').fill('Test Testesen');
+    await page.locator('#bestil-telefon').fill('20304050');
+    await page.locator('#bestil-send').click();
+    /* Kigget er beviset på, at afsendelsen nåede frem — står det
+       skjult, kom bestillingen aldrig af sted. */
+    await expect(page.locator('#bestil-kig')).toHaveClass(/skjult/);
+  });
+
+  /* ⚠️ OMRÅDET ER EJERENS FELT, IKKE ET TAL I KODEN. Retter han
+     leverings_postnr i admin, skal siden svare efter DET — ét af
+     tallene i prøven skal komme udefra, ellers måler den sig selv. */
+  test('zonen: området kommer fra ejerens egen liste', async ({ page }) => {
+    const d = medSmoerrebroed({ levering: true });
+    d.indstillinger.leverings_postnr = [8000];
+    await åbn(page, '/bestil/', { data: d });
+    await laegIKurv(page);
+    await page.locator('#bestil-hvordan .type-knap', { hasText: 'I leverer' }).click();
+    await page.locator('#bestil-adresse').fill('Storegade 1, 8000 Aarhus');
+    await expect(page.locator('#lev-svar')).toContainText('kører derud');
+  });
+
+  /* ⚠️ MODSTYKKET: en adresse UDEN postnummer må ikke spærre.
+     Gæsten kan skrive "Strandvejen 4, Greve", og et nej dér ville
+     afvise en adresse, forretningen kører til hver dag. */
+  test('zonen: uden et postnummer spærrer ingenting', async ({ page }) => {
+    await åbn(page, '/bestil/', { data: medSmoerrebroed({ levering: true }) });
+    await laegIKurv(page);
+    await page.locator('#bestil-hvordan .type-knap', { hasText: 'I leverer' }).click();
+    await page.locator('#bestil-adresse').fill('Strandvejen 4, Greve');
+    await page.locator('#bestil-navn').fill('Test Testesen');
+    await page.locator('#bestil-telefon').fill('20304050');
+    await page.locator('#bestil-send').click();
+    await expect(page.locator('#bestil-kig')).not.toHaveClass(/skjult/);
+  });
+
   test('det sidste kig siger Leveres og viser adressen', async ({ page }) => {
     await åbn(page, '/bestil/', { data: medSmoerrebroed({ levering: true }) });
     await laegIKurv(page);

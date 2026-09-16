@@ -2025,12 +2025,10 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    postnummer uden for omraadet er et SPOERGSMAAL — ejeren koerer
    "laengere ude efter aftale". Farvede vi dem roede, ville de
    ligne en formular, der har sagt nej. */
-#min-stk.min-mangler,#lev-svar.lev-spoerg{
+#min-stk.min-mangler{
   margin-top:8px;padding:9px 13px;border-radius:13px;font-weight:600;
   background:rgba(240,160,60,.18);color:#7a4a10}
-#lev-svar.lev-ja{
-  margin-top:8px;padding:9px 13px;border-radius:13px;font-weight:600;
-  background:rgba(60,150,90,.16);color:#1f6b3c}
+/* #lev-svar bor nu i css/style.css — begge sider indlaeser det. */
 
 /* ============================================================
    LUFT I FORESPOERGSELSFORMULAREN  (30/8)

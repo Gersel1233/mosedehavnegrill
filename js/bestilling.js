@@ -1665,6 +1665,15 @@
      Noten under feltet lover INGEN zone og ingen pris. Vi ved
      ikke, hvor langt de kører, og et gæt her bliver til et løfte
      på en kvittering. */
+  /* ⚠️ LINJEN SKAL FØLGE FINGEREN (16/9). visAdresse() kører kun,
+     når gæsten skifter mellem hent og lever — uden lytteren her
+     ville svaret stå og være forældet, mens hun taster
+     postnummeret. Sat én gang; feltet findes fra sidens start. */
+  (function lytPaaAdresse() {
+    var felt = $('bestil-adresse');
+    if (felt) felt.addEventListener('input', visLeveringsSvar);
+  })();
+
   function visAdresse() {
     var trin = $('bestil-adresse-trin');
     if (!trin) return;
@@ -1680,6 +1689,54 @@
         ? 'Vi ringer og bekræfter, at vi kan køre til adressen.'
         : '';
     }
+    visLeveringsSvar();
+  }
+
+  /* ---- KØRER VI DERUD?  (16/9) ----
+
+     Ejerens ord: de leverer i en radius — Greve, Karlslunde, Tune,
+     Køge og det ind imellem — "så adresse skal der være, og den
+     skal kende til, om det ligger inden for".
+
+     MÅLT: reglen fandtes (R.leveringSvar), listen fandtes i
+     ejerens egen indstilling, og smørrebrødssiden spurgte den.
+     bestil/ gjorde ALDRIG — her stod kun den faste sætning
+     ovenfor, og en gæst uden for området udfyldte hele formularen
+     og fik først nej i et opkald bagefter.
+
+     ⚠️ ORDENE ER SMØRREBRØDSSIDENS, TEGN FOR TEGN. To formuleringer
+     af det samme svar ville læses som to forskellige regler af en
+     gæst, der ser begge sider.
+
+     ⚠️ OG 'ukendt' SIGER IKKE NEJ. Gæsten kan skrive "Strandvejen
+     4, Greve" uden postnummer; et nej dér ville afvise en adresse,
+     forretningen kører til hver dag. */
+  function visLeveringsSvar() {
+    var linje = $('lev-svar');
+    if (!linje) return;
+    var felt = $('bestil-adresse');
+    var adr = felt ? felt.value : '';
+
+    if (kurv.hvordan !== 'levering' || !adr.trim() || !R || !R.leveringSvar) {
+      linje.textContent = '';
+      linje.classList.remove('lev-ja', 'lev-spoerg');
+      return;
+    }
+
+    /* ⚠️ HELE `data`, IKKE `data.indstillinger` — reglen slår selv
+       ned i indstillingerne, og et niveau for meget giver
+       `undefined` og dermed husets STANDARD-postnumre i stedet for
+       ejerens liste. Den fejl er tavs: Greve står i begge lister.
+       Smørrebrødssiden har betalt for den én gang. */
+    var svar = R.leveringSvar(data, adr);
+    linje.classList.toggle('lev-ja', svar === 'ja');
+    linje.classList.toggle('lev-spoerg', svar === 'spoerg');
+    linje.textContent = svar === 'ja'
+      ? '✓ Vi kører derud.'
+      : svar === 'spoerg'
+        ? 'Vi kører ikke fast derud. Ring til os, så aftaler vi det '
+          + '— eller vælg "Vi henter".'
+        : 'Skriv postnummeret med, så kan vi sige med det samme, om vi kører derud.';
   }
 
   function visTider() {
@@ -2223,7 +2280,25 @@
       navn: Butik.tjek.navn(navn, 'navn', 80),
       telefon: (vedBordNu && !telefon.trim()) ? '' : Butik.tjek.telefon(telefon),
       adresse: skalLeveres && adresse.trim().length < 5
-        ? 'Skriv vej, nummer, postnummer og by.' : '',
+        ? 'Skriv vej, nummer, postnummer og by.'
+        /* ⚠️ OG KØRER VI OVERHOVEDET DERUD? (16/9)
+
+           Ejerens beslutning fra 4/9 (Frederiksberg-sagen): en
+           levering, forretningen ikke kan køre, må ikke kunne
+           sendes — den ender ellers i køkkenets liste med en tid,
+           ingen kan holde. Samme spærring og samme ord som
+           js/skal/bestil.js; to formuleringer ville læses som to
+           regler.
+
+           ⚠️ KUN 'spoerg' SPÆRRER. 'ukendt' er en adresse uden
+           postnummer ("Strandvejen 4, Greve"), og et nej dér ville
+           afvise en adresse, de kører til hver dag. */
+        : (skalLeveres && R && R.leveringSvar
+            && R.leveringSvar(data, adresse) === 'spoerg')
+          ? 'Vi kører ikke fast til den adresse. Ring til os på '
+            + ((window.MOSEDE && window.MOSEDE.telefonPent) || '28 87 13 43')
+            + ', så aftaler vi det — eller vælg "Vi henter".'
+          : '',
     };
 
     visFejl('bestil-navn', fejl.navn);
