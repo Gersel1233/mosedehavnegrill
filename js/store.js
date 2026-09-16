@@ -1114,8 +1114,18 @@
      den vej: 20 prøver løb tør for tid på en spærret knap. Lokale data
      skrives kun af øvetilstanden (gemLokalt), så i produktionen er
      nede og reserve det samme. */
-  function bestillingNede(d) {
+  /* ⚠️ TILSTANDEN HAR SIT EGET NAVN (16/9). `bestillingNede` siger,
+     hvad der ikke kan lade sig gøre. Det, forsiden spørger om, er et
+     andet spørgsmål med samme svar: hvor KOMMER tallene på skærmen
+     fra. Skrev forsiden `_offline && _reserve` af i hånden, ville de
+     to skride fra hinanden den dag, betingelsen blev rettet — og
+     begge ville se rigtige ud for sig selv. */
+  function reservedata(d) {
     return !!(d && d._offline && d._reserve);
+  }
+
+  function bestillingNede(d) {
+    return reservedata(d);
   }
 
   function varePris(p) {
@@ -4468,6 +4478,7 @@
     varePris: varePris,
     vareValg: vareValg,
     linjeNavn: linjeNavn,
+    reservedata: reservedata,
     bestillingNede: bestillingNede,
     allergiMangler: allergiMangler,
     vilkaar: { vis: vilkaarVis, mangler: vilkaarMangler, kendt: vilkaarKendt },

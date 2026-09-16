@@ -673,6 +673,31 @@
     var boks = find('#find-tider') || find('.hours');
     if (!boks) return;
 
+    /* ⚠️ UDEN PÅLIDELIGE DATA STÅR DER INGEN TIDER (16/9). Pillen var
+       ærlig — `Butik.status` læser `_offline` og svarer "Ring og hør" —
+       men den her tabel spurgte aldrig. Resultatet var en ærlig pille
+       og en opdigtet uge på SAMME skærm, og gæsten tror på tabellen:
+       den har syv rækker og ligner data.
+
+       ⚠️ OG BOKSEN SKAL TØMMES, ikke bare springes over. `index.html`
+       har fem rækker stående som reserve (10–20, 10–21 …); et tidligt
+       `return` ville lade netop dem blive på skærmen.
+
+       ⚠️ OG TABELLEN SKRIVER IKKE BESKEDEN SELV — DEN FORSVINDER.
+       Første forsøg satte "Ring og hør, om vi har åbent" ind i
+       boksen. MÅLT PÅ ET SKUD: kortets egen pille står tre
+       centimeter over og siger de SAMME ord, så der stod den samme
+       sætning to gange. Kortet har allerede sit ærlige svar —
+       tabellen skal bare holde op med at påstå en uge. */
+    if (Butik.reservedata && Butik.reservedata(d)) {
+      boks.textContent = '';
+      boks.style.display = 'none';
+      return;
+    }
+    /* ⚠️ OG SÆT DEN TILBAGE. Uden den her linje ville kortet blive
+       tomt for altid, første gang genopret() tegnede på reservedata. */
+    boks.style.display = '';
+
     var tider = d.aabningstider || [];
     if (!tider.length) return;
 
@@ -831,6 +856,17 @@
   function visIs(d) {
     var afsnit = find('#isen', document);
     if (!afsnit) return;
+
+    /* ⚠️ INGEN PRISER, NÅR DE ER KODENS EGNE (16/9). Samme fejl som
+       åbningstabellen ovenfor: startdata() har priser, ingen har sat,
+       og en pris på forsiden er et løfte ved lugen. Afsnittet står
+       fint uden — "Kom forbi lugen" og iskortknappen bliver stående,
+       og de lover ikke et tal. */
+    if (Butik.reservedata && Butik.reservedata(d)) {
+      var reserveliste = find('[data-is-priser]', afsnit);
+      if (reserveliste) { tøm(reserveliste); reserveliste.hidden = true; }
+      return;
+    }
 
     var orden = {};
     var kat = (d.menu_kategorier || []).filter(function (k) {

@@ -25,6 +25,79 @@ async function åbn(page, sti, valg) {
   await åbnSkal(page, sti, Object.assign({ ur: FREDAG_MIDT_PÅ_DAGEN }, valg || {}));
 }
 
+/* ============================================================
+   RESERVEDATA MÅ IKKE VISES SOM SANDHED  (16/9)
+   ------------------------------------------------------------
+   Ejerens ord, som åbnede dagen: med en "forældet browser" viser
+   forsiden ting, der ikke passer.
+
+   MÅLT: kan databasen ikke nås, og er der ingen gemt kopi, sætter
+   hent() `_offline` og `_reserve` og viser kodens egen startdata.
+   `Butik.status()` VED det og svarer ærligt "Ring og hør, om vi
+   har åbent" — men `visTider` og `visIs` spørger aldrig om
+   flaget. Resultatet er en ærlig pille og en opdigtet
+   åbningstabel på SAMME skærm, plus ispriser, ingen har sat.
+
+   ⚠️ FIXTUREN ER DEN, hent() SELV LAVER i fejltilfældet: de
+   gemte data plus de to flag. At pillen svarer rigtigt er
+   prøvens kontrolmåling — gør den ikke det, er fixturen forkert,
+   og resten måler ingenting.
+
+   ⚠️ OG SVARET SKAL VÆRE DE SAMME ORD SOM PILLEN. To
+   formuleringer af "vi ved det ikke" læses som to forskellige
+   beskeder af en gæst, der ser begge dele.
+   ============================================================ */
+function udenPaalideligeData() {
+  const d = grunddata();
+  d._offline = true;
+  d._reserve = true;
+  return d;
+}
+
+test.describe('Reservedata siger ikke noget, ingen har sagt', () => {
+
+  test('pillen er ærlig — og det er kontrolmålingen', async ({ page }) => {
+    await åbn(page, '/index.html', { data: udenPaalideligeData() });
+    await expect(page.locator('.hero .status')).toContainText('Ring og hør');
+  });
+
+  test('åbningstabellen viser ikke tider, ingen har sat', async ({ page }) => {
+    await åbn(page, '/index.html', { data: udenPaalideligeData() });
+    await expect(page.locator('#find-tider')).toBeHidden();
+  });
+
+  /* ⚠️ DENNE PRØVE KOM AF ET SKUD, IKKE AF EN MÅLING (16/9). Første
+     rettelse skrev beskeden ind i tabellen, og alle prøver var
+     grønne — men kortets egen pille sagde de SAMME ord lige over,
+     så gæsten læste sætningen to gange. Ingen påstand om tekst
+     fangede det; det kunne kun ses. */
+  test('og beskeden står ÉN gang på kortet, ikke to', async ({ page }) => {
+    await åbn(page, '/index.html', { data: udenPaalideligeData() });
+    const kort = page.locator('.findkort').filter({ hasText: 'Åbningstider' });
+    const tekst = (await kort.textContent()) || '';
+    expect(tekst.split('Ring og hør').length - 1).toBe(1);
+  });
+
+  test('ispriserne står ikke, når de er kodens egne', async ({ page }) => {
+    await åbn(page, '/index.html', { data: udenPaalideligeData() });
+    await expect(page.locator('[data-is-priser]')).toBeHidden();
+  });
+
+  /* ⚠️ MODSTYKKET, OG DET ER DET VIGTIGE. Uden det ville en
+     rettelse, der ALTID skjulte tabellen og priserne, bestå de tre
+     prøver ovenfor — og så ville forsiden holde op med at vise
+     åbningstider på en helt almindelig dag. */
+  test('men med rigtige data står både tider og ispriser', async ({ page }) => {
+    await åbn(page, '/index.html', { data: grunddata() });
+    const tider = page.locator('#find-tider');
+    /* ⚠️ `toBeVisible` OG IKKE KUN teksten: rettelsen skjuler boksen,
+       så en manglende nulstilling ville lade den blive skjult. */
+    await expect(tider).toBeVisible();
+    await expect(tider).toContainText('11');
+    await expect(tider).not.toContainText('Ring og hør');
+  });
+});
+
 test.describe('Forsidens kobling', () => {
   test('statuspillen viser den rigtige åbningsstatus', async ({ page }) => {
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN });
