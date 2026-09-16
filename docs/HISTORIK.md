@@ -37,6 +37,27 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
   Dagens billede talte kun ankomne som "sagt ja" (en fuld lørdag stod som
   "0 sagt ja · 12 venter"); nu tæller alle bookede pladser. Nye står efter
   dag og tid. bord/ har − og + ved antallet
+- **Nyhederne: intet billedfelt uden et billede** (16/9, ingen SQL). Ejerens ord:
+  nyhederne er *"så forældet og ikke pænt nok og dygtigt nok — hvordan idk"*.
+  ⚠️ **Målt på et skud, ikke gættet:** af fire nyheder var TRE af kortene 170 px
+  pastel med ét emoji i midten (🍽️, 🕐, 🎉). Fotokortet levede; de tre andre
+  lignede et hul, nogen glemte at fylde. Formen var der altså — det var
+  *pladsholderen*, der trak afsnittet ned. Uden et foto falder billedfeltet nu
+  helt væk, og kortet er et rent tekstopslag. Forhåndsvisningen i admin følger
+  med: en forhåndsvisning, der viser noget, gæsten aldrig får, lyver i ejerens
+  eget værktøj. **"Læs mere ↓" er fjernet** — den pegede på `#nyheder`, altså
+  afsnittet selv, og der findes ingen nyhedsside. ⚠️ **Og kortet var SELV et
+  link** til `#nyheder`: `havnegrillen.js` binder et rullehop på hvert
+  `a[href^="#"]`, så et tryk på en nyhed hoppede hen til nyhederne — ikke bare et
+  dødt link, men et spring, der føles som en fejl. Kortet er en boks nu. Arkivets
+  felter (`.tidl-felt`) er urørte: dér er de 88 px og bærer en liste. **Tre prøver
+  er VENDT** med begrundelsen skrevet ind — de målte den gamle beslutning.
+  ⚠️ **Og en falsifikation så grøn ud uden at måle noget for tredje gang i dag:**
+  perl-mutationen stod i en dobbeltciteret skal-streng, skallen spiste
+  anførselstegnene, og prøven bestod på UÆNDRET kode ("2 passed", ikke en fejl).
+  Mutationen skal lægges i sin egen fil. De tre fælder på én dag: et `-g`-filter
+  skrevet med ASCII mod et prøvenavn med å, en prøve der påstod `true`, og en
+  mutation der aldrig blev sat
 - **Tre prøvefiler målte det forkerte — eller ingenting** (16/9). SQL-runden faldt
   med **21 fald** i `proev-kanal-vaern`, `proev-gaestens-regler` og
   `proev-vare-valg`. ⚠️ **Målt, ikke gættet:** med kanal-værnet slået fra gik de to
