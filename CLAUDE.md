@@ -74,6 +74,13 @@ med spiis og **ikke** Mosede (svarer 403).
   Én af tallene i en prøve skal komme udefra, ellers måler den sig selv
 - **Commit FØR du falsificerer**, og læs `git status` efter hver
   `git checkout -- <fil>` — den sletter ucommittet arbejde (sket fem gange)
+- **⚠️ KØR DEN FULDE RUNDE I HALVDELE MED TO ARBEJDERE** (16/9): systemet dræber
+  den ellers, når hukommelsen slipper op — tre gange på én aften, og en dræbt
+  runde ligner ikke en fejl, den ligner ingenting.
+  `npx playwright test --project=computer --workers=2`, og telefonen i tre
+  bidder (`--project=mobil --shard=1/3 --workers=2` osv.). Fire arbejdere er
+  det, der vælter den her maskine — og en runde, der kører på en udsultet
+  maskine, melder fejl, der ikke findes: 5 af 8 "fejl" bestod med to arbejdere
 - **Én Playwright-kørsel ad gangen**, og ingen browser eller filrettelser, mens en
   runde kører: `pgrep -fl "playwright test" && { echo STOP; exit 1; }` først.
   Kendingen på en maskinfejl er **tiden**: en prøve på 3 sek., der tager 11, ventede

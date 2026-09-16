@@ -90,6 +90,26 @@ ellers skal dataene være tydelige: *"det, de ansøger om i forvejen"*.
   forhånd, og en eksisterende regel må ikke tørres af
 - Otte prøver i `tests/foresp-bekraeft.spec.js`, seks falsifikationer, seks fald
 
+**Den fulde runde efter aftenens arbejde: 4.270 bestod, 0 fejlede** (16/9,
+sent) — kørt som computer (2.122) plus telefon i tre bidder (727 + 702 + 719).
+
+- **⚠️ OG RUNDEN BLEV DRÆBT TRE GANGE AF SYSTEMET** (for lidt hukommelse), som
+  11/9. Svaret er ikke at prøve igen: **kør den i halvdele med `--workers=2`**,
+  og telefonen i tre bidder (`--shard=1/3`). Fire arbejdere på den her Mac er
+  det, der vælter den — og en dræbt runde ligner ikke en fejl, den ligner
+  ingenting
+- **⚠️ FEM AF DE OTTE "FEJL" I DEN FØRSTE KØRSEL VAR MASKINEN.** Postnummeret,
+  arrangementets billede, emballagelinjen, den ikke-passive lytter og den sene
+  film bestod ALLE, da runden kørte med to arbejdere. Kendingen er den samme
+  som altid: tiden. Og ankerhoppet, der faldt i runden, består 6 af 6 alene på
+  1,4-3,3 sek.
+- **⚠️ DE TRE ÆGTE VAR MINE EGNE, OG RUNDEN FANGEDE DEM:** bekræft-boksen
+  dukkede op på ENHVER kontaktet sag — også baglokalets, som har sin egen
+  "Book lokalet til dem", der låser dagen. Så havde kortet to ja-veje igen,
+  præcis det, 8/9 lukkede. Boksen springer baglokalet over nu, og uden det værn
+  falder prøverne. **Naborunderne var grønne hele aftenen; det var den fulde
+  runde, der så det** — 30/8-læren, igen
+
 **Én vej til at lægge en begivenhed op — og menukortet siger, hvor tingene
 havner** (16/9, sent). Ejerens spørgsmål: *"i tilmeldinger, hvad er det til
 udover at se hvem der har reserveret? Hvordan opretter jeg de ting med musik,
