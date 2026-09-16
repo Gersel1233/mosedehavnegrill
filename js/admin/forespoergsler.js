@@ -1121,7 +1121,23 @@
       gendan.type = 'button';
       gendan.addEventListener('click', function () {
         var til = f.status === 'afvist' ? 'ny' : 'kontaktet';
-        gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, til, felt.value),
+
+        /* ⚠️ OG DAGEN SKAL FØLGE MED TILBAGE (16/9).
+
+           Et ja til sagen lukkede dagen; et fortrudt ja gjorde
+           ingenting ved den. Dagen blev stående lukket, gæsten fik
+           en tom liste tider, og ingen opdagede det. Der SPØRGES —
+           dagen kan være lukket af en anden grund. Reglen bor i
+           kalenderen (Admin.tilbydAabenDag), så forespørgsler og
+           udlejninger ikke kan blive uenige om den. */
+        var vej = (f.status === 'aftalt' && f.dato && Admin.tilbydAabenDag)
+          ? Admin.tilbydAabenDag(f.dato)
+          : Promise.resolve();
+
+        gemForespoergsel(
+          vej.then(function () {
+            return Butik.skrive.forespoergselStatus(f.id, til, felt.value);
+          }),
           'Forespørgslen er tilbage som "' + STATUS_NAVNE[til] + '".');
       });
       mere.appendChild(gendan);

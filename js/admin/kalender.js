@@ -2238,6 +2238,59 @@
      lukning" er regnet ud her, og den, der lukker en dag, sidder lige
      så ofte på Forespørgsler som på Kalender. To udgaver af det
      spørgsmål ville skride fra hinanden. */
+  /* ============================================================
+     VEJEN TILBAGE  (16/9)
+     ------------------------------------------------------------
+     MÅLT af en gennemgang: siger personalet ja til et selskab
+     eller en udlejning, lukkes dagen for almindelig drift. Bliver
+     sagen bagefter fortrudt eller afvist, rørte INTET dagen — den
+     stod lukket, og js/bestil-regler.js:493 gav så gæsten en TOM
+     liste tider. Cafeen havde fuldt hus af ledig kapacitet, og
+     hjemmesiden sagde nej til alle. Ingen fejl, ingen advarsel.
+
+     ⚠️ OG DEN MÅ IKKE ÅBNE AF SIG SELV. Lukningen OR'es ind, når
+     sagen aftales (`lukTogo.checked || !!nu.luk_takeaway`), så
+     dagen kan være lukket af en HELT anden grund: en tidlig
+     lukning, en anden sag, ejerens eget valg. En automatisk
+     tilbagerulning ville åbne en dag, nogen bevidst har lukket —
+     samme lov som "kolonner sendes aldrig ubetinget". Derfor
+     SPØRGES der, og derfor skrives kun de to flag om.
+
+     ⚠️ OG RESTEN AF RÆKKEN BÆRES MED. dagsregel() skriver hele
+     dagens række; udelades tider, besked eller bordloft, tørres de
+     af i samme skrivning. Det er arret fra gemRegel, der manglede
+     besked_titel og tavst slettede overskriften. */
+  function tilbydAabenDag(dato) {
+    var nu = (Butik.dagsregel && Butik.dagsregel(Admin.data || {}, dato)) || {};
+    if (!nu.luk_takeaway && !nu.luk_spis_her) return Promise.resolve();
+
+    var hvad = [];
+    if (nu.luk_takeaway) hvad.push('mad ud af huset');
+    if (nu.luk_spis_her) hvad.push('spisning her');
+
+    /* ⚠️ Admin.pænDato OG IKKE pænDato (målt 16/9). Filen har ingen
+       lokal binding — alle syv øvrige kald i filen står med
+       præfiks. Uden det kaster klikket "pænDato is not defined",
+       og node --check fanger det ikke: en manglende binding er en
+       runtime-fejl, ikke en syntaksfejl. */
+    if (!window.confirm('Dagen ' + Admin.pænDato(dato) + ' er stadig lukket for '
+      + hvad.join(' og ') + '.\n\nSkal den åbnes igen, så gæsterne kan '
+      + 'bestille?\n\nSiger du nej, bliver dagen ved med at være lukket — '
+      + 'fx hvis den er lukket af en anden grund.')) return Promise.resolve();
+
+    return Butik.skrive.dagsregel(Butik.skrive.medBordloft(nu, {
+      dato: dato,
+      luk_takeaway: false,
+      luk_spis_her: false,
+      tidligst: nu.tidligst,
+      senest_togo: nu.senest_togo,
+      senest_spis_her: nu.senest_spis_her,
+      besked_til_gaester: nu.besked_til_gaester,
+      besked_titel: nu.besked_titel,
+    }));
+  }
+
+  Admin.tilbydAabenDag = tilbydAabenDag;
   Admin.hvadRammerLukning = hvadRammerLukning;
 
   /* ⚠️ ÉN VEJ TIL AT OPRETTE ET ARRANGEMENT (16/9). Ejerens ord:

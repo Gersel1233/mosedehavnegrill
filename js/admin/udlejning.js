@@ -1261,7 +1261,21 @@
         if (!confirm('Afvis ønsket fra ' + u.navn + '?\n\n'
           + 'Husk at ringe til ' + u.telefon + ' — gæsten har fået at vide, '
           + 'at vi ringer.')) return;
-        gemUdlejning(Butik.skrive.udlejningStatus(u.id, 'afvist', felt.value),
+
+        /* ⚠️ OG DAGEN SKAL FØLGE MED TILBAGE (16/9). Samme ar som
+           på forespørgslerne: et ja lukkede dagen for almindelig
+           drift, og et afslag lod den stå lukket — gæsten mødte en
+           tom liste tider på en dag, hvor lokalet var frit igen.
+           Der spørges, fordi dagen kan være lukket af en anden
+           grund. Reglen bor i kalenderen, ét sted. */
+        var vej = (u.dato && Admin.tilbydAabenDag)
+          ? Admin.tilbydAabenDag(u.dato)
+          : Promise.resolve();
+
+        gemUdlejning(
+          vej.then(function () {
+            return Butik.skrive.udlejningStatus(u.id, 'afvist', felt.value);
+          }),
           'Ønsket er afvist.');
       });
       mere.appendChild(afvis);

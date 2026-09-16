@@ -165,6 +165,52 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
       .toContainText('Ny');
   });
 
+  /* ⚠️ OG LUKNINGEN SKAL FØLGE MED TILBAGE (16/9).
+
+     Samme ar som på forespørgslerne: siger I ja til en udlejning
+     og lukker dagen for almindelig drift, bliver dagen stående
+     lukket, når udlejningen bagefter afvises. Gæsten møder en tom
+     liste tider (js/bestil-regler.js:493) på en dag, hvor lokalet
+     er frit igen.
+
+     Der spørges — dagen kan være lukket af en anden grund. */
+  test('afvises en udlejning, tilbydes dagen åbnet igen', async ({ page }) => {
+    const d = grunddata();
+    d.udlejninger = [udlejning({ status: 'bekraeftet' })];
+    d.dags_regler = [{
+      id: 1, lokation_id: 'mosede', dato: '2026-08-22',
+      luk_takeaway: true, luk_spis_her: false,
+      tidligst: null, senest_togo: null, senest_spis_her: null,
+      besked_til_gaester: null, besked_titel: null, bord_loft: 12,
+    }];
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-lokale');
+
+    /* To dialoger: husets egen "husk at ringe", og vores nye om
+       dagen. Begge siges der ja til. */
+    page.on('dialog', (dia) => dia.accept());
+    /* ⚠️ aabnMere TAGER ÉT ARGUMENT (målt 16/9), og kortet hedder
+       .bestil-kort — udlejning.js:1096 bygger det som
+       `lav('div', 'bestil-kort b-' + u.status)`. Der findes ingen
+       .udlejning-kort i koden. Kaldes hjælperen med (page, kort),
+       åbner den den FØRSTE "···" på hele siden i stedet for
+       kortets egen; det virker kun, fordi page også har
+       .locator(). */
+    await aabnMere(page.locator('.bestil-kort').first());
+    await page.locator('button', { hasText: 'Afvis' }).first().click();
+
+    await expect.poll(async () => {
+      const r = ((await gemteData(page)).dags_regler || [])
+        .filter((x) => x.dato === '2026-08-22')[0] || {};
+      return r.luk_takeaway;
+    }, { message: 'dagen står stadig lukket, efter udlejningen blev afvist' })
+      .toBe(false);
+
+    const r = ((await gemteData(page)).dags_regler || [])
+      .filter((x) => x.dato === '2026-08-22')[0] || {};
+    expect(r.bord_loft, 'bordloftet blev tørret af').toBe(12);
+  });
+
   test('et nej frigiver dagen igen', async ({ page }) => {
     await åbnAdmin(page, {
       data: grunddata({

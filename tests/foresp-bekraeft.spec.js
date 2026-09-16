@@ -153,6 +153,90 @@ test('kun én vej frem: den grønne ligger bag ···', async ({ page }) => {
 
 /* Navnet står i kalenderen, hvor personalet læser det på dagen.
    Gæsten skriver "susanne dahl" i sin telefon. */
+/* ============================================================
+   VEJEN TILBAGE  (16/9)
+   ------------------------------------------------------------
+   MÅLT af en gennemgang: siger I ja til et selskab, lukkes dagen
+   (luk_takeaway / luk_spis_her). Aflyser selskabet bagefter,
+   rører Gendan KUN sagens status — dagen bliver stående lukket,
+   og js/bestil-regler.js:493 giver så gæsten en TOM liste tider.
+
+   Cafeen har fuldt hus af ledig kapacitet, og hjemmesiden siger
+   nej til alle. Ingen fejl, ingen advarsel, ingen der opdager det.
+
+   ⚠️ OG DEN MÅ IKKE ÅBNE AF SIG SELV. Lukningen OR'es ind, når
+   sagen aftales (`lukTogo.checked || !!nu.luk_takeaway`), så
+   dagen kan være lukket af en HELT anden grund — en tidlig
+   lukning, en anden sag, ejerens eget valg. Derfor spørges der,
+   og derfor skrives kun de to flag om.
+   ============================================================ */
+
+function medLukketDag(ekstra) {
+  const d = grunddata();
+  d.forespoergsler = [sag(Object.assign({ status: 'aftalt' }, ekstra || {}))];
+  d.dags_regler = [{
+    id: 1, lokation_id: 'mosede', dato: DAG,
+    luk_takeaway: false, luk_spis_her: true,
+    tidligst: null, senest_togo: null, senest_spis_her: null,
+    besked_til_gaester: 'Vi har selskab på trædækket.', besked_titel: null,
+    /* ⚠️ Bordloftet står i den SAMME række og skal overleve.
+       Skrives rækken uden det, tager dagen 55 bookinger igen —
+       tavst. Samme ar som medBordloft. */
+    bord_loft: 20,
+  }];
+  return d;
+}
+
+async function gendan(page, svar) {
+  page.on('dialog', (dia) => (svar ? dia.accept() : dia.dismiss()));
+  /* ⚠️ .bestil-kort OG IKKE .foresp-kort (målt 16/9): kortet
+     bygges som `lav('div', 'bestil-kort b-' + f.status)` i
+     forespoergsler.js:766. Klassen .foresp-kort findes ikke i
+     koden — andre prøver i huset garderer sig med
+     '.foresp-kort, .bestil-kort', hvilket skjuler, at kun den
+     sidste rammer. */
+  await page.locator('.bestil-kort .knap-mere').first().click();
+  await page.locator('button', { hasText: 'Gendan' }).first().click();
+}
+
+test('en aflyst aftale tilbyder at åbne dagen igen', async ({ page }) => {
+  await åbnAdmin(page, { ur: UR, data: medLukketDag() });
+  await visFane(page, 'p-forespoergsler');
+  await gendan(page, true);
+
+  await expect.poll(async () => {
+    const r = ((await gemteData(page)).dags_regler || [])
+      .filter((x) => x.dato === DAG)[0] || {};
+    return r.luk_spis_her;
+  }, { message: 'dagen står stadig lukket, efter aftalen blev fortrudt' })
+    .toBe(false);
+
+  /* ⚠️ OG RESTEN AF DAGEN SKAL STÅ. Skrives rækken forfra, ryger
+     bordloftet med — og dagen tager 55 bookinger igen. */
+  const r = ((await gemteData(page)).dags_regler || [])
+    .filter((x) => x.dato === DAG)[0] || {};
+  expect(r.bord_loft, 'bordloftet blev tørret af').toBe(20);
+});
+
+/* ⚠️ MODSTYKKET, OG DET ER DET VIGTIGE. Uden den her ville en
+   tilbagerulning, der bare skete AF SIG SELV, bestå prøven
+   ovenfor — og så ville et fejltryk på Gendan åbne en dag, ejeren
+   bevidst har lukket. */
+test('siger personalet nej, bliver dagen lukket', async ({ page }) => {
+  await åbnAdmin(page, { ur: UR, data: medLukketDag() });
+  await visFane(page, 'p-forespoergsler');
+  await gendan(page, false);
+
+  /* Sagen skal stadig være fortrudt — spørgsmålet handlede om
+     dagen, ikke om sagen. */
+  await expect.poll(async () =>
+    ((await gemteData(page)).forespoergsler || [{}])[0].status).toBe('kontaktet');
+
+  const r = ((await gemteData(page)).dags_regler || [])
+    .filter((x) => x.dato === DAG)[0] || {};
+  expect(r.luk_spis_her, 'dagen blev åbnet, uden at nogen bad om det').toBe(true);
+});
+
 test('titlen i kalenderen skriver navnet pænt', async ({ page }) => {
   const boks = await aabn(page);
   await expect(boks.locator('input.navn')).toHaveValue('Selskab: Susanne Dahl (40 pers.)');
