@@ -57,6 +57,79 @@ test.describe('Ejeren ser det hele', () => {
   });
 });
 
+/* ============================================================
+   EN FORFREMMELSE ER IKKE ET KLIK  (16/9)
+   ------------------------------------------------------------
+   Rollen er to piller side om side, og "Ejer" gemte med det
+   samme. Ét fejltryk på en liste over kolleger gav en
+   medarbejder adgang til priser, personale og Slet.
+
+   ⚠️ NABOEN "Luk ude" SPØRGER HELLER IKKE, og det er rigtigt:
+   den er reversibel med det samme ("Luk ind igen"). Slet spørger
+   — window.confirm, der siger både hvad der sker OG hvad
+   alternativet er. Forfremmelsen hører til hos Slet.
+
+   ⚠️ OG KUN OPAD. Spørger vi ved hvert klik, bliver det et
+   spørgsmål, man klikker væk uden at læse — husets egen
+   begrundelse fra bestillingerne (admin-bestillinger.spec.js:980).
+   ============================================================ */
+const TO_EJERE = [
+  { email: MIG, lokation_id: 'mosede', rolle: 'ejer', aktiv: true, navn: 'Chefen' },
+  { email: 'lone@proev.dk', lokation_id: 'mosede', rolle: 'ejer', aktiv: true, navn: 'Lone' },
+];
+
+async function rollen(page, email) {
+  const gemt = await gemteData(page);
+  const p = (gemt.personale || []).find((x) => x.email === email);
+  return p && p.rolle;
+}
+
+test.describe('At gøre nogen til Ejer spørger først', () => {
+
+  test('afviser man spørgsmålet, sker der ingenting', async ({ page }) => {
+    await åbnAdmin(page, { data: medHold(EJER) });
+    await visFane(page, 'p-personale');
+
+    let spurgt = false;
+    page.on('dialog', (d) => { spurgt = true; return d.dismiss(); });
+    await page.locator('[data-person="lone@proev.dk"] [data-rolle="ejer"]').click();
+    await page.waitForTimeout(600);
+
+    expect(spurgt, 'der blev ikke spurgt om en forfremmelse til Ejer').toBe(true);
+    expect(await rollen(page, 'lone@proev.dk'),
+      'rollen blev ændret, selv om spørgsmålet blev afvist').toBe('medarbejder');
+  });
+
+  test('siger man ja, sker det', async ({ page }) => {
+    /* ⚠️ MODSTYKKET. Uden den ville et værn, der ALDRIG
+       forfremmer, bestå prøven ovenfor. */
+    await åbnAdmin(page, { data: medHold(EJER) });
+    await visFane(page, 'p-personale');
+
+    page.on('dialog', (d) => d.accept());
+    await page.locator('[data-person="lone@proev.dk"] [data-rolle="ejer"]').click();
+    await page.waitForTimeout(600);
+
+    expect(await rollen(page, 'lone@proev.dk')).toBe('ejer');
+  });
+
+  test('men at gøre en ejer til medarbejder spørger ikke', async ({ page }) => {
+    /* ⚠️ OG DET HER ER DET ANDET MODSTYKKE: et spørgsmål ved hvert
+       klik ville blive klikket væk uden at blive læst, og så
+       værner det ingenting. */
+    await åbnAdmin(page, { data: medHold(TO_EJERE) });
+    await visFane(page, 'p-personale');
+
+    let spurgt = false;
+    page.on('dialog', (d) => { spurgt = true; return d.dismiss(); });
+    await page.locator('[data-person="lone@proev.dk"] [data-rolle="medarbejder"]').click();
+    await page.waitForTimeout(600);
+
+    expect(spurgt, 'en nedgradering blev der spurgt om').toBe(false);
+    expect(await rollen(page, 'lone@proev.dk')).toBe('medarbejder');
+  });
+});
+
 test.describe('Medarbejderen ser dagen — ikke forretningen', () => {
   test('de fem faner er væk', async ({ page }) => {
     await åbnAdmin(page, { data: medHold(MEDARBEJDER) });

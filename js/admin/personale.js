@@ -135,6 +135,20 @@
         }
         b.addEventListener('click', function () {
           if (p.rolle === v[0]) return;
+          /* ⚠️ EN FORFREMMELSE ER IKKE ET KLIK (16/9). Pillerne står
+             side om side på en liste over kolleger, og "Ejer" gemte
+             med det samme — ét fejltryk gav adgang til priser, salg
+             og Slet. Spørgsmålet er formet som Slet-knappens
+             nedenfor: hvad der sker, OG hvad alternativet er.
+
+             ⚠️ KUN OPAD. "Luk ude" spørger heller ikke, og det er
+             rigtigt — den er reversibel med det samme. Spurgte vi
+             ved hvert klik, blev det et spørgsmål, man klikker væk
+             uden at læse. */
+          if (v[0] === 'ejer' && !window.confirm(
+            'Gør ' + (p.navn || p.email) + ' til Ejer? En ejer kan ændre '
+            + 'priser, se salget og fjerne personale. "Medarbejder" giver '
+            + 'kun adgang til dagens arbejde.')) return;
           gem(Object.assign({}, p, { rolle: v[0] }));
         });
         seg.appendChild(b);
