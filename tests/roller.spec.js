@@ -243,6 +243,19 @@ test.describe('Ejeren kan styre holdet', () => {
     await åbnAdmin(page, { data: medHold(EJER) });
     await visFane(page, 'p-personale');
 
+    /* ⚠️ JA TAK — OG LINJEN SKAL BLIVE STÅENDE (16/9). Prøven er
+       ældre end værnet: en forfremmelse til Ejer spørger nu først
+       (js/admin/personale.js), og Playwright afviser dialoger af sig
+       selv. Uden accepten returnerede klikket bare, intet blev gemt,
+       og prøven faldt på en skjult kvittering.
+
+       Prøven her måler den LOVLIGE vej, og et menneske, der
+       forfremmer en kollega, svarer ja. Fjern den ikke for at få
+       prøven til at ligne de andre — selve spørgsmålet måles af de
+       tre i "At gøre nogen til Ejer spørger først" ovenfor, som
+       vogter begge veje: der SKAL spørges opad, og der må IKKE
+       spørges nedad. */
+    page.on('dialog', (dlg) => dlg.accept());
     await page.locator('[data-person="lone@proev.dk"] [data-rolle="ejer"]').click();
     await expect(page.locator('#kvittering')).toBeVisible();
 
