@@ -2787,7 +2787,10 @@
           <h2 class="h-panel">Hurtigfeltet — kun i dag</h2>
           <span class="kort-note">ugeplanens forgænger; bruges kun, når dagen er tom i planen ovenfor</span>
         </div>
-        <p class="hjaelp">Tomt navn = ingen dagens ret. Ingen pris = retten kan ses, men <strong>ikke bestilles</strong> — vi gætter ikke.</p>
+        <!-- 16/9: stod som "Ingen pris = retten kan ses, men ikke bestilles", og
+             prisfeltet stod som "frivilligt". Ejerens ord: "Prisen SKAL være der".
+             Adfærden er uændret — det var ordet "frivilligt", der løj om den. -->
+        <p class="hjaelp">Tomt navn = ingen dagens ret. <strong>Prisen skal udfyldes</strong> — uden den kan retten ses, men ikke bestilles.</p>
         <div class="felt">
           <label for="dagens-navn">Retten</label>
           <input id="dagens-navn" type="text" maxlength="80"
@@ -2799,7 +2802,7 @@
                  placeholder="Fx: Med nye kartofler og rødbeder">
         </div>
         <div class="felt felt-smal">
-          <label for="dagens-pris">Pris <span class="hjaelp">frivilligt</span></label>
+          <label for="dagens-pris">Pris <span class="hjaelp">skal udfyldes</span></label>
           <input id="dagens-pris" type="text" inputmode="decimal" maxlength="8"
                  placeholder="Fx: 89">
         </div>

@@ -635,6 +635,39 @@ test.describe('Dagens ret', () => {
      Halvdelen om KOMMAET er urørt: 89,50 skal stadig blive til
      89.5, og et tal, der ikke er en pris, skal stadig afvises
      (prøven lige nedenfor). */
+  /* ============================================================
+     SKÆRMEN MÅ IKKE LOVE NOGET, KODEN NÆGTER  (16/9)
+     ------------------------------------------------------------
+     MÅLT: hjælpelinjen sagde "Ingen pris = retten kan ses, men
+     IKKE BESTILLES — vi gætter ikke", og etiketten sagde "Pris
+     (frivilligt)". Men laesPris() afviser et tomt felt med "Skriv
+     en pris." og stopper hele gemningen — se prøven lige nedenfor,
+     som har målt netop dét siden 9/9.
+
+     Så ejeren læser, at prisen er valgfri, taster navnet, trykker
+     Gem — og dagens ret kommer slet ikke på forsiden. Ejerens eget
+     svar på forgreningen: prisen SKAL være der, og det er teksten,
+     der er forkert.
+
+     ⚠️ PRØVEN MÅLER SKÆRMEN, IKKE REGLEN. Et spørgsmål til
+     laesPris ville bestå — den har haft ret hele tiden. Det var
+     ordene ved siden af, der løj. */
+  test('dagens ret lover ikke, at prisen er frivillig', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-dagensret');
+
+    const etiket = page.locator('label[for="dagens-pris"]');
+    await expect(etiket).not.toContainText('frivilligt');
+    /* Og hjælpelinjen må ikke love, at retten kan ses uden pris. */
+    await expect(page.locator('#p-dagensret')).not.toContainText('Ingen pris');
+
+    /* ⚠️ MODSTYKKET: beskrivelsen ER stadig frivillig. Uden den her
+       linje ville en rettelse, der bare fjernede ordet "frivilligt"
+       ALLE steder, bestå prøven — og så ville ejeren tro, at også
+       beskrivelsen skal udfyldes. */
+    await expect(page.locator('label[for="dagens-desc"]')).toContainText('frivilligt');
+  });
+
   test('prisen tager komma — og tom bliver afvist', async ({ page }) => {
     await åbnAdmin(page);
     await åbnFane(page, 'p-dagensret');
