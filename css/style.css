@@ -6665,8 +6665,8 @@ label .valgfri { font-weight: 400; color: var(--muted); }
   margin-top: 18px;
   padding: 14px 16px;
   border-radius: var(--r-flade, 14px);
-  border: 1px solid rgba(209, 70, 47, .35);
-  background: rgba(209, 70, 47, .05);
+  border: 1px solid rgba(214, 42, 58, .35);
+  background: rgba(214, 42, 58, .05);
 }
 
 /* Fluebenet står inde i det røde allergifelt og skal se ud som en
@@ -6703,7 +6703,13 @@ label .valgfri { font-weight: 400; color: var(--muted); }
 
    Reglen ovenfor bliver stående: den gælder de steder, blokken
    ikke ligger i #bestil-form. */
-#bestil-form label.allergi-ja { font-weight: 400; }
+/* ⚠️ OG FARVEN HØRER MED (16/9, set på et skud). Vægten var 400,
+   og teksten så alligevel tung ud ved siden af hjælpelinjen —
+   fordi den arvede label'ens MØRKE farve, mens hjælpeteksten er
+   grå. Forsiden sætter `color: var(--muted)` af samme grund. To
+   målinger sagde 400; øjet sagde noget andet, og øjet havde ret om
+   helheden. */
+#bestil-form label.allergi-ja { font-weight: 400; color: var(--muted); }
 
 .felt-allergi .allergi-ja input { margin-top: 3px; flex: none; }
 
