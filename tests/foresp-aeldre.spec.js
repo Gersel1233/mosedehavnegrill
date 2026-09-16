@@ -88,3 +88,39 @@ test('knappen til de ældre sager står under listen og henter', async ({ page }
   // Og sagerne står der stadig — hentningen må ikke tømme listen.
   await expect(page.locator('#forespoergsler-liste')).toContainText('Susanne Dahl');
 });
+
+/* ⚠️ OG NÅR KNAPPEN BEDER OM DE ÆLDRE, SKAL DET NÅ FREM TIL
+   HENTNINGEN. Falsifikationen afslørede hullet: fjernes flaget fra
+   kaldet (Butik.hentForespoergsler() uden argument), BESTOD begge
+   prøver ovenfor — øvetilstanden henter alt fra localStorage og ser
+   aldrig argumentet, og sky-prøven kalder funktionen direkte, altså
+   uden om knappen. Reglen stod uden vagt.
+
+   Her måles selve sømmen: hvad admin FAKTISK beder om. */
+test('knappen beder hentningen om de ældre', async ({ page }) => {
+  const d = grunddata();
+  d.forespoergsler = [];
+  await åbnAdmin(page, { ur: '2026-09-16T11:00:00Z', data: d });
+  await visFane(page, 'p-forespoergsler');
+
+  await page.evaluate(() => {
+    const org = window.Butik.hentForespoergsler;
+    window.__alt = [];
+    window.Butik.hentForespoergsler = function (alt) {
+      window.__alt.push(alt);
+      return org.apply(this, arguments);
+    };
+  });
+
+  await page.locator('#foresp-aeldre').click();
+  await expect.poll(() => page.evaluate(() => window.__alt))
+    .toContain(true);
+
+  /* Og den bliver ved med at bede om dem: takten og hvert gem henter
+     listen igen, og uden at flaget huskes, ville de ældre forsvinde
+     to sekunder efter, nogen bad om dem. */
+  await page.evaluate(() => { window.__alt = []; });
+  await page.evaluate(() => window.Admin.friskOp && window.Admin.friskOp());
+  await expect.poll(() => page.evaluate(() => window.__alt))
+    .not.toContain(false);
+});
