@@ -37,6 +37,27 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
   Dagens billede talte kun ankomne som "sagt ja" (en fuld lørdag stod som
   "0 sagt ja · 12 venter"); nu tæller alle bookede pladser. Nye står efter
   dag og tid. bord/ har − og + ved antallet
+- **Tre prøvefiler målte det forkerte — eller ingenting** (16/9). SQL-runden faldt
+  med **21 fald** i `proev-kanal-vaern`, `proev-gaestens-regler` og
+  `proev-vare-valg`. ⚠️ **Målt, ikke gættet:** med kanal-værnet slået fra gik de to
+  sidste til nul — værnet fra samme formiddag var altså årsagen, **men det havde
+  ret**. `Butik.salgsKategorier` viser kun smørrebrødets kategorier, når ingen
+  liste er sat, så siden ville heller ikke sælge en PRØVE-BURGER: kulisserne var
+  forretninger, der ikke fandtes. De har nu en bestilbar liste, som ejeren har det.
+  ⚠️ **Og min egen fil fra formiddagen bestod "6 af 6" på løgn:** prøve 4 sagde
+  `svar('…', true)` — en påstand, der altid er sand, hvor `ok` blev regnet ud og
+  smidt væk; prøve 3 spurgte kun "ikke lig `kategori_lukket`", og en varsel-fejl
+  opfylder også det, så den bestod, mens ALT blev afvist. Prøve 1, 2, 5 og 6 faldt
+  senere samme dag **uden at en linje kode var ændret**: en ny kategori arver
+  ejerens døgnvarsel (`bestilling_varsel_timer` = 24), og kulissen bestilte til
+  første åbne dag — under 24 timer ude. Kulissen sætter nu sit eget varsel (flettet
+  ind, så ejerens øvrige kategorier beholder deres regler), og prøve 5 bestiller
+  mindst tre dage frem, så den ukendte vare får lov at svare i stedet for varslet.
+  **Lære:** en prøve, der låner ejerens virkelighed, arver alt, hvad der står på
+  den — og et "ikke lig X" kan bestå, fordi Y slog fejl først. `sql-runde.sh`
+  fangede desuden, at min første rettelse **dræbte** en fil (`column k.navn does
+  not exist`): den døde før sin første rapportlinje og ville ellers have talt som
+  nul fejl. 6/6, 32/32 og 8/8 bagefter
 - **En fjerde kasse: Andet** (16/9, `arrangement-kategori.sql` skal køres igen).
   Ejerens ord: *"hvad hvis det er noget helt andet unikt, men skal havne inde i
   hvad sker der?"* ⚠️ **Og det var ikke bare en manglende mulighed:** gættet på
