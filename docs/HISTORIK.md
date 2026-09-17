@@ -7,6 +7,68 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+⚠️ **TO COMMITS LIGGER LOKALT OG ER IKKE I LUFTEN** (17/9). Luften står på
+`74cd693`. Ejerens ord: *"vi lancere ikke endu så bar gør de ting vi lancere
+senere idag men ikke inde for de næste 2-3 timer"* — altså et ja til at
+arbejde, ikke til at udgive. De to venter på et nyt ja.
+
+**Køkkenets alarm kunne tie — og "en regel bor ét sted" er nu en prøve**
+(17/9). `minutterSiden` lå **ordret ens** i `koekken.js` og `overblik.js`,
+begge uden bund i nul. Et tidsstempel fra fremtiden (skæv klokke på en iPad
+ved lugen eller ved et bord) gav "-100 min" på kortet.
+
+⚠️ **MINUSTEGNET VAR IKKE DET VÆRSTE.** Det røde "for længe" afgøres af
+`minutter >= grænsen`, og et negativt tal er **aldrig** større end grænsen.
+Alarmen — hele grunden til at tallet står der — holdt op med at virke uden at
+sige fra. En tavs alarm er værre end ingen alarm. I Overblikkens bordkø gav
+det oven i købet to tal om samme bestilling: overskriften er et maksimum, der
+starter i nul, så der stod "ældste 0 min." over en række med "-100 min".
+
+Reglen bor nu ét sted: `Admin.minutterSiden` i `kerne.js`, som altid er
+indlæst først (linje 3340 mod overblik 3343 og køkken 3351) — og derfor
+**uden** det reservetal, `Admin.bordForLaenge` må have, fordi den bor i en
+fane-fil, der indlæses efter. Fire prøver, to af dem modstykker, så en
+rettelse, der bare altid skrev nul, ville falde. Falsificeret med md5 +
+`git diff`, ikke med en grep.
+
+⚠️ **OG BORDKØ-KORTET VAR HELT UDÆKKET.** `bordkoe` fandtes ikke i én eneste
+prøve — hverken overskriften eller rækkerne. Det er derfor, minustallet kunne
+leve der uset.
+
+**Guarden mod den næste af slagsen** (`doed-kode.spec.js`): den læser
+`js/admin/` fra disken og sammenligner funktions-**kroppe**, ikke navne — hver
+admin-fil er sin egen IIFE, så tre lokale `tegnAlt` er forventet og i orden.
+To identiske kroppe er derimod den samme regel skrevet to steder. Prøven
+beviser først, at den har læst over 100 funktioner: et regex uden greb ville
+ellers melde "ingen dubletter" og ligne en sejr — samme fælde som "No tests
+found", der ikke er en fejl. Kontrolleret mod sig selv: på commiten før
+rettelsen finder den tre dubletter, på denne nul.
+
+De to, den fandt, er samlet i `kerne.js`:
+· **`harNoegle`** (borde, menukort, nyheder) — værnet mod at sende en kolonne,
+  databasen ikke har. Tre kopier af det samme værn; fejlen ville vise sig som
+  PGRST204 i produktionen, ikke som noget, man kan se på skærmen.
+· **`isoPlus`** (dagensret, klokke) — datoregning fra klokken 12 UTC.
+
+⚠️ **GÆLD, SKREVET NED OG IKKE RETTET: `isoPlus` findes FEM steder mere uden
+for admin** — `bord.js`, `bestil-regler.js`, `skal/menukort.js` (byte-ens) og
+`skal/forside.js` (`Date.UTC`, altså midnat i stedet for middag). Og
+`bestil-regler.js` eksporterer den allerede som `R.isoPlus`, som to filer
+bruger — der er altså et delt hjem, tre filer går uden om. **Målt, ikke
+gættet:** 204 prøver over begge sommertidsskifter 2026, årsskiftet og
+skudåret 2028 gav **0 uenige** — udgaverne er adfærdsmæssigt identiske, så det
+er gæld og ikke en fejl. Guarden læser kun `js/admin/` og fanger det ikke.
+Kundevendt kode hører i sin egen omgang.
+
+⚠️ **SYV PÅSTANDE BLEV SKREVET AF SAMME DAG, alle mine egne.** De kom fra
+kodelæsning og faldt ved måling: den grønne knap er ikke skrøbelig
+(`koek-handling` bærer **også** `bestil-handling`, så `.gron` rammer), og
+`undefined`-værnet i `bordkort.js:83` er unødvendigt — `tilfoej-bord` afviser
+et tomt nummer ved porten, og `borde.nummer` er `NOT NULL` i databasen, mens
+`pladser` er nullable og derfor **med rette** har sit eget værn. `primaer`
+skrives fem steder i JS og findes i **nul** CSS-filer: dødt, men uden adfærd.
+Lære: mål, før du melder et fund — også når koden ser entydig ud.
+
 **De 14 borde er låst — QR-koderne er sat** (17/9, nat). Ejerens ord: *"ja gør
 det tag dem"*. Alle 14 borde havde `kode = null`, så bestilling ved bordet
 virkede ikke for ét eneste bord. Koderne er nu skrevet: **14 af 14 unikke**, 6
