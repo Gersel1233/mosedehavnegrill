@@ -229,6 +229,33 @@
     };
   }
 
+  /* EN DATO PLUS ET ANTAL DAGE  (samlet 17/9)
+
+     ⚠️ KLOKKEN 12 UTC MED VILJE — samme grund som førDato herunder.
+     Regner man fra midnat, flytter sommertidsskiftet dagen en tak,
+     og "om syv dage" bliver til seks. Middag ligger så langt fra
+     begge skift, at en time frem eller tilbage ikke kan flytte
+     datoen.
+
+     Funktionen lå i FEM udgaver: js/bord.js, js/bestil-regler.js,
+     js/skal/menukort.js, js/skal/forside.js og js/admin/kerne.js.
+     Fire ordret ens, den femte skrevet med Date.UTC — den så
+     anderledes ud uden at opføre sig anderledes (målt: 204 datoer
+     hen over begge sommertidsskifter, årsskiftet og skudåret 2028,
+     NUL uenige). Der var altså ingen fejl at rette, men en kopi er
+     en kommende fejl: samme dag svigtede minutterSiden af præcis
+     den grund — to ordret ens kroppe, hvor kun den ene fik en bund.
+
+     ⚠️ HJEMMET ER Butik OG IKKE R (bestil-regler). Målt:
+     bestil-regler.js mangler på bord/index.html og m-menukort.html,
+     så R.isoPlus ville dø dér. store.js er indlæst på alle fire
+     sider, der bruger funktionen. */
+  function isoPlus(iso, dage) {
+    var d = new Date(iso + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + dage);
+    return d.toISOString().slice(0, 10);
+  }
+
   // Datoen for N dage siden, i dansk tid.
   function førDato(dage) {
     var d = new Date(nu().dato + 'T12:00:00Z');
@@ -4121,11 +4148,17 @@
 
     if (!SKY) {
       var d = læsLokalt();
-      /* ⚠️ I GÅR REGNES HER, IKKE MED EN isoPlus(). Den findes i
-         js/bestil-regler.js, ikke i store.js — og et kald til en
-         funktion, der ikke er der, ville kaste inde i en
-         Promise-kæde og se ud som "ingen bestilling fundet".
-         Fanget af node --check, ikke af øjnene. */
+      /* I GÅR REGNES I HÅNDEN HER. Noten sagde indtil 17/9, at
+         isoPlus ikke fandtes i store.js — det gør den nu (se
+         Butik.isoPlus øverst i filen), så begrundelsen holder ikke
+         længere. Regnestykket er alligevel ikke rørt: det virker,
+         og en omskrivning midt i en Promise-kæde er ikke noget,
+         man laver uden en grund.
+
+         ⚠️ DEN OPRINDELIGE FÆLDE ER VÆRD AT HUSKE: et kald til en
+         funktion, der ikke er der, kaster inde i kæden og ser ud
+         som "ingen bestilling fundet". Det blev fanget af
+         node --check, ikke af øjnene. */
       var g = new Date(nu().dato + 'T12:00:00');
       g.setDate(g.getDate() - 1);
       var iGaar = g.toISOString().slice(0, 10);
@@ -4531,6 +4564,7 @@
     talEllerNull: talEllerNull,
     sky: SKY,
     nu: nu,
+    isoPlus: isoPlus,
     LOKATION: LOKATION,
     UGEDAGE: UGEDAGE,
     pænTid: pænTid,

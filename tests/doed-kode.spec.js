@@ -152,3 +152,51 @@ test('ingen regel i admin er skrevet to steder', () => {
     + 'saml reglen ét sted (Admin.* i kerne.js)')
     .toEqual([...KENDTE_DUBLETTER].sort());
 });
+
+/* ============================================================
+   isoPlus BOR ÉT STED  (17/9)
+   ------------------------------------------------------------
+   "Læg N dage til en dato" lå i FEM udgaver: js/bord.js,
+   js/bestil-regler.js, js/skal/menukort.js, js/skal/forside.js og
+   js/admin/kerne.js. Fire af dem ordret ens, og den femte
+   (forside) skrevet med Date.UTC i stedet — så den så anderledes
+   ud uden at opføre sig anderledes.
+
+   ⚠️ MÅLT FØRST, IKKE ANTAGET: 204 datoer hen over begge
+   sommertidsskifter 2026, årsskiftet og skudåret 2028 gav NUL
+   uenige. Der var altså ingen fejl at rette — men en kopi er en
+   kommende fejl, og samme dag svigtede minutterSiden af præcis
+   den grund: to ordret ens kroppe, hvor kun den ene fik en bund.
+
+   ⚠️ HJEMMET ER Butik (js/store.js) OG IKKE R (bestil-regler).
+   Målt: bestil-regler.js mangler på bord/index.html og
+   m-menukort.html, så R.isoPlus ville dø dér. store.js er
+   derimod indlæst på ALLE fire sider, der bruger funktionen.
+
+   ⚠️ OG DEN GENERELLE DUBLETGUARD DÆKKER DET IKKE. Udvides den
+   til hele js/, melder den 13 — heraf `lav` i sytten filer, som
+   er husets arkitektur (hver fil er sin egen lukkede IIFE) og
+   ikke en fejl. Derfor denne målrettede prøve i stedet. */
+test('isoPlus er defineret ét sted', () => {
+  const filer = [];
+  (function gaa(d) {
+    fs.readdirSync(d, { withFileTypes: true }).forEach((e) => {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) gaa(p);
+      else if (e.name.endsWith('.js')) filer.push(p);
+    });
+  })('js');
+
+  /* Tallet udefra: blev der overhovedet læst filer? */
+  expect(filer.length, 'ingen js-filer blev læst — prøven måler ingenting')
+    .toBeGreaterThan(20);
+
+  const steder = filer
+    .filter((f) => /^\s*function isoPlus\s*\(/m.test(fs.readFileSync(f, 'utf8')))
+    .sort();
+
+  expect(steder, 'isoPlus er skrevet flere steder — reglen skal bo i '
+    + 'Butik.isoPlus (js/store.js), som er indlæst på alle sider, '
+    + 'der bruger den')
+    .toEqual([path.join('js', 'store.js')]);
+});

@@ -66,12 +66,10 @@
     return t ? lav('span', 'mk-pris', t) : lav('span', 'mk-pris mk-spoerg', 'spørg');
   }
 
-  function isoPlus(iso, dage) {
-    // Middag i UTC: så flytter et døgn ikke datoen ved sommertid
-    var t = new Date(iso + 'T12:00:00Z');
-    t.setUTCDate(t.getUTCDate() + dage);
-    return t.toISOString().slice(0, 10);
-  }
+  /* isoPlus bor i js/store.js (Butik.isoPlus) — én regel ét sted.
+     ⚠️ OG IKKE i R (bestil-regler): den fil indlæses slet ikke på
+     m-menukort.html, så R ville være undefined her. store.js er.
+     Hvorfor middag og ikke midnat står i kommentaren dér. (17/9) */
 
   function datoTekst(iso) {
     var t = new Date(iso + 'T12:00:00Z');
@@ -170,7 +168,7 @@
     tøm(boks);
 
     for (var i = 0; i < 7; i++) {
-      var iso = isoPlus(i_dag, i);
+      var iso = Butik.isoPlus(i_dag, i);
       var række = lav('div', 'mk-dag' + (i === 0 ? ' mk-nu' : ''));
       række.setAttribute('data-dag', iso);
 

@@ -27,12 +27,11 @@
      --------------------------------------------------------- */
   var DAGE_FREM = 28;
 
-  function isoPlus(iso, dage) {
-    // Middag i UTC: så flytter et døgn ikke datoen ved sommertid
-    var t = new Date(iso + 'T12:00:00Z');
-    t.setUTCDate(t.getUTCDate() + dage);
-    return t.toISOString().slice(0, 10);
-  }
+  /* isoPlus bor i js/store.js (Butik.isoPlus) — én regel ét sted.
+     Den lå ordret ens her, i bord.js og i skal/menukort.js, plus en
+     femte udgave i skal/forside.js. Hvorfor middag og ikke midnat
+     står i kommentaren i store.js. R.isoPlus findes stadig længere
+     nede som en henvisning — se noten dér. (17/9) */
 
   function ugedagFor(iso) {
     // Butik.nu() giver 0 = mandag. Date giver 0 = søndag.
@@ -433,7 +432,7 @@
     var nu = Butik.nu();
     var minutter = nu.minutter + varselTimer(d, mindst) * 60;
     var dato = nu.dato;
-    while (minutter >= 24 * 60) { minutter -= 24 * 60; dato = isoPlus(dato, 1); }
+    while (minutter >= 24 * 60) { minutter -= 24 * 60; dato = Butik.isoPlus(dato, 1); }
     return { dato: dato, minutter: minutter };
   }
 
@@ -551,7 +550,7 @@
     var tidligstMin = nu.minutter + minutter;
     while (tidligstMin >= 24 * 60) {
       tidligstMin -= 24 * 60;
-      tidligstDato = isoPlus(tidligstDato, 1);
+      tidligstDato = Butik.isoPlus(tidligstDato, 1);
     }
     if (iso < tidligstDato) return [];
     if (iso === tidligstDato) {
@@ -630,7 +629,7 @@
     var ud = [];
     var start = Butik.nu().dato;
     for (var i = 0; i < DAGE_FREM && ud.length < 14; i++) {
-      var iso = isoPlus(start, i);
+      var iso = Butik.isoPlus(start, i);
       if (tiderFor(d, iso, mindst, hvordan, katIds, smoerIds).length) ud.push(iso);
     }
     return ud;
@@ -642,7 +641,7 @@
   function dagNavn(d, iso) {
     var i_dag = Butik.nu().dato;
     if (iso === i_dag) return 'I dag';
-    if (iso === isoPlus(i_dag, 1)) return 'I morgen';
+    if (iso === Butik.isoPlus(i_dag, 1)) return 'I morgen';
     return Butik.UGEDAGE[ugedagFor(iso)].slice(0, 3) + '.';
   }
 
@@ -652,7 +651,15 @@
 
   window.MosedeRegler = {
     DAGE_FREM: DAGE_FREM,
-    isoPlus: isoPlus,
+    /* ⚠️ EN HENVISNING OG IKKE `Butik.isoPlus` DIREKTE (17/9).
+       Det her objekt bygges på TOPNIVEAU, når filen indlæses — og
+       på admin.html kommer store.js (linje 3329) EFTER
+       bestil-regler.js (772). En direkte reference ville slå
+       admin ihjel ved indlæsning. Sådan her slås Butik først op,
+       når nogen kalder den, og da er alt for længst indlæst.
+       R.isoPlus bevares, fordi js/bestilling.js og js/skal/bestil.js
+       bruger den. */
+    isoPlus: function (iso, dage) { return Butik.isoPlus(iso, dage); },
     ugedagFor: ugedagFor,
     planFor: planFor,
     varselTimer: varselTimer,

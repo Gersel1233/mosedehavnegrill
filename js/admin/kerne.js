@@ -608,22 +608,13 @@
     return Math.max(0, Math.floor((Date.now() - t) / 60000));
   }
 
-  /* EN DATO PLUS ET ANTAL DAGE  (samlet 17/9)
-
-     ⚠️ KLOKKEN 12 UTC MED VILJE. Regner man fra midnat, flytter
-     sommertidsskiftet dagen en tak, og "om syv dage" bliver til
-     seks. Middag ligger så langt fra begge skift, at en time frem
-     eller tilbage ikke kan flytte datoen.
-
-     Lå ordret ens i dagensret.js og klokke.js — samme slags regel
-     som minutterSiden, der svigtede samme dag. Rettede nogen den
-     ene til midnat, ville datoerne skride i den ene fane og ikke
-     i den anden, og kun to gange om året. */
-  function isoPlus(iso, dage) {
-    var d = new Date(iso + 'T12:00:00Z');
-    d.setUTCDate(d.getUTCDate() + dage);
-    return d.toISOString().slice(0, 10);
-  }
+  /* isoPlus flyttede VIDERE til js/store.js (Butik.isoPlus) samme
+     dag (17/9). Den blev først samlet her fra dagensret.js og
+     klokke.js — men så viste målingen, at den lå i fem udgaver i
+     alt, også på gæstesiden, og at kun store.js er indlæst på
+     hver eneste side, der bruger den. Admin.isoPlus lever videre
+     som en henvisning nedenfor, så dagensret.js og klokke.js ikke
+     skulle røres. Hvorfor middag og ikke midnat står i store.js. */
 
   /* HVOR LANGT ER DER TIL? (15/9) — "om 18 dage", "i morgen", "for 2
      dage siden", og årstallet foran, når det ikke er i år. Ejerens ord:
@@ -1302,7 +1293,12 @@
     efterHent: efterHent,
     pænDato: pænDato,
     minutterSiden: minutterSiden,
-    isoPlus: isoPlus,
+    /* En henvisning til Butik.isoPlus og ikke en kopi. Slås op ved
+       KALDET, ikke her: dette objekt bygges på topniveau, og selv
+       om store.js står før kerne.js i admin.html, er et opslag ved
+       kaldet det, der ikke kan gå i stykker, hvis rækkefølgen
+       nogensinde ændrer sig. (17/9) */
+    isoPlus: function (iso, dage) { return Butik.isoPlus(iso, dage); },
     harNoegle: harNoegle,
     omDage: omDage,
     dagKort: dagKort,

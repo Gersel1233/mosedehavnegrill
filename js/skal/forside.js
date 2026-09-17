@@ -66,12 +66,12 @@
 
   /* Datoregning i UTC, som resten af huset: en lokal Date skifter
      dag ved midnat i browserens tidszone og ikke i Danmarks. */
-  function isoPlus(iso, dage) {
-    var t = String(iso).split('-');
-    var d = new Date(Date.UTC(+t[0], +t[1] - 1, +t[2]));
-    d.setUTCDate(d.getUTCDate() + dage);
-    return d.toISOString().slice(0, 10);
-  }
+  /* isoPlus bor i js/store.js (Butik.isoPlus) — én regel ét sted.
+     ⚠️ DEN HER VAR DEN FEMTE UDGAVE og den eneste, der så anderledes
+     ud: den regnede fra midnat via Date.UTC i stedet for middag.
+     Målt ækvivalent (204 datoer, nul uenige), fordi al regning skete
+     med UTC-metoder — men det er netop sådan en forskel, ingen
+     opdager, før den ene bliver rettet. (17/9) */
   /* mandag = 0 … søndag = 6, som Butik.UGEDAGE er skrevet. */
   function ugedagFor(iso) {
     var t = String(iso).split('-');
@@ -331,7 +331,7 @@
 
     var skjulte = 0;
     for (var i = 0; i < 7; i++) {
-      var iso = isoPlus(iDag, i);
+      var iso = Butik.isoPlus(iDag, i);
       var retter = Butik.dagensRetter(d, iso) || [];
       var lukket = Butik.lukketDen(d, iso);
 

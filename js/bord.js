@@ -44,12 +44,10 @@
   // ----------------------------------------------------------
   var DAGE_FREM = 28;
 
-  function isoPlus(iso, dage) {
-    // Middag i UTC: så flytter et døgn ikke datoen ved sommertid
-    var t = new Date(iso + 'T12:00:00Z');
-    t.setUTCDate(t.getUTCDate() + dage);
-    return t.toISOString().slice(0, 10);
-  }
+  /* isoPlus bor i js/store.js (Butik.isoPlus) — én regel ét sted.
+     Den lå ordret ens her, i bestil-regler.js og i skal/menukort.js,
+     plus en femte udgave i skal/forside.js. Hvorfor middag og ikke
+     midnat står i kommentaren i store.js. (17/9) */
 
   function ugedagFor(iso) {
     var d = new Date(iso + 'T12:00:00Z').getUTCDay();
@@ -88,7 +86,7 @@
     var nu = Butik.nu();
     var minutter = nu.minutter + varselTimer(d) * 60;
     var dato = nu.dato;
-    while (minutter >= 24 * 60) { minutter -= 24 * 60; dato = isoPlus(dato, 1); }
+    while (minutter >= 24 * 60) { minutter -= 24 * 60; dato = Butik.isoPlus(dato, 1); }
     return { dato: dato, minutter: minutter };
   }
 
@@ -131,7 +129,7 @@
     var t = tidligst(d);
     var ud = [];
     for (var i = 0; i < DAGE_FREM && ud.length < 14; i++) {
-      var iso = isoPlus(t.dato, i);
+      var iso = Butik.isoPlus(t.dato, i);
       if (tiderFor(d, iso).length) ud.push(iso);
     }
     return ud;
@@ -143,7 +141,7 @@
   function dagNavn(d, iso) {
     var nu = Butik.nu();
     if (iso === nu.dato) return 'I dag';
-    if (iso === isoPlus(nu.dato, 1)) return 'I morgen';
+    if (iso === Butik.isoPlus(nu.dato, 1)) return 'I morgen';
     return Butik.UGEDAGE[ugedagFor(iso)];
   }
 
