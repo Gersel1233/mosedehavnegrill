@@ -320,16 +320,33 @@ test('en tegner, der kaster, vælter ikke Admin.meld', async ({ page }) => {
   await åbnAdmin(page, { data: medArbejde() });
 
   const svar = await page.evaluate(() => {
-    /* Som FØR den første Butik.hent() er kommet hjem: fanerne
-       melder deres lister ind, så snart de har hentet, og det kan
-       ske før data er på plads. */
+    /* ⚠️ PRØVEN FREMKALDER FEJLEN SELV — den læner sig IKKE på, at
+       en bestemt fane tilfældigvis kaster.
+
+       Første udgave satte bare Admin.data = null og regnede med,
+       at loftAlle() i borde.js ville kaste. Det gjorde den — lige
+       indtil loftAlle blev rettet i samme commit. Så kastede INGEN
+       tegner længere, meld() havde intet at fange, og prøven
+       bestod også uden værnet. FANGET I FALSIFIKATIONEN: da
+       try/catch blev pillet ud af meld, blev prøven grøn alligevel.
+
+       En prøve, der kun virker, så længe en anden fil er i stykker,
+       måler ikke reglen — den måler den anden fil. */
     const gemt = window.Admin.data;
     window.Admin.data = null;
+    window.Admin.efterHent.push(function () {
+      throw new Error('prøvens egen tegner kaster med vilje');
+    });
+
+    let naaedeUd = false;
     let fejl = null;
-    try { window.Admin.meld('bordliste', []); }
+    try { window.Admin.meld('bordliste', []); naaedeUd = true; }
     catch (e) { fejl = String(e && e.message || e); }
+
+    window.Admin.efterHent.pop();
     window.Admin.data = gemt;
-    return { fejl: fejl, tegnere: (window.Admin.efterHent || []).length };
+    return { fejl: fejl, naaedeUd: naaedeUd,
+      tegnere: (window.Admin.efterHent || []).length };
   });
 
   /* Tallet udefra: er der ingen tegnere, måler prøven ingenting. */
@@ -338,6 +355,11 @@ test('en tegner, der kaster, vælter ikke Admin.meld', async ({ page }) => {
   expect(svar.fejl, 'Admin.meld kastede videre op i kaldet — '
     + 'en fane, der fejler, må ikke vælte hentningen')
     .toBeNull();
+  /* ⚠️ OG DEN SKAL NÅ TIL ENDE. Uden det ville en meld(), der
+     stoppede stille midt i løkken, bestå: de øvrige faner ville
+     aldrig blive tegnet, og ingen ville se en fejl. */
+  expect(svar.naaedeUd, 'meld() nåede ikke igennem tegnerne')
+    .toBe(true);
 });
 
 /* ⚠️ MODSTYKKET: værnet må ikke blive til en lyddæmper. Fanger
@@ -365,6 +387,52 @@ test('men fejlen skrives stadig i konsollen', async ({ page }) => {
 
   expect(linjer.join(' | '), 'fejlen blev slugt i stilhed')
     .toContain('prøvens egen tegner kaster med vilje');
+});
+
+/* ⚠️ OG INGEN FANE MÅ KASTE, FØR DATA ER HENTET  (17/9)
+
+   Prøven ovenfor fremkalder fejlen med sin EGEN tegner, så den
+   måler værnet i meld() og intet andet. Men så er der ingen, der
+   måler, om fanerne selv holder sig på benene — og det var netop
+   dét, der gik galt: loftAlle() i borde.js læste
+   Admin.data.indstillinger, mens Admin.data var null.
+
+   Den her prøve er bredere end den ene fejl: 24 steder i admin
+   skriver `Admin.data.indstillinger`, og kun de tegnere, der
+   ligger i efterHent, kan nå at køre, før den første Butik.hent()
+   er kommet hjem. Glemmer den næste fane sit garde, falder prøven
+   — og navnet på den fane står i beskeden.
+
+   ⚠️ DEN ER IKKE EN DUBLET AF meld-PRØVEN. Værnet i meld gør
+   fejlen harmløs; den her siger, at den slet ikke skal opstå. Går
+   begge, har vi to lag: fanen kaster ikke, og kaster den alligevel,
+   vælter den ikke resten. */
+test('ingen fane kaster, når Admin.data endnu er null', async ({ page }) => {
+  await åbnAdmin(page, { data: medArbejde() });
+
+  const svar = await page.evaluate(() => {
+    const gemt = window.Admin.data;
+    window.Admin.data = null;
+    const kastede = [];
+    (window.Admin.efterHent || []).forEach(function (f, i) {
+      try { f(); }
+      catch (e) {
+        /* Filen og linjen står i stakken — uden dem er beskeden
+           "en tegner fejlede", og så skal den næste selv lede. */
+        var hvor = String(e.stack || '').split('\n')[1] || '';
+        kastede.push(i + ': ' + e.message + '  @' + hvor.trim().slice(0, 80));
+      }
+    });
+    window.Admin.data = gemt;
+    return { kastede: kastede, antal: (window.Admin.efterHent || []).length };
+  });
+
+  expect(svar.antal, 'ingen efterHent-tegnere — prøven måler ingenting')
+    .toBeGreaterThan(3);
+  expect(svar.kastede,
+    'en fane kaster, før data er hentet — den skal værne om Admin.data '
+    + 'selv, ikke kun om .indstillinger (se loftDage() i borde.js)')
+    .toEqual([]);
 });
 
 test('hvert id i admin bruges kun én gang', async ({ page }) => {
