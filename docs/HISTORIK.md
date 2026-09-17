@@ -111,6 +111,48 @@ kan være kroge, som JS og prøver hænger på med vilje. To guard-forslag på �
 dag, begge trukket efter måling. Det er den rigtige rækkefølge — men mål FØR du
 foreslår, ikke efter.
 
+**isoPlus bor ét sted, og dagslinjen står på Køkkenet** (17/9, ejerens ord:
+*"lav dagslinje og isopuls tingen"*). Fuld runde efter begge: **computer 2205
+og telefon 2227 beståede, 0 fejl** — `store.js` er indlæst på 18 sider, så det
+var husets fundament, der blev rørt, ikke en fane.
+
+⚠️ **`R.isoPlus` VILLE HAVE DRÆBT TO KUNDESIDER.** Det oplagte hjem var
+`bestil-regler.js`, som allerede eksporterer funktionen og bruges af to filer.
+Men målt: den fil er **slet ikke indlæst** på `bord/index.html` og
+`m-menukort.html`. `store.js` er derimod med alle fire steder, og derfor bor
+reglen nu i `Butik.isoPlus`. Havde jeg fulgt den nærmeste vej, var
+menukortsiden og bordsiden gået ned på `R is not defined`.
+
+⚠️ **OG BÅDE `R.isoPlus` OG `Admin.isoPlus` ER HENVISNINGER, IKKE REFERENCER.**
+Begge objekter bygges på **topniveau** ved indlæsning, og på `admin.html` kommer
+`store.js` (3329) EFTER `bestil-regler.js` (772). En direkte reference
+(`isoPlus: Butik.isoPlus`) ville have slået admin ihjel ved indlæsning. En
+wrapper slår `Butik` op ved KALDET — og alle kald er målt til at ligge inde i
+funktioner (dybde 2-3, ingen på topniveau).
+
+⚠️ **LÆREN OM SCRIPT-RÆKKEFØLGE: den betyder kun noget for det, der kører ved
+indlæsning.** Jeg konkluderede først, at rettelsen ville brække to sider, fordi
+`store.js` står efter de filer, der bruger den. Det var forkert: `skal/forside.js`
+bruger `Butik` overalt og virker fint, netop fordi funktionerne først KALDES
+senere. Mål kaldstidspunktet, ikke `<script>`-rækkefølgen.
+
+**Dagslinjen** er dagens facit på Køkkenet: "3 bestillinger i dag · 2 venter ·
+ældste 20 min", og "ingen venter" frem for "0 venter · ældste 0 min" — et nul,
+hvor et tal plejer at betyde travlhed, læses som travlhed.
+
+⚠️ **DEN FIK SIT EGET ELEMENT.** `#koekken-linje` var lige ved hånden, men den
+er skærmens PULS (klokkeslæt, køen nu, LUKKET-status) og har **tre prøver
+hængende på sine ord**. At skrive dagens tal ind dér havde slået en virkende
+besked ihjel. To ting i én linje ville desuden blive for lang til at læses på
+afstand, og skærmen står tændt i et køkken. **"Ældste" spørger
+`Admin.minutterSiden`** og regner ikke forfra — Overblik har samme regel, og
+netop den funktion svigtede samme morgen, fordi den lå i to kopier.
+
+Fire prøver, hver med sit modstykke, alle falsificeret. Den mest oplysende:
+fjernes "ingen venter"-grenen, **består den første prøve stadig**, og kun
+modstykket falder. De to måler altså hver sin ting — et modstykke, der falder
+sammen med sin hovedprøve, måler ingenting.
+
 **Køkkenets alarm kunne tie — og "en regel bor ét sted" er nu en prøve**
 (17/9). `minutterSiden` lå **ordret ens** i `koekken.js` og `overblik.js`,
 begge uden bund i nul. Et tidsstempel fra fremtiden (skæv klokke på en iPad
