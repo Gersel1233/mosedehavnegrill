@@ -58,6 +58,28 @@ værn imod det. Grep'et ramte `bestil-pille` (fire steder i `js/skal/`). Målt i
 browseren: **ingen `.bestil-pil` på /bestil/, /index.html eller /m-tapas.html**.
 Brug `\b`, og mål i browseren frem for at slutte fra et grep.
 
+⚠️ **EN RUNDE MELDTE GRØNT PÅ NUL PRØVER — zsh-FÆLDEN IGEN.** Fjorten
+prøvefiler blev samlet i `F="tests/a.spec.js tests/b.spec.js …"` og kaldt som
+`npx playwright test $F`. **zsh deler ikke en variabel op i ord**, så Playwright
+fik én lang streng som ét filnavn, fandt ingenting og sluttede med `udfald=0,
+fejl=0`. Det ligner nøjagtig en grøn runde. Skriv filnavnene direkte i
+kommandoen, og **tæl altid de kørte prøver** — en bid, der kører nul, skal råbe:
+`[ "$koert" -eq 0 ] && echo "⚠️ NUL PROEVER KOERT"`.
+
+⚠️ **OG DE SEKS ANDRE CSS-KOLLISIONER ER IKKE FEJL — EN GUARD VILLE STØJE.**
+Efter `.maaned-top` blev hele `style.css` målt for selektorer med modstridende
+dobbeltdefinitioner. Der er syv i alt, men kun `.maaned-top` var ægte:
+· `.kat-dag` / `.kat-dag.paa` og `.kat-tid` / `.kat-tid input` har uscopede
+  rettelser, men elementerne ligger **altid** i deres forælder —
+  `dageLinje.appendChild(dage)` (menukort.js:1400) og `tidRaekke.appendChild(…)`
+  (:1352-1355) er de eneste indsættelser. Upræcise selektorer, harmløse.
+· `.menu-fold` / `.menu-fold-navn` er en senere omskrivning, hvor den gamle blok
+  stadig leverer `min-height`, `font-family` og `cursor`. Gæld, ikke fejl.
+En CSS-dubletguard som den i `doed-kode.spec.js` ville altså melde 7 og ramme
+rigtigt 1 gang. **Seks falske råb pr. rigtigt er værre end ingen guard** — den
+skal kende DOM'en og ikke kun stilarket, og det er en større opgave end den
+lyder. Forslaget er trukket, ikke glemt.
+
 **Køkkenets alarm kunne tie — og "en regel bor ét sted" er nu en prøve**
 (17/9). `minutterSiden` lå **ordret ens** i `koekken.js` og `overblik.js`,
 begge uden bund i nul. Et tidsstempel fra fremtiden (skæv klokke på en iPad
