@@ -285,6 +285,88 @@ test.describe('Felterne i admin har et navn', () => {
    fange de dubletter, vi allerede kender, og det er aldrig dem,
    der gør skade.
    ============================================================ */
+/* ============================================================
+   EN FANE, DER KASTER, MÅ IKKE VÆLTE HENTNINGEN  (17/9)
+   ------------------------------------------------------------
+   MÅLT PÅ KUNDENS EGEN SKÆRM: "Bordene kunne ikke hentes: Cannot
+   read properties of null (reading 'indstillinger')" — midt i at
+   han skulle printe bordskilte.
+
+   ⚠️ OG BESKEDEN LØJ OM ÅRSAGEN. Bordene var hentet fint.
+   js/admin/bordkort.js henter og kalder derefter Admin.meld(),
+   tegnBordkort() og tegnNøglekort() inde i den SAMME
+   Promise-kæde — og kædens .catch() fanger alt, også en fejl i
+   en tegner LANGT efter hentningen. Derfor så det ud, som om
+   databasen svigtede.
+
+   ⚠️ DEN ÆGTE FEJL: Admin.meld() kører efterHent-tegnerne HELT
+   uden værn, mens genindlæs() pakker præcis den samme slags
+   løkke i try/catch med noten "Én tegner, der kaster, må ikke
+   vælte de andre". Samme regel, to steder, kun det ene sted
+   skrevet. Udløseren var loftAlle() i borde.js, som læste
+   Admin.data.indstillinger, mens Admin.data endnu var null —
+   fire linjer under loftDage(), der gør det rigtigt.
+
+   Det er sket før: kalender.js' note beskriver, at Overblik og
+   Bestillinger stod TOMME uden en fejl på skærmen, og at elleve
+   prøver faldt. Værnet blev dengang lagt i genindlæs — ikke i
+   meld.
+
+   ⚠️ FEJLEN SKJULES IKKE. Den skal stadig i konsollen, som
+   genindlæs gør det, ellers bytter vi en larmende fejl for en
+   tavs — og en tavs fejl er den, der koster en frokost.
+   ============================================================ */
+test('en tegner, der kaster, vælter ikke Admin.meld', async ({ page }) => {
+  await åbnAdmin(page, { data: medArbejde() });
+
+  const svar = await page.evaluate(() => {
+    /* Som FØR den første Butik.hent() er kommet hjem: fanerne
+       melder deres lister ind, så snart de har hentet, og det kan
+       ske før data er på plads. */
+    const gemt = window.Admin.data;
+    window.Admin.data = null;
+    let fejl = null;
+    try { window.Admin.meld('bordliste', []); }
+    catch (e) { fejl = String(e && e.message || e); }
+    window.Admin.data = gemt;
+    return { fejl: fejl, tegnere: (window.Admin.efterHent || []).length };
+  });
+
+  /* Tallet udefra: er der ingen tegnere, måler prøven ingenting. */
+  expect(svar.tegnere, 'ingen efterHent-tegnere — prøven måler ingenting')
+    .toBeGreaterThan(3);
+  expect(svar.fejl, 'Admin.meld kastede videre op i kaldet — '
+    + 'en fane, der fejler, må ikke vælte hentningen')
+    .toBeNull();
+});
+
+/* ⚠️ MODSTYKKET: værnet må ikke blive til en lyddæmper. Fanger
+   meld() fejlen uden at sige det videre, bliver den næste fejl
+   usynlig — og så er vi tilbage ved "tomme faner uden en fejl på
+   skærmen", som kalender.js' note beskriver. */
+test('men fejlen skrives stadig i konsollen', async ({ page }) => {
+  await åbnAdmin(page, { data: medArbejde() });
+
+  const linjer = [];
+  page.on('console', (m) => { if (m.type() === 'error') linjer.push(m.text()); });
+
+  await page.evaluate(() => {
+    const gemt = window.Admin.data;
+    window.Admin.data = null;
+    /* En tegner, der ALTID kaster — så prøven ikke afhænger af,
+       at netop loftAlle bliver ved med at være uvernet. */
+    window.Admin.efterHent.push(function () {
+      throw new Error('prøvens egen tegner kaster med vilje');
+    });
+    try { window.Admin.meld('bordliste', []); } catch (e) { /* skal ikke ske */ }
+    window.Admin.efterHent.pop();
+    window.Admin.data = gemt;
+  });
+
+  expect(linjer.join(' | '), 'fejlen blev slugt i stilhed')
+    .toContain('prøvens egen tegner kaster med vilje');
+});
+
 test('hvert id i admin bruges kun én gang', async ({ page }) => {
   await åbnAdmin(page, { data: medArbejde() });
 

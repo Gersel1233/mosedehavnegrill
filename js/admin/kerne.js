@@ -717,7 +717,38 @@
 
   function meld(navn, liste) {
     lister[navn] = liste || [];
-    efterHent.forEach(function (f) { f(); });
+
+    /* ⚠️ SAMME VÆRN SOM I genindlæs() — OG AF SAMME GRUND  (17/9).
+
+       MÅLT PÅ KUNDENS SKÆRM: "Bordene kunne ikke hentes: Cannot
+       read properties of null (reading 'indstillinger')", midt i
+       at han skulle printe bordskilte. Bordene var hentet fint.
+
+       js/admin/bordkort.js henter og kalder derefter Admin.meld(),
+       tegnBordkort() og tegnNøglekort() i den SAMME Promise-kæde.
+       Kastede en tegner her, boblede fejlen op og blev fanget af
+       kædens .catch(), som melder "Bordene kunne ikke hentes" —
+       altså en besked, der peger på databasen, mens fejlen sad i
+       en helt anden fane. Udløseren var loftAlle() i borde.js, der
+       læste Admin.data.indstillinger, før den første Butik.hent()
+       var kommet hjem.
+
+       genindlæs() har haft det her værn siden 31/8 med noten "Én
+       tegner, der kaster, må ikke vælte de andre". meld() kører
+       den samme slags løkke og havde det ikke. Samme regel, to
+       steder, kun det ene skrevet — og meld() er det ENESTE sted,
+       der kører efterHent, så hullet er lukket her.
+
+       ⚠️ FEJLEN SKJULES IKKE. Den skrives i konsollen, præcis som
+       i genindlæs: et værn, der også er en lyddæmper, bytter en
+       larmende fejl for en tavs, og den tavse er den, der koster
+       en frokost. */
+    efterHent.forEach(function (f) {
+      try { f(); }
+      catch (e) {
+        if (window.console) console.error('En fane kunne ikke tegnes:', e);
+      }
+    });
   }
 
   /* "HENTET KL. 14.32" — den lille linje under hver liste.

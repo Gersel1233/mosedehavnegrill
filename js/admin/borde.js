@@ -656,7 +656,15 @@
   Admin.bordLoftFor = loftFor;
 
   function loftAlle() {
-    var v = (Admin.data.indstillinger || {}).bord_loft_pr_dag;
+    /* ⚠️ Admin.data KAN VÆRE NULL HER (17/9). Tegneren kaldes af
+       Admin.meld, og fanerne melder deres lister ind, så snart de
+       har hentet — det kan ske, før den første Butik.hent() er
+       kommet hjem. Uden gardet kastede den her linje, og fejlen
+       kom ud på skærmen som "Bordene kunne ikke hentes", fordi
+       bordkort.js' .catch() fangede den. loftDage() lige nedenfor
+       gjorde det rigtigt hele tiden; det var kun den her, der
+       værnede om .indstillinger uden at værne om Admin.data. */
+    var v = ((Admin.data && Admin.data.indstillinger) || {}).bord_loft_pr_dag;
     if (v === null || v === undefined || String(v).trim() === '') return null;
     var n = Number(v);
     return isFinite(n) ? n : null;
