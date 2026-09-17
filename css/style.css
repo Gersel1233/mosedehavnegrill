@@ -3652,7 +3652,14 @@ body.personale .tal-raekke .tal-felt { max-width: none; }
   margin-bottom: 4px;
 }
 .maaned-top h2 { flex: 1 1 auto; font-size: clamp(22px, 2.6vw, 30px); }
-.maaned-top .knap.lille { min-width: 44px; justify-content: center; }
+/* ⚠️ 48 OG IKKE 36, MEN KUN HER  (17/9). Pilene er `knap lille`,
+   som med vilje er 36 px ("et værktøj, man bruger sjældent").
+   Men i DEN HER række står de ved siden af "I dag", der er en
+   almindelig .knap på 48 — tre knapper i to højder, målt i
+   browseren. Løftet frem for at sænke: man gør ikke en trykflade
+   mindre. Scopet til månedsrækken, så alle andre små knapper i
+   admin beholder deres 36. */
+.maaned-top .knap.lille { min-width: 44px; min-height: 48px; justify-content: center; }
 
 .maaned {
   display: grid;
@@ -3693,7 +3700,13 @@ body.personale .tal-raekke .tal-felt { max-width: none; }
   overflow: hidden;
 }
 .maaned-dag:hover { border-color: rgba(36, 26, 23, .32); }
-.maaned-top {
+/* Toppen INDE I en dagcelle: dagens nummer og dens mærker.
+   ⚠️ HED .maaned-top INDTIL 17/9 — samme navn som månedsrækken
+   øverst på fanen. Samme specificitet, så den her vandt tavst, og
+   navigationen fik `align-items: baseline` og 2 px gap i stedet
+   for sine egne `center` og 10. Baseline er RIGTIGT her: dagens
+   tal og mærkerne skal stå på samme skriftlinje. */
+.maaned-dag-top {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;

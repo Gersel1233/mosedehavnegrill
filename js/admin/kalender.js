@@ -958,7 +958,15 @@
     if (dag === valgtDag) felt.classList.add('valgt');
     if (ting.lukket) felt.classList.add('er-lukket');
 
-    var top = lav('span', 'maaned-top');
+    /* ⚠️ maaned-dag-top OG IKKE maaned-top  (17/9). De to bar
+       samme navn: månedsnavigationen øverst på fanen (pile,
+       overskrift, "I dag") og den her, som sidder inde i HVER
+       dagcelle. To CSS-regler med samme specificitet, så den
+       sidste vandt tavst — og navigationen arvede dagcellens
+       `align-items: baseline`, så pile og knap stod på skriftens
+       grundlinje i stedet for centreret. Husets egen regel om to
+       ting med samme navn, bare i CSS, hvor der ingen fejl kommer. */
+    var top = lav('span', 'maaned-dag-top');
     top.appendChild(lav('span', 'maaned-nr', nr));
 
     /* ---- DAGENS TILSTAND, SET PÅ AFSTAND ----

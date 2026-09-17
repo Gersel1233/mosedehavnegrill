@@ -169,6 +169,55 @@ test.describe('Felterne er til fedtede fingre', () => {
     expect(dag, 'dagvælger og segmentgruppe står ikke på linje').toBe(seg);
   });
 
+  /* ⚠️ OG KALENDERENS MÅNEDSRÆKKE HAVDE DET VÆRRE  (17/9)
+
+     MÅLT I BROWSEREN: pilene 36 px, "I dag" 48 px — tre knapper i
+     to højder, og hele rækken justeret på skriftens GRUNDLINJE i
+     stedet for centreret.
+
+     ⚠️ MEN ÅRSAGEN VAR IKKE HØJDERNE. To forskellige komponenter
+     bar det samme klassenavn, .maaned-top: månedsnavigationen
+     (pile + overskrift + "I dag") og den lille top inde i HVER
+     dagcelle i nettet. De to CSS-regler har samme specificitet, så
+     den sidste vandt tavst, og navigationen arvede dagcellens
+     `align-items: baseline; gap: 2px 6px`.
+
+     Det er husets egen regel — "to ting med samme navn: den
+     sidste vinder tavst" — men i CSS, hvor der ikke er nogen
+     fejlmeddelelse at få øje på.
+
+     Overskriften tæller IKKE med: den er tekst, ikke en kontrol.
+     Prøven måler knapperne, og den kræver både at de er ens OG
+     mindst 44 — ellers ville "sæt dem alle til 0" bestå. */
+  test('kalenderens månedsrække står på linje', async ({ page }) => {
+    await åbnAdmin(page);
+    await visFane(page, 'p-kalender');
+
+    /* Rækken findes på sin overskrift og ikke på .maaned-top:
+       netop dét navn deles med dagcellerne, og prøven skal pege
+       på ÉN ting, også efter navnet er skilt ad. */
+    const raekke = page.locator('.maaned-top')
+      .filter({ has: page.locator('#maaned-navn') });
+    await expect(raekke, 'månedsrækken blev ikke fundet — prøven måler ingenting')
+      .toHaveCount(1);
+
+    const m = await raekke.evaluate((e) => ({
+      align: getComputedStyle(e).alignItems,
+      knapper: Array.from(e.querySelectorAll(':scope > button'))
+        .map((k) => Math.round(k.getBoundingClientRect().height)),
+    }));
+
+    expect(m.knapper.length, 'ingen knapper i rækken — prøven måler ingenting')
+      .toBeGreaterThanOrEqual(3);
+    expect(Array.from(new Set(m.knapper)).length,
+      'knapperne har forskellige højder: ' + m.knapper.join(', '))
+      .toBe(1);
+    expect(m.knapper[0], 'knapperne er lavere end 44 px')
+      .toBeGreaterThanOrEqual(44);
+    expect(m.align, 'rækken justerer på grundlinjen i stedet for at centrere')
+      .toBe('center');
+  });
+
   /* OG GÆSTESIDEN MÅ IKKE FLYTTE SIG MED. Komponenterne er
      scopet til body.personale; bestillingsformularen har sin EGEN
      form (spiis-formen, 23/8: 52 px høj, --r-lille runding, tonet
