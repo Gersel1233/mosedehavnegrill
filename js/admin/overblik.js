@@ -67,11 +67,11 @@
 
   var FAERDIG = { afhentet: true, serveret: true, afvist: true, udeblevet: true };
 
-  function minutterSiden(iso) {
-    var t = Date.parse(iso || '');
-    if (!isFinite(t)) return null;
-    return Math.floor((Date.now() - t) / 60000);
-  }
+  /* minutterSiden bor i js/admin/kerne.js (Admin.minutterSiden) —
+     én regel ét sted. Den lå kopieret her OG i koekken.js, ordret
+     ens og begge uden bund i nul, så bordkø-kortets overskrift og
+     rækker kunne sige to forskellige tal om samme bestilling.
+     Hvorfor står i kommentaren i kerne.js. (17/9) */
 
   function hvornårTekst(min) {
     if (min < 1) return 'LIGE NU';
@@ -698,7 +698,7 @@
     var aeldst = 0;
     var borde = {};
     koe.forEach(function (b) {
-      var m = minutterSiden(b.oprettet);
+      var m = Admin.minutterSiden(b.oprettet);
       if (m !== null && m > aeldst) aeldst = m;
       borde[b.bord_nummer] = true;
     });
@@ -726,7 +726,7 @@
     koe.slice().sort(function (a, b) {
       return String(a.oprettet || '') < String(b.oprettet || '') ? -1 : 1;
     }).forEach(function (b) {
-      var m = minutterSiden(b.oprettet);
+      var m = Admin.minutterSiden(b.oprettet);
       var allergi = Admin.erAllergi && Admin.erAllergi(b);
       var r = lav('div', 'bordkoe-raekke' + (allergi ? ' har-allergi' : ''));
       r.setAttribute('data-bord', b.bord_nummer);
@@ -870,7 +870,7 @@
     var ud = [];
 
     (Admin.lister.bestillinger || []).forEach(function (b) {
-      var min = minutterSiden(b.oprettet);
+      var min = Admin.minutterSiden(b.oprettet);
       if (b.slettet || min === null || min * 60000 > VINDUE_MS) return;
       ud.push({
         min: min, navn: b.navn, ny: b.status === 'ny',
@@ -883,7 +883,7 @@
     });
 
     (Admin.lister.borde || []).forEach(function (b) {
-      var min = minutterSiden(b.oprettet);
+      var min = Admin.minutterSiden(b.oprettet);
       if (b.slettet || min === null || min * 60000 > VINDUE_MS) return;
       ud.push({
         min: min, navn: b.navn, ny: b.status === 'ny',
@@ -896,7 +896,7 @@
     });
 
     (Admin.lister.udlejninger || []).forEach(function (u) {
-      var min = minutterSiden(u.oprettet);
+      var min = Admin.minutterSiden(u.oprettet);
       if (u.slettet || min === null || min * 60000 > VINDUE_MS) return;
       ud.push({
         min: min, navn: u.navn, ny: u.status === 'ny',
@@ -908,7 +908,7 @@
     });
 
     (Admin.lister.forespoergsler || []).forEach(function (f) {
-      var min = minutterSiden(f.oprettet);
+      var min = Admin.minutterSiden(f.oprettet);
       if (f.slettet || min === null || min * 60000 > VINDUE_MS) return;
       var navne = {
         catering: 'Catering', baglokale: 'Baglokale',
@@ -1099,7 +1099,7 @@
       var pr = {};
       (Admin.lister.bestillinger || []).forEach(function (b) {
         if (b.slettet || !erBord(b) || FAERDIG[b.status]) return;
-        var m = minutterSiden(b.oprettet);
+        var m = Admin.minutterSiden(b.oprettet);
         if (m === null || m < maal) return;
         if (!pr[b.bord_nummer] || m > pr[b.bord_nummer]) pr[b.bord_nummer] = m;
       });

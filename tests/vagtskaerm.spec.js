@@ -407,6 +407,43 @@ test.describe('Alarmstriben', () => {
      den dag, ejeren satte tallet ned — og begge ville se rigtige
      ud hver for sig. Prøven læser TALLET i sætningen, ikke bare
      at der står en advarsel. */
+  /* ============================================================
+     OVERSKRIFTEN OG RÆKKEN SIGER DET SAMME  (17/9)
+     ------------------------------------------------------------
+     Kortet skriver ventetiden TO gange: "ældste N min." i
+     overskriften, og N i hver række nedenunder. De regnes af hver
+     sin sløjfe, og overskriften er et maksimum, der starter i nul
+     (`var aeldst = 0`), mens rækken skriver den rå værdi.
+
+     Er et tidsstempel fra fremtiden — skæv klokke på iPad'en ved
+     luge eller bord — bliver den rå værdi negativ, og så står der
+     "ældste 0 min." over en række, der siger "-100 min". Samme
+     bestilling, samme kort, to tal.
+
+     ⚠️ OG DEN RØDE MARKERING FORSVINDER MED DET SAMME. `sent`
+     sættes af `m >= graense`, og et negativt tal er aldrig større
+     end grænsen. Alarmen holder op med at virke uden at sige fra.
+
+     Målt samme dag i køkkenet (tests/admin-koekken.spec.js): det
+     er ÉN funktion, minutterSiden, som lå kopieret i to filer.
+     ============================================================ */
+  test('overskrift og række er enige om den samme bestilling', async ({ page }) => {
+    await åbnAdmin(page, { data: medSentBord(-100) });
+    const boks = page.locator('#overblik-bordkoe');
+    await expect(boks.locator('.bordkoe-tekst')).toContainText('ældste 0 min');
+    await expect(boks.locator('.bordkoe-min')).toHaveText('0 min');
+  });
+
+  /* ⚠️ MODSTYKKET. Uden det ville en rettelse, der altid skrev
+     nul, bestå prøven ovenfor — og så blev INTET bord rødt igen. */
+  test('men et bord, der har ventet længe, står stadig rødt', async ({ page }) => {
+    await åbnAdmin(page, { data: medSentBord(99) });
+    const boks = page.locator('#overblik-bordkoe');
+    await expect(boks.locator('.bordkoe-tekst')).toContainText('ældste 99 min');
+    await expect(boks.locator('.bordkoe-min')).toHaveText('99 min');
+    await expect(boks.locator('.bordkoe-min')).toHaveClass(/sent/);
+  });
+
   test('grænsen for "for længe" er ejerens tal, ikke vores', async ({ page }) => {
     const d = medSentBord(12);
     d.indstillinger.bord_ventetid_min = 10;

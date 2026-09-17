@@ -175,11 +175,11 @@
       .sort(function (a, b) { return (a.oprettet || '') < (b.oprettet || '') ? -1 : 1; });
   }
 
-  function minutterSiden(iso) {
-    var t = Date.parse(iso || '');
-    if (!isFinite(t)) return null;
-    return Math.floor((Date.now() - t) / 60000);
-  }
+  /* minutterSiden bor i js/admin/kerne.js (Admin.minutterSiden) —
+     én regel ét sted. Den lå kopieret her OG i overblik.js, ordret
+     ens og begge uden bund i nul, så et tidsstempel fra fremtiden
+     slog den røde "for længe"-markering ud uden at sige fra.
+     Hvorfor står i kommentaren i kerne.js. (17/9) */
 
   function klokken(iso) {
     var d = new Date(Date.parse(iso || ''));
@@ -308,7 +308,7 @@
        nyt bord, fordi de lige har bestilt en is oveni. */
     var pr = {};
     koeen().forEach(function (b) {
-      var m = minutterSiden(b.oprettet);
+      var m = Admin.minutterSiden(b.oprettet);
       if (m === null || m < maal) return;
       var n = b.bord_nummer;
       if (!pr[n] || m > pr[n]) pr[n] = m;
@@ -460,7 +460,7 @@
       var n = b.bord_nummer;
       if (!pr[n]) pr[n] = { antal: 0, aeldst: null };
       pr[n].antal++;
-      var m = minutterSiden(b.oprettet);
+      var m = Admin.minutterSiden(b.oprettet);
       if (m !== null && (pr[n].aeldst === null || m > pr[n].aeldst)) pr[n].aeldst = m;
     });
 
@@ -783,7 +783,7 @@
 
   function kort(b) {
     var t = trinFor(b.status) || TRIN[0];
-    var min = minutterSiden(b.oprettet);
+    var min = Admin.minutterSiden(b.oprettet);
     var sent = min !== null && min >= maalTid();
 
     var k = lav('div', 'koek-kort' + (sent ? ' sent' : ''));

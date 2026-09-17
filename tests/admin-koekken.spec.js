@@ -274,6 +274,41 @@ test.describe('Ét tryk: Færdig', () => {
 // ============================================================
 test.describe('Ventetiden tikker og bliver rød', () => {
 
+  /* ============================================================
+     ET VENTETAL BLIVER ALDRIG NEGATIVT  (17/9)
+     ------------------------------------------------------------
+     minutterSiden() regner Date.now() minus tidsstemplet UDEN bund
+     ved nul. Står køkkenets iPad med skæv klokke — eller kommer et
+     tidsstempel fra en enhed i en anden tidszone — bliver tallet
+     negativt, og der står "-100 min" på kortet.
+
+     ⚠️ OG DET VÆRSTE ER IKKE MINUSTEGNET. Den røde "sent"-tilstand
+     afgøres af `min >= maalTid()`, og et negativt tal er ALDRIG
+     større end grænsen. Alarmen, som er hele grunden til at tallet
+     står der, holder op med at virke — uden at sige fra. En tavs
+     alarm er værre end ingen alarm.
+
+     Målt to steder uafhængigt af hinanden: her og på Overblik,
+     hvor overskriften klipper ved nul (`var aeldst = 0`) mens
+     rækken skriver den rå værdi — så de to tal i samme kort kan
+     være uenige om den samme bestilling.
+     ============================================================ */
+  test('et tidsstempel fra fremtiden giver ikke et minustal', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ oprettet: forSiden(-100) })]);
+    const min = kort(page, '7').locator('.koek-min');
+    await expect(min).not.toContainText('-');
+    await expect(min).toHaveText('0 min');
+  });
+
+  /* ⚠️ MODSTYKKET, OG DET VIGTIGSTE. Uden det ville en rettelse,
+     der altid skrev "0 min", bestå prøven ovenfor — og så ville
+     INGEN bestilling nogensinde blive rød. */
+  test('men en rigtig lang ventetid er stadig rød', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ oprettet: forSiden(99) })]);
+    await expect(kort(page, '7').locator('.koek-min')).toHaveText('99 min');
+    await expect(kort(page, '7')).toHaveClass(/sent/);
+  });
+
   test('minutterne regnes fra da bestillingen kom ind', async ({ page }) => {
     await åbnKoekkenet(page, [ordre({ oprettet: forSiden(9) })]);
     await expect(kort(page, '7').locator('.koek-min')).toHaveText('9 min');

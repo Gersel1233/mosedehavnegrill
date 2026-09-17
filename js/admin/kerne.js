@@ -555,6 +555,37 @@
       + '. ' + MAANEDER[Number(iso.slice(5, 7)) - 1];
   }
 
+  /* HVOR LÆNGE HAR DET VENTET? — MED BUND I NUL  (17/9)
+
+     Ventetiden på køkkenets kort og i Overblikkens bordkø regnes
+     her. Funktionen lå KOPIERET i js/admin/koekken.js og
+     js/admin/overblik.js, ordret ens, og ingen af de to havde en
+     bund: står en iPad ved lugen eller et bord med skæv klokke,
+     kommer et tidsstempel fra fremtiden, og tallet blev negativt
+     — der stod "-100 min" på kortet.
+
+     ⚠️ OG DET VÆRSTE VAR IKKE MINUSTEGNET. Det røde "for længe"
+     afgøres af `minutter >= grænsen`, og et negativt tal er ALDRIG
+     større end grænsen. Alarmen — hele grunden til at tallet står
+     der — holdt op med at virke uden at sige fra. En tavs alarm er
+     værre end ingen alarm.
+
+     I Overblikkens kort gav det oven i købet to tal om samme
+     bestilling: overskriften er et maksimum, der starter i nul, så
+     der stod "ældste 0 min." over en række med "-100 min".
+
+     null og ikke 0, når tidsstemplet ikke kan læses: kaldstederne
+     skriver "—" for null, og det er en anden besked end "lige nu".
+     Grænsen for "for længe" deles på samme måde (Admin.bordForLaenge
+     fra køkkenet) — men den bor i en fane-fil, der indlæses EFTER
+     overblik.js, og har derfor et reservetal. Denne her bor i
+     kerne.js, som altid er indlæst først, så den skal ikke have et. */
+  function minutterSiden(iso) {
+    var t = Date.parse(iso || '');
+    if (!isFinite(t)) return null;
+    return Math.max(0, Math.floor((Date.now() - t) / 60000));
+  }
+
   /* HVOR LANGT ER DER TIL? (15/9) — "om 18 dage", "i morgen", "for 2
      dage siden", og årstallet foran, når det ikke er i år. Ejerens ord:
      forespørgslerne er "utydelige", og "Lørdag 3. oktober" siger ikke,
@@ -1231,6 +1262,7 @@
     lister: lister,
     efterHent: efterHent,
     pænDato: pænDato,
+    minutterSiden: minutterSiden,
     omDage: omDage,
     dagKort: dagKort,
     dagMaerke: dagMaerke,
