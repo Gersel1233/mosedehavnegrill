@@ -7,6 +7,53 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+⚠️ **"BORDENE KUNNE IKKE HENTES" PEGEDE PÅ DATABASEN — FEJLEN SAD I EN FANE**
+(17/9). Målt på ejerens skærm, midt i at han skulle printe bordskilte:
+*"Bordene kunne ikke hentes: Cannot read properties of null (reading
+'indstillinger')"*. **Bordene var hentet fint.**
+
+`js/admin/bordkort.js` henter og kalder derefter `Admin.meld()`,
+`tegnBordkort()` og `tegnNøglekort()` i den SAMME Promise-kæde. Kaster en
+tegner, fanger kædens `.catch()` den og melder "Bordene kunne ikke hentes" — en
+besked, der peger på databasen, mens fejlen sad et helt andet sted. Derfor
+virkede det ved næste forsøg: da var `Admin.data` på plads.
+
+· **Den ægte fejl:** `Admin.meld()` kørte `efterHent`-tegnerne HELT uden værn,
+  mens `genindlæs()` pakker den samme slags løkke i `try/catch` med noten *"Én
+  tegner, der kaster, må ikke vælte de andre"* (31/8). Samme regel, to steder,
+  kun det ene skrevet. `meld()` er det ENESTE sted, der kører `efterHent`.
+· **Udløseren:** `loftAlle()` i `borde.js` læste `Admin.data.indstillinger`, før
+  første `Butik.hent()` var hjemme — fire linjer over `loftDage()`, der gjorde
+  det rigtigt hele tiden.
+· **Det er sket før:** `kalender.js`' note beskriver, at Overblik og
+  Bestillinger stod TOMME uden en fejl på skærmen, og at elleve prøver faldt.
+  Værnet blev dengang lagt i `genindlæs` — ikke i `meld`.
+· **51 steder** i admin læser `Admin.data.X` uden at værne om `Admin.data` selv.
+  Kun de **9 `efterHent`-tegnere** kan nå at køre først, og prøven måler dem
+  empirisk frem for at gætte ud fra statisk analyse.
+
+⚠️ **OG MIN EGEN PRØVE MÅLTE DEN FORKERTE FIL — fanget i falsifikationen.**
+Første udgave satte `Admin.data = null` og regnede med, at `loftAlle` ville
+kaste. Det gjorde den — indtil `loftAlle` blev rettet i SAMME commit. Så kastede
+ingen tegner længere, `meld()` havde intet at fange, og **prøven bestod også
+uden værnet**. Den måler nu reglen ved at fremkalde fejlen med sin EGEN kastende
+tegner. *En prøve, der kun virker, så længe en anden fil er i stykker, måler
+ikke reglen — den måler den anden fil.*
+
+⚠️ **OG EN FALSIFIKATION RAMTE DEN FORKERTE FUNKTION.** Teksten
+`'En fane kunne ikke tegnes:'` står nu **to** steder i `kerne.js` — i
+`genindlæs` (linje 463, ti mellemrums indryk) og i `meld` (749, otte). Et
+perl-mønster med otte mellemrum UDEN `^` matchede inde i den ti-mellemrums
+linje og muterede `genindlæs`, mens `meld` stod urørt — så falsifikationen
+bestod, og jeg troede et øjeblik, at prøven var værdiløs. **Ankr mutationer med
+`^` og `/m`**, når samme tekst går igen. Dagens mønster, nu i værktøjet: to
+identiske strenge, og den første vinder tavst.
+
+Tre prøver, alle falsificeret hver for sig: at `meld` ikke kaster videre, at
+fejlen **stadig skrives i konsollen** (et værn, der også er en lyddæmper, bytter
+en larmende fejl for en tavs), og at ingen fane kaster, før data er hentet —
+den sidste navngiver selv den skyldige fane i fejlbeskeden.
+
 **Udgivet og verificeret 17/9: `v=38989c6`** (ejerens ord: *"Ja, udgiv nu"*).
 Køkkenets alarm-rettelse er dermed i luften og ikke kun på en udviklermaskine.
 Fuld runde før udgivelsen: **4419 prøver, 0 ægte fejl** (computer 2197 i to
