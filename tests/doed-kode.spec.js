@@ -79,3 +79,76 @@ for (const f of KENDTE) {
       .toContain('INGEN SIDE INDLÆSER DEN HER FIL');
   });
 }
+
+/* ============================================================
+   SAMME FUNKTION SKREVET TO STEDER  (17/9)
+   ------------------------------------------------------------
+   "En regel bor ét sted" står i CLAUDE.md, men intet målte det.
+   Og det kostede: minutterSiden lå ordret ens i koekken.js og
+   overblik.js, begge uden bund i nul, så et tidsstempel fra
+   fremtiden gav "-100 min" — og den røde "for længe"-markering
+   holdt op med at virke, fordi et negativt tal aldrig er større
+   end grænsen. En tavs alarm. Den blev fundet ved et tilfælde.
+
+   ⚠️ NAVNET ER IKKE MÅLET — KROPPEN ER. Hver admin-fil er sin
+   egen lukkede IIFE, så tre filer med hver sin lokale tegnAlt er
+   forventet og helt i orden. Det farlige er to IDENTISKE kroppe:
+   de udtrykker den samme regel, og den dag den ene rettes,
+   skrider de fra hinanden uden at nogen opdager det.
+
+   ⚠️ OG PRØVEN BEVISER FØRST, AT DEN MÅLER NOGET. Et regex, der
+   ikke matcher, ville rapportere "ingen dubletter" og ligne en
+   sejr — samme fælde som "No tests found", der ikke er en fejl.
+   Derfor tælles funktionerne, og tallet kommer fra disken.
+
+   Står der noget nyt i listen: saml reglen ét sted (Admin.* i
+   kerne.js, som minutterSiden blev det) — ryk den ikke ind i
+   KENDTE for at få prøven grøn. */
+const KENDTE_DUBLETTER = [];
+
+function adminFunktioner() {
+  const fund = [];
+  for (const f of fs.readdirSync(path.join('js', 'admin')).filter((x) => x.endsWith('.js'))) {
+    const src = fs.readFileSync(path.join('js', 'admin', f), 'utf8');
+    const re = /^  function ([A-Za-zÆØÅæøå_$][\wÆØÅæøå$]*)\s*\(([^)]*)\)\s*\{\n([\s\S]*?)\n  \}/gm;
+    let m;
+    while ((m = re.exec(src)) !== null) {
+      fund.push({
+        fil: f,
+        navn: m[1],
+        /* Parametrene tæller med: to kroppe, der læser hver sit
+           argumentnavn, er ikke den samme regel. */
+        noegle: m[2].replace(/\s/g, '') + '|' + m[3].replace(/\s+/g, ' ').trim(),
+        krop: m[3].replace(/\s+/g, ' ').trim(),
+      });
+    }
+  }
+  return fund;
+}
+
+test('ingen regel i admin er skrevet to steder', () => {
+  const alle = adminFunktioner();
+
+  /* Tallet udefra: findes der ikke et pænt antal funktioner, har
+     regexet mistet grebet, og listen nedenfor betyder intet. */
+  expect(alle.length, 'der blev ikke læst nogen funktioner — prøven måler ingenting')
+    .toBeGreaterThan(100);
+
+  const efterKrop = {};
+  alle.forEach((x) => {
+    /* Korte kroppe (en enkelt retur-linje) ligner hinanden ved
+       et tilfælde og er ikke en delt regel. */
+    if (x.krop.length < 40) return;
+    (efterKrop[x.noegle] = efterKrop[x.noegle] || []).push(x);
+  });
+
+  const dubletter = Object.keys(efterKrop)
+    .map((k) => efterKrop[k])
+    .filter((g) => new Set(g.map((x) => x.fil)).size > 1)
+    .map((g) => g.map((x) => x.fil + ':' + x.navn).join(' == '))
+    .sort();
+
+  expect(dubletter, 'den samme funktionskrop står i flere admin-filer — '
+    + 'saml reglen ét sted (Admin.* i kerne.js)')
+    .toEqual([...KENDTE_DUBLETTER].sort());
+});

@@ -184,11 +184,9 @@
      ============================================================ */
   var DAGE_FREM = 7;
 
-  function isoPlus(iso, dage) {
-    var d = new Date(iso + 'T12:00:00Z');
-    d.setUTCDate(d.getUTCDate() + dage);
-    return d.toISOString().slice(0, 10);
-  }
+  /* isoPlus bor i js/admin/kerne.js (Admin.isoPlus) — én regel ét
+     sted. Den lå ordret ens her og i klokke.js; hvorfor middag og
+     ikke midnat, står i kommentaren i kerne.js. (17/9) */
 
   function retterPaa(dato) {
     return (Admin.data.dagens_retter || [])
@@ -239,7 +237,7 @@
     var iDag = Butik.nu().dato;
 
     for (var i = 0; i < DAGE_FREM; i++) {
-      var iso = isoPlus(iDag, i);
+      var iso = Admin.isoPlus(iDag, i);
       boks.appendChild(dagKort(iso, i === 0));
     }
   }

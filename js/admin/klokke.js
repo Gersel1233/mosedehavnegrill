@@ -146,22 +146,20 @@
   var PAAMINDELSE_DAGE = [5, 6];      // 0 = mandag … 5 = lørdag, 6 = søndag
   var PAAMINDELSE_FRA_MIN = 10 * 60;  // kl. 10.00
 
-  function isoPlus(iso, dage) {
-    var d = new Date(iso + 'T12:00:00Z');
-    d.setUTCDate(d.getUTCDate() + dage);
-    return d.toISOString().slice(0, 10);
-  }
+  /* isoPlus bor i js/admin/kerne.js (Admin.isoPlus) — én regel ét
+     sted. Den lå ordret ens her og i dagensret.js; hvorfor middag
+     og ikke midnat, står i kommentaren i kerne.js. (17/9) */
 
   function ugePaamindelse() {
     if (!window.Butik || typeof Butik.nu !== 'function') return null;
     var n = Butik.nu();
     if (PAAMINDELSE_DAGE.indexOf(n.ugedag) === -1 || n.minutter < PAAMINDELSE_FRA_MIN) return null;
-    var mandag = isoPlus(n.dato, 7 - n.ugedag);
+    var mandag = Admin.isoPlus(n.dato, 7 - n.ugedag);
     var retter = ((Admin.data && Admin.data.dagens_retter) || [])
       .filter(function (r) { return r.aktiv !== false; });
     var dage = 0;
     for (var i = 0; i < 7; i++) {
-      var d = isoPlus(mandag, i);
+      var d = Admin.isoPlus(mandag, i);
       if (retter.some(function (r) { return r.dato === d; })) dage++;
     }
     return {

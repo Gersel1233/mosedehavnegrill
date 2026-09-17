@@ -81,14 +81,12 @@
      indstilling nogen skal huske at sætte: har rækkerne nøglen,
      er kolonnen der. Er der ingen rækker endnu, er der heller
      ikke noget at vise feltet på. */
-  function harNoegle(raekker, noegle) {
-    return (raekker || []).some(function (r) {
-      return Object.prototype.hasOwnProperty.call(r, noegle);
-    });
-  }
+  /* harNoegle bor i js/admin/kerne.js (Admin.harNoegle) — én regel
+     ét sted. Den lå ordret ens her, i borde.js og i nyheder.js;
+     hvorfor det er farligt, står i kommentaren i kerne.js. (17/9) */
 
   function maaAntal() {
-    return harNoegle(Admin.data && Admin.data.menu_varer, 'antal_tilbage');
+    return Admin.harNoegle(Admin.data && Admin.data.menu_varer, 'antal_tilbage');
   }
 
   /* ⚠️ FELTET FINDES IKKE, FØR KOLONNEN GØR. Samme greb som
@@ -98,18 +96,18 @@
      og ejeren ville sidde med et menukort, der ikke kan gemmes,
      på grund af en fil, han ikke ved eksisterer. */
   function maaBillede() {
-    return harNoegle(Admin.data && Admin.data.menu_varer, 'billede');
+    return Admin.harNoegle(Admin.data && Admin.data.menu_varer, 'billede');
   }
 
   /* VALGENE (supabase/vare-valg.sql, 15/9). Samme greb som maaAntal():
      feltet findes kun, når databasen HAR svaret med kolonnen — ellers
      ville hvert valg-gem fejle med PGRST204. */
   function maaValg() {
-    return harNoegle(Admin.data && Admin.data.menu_varer, 'valg');
+    return Admin.harNoegle(Admin.data && Admin.data.menu_varer, 'valg');
   }
 
   function maaDage() {
-    return harNoegle(Admin.data && Admin.data.menu_kategorier, 'dage');
+    return Admin.harNoegle(Admin.data && Admin.data.menu_kategorier, 'dage');
   }
 
   var DAGE_NAVNE = {

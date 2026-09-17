@@ -51,11 +51,9 @@
      DATABASEN har svaret, i stedet for at antage. Er
      supabase/bord-plads.sql ikke kørt, ville hvert gem fejle med
      PGRST204 på en fil, ejeren ikke ved eksisterer. */
-  function harNoegle(raekker, noegle) {
-    return (raekker || []).some(function (r) {
-      return Object.prototype.hasOwnProperty.call(r, noegle);
-    });
-  }
+  /* harNoegle bor i js/admin/kerne.js (Admin.harNoegle) — én regel
+     ét sted. Den lå ordret ens her, i menukort.js og i nyheder.js;
+     hvorfor det er farligt, står i kommentaren i kerne.js. (17/9) */
 
   /* Er bordet lovet væk omkring det tidspunkt? Spejler databasens
      regel (mosede_bord_plads_vaern), så vælgeren siger det samme som
@@ -377,7 +375,7 @@
        det samme bord i samme sekund, ser begge det gamle billede.
        Derfor er et optaget bord spærret HER, og afvist alligevel
        DÉR. */
-    if (harNoegle(borde, 'bord_id')) {
+    if (Admin.harNoegle(borde, 'bord_id')) {
       var pladsBoks = lav('div', 'felt bord-plads');
       var pladsEtiket = lav('label', null, 'Bord');
       pladsEtiket.setAttribute('for', 'bord-plads-' + b.id);

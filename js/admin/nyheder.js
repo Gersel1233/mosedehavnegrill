@@ -132,15 +132,13 @@
      nyheder endnu — ellers kunne ejeren ikke se, at fanen kan
      mere, den dag han lige har kørt SQL-filen og har et tomt
      arkiv. Uden rækker er der ingen nøgler at læse. */
-  function harNoegle(raekker, noegle) {
-    return (raekker || []).some(function (r) {
-      return Object.prototype.hasOwnProperty.call(r, noegle);
-    });
-  }
+  /* harNoegle bor i js/admin/kerne.js (Admin.harNoegle) — én regel
+     ét sted. Den lå ordret ens her, i borde.js og i menukort.js;
+     hvorfor det er farligt, står i kommentaren i kerne.js. (17/9) */
 
   function maaSlags() {
     var n = Admin.data && Admin.data.nyheder;
-    return !n || !n.length || harNoegle(n, 'slags');
+    return !n || !n.length || Admin.harNoegle(n, 'slags');
   }
 
   /* ⚠️ ER DER INGEN RÆKKER, SPØRGER VI DATABASEN  (7/9).
@@ -187,7 +185,7 @@
 
   function harKolonne(navn) {
     var n = Admin.data && Admin.data.nyheder;
-    if (n && n.length) return harNoegle(n, navn);
+    if (n && n.length) return Admin.harNoegle(n, navn);
     spoergKolonne(navn);
     return kolonneSvar[navn] === true;
   }

@@ -536,6 +536,28 @@
     }
   }
 
+  /* FINDES KOLONNEN OVERHOVEDET?  (samlet 17/9)
+
+     Admin sender aldrig en kolonne ubetinget. Gør den det, og
+     databasen ikke har feltet, svarer PostgREST PGRST204 — eller
+     værre: en anden kolonne bliver overskrevet i stilhed. Derfor
+     spørger fanerne først, om rækkerne fra skyen overhovedet
+     BÆRER nøglen.
+
+     Værnet lå ordret ens i borde.js, menukort.js og nyheder.js.
+     Tre kopier af det samme: den dag den ene blev rettet, ville
+     én fane sende en kolonne, mens de to andre holdt igen — og
+     det viser sig som en PGRST204 i produktionen, ikke som noget,
+     man kan se på skærmen.
+
+     hasOwnProperty og ikke `r[noegle] !== undefined`: en kolonne,
+     der ER i skemaet og bare står tom, skal tælle som til stede. */
+  function harNoegle(raekker, noegle) {
+    return (raekker || []).some(function (r) {
+      return Object.prototype.hasOwnProperty.call(r, noegle);
+    });
+  }
+
   var MAANEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
     'juli', 'august', 'september', 'oktober', 'november', 'december'];
 
@@ -584,6 +606,23 @@
     var t = Date.parse(iso || '');
     if (!isFinite(t)) return null;
     return Math.max(0, Math.floor((Date.now() - t) / 60000));
+  }
+
+  /* EN DATO PLUS ET ANTAL DAGE  (samlet 17/9)
+
+     ⚠️ KLOKKEN 12 UTC MED VILJE. Regner man fra midnat, flytter
+     sommertidsskiftet dagen en tak, og "om syv dage" bliver til
+     seks. Middag ligger så langt fra begge skift, at en time frem
+     eller tilbage ikke kan flytte datoen.
+
+     Lå ordret ens i dagensret.js og klokke.js — samme slags regel
+     som minutterSiden, der svigtede samme dag. Rettede nogen den
+     ene til midnat, ville datoerne skride i den ene fane og ikke
+     i den anden, og kun to gange om året. */
+  function isoPlus(iso, dage) {
+    var d = new Date(iso + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + dage);
+    return d.toISOString().slice(0, 10);
   }
 
   /* HVOR LANGT ER DER TIL? (15/9) — "om 18 dage", "i morgen", "for 2
@@ -1263,6 +1302,8 @@
     efterHent: efterHent,
     pænDato: pænDato,
     minutterSiden: minutterSiden,
+    isoPlus: isoPlus,
+    harNoegle: harNoegle,
     omDage: omDage,
     dagKort: dagKort,
     dagMaerke: dagMaerke,
