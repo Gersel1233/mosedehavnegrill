@@ -80,6 +80,37 @@ rigtigt 1 gang. **Seks falske råb pr. rigtigt er værre end ingen guard** — d
 skal kende DOM'en og ikke kun stilarket, og det er en større opgave end den
 lyder. Forslaget er trukket, ikke glemt.
 
+**Knapperne i admin er ikke rodede — det femte bølge-2-punkt falder også**
+(17/9). Agenterne meldte "17 knap-udseender, kan blive 9-10". Målt: **18**, og
+formen er sund. Fem hovedformer dækker **107 af 123 steder** (`knap` bar 40,
+`lille` 23, `sekundaer` 21, `fare` 16, `lille sekundaer` 7), og 11 af de 18
+bruges kun én gang — men de er hovedformer plus en FUNKTIONSKLASSE
+(`bestil-pil lille`, `dag-luk lille`, `vagt-frem`), ikke nye udseender.
+`skjult` er en **tilstand** (`.skjult { display: none !important }`), så
+`sekundaer skjult` og `fare skjult` er ikke to udseender mere. Der er intet at
+konsolidere.
+
+⚠️ **MEN `primaer` ER DØD OG VILDLEDENDE.** Nul CSS-filer kender den; fem
+steder i JS skriver den (`bestillinger`, `borde`, `koekken`, `tilmeldinger`,
+`overblik`), og `borde.js:432` bruger den endda i en kommentar til at forklare
+en gammel fejl. En klasse, der ikke findes, men som LÆSES som om den betyder
+noget, sender den næste på vildspor. Ingen bruger kan se forskel.
+
+⚠️ **OG SEKS KNAPPER STÅR HELT UDEN FOR `.knap`-FAMILIEN**: `knap-mere` (7×),
+`kryds-knap`, `type-knap`, `udsolgt-knap`, `slags-knap`, `mere-knap`. Det er en
+anden slags inkonsistens end den meldte. **`type-knap` er bekræftet delt med
+gæstesiden** (admin: `kalender.js`, `salg.js` — gæst: `bestilling.js`,
+`forespoergsel.js`, `ved-bordet.js`), målt med ordgrænse. Den må aldrig få en
+uscoped regel.
+
+⚠️ **EN GUARD MOD DØDE KLASSER DUER HELLER IKKE.** Målt: 26 af 370 JS-skrevne
+klasser kendes ikke af noget stilark — men seks af dem (`.b-`, `.mp-`, `.m-`,
+`.kilde-`, `.trin-`, `.tegn-`) er **præfikser fra strengsammensætning**
+(`lav('span', 'b-' + status)`), altså artefakter af målingen selv, og resten
+kan være kroge, som JS og prøver hænger på med vilje. To guard-forslag på én
+dag, begge trukket efter måling. Det er den rigtige rækkefølge — men mål FØR du
+foreslår, ikke efter.
+
 **Køkkenets alarm kunne tie — og "en regel bor ét sted" er nu en prøve**
 (17/9). `minutterSiden` lå **ordret ens** i `koekken.js` og `overblik.js`,
 begge uden bund i nul. Et tidsstempel fra fremtiden (skæv klokke på en iPad
