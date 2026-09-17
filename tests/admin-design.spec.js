@@ -120,6 +120,55 @@ test.describe('Felterne er til fedtede fingre', () => {
     expect((await vaelger.boundingBox()).height).toBeGreaterThanOrEqual(44);
   });
 
+  /* ⚠️ TO KONTROLLER I SAMME RÆKKE SKAL STÅ PÅ LINJE  (17/9)
+
+     MÅLT I BROWSEREN, ikke læst i koden: på Bestillinger stod
+     dagvælgeren 36 px høj ved siden af segmentgruppens 44 px — i
+     SAMME flexrække. Otte pixels, som ingen kan sætte ord på, men
+     som øjet ser: to kontroller, der ikke flugter. Kundens ord om
+     admin var, at knapperne "ligner noget for 1850'erne", og det
+     her er en af de ting, der giver det indtryk.
+
+     Kilden: .knap.bestil-pil fik `min-width: 44px` og ingen
+     min-height, så pilene faldt tilbage på .knap.lille's 36 px.
+     Bredden blev sat, højden glemt.
+
+     Etiketten (.adm-seg-navn, 18 px) tæller IKKE med. Den er en
+     tekst, der med vilje står FØR gruppen i stedet for over den —
+     se noten ved .adm-seg-navn. At strække den til 44 ville være
+     at rette det forkerte.
+
+     ⚠️ PRØVEN ER SIT EGET MODSTYKKE. Den kræver BÅDE at de to er
+     ens OG at de er mindst 44. En rettelse, der sænkede begge til
+     36, falder på det sidste; en, der kun løftede den ene, på det
+     første. Uden begge krav ville "sæt dem begge til 0" bestå. */
+  test('kontrollerne i en filterrække flugter', async ({ page }) => {
+    const d = grunddata();
+    /* Dagrækken tegnes af bestillingsfanen — uden en bestilling er
+       der ingen dag at vælge, og prøven ville måle ingenting. */
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM-A-1', navn: 'Anna Vind',
+      telefon: '20304050', email: null, hent_dato: '2026-08-07', hent_tid: '13:15',
+      linjer: [{ navn: 'Håndmad', antal: 2, pris: 45 }], fyld: [], antal: 2,
+      besked: null, status: 'ny', hvordan: 'afhentning', leverings_adresse: null,
+      bord_nummer: null, intern_note: null, slettet: null,
+      oprettet: '2026-08-07T08:00:00Z',
+    }];
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-bestillinger');
+
+    const raekke = page.locator('.adm-filter').filter({ has: page.locator('.adm-dagvaelger') });
+    await expect(raekke, 'dagrækken blev ikke tegnet — prøven måler ingenting')
+      .toHaveCount(1);
+
+    const dag = Math.round((await raekke.locator('.adm-dagvaelger').boundingBox()).height);
+    const seg = Math.round((await raekke.locator('.adm-seg').boundingBox()).height);
+
+    expect(dag, 'dagvælgeren er lavere end 44 px').toBeGreaterThanOrEqual(44);
+    expect(seg, 'segmentgruppen er lavere end 44 px').toBeGreaterThanOrEqual(44);
+    expect(dag, 'dagvælger og segmentgruppe står ikke på linje').toBe(seg);
+  });
+
   /* OG GÆSTESIDEN MÅ IKKE FLYTTE SIG MED. Komponenterne er
      scopet til body.personale; bestillingsformularen har sin EGEN
      form (spiis-formen, 23/8: 52 px høj, --r-lille runding, tonet

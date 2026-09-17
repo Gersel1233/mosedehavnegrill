@@ -9414,8 +9414,16 @@ body.personale .bestil-dagnavn {
   font-size: 17px;
   white-space: nowrap;
 }
-/* Pilene er kvadratiske, så de ikke ligner ord. */
-body.personale .knap.bestil-pil { min-width: 44px; padding: 0 12px; }
+/* Pilene er kvadratiske, så de ikke ligner ord.
+
+   ⚠️ OG HØJDEN HØRER HER SAMMEN MED BREDDEN  (17/9). Kun
+   min-width var sat, så pilene faldt tilbage på .knap.lille's
+   36 px og stod otte pixels lavere end segmentgruppen ved siden
+   af dem — i SAMME filterrække. Det kan ingen sætte ord på, men
+   øjet ser det: to kontroller, der ikke flugter. MÅLT I
+   BROWSEREN; i koden lignede det en færdig regel.
+   Se prøven "kontrollerne i en filterrække flugter". */
+body.personale .knap.bestil-pil { min-width: 44px; min-height: 44px; padding: 0 12px; }
 body.personale .knap.bestil-pil:disabled { opacity: .4; cursor: default; }
 /* Den valgte knap er den ENESTE mørke i rækken. To mørke ville
    være to valg, og der er kun ét. */
