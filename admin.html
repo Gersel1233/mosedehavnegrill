@@ -1625,6 +1625,15 @@
           <span class="kort-note" id="koekken-linje">QR-bestillinger fra bordene</span>
         </div>
 
+        <!-- ⚠️ DAGENS FACIT, IKKE SKÆRMENS PULS (17/9). Linjen over
+             er pulsen: klokkeslættet, køen lige nu og LUKKET-status.
+             Den her siger, hvor meget der er lavet i dag, og hvor
+             meget der venter. To ting i ÉN linje ville blive for
+             lang til at læses på afstand, og skærmen står tændt i et
+             køkken. Teksten skrives af tegnDagslinje() i
+             js/admin/koekken.js og tikker med uret. -->
+        <p class="koek-dagslinje" id="koekken-dagslinje"></p>
+
         <div class="koek-hoved-raekke">
           <label class="afkryds" for="bord-aaben">
             <input type="checkbox" id="bord-aaben">

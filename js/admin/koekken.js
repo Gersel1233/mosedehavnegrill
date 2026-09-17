@@ -277,6 +277,52 @@
   }
 
   // ----------------------------------------------------------
+  //  DAGENS FACIT — ÉN LINJE  (17/9)
+  // ----------------------------------------------------------
+  /* Ejerens ord: en linje med dagens tal. "14 bestillinger i dag ·
+     3 venter · ældste 12 min". Én linje, ingen ny liste.
+
+     ⚠️ ET ANDET ELEMENT END #koekken-linje. Den er skærmens puls
+     (klokken, køen nu, LUKKET) og har prøver på sine ord. Det her
+     er dagens facit. To ting i én linje bliver for lang til at
+     læses på afstand.
+
+     ⚠️ "ÆLDSTE" SPØRGER Admin.minutterSiden OG REGNER IKKE SELV.
+     Overblik har den samme regel i sin bordkø-linje, og præcis den
+     funktion svigtede samme dag, fordi den lå i to kopier, hvor kun
+     den ene fik en bund ved nul.
+
+     ⚠️ OG "INGEN VENTER" FREM FOR "0 venter · ældste 0 min". Et
+     nul, der står, hvor et tal plejer at betyde travlhed, læses
+     som travlhed. Er der ingenting, skal linjen sige det. */
+  function tegnDagslinje() {
+    var el = $('koekken-dagslinje');
+    if (!el) return;
+
+    var iDag = Butik.nu().dato;
+    /* Alt fra bordene i dag — både det, der er gjort færdigt, og
+       det, der stadig står i køen. faerdigeIDag() er kun den ene
+       halvdel, og køen kender ingen dato. */
+    var iDagAlle = (Admin.lister.bestillinger || []).filter(function (b) {
+      return b.bord_nummer && !b.slettet
+        && String(b.oprettet || '').slice(0, 10) === iDag;
+    });
+
+    var koe = koeen();
+    var aeldst = 0;
+    koe.forEach(function (b) {
+      var m = Admin.minutterSiden(b.oprettet);
+      if (m !== null && m > aeldst) aeldst = m;
+    });
+
+    var dele = [iDagAlle.length
+      + (iDagAlle.length === 1 ? ' bestilling i dag' : ' bestillinger i dag')];
+    dele.push(koe.length ? koe.length + ' venter' : 'ingen venter');
+    if (koe.length) dele.push('ældste ' + aeldst + ' min');
+    el.textContent = dele.join(' · ');
+  }
+
+  // ----------------------------------------------------------
   //  GÅ UD OG SIG NOGET
   // ----------------------------------------------------------
   /* ⚠️ DE HER LINJER HAR INGEN KNAPPER, OG DET ER MED VILJE.
@@ -677,6 +723,7 @@
     }
 
     tegnLinje();
+    tegnDagslinje();
     tegnObs();
     tegnZoner();
     tegnBorde();

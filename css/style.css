@@ -8946,6 +8946,16 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    mest almindelige handling i huset skal være det nemmeste sted
    at ramme. */
 .koek-handling { margin-top: 14px; }
+/* Dagens facit under køkkenets hoved. Større og mørkere end
+   kort-noten over den: den skal kunne læses på afstand af en, der
+   står ved komfuret — se noten i js/admin/koekken.js. */
+body.personale .koek-dagslinje {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sea);
+}
+
 .koek-handling .koek-knap { width: 100%; }
 
 .koek-bund {

@@ -705,6 +705,54 @@ test.describe('Køkkenskærmens hoved og alarmer', () => {
       await expect(linje).toContainText('2 bestillinger skal ud');
     });
 
+  /* ============================================================
+     DAGSLINJEN — DAGENS FACIT, IKKE SKÆRMENS PULS  (17/9)
+     ------------------------------------------------------------
+     Ejerens ord: en linje med dagens tal, fx "14 bestillinger i
+     dag · 3 venter · ældste 12 min". Én linje, ingen ny liste.
+
+     ⚠️ DEN ER ET ANDET ELEMENT END #koekken-linje. Den linje er
+     skærmens PULS (klokkeslæt, køen lige nu, LUKKET-status) og
+     har tre prøver hængende på sine ord. Dagens facit er noget
+     andet: hvor meget er der lavet i dag, og hvor meget venter.
+     To ting i én linje ville blive for lang til at læses på
+     afstand — og skærmen står tændt i et køkken.
+
+     ⚠️ "ÆLDSTE" REGNES MED Admin.minutterSiden OG IKKE FORFRA.
+     Overblik har allerede den regel i sin bordkø-linje. Samme dag
+     svigtede minutterSiden, netop fordi den lå i to kopier, hvor
+     kun den ene fik en bund ved nul.
+     ============================================================ */
+  test('dagslinjen siger dagens tal', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, oprettet: forSiden(20) }),
+      ordre({ id: 2, reference: 'SM260806-BBBBB', bord_nummer: '3',
+        oprettet: forSiden(5) }),
+      ordre({ id: 3, reference: 'SM260806-CCCCC', bord_nummer: '9',
+        status: 'serveret', oprettet: forSiden(90) }),
+    ]);
+    const linje = page.locator('#koekken-dagslinje');
+    await expect(linje).toHaveCount(1);
+    // Tre i dag, to af dem venter stadig, og den ældste kom for 20 min siden.
+    await expect(linje).toContainText('3 bestillinger i dag');
+    await expect(linje).toContainText('2 venter');
+    await expect(linje).toContainText('ældste 20 min');
+  });
+
+  /* ⚠️ MODSTYKKET. Uden det ville en linje, der altid skrev de
+     samme ord, bestå prøven ovenfor. En rolig dag skal sige, at
+     der er roligt — ikke "ældste 0 min", som læses som om noget
+     venter. */
+  test('og en tom kø siger det, i stedet for at skrive nuller', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, status: 'serveret', oprettet: forSiden(30) }),
+    ]);
+    const linje = page.locator('#koekken-dagslinje');
+    await expect(linje).toContainText('1 bestilling i dag');
+    await expect(linje).toContainText('ingen venter');
+    await expect(linje).not.toContainText('ældste');
+  });
+
   test('og den siger det højt, når bordene er lukket', async ({ page }) => {
     await åbnKoekkenet(page, [ordre()], { bordbestilling_aaben: false });
     await expect(page.locator('#koekken-linje')).toContainText('LUKKET for bordene');
