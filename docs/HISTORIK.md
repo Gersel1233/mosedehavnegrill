@@ -7,10 +7,56 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-⚠️ **TO COMMITS LIGGER LOKALT OG ER IKKE I LUFTEN** (17/9). Luften står på
-`74cd693`. Ejerens ord: *"vi lancere ikke endu så bar gør de ting vi lancere
-senere idag men ikke inde for de næste 2-3 timer"* — altså et ja til at
-arbejde, ikke til at udgive. De to venter på et nyt ja.
+**Udgivet og verificeret 17/9: `v=38989c6`** (ejerens ord: *"Ja, udgiv nu"*).
+Køkkenets alarm-rettelse er dermed i luften og ikke kun på en udviklermaskine.
+Fuld runde før udgivelsen: **4419 prøver, 0 ægte fejl** (computer 2197 i to
+halvdele, telefon 2222 i tolv bidder).
+
+⚠️ **RUNDEN SKAL DELES — OGSÅ PÅ TELEFONEN.** To runder blev dræbt af
+hukommelsen samme dag: først en udelt `--project=computer`, siden telefonen i
+kun tre bidder. Reglen i CLAUDE.md siger "i halvdele", og det er for lidt for
+telefonen på den her maskine: **tolv bidder kørt sekventielt i ét kald** gik
+igennem (191, 189, 183, 189, 185, 164, 189, 190, 182, 188, 186, 186). En dræbt
+runde ligner ingenting — den melder ikke fejl, den holder bare op.
+
+⚠️ **OG TRE "FEJL" I COMPUTER-RUNDEN VAR MASKINEN, IKKE KODEN.** Kendingen var
+tiden: `vagtskaerm.spec.js:572` og `:578` tog **19,8 minutter** hver, og `:948`
+faldt på `net::ERR_NETWORK_CHANGED` — altså inden den nåede at måle noget.
+Kørt alene bagefter: 615, 305 og 362 ms, alle grønne.
+
+**Udseendet på admin, første to fund** (17/9, ejerens ord: *"Udseendet på
+admin"*). To commits ligger lokalt og venter på den brede flade:
+
+· **Filterrækken på Bestillinger flugtede ikke.** Dagvælgeren stod 36 px høj
+  ved siden af segmentgruppens 44 i SAMME flexrække. Kilden:
+  `.knap.bestil-pil` havde `min-width: 44px` og ingen `min-height` — bredden
+  sat, højden glemt. Etiketten (18 px) er urørt med vilje: den er tekst, ikke
+  en kontrol.
+
+· ⚠️ **TO KOMPONENTER DELTE KLASSENAVNET `.maaned-top`** — månedsnavigationen
+  øverst på Kalenderen og den lille top inde i hver dagcelle. Samme
+  specificitet, så den sidste vandt **tavst**, og navigationen arvede
+  dagcellens `align-items: baseline; gap: 2px 6px`. Det er husets egen regel om
+  to ting med samme navn, men i CSS, hvor der ingen fejlmeddelelse kommer.
+  Dagcellens hedder nu `maaned-dag-top`; pilene løftet fra 36 til 48 (husets
+  basisknap), scopet så alle andre `.knap.lille` beholder deres 36.
+  **Begge halvdele falsificeret hver for sig**, så ingen af dem er død kode.
+
+⚠️ **AGENTERNES BØLGE-2-LISTE HOLDT DÅRLIGT — MÅL, FØR DU RETTER.** Af fem
+punkter faldt tre ved måling: Menukortets 4208 px er prøvedata og ikke
+virkelighed (produktionen har **307 varer i 22 kategorier**, og `FOLD_FRA = 30`,
+så kategorierne ER foldet hos ejeren); `#fff` → `var(--paper)` er kun **6**
+regler, der trygt kan røres, og i admin er de to samme værdi, så det er
+usynligt; og `--paper`s to definitioner er ikke en dublet, men en token, der med
+vilje er cremet på gæstesiden og hvid i admin. Det fjerde punkt — "fire
+kontrolhøjder i én filterrække" — **var sandt, men sad i kalenderen**, ikke i
+bestillingerne. Jeg afviste det for tidligt, fordi jeg ledte det forkerte sted.
+
+⚠️ **OG ET GREP UDEN ORDGRÆNSE KOSTEDE NÆSTEN EN FEJL PÅ OTTE KUNDESIDER.** Jeg
+konkluderede, at `.bestil-pil` var delt med gæstesiden, og var ved at bygge et
+værn imod det. Grep'et ramte `bestil-pille` (fire steder i `js/skal/`). Målt i
+browseren: **ingen `.bestil-pil` på /bestil/, /index.html eller /m-tapas.html**.
+Brug `\b`, og mål i browseren frem for at slutte fra et grep.
 
 **Køkkenets alarm kunne tie — og "en regel bor ét sted" er nu en prøve**
 (17/9). `minutterSiden` lå **ordret ens** i `koekken.js` og `overblik.js`,
