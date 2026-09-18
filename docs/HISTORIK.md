@@ -7,6 +7,46 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+⚠️ **ÅBNINGSTIDEN ER ÆNDRET I PRODUKTIONEN: 10.00 → 08.00, alle syv dage**
+(18/9, ejerens ord: *"morgenmaden skal dog være øverst fra 08-11"*, og på
+spørgsmålet om hvilken vej: *"du gør det"*). **Ingen SQL-fil, ingen kodeændring
+— én skrivning i `aabningstider`.** Lukketiden er urørt (20.00).
+
+⚠️ **OG DET VAR IKKE ET SORTERINGSPROBLEM.** Dagsdelene virkede hele tiden
+(`dagsdel.spec.js` består 7/7). Regnestykket var:
+
+| Led | Værdi |
+|---|---|
+| Åbning | 10.00 |
+| `bestilling_varsel_timer` | 1 |
+| Første bestilbare tidspunkt | **11.00** |
+| `dagsdel()`: morgen er | alt **før 11.00** |
+
+Morgen-vinduet og det bestilbare vindue **rørte hinanden uden at overlappe med
+ét minut**. Morgenmaden kunne derfor aldrig få rang 0 — uanset flueben. Med
+åbning 08.00 er 08.00–10.30 nu morgentidspunkter.
+
+**Målt efter ændringen** (ur sat til 07.00, fordi man ikke kan bestille bagud):
+kl. 09.00 og 10.30 → **Morgenmad, Tilkøb morgenmad**. Kl. 13 → Sandwich,
+Smørrebrød, Håndmadder. Kl. 18 → Retter, Burgere, Pølser.
+
+⚠️ **TILBAGERULNING, hvis forretningen ikke er der kl. 8:**
+`update aabningstider set aabner = '10:00:00' where lokation_id = 'mosede';`
+Åbningstiden er ikke kun et filter — den står på forsiden. `js/admin/tider.js`
+kalder den selv *"DEN FARLIGSTE AF DEM ALLE"*, fordi siden lover åbent, og
+gæsten kører forgæves.
+
+**To ting, der stadig kan flytte morgenvinduet uden at røre åbningstiden:**
+`bestilling_varsel_timer` (1 i dag — sættes i admin) og dagsdel-grænsen
+`indstillinger.dagsdele` (11.00/16.00 som standard) — ⚠️ **den sidste kan IKKE
+sættes i admin**, kun direkte i databasen.
+
+⚠️ **TRETTEN GANGE NARREDE MIT EGET MÅLEAPPARAT MIG DEN DAG.** Den værste her:
+efter skrivningen viste forsiden **12.30** som første tidspunkt, og jeg var ved
+at melde, at ændringen ikke virkede. Forklaringen var, at målingen kørte med
+rigtig systemtid over middag — man kan ikke bestille bagud. **Sæt uret, når du
+måler noget, der afhænger af klokken**, som `dagsdel.spec.js` gør.
+
 ⚠️ **"BORDENE KUNNE IKKE HENTES" PEGEDE PÅ DATABASEN — FEJLEN SAD I EN FANE**
 (17/9). Målt på ejerens skærm, midt i at han skulle printe bordskilte:
 *"Bordene kunne ikke hentes: Cannot read properties of null (reading
