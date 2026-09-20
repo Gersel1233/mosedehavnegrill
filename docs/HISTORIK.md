@@ -7,6 +7,30 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**Isflowet blev DATA, ikke kode** (20/9, ejerens ord: *"inden de kan vælge
+kugler skal de vælge en isvaffel først … så det bliver nemmere og bedre for
+kunden og admin tydeligt kan se det"*).
+
+⚠️ **MEKANIKKEN FANDTES ALLEREDE.** `menu_varer.valg` (15/9) + `Butik.vareValg`
+gør præcis det: har en vare valg, tegner `js/skal/bestil.js` **én tæller pr.
+valg og INGEN almindelig tæller** — isen kan altså ikke lægges i kurven uden at
+vælge. Databasen holder det samme (`bestilling_mangler_valg`), og det virker på
+forsiden, ved bordene (`js/bestilling.js`) og i admin. Sat på seks varer:
+1–4 kugler og softice lille/stor → `["Vaffel","Bæger","Glutenfri vaffel"]`.
+Dermed er glutenfri-kravet også løst: det står som et valg, ikke som et tillæg.
+
+⚠️ **ET VALG HAR ÉN PRIS.** Glutenfri vaffel koster det samme som en almindelig,
+når den er en del af en is. Skal den koste 3 kr. mere (løs vaffel er 7 mod 10),
+kan `valg` ikke bære det — så skal det være egne varer.
+
+⚠️ **OG JEG MÅLTE TO GANGE DET FORKERTE STED FØRST.** `#bestil .item` er
+**kategori**rækkerne, ikke varerne; varerne findes først, når en kategori er
+foldet ud. Første to målinger sagde "0 rækker med valg", og det så ud som om
+ændringen ikke virkede. Fold kategorien ud, før du måler på varer.
+
+**Varslet:** `varsel_min_togo = 30`, `varsel_min_bord = 15` — ejernes egne tal
+fra admin-noten 30/8, felterne havde aldrig været udfyldt.
+
 **Ejernes rettelsesliste før lancering — menukortet er kørt igennem** (20/9,
 Jeannette og Jims egen liste på ~60 punkter, videresendt af Mikkel).
 
