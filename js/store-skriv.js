@@ -805,10 +805,28 @@
       }
       if (felter.antal_tilbage !== undefined) ren.antal_tilbage = talEllerNull(felter.antal_tilbage);
       /* VALGENE (supabase/vare-valg.sql): en liste med 2-12, ellers
-         ingen — samme regel som Butik.vareValg og vare_valg_ok. */
+         ingen — samme regel som Butik.vareValg og vare_valg_ok.
+
+         ⚠️ ET VALG KAN KOSTE EKSTRA (20/9): et element er enten en
+         streng ("Kebab") eller { navn, tillaeg }. Strengen skrives
+         stadig som en streng — ellers ville hver eneste vare på
+         kortet få skrevet sin valgliste om til objekter, første gang
+         ejeren rørte den, og den gamle form er den, der står i
+         databasen i dag. Kun et valg, der FAKTISK koster noget,
+         bliver et objekt. */
       if (felter.valg !== undefined) {
         var liste = (Array.isArray(felter.valg) ? felter.valg : [])
-          .map(function (x) { return String(x || '').trim().slice(0, 40); })
+          .map(function (x) {
+            var navn = String((x && typeof x === 'object' ? x.navn : x) || '')
+              .trim().slice(0, 40);
+            if (!navn) return null;
+            var t = x && typeof x === 'object' ? Number(x.tillaeg) : 0;
+            /* Samme grænser som databasen: et negativt tillæg er en
+               rabat, ingen har sat, og ører i en valgliste er en
+               tastefejl, ikke en pris. */
+            t = isFinite(t) && t > 0 ? Math.round(t * 100) / 100 : 0;
+            return t ? { navn: navn, tillaeg: t } : navn;
+          })
           .filter(Boolean).slice(0, 12);
         ren.valg = liste.length >= 2 ? liste : null;
       }

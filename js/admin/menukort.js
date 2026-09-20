@@ -106,6 +106,37 @@
     return Admin.harNoegle(Admin.data && Admin.data.menu_varer, 'valg');
   }
 
+  /* ⚠️ TILLÆGGET SKRIVES, SOM KORTET SIGER DET  (20/9)
+     Det trykte is-kort siger "glutenfri vaffel +3,-", så feltet skriver
+     "Glutenfri vaffel +3". Ejeren skal selv kunne rette de 3 kroner —
+     det var hele pointen med at lægge priserne i admin, og et tillæg,
+     kun en udvikler kan ændre, er et tillæg, der bliver forkert.
+
+     De to funktioner er hinandens modsatte og bor ved siden af
+     hinanden: skrider den ene form fra den anden, kan ejeren ikke få
+     sin egen tekst tilbage ind i feltet.
+
+     ⚠️ Ører skrives med PUNKTUM. Kommaet er allerede brugt som
+     skilletegn mellem valgene, så "3,50" ville blive til to valg. */
+  function valgSomTekst(v) {
+    var navne = Butik.vareValg ? Butik.vareValg(v) : null;
+    if (!navne) return '';
+    return navne.map(function (n) {
+      var t = Butik.valgTillaeg ? Butik.valgTillaeg(v, n) : 0;
+      return t ? n + ' +' + t : n;
+    }).join(', ');
+  }
+
+  function valgFraTekst(s) {
+    return String(s == null ? '' : s).split(',').map(function (del) {
+      var t = del.trim();
+      if (!t) return null;
+      var m = t.match(/^(.*?)\s*\+\s*(\d+(?:\.\d{1,2})?)\s*(?:kr\.?)?$/i);
+      if (m && m[1].trim()) return { navn: m[1].trim(), tillaeg: Number(m[2]) };
+      return t;
+    }).filter(Boolean);
+  }
+
   function maaDage() {
     return Admin.harNoegle(Admin.data && Admin.data.menu_kategorier, 'dage');
   }
@@ -2305,8 +2336,11 @@
     var valgNu = Butik.vareValg ? Butik.vareValg(v) : null;
     if (maaValg()) {
       if (valgNu) {
+        /* Rækken viser tillægget med (20/9) — står der "+3" på kortet,
+           skal ejeren kunne se det her uden at åbne ⋯. */
         r.appendChild(lav('p', 'vare-valg-note',
-          'Gæsten vælger: ' + valgNu.join(' · ') + ' — ret under ⋯'));
+          'Gæsten vælger: ' + valgSomTekst(v).split(', ').join(' · ')
+          + ' — ret under ⋯'));
       }
       var valgForslag = !valgNu && Admin.valgForslag ? Admin.valgForslag(v.navn) : null;
       if (valgForslag) {
@@ -2397,21 +2431,26 @@
       valgBoks.appendChild(lav('span', null, 'Valg (kommaer imellem)'));
       var valgFelt = document.createElement('input');
       valgFelt.type = 'text';
-      valgFelt.maxLength = 400;
-      valgFelt.placeholder = 'fx Kebab, Kylling, Tun';
-      valgFelt.value = (valgNu || []).join(', ');
+      valgFelt.maxLength = 600;
+      valgFelt.placeholder = 'fx Kebab, Kylling, Tun — eller Glutenfri vaffel +3';
+      valgFelt.value = valgSomTekst(v);
       valgFelt.setAttribute('data-vare-valg', v.id);
       valgFelt.setAttribute('aria-label', 'Valg på ' + v.navn);
       valgFelt.addEventListener('input', function (h) { h.stopPropagation(); });
       valgFelt.addEventListener('change', function (h) {
         h.stopPropagation();
-        var liste = valgFelt.value.split(',')
-          .map(function (x) { return x.trim(); }).filter(Boolean);
+        var liste = valgFraTekst(valgFelt.value);
         if (liste.length === 1) {
           return Admin.brøl('Et valg skal have mindst to muligheder — eller ingen.');
         }
+        /* Kvitteringen skriver den form, ejeren selv tastede, så hun
+           kan se, at "+3" blev forstået som penge og ikke som en del
+           af navnet. */
+        var somTekst = liste.map(function (x) {
+          return typeof x === 'object' ? x.navn + ' +' + x.tillaeg : x;
+        }).join(', ');
         Admin.gem(Butik.skrive.vareFelter(v.id, { valg: liste }), liste.length
-          ? v.navn + ' har fået valg: ' + liste.join(', ') + '.'
+          ? v.navn + ' har fået valg: ' + somTekst + '.'
           : v.navn + ' har ikke valg længere.');
       });
       valgBoks.appendChild(valgFelt);

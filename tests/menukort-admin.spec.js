@@ -1844,6 +1844,33 @@ test.describe('Valg på en vare kan sættes i admin', () => {
       .toEqual(['Pilsner', 'Classic']);
   });
 
+  /* ⚠️ EJEREN SKAL SELV KUNNE SÆTTE TILLÆGGET  (20/9). Is-kortet lover
+     "glutenfri vaffel +3,-", og et tillæg, kun en udvikler kan ændre,
+     er et tillæg, der bliver forkert. Prøven går hele vejen rundt:
+     ejerens tekst → det gemte data → tilbage i feltet. Kun den vej
+     beviser, at de to former ikke er skredet fra hinanden. */
+  test('ejeren kan skrive et tillæg på et valg, og få sin egen tekst igen', async ({ page }) => {
+    await åbnMenufanen(page, { data: medValgKolonne() });
+    const r = await åbnMereFor(vare(page, 3));
+    const felt = r.locator('[data-vare-valg]');
+
+    await felt.fill('Vaffel, Bæger, Glutenfri vaffel +3');
+    await felt.press('Tab');
+    await expect(page.locator('#kvittering')).toContainText('Glutenfri vaffel +3');
+
+    /* Kun det valg, der KOSTER noget, bliver et objekt — ellers ville
+       hele kortets valglister blive skrevet om, første gang ejeren
+       rørte dem. */
+    expect((await gemteData(page)).menu_varer.find((x) => x.id === 3).valg)
+      .toEqual(['Vaffel', 'Bæger', { navn: 'Glutenfri vaffel', tillaeg: 3 }]);
+
+    await expect(vare(page, 3).locator('.vare-valg-note'))
+      .toContainText('Glutenfri vaffel +3');
+    const igen = await åbnMereFor(vare(page, 3));
+    await expect(igen.locator('[data-vare-valg]'))
+      .toHaveValue('Vaffel, Bæger, Glutenfri vaffel +3');
+  });
+
   test('uden kolonnen findes hverken felt eller forslag', async ({ page }) => {
     const d = medValgKolonne();
     d.menu_varer.forEach((v) => { delete v.valg; });
