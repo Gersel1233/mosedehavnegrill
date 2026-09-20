@@ -7,6 +7,37 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**Dåsen kan kun købes med ud af huset — og valget står nu øverst** (20/9).
+Ejernes ord: *"Sodavand/øl Dåse, eller flaske sodavand skal fjernes, og kun
+kunne bestilles ved Take Away. Pris 30,-kr."* Mikkels svar på hvordan: *"i
+stedet for i bunden så i toppen — lad take away eller spis her stå som så enten
+unlocker sodavand eller holder det skjult."*
+
+⚠️ **SAMME FELT SOM SALGSSTEDERNE, IKKE ET NYT BEGREB.** `ikke_saelges`
+fravalgte allerede en vare pr. sted (`forside`, `bord`, `smoer`). Spisemåden
+ligger nu i den SAMME liste som `spis_her`, og `vareHer` i `Butik.udvalg`
+spørger `vareSaelgesHer` to gange — stedet og spisemåden. Rettelsen blev fire
+linjer. Produktionen: `ikke_saelges = {"134":["spis_her"]}` (Dåse eller flaske
+sodavand, 30 kr.).
+
+⚠️ **OPTEGNINGEN FANDTES ALLEREDE.** Segment-lytteren i `js/skal/bestil.js`
+kalder `visVarer()` siden 5/9, fordi en dag kan være lukket for to-go og åben
+for spis her. Jeg troede, jeg skulle bygge en krog i `havnegrillen.js` — den
+var der. **Mål, hvad der allerede sker, før du bygger en vej til det.**
+
+⚠️ **FACITLISTEN ER VENDT MED GRUNDEN, IKKE LEMPET** — samme greb som da
+allergifeltet kom til 10/9. `skal-bestil.spec.js` låser formularens rækkefølge
+med vilje (*"skallen må ikke skride, fordi nogen synes, der manglede noget"*).
+Rækkefølgen er nu **Hvordan vil I spise? → Dato → Vælg jeres retter →
+Tidspunkt → …**, fordi et valg, der styrer HVAD der kan købes, ikke kan stå
+under det, det styrer.
+
+**Fuld runde: computer 2217 og telefon 2247 beståede, 0 ægte fejl.**
+⚠️ To prøver i `kontakt-post.spec.js` (favicon-tegning) faldt i runden med
+`Tearing down "context" exceeded the test timeout` efter **1,7 og 1,6 minutter**
+— alene tager de **960 ms** og består. Maskinen igen, femte gang samme dag.
+Kendingen er stadig tiden.
+
 **Isflowet blev DATA, ikke kode** (20/9, ejerens ord: *"inden de kan vælge
 kugler skal de vælge en isvaffel først … så det bliver nemmere og bedre for
 kunden og admin tydeligt kan se det"*).
