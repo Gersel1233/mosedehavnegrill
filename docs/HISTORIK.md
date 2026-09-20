@@ -7,6 +7,42 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**To nye kategorier fik deres eget ansigt** (20/9). `Ispinde` matchede INTET
+mønster i `js/menu-emoji.js` — `\bis\b` kræver "is" som et helt ord, og
+"Ispinde" fortsætter — og faldt tilbage på afdelingens 🍦, altså softicens eget
+tegn. `Tillæg: glutenfri, laktosefri og vegansk` faldt tilbage på husets 🍽️ og
+delte den med Retter. Ispinde får **🍧**; tillægget lægges ind i den
+EKSISTERENDE tilkøbsregel frem for at få sin egen.
+
+⚠️ **IKKE et 🌱 på tillægget**, selv om kategorien hedder noget med vegansk.
+Loven øverst i filen: tegnet må aldrig sige noget, navnet ikke selv siger — et
+blad er et løfte om maden. ⚠️ **Og hele mappingen blev målt før og efter** på
+alle 23 af ejernes kategorier: kun de to flyttede sig. De tilbageværende par er
+rigtige (Burgere/Sliders er begge burgere, Smørrebrød/Håndmadder begge mad på
+brød). 433 grønne over otte filer.
+
+⚠️ **EN EKSTERN OPMÅLING AF ADMIN BLEV EFTERPRØVET — ÉT AF TRE PUNKTER HOLDT
+IKKE** (20/9). Rapporten meldte tre opgaver. Efterprøvet hver for sig:
+
+| Punkt | Dom |
+|---|---|
+| "Dagens ret kan ikke bestilles" | ❌ **Reproducerer ikke** |
+| "Valg pr. dagens ret mangler" | ✅ Rigtigt — ingen `valg`-kolonne i `dagens_retter` |
+| "Billede pr. dagens ret mangler" | ✅ Rigtigt — ingen `billede`-kolonne |
+
+**Om det første:** med produktionens egne indstillinger står `.dagens-blok` i
+forsidens formular **med en tæller**, og datovælgeren begynder **"I dag"** — ikke
+13 dage ude. Linket i `index.html:302` peger på `#bestil`, altså forsidens egen
+bestilling, ikke smørrebrødssiden. Rapportens symptomer — *"kun 🍞 Smørrebrød"*
+og *"13 dage ude"* — beskriver præcist en formular, hvor kun smørrebrødet er
+bestilbart og varslet er et døgn. **Forsiden viser femten kategorier med
+ejernes data.** Hvad de faktisk målte på, vides ikke; det skal oplyses, før den
+vigtigste knap på forsiden bygges om.
+
+⚠️ **MEKANIKKEN TIL PUNKT 2 FINDES ALLEREDE:** `menu_varer.valg` +
+`Butik.vareValg` — den samme, isflowet bruger. Den skal kobles på
+`dagens_retter`, ikke bygges forfra.
+
 **Dåsen kan kun købes med ud af huset — og valget står nu øverst** (20/9).
 Ejernes ord: *"Sodavand/øl Dåse, eller flaske sodavand skal fjernes, og kun
 kunne bestilles ved Take Away. Pris 30,-kr."* Mikkels svar på hvordan: *"i
