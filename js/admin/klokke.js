@@ -47,10 +47,17 @@
     (L.bestillinger || []).forEach(function (b) {
       if (b.slettet || b.status !== 'ny') return;
       var bord = b.bord_nummer;
+      /* ⚠️ KLOKKEN SKAL SIGE, HVAD DET ER FOR EN SLAGS  (20/9).
+         Her stod "Ny bestilling", uanset om det var to-go, spis her
+         eller en LEVERING — kun bordet fik sit nummer. Leveringen
+         er den, der haster mest, og den så ud som alt andet, mens
+         listen ti centimeter længere nede viste "Leveres".
+         Admin.typeTekst er den ene regel; klokken gætter ikke mere. */
+      var slags = Admin.typeTekst ? Admin.typeTekst(b) : null;
       ud.push({
         id: 'b' + b.id,
-        tegn: bord ? '🍽️' : '🥡',
-        titel: (bord ? 'Bord ' + bord + ': ' : 'Ny bestilling: ')
+        tegn: slags ? slags.tegn : (bord ? '🍽️' : '🥡'),
+        titel: (slags ? slags.tekst : 'Ny bestilling') + ': '
           + linjeTekst(b),
         under: b.navn + ' · ' + Admin.pænDato(b.hent_dato)
           + (b.hent_tid ? ' kl. ' + String(b.hent_tid).slice(0, 5) : ''),

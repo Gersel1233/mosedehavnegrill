@@ -103,6 +103,50 @@ test.describe('Klokken', () => {
   /* ⚠️ ET KLIK INDE I LAGET MÅ IKKE LUKKE DET. Uden
      stopPropagation lukkede laget sig selv, i det sekund man
      trykkede ✕ på en post. */
+  /* ⚠️ KLOKKEN SKAL SIGE, HVAD DET ER FOR EN SLAGS  (20/9)
+     Klokken skrev "Ny bestilling", uanset om det var to-go, spis her
+     eller en LEVERING — kun bordet fik sit nummer. Leveringen er den,
+     der haster mest, og den så ud som alt andet.
+
+     Ti centimeter længere nede gør listen det rigtigt: Admin.typeMaerke
+     har haft de fire mærker siden 6/9. Klokken spurgte den bare ikke —
+     samme mønster som dengang Overblik og Bestillinger sagde hver sit
+     om den samme række.
+
+     Prøven måler alle fire slags, så en regel, der bare skrev
+     "Leveres" på alt, ikke kan bestå. */
+  test('klokken siger, hvilken slags bestilling det er — også levering', async ({ page }) => {
+    function best(id, navn, ændringer) {
+      return Object.assign({
+        id: id, lokation_id: 'mosede', reference: 'SM-K-' + id, navn: navn,
+        telefon: '2030405' + id, email: null, hent_dato: I_DAG, hent_tid: '13:00',
+        linjer: [{ navn: 'Softice med guf', antal: 1, pris: 35.5 }], fyld: [], antal: 1,
+        besked: null, status: 'ny', hvordan: 'afhentning', leverings_adresse: null,
+        bord_nummer: null, intern_note: null, slettet: null,
+        oprettet: '2026-08-07T10:00:00Z',
+      }, ændringer || {});
+    }
+    const d = medNyt();
+    d.bestillinger = [
+      best(1, 'Lis Bang', { hvordan: 'levering', leverings_adresse: 'Havnevej 2' }),
+      best(2, 'Ole Dam', { hvordan: 'spis_her' }),
+      best(3, 'Per Kjær', { hvordan: 'afhentning' }),
+      best(4, 'Ida Nord', { bord_nummer: 7 }),
+    ];
+
+    await åbnAdmin(page, { data: d });
+    await page.locator('#klokke-knap').click();
+
+    await expect(page.locator('.klokke-post', { hasText: 'Lis Bang' }),
+      'leveringen så ud som alt andet').toContainText('Leveres');
+    await expect(page.locator('.klokke-post', { hasText: 'Ole Dam' }))
+      .toContainText('Spis her');
+    await expect(page.locator('.klokke-post', { hasText: 'Per Kjær' }))
+      .toContainText('To-go');
+    await expect(page.locator('.klokke-post', { hasText: 'Ida Nord' }))
+      .toContainText('Bord 7');
+  });
+
   test('laget bliver åbent, når man trykker inde i det', async ({ page }) => {
     await åbnAdmin(page, { data: medNyt() });
     await page.locator('#klokke-knap').click();

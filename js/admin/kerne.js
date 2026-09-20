@@ -1113,30 +1113,59 @@
     return e;
   }
 
-  function typeMaerke(b) {
+  /* ⚠️ SLAGSEN ER ORD, IKKE ET ELEMENT  (20/9)
+     ------------------------------------------------------------
+     typeMaerke lavede mærket OG afgjorde slagsen i én omgang, og
+     svaret kunne kun bruges ét sted: i en liste, der kan tage imod
+     et DOM-element. Klokken øverst til højre skal bruge de samme ord
+     i en overskrift, og den kunne derfor ikke spørge — så den
+     gættede selv: "Bord N", hvis der var et bordnummer, ellers "Ny
+     bestilling". Altså stod en LEVERING med to-go-tegnet og den
+     samme sætning som alt andet, mens listen ti centimeter længere
+     nede viste "Leveres".
+
+     Det er nøjagtig det mønster, mærket selv blev lavet for at lukke
+     6/9: to skærme, der hver regnede den samme ting ud. Ordene bor
+     her nu, og både mærket og klokken spørger. */
+  function typeTekst(b) {
     if (!b) return null;
-    var slags = b.bord_nummer ? 'bord'
-      : b.hvordan === 'levering' ? 'levering'
-        : b.hvordan === 'spis_her' ? 'spis_her' : 'togo';
-    var e = slags === 'bord' ? lav('span', 'maerke m-bord', '\uD83C\uDF7D\uFE0F Bord ' + b.bord_nummer)
-      /* ⚠️ m-lev OG IKKE m-ny  (8/9). Leveringen bar STATUSSENS
-         klasse — den samme, "Ny" bruger — og papirerne advarede
-         om netop det 6/9: *"`m-ny` er BEGGE dele i huset:
-         leveringens røde mærke og statussen 'Ny'."* Dengang blev
-         PRØVEN rettet med data-type; her er årsagen.
+    if (b.bord_nummer) {
+      return { slags: 'bord', tegn: '\uD83C\uDF7D\uFE0F',
+               tekst: 'Bord ' + b.bord_nummer, klasse: 'maerke m-bord' };
+    }
+    /* ⚠️ m-lev OG IKKE m-ny  (8/9). Leveringen bar STATUSSENS
+       klasse — den samme, "Ny" bruger — og papirerne advarede
+       om netop det 6/9: *"`m-ny` er BEGGE dele i huset:
+       leveringens røde mærke og statussen 'Ny'."* Dengang blev
+       PRØVEN rettet med data-type; her er årsagen.
 
-         Kundens ord 8/9: *"det ligner hinanden alt for meget, det
-         er alt for uklart hvad er hvad."* Han har ret helt ned i
-         klassenavnet: to forskellige oplysninger kan ikke se
-         forskellige ud, når de er den samme regel.
+       Kundens ord 8/9: *"det ligner hinanden alt for meget, det
+       er alt for uklart hvad er hvad."* Han har ret helt ned i
+       klassenavnet: to forskellige oplysninger kan ikke se
+       forskellige ud, når de er den samme regel.
 
-         Farven er den SAMME røde som før — leveringen SKAL råbe
-         (6/9). Det, der skifter, er, at status og type nu kan
-         adskilles: statussen har ingen flade, typen har. */
-      : slags === 'levering' ? lav('span', 'maerke m-lev', '\uD83D\uDE97 Leveres')
-        : slags === 'spis_her' ? lav('span', 'maerke favorit', '\uD83C\uDF7D\uFE0F Spis her')
-          : lav('span', 'maerke m-togo', '\uD83E\uDD61 To-go');
-    e.setAttribute('data-type', slags);
+       Farven er den SAMME røde som før — leveringen SKAL råbe
+       (6/9). Det, der skifter, er, at status og type nu kan
+       adskilles: statussen har ingen flade, typen har. */
+    if (b.hvordan === 'levering') {
+      return { slags: 'levering', tegn: '\uD83D\uDE97',
+               tekst: 'Leveres', klasse: 'maerke m-lev' };
+    }
+    if (b.hvordan === 'spis_her') {
+      return { slags: 'spis_her', tegn: '\uD83C\uDF7D\uFE0F',
+               tekst: 'Spis her', klasse: 'maerke favorit' };
+    }
+    return { slags: 'togo', tegn: '\uD83E\uDD61',
+             tekst: 'To-go', klasse: 'maerke m-togo' };
+  }
+
+  /* Mærket til listerne er de samme ord, klokken bruger — kun
+     pakket i et element med sin klasse. */
+  function typeMaerke(b) {
+    var t = typeTekst(b);
+    if (!t) return null;
+    var e = lav('span', t.klasse, t.tegn + ' ' + t.tekst);
+    e.setAttribute('data-type', t.slags);
     return e;
   }
 
@@ -1340,6 +1369,7 @@
     kanalNavn: kanalNavn,
     statusMaerke: statusMaerke,
     typeMaerke: typeMaerke,
+    typeTekst: typeTekst,
     retterI: retterI,
     kontakt: kontakt,
     pæntNavn: pæntNavn,
