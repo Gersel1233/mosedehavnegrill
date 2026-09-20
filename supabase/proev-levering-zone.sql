@@ -4,7 +4,7 @@
 --  Kør EFTER supabase/levering-zone.sql. Skriver ingenting, der
 --  bliver stående: alt rulles tilbage til sidst.
 --
---  Skal skrive: ALLE 16 AF 16 BESTOD.
+--  Skal skrive: ALLE 26 AF 26 BESTOD.
 --
 --  ⚠️ DEN LÅNER IKKE EJERENS GRÆNSE. Prøven har sin egen forretning
 --     og sin egen zone — et kvadrat med kendte hjørner. Målte vi mod
@@ -15,6 +15,14 @@
 --  ⚠️ TALLENE KOMMER UDEFRA. Kvadratets hjørner er valgt i hånden, og
 --     punkterne er regnet i forhold til dem. Cafeens eget punkt
 --     (12.28463387, 55.5664776) er MÅLT hos DAWA 20/9 — ikke gættet.
+--
+--  ⚠️ OG PRØVE 17-26 LÅNER ALLIGEVEL EJERENS GRÆNSE — med vilje.
+--     Ovenstående gælder geometrien; de ti sidste måler noget andet:
+--     at grænsen dækker de syv postnumre, ejeren SELV har skrevet i
+--     `leverings_postnr`. Hver koordinat er en rigtig adresse slået
+--     op hos Dataforsyningen 21/9. Flytter ejeren et postnummer, skal
+--     den prøve falde — det er ikke en straf, det er hele pointen:
+--     listen og grænsen må ikke skride fra hinanden.
 -- ============================================================
 begin;
 
@@ -136,6 +144,45 @@ select pg_temp.lig(15, 'Et ukendt zonesvar springes over',
 select pg_temp.lig(16, 'Cafeen ligger selv i sin egen zone',
   public.mosede_leveringszone(12.28463387, 55.5664776, 'mosede'), 'ja');
 
+-- ---- DE SYV POSTNUMRE, EJEREN SELV HAR SKREVET ----
+/* ⚠️ TALLENE HER KOMMER UDEFRA. Hver koordinat er slået op hos
+   Dataforsyningen 21/9 — en rigtig adresse i hvert af de syv
+   numre, der står i indstillingen `leverings_postnr`. Prøven
+   måler altså ikke sig selv: den holder grænsen op mod ejerens
+   egen liste.
+
+   ⚠️ OG DEN HAR FANGET NOGET. Ishøj-linjen FEJLEDE mod den
+   håndtegnede grænse, der lå her indtil 21/9: 2635 stod på
+   ejerens liste, men punktet lå uden for omridset og svarede
+   "spoerg". Et omrids slået om en by rammer ikke byens kant.
+   Falder linjen igen, er grænsen skredet tilbage mod et gæt. */
+select pg_temp.lig(17, '2635 Ishøj — Ishøj Stationsvej 1',
+  public.mosede_leveringszone(12.36490, 55.61245, 'mosede'), 'ja');
+select pg_temp.lig(18, '2670 Greve — Greve Strandvej 10',
+  public.mosede_leveringszone(12.31154, 55.58265, 'mosede'), 'ja');
+select pg_temp.lig(19, '2680 Solrød — Solrød Center 1',
+  public.mosede_leveringszone(12.21437, 55.53376, 'mosede'), 'ja');
+select pg_temp.lig(20, '2690 Karlslunde — Karlslunde Strandvej 10',
+  public.mosede_leveringszone(12.26958, 55.56350, 'mosede'), 'ja');
+select pg_temp.lig(21, '4030 Tune — Tune Parkvej 5',
+  public.mosede_leveringszone(12.18784, 55.59664, 'mosede'), 'ja');
+select pg_temp.lig(22, '4600 Køge — Torvet 1',
+  public.mosede_leveringszone(12.18280, 55.45655, 'mosede'), 'ja');
+select pg_temp.lig(23, '4623 Lille Skensved — Uglevænget 18',
+  public.mosede_leveringszone(12.07788, 55.49271, 'mosede'), 'ja');
+
+-- ---- OG DEM, DER IKKE SKAL KUNNE BESTILLE ----
+/* Havdrup ligger klos op ad Solrød, men 4622 står IKKE på ejerens
+   liste. Den skal have et opkald tilbudt — ikke en bestilling.
+   Roskilde og København skal have et rent nej: en zone, der siger
+   "ring til os" til hele Sjælland, siger ingenting. */
+select pg_temp.lig(24, 'Havdrup (4622) får tilbudt et opkald',
+  public.mosede_leveringszone(12.11576, 55.54531, 'mosede'), 'spoerg');
+select pg_temp.lig(25, 'Roskilde er for langt — rent nej',
+  public.mosede_leveringszone(12.08175, 55.64120, 'mosede'), 'nej');
+select pg_temp.lig(26, 'København er udenfor',
+  public.mosede_leveringszone(12.56958, 55.67563, 'mosede'), 'nej');
+
 select nr, navn,
   case when coalesce(bestod, false) then 'BESTOD' else 'FEJLEDE' end as udfald, grund
 from _svar order by nr;
@@ -143,12 +190,12 @@ from _svar order by nr;
 select
   'Proevens dato: ' || current_date as udgave,
   case
-    when (select count(*) from _svar) <> 16
-    then 'PROEVEN ER UFULDSTAENDIG: ' || (select count(*) from _svar) || ' af 16 linjer'
-    when (select count(*) from _svar where coalesce(bestod, false)) = 16
-    then 'ALLE 16 AF 16 BESTOD'
+    when (select count(*) from _svar) <> 26
+    then 'PROEVEN ER UFULDSTAENDIG: ' || (select count(*) from _svar) || ' af 26 linjer'
+    when (select count(*) from _svar where coalesce(bestod, false)) = 26
+    then 'ALLE 26 AF 26 BESTOD'
     else (select count(*) from _svar where not coalesce(bestod, false))
-         || ' AF 16 FEJLEDE — se grund-kolonnen ovenfor'
+         || ' AF 26 FEJLEDE — se grund-kolonnen ovenfor'
   end as resultat;
 
 rollback;
