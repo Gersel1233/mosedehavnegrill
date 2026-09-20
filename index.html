@@ -60,7 +60,7 @@
      havnegrillen.css. -->
 <meta name="theme-color" content="#0b0706" data-fast="#fdf7ef">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><!-- ⚠️ FILMEN ER ÅBNINGEN — OG KLASSEN SÆTTES, FØR SIDEN TEGNES (11/9).
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><!-- ⚠️ FILMEN ER ÅBNINGEN — OG KLASSEN SÆTTES, FØR SIDEN TEGNES (11/9).
      Bølge-introen er afløst af heroens film (kundens beslutning:
      "fade ind premium ligesom apples hjemmeside og blive til den
      statiske end frame hvor teksten så kommer"). Heroens tekst skal
@@ -345,7 +345,38 @@
       <div class="seg2" data-seg="how">
         <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8h14l-1.4 11H6.4zM5 8l1-3h12l1 3M10 12v4M14 12v4"/></svg>To-go</button>
         <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 4v7a2 2 0 004 0V4M8 11v9M17 4c-1.6 1-2.4 2.6-2.4 4.4 0 1.5.7 2.4 2.4 2.6M17 4v16"/></svg>Spis her</button>
+        <!-- ⚠️ LEVERING KOM TIL 20/9. Ejernes punkt nummer ét:
+             "Leverings muligheden mangler." Den fandtes kun på
+             smørrebrødssiden og i bestil/ — så en burger, en is
+             eller grillmad kunne slet ikke bestilles til levering,
+             selv om indstillingen var slået TIL, gebyret sat til 79
+             og de syv postnumre skrevet.
+
+             ⚠️ Knappen forsvinder af sig selv, hvis forretningen
+             slår levering fra: js/skal/bestil.js skjuler hver knap,
+             hvis måde ikke er slået til. En knap, der ikke virker,
+             er værre end ingen knap. -->
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7zM7 19a2 2 0 100-4 2 2 0 000 4zM18 19a2 2 0 100-4 2 2 0 000 4z"/></svg>Levering</button>
       </div>
+    </div>
+
+    <!-- ⚠️ ADRESSEN ER OFFICIEL, IKKE FRI TEKST  (20/9).
+         Feltet foreslår adresser fra Dataforsyningen, og gæsten skal
+         VÆLGE en. Valget sendes til serveren, som slår adressen op
+         igen og udsteder en kvittering — og databasen kræver
+         kvitteringen og OVERSKRIVER adressen med den, den bekræftede
+         (supabase/levering-valideret.sql).
+
+         Feltet her er altså høflighed: det viser svaret, før hun
+         binder sig. Sikkerheden ligger i databasen. -->
+    <div class="field" id="flevfelt" hidden>
+      <label for="fadr">Hvor skal det leveres?</label>
+      <div class="adr-felt-hylster">
+        <input class="inp" id="fadr" autocomplete="off"
+               placeholder="Begynd at skrive vej og husnummer">
+      </div>
+      <p class="hint" id="lev-hint"></p>
+      <p class="adr-status skjult" id="lev-svar"></p>
     </div>
     <div class="field"><label for="dato">Dato</label>
       <select class="inp" id="dato"><option>I dag – søndag d. 23. august · Stegt flæsk med persillesovs</option><option>I morgen – mandag d. 24. august</option><option>Tirsdag d. 25. august</option></select>
@@ -847,5 +878,6 @@
 <script src="js/skal/tidligere.js?v=__V__"></script>
 <script src="js/dagsbesked.js?v=__V__"></script>
 <script src="js/skal/forside.js?v=__V__"></script>
+<script src="js/adressefelt.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>
 </body></html>

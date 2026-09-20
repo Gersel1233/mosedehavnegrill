@@ -36,7 +36,7 @@
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"></head><body class="hav">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"></head><body class="hav">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
@@ -225,7 +225,15 @@
 
     <div class="field" id="levfelt" hidden>
       <label for="sadr">Hvor skal det leveres?</label>
-      <input class="inp" id="sadr" placeholder="Vej, nr. og postnummer">
+      <!-- ⚠️ HYLSTERET ER IKKE PYNT (20/9). Forslagslisten fra
+           Dataforsyningen lægger sig absolut under feltet, og uden
+           en forælder med position:relative ville den lande et
+           tilfældigt sted på siden — eller blive klippet af. Se
+           css/adressefelt.css. -->
+      <div class="adr-felt-hylster">
+        <input class="inp" id="sadr" autocomplete="off"
+               placeholder="Begynd at skrive vej og husnummer">
+      </div>
       <!-- ⚠️ OMRÅDET OG PRISEN ER EJERENS EGNE FELTER, og linjen
            er TOM i opmærkningen. Designet skrev "150 kr. inden
            for 10 km af havnen" — et opdigtet tal, der er værre
@@ -386,5 +394,6 @@
 <script src="js/bestil-regler.js?v=__V__"></script>
 <script src="js/skal/kvittering.js?v=__V__"></script>
 <script src="js/menu-emoji.js?v=__V__"></script>
+<script src="js/adressefelt.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>
 </body></html>

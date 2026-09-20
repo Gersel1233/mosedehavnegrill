@@ -62,6 +62,13 @@
      begge knapper umarkerede, til gæsten selv trykkede: et valg
      uden forvalg ligner et spørgsmål, man ikke kan springe over. */
   var kurv = { stk: {}, fyld: [], hvordan: 'afhentning' };
+  /* ADRESSEFELTET OG DETS SVAR  (20/9). adresseKontrol er
+     komponenten fra js/adressefelt.js; leveringsSvar er dens sidste
+     melding. `klar` er sandt, når gæsten har VALGT en officiel
+     adresse, OG serveren har sagt, at vi kører derud. Retter hun ét
+     tegn bagefter, bliver den falsk igen. */
+  var adresseKontrol = null;
+  var leveringsSvar = { klar: false, token: null, besked: '' };
 
   /* ⚠️ VALGET ER EN DEL AF NØGLEN  (15/9). kurv.stk var nøglet på
      NAVNET alene; med valg ("Pitabrød" · Kebab/Kylling/Tun) har hvert
@@ -1683,7 +1690,34 @@
        følge med, når zonen svarer — kaldte vi kun svarlinjen, ville
        "Vi ringer og bekræfter" blive stående og modsige den. */
     var felt = $('bestil-adresse');
-    if (felt) felt.addEventListener('input', visAdresse);
+    if (!felt) return;
+
+    /* ⚠️ OFFICIELLE ADRESSER SIDEN 20/9. Er komponenten der, ejer
+       DEN svarlinjen: gæsten vælger en adresse fra Dataforsyningen,
+       serveren slår den op igen og udsteder en kvittering, og
+       databasen kræver kvitteringen ved bestillingen.
+
+       Falder komponenten væk — en gammel browser, en fil der ikke
+       blev hentet — gør det gamle postnummersvar det stadig. Men
+       afsendelsen spærrer under alle omstændigheder: uden
+       kvittering afviser databasen. Det er den rigtige måde at
+       fejle på. */
+    var sky = window.MOSEDE_CLOUD || {};
+    if (window.MosedeAdresse && sky.url) {
+      adresseKontrol = window.MosedeAdresse.tilslut(felt, {
+        status: $('lev-svar'),
+        lokation: (window.Butik && Butik.LOKATION) || 'mosede',
+        valideringUrl: sky.url + '/functions/v1/valider-levering',
+        naarAendret: function (t) {
+          leveringsSvar = t;
+          /* Noten ovenover skal følge med — se 16/9 nedenfor. */
+          visAdresse();
+        },
+      });
+      felt.addEventListener('input', visAdresse);
+    } else {
+      felt.addEventListener('input', visAdresse);
+    }
   })();
 
   function visAdresse() {
@@ -2316,6 +2350,17 @@
       telefon: (vedBordNu && !telefon.trim()) ? '' : Butik.tjek.telefon(telefon),
       adresse: skalLeveres && adresse.trim().length < 5
         ? 'Skriv vej, nummer, postnummer og by.'
+        /* ⚠️ EN OFFICIEL ADRESSE, IKKE EN TEKST  (20/9).
+           Er komponenten koblet på, skal gæsten have VALGT en
+           adresse fra Dataforsyningen, og serveren skal have sagt
+           ja til at køre derud. Uden kvittering afviser databasen
+           alligevel — spærringen her findes kun, for at hun får det
+           at vide FØR hun trykker, og med en besked, der siger,
+           hvad hun skal gøre. */
+        : (skalLeveres && adresseKontrol && !leveringsSvar.klar)
+          ? (leveringsSvar.besked
+             || 'Vælg din adresse fra forslagene, så vi er sikre på, '
+                + 'hvor maden skal hen.')
         /* ⚠️ OG KØRER VI OVERHOVEDET DERUD? (16/9)
 
            Ejerens beslutning fra 4/9 (Frederiksberg-sagen): en
@@ -2410,6 +2455,10 @@
       kanal: hvilkenKanal(),
       hent_dato: valgtDag, hent_tid: tid, hvordan: kurv.hvordan,
       leverings_adresse: skalLeveres ? adresse.trim() : null,
+      /* Kvitteringen fra serveren. Databasen kræver den ved en
+         levering og OVERSKRIVER adressen med den validerede —
+         teksten ovenfor er kun det, gæsten så. */
+      leverings_token: leveringsSvar.token,
       bord_nummer: vedBord,
       bord_kode: vedBord ? vedBordKoden() : null,
       antal_personer: String(personer).trim() === '' ? null : Number(personer),

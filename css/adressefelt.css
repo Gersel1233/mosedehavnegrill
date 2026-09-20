@@ -1,0 +1,101 @@
+/* ============================================================
+   ADRESSEFELTET  (20. sep 2026)
+   ------------------------------------------------------------
+   Forslagslisten under leveringsadressen og linjen, der siger, om
+   vi kører derud.
+
+   ⚠️ ÉN FIL, TO SIDER. Forsiden indlæser havnegrillen.css og
+      bestil/ indlæser css/style.css — de deler ikke variabler.
+      Feltet findes begge steder, så filen her ligger i css/ og
+      indlæses af begge, præcis som dagsbesked.css og
+      kvittering.css gør det. To kopier ville skride fra hinanden.
+
+   ⚠️ DERFOR RESERVEVÆRDIER PÅ HVER VARIABEL. --cream2, --ink,
+      --ink2 og --kant-inde findes KUN i havnegrillen.css. Uden
+      `var(--x, reserve)` ville listen stå sort på sort på
+      smørrebrødssiden. Tallene er husets egne, hentet ud af
+      havnegrillen.css 20/9.
+
+   ⚠️ LISTEN MÅ IKKE KLIPPES AF. Den ligger absolut over resten,
+      og feltets forælder får position:relative. På en telefon er
+      det forskellen på at kunne vælge sin adresse og ikke.
+   ============================================================ */
+
+.adr-felt-hylster {
+  position: relative;
+}
+
+.adr-liste {
+  position: absolute;
+  z-index: 60;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 264px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--paper, #fff);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .06), 0 12px 28px rgba(36, 26, 23, .16);
+}
+
+.adr-liste.skjult { display: none; }
+
+.adr-forslag {
+  /* ⚠️ 44 px er husets mindstemål for noget, man rammer med en
+     finger — samme tal som bestillingens plus-knapper. */
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--ink, #241a17);
+  cursor: pointer;
+}
+
+.adr-forslag.paa,
+.adr-forslag:hover {
+  background: var(--cream2, #f7ede1);
+}
+
+/* ---- LINJEN, DER SIGER SVARET ---------------------------------
+   Fire slags, og de skal kunne kendes fra hinanden uden farve
+   alene — tegnet står forrest i teksten (✓), og vægten skifter.
+   En gæst, der ikke ser farver, skal kunne læse svaret. */
+.adr-status {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink2, #5c4a45);
+}
+
+.adr-status.skjult { display: none; }
+
+.adr-status.adr-ja {
+  color: #2f6b4f;
+  font-weight: 600;
+}
+
+/* Samme røde som leveringens mærke i admin — den skal råbe. */
+.adr-status.adr-nej {
+  color: var(--red, #d62a3a);
+  font-weight: 600;
+}
+
+/* "Vi kontrollerer adressen …" og "vi kunne ikke lige nu" er
+   oplysninger, ikke afslag. De står i husets dæmpede tone. */
+.adr-status.adr-venter,
+.adr-status.adr-vaelg,
+.adr-status.adr-tom {
+  color: var(--ink2, #5c4a45);
+}
+
+.adr-status.adr-nede {
+  color: #8a6410;
+  font-weight: 600;
+}

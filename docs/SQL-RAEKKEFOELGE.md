@@ -45,6 +45,7 @@ og derfra:
   → aabent-og-antal-vaern.sql → ugepaamindelse.sql
   → gaestens-regler.sql → kanal-vaern.sql
   → bord-plads.sql → gaester-ved-bordet.sql
+  → levering-zone.sql → levering-valideret.sql
 ```
 
 **⚠️ `vare-valg.sql` er flyttet frem (20/9)** — den stod efter

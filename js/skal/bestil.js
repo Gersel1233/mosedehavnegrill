@@ -60,10 +60,21 @@
       kanal: 'forside',
       udvalg: 'uden-fyld',
       felter: { dato: 'dato', tid: 'tid', navn: 'navn', tlf: 'tlf',
-        besked: 'besked', allergi: 'allergi' },
+        besked: 'besked', allergi: 'allergi', adresse: 'fadr' },
       seg: '[data-seg="how"]',
-      segSvar: ['afhentning', 'spis_her'],
-      segKraever: 'spis_her',
+      /* ⚠️ LEVERING KOM TIL 20/9. Ejernes punkt nummer ét: "Leverings
+         muligheden mangler." Den fandtes kun på smørrebrødssiden og i
+         bestil/ — så en burger, en is eller grillmad kunne slet ikke
+         bestilles til levering, selv om indstillingen var slået til,
+         gebyret sat og postnumrene skrevet.
+
+         ⚠️ RÆKKEFØLGEN ER OPMÆRKNINGENS. hvordan() slår knappens
+         PLADS op i listen her, så den skal stå i samme orden som
+         knapperne i index.html. Bytter man om, bliver "Spis her"
+         sendt som en levering. Målt på smørrebrødssiden 4/9. */
+      segSvar: ['afhentning', 'spis_her', 'levering'],
+      segKraever: ['spis_her', 'levering'],
+      adresseFelt: '#flevfelt',
       dagensRet: true,
       folder: true,
       dagensHint: true,
@@ -138,6 +149,13 @@
      databasen siger fra, hvis tidsrummet er fyldt. */
   var fyldteTider = [];
   var kurv = {};              // nøgle → { navn, pris, antal }
+  /* ADRESSEFELTET OG DETS SVAR  (20/9). adresseKontrol er
+     komponenten fra js/adressefelt.js; leveringsSvar er dens
+     sidste melding. `klar` er sandt, når gæsten har VALGT en
+     officiel adresse, OG serveren har sagt, at vi kører derud.
+     Retter hun ét tegn bagefter, bliver den falsk igen. */
+  var adresseKontrol = null;
+  var leveringsSvar = { klar: false, token: null, besked: '' };
   var valgtFyld = [];         // navnene på det fyld, gæsten ønsker
   var valgtStoerrelse = null; // hel skive eller håndmad — vare-rækken selv
   var aabne = {};             // kategori-id → foldet ud?
@@ -1430,8 +1448,27 @@
   //  koster, og en side, der tilbyder levering, fordi ingen har
   //  sagt nej, lover noget på forretningens vegne.
   // ----------------------------------------------------------
+  /* ⚠️ SEGMENTET KAN HAVE MERE END ÉN EKSTRA MÅDE  (20/9).
+     Forsiden havde To-go og Spis her; nu kan den også levere, og
+     de to har hver sit flueben i admin. segKraever må derfor være
+     en LISTE: feltet vises, hvis bare én af dem er slået til, og
+     den enkelte knap skjules, hvis netop dens måde er slukket.
+
+     Afhentning har intet flueben — den kan altid lade sig gøre,
+     og det er dét svar, der ikke lover noget. */
+  function segKraevede() {
+    var k = side.segKraever;
+    return Array.isArray(k) ? k : (k ? [k] : []);
+  }
+
   function segÅben() {
-    return (data.indstillinger || {})[side.segKraever] === true;
+    var i = data.indstillinger || {};
+    return segKraevede().some(function (n) { return i[n] === true; });
+  }
+
+  function svarTilladt(svar) {
+    if (!svar || svar === 'afhentning') return true;
+    return (data.indstillinger || {})[svar] === true;
   }
 
   /* ---- HVOR LEVERER DE? ----
@@ -1883,6 +1920,21 @@
     if (svar === 'levering' && adresse.trim().length < 5) {
       return brøl('Skriv adressen, maden skal køres til.', 'adresse');
     }
+    /* ⚠️ EN OFFICIEL ADRESSE, IKKE EN TEKST  (20/9).
+       Er komponenten koblet på, skal gæsten have VALGT en adresse
+       fra Dataforsyningen, og serveren skal have sagt ja til at
+       køre derud. Uden kvittering afviser databasen alligevel —
+       spærringen her findes kun, for at hun får det at vide FØR
+       hun trykker, og med en besked, der siger hvad hun skal gøre.
+
+       ⚠️ Den gamle postnummerspærring nedenunder bliver stående
+       som reserve. Falder komponenten væk, er den bedre end
+       ingenting — og den er ejerens beslutning fra 4/9. */
+    if (svar === 'levering' && adresseKontrol && !leveringsSvar.klar) {
+      return brøl(leveringsSvar.besked
+        || 'Vælg din adresse fra forslagene, så vi er sikre på, '
+           + 'hvor maden skal hen.', 'adresse');
+    }
     /* ⚠️ EN LEVERING UDEN FOR OMRÅDET MÅ IKKE SENDES  (4/9).
 
        Kundens ord: *"man kan godt bestille til Frederiksberg, som
@@ -1935,6 +1987,10 @@
       hent_tid: tid.value,
       hvordan: svar,
       leverings_adresse: adresse,
+      /* Kvitteringen fra serveren. Databasen kræver den ved en
+         levering og OVERSKRIVER adressen med den validerede —
+         teksten ovenfor er kun det, gæsten så. */
+      leverings_token: leveringsSvar.token,
       besked: besked,
       linjer: medTillaeg(Object.keys(kurv).map(function (k) {
         return {
@@ -2196,9 +2252,32 @@
         var ekstra = side.adresseFelt ? find(side.adresseFelt, panel) : null;
         if (ekstra) ekstra.style.display = 'none';
       } else {
+        /* ⚠️ EN MÅDE, FORRETNINGEN HAR SLÅET FRA, SKAL VÆK  (20/9).
+           Feltet vises nu, hvis bare én ekstra måde er slået til —
+           og så ville de andres knapper stå tilbage og love noget,
+           ingen kan holde. En knap, der ikke virker, er værre end
+           ingen knap: gæsten tror, hun har valgt. */
+        alle(side.seg + ' button', panel).forEach(function (k, i) {
+          if (!svarTilladt(side.segSvar[i])) k.style.display = 'none';
+        });
+
+        /* Adressefeltet hører til leveringen og må kun stå, når den
+           er valgt. Designets skal folder det ud via data-toggles på
+           smørrebrødssiden; forsiden har tre knapper og gør det
+           her, så begge sider opfører sig ens. */
+        var visAdresse = function () {
+          var f = side.adresseFelt ? find(side.adresseFelt, panel) : null;
+          if (!f) return;
+          var paa = hvordan() === 'levering';
+          f.hidden = !paa;
+          f.style.display = paa ? '' : 'none';
+        };
+        visAdresse();
+
         // EFTER havnegrillen.js' egen lytter, så vores sumlinje
         // står sidst — ellers skriver designets sum() hen over.
         seg.addEventListener('click', function () {
+          visAdresse();
           visSum();
           visLeveringsSvar();
           visTidLabel();
@@ -2219,9 +2298,33 @@
        uden for området, har hun fyldt hele formularen ud
        forgæves. Samme grund som den fulde dag STÅR i
        dagstriben i stedet for at mangle (1/9). */
+    /* ⚠️ OFFICIELLE ADRESSER SIDEN 20/9. Findes komponenten, ejer
+       DEN linjen og svaret: gæsten vælger en adresse fra
+       Dataforsyningen, serveren slår den op igen og udsteder en
+       kvittering, og databasen kræver kvitteringen.
+
+       Falder komponenten væk — en gammel browser, en fil der ikke
+       blev hentet — gør det gamle postnummersvar det stadig, så
+       gæsten ikke står uden nogen vejledning overhovedet. Men
+       afsendelsen spærrer under alle omstændigheder: uden
+       kvittering afviser databasen bestillingen. Det er den
+       rigtige måde at fejle på. */
     var adr = felt('adresse');
-    if (adr) adr.addEventListener('input', visLeveringsSvar);
-    visLeveringsSvar();
+    var sky = window.MOSEDE_CLOUD || {};
+    if (adr && window.MosedeAdresse && sky.url) {
+      adresseKontrol = window.MosedeAdresse.tilslut(adr, {
+        status: find('#lev-svar', panel),
+        lokation: Butik.LOKATION || 'mosede',
+        valideringUrl: sky.url + '/functions/v1/valider-levering',
+        naarAendret: function (t) {
+          leveringsSvar = t;
+          if (fejlVises) visSum();
+        },
+      });
+    } else if (adr) {
+      adr.addEventListener('input', visLeveringsSvar);
+      visLeveringsSvar();
+    }
     visTidLabel();
 
     ['navn', 'tlf'].forEach(function (n) {

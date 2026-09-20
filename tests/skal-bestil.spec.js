@@ -353,7 +353,21 @@ test.describe('Forsidens bestilling', () => {
     await åbn(page);
     const etiketter = await page.$$eval('#bestil .panel .field label',
       (els) => els.map((e) => e.textContent.trim().split('\n')[0].trim()));
-    expect(etiketter).toEqual(['Hvordan vil I spise?', 'Dato', 'Vælg jeres retter',
+    /* ⚠️ "HVOR SKAL DET LEVERES?" KOM TIL 20/9, og den står med
+       vilje LIGE efter valget af spisemåde — ikke nederst.
+
+       Ejernes punkt nummer ét: "Leverings muligheden mangler."
+       Forsiden kunne kun To-go og Spis her, selv om indstillingen
+       var slået til og gebyret sat. Adressen hører til valget og
+       folder sig ud under det, præcis som på smørrebrødssiden;
+       stod den længere nede, ville gæsten vælge levering og først
+       møde adressefeltet efter hele varelisten.
+
+       Feltet er `hidden`, indtil levering er valgt — men etiketten
+       står i opmærkningen, og den her prøve læser rækkefølgen i
+       DOM'en, ikke hvad der er synligt. */
+    expect(etiketter).toEqual(['Hvordan vil I spise?', 'Hvor skal det leveres?',
+      'Dato', 'Vælg jeres retter',
       'Tidspunkt', 'Navn', 'Telefonnummer',
       'Allergi (valgfrit)', 'Ja, køkkenet må gemme det her, så de kan tage hensyn.',
       'Besked (valgfrit)']);

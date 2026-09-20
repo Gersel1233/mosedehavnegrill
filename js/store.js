@@ -2393,6 +2393,26 @@
       raekke.antal_personer = personer;
     }
 
+    /* KVITTERINGEN PÅ LEVERINGSADRESSEN  (20/9)
+       ------------------------------------------------------------
+       Serveren har slået adressen op hos Dataforsyningen og udstedt
+       et token (supabase/funktioner/valider-levering.ts). Databasens
+       udløser kræver det ved en levering fra en gæst — og
+       OVERSKRIVER leverings_adresse med den, serveren bekræftede.
+       Det, der står i feltet her, er altså kun det, gæsten så; det
+       er ikke dét, køkkenet får.
+
+       ⚠️ SENDES KUN VED LEVERING OG KUN NÅR DER ER ET. Et token på
+       en afhentning ville se ud som en oplysning, der betyder noget
+       — og databasen nulstiller det alligevel. Kolonnen er desuden
+       ny: en fane fra i går kender den ikke, og en database uden
+       migreringen ville svare PGRST204 på hver eneste bestilling,
+       hvis den blev sendt ubetinget. Samme greb som antal_tilbage. */
+    if (hvordanEt(b.hvordan) === 'levering'
+        && String(b.leverings_token || '').trim()) {
+      raekke.leverings_token = String(b.leverings_token).trim().slice(0, 100);
+    }
+
     // Øvetilstand: der er ingen database, så bestillingen lægges
     // lokalt. Så kan flowet prøves igennem uden nøgle.
     if (!SKY) {
@@ -2857,6 +2877,31 @@
         var mv = efterKoden('bestilling_mangler_valg');
         return new Error((mv ? '"' + mv + '"' : 'En af varerne') + ' skal have et valg — '
           + 'fx hvilket fyld. Genindlæs siden, og vælg igen.');
+      }
+      /* LEVERINGSADRESSEN (supabase/levering-valideret.sql, 20/9).
+         En levering fra en gæst skal bære en kvittering, serveren
+         selv har udstedt efter et opslag hos Dataforsyningen.
+
+         ⚠️ INGEN TEKNISKE KODER TIL GÆSTEN. Hun skal vide, hvad hun
+         skal GØRE — ikke hvad udløseren hedder. De fire grunde
+         kræver hver sin handling, og derfor har de hver sin tekst:
+         et udløbet token skal vælges igen, et brugt betyder, at
+         bestillingen allerede er sendt. */
+      if (/levering_uden_for_omraadet/.test(t)) {
+        return new Error('Vi leverer desværre ikke til den adresse. '
+          + 'Ring til os, så aftaler vi det — eller vælg, at I henter selv.');
+      }
+      if (/levering_validering_udloebet/.test(t)) {
+        return new Error('Adressen blev kontrolleret for længe siden. '
+          + 'Vælg den igen fra forslagene, så sender vi bestillingen.');
+      }
+      if (/levering_validering_brugt/.test(t)) {
+        return new Error('Den bestilling er allerede sendt. '
+          + 'Genindlæs siden, hvis du vil bestille mere.');
+      }
+      if (/levering_ikke_valideret/.test(t)) {
+        return new Error('Vælg din adresse fra forslagene, '
+          + 'så vi er sikre på, hvor maden skal hen.');
       }
       /* KANALEN (supabase/kanal-vaern.sql, 16/9). Kategorien er ikke
          åben for bestilling — en gammel fane eller en gemt adresse

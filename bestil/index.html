@@ -342,9 +342,15 @@
            så feltet her er første lag, ikke det eneste. -->
       <div class="felt skjult" id="bestil-adresse-trin">
         <label for="bestil-adresse">Leveringsadresse</label>
-        <input id="bestil-adresse" type="text" name="adresse"
-               autocomplete="street-address" maxlength="300"
-               placeholder="Vej og nummer, postnr. og by">
+        <!-- ⚠️ HYLSTERET ER IKKE PYNT (20/9). Forslagslisten fra
+             Dataforsyningen lægger sig absolut under feltet, og uden en
+             forælder med position:relative ville den lande et tilfældigt
+             sted — eller blive klippet af. Se css/adressefelt.css. -->
+        <div class="adr-felt-hylster">
+          <input id="bestil-adresse" type="text" name="adresse"
+                 autocomplete="off" maxlength="300"
+                 placeholder="Begynd at skrive vej og husnummer">
+        </div>
         <p class="desc" id="bestil-adresse-note"></p>
         <!-- ⚠️ SVARET ER TRE TILSTANDE, IKKE TO (16/9). Ejerens ord:
              de leverer i en radius — Greve, Karlslunde, Tune, Køge
@@ -587,6 +593,7 @@
 <script src="../js/menu-emoji.js?v=__V__"></script>
 <script src="../js/bestil-regler.js?v=__V__"></script>
 <script src="../js/dagsbesked.js?v=__V__"></script>
+<script src="../js/adressefelt.js?v=__V__"></script>
 <script src="../js/bestilling.js?v=__V__"></script>
 <script src="../js/bestil.js?v=__V__"></script>
 </body>
