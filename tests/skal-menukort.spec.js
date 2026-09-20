@@ -163,6 +163,50 @@ test.describe('Menukortet', () => {
     await expect(page.locator('[data-kategori="Smørrebrød"] .mk-antal')).toHaveText('1 vare');
   });
 
+  /* ⚠️ TO KATEGORIER MÅ IKKE DELE ANSIGT, NÅR DE SÆLGER HVER SIT
+     (20/9). Ejerne fik to nye kategorier samme dag: "Ispinde" og
+     "Tillæg: glutenfri, laktosefri og vegansk".
+
+     MÅLT på ejerens rigtige kort: Ispinde matchede INTET mønster
+     (`\bis\b` kræver "is" som et helt ord, og "Ispinde" fortsætter)
+     og faldt tilbage på afdelingens 🍦 — altså softicens eget tegn.
+     To iskategorier med samme ansigt er to, man skal læse for at
+     skelne. Tillægget faldt tilbage på husets tallerken 🍽️.
+
+     ⚠️ OG TEGNET SIGER STADIG INTET OM INDHOLDET. Tillægget får det
+     SAMME ➕ som de andre tilkøb — ikke 🌱. Et blad på en kategori
+     er et løfte om vegansk, og det er en oplysning, ikke en
+     tegning. Se loven i js/menu-emoji.js. */
+  test('ispindene har deres eget tegn — ikke softicens', async ({ page }) => {
+    const d = medRet();
+    d.menu_kategorier.push({ id: 21, afdeling: 'is', navn: 'Ispinde', sortering: 12, aktiv: true });
+    d.menu_varer.push({
+      id: 21, kategori_id: 21, navn: 'Maxibon', beskrivelse: null, pris: 31,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+    });
+    await åbn(page, d);
+
+    await expect(page.locator('[data-kategori="Softice og vafler"] .mk-tegn')).toHaveText('🍦');
+    await expect(page.locator('[data-kategori="Ispinde"] .mk-tegn')).toHaveText('🍧');
+  });
+
+  test('tillægget får de andre tilkøbs plus, ikke husets tallerken', async ({ page }) => {
+    const d = medRet();
+    d.menu_kategorier.push({
+      id: 22, afdeling: 'mad', navn: 'Tillæg: glutenfri, laktosefri og vegansk',
+      sortering: 14, aktiv: true,
+    });
+    d.menu_varer.push({
+      id: 22, kategori_id: 22, navn: 'Glutenfri bolle', beskrivelse: null, pris: 10,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+    });
+    await åbn(page, d);
+
+    await expect(
+      page.locator('[data-kategori="Tillæg: glutenfri, laktosefri og vegansk"] .mk-tegn'),
+    ).toHaveText('➕');
+  });
+
   test('hop-båndet fører til kategorien', async ({ page }) => {
     await åbn(page);
 

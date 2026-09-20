@@ -47,6 +47,13 @@
     [/softice/i, '🍦'],
     [/pandekage|vaffel|vafler|boblevaffel/i, '🧇'],
     [/kage|dessert|æblekage/i, '🍰'],
+    /* ⚠️ ISPINDENE FØR KUGLERNE  (20/9). Ejerne fik kategorien
+       "Ispinde" med Premier Is-sortimentet, og den matchede
+       INGENTING: `\bis\b` kræver "is" som et helt ord, og "Ispinde"
+       fortsætter. Den faldt derfor tilbage på afdelingens 🍦 — altså
+       softicens eget tegn, og to iskategorier lignede hinanden på en
+       prik. 🍧 er husets tredje is og er ikke brugt andetsteds. */
+    [/ispind/i, '🍧'],
     [/kugleis|ishorn|\bis\b/i, '🍨'],
     /* ⚠️ SODAVANDEN SKAL STÅ FØR KAFFEN, og den er derfor delt i
        to. MÅLT mod ejerens rigtige kort: "Sodavand, juice og
@@ -64,7 +71,11 @@
     [/vin|cava|champagne|bobler/i, '🍷'],
     [/vand|drikke/i, '🥤'],
     [/slik|snack|chips|popcorn/i, '🍬'],
-    [/tilkøb|tilkoeb|ekstra/i, '➕'],
+    /* "Tillæg" hører til de andre tilkøb og får deres plus — IKKE
+       et 🌱, selv om kategorien hedder noget med vegansk. Et blad er
+       et løfte om maden, og tegnet må aldrig sige noget, navnet ikke
+       selv siger. Se loven øverst i filen. (20/9) */
+    [/tilkøb|tilkoeb|ekstra|till(æ|ae)g/i, '➕'],
     [/selskab|fest|arrangement/i, '🎉'],
     [/b(ø|oe)rn/i, '🧒'],
   ];
