@@ -1356,4 +1356,49 @@ test.describe('Valg på en vare er sin egen linje', () => {
     await expect(øl.locator('button[data-d="+"]')).toHaveCount(1);
     await expect(øl.locator('.item-valg-linje')).toHaveCount(0);
   });
+
+  /* ⚠️ ET VALG MÅ KOSTE (20/9). Det trykte is-kort lover "glutenfri
+     vaffel +3,-", og hjemmesiden opkrævede det ikke: et valg havde
+     varens ene pris, og det var skrevet ind i tre lag. Tillægget står
+     i valget selv ({navn, tillaeg}), og prisen regnes ÉT sted,
+     Butik.varePris. Prøven læser den gemte række — skærmen kan vise
+     det rigtige, mens køkkenet og kassen får varens gamle pris. */
+  function medTillaeg() {
+    const d = medPita();
+    const pita = d.menu_varer.find((v) => v.navn === 'Pitabrød');
+    pita.valg = ['Kebab', 'Kylling', { navn: 'Tun', tillaeg: 5 }];
+    return d;
+  }
+
+  test('et valg med tillæg koster mere — og gæsten kan se det', async ({ page }) => {
+    await åbn(page, { data: medTillaeg() });
+    await page.locator('[data-kategori="Retter"]').click();
+    const pita = page.locator('[data-vare="Pitabrød"]');
+
+    /* Tillægget skal stå PÅ valget. Et tillæg, gæsten først møder på
+       kvitteringen, er en regning, ingen har sagt ja til. */
+    /* ⚠️ Mål på tillægs-mærket, ikke på hele linjen: tæller-knappen
+       hedder selv "+", så "linjen indeholder ikke et plus" kan
+       aldrig være sandt (målt 20/9). */
+    await expect(pita.locator('.item-valg-linje[data-valg="Tun"] .item-valg-tillaeg'))
+      .toHaveText('+5 kr.');
+    await expect(pita.locator('.item-valg-linje[data-valg="Kebab"] .item-valg-tillaeg'))
+      .toHaveCount(0);
+
+    await pita.locator('.item-valg-linje[data-valg="Kebab"] button[data-d="+"]').click();
+    await pita.locator('.item-valg-linje[data-valg="Tun"] button[data-d="+"]').click();
+
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+
+    const linjer = (await gemteData(page)).bestillinger[0].linjer
+      .filter((l) => l.navn === 'Pitabrød');
+    /* 65 er varens pris, 70 er den med tunens tillæg — begge regnet i
+       hånden ud fra opsætningen, så prøven ikke måler sig selv. */
+    expect(linjer.map((l) => [l.variant, l.pris]).sort(),
+      'kassen fik ikke tillægget med').toEqual([['Kebab', 65], ['Tun', 70]]);
+  });
 });

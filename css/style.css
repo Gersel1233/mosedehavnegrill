@@ -12535,6 +12535,17 @@ body:not(.personale) .stk-valg-linje {
   gap: 12px;
 }
 body:not(.personale) .stk-valg-navn { font-weight: 600; }
+/* TILLÆGGET PÅ ET VALG  (20/9)
+   Samme regel som .item-valg-tillaeg på forsiden: de 3 kroner for en
+   glutenfri vaffel skal stå ved valget, før gæsten trykker plus.
+   ⚠️ margin-right:auto — rækken er space-between, og uden den lander
+   tillægget midt mellem navnet og tælleren. */
+body:not(.personale) .stk-valg-tillaeg {
+  margin-right: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--red);
+}
 
 /* ============================================================
    KØRER VI DERUD? — SVARET UNDER ADRESSEN  (16/9)

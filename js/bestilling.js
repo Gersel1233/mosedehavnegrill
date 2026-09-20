@@ -1014,6 +1014,13 @@
           var linje = lav('div', 'stk-valg-linje');
           linje.setAttribute('data-valg', valgNavn);
           linje.appendChild(lav('span', 'stk-valg-navn', valgNavn));
+          /* ⚠️ TILLÆGGET SKAL STÅ VED VALGET  (20/9) — samme regel som
+             på forsiden. Gæsten ved bordet skal se de 3 kroner, FØR
+             hun trykker plus, ikke på bonen bagefter. */
+          var tillæg2 = Butik.valgTillaeg ? Butik.valgTillaeg(v, valgNavn) : 0;
+          if (tillæg2) {
+            linje.appendChild(lav('span', 'stk-valg-tillaeg', '+' + Butik.pris(tillæg2)));
+          }
           var t2 = lav('div', 'taeller');
           var ned2 = lav('button', 'glass rund', '−');
           var tal2 = lav('span', 'taeller-tal', kurv.stk[nk] || 0);
@@ -1819,12 +1826,17 @@
     return n;
   }
 
+  /* ⚠️ VALGET SKAL MED I PRISEN  (20/9). Opslaget er på navnet
+     alene — og et valg med tillæg ("Glutenfri vaffel +3") ville
+     derfor tavst koste varens grundpris netop her, ved bordene.
+     delNøgle kender valget; Butik.prisMedValg lægger tillægget på. */
   function prisIKurv() {
     var sum = 0;
     var liste = bestilbare();
     for (var k in kurv.stk) {
-      var v = liste.filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
-      if (v) sum += Number(v.pris) * kurv.stk[k];
+      var dk = delNøgle(k);
+      var v = liste.filter(function (x) { return x.navn === dk.navn; })[0];
+      if (v) sum += Number(Butik.prisMedValg(v, dk.valg) || 0) * kurv.stk[k];
     }
     return sum + emballagen().ialt + fragten().ialt;
   }
@@ -1957,7 +1969,8 @@
       /* Prisen er linjens EGEN sum. "2 × 89" tvinger gæsten til at
          gange i hovedet, mens hun sidder og skal betale bagefter. */
       if (v && v.pris !== null && v.pris !== undefined) {
-        t.appendChild(lav('span', 'kurv-pris', window.MosedePris(v.pris * n)));
+        t.appendChild(lav('span', 'kurv-pris',
+          window.MosedePris(Butik.prisMedValg(v, dn.valg) * n)));
       } else {
         t.appendChild(lav('span', 'kurv-pris kurv-uden', 'pris følger'));
       }
@@ -2358,11 +2371,14 @@
     var linjer = [];
     var liste = bestilbare();
     for (var k in kurv.stk) {
-      var v = liste.filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
       var dk = delNøgle(k);
+      var v = liste.filter(function (x) { return x.navn === dk.navn; })[0];
       /* Valget rejser som linjens `variant` — samme felt som køkkenet,
-         Overblik og bonen allerede viser (15/9). */
-      linjer.push({ navn: dk.navn, antal: kurv.stk[k], pris: v ? v.pris : null,
+         Overblik og bonen allerede viser (15/9). Og prisen er valgets,
+         ikke varens (20/9): det er DEN linje, kassen og databasens
+         prisværn regner på. */
+      linjer.push({ navn: dk.navn, antal: kurv.stk[k],
+        pris: v ? Butik.prisMedValg(v, dk.valg) : null,
         variant: dk.valg || undefined });
     }
 

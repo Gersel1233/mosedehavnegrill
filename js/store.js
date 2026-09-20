@@ -1144,11 +1144,66 @@
      hver regnede den ud, ville langsomt komme til at mene noget
      forskelligt om den samme pitabrød. Mindst to — ét valg er ikke et
      valg. Databasen kræver det samme (vare_valg_ok). */
+  /* ⚠️ ET VALG KAN KOSTE EKSTRA  (20/9)
+     ------------------------------------------------------------
+     Indtil i dag var et valg prisneutralt, og det stod skrevet i
+     vare-valg.sql: "PRISEN er varens — et valg koster ikke ekstra."
+     Det trykte is-kort lover noget andet: "alle kugler og al softice
+     kan fås i glutenfri vaffel +3,-". Hjemmesiden opkrævede dem ikke.
+
+     Et valg er derfor enten en streng ("Kebab") eller et objekt
+     ({ navn: 'Glutenfri vaffel', tillaeg: 3 }). BEGGE former skal
+     kunne læses for altid: de seks isvarer skrives om, resten af
+     kortet er strenge, og en fane, der har ligget åben siden i går,
+     læser den gamle form. Databasen læser begge former det samme
+     sted (mosede_valg_navn i vare-valg.sql).
+
+     Navnet og tillægget hentes HER og kun her. Lægges de to ting ud
+     i formularerne, kommer de til at være uenige om, hvad en
+     glutenfri vaffel koster — og uenigheden vises først på en
+     regning, gæsten ikke har sagt ja til. */
+  function valgNavnet(x) {
+    if (x && typeof x === 'object') return String(x.navn || '').trim();
+    return String(x === null || x === undefined ? '' : x).trim();
+  }
+
+  function valgTillaegget(x) {
+    if (!x || typeof x !== 'object') return 0;
+    var t = Number(x.tillaeg);
+    /* Et negativt tillæg er en rabat, ingen har bedt om — og et
+       ikke-tal ville brede sig som NaN gennem hele summen. */
+    return isFinite(t) && t > 0 ? Math.round(t * 100) / 100 : 0;
+  }
+
   function vareValg(v) {
     if (!v || !Array.isArray(v.valg)) return null;
-    var ud = v.valg.map(function (x) { return String(x || '').trim(); })
-      .filter(Boolean);
+    var ud = v.valg.map(valgNavnet).filter(Boolean);
     return ud.length >= 2 ? ud.slice(0, 12) : null;
+  }
+
+  /* Tillægget for ét valg. Samme sammenligning som databasen
+     (lower + btrim), så siden og værnet aldrig kan blive uenige om,
+     hvilket valg gæsten pegede på. */
+  function valgTillaeg(v, valgNavn) {
+    if (!v || !Array.isArray(v.valg) || !valgNavn) return 0;
+    var søgt = String(valgNavn).trim().toLowerCase();
+    for (var i = 0; i < v.valg.length; i++) {
+      if (valgNavnet(v.valg[i]).toLowerCase() === søgt) {
+        return valgTillaegget(v.valg[i]);
+      }
+    }
+    return 0;
+  }
+
+  /* ⚠️ DEN ENE PRISBEREGNING. Klienten ganger pris × antal ti steder;
+     hvad ÉN linje koster, skal kun regnes her. Uden valg er svaret
+     varens egen pris, præcis som før. */
+  function prisMedValg(v, valgNavn) {
+    var p = v && v.pris;
+    if (p === null || p === undefined || p === '') return null;
+    var n = Number(p);
+    if (!isFinite(n)) return null;
+    return n + valgTillaeg(v, valgNavn);
   }
 
   /* ÉN MÅDE AT SKRIVE EN LINJE MED ET VALG  (15/9)
@@ -4588,6 +4643,8 @@
     kroner: kroner,
     varePris: varePris,
     vareValg: vareValg,
+    valgTillaeg: valgTillaeg,
+    prisMedValg: prisMedValg,
     linjeNavn: linjeNavn,
     reservedata: reservedata,
     bestillingNede: bestillingNede,

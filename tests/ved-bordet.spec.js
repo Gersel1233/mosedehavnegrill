@@ -735,6 +735,40 @@ test.describe('Valg på en vare ved bordet', () => {
     expect(l && l.variant, 'køkkenet fik ikke valget på linjen').toBe('Tun');
     expect(l.antal).toBe(1);
   });
+
+  /* ⚠️ TILLÆGGET SKAL OGSÅ VIRKE BAG QR-KODEN  (20/9). Den her fil
+     slår prisen op på varens NAVN i fem løkker — et tillæg på valget
+     ville tavst falde på gulvet netop her, mens forsiden opkrævede
+     det rigtige. Så ville den samme is koste to ting alt efter, om
+     gæsten stod ved lugen eller sad ved bordet. Prøven læser den
+     gemte linje og summen i kiget, ikke rækken. */
+  test('et valg med tillæg koster mere ved bordet også', async ({ page }) => {
+    const d = medPita();
+    d.menu_varer.find((v) => v.navn === 'Pitabrød').valg =
+      ['Kebab', 'Kylling', { navn: 'Tun', tillaeg: 5 }];
+    await åbnBord(page, '?bord=7', { data: d });
+
+    const pita = page.locator('#bestil-stykker .stk-linje[data-vare="Pitabrød"]');
+    await expect(pita.locator('.stk-valg-linje[data-valg="Tun"] .stk-valg-tillaeg'))
+      .toHaveText('+5 kr.');
+    await expect(pita.locator('.stk-valg-linje[data-valg="Kebab"] .stk-valg-tillaeg'))
+      .toHaveCount(0);
+
+    await pita.locator('.stk-valg-linje[data-valg="Tun"] button', { hasText: '+' }).click();
+    await pita.locator('.stk-valg-linje[data-valg="Kebab"] button', { hasText: '+' }).click();
+
+    await page.fill('#bestil-navn', 'Sara Holm');
+    await page.locator('#bestil-send').click();
+    await page.locator('#kig-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const linjer = (await gemteData(page)).bestillinger[0].linjer
+      .filter((x) => x.navn === 'Pitabrød');
+    /* 65 er varens pris, 70 er den med tunens tillæg — regnet i hånden
+       ud fra opsætningen, så prøven ikke måler sig selv. */
+    expect(linjer.map((x) => [x.variant, x.pris]).sort(),
+      'kassen ved bordet fik ikke tillægget med').toEqual([['Kebab', 65], ['Tun', 70]]);
+  });
 });
 
 /* ⚠️ DAGENS RET MÅ IKKE RYGE UD AF KURVEN (16/9). rensKurv læste kun

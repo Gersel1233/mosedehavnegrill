@@ -701,6 +701,8 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .item-valg{display:grid;gap:6px;margin-top:8px}
 .item-valg-linje{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .item-valg-navn{font-weight:600}
+/* TILLÆGGET PÅ ET VALG (20/9): is-kortet lover "glutenfri vaffel +3,-", og de tre kroner skal stå VED valget, ikke først på kvitteringen. margin-right:auto holder det op ad navnet — uden den lander det midt i linjen, fordi rækken er space-between. */
+.item-valg-tillaeg{margin-right:auto;font-size:12px;font-weight:600;color:var(--red)}
 .item .add{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:var(--red)}
 /* ⚠️ ET ANSIGT PR. KATEGORI I BESTILLINGEN (29/8). Fem rækker ren
    tekst — Grill fra pladen, Smørrebrød, Is og desserter … — hvor

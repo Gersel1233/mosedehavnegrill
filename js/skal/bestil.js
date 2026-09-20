@@ -765,7 +765,16 @@
         var linje = lav('div', 'item-valg-linje');
         linje.setAttribute('data-valg', valgNavn);
         linje.appendChild(lav('span', 'item-valg-navn', valgNavn));
-        linje.appendChild(tællerFor(nøgle + '|valg|' + valgNavn, v.navn, v.pris, valgNavn,
+        /* ⚠️ TILLÆGGET SKAL STÅ VED VALGET  (20/9). Is-kortet lover
+           "glutenfri vaffel +3,-", og et tillæg, gæsten først møder
+           på kvitteringen, er en regning, ingen har sagt ja til.
+           Prisen selv regnes af Butik.prisMedValg — ét sted. */
+        var tillæg = Butik.valgTillaeg ? Butik.valgTillaeg(v, valgNavn) : 0;
+        if (tillæg) {
+          linje.appendChild(lav('span', 'item-valg-tillaeg', '+' + Butik.pris(tillæg)));
+        }
+        linje.appendChild(tællerFor(nøgle + '|valg|' + valgNavn, v.navn,
+          Butik.prisMedValg ? Butik.prisMedValg(v, valgNavn) : v.pris, valgNavn,
           v.kategori_id, Butik.antalLoft && Butik.antalLoft(v)));
         valgListe.appendChild(linje);
       });
