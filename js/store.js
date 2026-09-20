@@ -438,14 +438,46 @@
     var ventetider = [2000, 4000, 8000, 16000, 30000];
     var i = 0;
 
+    /* ⚠️ PRØVEHENTNINGEN SKAL HAVE EN TIDSGRÆNSE  (20/9)
+       ------------------------------------------------------------
+       Her stod et bart fetch. Ved et rent nedbrud — forbindelse
+       afvist, 500 — faldt løftet med det samme, og næste banken
+       blev planlagt. Men en forbindelse, der HÆNGER og hverken
+       svarer ja eller nej (dårligt net ved vandet, en halvdød
+       forbindelse), gav et løfte, der aldrig faldt: .catch fyrede
+       aldrig, setTimeout blev aldrig sat, og genopretningen døde
+       TAVST. Så stod gæsten med en død side, til hun selv
+       genindlæste — præcis det, et nedbrud på en time koster, når
+       ingen opdager, at siden holdt op med at prøve.
+
+       hentTabel har haft HENT_LOFT_MS hele tiden mod netop den
+       fejlmode; genopretningen manglede den. Nu bruger de det
+       samme tal, så de ikke kan skride fra hinanden.
+
+       `slut` kaldes præcis én gang, uanset hvem der kommer først —
+       svaret eller uret. Uden den lås ville et svar, der kom lige
+       EFTER tidsgrænsen, planlægge en banken mere, og pauserne
+       ville stille og roligt blive halveret. */
     function prøv() {
+      var faerdig = false;
+      var ur;
+
+      function slut(kontakt) {
+        if (faerdig) return;
+        faerdig = true;
+        clearTimeout(ur);
+        if (kontakt) return tilbage();
+        setTimeout(prøv, ventetider[Math.min(i++, ventetider.length - 1)]);
+      }
+
+      ur = setTimeout(function () { slut(false); }, HENT_LOFT_MS);
+
       fetch(cfg.url + '/rest/v1/lokationer?select=id&limit=1', {
         headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey },
       }).then(function (r) {
-        if (!r.ok) throw new Error(String(r.status));
-        tilbage();
+        slut(!!r.ok);
       }).catch(function () {
-        setTimeout(prøv, ventetider[Math.min(i++, ventetider.length - 1)]);
+        slut(false);
       });
     }
 

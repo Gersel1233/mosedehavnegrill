@@ -477,6 +477,57 @@ test.describe('Gæstesiden kommer sig selv, når databasen er tilbage', () => {
     await expect(page.locator('#genopret-bjaelke button')).toHaveText('Hent siden igen');
     expect(t.sider, 'siden genindlæste under fingeren').toBe(før);
   });
+
+  /* ============================================================
+     DEN HÆNGENDE FORBINDELSE  (20. sep 2026)
+     ------------------------------------------------------------
+     Genopretningen bankede på hvert 30. sekund for evigt — men kun,
+     hvis svaret KOM. Dens egen prøvehentning havde ingen
+     tidsgrænse, mens den rigtige hentning har tolv sekunder. En
+     forbindelse, der hverken svarer ja eller nej — dårligt net ved
+     vandet, en halvdød forbindelse — fik derfor løftet til aldrig
+     at falde: fejlgrenen fyrede ikke, næste banken blev aldrig
+     planlagt, og genopretningen døde tavst. Så stod gæsten med en
+     død side, til hun selv genindlæste.
+
+     Det er præcis den fejl, søsterprojektet lå nede en time med, og
+     den stod ORDRET beskrevet som kendt i den her fil: "genopret()
+     genindlæser ikke undervejs: dens egen prøvehentning hænger
+     også."
+
+     ⚠️ PRØVEN TÆLLER PROBER, ikke tid. En regel, der bare gjorde
+     pauserne kortere, ville ikke bestå: her kommer der aldrig et
+     svar, så det ENESTE, der kan give et forsøg nummer to, er en
+     tidsgrænse på forsøg nummer ét. */
+  test('en hængende forbindelse stopper ikke genopretningen', async ({ page }) => {
+    test.setTimeout(60000);
+    const t = { haenger: true, prober: 0, kald: 0 };
+    await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+    await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD={url:'" + SKY + "',anonKey:'proeve'};",
+    }));
+    await page.route(SKY + '/**', (r) => {
+      const u = r.request().url();
+      if (u.indexOf('lokationer') !== -1 && u.indexOf('limit=1') !== -1) {
+        t.prober++;
+        if (t.haenger) return;   // svarer hverken ja eller nej
+      }
+      t.kald++;
+      return r.abort('connectionfailed');
+    });
+    await sætUr(page, '2026-08-07T11:00:00Z');
+    await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(800);
+    expect(t.kald, 'prøven ramte aldrig databasen — den måler ingenting')
+      .toBeGreaterThan(0);
+
+    await expect.poll(() => t.prober, { timeout: 40000,
+      message: 'genopretningen gav op efter det første forsøg, fordi svaret hang' })
+      .toBeGreaterThan(1);
+  });
 });
 
 /* ============================================================
