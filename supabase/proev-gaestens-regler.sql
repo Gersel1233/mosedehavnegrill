@@ -85,6 +85,16 @@ select 'proev-gr', n, v from (values
   ('emballage_pris',          '10'::jsonb),
   ('emballage_navn',          '"Emballage"'::jsonb),
   ('leverings_gebyr',         '79'::jsonb),
+  /* ⚠️ EN ZONE, SIDEN 20/9. Leveringen kræver nu en kvittering fra
+     serveren (supabase/levering-valideret.sql), og udløseren regner
+     zonen igen ved bestillingen. Uden en grænse her ville selv en
+     gyldig kvittering blive afvist — og prøven ville melde en fejl,
+     der ikke findes. Kvadratet dækker Prøvevej 9's punkt nedenfor. */
+  ('leverings_zoner', $j$
+     { "godkendt": false, "zoner": [
+         { "navn": "kerne", "svar": "ja",
+           "polygon": [[12.20,55.55],[12.30,55.55],[12.30,55.62],[12.20,55.62]] } ] }
+   $j$::jsonb),
   ('sidste_bestilling_min',   '0'::jsonb),
   ('kategori_tider', jsonb_build_object(
      (select id from _kat where hvad = 'smoer')::text,  jsonb_build_object('varsel_min', 1440),
@@ -136,19 +146,39 @@ create or replace function pg_temp.best(
   lok text, ref text, dag date, tid time, linjer jsonb, nr int,
   hvordan text default 'afhentning', rolle text default 'anon', bord text default null)
 returns text language plpgsql as $$
+declare v_token text;
 begin
+  /* ⚠️ EN LEVERING SKAL BÆRE EN KVITTITERING SIDEN 20/9
+     (supabase/levering-valideret.sql). Hjælperen udsteder den, som
+     Edge Function'en ville have gjort — ellers ville hver
+     leveringsprøve i filen falde på levering_ikke_valideret, og det
+     ville se ud som en fejl i gæstens regler.
+
+     ⚠️ Punktet er MÅLT: 12.2846, 55.5665 er Havnevej 20 i Greve,
+     hentet hos Dataforsyningen 20/9. Det ligger inde i zonen, som
+     forretningen fik ovenfor. */
+  if hvordan = 'levering' then
+    v_token := 'PROEV-' || ref;
+    insert into public.leverings_valideringer
+      (token, lokation_id, dawa_id, adresse, postnr, by, lng, lat, zone, udloeber)
+    values (v_token, lok, 'proev-' || ref, 'Prøvevej 9, 2670 Greve',
+            '2670', 'Greve', 12.28463387, 55.5664776, 'ja', now() + interval '1 hour')
+    on conflict (token) do nothing;
+  end if;
+
   perform set_config('request.jwt.claims',
     case when rolle is null then '' else json_build_object('role', rolle)::text end, true);
   insert into public.bestillinger
     (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
-     antal, linjer, status, hvordan, bord_nummer, leverings_adresse)
+     antal, linjer, status, hvordan, bord_nummer, leverings_adresse, leverings_token)
   values
     (ref, lok, 'Prøve Person',
      case when bord is null then '3300' || lpad(nr::text, 4, '0') end,
      dag, tid,
      greatest((select coalesce(sum((l ->> 'antal')::int), 1) from jsonb_array_elements(linjer) l), 1),
      linjer, 'ny', hvordan, bord,
-     case when hvordan = 'levering' then 'Prøvevej 9, 2670 Greve' end);
+     case when hvordan = 'levering' then 'Prøvevej 9, 2670 Greve' end,
+     v_token);
   perform set_config('request.jwt.claims', '', true);
   return null;
 exception when others then
