@@ -7,6 +7,61 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**Ejernes rettelsesliste før lancering — menukortet er kørt igennem** (20/9,
+Jeannette og Jims egen liste på ~60 punkter, videresendt af Mikkel).
+
+⚠️ **ÅBNINGSTIDERNE VAR FORKERTE, OG DET VAR MIN FEJL.** Jeg satte 08–20 alle
+syv dage 17/9 efter beskeden *"morgenmaden skal være øverst fra 08-11"*. Ejernes
+egne tider er **10–20 man-tors, 10–22 fre, 09–22 lør, 09–21 søn** — rettet 20/9.
+⚠️ **Og det har en følge:** med åbning kl. 10 og `bestilling_varsel_timer = 1`
+er første bestilbare tidspunkt kl. 11 på hverdage — præcis dér, hvor morgen
+slutter. **Morgenmaden kan derfor kun stå øverst lør–søn**, hvor der åbnes kl. 9.
+Varslet skal sættes ned, hvis den skal virke på hverdage.
+
+**~76 rettelser i menukortet, alle som DATA** — ingen kode, ingen udgivelse:
+13 varer slukket (pistolpølse, dürüm, begge Hansens, ishorn, sandwich stor,
+chips/peanuts i dobbeltpakker, juice-Capri-Sun, ekstra æg/kylling), 13 priser,
+9 navne, 12 nye varer, kategorien **Kugleis** (ishorn ud af navnet), **Burgere**
+og **Sandwich** delt op, ny kategori **Ispinde** med 11 varer fra Premier
+Is-skiltet, og **Boblevaffel → Bubble waffle** (det var derfor, ejerne ikke
+kunne finde den).
+
+⚠️ **PRISVAGTEN SLOG TIL IGEN** (`kun_ejeren_saetter_priser`, roller.sql 2/9).
+Samme greb som 10/9: `request.jwt.claims` sat **lokalt** i en `do`-blok for
+netop de skrivninger, ryddet igen bagefter. **Vagten er URØRT** — bevist med en
+prøve, der forsøger en prisændring uden claim og altid ruller tilbage:
+`prisvagten afviste skrivningen = t`.
+⚠️ **Og den rammer kun UPDATE**, ikke INSERT: nye varer kan oprettes med pris.
+⚠️ **Logbogen dækker IKKE menukortet** — kun `bestillinger`, `bordbestillinger`,
+`forespoergsler` og `udlejninger`. En prisændring skriver altså ingen persons
+navn nogen steder; den bekymring var bygget på en antagelse, der ikke holdt.
+
+⚠️ **EN NY KATEGORI FALDER UD AF BESTILLINGEN.** Da `Sandwich` (id 63) blev
+oprettet, forsvandt flæskestegs-, frikadelle- og bøfsandwich fra forsidens
+bestilling: `bestilbare_kategorier` kendte ikke den nye kategori. Fanget med det
+samme og rettet. **Opretter du en kategori, hvis varer skal kunne bestilles,
+skal dens id på den liste** — ellers er varerne synlige på kortet og umulige at
+købe, uden en fejl nogen steder.
+
+**Søgningen i admins menukort er lavet om** (ejerens ord: *"gør søgefeltet langt
+langt bedre så de kan finde det"*). Den var ren delstreng på navn og
+beskrivelse. Nu foldes ø/æ/å og oe/ae/aa sammen, **kategoriens navn tæller med**,
+og flere ord må stå i hvert sit felt.
+
+⚠️ **FØRSTE UDGAVE BRÆKKEDE TO EKSISTERENDE PRØVER.** Hvert ord måtte matche
+hvor som helst, og så gav `"Øl nr. 3"` alle tolv **pølser**: "øl" foldes til
+"ol", og "ol" står inde i "polser". **Fanget ved at køre HELE filen** — ikke kun
+mine egne prøver. Værnet er nu, at ord på **højst to tegn skal stå først i et
+ord**; længere ord må gerne stå inde i et andet, ellers kunne "løg" ikke finde
+"rødløg" og "vand" ikke "sodavand".
+
+⚠️ **"uden pris" blev IKKE en søgeterm** — filteret findes allerede som knap
+("Mangler pris" i `FILTRE`). Målt før byggeriet; to veje til det samme er dét,
+huset er brændt på før.
+
+Seks prøver, to af dem modstykker, alle tre dele falsificeret hver for sig.
+**457 grønne** (95 i menukort-filen + 362 over tretten filer, der rører fanen).
+
 ⚠️ **ÅBNINGSTIDEN ER ÆNDRET I PRODUKTIONEN: 10.00 → 08.00, alle syv dage**
 (18/9, ejerens ord: *"morgenmaden skal dog være øverst fra 08-11"*, og på
 spørgsmålet om hvilken vej: *"du gør det"*). **Ingen SQL-fil, ingen kodeændring
