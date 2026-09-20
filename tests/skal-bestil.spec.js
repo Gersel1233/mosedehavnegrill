@@ -1380,8 +1380,10 @@ test.describe('Valg på en vare er sin egen linje', () => {
     /* ⚠️ Mål på tillægs-mærket, ikke på hele linjen: tæller-knappen
        hedder selv "+", så "linjen indeholder ikke et plus" kan
        aldrig være sandt (målt 20/9). */
+    /* "+5,-" og ikke "+5 kr." — husets prisform, og den eneste der
+       ikke brækker over to linjer i mærket (målt på iPhone 13, 20/9). */
     await expect(pita.locator('.item-valg-linje[data-valg="Tun"] .item-valg-tillaeg'))
-      .toHaveText('+5 kr.');
+      .toHaveText('+5,-');
     await expect(pita.locator('.item-valg-linje[data-valg="Kebab"] .item-valg-tillaeg'))
       .toHaveCount(0);
 

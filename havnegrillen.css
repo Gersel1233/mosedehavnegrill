@@ -700,9 +700,11 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 /* VALG PÅ EN VARE (15/9): én linje pr. valg med sin egen tæller, under navnet. Ingen ny skriftstørrelse — navnet arver rækkens. */
 .item-valg{display:grid;gap:6px;margin-top:8px}
 .item-valg-linje{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.item-valg-navn{font-weight:600}
-/* TILLÆGGET PÅ ET VALG (20/9): is-kortet lover "glutenfri vaffel +3,-", og de tre kroner skal stå VED valget, ikke først på kvitteringen. margin-right:auto holder det op ad navnet — uden den lander det midt i linjen, fordi rækken er space-between. */
-.item-valg-tillaeg{margin-right:auto;font-size:12px;font-weight:600;color:var(--red)}
+/* ⚠️ Navnet er det, der må brække (20/9). Uden flex+min-width:0 skrumper det ikke, og så er det tillægget, der bliver klemt. */
+.item-valg-navn{font-weight:600;flex:1 1 auto;min-width:0}
+/* TILLÆGGET PÅ ET VALG (20/9): is-kortet lover "glutenfri vaffel +3,-", og de tre kroner skal stå VED valget, ikke først på kvitteringen. margin-right:auto holder det op ad navnet — uden den lander det midt i linjen, fordi rækken er space-between.
+   ⚠️ nowrap: MÅLT på iPhone 13, at mærket blev 21 px bredt og 30 px højt — "+3 kr." brækkede over to linjer midt i en prisoplysning. */
+.item-valg-tillaeg{margin-right:auto;flex:0 0 auto;white-space:nowrap;font-size:12px;font-weight:600;color:var(--red)}
 .item .add{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:var(--red)}
 /* ⚠️ ET ANSIGT PR. KATEGORI I BESTILLINGEN (29/8). Fem rækker ren
    tekst — Grill fra pladen, Smørrebrød, Is og desserter … — hvor

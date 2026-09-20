@@ -1019,7 +1019,9 @@
              hun trykker plus, ikke på bonen bagefter. */
           var tillæg2 = Butik.valgTillaeg ? Butik.valgTillaeg(v, valgNavn) : 0;
           if (tillæg2) {
-            linje.appendChild(lav('span', 'stk-valg-tillaeg', '+' + Butik.pris(tillæg2)));
+            /* "+3,-" — samme form som kortet og som resten af siden;
+               "+3 kr." brækkede over to linjer på telefonen (20/9). */
+            linje.appendChild(lav('span', 'stk-valg-tillaeg', '+' + Butik.kroner(tillæg2)));
           }
           var t2 = lav('div', 'taeller');
           var ned2 = lav('button', 'glass rund', '−');

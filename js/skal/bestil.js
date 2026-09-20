@@ -769,9 +769,13 @@
            "glutenfri vaffel +3,-", og et tillæg, gæsten først møder
            på kvitteringen, er en regning, ingen har sagt ja til.
            Prisen selv regnes af Butik.prisMedValg — ét sted. */
+        /* ⚠️ "+3,-" OG IKKE "+3 kr."  (målt på telefonen 20/9). Mærket
+           blev 21 px bredt, og "+3 kr." brækkede over to linjer.
+           Kortet skriver "+3,-", og resten af siden skriver priser på
+           samme form — kortere OG husets egen. */
         var tillæg = Butik.valgTillaeg ? Butik.valgTillaeg(v, valgNavn) : 0;
         if (tillæg) {
-          linje.appendChild(lav('span', 'item-valg-tillaeg', '+' + Butik.pris(tillæg)));
+          linje.appendChild(lav('span', 'item-valg-tillaeg', '+' + Butik.kroner(tillæg)));
         }
         linje.appendChild(tællerFor(nøgle + '|valg|' + valgNavn, v.navn,
           Butik.prisMedValg ? Butik.prisMedValg(v, valgNavn) : v.pris, valgNavn,

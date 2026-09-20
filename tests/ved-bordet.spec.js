@@ -750,7 +750,7 @@ test.describe('Valg på en vare ved bordet', () => {
 
     const pita = page.locator('#bestil-stykker .stk-linje[data-vare="Pitabrød"]');
     await expect(pita.locator('.stk-valg-linje[data-valg="Tun"] .stk-valg-tillaeg'))
-      .toHaveText('+5 kr.');
+      .toHaveText('+5,-');
     await expect(pita.locator('.stk-valg-linje[data-valg="Kebab"] .stk-valg-tillaeg'))
       .toHaveCount(0);
 
