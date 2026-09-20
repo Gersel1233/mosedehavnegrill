@@ -1005,6 +1005,104 @@ test.describe('Søgningen finder pølsen', () => {
   });
 });
 
+/* ============================================================
+   SØGNINGEN SKAL KUNNE TÅLE, HVORDAN MAN FAKTISK SKRIVER  (20/9)
+   ------------------------------------------------------------
+   Ejerens ord: *"i menukortet i admin gør søgefeltet langt langt
+   bedre så de kan finde det"* — og grunden er konkret: seks varer
+   står uden pris og venter på, at nogen kan FINDE dem.
+
+   Søgningen var ren delstreng på navn og beskrivelse. Det slog
+   fejl på tre ting, der sker hver dag:
+
+     · "polser" fandt ikke "Pølser". Man skriver ikke altid ø, og
+       på en iPad i et køkken skriver man slet ikke omhyggeligt.
+     · "Ispinde" fandt ingenting, fordi det er en KATEGORI. Man
+       husker, hvor varen står — ikke hvad den hedder.
+     · "pølser rødløg" fandt ingenting, fordi de to ord står i
+       hvert sit felt.
+
+   ⚠️ OG "UDEN PRIS" BLEV IKKE EN SØGETERM. Det filter findes
+   allerede som knap ("Mangler pris"). To veje til det samme er
+   dét, huset er brændt på før.
+   ============================================================ */
+test.describe('Søgningen er klogere end stavemåden', () => {
+
+  /* Kategorien Iskugler får varenavne UDEN ordet i sig, så
+     kategorisøgningen måler sig selv og ikke navnet. */
+  function kortMedOmdoebteKugler() {
+    const d = stortKort();
+    d.menu_varer = d.menu_varer.map((v) => (v.kategori_id === 15
+      ? Object.assign({}, v, { navn: 'Vaniljekugle nr. ' + v.sortering })
+      : v));
+    return d;
+  }
+
+  test('"polser" finder pølserne — også uden ø på tastaturet',
+    async ({ page }) => {
+      await åbnMenufanen(page, { data: stortKort() });
+      await page.locator('#menu-soeg').fill('polser');
+      /* Tallet udefra: tolv varer hedder "Pølser nr. N" i kulissen.
+         Finder den 252, matcher den alt — og så måler prøven intet. */
+      await expect(page.locator('.vare-raekke')).toHaveCount(12);
+    });
+
+  test('kategoriens navn tæller med — man husker hvor, ikke hvad',
+    async ({ page }) => {
+      await åbnMenufanen(page, { data: kortMedOmdoebteKugler() });
+      /* Ingen vare hedder "Iskugler" mere — kun kategorien gør. */
+      await page.locator('#menu-soeg').fill('Iskugler');
+      await expect(page.locator('.vare-raekke')).toHaveCount(12);
+    });
+
+  test('to ord må gerne stå i hvert sit felt', async ({ page }) => {
+    const d = stortKort();
+    /* ⚠️ VARE NR. 40 LIGGER I TAPAS, IKKE I PØLSER — tolv varer pr.
+       kategori, så nr. 40 er den fjerde tapas. Jeg skrev "pølser"
+       første gang, og prøven faldt med rette. */
+    d.menu_varer[40] = Object.assign({}, d.menu_varer[40],
+      { beskrivelse: 'Med syltede rødløg' });
+    await åbnMenufanen(page, { data: d });
+    // "tapas" står i navn og kategori, "rødløg" kun i beskrivelsen.
+    await page.locator('#menu-soeg').fill('tapas rødløg');
+    await expect(page.locator('.vare-raekke')).toHaveCount(1);
+  });
+
+  /* ⚠️ OG ET KORT ORD MÅ IKKE RAMME INDE I ET ANDET. "øl" foldes
+     til "ol", og "ol" står inde i "polser": uden værnet gav en
+     søgning efter øl alle tolv pølser. To prøver faldt på det. */
+  test('"øl" giver øl og ikke pølser', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('#menu-soeg').fill('øl');
+    await expect(page.locator('.vare-raekke')).toHaveCount(12);
+  });
+
+  /* Men et ord på tre tegn må gerne stå inde i et andet — ellers
+     kunne man ikke finde rødløg ved at skrive løg. */
+  test('"løg" finder rødløg inde i ordet', async ({ page }) => {
+    const d = stortKort();
+    d.menu_varer[40] = Object.assign({}, d.menu_varer[40],
+      { beskrivelse: 'Med syltede rødløg' });
+    await åbnMenufanen(page, { data: d });
+    await page.locator('#menu-soeg').fill('løg');
+    await expect(page.locator('.vare-raekke')).toHaveCount(1);
+  });
+
+  /* ⚠️ MODSTYKKET. En søgning, der er blevet så large, at den
+     matcher alt, er værre end den snævre: den ser ud til at virke
+     og giver 252 rækker, hver gang man taster. */
+  test('men den finder stadig ikke noget, der ikke er der',
+    async ({ page }) => {
+      await åbnMenufanen(page, { data: stortKort() });
+      await page.locator('#menu-soeg').fill('flødeskumsbolle');
+      await expect(page.locator('.vare-raekke')).toHaveCount(0);
+
+      /* Og to ord, hvor kun det ene findes, er ikke et træf. */
+      await page.locator('#menu-soeg').fill('pølser flødeskumsbolle');
+      await expect(page.locator('.vare-raekke')).toHaveCount(0);
+    });
+});
+
 test.describe('Kategorierne folder sig, når kortet er langt', () => {
 
   /* ⚠️ MÅLT, IKKE GÆTTET. Ejerens kort er 242 varer i 21

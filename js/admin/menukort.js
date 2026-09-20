@@ -706,12 +706,69 @@
      varer: "hvor er pølsen henne" er tyve sekunders rulning uden
      den. Der søges i BÅDE navn og beskrivelse — ejeren husker
      ikke altid, hvad varen hedder, men han husker, hvad der er i
-     den. */
+     den.
+
+     ⚠️ OG DEN SKAL TÅLE, HVORDAN MAN FAKTISK SKRIVER  (20/9).
+     Ejerens ord: *"gør søgefeltet langt langt bedre så de kan
+     finde det"*. Den var ren delstreng, og den fejlede på tre
+     ting, der sker hver dag:
+
+       · "polser" fandt ikke "Pølser". Man skriver ikke ø, når man
+         har travlt — og slet ikke på en iPad i et køkken.
+       · "Ispinde" fandt ingenting, fordi det er en KATEGORI. Man
+         husker, HVOR varen står, ikke hvad den hedder.
+       · "pølser rødløg" fandt ingenting, fordi de to ord står i
+         hvert sit felt.
+
+     ⚠️ "UDEN PRIS" BLEV IKKE EN SØGETERM. Det filter findes
+     allerede som knap ("Mangler pris" i FILTRE). To veje til det
+     samme er dét, huset er brændt på før. */
+
+  /* ø/æ/å og oe/ae/aa foldes til det samme, så stavemåden ikke
+     afgør, om man finder sin vare. Rækkefølgen er med vilje:
+     ø→o FØR oe→o, ellers ville "Pølse" blive til "plse". */
+  function fold(s) {
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/ø/g, 'o').replace(/æ/g, 'a').replace(/å/g, 'a')
+      .replace(/oe/g, 'o').replace(/ae/g, 'a').replace(/aa/g, 'a');
+  }
+
+  function katNavnFor(id) {
+    var fundet = ((Admin.data && Admin.data.menu_kategorier) || [])
+      .filter(function (k) { return String(k.id) === String(id); })[0];
+    return fundet ? fundet.navn : '';
+  }
+
+  /* ⚠️ ET KORT ORD SKAL STÅ FØRST I ET ORD — MÅLT, IKKE GÆTTET.
+
+     Første udgave lod hvert søgeord matche hvor som helst. Så gav
+     "Øl nr. 3" alle tolv PØLSER, fordi "øl" foldes til "ol", og
+     "ol" står inde i "polser". To prøver faldt på det.
+
+     Men kravet må ikke gælde alle ord: "løg" skal stadig finde
+     "rødløg", og "vand" skal finde "sodavand". Grænsen går ved to
+     tegn — det er dér, et ord er så kort, at det rammer tilfældigt
+     inde i et andet. */
+  function harOrdet(hoestak, o) {
+    if (o.length > 2) return hoestak.indexOf(o) !== -1;
+    var i = hoestak.indexOf(o);
+    while (i !== -1) {
+      if (i === 0 || /[^a-z0-9]/.test(hoestak.charAt(i - 1))) return true;
+      i = hoestak.indexOf(o, i + 1);
+    }
+    return false;
+  }
+
   function passerSoeg(v) {
     if (!soeg) return true;
-    var s2 = soeg.toLowerCase();
-    return String(v.navn || '').toLowerCase().indexOf(s2) !== -1
-      || String(v.beskrivelse || '').toLowerCase().indexOf(s2) !== -1;
+    var hoestak = fold(v.navn) + ' ' + fold(v.beskrivelse)
+      + ' ' + fold(katNavnFor(v.kategori_id));
+    /* ⚠️ ALLE ord skal findes, ikke bare ét. Ellers ville "pølser
+       flødeskumsbolle" give alle tolv pølser — en søgning, der
+       svarer på noget andet end det, der blev spurgt om. */
+    var ord = fold(soeg).split(/\s+/).filter(Boolean);
+    if (!ord.length) return true;
+    return ord.every(function (o) { return harOrdet(hoestak, o); });
   }
 
   function passer(v) {
