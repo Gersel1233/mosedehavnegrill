@@ -104,7 +104,7 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   dato-vaern-resten bordnummer bestilling-status luge-loft
   kategori-ugedage bestilling-kanal menukort-raekkefoelge push
   sagsnummer aabent-og-antal-vaern ugepaamindelse gaestens-regler
-  kanal-vaern bord-plads"
+  kanal-vaern bord-plads gaester-ved-bordet"
 # ⚠️ vare-valg er flyttet op foran roller (20/9): da et valg fik lov at
 #    koste ekstra, blev mosede_valg_navn/_tillaeg/_aftryk faelles
 #    ordforraad, som baade roller og gaestens-regler kalder. Stod den

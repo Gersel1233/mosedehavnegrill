@@ -1281,4 +1281,44 @@ test.describe('Status og type kan ikke forveksles', () => {
        den røde værdi står i CSS'en som rgba(214, 42, 58, .12). */
     expect(type, 'typemærket blev farvet af kortet').toContain('214, 42, 58');
   });
+
+  /* ============================================================
+     FLERE GÆSTER END RETTER  (20. sep 2026)
+     ------------------------------------------------------------
+     Gæsten kan nu skrive, hvor mange der sidder ved bordet. Det
+     tal alene er rart; det, der betyder noget, er FORSKELLEN —
+     kommer der fire, og er der bestilt mad til to, overrasker
+     opdækningen, når maden bæres ud.
+
+     Tre tilstande, fordi en regel, der bare satte en advarsel på
+     alt, skal kunne falde: advarsel, roligt tal, og intet mærke.
+     Feltet er frivilligt, så INTET mærke er den normale tilstand —
+     et "0 pers." på hvert kort ville være støj på den skærm,
+     personalet skimmer hurtigst. */
+  test('kortet advarer, når der kommer flere, end der er mad til', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [
+      Object.assign(b(21, I_DAG, '13:00', 'Ida Ravn', 'Frikadeller', 2),
+        { antal_personer: 4, hvordan: 'spis_her', bord_nummer: '7' }),
+      Object.assign(b(22, I_DAG, '13:30', 'Per Vinge', 'Frikadeller', 3),
+        { antal_personer: 2, hvordan: 'spis_her', bord_nummer: '7' }),
+      b(23, I_DAG, '14:00', 'Uffe Lund', 'Frikadeller', 2),
+    ];
+    await åbnFanen(page, d);
+
+    const flere = page.locator('.bestil-kort', { hasText: 'Ida Ravn' });
+    await expect(flere.locator('.maerke.m-flere'),
+      'fire gæster og mad til to gav ingen advarsel').toContainText('4 pers.');
+    await expect(flere.locator('.maerke.m-flere')).toContainText('mad til 2');
+
+    /* Modstykket: mad nok, så tallet står roligt og uden "mad til". */
+    const rolig = page.locator('.bestil-kort', { hasText: 'Per Vinge' });
+    await expect(rolig.locator('.maerke.m-pers')).toContainText('2 pers.');
+    await expect(rolig.locator('.maerke.m-flere')).toHaveCount(0);
+
+    /* Og modstykket til det hele: uden et tal er der intet mærke. */
+    const uden = page.locator('.bestil-kort', { hasText: 'Uffe Lund' });
+    await expect(uden.locator('.maerke.m-pers')).toHaveCount(0);
+    await expect(uden.locator('.maerke.m-flere')).toHaveCount(0);
+  });
 });

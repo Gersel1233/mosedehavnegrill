@@ -778,6 +778,12 @@
         'Bordbestilling · bestilt ved bordet · laves nu og bæres ud'));
       k.appendChild(bordLinje);
     } else if (type) top.appendChild(type);
+    /* HVOR MANGE SIDDER DER — og er der mad nok til dem? (20/9)
+       Mærket står kun, når gæsten HAR skrevet et tal; feltet er
+       frivilligt. Reglen bor i Admin.gaesteMaerke, så køkkenet og
+       Overblik kan spørge den samme, når de skal vise det. */
+    var gaester = Admin.gaesteMaerke && Admin.gaesteMaerke(b);
+    if (gaester) top.appendChild(gaester);
     /* GÆNGEREN SES FØR MADEN LAVES — spiis' brief (22/8), betalt
        med rigtige middage i skraldespanden. Mærket står KUN på
        bestillinger, der stadig er i arbejde: på en afhentet er

@@ -2339,6 +2339,28 @@
       // stavefejl blive en afvisning gæsten ikke kan gøre noget ved.
     };
 
+    /* HVOR MANGE SIDDER DER  (20/9, supabase/gaester-ved-bordet.sql)
+       ------------------------------------------------------------
+       Gæstens eget tal, frivilligt. Køkkenet skal kunne se, at der
+       kommer fire, men er bestilt mad til to — det er en opdækning,
+       der ellers overrasker.
+
+       ⚠️ KOLONNEN SENDES KUN, NÅR DER FAKTISK ER ET TAL. Feltet er
+       frivilligt, så `antal_personer: null` på hver eneste
+       bestilling ville være støj — og huset har allerede betalt for
+       en kolonne sendt ubetinget: PGRST204 på hver bestilling, hvis
+       databasen ikke har fået migreringen endnu. Samme greb som
+       antal_tilbage og billede.
+
+       ⚠️ Grænserne er databasens egne (1-60). Et tal uden for
+       skiven ville blive afvist ved send, og en oplysning, der kan
+       spærre for en bestilling, er ikke værd at have — så den
+       falder bare ud i stedet. */
+    var personer = Math.round(Number(b.antal_personer));
+    if (isFinite(personer) && personer >= 1 && personer <= 60) {
+      raekke.antal_personer = personer;
+    }
+
     // Øvetilstand: der er ingen database, så bestillingen lægges
     // lokalt. Så kan flowet prøves igennem uden nøgle.
     if (!SKY) {

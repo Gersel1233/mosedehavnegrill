@@ -8703,6 +8703,31 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   font-weight: 600;
 }
 
+/* ============================================================
+   HVOR MANGE SIDDER DER  (20/9)
+   ------------------------------------------------------------
+   To mærker med samme form og to forskellige budskaber. Det
+   rolige er en OPLYSNING — fire personer, der skal dækkes op
+   til — og ligner derfor to-go-mærket: samme dæmpede flade.
+
+   Det gule er en ADVARSEL: der kommer flere, end der er bestilt
+   mad til. Farven er den samme, gængeren bruger (linje 7395), og
+   det er med vilje — begge siger "kig på den her, før maden
+   laves". En tredje advarselsfarve ville gøre begge svagere.
+
+   ⚠️ IKKE den røde. Den er leveringens og statussens i forvejen,
+   og huset betalte 8/9 for at to slags oplysning så ens ud. */
+.maerke.m-pers {
+  background: rgba(36, 26, 23, .06);
+  color: var(--muted);
+  font-weight: 600;
+}
+.maerke.m-flere {
+  background: rgba(214, 158, 32, .18);
+  color: #7a5a17;
+  font-weight: 700;
+}
+
 /* Et bord, personalet har slukket. Mærkatet på det virker ikke,
    og rækken skal se sådan ud — ellers ligner listen i admin en
    liste over borde, der tager imod. */

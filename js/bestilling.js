@@ -2398,6 +2398,13 @@
        sender. Det er gæstens eget værn mod en forkert bestilling
        — og det bliver det eneste, den dag bestillinger bekræftes
        automatisk. */
+    /* HVOR MANGE SIDDER DER (20/9). Frivilligt felt, og det findes
+       kun ved bordet — derfor $() og ikke et krav. Butik.bestil
+       kaster tallet væk, hvis det ligger uden for databasens skive,
+       så en tastefejl aldrig kan spærre for en bestilling. */
+    var personerFelt = $('bestil-personer');
+    var personer = personerFelt ? personerFelt.value : '';
+
     visKig({
       navn: navn, telefon: telefon, email: email, besked: besked,
       kanal: hvilkenKanal(),
@@ -2405,6 +2412,7 @@
       leverings_adresse: skalLeveres ? adresse.trim() : null,
       bord_nummer: vedBord,
       bord_kode: vedBord ? vedBordKoden() : null,
+      antal_personer: String(personer).trim() === '' ? null : Number(personer),
       linjer: medTillaeg(linjer), fyld: kurv.fyld.slice(),
     });
   }

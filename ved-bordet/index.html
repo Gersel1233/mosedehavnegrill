@@ -203,6 +203,34 @@
         </div>
       </div>
 
+      <!-- ============ HVOR MANGE SIDDER DER? ================
+           Mikkels ord (20/9): "måske man skal ind i QR-code-tingen
+           angive hvor mange siddende man er, så de ved det."
+
+           Køkkenet får tallet ved siden af antallet af retter, og
+           admin siger til, når der kommer flere, end der er bestilt
+           mad til — "4 pers. · mad til 2". Det er en opdækning, der
+           ellers overrasker, når maden bæres ud.
+
+           ⚠️ FRIVILLIGT, og det er et valg. Huset har haft reglen
+           siden 23/8: en bestilling må ikke møde sten på vejen. Et
+           påkrævet felt ville koste et tryk på hver eneste
+           bestilling for en oplysning, der er rar at have — ikke
+           nødvendig. Står det tomt, opfører alt sig som før.
+
+           ⚠️ OG DET ER IKKE ANTAL RETTER. Kolonnen hedder
+           antal_personer; `antal` i samme tabel er retterne. De to
+           må aldrig forveksles, og det er netop deres forskel, der
+           er hele advarslen. ============================== -->
+      <div class="felt felt-personer">
+        <label for="bestil-personer">Hvor mange sidder I?
+          <span class="valgfri">(valgfrit)</span></label>
+        <input id="bestil-personer" type="number" name="antal_personer"
+               inputmode="numeric" min="1" max="60" step="1"
+               placeholder="Så ved køkkenet, hvor mange der skal dækkes op til">
+        <p class="fejl skjult" id="fejl-personer"></p>
+      </div>
+
       <!-- ============ ALLERGI ER SIT EGET FELT ==============
            Det stod i "Besked" før, mellem "ekstra remoulade" og
            "vi sidder ude bagved". Et køkken, der skimmer en

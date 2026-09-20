@@ -1197,6 +1197,41 @@
   }
 
   /* ============================================================
+     FLERE GÆSTER END RETTER  (20/9)
+     ------------------------------------------------------------
+     Gæsten kan nu skrive, hvor mange der sidder ved bordet
+     (supabase/gaester-ved-bordet.sql). Tallet er rart i sig selv —
+     der skal dækkes op til fire — men det, der betyder noget, er
+     FORSKELLEN: kommer der fire, og er der bestilt mad til to, så
+     er det en opdækning, der ellers overrasker, når maden bæres
+     ud. Gennemgangen mod søsterprojektet bad om netop den advarsel.
+
+     ⚠️ FELTET ER FRIVILLIGT, så intet mærke er den normale
+     tilstand. Et "0 pers." på hvert kort ville være støj på den
+     skærm, personalet skimmer hurtigst.
+
+     ⚠️ OG DEN ADVARER KUN, NÅR DER FAKTISK ER MAD AT TÆLLE. En
+     bestilling, hvor alle linjer er emballage, giver retter = 0, og
+     "4 pers. · mad til 0" ville være en advarsel om ingenting.
+
+     Reglen bor her og ikke i fanen: køkkenskærmen og Overblik skal
+     kunne spørge den samme, den dag de skal vise det. Det er
+     husets ældste ar, at to skærme regner det samme hver for sig. */
+  function gaesteMaerke(b) {
+    if (!b) return null;
+    var pers = Math.round(Number(b.antal_personer));
+    if (!isFinite(pers) || pers < 1) return null;
+    var retter = retterI([b]);
+    var faerre = retter > 0 && pers > retter;
+    var e = lav('span', 'maerke ' + (faerre ? 'm-flere' : 'm-pers'),
+      (faerre ? '⚠️ ' : '👥 ') + pers + ' pers.'
+        + (faerre ? ' · mad til ' + retter : ''));
+    e.setAttribute('data-personer', String(pers));
+    if (faerre) e.setAttribute('data-faerre-retter', String(retter));
+    return e;
+  }
+
+  /* ============================================================
      KONTAKTEN TIL GÆSTEN — ÉT STED  (1/9)
      ------------------------------------------------------------
      Kundens ord med et skærmbillede af Overblik: *"det her er
@@ -1371,6 +1406,7 @@
     typeMaerke: typeMaerke,
     typeTekst: typeTekst,
     retterI: retterI,
+    gaesteMaerke: gaesteMaerke,
     kontakt: kontakt,
     pæntNavn: pæntNavn,
     erAllergi: erAllergi,

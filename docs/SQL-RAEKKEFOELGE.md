@@ -44,7 +44,7 @@ og derfra:
   → menukort-raekkefoelge.sql → sagsnummer.sql
   → aabent-og-antal-vaern.sql → ugepaamindelse.sql
   → gaestens-regler.sql → kanal-vaern.sql
-  → bord-plads.sql
+  → bord-plads.sql → gaester-ved-bordet.sql
 ```
 
 **⚠️ `vare-valg.sql` er flyttet frem (20/9)** — den stod efter

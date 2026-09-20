@@ -771,6 +771,55 @@ test.describe('Valg på en vare ved bordet', () => {
   });
 });
 
+/* ============================================================
+   HVOR MANGE SIDDER DER VED BORDET  (20. sep 2026)
+   ------------------------------------------------------------
+   Mikkels ord: "måske man skal ind i QR-code-tingen angive hvor
+   mange siddende man er, så de ved det." Køkkenet skal kunne
+   dække op til fire, også når der kun er bestilt mad til to.
+
+   ⚠️ FELTET ER FRIVILLIGT, og modstykket er derfor lige så vigtigt
+   som prøven selv: et tomt felt må ALDRIG sende et tal, og det må
+   ikke spærre for bestillingen. Huset har haft reglen siden 23/8 —
+   en bestilling må ikke møde sten på vejen. */
+test.describe('Hvor mange sidder der ved bordet', () => {
+  function medRet() {
+    const g = grunddata();
+    g.menu_kategorier.push({ id: 31, afdeling: 'mad', navn: 'Retter', sortering: 2, aktiv: true });
+    g.menu_varer.push({ id: 301, kategori_id: 31, navn: 'Frikadeller', beskrivelse: null,
+      pris: 75, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true });
+    return { menu_kategorier: g.menu_kategorier, menu_varer: g.menu_varer,
+      indstillinger: { bestilbare_kategorier: [1, 6, 9, 31] } };
+  }
+
+  async function bestil(page, retter, personer) {
+    await åbnBord(page, '?bord=7', { data: medRet() });
+    const r = page.locator('#bestil-stykker .stk-linje[data-vare="Frikadeller"]');
+    for (let i = 0; i < retter; i++) await r.locator('button', { hasText: '+' }).click();
+    await page.fill('#bestil-navn', 'Sara Holm');
+    if (personer !== null) await page.fill('#bestil-personer', String(personer));
+    await page.locator('#bestil-send').click();
+    await page.locator('#kig-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+    return (await gemteData(page)).bestillinger[0];
+  }
+
+  test('tallet når hele vejen til den gemte række', async ({ page }) => {
+    const b = await bestil(page, 2, 4);
+    expect(b.antal_personer, 'køkkenet fik ikke at vide, hvor mange der sidder').toBe(4);
+    /* Og retterne er stadig retterne — de to tal må aldrig blandes
+       sammen. `antal` er mad, `antal_personer` er mennesker. */
+    expect(b.antal, 'antal er antal RETTER, ikke personer').toBe(2);
+  });
+
+  test('feltet er frivilligt — tomt spærrer ikke og sender intet tal', async ({ page }) => {
+    const b = await bestil(page, 1, null);
+    expect(b.antal_personer === undefined || b.antal_personer === null,
+      'et tomt felt sendte alligevel et tal').toBe(true);
+    expect(b.antal).toBe(1);
+  });
+});
+
 /* ⚠️ DAGENS RET MÅ IKKE RYGE UD AF KURVEN (16/9). rensKurv læste kun
    den gamle indstilling `dagens_ret`, men retten bor i tabellen
    dagens_retter siden 24/8. En gæst, der havde lagt dagens ret i
