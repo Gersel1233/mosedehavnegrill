@@ -13,10 +13,28 @@ Jeannette og Jims egen liste på ~60 punkter, videresendt af Mikkel).
 ⚠️ **ÅBNINGSTIDERNE VAR FORKERTE, OG DET VAR MIN FEJL.** Jeg satte 08–20 alle
 syv dage 17/9 efter beskeden *"morgenmaden skal være øverst fra 08-11"*. Ejernes
 egne tider er **10–20 man-tors, 10–22 fre, 09–22 lør, 09–21 søn** — rettet 20/9.
-⚠️ **Og det har en følge:** med åbning kl. 10 og `bestilling_varsel_timer = 1`
-er første bestilbare tidspunkt kl. 11 på hverdage — præcis dér, hvor morgen
-slutter. **Morgenmaden kan derfor kun stå øverst lør–søn**, hvor der åbnes kl. 9.
-Varslet skal sættes ned, hvis den skal virke på hverdage.
+⚠️ **VARSLET ER SAT TIL EJERNES EGNE TAL** (20/9): `varsel_min_togo = 30` og
+`varsel_min_bord = 15`. De står ordret i admin-noten fra 30/8 — *"man skal
+bestille tidligst 30 min in advance når det er to-go — udover bord, der er det
+15 min."* — men felterne havde aldrig været udfyldt, så `bestilling_varsel_timer
+= 1` gjaldt. ⚠️ `kanalVarsel` **erstatter** timetallet, den lægges ikke oveni;
+kategorier med eget `varsel_min` (Smørrebrød, Håndmadder, Platter: 1440)
+beholder deres døgn, og `mindsteVarsel` tager den MINDSTE af dem, siden sælger.
+
+⚠️ **OG MIN FØRSTE PÅSTAND OM MORGENMADEN VAR FORKERT.** Jeg skrev, at første
+bestilbare tidspunkt var kl. 11 på hverdage, så morgenmaden kun kunne stå øverst
+lør–søn. **Målt på en mandag, ikke ræsonneret:**
+
+| Kl. | Med 1 times varsel | Med 30 min |
+|---|---|---|
+| 09.00 | 10:00 · Morgenmad øverst | 10:00 · Morgenmad øverst |
+| **10.00** | **11:00 · frokost øverst** | **10:30 · Morgenmad øverst** |
+| 10.15 | 11:30 · frokost | 11:00 · frokost |
+
+Varslet bed altså kun i vinduet **10:00–10:30** — for den gæst, der åbner siden,
+netop som caféen lukker op. Før kl. 10 virkede morgenmaden hele tiden.
+**Første måling viste ingen forskel overhovedet, fordi jeg målte kl. 09** — og
+en måling uden forskel beviser ingenting.
 
 **~76 rettelser i menukortet, alle som DATA** — ingen kode, ingen udgivelse:
 13 varer slukket (pistolpølse, dürüm, begge Hansens, ishorn, sandwich stor,
