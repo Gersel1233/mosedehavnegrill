@@ -43,6 +43,60 @@ test.describe('Forsidens bestilling', () => {
     await expect(page.locator('#sumline')).toContainText('3 × Stegt rødspætte');
   });
 
+  /* ⚠️ EN DAG MED DAGENS RET SKAL KUNNE VÆLGES  (20/9)
+     ------------------------------------------------------------
+     Forsidens dagvælger regner dagene ud af VARERNES kategorier
+     alene (js/skal/bestil.js, visDage). Dagens ret har ingen
+     kategori, så den tæller ikke med — og ligger retten på en dag,
+     kategorierne ikke kan nå, falder dagen ud af vælgeren. Så står
+     valgtDag på i morgen, dagensRetter(data, i morgen) svarer tomt,
+     blokken tegnes aldrig, og knappen siger "Vælg noget først".
+
+     ⚠️ OG SIDEN ER DERMED STRENGERE END DATABASEN. For en linje
+     uden kategori gælder KANALENS varsel (gaestens-regler.sql:458),
+     ikke kategoriernes. Databasen ville tage imod bestillingen;
+     siden tilbyder den bare ikke. Det er tabt salg, ikke et værn.
+
+     Prøven sætter hele menukortet til et døgn og kanalen til en
+     halv time — to tal, der kommer udefra, og som peger hver sin
+     vej. Bestod prøven uden rettelsen, målte den sig selv. */
+  test('dagens ret kan bestilles, selv om ingen kategori kan nås i dag', async ({ page }) => {
+    const d = data();
+    d.indstillinger.kategori_tider = {};
+    d.menu_kategorier.forEach((k) => {
+      d.indstillinger.kategori_tider[k.id] = { varsel_min: 1440 };
+    });
+    d.indstillinger.varsel_min_togo = 30;
+    d.dagens_retter = [{ id: 1, lokation_id: 'mosede', dato: '2026-08-07',
+      navn: 'Stegt rødspætte', pris: 118, aktiv: true, sortering: 1, antal_tilbage: 20 }];
+
+    await åbn(page, { data: d });
+
+    const dage = await page.$$eval('#dato option', (o) => o.map((e) => e.value));
+    expect(dage, 'i dag faldt ud af dagvælgeren, selv om dagens ret kan nås')
+      .toContain('2026-08-07');
+
+    await page.locator('#dato').selectOption('2026-08-07');
+    await expect(page.locator('.dagens-blok')).toBeVisible();
+    await page.locator('.dagens-blok button[data-d="+"]').click();
+    await expect(page.locator('#sumline')).toContainText('1 × Stegt rødspætte');
+
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+
+    /* Retten SKAL bestilles til sin egen dag — databasens prisværn
+       slår op med `r.dato = new.hent_dato`. En ret tegnet på den
+       forkerte dag ville blive afvist ved send. */
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.hent_dato, 'retten blev bestilt til en anden dag, end den står på')
+      .toBe('2026-08-07');
+    expect(b.linjer.map((l) => [l.navn, l.pris]))
+      .toContainEqual(['Stegt rødspætte', 118]);
+  });
+
   /* ⚠️ RÆKKEFØLGEN ER MENUKORTETS PÅ HVER DAG  (13/9). Kundens ord:
      "når jeg skifter dagene på bestillingen ændrer rækkefølgen på
      sortimentet". Smørrebrødet stod forrest på de dage, hvor varslet

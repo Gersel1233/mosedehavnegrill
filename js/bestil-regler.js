@@ -635,6 +635,75 @@
     return ud;
   }
 
+  /* ============================================================
+     EN DAG MED DAGENS RET TÆLLER OGSÅ  (20/9)
+     ------------------------------------------------------------
+     muligeDage spørger VARERNES kategorier, og dagens ret har
+     ingen kategori. Lå retten på en dag, hvor intet på menukortet
+     kunne nås — typisk i dag, når kategoriernes varsel er passeret
+     — faldt dagen ud af vælgeren. Så stod valgtDag på i morgen,
+     Butik.dagensRetter(data, i morgen) svarede tomt, blokken blev
+     aldrig tegnet, og knappen sagde "Vælg noget først". Ejeren
+     kunne se retten på forsiden og troede, den kunne købes.
+
+     ⚠️ OG SIDEN VAR DERMED STRENGERE END DATABASEN. For en linje
+     uden kategori gælder KANALENS varsel og ikke kategoriernes —
+     det står i gaestens-regler.sql: "Ingen kategori: dagens ret …
+     Kanalens varsel gælder." Databasen ville have taget imod
+     bestillingen; siden tilbød den bare ikke. Det er tabt salg,
+     ikke et værn, og huset har hele tiden haft reglen den anden
+     vej: databasen må aldrig være strengere end siden.
+
+     Derfor null som katIds herunder — mindsteVarsel falder selv
+     tilbage på kanalen, præcis som databasen gør.
+
+     ⚠️ REGLEN BOR HER, fordi to flader skal bruge den. js/bestilling.js
+     regnede sit eget svar (enRetKanNaas), og forsiden havde slet
+     intet. Tre steder, der hver regner "kan retten nås?", bliver
+     uenige — det er husets ældste ar. */
+  function dageMedRet(d, hvordan) {
+    var ud = [];
+    var start = Butik.nu().dato;
+    if (!Butik.dagensRetter || !Butik.retKanBestilles) return ud;
+    for (var i = 0; i < DAGE_FREM && ud.length < 14; i++) {
+      var iso = Butik.isoPlus(start, i);
+      var retter = Butik.dagensRetter(d, iso) || [];
+      if (!retter.filter(Butik.retKanBestilles).length) continue;
+      if (tiderFor(d, iso, null, hvordan, null).length) ud.push(iso);
+    }
+    return ud;
+  }
+
+  /* Dagene, gæsten kan vælge imellem: menukortets OG dagens rets.
+     Sorteret og uden gengangere, med samme loft som muligeDage —
+     fjorten dage er, hvad vælgeren kan rumme uden at blive en
+     rulleliste, man giver op over for. */
+  /* ⚠️ OG TIDERNE PÅ DEN DAG  (20/9). Dagen kan være valgbar og
+     tidsvælgeren alligevel tom: tiderne regnes af de SAMME
+     kategorier. En dag, hvor kun dagens ret kan nås, gav en dag
+     uden et eneste klokkeslæt — og så kan der stadig ikke
+     bestilles. Kun på dage, hvor der FAKTISK står en bestilbar
+     ret, lægges kanalens tider til; alle andre dage måles
+     nøjagtigt som før. */
+  function bestilbareTider(d, iso, mindst, hvordan, katIds, smoerIds) {
+    var fraMenu = tiderFor(d, iso, mindst, hvordan, katIds, smoerIds);
+    if (!Butik.dagensRetter || !Butik.retKanBestilles) return fraMenu;
+    var retter = (Butik.dagensRetter(d, iso) || []).filter(Butik.retKanBestilles);
+    if (!retter.length) return fraMenu;
+    var set = {};
+    fraMenu.concat(tiderFor(d, iso, mindst, hvordan, null))
+      .forEach(function (t) { set[t] = true; });
+    return Object.keys(set).sort();
+  }
+
+  function bestilbareDage(d, mindst, hvordan, katIds, smoerIds) {
+    var set = {};
+    muligeDage(d, mindst, hvordan, katIds, smoerIds)
+      .concat(dageMedRet(d, hvordan))
+      .forEach(function (iso) { set[iso] = true; });
+    return Object.keys(set).sort().slice(0, 14);
+  }
+
   var MAANED = ['jan.', 'feb.', 'mar.', 'apr.', 'maj', 'juni',
     'juli', 'aug.', 'sep.', 'okt.', 'nov.', 'dec.'];
 
@@ -685,6 +754,9 @@
     tidligst: tidligst,
     tiderFor: tiderFor,
     muligeDage: muligeDage,
+    dageMedRet: dageMedRet,
+    bestilbareDage: bestilbareDage,
+    bestilbareTider: bestilbareTider,
     dagNavn: dagNavn,
     dagDato: dagDato,
   };

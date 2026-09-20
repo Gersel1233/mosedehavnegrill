@@ -965,8 +965,13 @@
     var lovlige = {};
     (u.varer || []).forEach(function (v) { lovlige[v.kategori_id + '|' + v.navn] = true; });
     (u.varianter || []).forEach(function (v) { lovlige['variant|' + v.navn] = true; });
-    var ret = dagensRet();
-    if (ret) lovlige['dagens|' + ret.navn] = true;
+    /* ⚠️ ALLE dagens retter, ikke kun den første (20/9). visVarer
+       tegner hver ret på dagen, men hvidlisten kendte kun nr. 1 —
+       så en gæst, der valgte ret nummer to, fik den slettet tavst
+       ud af kurven, så snart hun skiftede klokkeslæt. En vare, der
+       forsvinder af sig selv, er værre end en, der aldrig kunne
+       vælges: hun opdager det først på kvitteringen. */
+    dagensRetter().forEach(function (r) { lovlige['dagens|' + r.navn] = true; });
 
     Object.keys(kurv).forEach(function (k) {
       /* Et valg (15/9) hænger på varens nøgle: "12|Pitabrød|valg|Kebab". */
@@ -1180,7 +1185,15 @@
     var vælger = felt('dato');
     if (!vælger) return;
     var u = Butik.udvalg(data, side.udvalg, Butik.nu().dato, '', hvordan()) || {};
-    var dage = R.muligeDage(data, null, hvordan(), u.katIds);
+    /* ⚠️ DAGENS RET HAR INGEN KATEGORI (20/9), og dagene blev regnet
+       af kategorierne alene. Lå retten på en dag, menukortet ikke
+       kunne nå, faldt dagen ud af vælgeren — og retten kunne ses på
+       forsiden, men ikke købes. R.bestilbareDage lægger rettens egne
+       dage til; reglen bor i bestil-regler.js, så bordet og lugen
+       ikke kan blive uenige om, hvornår en ret kan nås. */
+    var dage = R.bestilbareDage
+      ? R.bestilbareDage(data, null, hvordan(), u.katIds)
+      : R.muligeDage(data, null, hvordan(), u.katIds);
     tøm(vælger);
 
     dage.forEach(function (iso) {
@@ -1226,7 +1239,12 @@
     if (!vælger) return;
     var før = vælger.value;
     var u2 = Butik.udvalg(data, side.udvalg, valgtDag, '', hvordan()) || {};
-    var tider = R.tiderFor(data, valgtDag, null, hvordan(), u2.katIds);
+    /* Samme grund som dagene ovenfor (20/9): dagens ret har ingen
+       kategori, så på en dag, hvor kun retten kan nås, stod
+       tidsvælgeren tom — og dagen var valgbar uden at kunne bruges. */
+    var tider = R.bestilbareTider
+      ? R.bestilbareTider(data, valgtDag, null, hvordan(), u2.katIds)
+      : R.tiderFor(data, valgtDag, null, hvordan(), u2.katIds);
     tøm(vælger);
     var ledige = [];
     tider.forEach(function (t) {
@@ -2094,9 +2112,17 @@
        står et telefonnummer. */
     var lukket = ((d.indstillinger || {}).saeson || {}).lukket
       || (d.indstillinger || {}).bestilling_aaben === false;
-    var kanBestilles = varerne().length > 0 || dagensRet();
+    /* ⚠️ valgtDag ER STADIG NULL HER  (20/9). visDage() har ikke
+       kørt endnu, så dagensRet() svarede altid null — og en dag med
+       UDELUKKENDE dagens ret ville skjule hele bestillingsafsnittet,
+       som om der var lukket. Spørg i stedet, om der findes en
+       bestilbar ret på en dag, gæsten kan nå; det svar kræver ingen
+       valgt dag. */
+    var kanBestilles = varerne().length > 0
+      || (R.dageMedRet ? R.dageMedRet(d, hvordan()).length > 0 : !!dagensRet());
 
-    if (lukket || !kanBestilles || !R.muligeDage(d).length) {
+    if (lukket || !kanBestilles
+        || !(R.bestilbareDage ? R.bestilbareDage(d) : R.muligeDage(d)).length) {
       var skjules = side.skjulHele
         ? (panel.closest ? panel.closest('section') : null) || panel
         : panel;
