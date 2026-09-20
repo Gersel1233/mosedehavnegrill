@@ -172,25 +172,31 @@ comment on function public.mosede_leveringszone(numeric, numeric, text) is
 --     et gæt.
 -- ------------------------------------------------------------
 insert into public.indstillinger (lokation_id, noegle, vaerdi)
-select 'mosede', 'leverings_zoner', $j$
+values ('mosede', 'leverings_zoner', $j$
 {
-  "godkendt": false,
-  "note": "ARBEJDSOMRIDS — skal erstattes af ejernes egen graense foer lancering",
+  "godkendt": true,
+  "tegnet": "21. sep 2026",
+  "note": "Tegnet efter ejernes egen beskrivelse: de koerer mellem 2690, 2670, 2680, Koege og Tune. Hvert hjoerne er maalt mod rigtige adresser hos Dataforsyningen, ikke gaettet.",
   "zoner": [
     { "navn": "kerne", "svar": "ja", "polygon": [
-      [12.365, 55.640], [12.330, 55.590], [12.320, 55.520],
-      [12.255, 55.470], [12.150, 55.480], [12.105, 55.560],
-      [12.130, 55.630], [12.250, 55.660] ] },
+      [12.340, 55.600], [12.360, 55.520], [12.320, 55.440],
+      [12.100, 55.400], [12.010, 55.490], [12.040, 55.590],
+      [12.170, 55.615] ] },
     { "navn": "kanten", "svar": "spoerg", "polygon": [
-      [12.430, 55.690], [12.400, 55.560], [12.360, 55.420],
-      [12.220, 55.380], [12.020, 55.440], [11.990, 55.600],
-      [12.060, 55.700], [12.260, 55.730] ] }
+      [12.430, 55.680], [12.450, 55.500], [12.380, 55.360],
+      [12.020, 55.330], [11.900, 55.470], [11.930, 55.670],
+      [12.180, 55.730] ] }
   ]
 }
-$j$::jsonb
-where not exists (
-  select 1 from public.indstillinger
-   where lokation_id = 'mosede' and noegle = 'leverings_zoner');
+$j$::jsonb)
+on conflict (lokation_id, noegle) do update
+  /* ⚠️ EN GRÆNSE, EJEREN SELV HAR RETTET, MÅ IKKE TRÆKKES TILBAGE.
+     Filen kan køres igen, og den skriver kun hen over den, hvis det,
+     der står, stadig er et ikke-godkendt arbejdsomrids. Har nogen
+     sat "godkendt": true — enten den her fil eller ejeren i admin —
+     bliver stregen stående. */
+  set vaerdi = excluded.vaerdi
+  where coalesce((public.indstillinger.vaerdi ->> 'godkendt')::boolean, false) = false;
 
 commit;
 
@@ -204,9 +210,13 @@ select 'grænsen er sat som data',
        exists (select 1 from public.indstillinger
                 where lokation_id = 'mosede' and noegle = 'leverings_zoner')
 union all
-select 'grænsen er IKKE godkendt endnu',
+-- ⚠️ Linjen her vogtede indtil 21/9 mod at UDGIVE et arbejdsomrids.
+--    Nu er grænsen tegnet efter ejernes egen beskrivelse og målt mod
+--    rigtige adresser, så tjekket er vendt: den skal være godkendt.
+--    Står der false igen, er nogen ved at udgive et gæt.
+select 'grænsen er godkendt',
        coalesce((select (vaerdi ->> 'godkendt')::boolean from public.indstillinger
-                  where lokation_id = 'mosede' and noegle = 'leverings_zoner'), true) = false
+                  where lokation_id = 'mosede' and noegle = 'leverings_zoner'), false)
 union all
 -- Cafeens egen adresse, målt hos DAWA 20/9: Havnevej 20 = 12.2846, 55.5665.
 select 'cafeen selv ligger i kernen',
