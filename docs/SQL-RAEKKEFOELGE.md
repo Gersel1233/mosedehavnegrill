@@ -36,16 +36,26 @@ og derfra:
   → vare-billede.sql → bord-loft-pr-dag.sql
   → kortets-priser-3.sql → smoerrebroed-kortet.sql
   → ejerens-oplysninger.sql → tillaeg-hensyn.sql
-  → kategori-dag-vaern-aktiv.sql → roller.sql
+  → kategori-dag-vaern-aktiv.sql → vare-valg.sql → roller.sql
   → levering-og-mindsteantal.sql
   → dato-vaern-resten.sql → bordnummer.sql
   → bestilling-status.sql → luge-loft.sql
   → kategori-ugedage.sql → bestilling-kanal.sql
   → menukort-raekkefoelge.sql → sagsnummer.sql
   → aabent-og-antal-vaern.sql → ugepaamindelse.sql
-  → gaestens-regler.sql → vare-valg.sql → kanal-vaern.sql
+  → gaestens-regler.sql → kanal-vaern.sql
   → bord-plads.sql
 ```
+
+**⚠️ `vare-valg.sql` er flyttet frem (20/9)** — den stod efter
+`gaestens-regler.sql`. Da et valg fik lov at koste ekstra, blev
+`mosede_valg_navn`, `mosede_valg_tillaeg` og `mosede_valg_tillaeg_aftryk`
+fælles ordforråd: `gaestens-regler.sql` læser valget med dem, og
+`roller.sql` bruger aftrykket til at se, om nogen har rettet pengene i
+et valg. Begge filer ville derfor kalde noget, der ikke fandtes endnu.
+`vare-valg.sql` laver kun kolonnen og de tre funktioner og afhænger
+ikke af nogen af dem, så den kan stå tidligt. `gaestens-regler.sql`
+siger selv fra med en klar besked, hvis den alligevel køres først.
 
 Fire filer står ikke i blokkene, men køres af byggeren på deres plads:
 `lukkedag-vaern.sql` (efter `dagsregler.sql`), `forespoergsel-kalender.sql` og

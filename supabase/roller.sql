@@ -228,7 +228,21 @@ begin
   select k.lokation_id into v_lok
     from public.menu_kategorier k where k.id = new.kategori_id;
 
-  if new.pris is distinct from old.pris
+  /* ⚠️ TILLÆGGET PÅ ET VALG ER OGSÅ EN PRIS  (20/9)
+     Siden 20/9 kan en valgmulighed koste ekstra ("Glutenfri vaffel
+     +3"), og de penge står i kolonnen `valg`, ikke i `pris`. Værnet
+     her så kun på `pris`, så en medarbejder kunne sætte den glutenfri
+     vaffel til 500 — uden om hele reglen om, at prisen er ejerens.
+
+     Kun PENGENE sammenlignes (mosede_valg_tillaeg_aftryk). Hun må
+     stadig gerne rette "Kebab" til "Kebabfyld": det er kortets tekst,
+     som hun også må rette i navn og beskrivelse.
+
+     ⚠️ to_jsonb(new) og ikke new.valg: udløseren skal kunne oprettes,
+     før kolonnen findes — samme greb som gaestens-regler.sql. */
+  if (new.pris is distinct from old.pris
+      or public.mosede_valg_tillaeg_aftryk(to_jsonb(new) -> 'valg')
+         is distinct from public.mosede_valg_tillaeg_aftryk(to_jsonb(old) -> 'valg'))
      and not public.er_ejer_for(coalesce(v_lok, 'mosede')) then
     raise exception 'kun_ejeren_saetter_priser';
   end if;
@@ -236,7 +250,7 @@ begin
 end $$;
 
 comment on function public.mosede_pris_er_ejerens() is
-  'En medarbejder må melde udsolgt og sætte antallet ned — ikke rette prisen. Kolonnerettigheder duer ikke: begge roller er authenticated.';
+  'En medarbejder må melde udsolgt og sætte antallet ned — ikke rette prisen, heller ikke tillægget på et valg (20/9). Kolonnerettigheder duer ikke: begge roller er authenticated.';
 
 drop trigger if exists menu_vare_pris_ejer on public.menu_varer;
 create trigger menu_vare_pris_ejer

@@ -100,11 +100,16 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   forespoergsel-kalender frokost smoerrebroed-forespoergsel
   bord-uden-telefon vare-billede bord-loft-pr-dag kortets-priser-3
   smoerrebroed-kortet ejerens-oplysninger tillaeg-hensyn
-  kategori-dag-vaern-aktiv roller levering-og-mindsteantal
+  kategori-dag-vaern-aktiv vare-valg roller levering-og-mindsteantal
   dato-vaern-resten bordnummer bestilling-status luge-loft
   kategori-ugedage bestilling-kanal menukort-raekkefoelge push
-  sagsnummer aabent-og-antal-vaern ugepaamindelse gaestens-regler vare-valg
+  sagsnummer aabent-og-antal-vaern ugepaamindelse gaestens-regler
   kanal-vaern bord-plads"
+# ⚠️ vare-valg er flyttet op foran roller (20/9): da et valg fik lov at
+#    koste ekstra, blev mosede_valg_navn/_tillaeg/_aftryk faelles
+#    ordforraad, som baade roller og gaestens-regler kalder. Stod den
+#    stadig her til sidst, ville begge filer doe paa en funktion, der
+#    ikke fandtes endnu. Se docs/SQL-RAEKKEFOELGE.md.
 
 fejl=0
 for f in $FILER; do

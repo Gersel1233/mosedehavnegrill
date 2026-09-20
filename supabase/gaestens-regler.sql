@@ -77,8 +77,27 @@
 --     SKAL mosede_gaestens_regler følge med. proev-gaestens-regler.sql
 --     prøver hver regel med et modstykke, der SKAL gå igennem.
 --
+--  ⚠️ VARE-VALG.SQL SKAL VÆRE KØRT FØRST  (20/9). Filen her kalder
+--     mosede_valg_navn og mosede_valg_tillaeg, som bor i vare-valg.sql
+--     (dér, hvor kolonnen bor). Mangler de, ville hver eneste
+--     bestilling fejle inde i udløseren — altså hele siden, ikke bare
+--     isen. Derfor siger den fra HER, hvor det står i klartekst,
+--     i stedet for på en gæsts bestilling en lørdag aften.
+--
 --  Kan køres igen. Prøven er proev-gaestens-regler.sql.
 -- ============================================================
+do $$
+begin
+  -- ⚠️ to_regprocedure, IKKE to_regproc (målt 20/9): to_regproc tager
+  --    et funktionsNAVN og svarer NULL på en signatur med argumenter.
+  --    Værnet sagde derfor fra, selv om funktionerne stod der.
+  if to_regprocedure('public.mosede_valg_navn(jsonb)') is null
+     or to_regprocedure('public.mosede_valg_tillaeg(jsonb, text)') is null then
+    raise exception
+      'Kør supabase/vare-valg.sql først — mosede_valg_navn/_tillaeg mangler.';
+  end if;
+end $$;
+
 begin;
 
 -- ------------------------------------------------------------
@@ -480,7 +499,16 @@ begin
     -- Kortet: kendt = findes (i hvilken som helst tilstand — udsolgt og
     -- slukket siger udsolgt-værnet selv); prisen = de rækker, der KAN
     -- bestilles og har en.
-    select array_agg(v.pris) filter (where v.aktiv and kat.aktiv and not v.udsolgt
+    --
+    -- ⚠️ OG VALGETS TILLÆG SKAL MED  (20/9). Opslaget er på navnet
+    --    alene, så en "Softice, stor · Glutenfri vaffel" til 48 ville
+    --    blive målt mod varens 45 og afvist som prisfusk — netop den
+    --    linje, det trykte kort lover. mosede_valg_tillaeg svarer 0
+    --    for alle andre valg og for varer uden valg, så resten af
+    --    kortet måles nøjagtigt som før.
+    select array_agg(v.pris
+             + public.mosede_valg_tillaeg(to_jsonb(v) -> 'valg', linje ->> 'variant'))
+             filter (where v.aktiv and kat.aktiv and not v.udsolgt
                                        and v.pris is not null),
            count(*) > 0
       into v_priser, v_kendt
@@ -522,12 +550,19 @@ begin
        kolonnen findes (så svarer den null, og intet ændrer sig).
        ⚠️ bool_and: står navnet i to kategorier, og har kun den ene
        valg, afvises intet — databasen må ikke være strengere end siden. */
+    /* ⚠️ jsonb_array_elements, IKKE _text  (20/9). Et valg kan nu være
+       et objekt ({"navn": "Glutenfri vaffel", "tillaeg": 3}), og
+       _text ville give hele JSON-teksten som "navn". Så ville intet
+       valg nogensinde matche, og HVER eneste isbestilling fra en
+       gæst ville blive afvist med bestilling_mangler_valg.
+       mosede_valg_navn læser begge former. */
     select coalesce(bool_and(jsonb_typeof(to_jsonb(v) -> 'valg') = 'array'), false),
            coalesce(bool_or(exists (
-             select 1 from jsonb_array_elements_text(
+             select 1 from jsonb_array_elements(
                case when jsonb_typeof(to_jsonb(v) -> 'valg') = 'array'
-                    then to_jsonb(v) -> 'valg' else '[]'::jsonb end) x(valg)
-              where lower(btrim(x.valg)) = lower(btrim(coalesce(linje ->> 'variant', ''))))), false)
+                    then to_jsonb(v) -> 'valg' else '[]'::jsonb end) x
+              where lower(public.mosede_valg_navn(x))
+                    = lower(btrim(coalesce(linje ->> 'variant', ''))))), false)
       into v_alle_valg, v_valg_ok
       from public.menu_varer v
       join public.menu_kategorier kat on kat.id = v.kategori_id
