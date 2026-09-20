@@ -1638,7 +1638,21 @@
     function herMed(katId) {
       return valgte.indexOf(Number(katId)) !== -1;
     }
-    function vareHer(v) { return vareSaelgesHer(d, v, sted); }
+    /* ⚠️ SPISEMÅDEN TÆLLER MED  (20/9). Ejernes ord: *"Dåse eller
+       flaske sodavand skal fjernes, og kun kunne bestilles ved Take
+       Away."* Sidder gæsten ned, får hun den i glas fra hanen.
+
+       Det er SAMME felt som salgsstederne (`ikke_saelges`), bare med
+       'spis_her' i listen — ikke et nyt begreb. To felter om det
+       samme ville skride fra hinanden den dag, det ene blev rettet.
+
+       Uden et `hvordan` filtreres der ikke: dagvælgeren tegnes, før
+       gæsten har valgt, og en vare må ikke forsvinde, fordi spørgsmålet
+       endnu ikke er stillet. */
+    function vareHer(v) {
+      return vareSaelgesHer(d, v, sted)
+        && (!hvordan || vareSaelgesHer(d, v, hvordan));
+    }
 
     var kunSmoer = hvad === 'kun-smoer';
     /* ⚠️ 'skiver' OG 'uden-fyld' ER DET SAMME SOM 'kun-smoer' NU

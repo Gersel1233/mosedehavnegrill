@@ -328,6 +328,25 @@
   <div class="rev"><div class="eyebrow">Bestil online</div><h2>Bestil mad</h2><div class="rule"></div>
   <p class="sub">Vælg dag, retter og tid — bestillingen lander direkte i køkkenet.</p></div>
   <div class="panel rev d1">
+    <!-- ⚠️ ØVERST, IKKE NEDERST  (20/9). Ejerne: "Dåse eller flaske
+         sodavand skal fjernes, og kun kunne bestilles ved Take Away."
+         Kundens svar på hvordan: "i stedet for i bunden så i toppen —
+         lad take away eller spis her stå som så enten unlocker
+         sodavand eller holder det skjult."
+
+         Valget styrer nu, HVAD der kan købes (Butik.udvalg spørger
+         ikke_saelges med spisemåden). Et valg, der styrer listen, kan
+         ikke stå under listen: gæsten ville vælge sin mad og først
+         bagefter få at vide, at noget af den ikke kunne fås.
+
+         ⚠️ Feltet findes kun, når forretningen har slået "spis her"
+         til — js/skal/bestil.js skjuler hele .field'en ellers. -->
+    <div class="field"><label>Hvordan vil I spise?</label>
+      <div class="seg2" data-seg="how">
+        <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8h14l-1.4 11H6.4zM5 8l1-3h12l1 3M10 12v4M14 12v4"/></svg>To-go</button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 4v7a2 2 0 004 0V4M8 11v9M17 4c-1.6 1-2.4 2.6-2.4 4.4 0 1.5.7 2.4 2.4 2.6M17 4v16"/></svg>Spis her</button>
+      </div>
+    </div>
     <div class="field"><label for="dato">Dato</label>
       <select class="inp" id="dato"><option>I dag – søndag d. 23. august · Stegt flæsk med persillesovs</option><option>I morgen – mandag d. 24. august</option><option>Tirsdag d. 25. august</option></select>
       <p class="hint">Dagens ret: Stegt flæsk med persillesovs · 95,-</p>
@@ -342,12 +361,6 @@
       <div class="item"><h4>Tilbehør</h4><span class="add">+ tilføj</span></div>
     </div>
     <div class="field"><label for="tid">Tidspunkt</label><select class="inp" id="tid"><option>kl. 11:30</option><option>kl. 12:00</option><option selected>kl. 17:30</option><option>kl. 18:00</option></select></div>
-    <div class="field"><label>Hvordan vil I spise?</label>
-      <div class="seg2" data-seg="how">
-        <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8h14l-1.4 11H6.4zM5 8l1-3h12l1 3M10 12v4M14 12v4"/></svg>To-go</button>
-        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 4v7a2 2 0 004 0V4M8 11v9M17 4c-1.6 1-2.4 2.6-2.4 4.4 0 1.5.7 2.4 2.4 2.6M17 4v16"/></svg>Spis her</button>
-      </div>
-    </div>
     <div class="field two-col"><div><label for="navn">Navn</label><input class="inp" id="navn" placeholder="Dit fulde navn"></div><div><label for="tlf">Telefonnummer</label><input class="inp" id="tlf" placeholder="12 34 56 78"></div></div>
     <div class="field">
       <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9).

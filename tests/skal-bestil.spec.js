@@ -283,12 +283,24 @@ test.describe('Forsidens bestilling', () => {
      ⚠️ OG DET STÅR FØR BESKEDEN, IKKE EFTER. Beskedfeltets
      pladsholder er skrevet om samtidig ("Fx særlige ønsker"), så
      de to ikke konkurrerer om den samme oplysning. */
+  /* ⚠️ OG "HVORDAN VIL I SPISE?" ER FLYTTET ØVERST — KUNDENS EGEN
+     BESLUTNING (20/9), og prøven er VENDT med grunden, ikke lempet.
+
+     Ejerne: *"Dåse eller flaske sodavand skal fjernes, og kun kunne
+     bestilles ved Take Away."* Mikkels svar på hvordan: *"i stedet
+     for i bunden så i toppen — lad take away eller spis her stå som
+     så enten unlocker sodavand eller holder det skjult."*
+
+     Valget stod EFTER varelisten. Et valg, der skal styre, hvad der
+     kan købes, kan ikke stå under det, det styrer: gæsten ville
+     vælge sin mad og først bagefter få at vide, at halvdelen ikke
+     kunne fås. Derfor er det nu det første, der spørges om. */
   test('skallen: felterne står i designets rækkefølge — plus allergien', async ({ page }) => {
     await åbn(page);
     const etiketter = await page.$$eval('#bestil .panel .field label',
       (els) => els.map((e) => e.textContent.trim().split('\n')[0].trim()));
-    expect(etiketter).toEqual(['Dato', 'Vælg jeres retter', 'Tidspunkt',
-      'Hvordan vil I spise?', 'Navn', 'Telefonnummer',
+    expect(etiketter).toEqual(['Hvordan vil I spise?', 'Dato', 'Vælg jeres retter',
+      'Tidspunkt', 'Navn', 'Telefonnummer',
       'Allergi (valgfrit)', 'Ja, køkkenet må gemme det her, så de kan tage hensyn.',
       'Besked (valgfrit)']);
   });
@@ -301,6 +313,68 @@ test.describe('Forsidens bestilling', () => {
     await åbn(page);
     const p = await page.locator('#besked').getAttribute('placeholder');
     expect((p || '').toLowerCase()).not.toContain('allergi');
+  });
+});
+
+/* ============================================================
+   NOGET KAN KUN KØBES MED UD AF HUSET  (20/9)
+   ------------------------------------------------------------
+   Ejernes ord: *"Sodavand/øl Dåse, eller flaske sodavand skal
+   fjernes, og kun kunne bestilles ved Take Away. Pris 30,-kr."*
+   Sidder gæsten ned, får hun den i glas fra hanen; dåsen er noget,
+   man tager med.
+
+   ⚠️ SAMME FELT SOM SALGSSTEDERNE, IKKE ET NYT BEGREB.
+   `ikke_saelges` fravalgte allerede en vare pr. sted ('forside',
+   'bord', 'smoer'). Spisemåden lægges ind i den SAMME liste som
+   'spis_her'. Et nyt felt ville være to regler om det samme —
+   og den dag den ene blev rettet, ville de skride fra hinanden.
+
+   ⚠️ OG LISTEN SKAL TEGNES OM, NÅR VALGET SKIFTER. Designets
+   [data-seg] flytter kun .on og kalder sum() (havnegrillen.js);
+   den ved ikke, at varelisten afhænger af valget. Derfor folder
+   prøven kategorien ud FØRST og skifter BAGEFTER — ellers ville
+   den bestå uden optegningen, fordi listen tegnes frisk, når man
+   åbner en kategori.
+   ============================================================ */
+test.describe('Dåsen kan kun købes med ud af huset', () => {
+
+  function medKunTogo() {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    // Fadøl, lille (id 3) står for dåsen i kulissen.
+    d.indstillinger.ikke_saelges = { 3: ['spis_her'] };
+    return d;
+  }
+
+  test('den står i listen, når maden skal med ud af huset', async ({ page }) => {
+    await åbn(page, { data: medKunTogo() });
+    await page.locator('[data-kategori="Øl"]').click();
+    await expect(page.locator('[data-vare="Fadøl, lille"]')).toBeVisible();
+  });
+
+  test('og den forsvinder, når man vælger Spis her', async ({ page }) => {
+    await åbn(page, { data: medKunTogo() });
+    await page.locator('[data-kategori="Øl"]').click();
+    await expect(page.locator('[data-vare="Fadøl, lille"]')).toBeVisible();
+
+    // Spis her er den anden knap i segmentet
+    await page.locator('[data-seg="how"] button').nth(1).click();
+    await expect(page.locator('[data-vare="Fadøl, lille"]')).toHaveCount(0);
+  });
+
+  /* ⚠️ MODSTYKKET. Uden det ville en regel, der bare skjulte
+     drikkevarer ved Spis her, bestå prøven ovenfor — og så kunne
+     ingen bestille en fadøl til bordet. */
+  test('men en vare uden mærket bliver stående begge veje', async ({ page }) => {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    await åbn(page, { data: d });
+    await page.locator('[data-kategori="Øl"]').click();
+    await expect(page.locator('[data-vare="Fadøl, lille"]')).toBeVisible();
+
+    await page.locator('[data-seg="how"] button').nth(1).click();
+    await expect(page.locator('[data-vare="Fadøl, lille"]')).toBeVisible();
   });
 });
 
