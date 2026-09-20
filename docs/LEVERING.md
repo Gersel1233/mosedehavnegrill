@@ -68,10 +68,41 @@ Hvert punkt er `[længde, bredde]` i WGS84 — **de samme tal, Google
 Maps viser, bare i omvendt rækkefølge af det, Maps skriver.**
 Polygonen lukkes selv; første og sidste punkt behøver ikke være ens.
 
-> ⚠️ **Polygonen, der ligger der nu, er IKKE godkendt.** Den er et
-> arbejdsomrids om de byer, ejerne nævnte, og står med
-> `"godkendt": false`. Den skal erstattes af ejernes egen grænse før
-> lancering.
+### Hvad der ligger der nu (21/9)
+
+**Otte zoner: ejerens syv postnumre og en ring udenom.** De syv er
+2635, 2670, 2680, 2690, 4030, 4600 og 4623 — nøjagtig dem, der står i
+indstillingen `leverings_postnr`. Hver enkelt er hentet som *officiel
+geometri* hos Dataforsyningen og forenklet ved 0,0001 grader (~11 m):
+
+```
+https://api.dataforsyningen.dk/postnumre/2670?format=geojson&srid=4326
+```
+
+> ⚠️ **Forenklingen er målt, ikke antaget.** 2.000 rigtige
+> adgangsadresser pr. postnummer — 14.000 i alt — blev kørt gennem
+> stråleskydningen: **nul** faldt uden for. Ved 111 meters tolerance
+> faldt otte ud, og de otte ville have været otte kunder, der fik nej
+> ved deres egen hoveddør.
+
+Den ottende zone, `ring-og-spoerg`, er den konvekse skal om alle syv,
+skubbet fem kilometer udad. Målt 21/9: Vallensbæk, Taastrup,
+Hedehusene, Havdrup, Herfølge og Albertslund får tilbudt et opkald;
+Roskilde, Brøndby, Ringsted og København får nej.
+
+**Første udgave var tegnet i hånden og var forkert.** Ishøj
+Stationsvej 1 svarede `spoerg`, selv om 2635 stod på ejerens egen
+liste. Et omrids slået om en by rammer ikke byens kant. Det er nu
+prøve 17 i `proev-levering-zone.sql`.
+
+> ⚠️ **Skal `levering-zone.sql` køres igen for at sætte grænsen
+> tilbage, skal rækken slettes først.** `on conflict` skriver med
+> vilje kun hen over en grænse, der IKKE er godkendt — ellers ville en
+> genkørsel kunne trække ejerens egen rettelse tilbage:
+> ```sql
+> delete from public.indstillinger
+>  where lokation_id = 'mosede' and noegle = 'leverings_zoner';
+> ```
 
 ### Flere zoner
 
@@ -93,9 +124,17 @@ skal lægges. Geometrien behøver ikke røres.
 Indstillingen `leverings_postnr`. Den er en **grov sigte** og bruges
 af `js/bestil-regler.js` til at svare hurtigt, mens gæsten skriver.
 
-> ⚠️ **Postnummeret afgør ingenting.** Polygonen er dommen. Et tilladt
-> postnummer uden for grænsen bliver stadig afvist — det er prøve 7 i
-> `proev-levering-zone.sql`.
+> ⚠️ **Postnummeret afgør stadig ingenting.** Polygonen er dommen, og
+> den er hentet ét sted fra. At de to i dag dækker det samme, er
+> fordi grænsen blev *tegnet efter* listen — ikke fordi koden slår
+> postnummeret op. Skriver gæsten "2670" i en adresse i Aalborg,
+> afviser serveren den.
+
+> ⚠️ **Ændrer ejeren `leverings_postnr`, følger grænsen IKKE med.**
+> De to skal rettes sammen, ellers får kunder i det nye postnummer
+> nej. Prøve 17–23 i `proev-levering-zone.sql` falder, den dag de
+> skrider fra hinanden — det er hele grunden til, at de prøver låner
+> ejerens rigtige grænse.
 
 ## C · Sådan prøver du en adresse
 
@@ -118,6 +157,22 @@ psql -d fuld -f supabase/proev-levering-zone.sql        # 16 prøver
 psql -d fuld -f supabase/proev-levering-valideret.sql   # 14 prøver
 npx playwright test tests/adressefelt.spec.js           # 14 prøver
 ```
+
+## C2 · ⚠️ Edge Function'en skal hente svaret UPAKKET
+
+```ts
+headers: { accept: "application/json", "accept-encoding": "identity" }
+```
+
+**Uden `identity` virker ingenting.** Deno henter som standard med
+`accept-encoding: gzip, br`, og kørselsmiljøet i Supabase kan ikke
+folde DAWA's pakkede svar ud. `await r.json()` dør med
+`TypeError: unexpected end of file`.
+
+Og fejlen ligner noget andet: et adresse-ID, der **ikke findes**,
+kommer pænt igennem, fordi 404 tjekkes på `r.status` FØR kroppen
+læses. Så virker "forkerte" adresser, og alle de rigtige svarer
+`ADRESSETJENESTE_NEDE`. Målt og rettet 21/9.
 
 ## D · Hvis Dataforsyningen er nede
 

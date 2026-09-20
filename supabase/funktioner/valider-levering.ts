@@ -72,7 +72,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
    send-push.ts, og af samme grund: en rettelse i repoet er ikke en
    rettelse i skyen, og der er ingen anden måde at SE forskel.
    ⚠️ Den skal følge med, når reglerne ændres. */
-const UDGAVE = "2026-09-20";
+const UDGAVE = "2026-09-21 · upakket svar fra DAWA";
 console.log("valider-levering · udgave " + UDGAVE);
 
 /* Dataforsyningen svarer normalt på under 100 ms (målt 20/9: 94 ms).
@@ -179,14 +179,32 @@ async function hentHosDawa(id: string) {
   try {
     const r = await fetch(DAWA_ADRESSE + encodeURIComponent(id), {
       signal: ur.signal,
-      headers: { accept: "application/json" },
+      headers: {
+        accept: "application/json",
+        /* ⚠️ "identity" ER IKKE PYNT — UDEN DEN VIRKER INGENTING.
+           Målt i produktionen 21/9: Deno henter som standard med
+           accept-encoding gzip/br, og DAWA's pakkede svar kan
+           kørselsmiljøet her IKKE folde ud. `await r.json()` døde
+           med "TypeError: unexpected end of file" på hver eneste
+           gyldig adresse — mens et ID, der ikke findes, kom
+           igennem, fordi 404 tjekkes på status FØR kroppen læses.
+           Det fik fejlen til at ligne "Dataforsyningen er nede",
+           og siden svarede fail closed: ingen kunne bestille
+           levering. Beder vi om svaret upakket, kommer alle 4.704
+           bytes igennem på 35 ms. Fjern ikke linjen. */
+        "accept-encoding": "identity",
+      },
     });
     if (r.status === 404) return { slags: "ikke_fundet" as const };
     if (!r.ok) return { slags: "nede" as const };
     return { slags: "ok" as const, krop: await r.json() };
-  } catch (_fejl) {
-    /* Timeout eller netværk. Logges teknisk, men uden gæstens data. */
-    console.error("valider-levering: Dataforsyningen svarede ikke");
+  } catch (fejl) {
+    /* ⚠️ FEJLEN SKAL MED I LOGGEN. Første udgave skrev kun
+       "Dataforsyningen svarede ikke" og smed beskeden væk — og så
+       lignede en pakke-fejl i VORES ende et nedbrud i DERES. Det
+       kostede en time 21/9. Beskeden er teknisk og indeholder ikke
+       gæstens data; adressen står ikke i den. */
+    console.error("valider-levering: opslaget fejlede — " + String(fejl));
     return { slags: "nede" as const };
   } finally {
     clearTimeout(timer);

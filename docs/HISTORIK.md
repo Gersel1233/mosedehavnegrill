@@ -7,6 +7,53 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LEVERINGEN ER I LUFTEN — OG GRÆNSEN ER HENTET, IKKE TEGNET** (21/9).
+`levering-zone.sql`, `levering-valideret.sql` og Edge Function'en
+`valider-levering` er kørt i produktionen (`epwyjzakvvbxtpvnhvbn`), og koden er
+pushet (`65747b8`, verificeret i luften). Hele kæden er målt ende-til-ende mod
+det levende system. Tre ting, der skal huskes:
+
+⚠️ **DEN HÅNDTEGNEDE GRÆNSE VAR FORKERT, OG KUN RIGTIGE ADRESSER AFSLØREDE
+DET.** Det første omrids var slået om de byer, ejerne nævnte. Målt mod
+Dataforsyningen svarede **Ishøj Stationsvej 1 `spoerg`** — og 2635 står i
+ejerens egen `leverings_postnr`. Et omrids slået om en by rammer ikke byens
+kant. Grænsen er nu de **syv postnumre**, ejeren selv har skrevet, hentet som
+officiel geometri (`api.dataforsyningen.dk/postnumre/<nr>?format=geojson&srid=4326`)
+og forenklet med Douglas-Peucker ved 0,0001 grader (~11 m). **14.000 rigtige
+adgangsadresser — 2.000 pr. postnummer — blev kørt igennem: nul faldt udenfor.**
+Ved 111 meters tolerance faldt otte ud, og de otte var otte kunder med nej ved
+egen hoveddør. Aftrykket af grænsen (`md5 6297f55f…`, punkter pr. zone
+`161 159 119 120 70 322 211 29`) blev sammenlignet mellem den lokalt prøvede og
+den i produktionen: byte for byte ens.
+
+⚠️ **OG FØRSTE UDGAVE I LUFTEN VIRKEDE IKKE — AF EN GRUND, DER LIGNEDE EN
+ANDEN.** `valider-levering` svarede `ADRESSETJENESTE_NEDE` på **hver eneste
+gyldige adresse**, mens et id, der ikke findes, kom pænt igennem. Det så ud, som
+om Dataforsyningen var nede. Det var det ikke: Deno henter som standard med
+`accept-encoding: gzip, br`, og **kørselsmiljøet kunne ikke folde DAWA's pakkede
+svar ud** — `await r.json()` døde med `TypeError: unexpected end of file`. Det
+opdigtede id slap igennem, fordi 404 tjekkes på `r.status` FØR kroppen læses.
+Rettelsen er én linje: `"accept-encoding": "identity"`. Fejlen blev fundet med
+en engangs-Edge-Function, der prøvede seks headerkombinationer — kun `identity`
+gav de 4.704 bytes. ⚠️ **`catch (_fejl)` smed beskeden væk**; den logger nu
+`String(fejl)`, og uden det havde det taget meget længere.
+
+⚠️ **TO AF MINE EGNE PRØVER MÅLTE INGENTING, FØR JEG OPDAGEDE DET.** Først faldt
+alle fire manipulationsprøver på `bestilling_ukendt_vare` og senere
+`bestilling_mangler_valg` — de nåede aldrig leveringsudløseren. Dernæst blev
+**enhver** gæstebestilling afvist med "violates row-level security policy", og
+et øjeblik lignede det, at hele siden var i stykker: årsagen var
+`Prefer: return=representation` i mit eget kald — `INSERT … RETURNING` kræver
+læseret, og gæsten har kun `bestillinger_opret_gaest` (INSERT). Uden den header
+gik bestillingen igennem. **Manipulationsprøven i produktionen:** gæsten sendte
+`"En falsk adresse i Aalborg 9000"` med et gyldigt token — køkkenet fik
+`"Havnevej 20, 2670 Greve"`. Genbrug af tokenet, intet token og et opdigtet
+token blev alle afvist. Prøverækken og kvitteringerne er slettet igen.
+
+⚠️ **ENGANGSFUNKTIONEN `zone-tjek` SKAL SLETTES I HÅNDEN** — MCP'en kan ikke
+slette en Edge Function. Den svarer 410 og gør ingenting, men den bør væk:
+Supabase → Edge Functions → `zone-tjek` → Delete.
+
 **To nye kategorier fik deres eget ansigt** (20/9). `Ispinde` matchede INTET
 mønster i `js/menu-emoji.js` — `\bis\b` kræver "is" som et helt ord, og
 "Ispinde" fortsætter — og faldt tilbage på afdelingens 🍦, altså softicens eget
