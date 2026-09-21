@@ -72,7 +72,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
    send-push.ts, og af samme grund: en rettelse i repoet er ikke en
    rettelse i skyen, og der er ingen anden måde at SE forskel.
    ⚠️ Den skal følge med, når reglerne ændres. */
-const UDGAVE = "2026-09-21 · upakket svar fra DAWA";
+const UDGAVE = "2026-09-21b · upakket svar + adressens dele";
 console.log("valider-levering · udgave " + UDGAVE);
 
 /* Dataforsyningen svarer normalt på under 100 ms (målt 20/9: 94 ms).
