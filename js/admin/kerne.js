@@ -121,7 +121,14 @@
     'menu_kategorier.note': 'menukort-ejerens-liste.sql',
     'bestillinger.hvordan': 'spis-her.sql',
     'bestillinger.bord_nummer': 'bordkort.sql',
-    'bestillinger.adresse': 'levering.sql',
+    /* ⚠️ HED 'bestillinger.adresse' INDTIL 21/9 — og kunne derfor
+       ALDRIG ramme. Nøglen slås op med det kolonnenavn, PostgREST
+       selv skriver i sin fejl, og kolonnen hedder
+       `leverings_adresse`. Beskeden faldt tilbage på "der mangler
+       en SQL-fil" uden at sige hvilken — altså gjorde linjen
+       ingenting, siden den blev skrevet. */
+    'bestillinger.leverings_adresse': 'levering.sql',
+    'bestillinger.leverings_token': 'levering-valideret.sql',
     'forespoergsler.detaljer': 'forespoergsel-kalender.sql',
   };
 
@@ -1232,6 +1239,88 @@
   }
 
   /* ============================================================
+     HVOR SKAL MADEN KØRES HEN?  (21/9)
+     ------------------------------------------------------------
+     ⚠️ ADRESSEN STOD INGEN STEDER I ADMIN. Kortet sagde "🚗
+     Leveres" og intet mere — hverken Bestillinger eller Overblik
+     nævnte, HVOR. Personalet skulle ringe til gæsten for at få at
+     vide, hvor maden skulle køres hen, på en bestilling, hvor hun
+     allerede havde skrevet det.
+
+     Det var til at leve med, så længe adressen var fri tekst,
+     ingen havde set på. Fra 21/9 er den slået op hos
+     Dataforsyningen og overskrevet af serveren
+     (supabase/levering-valideret.sql) — altså er den nu god nok
+     til at køre efter, og så skal den frem.
+
+     ⚠️ DEN BOR HER, FORDI DEN BRUGES TO STEDER — samme ar som
+     Admin.kontakt (3/9) og Admin.typeMaerke (6/9). Bestillinger
+     viser den i en bjælke, Overblik som en linje; det er
+     PRÆSENTATIONEN, der er forskellig. Adressen, linket og
+     spørgsmålet "er den kontrolleret?" er den samme regel.
+     ------------------------------------------------------------ */
+
+  /* ⚠️ INGEN FORRETNINGSNAVN FORAN — MODSAT MOSEDE.ruteUrl.
+     Gæstesidens rutelink (js/oplysninger.js) lægger cafeens NAVN
+     foran adressen, fordi det rammer forretningens egen
+     Google-profil. En privatadresse har ingen profil: "Anna Vind,
+     Havnevej 20" ville sende chaufføren efter en virksomhed, der
+     ikke findes. Her er adressen alene det rigtige.
+
+     ⚠️ OG DET ER GOOGLE OG IKKE APPLE KORT. Linket her åbner
+     Google Maps-appen på både iPhone og Android, når den er
+     installeret, og ellers browseren — et maps.apple.com-link
+     ville virke på den ene af de to. Huset bruger i forvejen
+     præcis den her linkform til "Vis rute til havnen". */
+  function kortUrl(adresse) {
+    var a = String(adresse || '').trim();
+    if (!a) return null;
+    return 'https://www.google.com/maps/dir/?api=1&destination='
+      + encodeURIComponent(a);
+  }
+
+  /* Data om leveringen — ikke et element. Samme deling som
+     typeTekst/typeMaerke: reglen svarer, fladerne tegner. */
+  function leveringTekst(b) {
+    if (!b || b.hvordan !== 'levering') return null;
+    var adr = String(b.leverings_adresse || '').trim();
+    if (!adr) return null;
+    return {
+      adresse: adr,
+      url: kortUrl(adr),
+      /* ⚠️ KUN ET FLUEBEN, ALDRIG EN ADVARSEL. Et token betyder,
+         at serveren selv har slået adressen op hos
+         Dataforsyningen. Mangler det, er bestillingen enten
+         ældre end 21/9 eller taget i telefonen af personalet —
+         og at stemple DEM "ikke kontrolleret" ville råbe om
+         noget, der er helt i orden. Fraværet af flueben er
+         oplysning nok. */
+      kontrolleret: !!String(b.leverings_token || '').trim(),
+    };
+  }
+
+  /* Den korte udgave: ét link, til en linje der har andet på sig
+     (Overbliks kontaktlinje). */
+  function leveringsLink(b, klasse) {
+    var l = leveringTekst(b);
+    if (!l) return null;
+    var a = document.createElement('a');
+    a.className = klasse || 'bestil-tlf';
+    a.textContent = '📍 ' + l.adresse;
+    a.href = l.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    /* ⚠️ TITLEN SIGER, HVAD DER SKER. "📍 Havnevej 20" ligner en
+       oplysning, ikke en knap, og et link, der uden varsel åbner
+       en app, er en ubehagelig overraskelse midt i en frokost. */
+    a.title = 'Åbn ruten i kort'
+      + (l.kontrolleret ? ' · adressen er kontrolleret hos Dataforsyningen' : '');
+    a.setAttribute('data-levering-adresse', l.adresse);
+    if (l.kontrolleret) a.setAttribute('data-kontrolleret', 'ja');
+    return a;
+  }
+
+  /* ============================================================
      KONTAKTEN TIL GÆSTEN — ÉT STED  (1/9)
      ------------------------------------------------------------
      Kundens ord med et skærmbillede af Overblik: *"det her er
@@ -1407,6 +1496,9 @@
     typeTekst: typeTekst,
     retterI: retterI,
     gaesteMaerke: gaesteMaerke,
+    kortUrl: kortUrl,
+    leveringTekst: leveringTekst,
+    leveringsLink: leveringsLink,
     kontakt: kontakt,
     pæntNavn: pæntNavn,
     erAllergi: erAllergi,

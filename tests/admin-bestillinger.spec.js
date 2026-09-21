@@ -955,6 +955,73 @@ test.describe('En levering er lovet et opkald', () => {
     return d;
   }
 
+  /* ⚠️ HVOR SKAL MADEN KØRES HEN? (21/9)
+
+     MÅLT før rettelsen: adressen stod INGEN steder i admin.
+     Kortet bar "🚗 Leveres" og ikke ét ord om hvorhen — personalet
+     skulle ringe til gæsten for at få den adresse at vide, hun
+     allerede havde skrevet. Ejerens ord: *"er det tydeligt
+     hvorhenne det er, og måske et link til kortappen i telefonen
+     til præcis adresse."*
+
+     ⚠️ TALLET KOMMER UDEFRA: adressen i prøven her er den, der står
+     i medLevering()'s kulisse — ikke en, tegneren selv finder på. */
+  test('Leveringens adresse står på kortet, med et kort at åbne', async ({ page }) => {
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medLevering() });
+    await visFane(page, 'p-bestillinger');
+
+    const kort = page.locator('.bestil-kort', { hasText: 'Lone Hansen' });
+    const bjaelke = kort.locator('.bestil-levering');
+    await expect(bjaelke, 'leveringen har ingen bjælke med adressen')
+      .toHaveCount(1);
+    await expect(bjaelke).toContainText('Strandvej 4, 2670 Greve');
+
+    /* ⚠️ LINKET SKAL PEGE PÅ ADRESSEN — ikke bare være et link.
+       Et kortlink til den forkerte adresse er værre end ingen:
+       chaufføren opdager det først, når han står der. */
+    const kortLink = bjaelke.locator('.bestil-levering-kort');
+    await expect(kortLink).toHaveCount(1);
+    const href = await kortLink.getAttribute('href');
+    expect(href).toContain('google.com/maps');
+    expect(decodeURIComponent(href)).toContain('Strandvej 4, 2670 Greve');
+    /* ⚠️ OG UDEN CAFEENS NAVN. MOSEDE.ruteUrl lægger forretningens
+       navn foran, fordi det rammer dens Google-profil. En
+       privatadresse har ingen profil — "Mosede Havnecafe,
+       Strandvej 4" ville sende chaufføren efter noget andet. */
+    expect(decodeURIComponent(href)).not.toContain('Havnecafe');
+
+    /* En afhentning må ikke få bjælken: et mærke på hver eneste
+       bestilling siger ingenting. */
+    await expect(page.locator('.bestil-kort', { hasText: 'Peter Storm' })
+      .locator('.bestil-levering'), 'afhentningen fik en leveringsbjælke')
+      .toHaveCount(0);
+  });
+
+  /* ⚠️ FLUEBENET ER IKKE PYNT. Det siger, at SERVEREN selv har
+     slået adressen op hos Dataforsyningen (leverings_token). Stod
+     det på alle, ville det intet betyde — og stod det på en
+     adresse, ingen har kontrolleret, ville det lyve om noget,
+     maden bliver kørt efter. */
+  test('"Kontrolleret" står kun, når serveren har slået adressen op', async ({ page }) => {
+    const d = medLevering();
+    d.bestillinger.push(b(3, I_DAG, '13:30', 'Mia Kjær', 'Rejemad', 1,
+      { hvordan: 'levering', status: 'bekraeftet',
+        leverings_adresse: 'Havnevej 20, 2670 Greve',
+        leverings_token: 'kvittering-fra-serveren' }));
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: d });
+    await visFane(page, 'p-bestillinger');
+
+    await expect(page.locator('.bestil-kort', { hasText: 'Mia Kjær' })
+      .locator('.bestil-levering-ok'), 'den kontrollerede mangler sit flueben')
+      .toHaveCount(1);
+    /* Lone Hansen har ingen kvittering — hendes bestilling er
+       enten ældre end 21/9 eller taget i telefonen. */
+    await expect(page.locator('.bestil-kort', { hasText: 'Lone Hansen' })
+      .locator('.bestil-levering-ok'),
+      'en ukontrolleret adresse blev stemplet som kontrolleret')
+      .toHaveCount(0);
+  });
+
   test('Færdig på en levering spørger om opkaldet FØRST', async ({ page }) => {
     await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medLevering() });
     await visFane(page, 'p-bestillinger');

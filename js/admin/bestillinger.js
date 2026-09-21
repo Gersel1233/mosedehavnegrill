@@ -770,6 +770,27 @@
        "laves nu og bæres ud". ⚠️ Mærket FLYTTER ind i bjælken; det
        kopieres ikke. Det er stadig Admin.typeMaerke med
        data-type="bord", så reglen om ét typemærke pr. kort holder. */
+    /* ⚠️ OG EN LEVERING FÅR DEN SAMME BEHANDLING  (21/9).
+       Ejerens ord: *"er det tydeligt hvorhenne det er, og måske
+       et link til kortappen i telefonen til præcis adresse."*
+
+       MÅLT: adressen stod INGEN steder i admin. Kortet bar "🚗
+       Leveres" og ikke et ord om hvorhen — personalet skulle
+       ringe til gæsten for at få at vide, hvor maden skulle
+       køres hen, på en bestilling hvor hun allerede havde
+       skrevet det.
+
+       Bjælken er bordets: mærket FLYTTER ind i den, det kopieres
+       ikke, så reglen om ét typemærke pr. kort holder. Adressen
+       står som tekst og kortet som en knap ved siden af — gjorde
+       vi hele adressen klikbar, ville et øje, der bare læser,
+       kunne komme til at åbne en app midt i en frokost.
+
+       ⚠️ BORDET FØRST. En bestilling kan ikke være begge dele i
+       dag, men rækkefølgen her afgør det, hvis den nogensinde
+       kan: bordet er dér, gæsten SIDDER, og det er det mest
+       akutte. */
+    var lev = Admin.leveringTekst && Admin.leveringTekst(b);
     if (type && b.bord_nummer) {
       k.classList.add('b-bord');
       var bordLinje = lav('div', 'bestil-bord');
@@ -777,6 +798,31 @@
       bordLinje.appendChild(lav('span', 'bestil-bord-hvad',
         'Bordbestilling · bestilt ved bordet · laves nu og bæres ud'));
       k.appendChild(bordLinje);
+    } else if (type && lev) {
+      k.classList.add('b-levering');
+      var levLinje = lav('div', 'bestil-levering');
+      levLinje.appendChild(type);
+      var hvor = lav('div', 'bestil-levering-hvor');
+      hvor.appendChild(lav('span', 'bestil-levering-adr', lev.adresse));
+      /* Fluebenet står KUN, når serveren selv har slået adressen
+         op. Se noten ved Admin.leveringTekst: fraværet er ikke en
+         advarsel, det er bare fravær. */
+      if (lev.kontrolleret) {
+        hvor.appendChild(lav('span', 'bestil-levering-ok',
+          '✓ Kontrolleret hos Dataforsyningen'));
+      }
+      levLinje.appendChild(hvor);
+      if (lev.url) {
+        var kort = document.createElement('a');
+        kort.className = 'bestil-levering-kort';
+        kort.href = lev.url;
+        kort.target = '_blank';
+        kort.rel = 'noopener';
+        kort.textContent = '📍 Åbn i kort';
+        kort.title = 'Åbn ruten til ' + lev.adresse;
+        levLinje.appendChild(kort);
+      }
+      k.appendChild(levLinje);
     } else if (type) top.appendChild(type);
     /* HVOR MANGE SIDDER DER — og er der mad nok til dem? (20/9)
        Mærket står kun, når gæsten HAR skrevet et tal; feltet er

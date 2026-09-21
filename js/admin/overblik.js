@@ -362,6 +362,14 @@
       (Admin.kontakt ? Admin.kontakt(r.b) : []).forEach(function (e) {
         kontakt.appendChild(e);
       });
+      /* ⚠️ OG HVOR DEN SKAL KØRES HEN  (21/9). Personalet står ved
+         lugen med Overblik åben — nøjagtig den grund, nummeret kom
+         herind 1/9. En levering uden adresse på rækken tvinger dem
+         over på Bestillinger-fanen for at finde den. Reglen bor i
+         Admin.leveringsLink, så de to faner ikke kan komme til at
+         vise adressen på hver sin måde. */
+      var levLink = Admin.leveringsLink && Admin.leveringsLink(r.b, 'bestil-tlf');
+      if (levLink) kontakt.appendChild(levLink);
       /* ⚠️ BESTILLINGSNUMMERET STÅR IKKE HER. Forlægget har det
          ikke på rækken, og det er rigtigt: linjen er "kl. 16.00 ·
          📞 61799448", og et tredje led brækkede den i to. Nummeret
@@ -824,6 +832,11 @@
       (Admin.kontakt ? Admin.kontakt(b) : []).forEach(function (e) {
         kontakt.appendChild(e);
       });
+      /* Adressen står også på den udleverede række — se noten på
+         den åbne ovenfor. Skal chaufføren køre tilbage, fordi
+         ingen lukkede op, er det HER, adressen skal kunne findes. */
+      var levLink2 = Admin.leveringsLink && Admin.leveringsLink(b, 'bestil-tlf');
+      if (levLink2) kontakt.appendChild(levLink2);
       /* ⚠️ KLOKKESLÆTTET STOD TO GANGE OGSÅ HER (6/9) — i
          tidsaksen til venstre og i kontaktlinjen. Aksen bliver;
          se noten på den åbne række ovenfor. */

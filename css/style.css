@@ -4642,6 +4642,79 @@ body.personale .nyhed-knapper {
 }
 .bestil-bord-hvad { font-size: 14px; color: rgba(255, 255, 255, .88); }
 
+/* Bestillingskortets bjælke for en LEVERING (21/9) — se noten i
+   js/admin/bestillinger.js. Samme form som bordets, men i husets
+   røde: leveringen SKAL råbe (6/9), og de to slags må ikke ligne
+   hinanden. Adressen er det største, fordi det er den, der skal
+   læses; kortknappen står for sig, så et øje, der bare læser,
+   ikke kommer til at åbne en app.
+   ⚠️ flex-wrap og margin-left:auto — på en telefon falder
+   kortknappen ned under adressen i stedet for at klemme den. */
+.bestil-levering {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: -14px -16px 12px;
+  padding: 10px 16px;
+  background: var(--red);
+  color: #fff;
+  border-radius: 0 calc(var(--r-lille) - 1px) 0 0;
+}
+.bestil-levering .maerke.m-lev {
+  background: #fff;
+  color: var(--red);
+  font-size: 15px;
+  padding: 5px 12px;
+}
+.bestil-levering-hvor { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.bestil-levering-adr {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+  /* Adressen må gerne bryde — en lang vej på en telefon skal
+     kunne læses helt, ikke klippes af med tre prikker. */
+  overflow-wrap: anywhere;
+}
+/* ⚠️ 95 % OG IKKE 85 %. Målt på husets røde (#d62a3a): hvid på
+   85 % giver 3,92:1, og 12 px skrift skal have 4,5:1. 95 % måler
+   4,57:1. Den slags ses ikke med øjet — den skal regnes. */
+.bestil-levering-ok { font-size: 12px; color: rgba(255, 255, 255, .95); }
+.bestil-levering-kort {
+  margin-left: auto;
+  flex: none;
+  /* ⚠️ ET MØRKT SLØR, IKKE ET LYST. Første udgave lagde hvid 16 %
+     oven på den røde, så knappen blev LYSERE — og hvid tekst på
+     den måler 4,00:1. 14 px fed er ikke "stor skrift" i reglerne,
+     så den skal have 4,5:1. Et sort slør på 18 % gør knappen
+     mørkere i stedet og måler 6,79:1. Kanten er stadig lys, så
+     knappen kan ses som en knap. */
+  background: rgba(0, 0, 0, .18);
+  border: 1px solid rgba(255, 255, 255, .45);
+  color: #fff;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.bestil-levering-kort:hover,
+.bestil-levering-kort:focus-visible { background: rgba(0, 0, 0, .3); }
+/* ⚠️ PÅ EN TELEFON FYLDER KNAPPEN LINJEN. Målt på iPhone 13:
+   bjælken brækker om, og `margin-left: auto` klemte knappen ud i
+   højre hjørne med et tomt felt ved siden af. Den trykkes af en,
+   der står med en pose mad i den anden hånd — så skal den være
+   hele linjen bred, ikke 130 px i et hjørne. */
+@media (max-width: 700px) {
+  .bestil-levering-kort {
+    margin-left: 0;
+    flex: 1 1 100%;
+    text-align: center;
+    padding: 10px 14px;
+  }
+}
+
 /* ---- FÆRDIGE ----
    <details> og ikke en knap med JavaScript: browseren kan det
    selv, og den kan det med tastatur. */

@@ -1045,6 +1045,41 @@ test.describe('Rækkens form', () => {
       .locator('.vagt-kontakt a').first();
     await expect(tlf).toHaveAttribute('href', 'tel:20304050');
   });
+
+  /* ⚠️ OG ADRESSEN, NÅR DET ER EN LEVERING  (21/9).
+
+     Nøjagtig den grund, nummeret kom herind 1/9: personalet står
+     ved lugen med Overblik åben. Stod adressen kun på
+     Bestillinger-fanen, skulle de skifte fane og finde kortet
+     igen for at vide, hvor maden skulle køres hen.
+
+     ⚠️ REGLEN ER DEN SAMME SOM BESTILLINGSKORTETS
+     (Admin.leveringsLink). Måler prøven her noget andet end
+     prøven i admin-bestillinger.spec.js, er de to faner skredet
+     fra hinanden — og så skal én af dem rettes, ikke prøven. */
+  test('en levering viser adressen på rækken, med et kort at åbne', async ({ page }) => {
+    const d = travlDag();
+    d.bestillinger[0].hvordan = 'levering';
+    d.bestillinger[0].leverings_adresse = 'Tjørnebakken 3, 2690 Karlslunde';
+    await åbnAdmin(page, { data: d });
+
+    const raekke = page.locator('#overblik-vagt .vagt-raekke',
+      { hasText: d.bestillinger[0].navn });
+    const adr = raekke.locator('[data-levering-adresse]');
+    await expect(adr, 'leveringens adresse står ikke på vagtskærmen')
+      .toHaveCount(1);
+    await expect(adr).toHaveAttribute('data-levering-adresse',
+      'Tjørnebakken 3, 2690 Karlslunde');
+    const href = await adr.getAttribute('href');
+    expect(href).toContain('google.com/maps');
+    expect(decodeURIComponent(href)).toContain('Tjørnebakken 3, 2690 Karlslunde');
+
+    /* En afhentning har ingen adresse at køre til — og en
+       kortknap til ingenting er en knap, der lover noget falsk. */
+    await expect(page.locator('#overblik-vagt .vagt-raekke',
+      { hasText: d.bestillinger[1].navn }).locator('[data-levering-adresse]'),
+      'afhentningen fik et kortlink').toHaveCount(0);
+  });
 });
 
 /* ============================================================
