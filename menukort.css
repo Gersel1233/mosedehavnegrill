@@ -525,3 +525,42 @@
 .vare-lag-bits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .vare-lag-bits:empty { display: none; }
 .vare-lag-bits span { padding: 6px 11px; border-radius: 999px; background: var(--cream2, #f7ede1); font-size: 13px; line-height: 1.3; color: var(--ink2, #5c4a45); }
+
+/* ============================================================
+   ISAFSNITTET FÅR SIT EGET FELT  (21/9)
+   ------------------------------------------------------------
+   Ejerens ord: isen er det, de er stolte af — logoet er en
+   vaffel, og forsidens afsnit hedder "Havnens stolthed". På
+   menukortet stod "Is og dessert" som en streg i teksten
+   nøjagtig som "Mad" og "Drikke".
+
+   ⚠️ RÆKKEFØLGEN ER IKKE RØRT. Mikkels valg 21/9: isen bliver,
+   hvor den er (Mad → Is → Drikke), og får i stedet en genvej fra
+   forsiden og sit eget felt. Et afsnit, der springer køen, ville
+   sende en frokostgæst forbi isen først.
+
+   ⚠️ OG DET ER STADIG IKKE EN BJÆLKE. Hop-båndet klæber allerede
+   under topbjælken; se noten ovenfor om de to klæbende lag. Det
+   her er en flade omkring overskriften, ikke et tredje lag.
+
+   ⚠️ scroll-margin-top ER IKKE PYNT. Genvejen fra forsiden
+   (#afsnit-is) ruller hertil, og uden den lander overskriften
+   under den faste bjælke og hop-båndet — altså usynlig, selv om
+   hoppet teknisk virkede. Samme tal som .mk-kat .panel bruger.
+   ============================================================ */
+#afsnit-is {
+  margin-top: 22px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(214, 42, 58, .10), rgba(214, 42, 58, .03));
+  box-shadow: inset 0 0 0 1px rgba(214, 42, 58, .22);
+  scroll-margin-top: 172px;
+}
+/* Tegnet siger, hvad afsnittet er — og det er husets eget fra
+   logoet, ikke et tilfældigt emoji. */
+#afsnit-is::before {
+  content: "🍦";
+  margin-right: 9px;
+  font-size: .86em;
+}

@@ -111,3 +111,37 @@ test.describe('Isen på forsiden', () => {
     }
   });
 });
+
+/* ============================================================
+   GENVEJEN TIL ISEN I MENUKORTET  (21/9)
+   ------------------------------------------------------------
+   Ejerens ord: isen er det, de er stolte af, og den lå langt
+   nede i menukortet — "Mad" fylder femten kategorier, før "Is og
+   dessert" begynder.
+   ============================================================ */
+test.describe('Genvejen til is-menukortet', () => {
+
+  test('den står, når isen kan bestilles — og peger på isafsnittet', async ({ page }) => {
+    await åbnForsiden(page, medIs({ bestilbare_kategorier: [15, 16] }));
+    const link = page.locator('#isen [data-is-kortlink]');
+    await expect(link).toBeVisible();
+    /* ⚠️ ANKERET ER DET, MENUKORTET SELV SKRIVER: js/skal/menukort.js
+       sætter h.id = 'afsnit-' + afdeling. Peger linket et andet
+       sted hen, lander gæsten i toppen. */
+    await expect(link).toHaveAttribute('href', 'm-menukort.html#afsnit-is');
+  });
+
+  /* ⚠️ MODSTYKKET. Kan isen ikke bestilles, peger den røde knap
+     SELV på menukortet — og så ville to linjer under hinanden
+     sige nøjagtig det samme. To veje til det samme sted er ikke
+     to muligheder; det er en gæst, der skal vælge mellem to ens
+     knapper. */
+  test('den er væk, når knappen selv fører til kortet', async ({ page }) => {
+    await åbnForsiden(page, medIs());
+    await expect(page.locator('#isen [data-is-knap]'))
+      .toHaveAttribute('href', 'm-menukort.html');
+    await expect(page.locator('#isen [data-is-kortlink]'),
+      'genvejen står ved siden af en knap, der gør det samme')
+      .toBeHidden();
+  });
+});

@@ -553,6 +553,44 @@
        samme rækkefølge som kortene af sig selv — og en chip kan
        ikke komme til at pege på et kort, der ikke blev tegnet. */
     visHop(grupper);
+
+    hopTilHash();
+  }
+
+  /* ============================================================
+     ET LINK MED #afsnit-is SKAL FAKTISK LANDE DER  (21/9)
+     ------------------------------------------------------------
+     Forsiden har fået "Se hele is-menukortet →", der peger på
+     m-menukort.html#afsnit-is.
+
+     ⚠️ BROWSEREN NÅR DET IKKE SELV. Kortet tegnes HER, af
+     JavaScript, efter databasen har svaret. Når browseren læser
+     adressens hash, findes #afsnit-is ikke endnu — så sker der
+     ingenting, gæsten lander i toppen, og linket ligner noget i
+     stykker. Den slags fejl kan ikke ses i koden; den kan kun ses
+     ved at trykke på linket.
+
+     ⚠️ OG DEN RULLER IKKE, HVIS GÆSTEN ALLEREDE ER I GANG.
+     Optegningen kaldes igen, hver gang data kommer ind på ny. Et
+     hop midt i, at nogen læser, ville rykke siden væk under
+     fingeren — derfor kun én gang pr. sidevisning.
+     ============================================================ */
+  var hoppet = false;
+
+  function hopTilHash() {
+    if (hoppet) return;
+    var id = String(location.hash || '').replace(/^#/, '');
+    if (!id) return;
+    var maal = document.getElementById(id);
+    if (!maal) return;
+    hoppet = true;
+    /* Lidt luft over overskriften, så den ikke klistrer til
+       toppen af skærmen under den faste bjælke. */
+    try {
+      maal.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      maal.scrollIntoView();
+    }
   }
 
   /* ---- HOP TIL ----

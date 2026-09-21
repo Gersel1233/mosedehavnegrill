@@ -507,6 +507,24 @@
     <div class="is-kort">
       <ul class="is-priser" data-is-priser hidden></ul>
       <a class="g solid blk" href="m-menukort.html" data-is-knap><span aria-hidden="true">🍦 </span><span data-is-ord>Se iskortet</span><span class="sheen"></span></a>
+      <!-- ============================================================
+           GENVEJ TIL ISEN I MENUKORTET  (21/9)
+           ------------------------------------------------------------
+           Ejerens ord: isen er det, de er stolte af, og den lå langt
+           nede i menukortet — "Mad" fylder femten kategorier, før
+           "Is og dessert" begynder.
+
+           ⚠️ DEN VISES KUN, NÅR KNAPPEN OVENOVER SIGER "BESTIL IS".
+           Kan isen ikke bestilles, peger knappen selv på
+           menukortet, og så ville de to linjer sige det samme to
+           gange. js/skal/forside.js styrer det.
+
+           ⚠️ OG HOPPET VIRKER KUN, FORDI menukortet HÅNDTERER
+           HASHEN EFTER OPTEGNINGEN. Kortet tegnes af JavaScript,
+           så #afsnit-is findes ikke, når browseren selv prøver at
+           rulle — se noten i js/skal/menukort.js. Uden den ville
+           linket her lande i toppen og ligne noget i stykker. -->
+      <a class="is-kortlink skjult" href="m-menukort.html#afsnit-is" data-is-kortlink>Se hele is-menukortet <span aria-hidden="true">→</span></a>
       <p class="fine">Kom forbi lugen — isen er altid til rådighed.</p>
     </div>
   </div>
@@ -886,26 +904,38 @@
   <!-- ============================================================
        GREVE-PRISERNE  (21/9)
        ------------------------------------------------------------
-       ⚠️ EJERENS EGEN OPLYSNING. Jim Gjermandsen 20/9, ordret:
-       *"Reklame for at vi er indstillet til Greve iværksætter
-       pris, samt Greve Erhvervspris."*
+       ⚠️ EJERENS EGEN OPLYSNING, OG NU MED PAPIR PÅ. Jim
+       Gjermandsen 20/9: *"Reklame for at vi er indstillet til
+       Greve iværksætter pris, samt Greve Erhvervspris."*
 
-       ⚠️ "INDSTILLET TIL" — IKKE "VINDER AF". Han skriver
-       indstillet, og det er dét, der står. En nominering, der
+       Og 21/9 sendte han beviset — Greve Business Awards' eget
+       badge, ordret: *"Tillykke! Mosede Havnegrill & Ishus er
+       indstillet til GREVE IVÆRKSÆTTERPRIS 2026 … Prisen uddeles
+       til Greve Business Awards d. 8. oktober 2026 i Portalen."*
+
+       ⚠️ "INDSTILLET TIL" — IKKE "VINDER AF". En nominering, der
        bliver til en sejr på vejen fra en besked til en
-       hjemmeside, er den slags, ingen opdager, før nogen
-       spørger til pokalen.
+       hjemmeside, er den slags, ingen opdager, før nogen spørger
+       til pokalen.
 
-       ⚠️ OG DEN STÅR UDEN LINK. Vi har ingen kilde at pege på
-       ud over ejerens ord, og et link, der ikke fører nogen
-       steder hen, er værre end ingen. Kommer der en side fra
-       Greve Kommune, hører den her.
+       ⚠️ OG NU MED LINK. Her stod indtil i dag "uden link, fordi
+       vi ingen kilde har". Det er ikke længere sandt: begge
+       priser er bekræftet på erhvervscentret.greve.dk/gba, som
+       også har datoen. En kommentar, der er blevet forkert, får
+       den næste til at fjerne linket i god tro.
 
-       Den står i bunden ved siden af smiley-rapporten — begge
-       er noget, en udefrakommende har sagt om forretningen, og
-       de hører sammen. -->
-  <p class="smiley-linje" style="cursor:default"><span aria-hidden="true">🏅</span><span>Indstillet
-    til <b>Greve Iværksætterpris</b> og <b>Greve Erhvervspris</b></span></p>
+       ⚠️ BADGET BRUGES IKKE SOM BILLEDE. Der står "Mosede
+       Havnegrill & Ishus" på det — netop det navn, ejerne vil
+       væk fra. Teksten med link giver samme troværdighed uden at
+       sætte det gamle navn synligt tilbage på siden.
+
+       ⚠️ KUN IVÆRKSÆTTERPRISEN HAR ET DOKUMENT. Erhvervsprisen
+       står på ejerens ord alene; begge priser findes, men hvis
+       nogen spørger, er det værd at vide hvilken af de to der er
+       papir på.
+       ============================================================ -->
+  <a class="smiley-linje" href="https://erhvervscentret.greve.dk/gba" target="_blank" rel="noopener"><span aria-hidden="true">🏅</span><span>Indstillet
+    til <b>Greve Iværksætterpris 2026</b> og <b>Greve Erhvervspris</b> — Greve Business Awards, 8. oktober</span></a>
   <div class="legal">© 2026 Mosede Havnecafe<br>Havnevej 20I · 2670 Greve<br><a class="jura-link" href="persondatapolitik.html">Persondata og cookies</a><span class="jura-skel" aria-hidden="true"> · </span><a class="jura-link" href="handelsbetingelser.html">Handelsbetingelser</a><br><a class="personale-link" href="admin.html" rel="nofollow">Personale</a><br>Lavet af <a class="lavet-af" href="https://lesreg.dk" target="_blank" rel="noopener">Lesreg</a></div>
 </footer>
 </div>

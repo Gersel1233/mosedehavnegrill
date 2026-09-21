@@ -2770,3 +2770,11 @@ footer .smiley-linje{
 /* ⚠️ Den lange første linje må ikke klemme de korte sammen: på en
    telefon får den hele bredden i stedet for at brække i to tegn. */
 @media (max-width:520px){.lokale-udstyr li:first-child{flex:1 1 100%;text-align:center}}
+
+/* Genvejen til isen i menukortet (21/9) — se noten i index.html.
+   En stille linje under den røde knap: den er en vej videre, ikke
+   et andet tilbud, og to knapper med samme vægt ville tvinge
+   gæsten til at vælge mellem dem. */
+.is-kortlink{display:inline-block;margin-top:10px;font-size:13px;font-weight:600;color:var(--red-tekst);text-decoration:none;border-bottom:1px solid rgba(214,42,58,.3);padding-bottom:1px}
+.is-kortlink:hover,.is-kortlink:focus-visible{border-bottom-color:var(--red-tekst)}
+.is-kortlink.skjult{display:none}

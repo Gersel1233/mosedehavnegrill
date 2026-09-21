@@ -137,7 +137,26 @@
     }
 
     /* Profilerne binder domænet sammen med de steder, forretningen
-       allerede findes — det er dét, sameAs er til. */
+       allerede findes — det er dét, sameAs er til.
+
+       ⚠️ INSTAGRAM OG TIKTOK BLIVER STÅENDE, SELV OM DE HEDDER
+       NOGET MED GRILL  (21/9).
+
+       Ejeren klagede over, at "Instagram linker til tidligere
+       ejers Instagram". MÅLT: det gør det ikke. Mikkel sendte
+       selv de to adresser 21/9, og de er tegn for tegn de samme,
+       der står i indstillingerne —
+       instagram.com/mosedehavnegrillogishus og
+       tiktok.com/@mosede.havn.gril. Kontoen ER deres; den hedder
+       bare stadig efter det gamle firmanavn, og et profilnavn kan
+       kun ejeren selv ændre inde hos Instagram.
+
+       ⚠️ OG DE HJÆLPER NETOP PÅ DET. sameAs er dét felt, der
+       fortæller Google, at domænet og profilerne er den SAMME
+       forretning. Fjernede vi dem, fordi navnet ser gammelt ud,
+       mistede vi bindingen mellem det gamle og det nye navn — og
+       så ville en søgning på "Mosede Havnegrill" have endnu
+       mindre at matche. Samme grund som alternateName. */
     var sameAs = fyldte([s.facebook, s.instagram, s.tiktok, s.google, s.smiley]);
     if (sameAs.length) blok.sameAs = sameAs;
 

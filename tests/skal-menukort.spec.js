@@ -712,3 +712,59 @@ test.describe('Menukortet læses i afsnit', () => {
     await expect(page.locator('#mk-kat .mk-afsnit')).toHaveCount(0);
   });
 });
+
+/* ============================================================
+   #afsnit-is SKAL FAKTISK LANDE PÅ ISEN  (21/9)
+   ------------------------------------------------------------
+   Forsiden har fået "Se hele is-menukortet →", der peger på
+   m-menukort.html#afsnit-is.
+
+   ⚠️ BROWSEREN NÅR DET IKKE SELV. Kortet tegnes af JavaScript,
+   efter databasen har svaret. Når browseren læser adressens hash,
+   findes #afsnit-is ikke endnu — så sker der ingenting, gæsten
+   lander i toppen, og linket ligner noget i stykker.
+
+   ⚠️ RULLERODEN ER #sc, IKKE VINDUET. Hele siden ligger i den, og
+   window.scrollY står på nul, uanset hvor langt man er nede.
+   ============================================================ */
+test.describe('Genvejen fra forsiden lander på isen', () => {
+
+  async function rulletTil(page) {
+    return page.evaluate(() => {
+      const sc = document.getElementById('sc');
+      const is = document.getElementById('afsnit-is');
+      return {
+        rullet: sc ? Math.round(sc.scrollTop) : -1,
+        findes: !!is,
+        /* Hvor langt fra skærmens top står overskriften? Den må
+           ikke gemme sig under bjælken og hop-båndet. */
+        fraToppen: is ? Math.round(is.getBoundingClientRect().top) : null,
+      };
+    });
+  }
+
+  test('med #afsnit-is ruller siden ned til isen', async ({ page }) => {
+    await åbnSkal(page, '/m-menukort.html#afsnit-is', { ur: FREDAG, data: medRet() });
+    await page.waitForTimeout(1800);
+    const m = await rulletTil(page);
+    expect(m.findes, 'isafsnittet blev ikke tegnet').toBe(true);
+    /* ⚠️ TALLET KOMMER UDEFRA: nul er browserens egen udgangsstilling.
+       Står den der stadig, skete hoppet aldrig. */
+    expect(m.rullet, 'siden blev stående i toppen — hoppet virkede ikke')
+      .toBeGreaterThan(0);
+    /* Og overskriften skal være SYNLIG, ikke bare rullet forbi. */
+    expect(m.fraToppen, 'isafsnittet gemmer sig under bjælken')
+      .toBeGreaterThanOrEqual(0);
+  });
+
+  /* ⚠️ MODSTYKKET. Uden en hash må siden IKKE rulle af sig selv —
+     en gæst, der åbner menukortet for at læse fra toppen, skal
+     ikke kastes ned i midten. */
+  test('uden hash bliver siden i toppen', async ({ page }) => {
+    await åbnSkal(page, '/m-menukort.html', { ur: FREDAG, data: medRet() });
+    await page.waitForTimeout(1800);
+    const m = await rulletTil(page);
+    expect(m.rullet, 'siden rullede af sig selv uden at blive bedt om det')
+      .toBe(0);
+  });
+});

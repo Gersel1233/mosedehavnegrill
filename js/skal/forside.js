@@ -957,6 +957,16 @@
     var kan = ids.length > 0 && !!best && best.style.display !== 'none';
     knap.setAttribute('href', kan ? '#bestil' : 'm-menukort.html');
     ord.textContent = kan ? 'Bestil is' : 'Se iskortet';
+
+    /* ⚠️ GENVEJEN TIL ISEN I MENUKORTET  (21/9)
+
+       Den står KUN, når knappen ovenover siger "Bestil is". Kan
+       isen ikke bestilles, peger knappen selv på menukortet — og
+       så ville to linjer under hinanden sige nøjagtig det samme.
+       To veje til det samme sted er ikke to muligheder; det er en
+       gæst, der skal vælge mellem to ens knapper. */
+    var kortlink = find('[data-is-kortlink]', afsnit);
+    if (kortlink) kortlink.className = 'is-kortlink' + (kan ? '' : ' skjult');
     knap.setAttribute('data-is-kat', ids.join(','));
     if (knap.getAttribute('data-is-lytter')) return;
     knap.setAttribute('data-is-lytter', '1');
