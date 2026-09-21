@@ -572,7 +572,13 @@ section{padding:32px var(--pad)}
 .eyebrow{font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .eyebrow.red{color:var(--red)}
 h2{font-size:35px;margin-top:9px}
-.sub{margin:12px 0 0;font-size:15px;line-height:1.5;color:var(--ink2)}
+/* ⚠️ text-wrap: pretty — MOD DET ENLIGE ORD  (21/9)
+   MÅLT paa forsiden: "… nemt at bladre i." braekkede, saa "i."
+   stod alene paa tredje linje under overskriften Menukort. Et
+   enligt ord paa sidste linje ser ud som en fejl i teksten.
+   Reglen, ikke teksten: en omskrevet saetning braekker igen ved
+   naeste skriftstoerrelse eller skaermbredde. */
+.sub{margin:12px 0 0;font-size:15px;line-height:1.5;color:var(--ink2);text-wrap:pretty}
 .mid{text-align:center;display:grid;justify-items:center}
 .dots{display:flex;gap:7px;margin:14px 0 2px}
 .dots i{width:5px;height:5px;border-radius:50%;background:var(--red);opacity:.6}
