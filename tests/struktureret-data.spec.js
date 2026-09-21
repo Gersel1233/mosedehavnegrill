@@ -303,3 +303,45 @@ test.describe('Leveringsområdet i mærket', () => {
     expect(m.data.currenciesAccepted).toBe('DKK');
   });
 });
+
+/* ============================================================
+   SALGSSIDERNES TITLER  (21/9)
+   ------------------------------------------------------------
+   Ejernes klage: *"Vi kommer slet ikke frem på Google ved nogle
+   søgninger… Smørrebrød, is, burgere eller lign."*
+
+   MÅLT: titlerne hed "Smørrebrød ud af huset · Mosede Havnecafe"
+   — uden byen. En gæst søger "smørrebrød Greve", og den side, der
+   SKULLE ranke på det, nævnte ikke Greve med ét ord.
+
+   ⚠️ KUN SALGSSIDERNE. Historien, persondatapolitikken og
+   handelsbetingelserne skal IKKE stoppes fulde af bynavne — en
+   titel, der sælger på en side, der ikke sælger, er støj.
+   ============================================================ */
+test.describe('Salgssidernes titler', () => {
+  /* Siden → det ord, den skal kunne findes på. Ordet kommer fra
+     sidens EGET indhold, ikke fra en ønskeliste. */
+  const SIDER = [
+    ['h-smorrebrod.html', /smørrebrød/i],
+    ['m-tapas.html', /tapas/i],
+    ['h-catering.html', /catering/i],
+    ['h-selskaber.html', /selskab|fest/i],
+    ['h-frokost.html', /frokost/i],
+    ['h-baglokale.html', /lokale/i],
+  ];
+
+  for (const [fil, ord] of SIDER) {
+    test(`${fil} nævner både varen og Greve`, () => {
+      const t = fs.readFileSync(path.join(ROD, fil), 'utf8');
+      const m = t.match(/<title>([^<]*)<\/title>/);
+      expect(m, `${fil} har ingen titel`).not.toBeNull();
+      expect(m[1], 'titlen nævner ikke, hvad siden sælger').toMatch(ord);
+      expect(m[1], 'titlen nævner ikke byen — gæsten søger "… Greve"')
+        .toMatch(/Greve/);
+      /* Google klipper ved ~60 tegn; en klippet titel ser ud som
+         en fejl i resultatlisten. Samme grænse som forsiden. */
+      expect(m[1].length, 'titlen er for lang til et søgeresultat')
+        .toBeLessThanOrEqual(62);
+    });
+  }
+});

@@ -1,4 +1,4 @@
-# Mosede Havnegrill og Ishus
+# Mosede Havnecafe
 
 # Alt må indekseres bortset fra personalesiden. Den har også
 # noindex i sit eget hoved – to spærrer, fordi robots.txt kun er en
