@@ -93,16 +93,20 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Svar = Record<string, unknown>;
 
+/* Gæstesiden ligger på mosedehavnecafe.dk og kalder herfra.
+   ⚠️ ÉT STED. Stod headerne to steder, kunne svaret og preflight
+   komme til at sige hver sit om, hvem der må kalde. */
+const CORS: Record<string, string> = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-headers": "content-type",
+  "access-control-allow-methods": "POST, OPTIONS",
+  "access-control-max-age": "86400",
+};
+
 function json(krop: Svar, status = 200): Response {
   return new Response(JSON.stringify(krop), {
     status,
-    headers: {
-      "content-type": "application/json",
-      /* Gæstesiden ligger på mosedehavnecafe.dk og kalder herfra. */
-      "access-control-allow-origin": "*",
-      "access-control-allow-headers": "content-type",
-      "access-control-allow-methods": "POST, OPTIONS",
-    },
+    headers: { "content-type": "application/json", ...CORS },
   });
 }
 
@@ -216,7 +220,27 @@ function nytToken(): string {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return json({}, 204);
+  /* ⚠️⚠️ ET 204-SVAR MÅ IKKE HAVE EN KROP — OG DET VÆLTEDE HELE
+     LEVERINGEN  (målt 21/9).
+
+     Her stod `return json({}, 204)`. json() lægger altid en krop
+     på, og `new Response("{}", { status: 204 })` KASTER i
+     kørselsmiljøet: et 204 er defineret som "intet indhold".
+     Funktionen svarede derfor **500 uden CORS-headere** på
+     browserens preflight — og så blokerer browseren POST'en, før
+     den sendes.
+
+     ⚠️ DET SÅ UD SOM NOGET ANDET. Gæsten fik "Vi kunne ikke
+     kontrollere leveringsadressen lige nu", altså husets
+     fail-closed-besked, som om Dataforsyningen var nede. Og curl
+     sender ingen preflight, så hver eneste måling med curl
+     bestod. Fejlen kunne KUN ses ved at køre en rigtig browser
+     mod det levende site.
+
+     Svaret er tomt med vilje: `new Response(null, …)`. */
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS });
+  }
   if (req.method !== "POST") return json({ fejl: "kun POST" }, 405);
 
   const krop = await req.json().catch(() => null);

@@ -174,6 +174,40 @@ kommer pænt igennem, fordi 404 tjekkes på `r.status` FØR kroppen
 læses. Så virker "forkerte" adresser, og alle de rigtige svarer
 `ADRESSETJENESTE_NEDE`. Målt og rettet 21/9.
 
+## C3 · ⚠️ Preflight må ALDRIG have en krop
+
+```ts
+if (req.method === "OPTIONS") {
+  return new Response(null, { status: 204, headers: CORS });
+}
+```
+
+Her stod `return json({}, 204)`. `json()` lægger altid en krop på,
+og **`new Response("{}", { status: 204 })` kaster** — et 204 er
+defineret som "intet indhold". Funktionen svarede derfor **500
+uden CORS-headere** på browserens preflight, og så blokerer
+browseren POST'en, før den sendes.
+
+> ⚠️ **Det så ud som noget helt andet.** Gæsten fik *"Vi kunne
+> ikke kontrollere leveringsadressen lige nu"* — husets
+> fail-closed-besked, som om Dataforsyningen var nede.
+
+> ⚠️ **Og hver eneste måling med `curl` bestod.** curl sender
+> ingen preflight. Fejlen kunne KUN ses ved at køre en rigtig
+> browser mod det levende site. Måler du på leveringen, så gør
+> det i en browser — ikke kun med curl.
+
+Tjek efter hver udgivelse af funktionen:
+
+```bash
+curl -s -o /dev/null -D - -X OPTIONS \
+  https://<projekt>.supabase.co/functions/v1/valider-levering \
+  -H 'Origin: https://mosedehavnecafe.dk' \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: content-type'
+# skal svare 204 MED access-control-allow-origin
+```
+
 ## D · Hvis Dataforsyningen er nede
 
 **Der udstedes ingen kvittering, og så kan der ikke bestilles
