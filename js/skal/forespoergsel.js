@@ -110,46 +110,27 @@
       optagerDagen: function () { return true; },
     },
     /* ============================================================
-       SMØRREBRØD UD AF HUSET  (31/8)
+       ⚠️ SMØRREBRØDET HAR HELLER INGEN OPSÆTNING HER MERE  (21/9)
        ------------------------------------------------------------
-       Siden var en BESTILLING med kurv, dagvælger og fyld, der
-       skrev direkte i `bestillinger`. Kundens ord: "fuck af med
-       kalenderen, det er ligegyldigt ... bare hav en knap, der
-       hedder kontakt og få et tilbud" — og adspurgt direkte:
-       formularen skal HELT væk.
+       Siden var en forespørgsel fra 31/8, og 4/9 blev den en
+       BESTILLINGSSIDE igen ("1 mad er som 1 mad"). Den indlæser
+       js/skal/bestil.js og ikke den her fil — men `sdato` stod
+       tilbage i SIDER med chips, krav og segmenter, altså en
+       opsætning, der ALDRIG kunne rammes.
 
-       Den er nu den samme forespørgsel som catering og selskaber,
-       fordi han i samme besked sagde, at alt skal kunne ses i
-       Forespørgsler i admin. En mailto lander i en indbakke; en
-       forespørgsel lander på en fane, kan tælles, kan lægges i
-       kalenderen og kan ikke blive væk.
+       Det er nøjagtig den fælde, noten om cateringen nedenfor
+       advarer imod, og den stod syv linjer over den. MÅLT 21/9 af
+       tests/doed-kode.spec.js, som nu slår hver SIDER-nøgle op i
+       de sider, der faktisk indlæser filen — en note om at være
+       påpasselig er ikke et værn.
 
-       ⚠️ INGEN LEDIGHEDSKALENDER OG INGEN VARSEL. Smørrebrød ud
-       af huset optager ingen dage (maden kører ud, havnen står
-       fri), og datoen er FRIVILLIG: "engang i oktober" er en
-       rimelig forespørgsel. Et varsel ville afvise den. */
-    sdato: {
-      type: 'smoerrebroed',
-      felter: { dato: 'sdato', antal: 'santal', navn: 'snavn',
-        tlf: 'stlf', mail: 'smail', besked: 'sbesked' },
-      /* ⚠️ RÆKKEFØLGEN ER OPMÆRKNINGENS. Chipgrupperne læses
-         efter, hvor de står i HTML'en — bytter nogen om på de to
-         grupper uden at rette her, lander maden under
-         "anledning", tavst, og admin viser det pænt formateret. */
-      chips: ['anledning', 'mad'],
-      ekstra: { anledning: 'sanledning', adresse: 'sadr' },
-      /* Anledningen ERSTATTER (gæstens egne ord vinder over den
-         chip, der var valgt på forhånd); maden LÆGGES TIL. Se
-         den lange note ved cateringen nedenfor. */
-      chipsTillæg: { mad: 'smad' },
-      /* ⚠️ MINDST ÉN VEJ TILBAGE, ikke begge. Den, der spørger om
-         tyve håndmadder fra et arbejde, har måske kun en mail —
-         samme regel som baglokalet (29/8). */
-      krav: { mailEllerTlf: true },
-      seg: { vælger: '[data-toggles="#sadrfelt"]', navn: 'levering',
-        svar: ['afhentning', 'levering'] },
-      optagerDagen: function () { return false; },
-    },
+       ⚠️ MEN TYPEN 'smoerrebroed' LEVER VIDERE, præcis som
+       cateringens: i forespoergsel_type_ok, i FORESPOERGSEL_TYPER
+       i store.js og i TYPE_NAVNE på Forespørgsler-fanen. De
+       forespørgsler, der kom ind mellem 31/8 og 4/9, står stadig
+       i admin og skal kunne åbnes, aftales og afvises som før.
+       ============================================================ */
+
     /* ============================================================
        ⚠️ CATERINGEN HAR INGEN OPSÆTNING HER MERE  (4/9)
        ------------------------------------------------------------

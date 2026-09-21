@@ -200,3 +200,51 @@ test('isoPlus er defineret ét sted', () => {
     + 'der bruger den')
     .toEqual([path.join('js', 'store.js')]);
 });
+
+/* ============================================================
+   OG EN DØD NØGLE INDE I EN FIL, DER KØRER  (21/9)
+   ------------------------------------------------------------
+   Prøverne ovenfor fælder en FIL, ingen indlæser. De ser ikke en
+   opsætning, der ligger i en fil, som kører fint — og det er
+   præcis den fælde, js/skal/forespoergsel.js selv advarer imod,
+   da cateringens opsætning blev slettet 4/9: *"otte
+   JavaScript-filer i repoet indlæses ikke af én eneste side, og
+   de er en fælde for den, der læser koden om et halvt år og tror,
+   de kører. En død SIDER-nøgle er den samme fælde i lille."*
+
+   MÅLT 21/9: `sdato` stod stadig i SIDER med hele
+   smørrebrødssidens opsætning — chips, krav, segmenter. Siden
+   blev en BESTILLINGSSIDE igen 4/9 og indlæser js/skal/bestil.js,
+   ikke forespoergsel.js. Nøglen kunne altså aldrig rammes, og den
+   fortalte en læser, at smørrebrødsforespørgsler stadig kommer
+   ind ad den vej. (Typen 'smoerrebroed' lever videre i databasen
+   og på Forespørgsler-fanen — gamle sager skal stadig kunne
+   åbnes. Det er OPSÆTNINGEN, der er død.)
+
+   ⚠️ NØGLERNE ER SIDENS EGNE ID'er. SIDER genkendes med
+   document.getElementById(nøglen) i netop de sider, der indlæser
+   filen — så prøven slår hver nøgle op dér og ikke i hele repoet.
+   ============================================================ */
+test('hver SIDER-nøgle i forespoergsel.js kan faktisk rammes', () => {
+  const kilde = fs.readFileSync('js/skal/forespoergsel.js', 'utf8');
+
+  /* Nøglerne står som `  xdato: {` i toppen af SIDER — læses ud,
+     så listen ikke skal vedligeholdes i hånden. */
+  const blok = kilde.slice(kilde.indexOf('var SIDER = {'));
+  const noegler = (blok.match(/^ {4}([a-z]+): \{$/gm) || [])
+    .map((l) => l.trim().replace(':', '').replace(' {', ''));
+  expect(noegler.length, 'ingen SIDER-nøgler fundet — mønsteret er skredet')
+    .toBeGreaterThanOrEqual(2);
+
+  /* De sider, der faktisk indlæser filen. Tallet kommer udefra. */
+  const brugere = sider().filter((f) => {
+    try {
+      return fs.readFileSync(f, 'utf8').indexOf('js/skal/forespoergsel.js') !== -1;
+    } catch (e) { return false; }
+  });
+  expect(brugere.length, 'ingen side indlæser forespoergsel.js').toBeGreaterThan(0);
+
+  const doede = noegler.filter((n) => !brugere.some((f) =>
+    fs.readFileSync(f, 'utf8').indexOf('id="' + n + '"') !== -1));
+  expect(doede, 'SIDER-nøgler, ingen af filens sider kan ramme').toEqual([]);
+});
