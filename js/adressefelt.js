@@ -59,6 +59,14 @@
     ikkeBekraeftet: 'Vi kunne ikke bekræfte adressen. Prøv at vælge den igen.',
     nede: 'Vi kunne ikke kontrollere leveringsadressen lige nu. Prøv igen.',
     ingen: 'Ingen adresser fundet. Prøv at skrive vej og husnummer.',
+    /* ⚠️ AFVIST PÅ POSTNUMMERET ALENE — uden at spørge serveren.
+       Ejerens ord: *"det kan ske ud fra postnummeret og afvise af
+       sig selv."* Ligger adressen i et postnummer, bilen aldrig
+       kører til, er svaret det samme, hvad enten serveren
+       spørges eller ej — og et svar med det samme er bedre end et
+       svar efter et sekunds venten. */
+    forkertPostnr: 'Vi kører ikke til %s. Vælg Afhentning, '
+      + 'eller ring til os, hvis I er flere.',
   };
 
   function lav(navn, klasse, tekst) {
@@ -76,6 +84,14 @@
     var statusLinje = o.status || null;
     var lokation = o.lokation || 'mosede';
     var valideringUrl = o.valideringUrl || '';
+    /* ⚠️ EJERENS EGEN LISTE, IKKE EN KOPI. Tallene kommer fra
+       indstillingen leverings_postnr — den samme, leveringszonen
+       er tegnet efter. Feltet her gætter ikke; er listen tom,
+       springes den hurtige afvisning bare over, og serveren
+       afgør det som før. */
+    var postnumre = (o.postnumre || []).map(function (n) {
+      return String(n).trim();
+    }).filter(function (n) { return /^[0-9]{4}$/.test(n); });
     var meld = typeof o.naarAendret === 'function' ? o.naarAendret : function () {};
 
     var listeId = 'adr-liste-' + (++loebenr);
@@ -83,6 +99,16 @@
     liste.id = listeId;
     liste.setAttribute('role', 'listbox');
     felt.parentNode.insertBefore(liste, felt.nextSibling);
+
+    /* Delene står UNDER statuslinjen, ikke over: svaret "vi
+       leverer hertil" er det, hun leder efter; opdelingen er
+       kvitteringen på, hvad vi forstod. */
+    var deleFelt = lav('div', 'adr-dele skjult');
+    if (statusLinje && statusLinje.parentNode) {
+      statusLinje.parentNode.insertBefore(deleFelt, statusLinje.nextSibling);
+    } else {
+      felt.parentNode.insertBefore(deleFelt, liste.nextSibling);
+    }
 
     felt.setAttribute('role', 'combobox');
     felt.setAttribute('aria-autocomplete', 'list');
@@ -97,6 +123,41 @@
     var hentning = null;   // AbortController
     var timer = null;
     var nyeste = 0;
+
+    /* ⚠️ ADRESSEN DELT OP — EJERENS EGET ØNSKE  (21/9)
+
+       *"Opdelt: adresse, vej, nummer, postnummer — og så skal det
+       tjekkes i databasen."* Gæsten skal kunne SE, hvad vi
+       forstod, før hun binder sig. En linje som "Mosede
+       Strandvej 25, 2. th, 2670 Greve" kan læses forkert i en
+       fart; fire mærkede felter kan ikke.
+
+       ⚠️ DELENE KOMMER FRA SERVEREN. Edge Function'en sender
+       vejnavn, husnr, etage, dør, postnr og by tilbage — de
+       samme, den skrev i kvitteringen. Delte browseren selv
+       DAWA-teksten op, ville skærmen vise noget, ingen havde
+       bekræftet. */
+    function visDelene(d) {
+        if (!deleFelt) return;
+        deleFelt.innerHTML = '';
+        if (!d) { deleFelt.className = 'adr-dele skjult'; return; }
+        var raekker = [
+          ['Vej', d.vejnavn],
+          ['Nr.', d.husnr],
+          ['Etage, dør', [d.etage, d.doer].filter(Boolean).join(', ')],
+          ['Postnr. og by', [d.postnr, d.by].filter(Boolean).join(' ')],
+        ];
+        var n = 0;
+        raekker.forEach(function (r) {
+          if (!r[1]) return;            // tomme felter står ikke
+          n++;
+          var rk = lav('div', 'adr-del');
+          rk.appendChild(lav('span', 'adr-del-navn', r[0]));
+          rk.appendChild(lav('span', 'adr-del-vaerdi', String(r[1])));
+          deleFelt.appendChild(rk);
+        });
+        deleFelt.className = 'adr-dele' + (n ? '' : ' skjult');
+      }
 
     function tilstand(slags, besked) {
       if (statusLinje) {
@@ -129,6 +190,10 @@
       if (!valgt && !token) return;
       valgt = null;
       token = null;
+      /* En adresse, der er rettet efter valget, er ikke længere
+         bekræftet — så må opdelingen heller ikke blive stående.
+         Den ville ellers påstå noget om det, der stod før. */
+      visDelene(null);
       tilstand('vaelg', ORD.vaelg);
     }
 
@@ -189,9 +254,15 @@
         /* Et gammelt svar må ikke overhale et nyt. Se hovedet. */
         if (mit !== nyeste) return;
         tegnForslag((Array.isArray(d) ? d : []).map(function (x) {
+          var a = (x && x.adresse) || {};
           return {
             tekst: String((x && x.tekst) || ''),
-            id: String(((x && x.adresse) || {}).id || ''),
+            id: String(a.id || ''),
+            /* ⚠️ KUN TIL DEN HURTIGE AFVISNING OG TIL AT VISE,
+               MENS SERVEREN SPØRGES. Det er SERVERENS svar, der
+               tegner den endelige opdeling — browserens felter er
+               aldrig autoritative. */
+            postnr: String(a.postnr || ''),
           };
         }).filter(function (x) { return x.tekst && x.id; }));
       }).catch(function () {
@@ -211,6 +282,24 @@
       valgt = { id: r.id, tekst: r.tekst };
       token = null;
       lukListen();
+
+      /* ⚠️ AFVIS PÅ POSTNUMMERET FØR SERVEREN SPØRGES.
+         Ejerens ord: *"det kan ske ud fra postnummeret og afvise
+         af sig selv."* Ligger adressen i et postnummer, bilen
+         aldrig kører til, er svaret det samme — og et svar med
+         det samme er bedre end et efter et sekunds venten.
+
+         ⚠️ DEN AFGØR KUN ET NEJ, ALDRIG ET JA. Et postnummer på
+         listen betyder ikke, at vi kører derhen: zonen er
+         geografisk, og et postnummer kan ligge halvt inde og
+         halvt ude. Derfor spørges serveren stadig, hver gang
+         svaret ikke er et rent nej. Ellers havde vi to dommere. */
+      if (postnumre.length && r.postnr
+          && postnumre.indexOf(r.postnr) === -1) {
+        visDelene(null);
+        return tilstand('nej', ORD.forkertPostnr.replace('%s', r.postnr));
+      }
+
       validér();
     }
 
@@ -235,15 +324,20 @@
         if (s.gyldig && s.leveres && s.token) {
           token = String(s.token);
           if (s.adresse) { felt.value = s.adresse; valgt.tekst = s.adresse; }
+          /* Opdelingen står KUN ved et ja. Ved et nej er adressen
+             ligegyldig — svaret er, at vi ikke kører derhen. */
+          visDelene(s);
           return tilstand('ja', ORD.leverer);
         }
         if (s.gyldig && !s.leveres) {
           token = null;
           if (s.adresse) { felt.value = s.adresse; valgt.tekst = s.adresse; }
+          visDelene(null);
           return tilstand('nej',
             s.grund === 'RING_TIL_OS' ? ORD.ring : ORD.udenfor);
         }
         token = null;
+        visDelene(null);
         if (s.grund === 'ADRESSE_IKKE_FUNDET') return tilstand('nej', ORD.ikkeFundet);
         if (s.grund === 'ADRESSETJENESTE_NEDE') return tilstand('nede', ORD.nede);
         return tilstand('nej', ORD.ikkeBekraeftet);

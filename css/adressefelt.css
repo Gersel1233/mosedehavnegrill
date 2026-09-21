@@ -99,3 +99,58 @@
   color: #8a6410;
   font-weight: 600;
 }
+
+/* ============================================================
+   ADRESSEN DELT OP  (21/9)
+   ------------------------------------------------------------
+   Ejerens eget ønske: *"opdelt — adresse, vej, nummer,
+   postnummer."* Gæsten skal kunne SE, hvad vi forstod, før hun
+   binder sig. En linje som "Mosede Strandvej 25, 2. th, 2670
+   Greve" kan læses forkert i en fart; mærkede felter kan ikke.
+
+   ⚠️ DEN STÅR KUN VED ET JA. Ved et nej er adressen ligegyldig —
+   svaret er, at vi ikke kører derhen, og en pæn opdeling af en
+   adresse, vi afviser, ville læses som en bekræftelse.
+
+   ⚠️ RESERVEVÆRDIER PÅ HVER VARIABEL, som resten af filen: de
+   findes kun i havnegrillen.css, og feltet bruges tre steder.
+   ============================================================ */
+.adr-dele {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--kant-inde, rgba(36, 26, 23, .14));
+  border-radius: 10px;
+  background: var(--cream2, #f7ede1);
+  display: grid;
+  gap: 4px 14px;
+}
+.adr-dele.skjult { display: none; }
+
+/* Etiket og værdi på hver sin side — øjet løber ned ad
+   etiketterne og finder det felt, det leder efter. */
+.adr-del {
+  display: grid;
+  grid-template-columns: minmax(84px, auto) 1fr;
+  gap: 4px 14px;
+  align-items: baseline;
+}
+.adr-del-navn {
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink2, #5c4a45);
+}
+.adr-del-vaerdi {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink, #241a17);
+  /* Et langt vejnavn skal kunne læses helt, ikke klippes af. */
+  overflow-wrap: anywhere;
+}
+
+/* ⚠️ PÅ EN TELEFON STABLES DE. Ved 84 px etiket og et langt
+   vejnavn blev værdien presset ned i to tegn pr. linje. */
+@media (max-width: 420px) {
+  .adr-del { grid-template-columns: 1fr; gap: 0; }
+  .adr-del-vaerdi { margin-bottom: 2px; }
+}

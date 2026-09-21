@@ -315,11 +315,25 @@ Deno.serve(async (req) => {
     .lt("udloeber", new Date(Date.now() - 86_400_000).toISOString())
     .then(() => {}, () => {});
 
+  /* ⚠️ DELENE SENDES MED TILBAGE  (21/9). Ejerens oenske: gaesten
+     skal SE adressen delt op — vej, nummer, postnummer — saa hun
+     kan se, hvad vi forstod, foer hun binder sig.
+
+     ⚠️ OG DE KOMMER FRA SERVEREN, IKKE FRA BROWSEREN. Felterne
+     laa allerede her: de skrives i kvitteringen (leverings_
+     valideringer). Lod vi browseren dele DAWA-forslagets tekst op
+     selv, ville den vise noget, ingen havde bekraeftet — og hele
+     pointen med opslaget er, at klientens felter aldrig er
+     autoritative. */
   return json({
     gyldig: true,
     leveres: true,
     token,
     adresse: a.adresse,
+    vejnavn: a.vejnavn,
+    husnr: a.husnr,
+    etage: a.etage,
+    doer: a.doer,
     postnr: a.postnr,
     by: a.by,
   });

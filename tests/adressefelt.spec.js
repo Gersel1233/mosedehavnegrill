@@ -274,3 +274,138 @@ test.describe('Adressefeltet', () => {
       .toHaveAttribute('role', 'option');
   });
 });
+
+/* ============================================================
+   ADRESSEN DELT OP — OG AFVIST PÅ POSTNUMMERET  (21/9)
+   ------------------------------------------------------------
+   Ejerens egne ord: *"opdelt — adresse, vej, nummer, postnummer
+   — og så skal det tjekkes i databasen. Leverer vi der, okay, de
+   kan bestille; hvis ikke, er det uden for de områder vi kører,
+   så kan de ikke bestille og får en afvisning. Og det kan ske ud
+   fra postnummeret og afvise af sig selv."*
+   ============================================================ */
+test.describe('Adressen delt op', () => {
+
+  /* En DAWA-kulisse, der SENDER postnummeret med — som det
+     rigtige API gør. Den oprindelige kulisse gjorde ikke, og
+     derfor rører den hurtige afvisning ikke de gamle prøver. */
+  async function medPostnr(page, postnr, id) {
+    await page.route('https://api.dataforsyningen.dk/**', (r) => r.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify([{
+        tekst: 'Prøvevej 1, ' + postnr + ' Byen',
+        adresse: { id: id || '5d4b049b-1e0e-447f-abdf-62c79a92a5cc',
+                   postnr: String(postnr) },
+      }]),
+    }));
+  }
+
+  test('et postnummer uden for ruten afvises UDEN at spørge serveren', async ({ page }) => {
+    /* ⚠️ TALLET KOMMER UDEFRA: 9000 står ikke i kulissens
+       leverings_postnr, og 2670 gør. Prøven måler altså mod
+       ejerens egen liste, ikke mod en liste skrevet her. */
+    const d = medLevering();
+    d.indstillinger.leverings_postnr = [2670, 2690];
+    const t = await åbnMedSky(page, { data: d });
+    await medPostnr(page, 9000);
+
+    await page.locator('[data-seg="how"] button:has-text("Levering")').click();
+    await page.locator('#fadr').fill('Prøvevej 1');
+    await page.locator('.adr-liste .adr-forslag').first().click();
+    await page.waitForTimeout(500);
+
+    await expect(page.locator('.adr-status'), 'gæsten fik ingen afvisning')
+      .toContainText('9000');
+    /* ⚠️ DET ER HELE POINTEN: serveren blev ALDRIG spurgt.
+       Bestod prøven uden den her linje, kunne afvisningen komme
+       fra serveren — og så var intet blevet hurtigere. */
+    expect(t.valideringer, 'serveren blev spurgt om et postnummer, vi aldrig kører til')
+      .toBe(0);
+    await expect(page.locator('.adr-dele')).toBeHidden();
+  });
+
+  test('et postnummer PÅ listen spørges stadig hos serveren', async ({ page }) => {
+    /* ⚠️ MODSTYKKET. Et postnummer på listen betyder ikke, at vi
+       kører derhen: zonen er geografisk, og et postnummer kan
+       ligge halvt inde og halvt ude. Afgjorde feltet det selv,
+       havde vi to dommere. */
+    const d = medLevering();
+    d.indstillinger.leverings_postnr = [2670, 2690];
+    const t = await åbnMedSky(page, { data: d });
+    await medPostnr(page, 2670);
+
+    await page.locator('[data-seg="how"] button:has-text("Levering")').click();
+    await page.locator('#fadr').fill('Prøvevej 1');
+    await page.locator('.adr-liste .adr-forslag').first().click();
+    await page.waitForTimeout(700);
+
+    expect(t.valideringer, 'serveren blev sprunget over på et gyldigt postnummer')
+      .toBe(1);
+  });
+
+  test('ved et ja står adressen delt op — med SERVERENS felter', async ({ page }) => {
+    const t = await åbnMedSky(page);
+    /* Serveren svarer med delene; browseren deler ikke selv op. */
+    t.svar = {
+      gyldig: true, leveres: true, token: 'TOKEN-123',
+      adresse: 'Mosede Strandvej 25, 2. th, 2670 Greve',
+      vejnavn: 'Mosede Strandvej', husnr: '25',
+      etage: '2', doer: 'th', postnr: '2670', by: 'Greve',
+    };
+    await page.locator('[data-seg="how"] button:has-text("Levering")').click();
+    await page.locator('#fadr').fill('Havnevej');
+    await page.locator('.adr-liste .adr-forslag').first().click();
+    await page.waitForTimeout(700);
+
+    const dele = page.locator('.adr-dele');
+    await expect(dele).toBeVisible();
+    await expect(dele).toContainText('Mosede Strandvej');
+    await expect(dele).toContainText('25');
+    await expect(dele).toContainText('2670 Greve');
+    /* Etage og dør er sat, så de skal stå — men KUN når de er der.
+       Se prøven nedenfor. */
+    await expect(dele).toContainText('2, th');
+  });
+
+  test('en adresse uden etage får ingen tom etage-linje', async ({ page }) => {
+    /* Et mærket felt uden værdi er en påstand om, at noget
+       mangler — og de fleste adresser har hverken etage eller dør. */
+    const t = await åbnMedSky(page);
+    t.svar = {
+      gyldig: true, leveres: true, token: 'TOKEN-123',
+      adresse: 'Havnevej 20, 2670 Greve',
+      vejnavn: 'Havnevej', husnr: '20',
+      etage: null, doer: null, postnr: '2670', by: 'Greve',
+    };
+    await page.locator('[data-seg="how"] button:has-text("Levering")').click();
+    await page.locator('#fadr').fill('Havnevej');
+    await page.locator('.adr-liste .adr-forslag').first().click();
+    await page.waitForTimeout(700);
+
+    await expect(page.locator('.adr-dele')).toBeVisible();
+    await expect(page.locator('.adr-dele'), 'tom etage-linje står frem')
+      .not.toContainText('Etage');
+  });
+
+  test('rettes adressen efter valget, forsvinder opdelingen', async ({ page }) => {
+    /* En opdeling, der bliver stående, påstår noget om det, der
+       stod FØR rettelsen — og gæsten tror, hun stadig er godkendt. */
+    const t = await åbnMedSky(page);
+    t.svar = {
+      gyldig: true, leveres: true, token: 'TOKEN-123',
+      adresse: 'Havnevej 20, 2670 Greve', vejnavn: 'Havnevej',
+      husnr: '20', postnr: '2670', by: 'Greve',
+    };
+    await page.locator('[data-seg="how"] button:has-text("Levering")').click();
+    await page.locator('#fadr').fill('Havnevej');
+    await page.locator('.adr-liste .adr-forslag').first().click();
+    await page.waitForTimeout(700);
+    await expect(page.locator('.adr-dele')).toBeVisible();
+
+    await page.locator('#fadr').press('End');
+    await page.locator('#fadr').press('Backspace');
+    await page.waitForTimeout(400);
+    await expect(page.locator('.adr-dele'),
+      'opdelingen stod stadig efter en rettelse').toBeHidden();
+  });
+});

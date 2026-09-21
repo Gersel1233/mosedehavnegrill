@@ -1708,6 +1708,13 @@
         status: $('lev-svar'),
         lokation: (window.Butik && Butik.LOKATION) || 'mosede',
         valideringUrl: sky.url + '/functions/v1/valider-levering',
+        /* ⚠️ EJERENS EGNE POSTNUMRE — OG SPURGT HOS REGLEN, IKKE
+           LÆST AF INDSTILLINGEN HER. R.leveringsPostnr bor i
+           js/bestil-regler.js og kender også reserven, hvis feltet
+           er tomt. To steder at læse den samme liste er to steder,
+           der kan skride fra hinanden. Feltet bruger den KUN til
+           at afvise hurtigt; zonen på serveren afgør stadig. */
+        postnumre: R.leveringsPostnr ? R.leveringsPostnr(data || {}) : [],
         naarAendret: function (t) {
           leveringsSvar = t;
           /* Noten ovenover skal følge med — se 16/9 nedenfor. */
