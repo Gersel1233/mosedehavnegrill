@@ -144,6 +144,42 @@
     var aabent = tider(d);
     if (aabent.length) blok.openingHoursSpecification = aabent;
 
+    /* ⚠️ HVOR VI KØRER HEN — OG KUN NÅR VI GØR  (21/9)
+
+       Ejernes klage var, at de ikke kommer frem paa "smoerrebroed
+       Greve" og "is Greve". Maerket fortalte Google, HVOR
+       forretningen ligger, men ikke hvor den LEVERER — og det er
+       to forskellige spoergsmaal. En gaest i Karlslunde soeger
+       ikke efter en cafe paa Mosede Havn; hun soeger efter nogen,
+       der koerer ud til hende.
+
+       ⚠️ TALLENE ER EJERENS EGNE. De kommer fra indstillingen
+       leverings_postnr — den samme, leveringszonen er tegnet
+       efter. Skrev vi dem her, ville der vaere to lister, og de
+       ville skride fra hinanden foerste gang ejeren fjerner et
+       postnummer.
+
+       ⚠️ OG KUN NAAR LEVERING ER SLAAET TIL. Er den slukket, er
+       et areaServed et loefte, forretningen ikke holder. */
+    var ind = (d && d.indstillinger) || {};
+    if (ind.levering === true && Array.isArray(ind.leverings_postnr)) {
+      var numre = ind.leverings_postnr
+        .map(function (n) { return String(n).trim(); })
+        .filter(function (n) { return /^[0-9]{4}$/.test(n); });
+      if (numre.length) {
+        blok.areaServed = numre.map(function (n) {
+          return { '@type': 'PostalAddress', postalCode: n, addressCountry: 'DK' };
+        });
+      }
+    }
+
+    /* Bordene kan bookes paa siden — det er et selvstaendigt felt
+       hos Google og vises i kortpakken. bord_pladser er ejerens
+       eget tal; er der ingen pladser, lover vi ingenting. */
+    if (Number(ind.bord_pladser) > 0) blok.acceptsReservations = true;
+
+    blok.currenciesAccepted = 'DKK';
+
     /* Tomme felter falder fra til sidst, så en nedlagt mail eller
        en manglende prisklasse ikke bliver til "" hos Google. */
     Object.keys(blok).forEach(function (k) {

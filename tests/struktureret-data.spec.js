@@ -223,4 +223,83 @@ test.describe('Forsidens titel', () => {
     expect(m[1].length, 'titlen er for lang til et søgeresultat')
       .toBeLessThanOrEqual(62);
   });
+
+  /* ⚠️ DET GAMLE NAVN HØRER I alternateName, IKKE I TITLEN  (21/9)
+
+     Titlen sagde "Mosede Havnecafe — grill og ishus på Mosede Havn
+     i Greve". Grunden var rigtig: folk søger stadig på det gamle
+     navn, og Google skal kunne matche det.
+
+     Men ejeren har sagt det modsatte om navnet: *"de hedder
+     …@mosedehavnegrill.dk, alt for lange, og vi ønsker ikke at
+     hedde noget med grill længere."* Titlen er det, en gæst LÆSER
+     i søgeresultatet — og der skal der stå det navn, forretningen
+     har i dag.
+
+     ⚠️ SØGEORDET GÅR IKKE TABT. alternateName i mærket bærer det
+     gamle navn videre, og det er præcis, hvad feltet er til.
+     Prøven ovenfor holder fast i, at det bliver stående. De to
+     regler hænger sammen: fjernes alternateName, står vi uden
+     match på det gamle navn — og DEN prøve falder. */
+  test('titlen bærer ikke det gamle grill-navn', () => {
+    const t = fs.readFileSync(path.join(ROD, 'index.html'), 'utf8');
+    const m = t.match(/<title>([^<]*)<\/title>/);
+    expect(m[1], 'det gamle navn står i titlen — det hører i alternateName')
+      .not.toMatch(/grill/i);
+    /* Og de to ord, ejeren savnede på Google, skal stå der. */
+    expect(m[1], 'titlen nævner ikke smørrebrød').toMatch(/smørrebrød/i);
+    expect(m[1], 'titlen nævner ikke Greve').toMatch(/Greve/);
+  });
+});
+
+/* ============================================================
+   HVOR KØRER DE HEN, OG KAN MAN BOOKE?  (21/9)
+   ------------------------------------------------------------
+   Ejernes klage: de kommer ikke frem på "smørrebrød Greve" eller
+   "is Greve". Mærket fortalte, HVOR forretningen ligger — ikke
+   hvor den LEVERER. En gæst i Karlslunde søger ikke efter en
+   cafe på Mosede Havn; hun søger efter nogen, der kører ud.
+   ============================================================ */
+test.describe('Leveringsområdet i mærket', () => {
+  test('de postnumre, ejeren selv har sat, står i mærket', async ({ page }) => {
+    /* ⚠️ TALLENE KOMMER UDEFRA: kulissens egen leverings_postnr,
+       ikke en liste skrevet her. Ændrer ejeren sin liste, følger
+       mærket med — og gør det ikke, falder prøven. */
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      levering: true, leverings_postnr: [2670, 2690, 4600],
+    });
+    await åbnSkal(page, '/index.html', { data: d });
+    await page.waitForTimeout(900);
+    const m = await maerket(page);
+    const numre = (m.data.areaServed || []).map((a) => a.postalCode);
+    expect(numre, 'leveringsområdet mangler i mærket')
+      .toEqual(['2670', '2690', '4600']);
+    expect((m.data.areaServed || [])[0].addressCountry).toBe('DK');
+  });
+
+  test('er leveringen slukket, lover mærket ingenting', async ({ page }) => {
+    /* Et areaServed uden levering er et løfte, forretningen ikke
+       holder — og det er værre end intet felt. */
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      levering: false, leverings_postnr: [2670, 2690],
+    });
+    await åbnSkal(page, '/index.html', { data: d });
+    await page.waitForTimeout(900);
+    const m = await maerket(page);
+    expect(m.data.areaServed, 'mærket lover levering, der er slået fra')
+      .toBeUndefined();
+  });
+
+  test('bordene kan bookes — og det står i mærket', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, { bord_pladser: 58 });
+    await åbnSkal(page, '/index.html', { data: d });
+    await page.waitForTimeout(900);
+    const m = await maerket(page);
+    expect(m.data.acceptsReservations, 'bordbookingen står ikke i mærket')
+      .toBe(true);
+    expect(m.data.currenciesAccepted).toBe('DKK');
+  });
 });
