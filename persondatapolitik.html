@@ -155,7 +155,9 @@
   <div class="rev d1"><div class="eyebrow">Hvem ser det</div><h2>Kun os<br>— og tre leverandører</h2><div class="rule"></div></div>
   <p class="sub">Dine oplysninger står på personalets skærm i køkkenet. De bliver ikke solgt, delt eller brugt til reklamer. Tre virksomheder hjælper os med at drive siden og mailen, og de behandler oplysningerne på vores vejledning:</p>
   <!-- ⚠️ MAILEN LIGGER HOS GOOGLE (målt 15/9: MX-posten for mosedehavnecafe.dk er smtp.google.com).
-       Siden nævnte kun Supabase og GitHub, mens gæsternes mails til kontakt@, selskab1@ og booking1@
+       Siden nævnte kun Supabase og GitHub, mens gæsternes mails til kontakt@, booking@ og selskab1@
+       (⚠️ 21/9: her stod "booking1@", som ikke findes ét sted på siden — den samme fejl var
+       røget med i driftsaftalen og prisarket og er rettet begge steder)
        lander i Google Workspace. Databehandleraftalen (bilag B) har den samme liste — ret begge steder. -->
   <div class="hours rev d2">
     <div><span>Databasen</span><span>Supabase</span></div>
@@ -163,6 +165,25 @@
     <div><span>Mailen</span><span>Google Workspace</span></div>
   </div>
   <p class="fine">Hjemmesiden bliver leveret af en server, der som al webtrafik ser din IP-adresse i sine logfiler. Det er teknisk nødvendigt for at sende siden til dig. Skriver du til os på mail, ligger mailen i vores postkasse hos Google.</p>
+
+  <!-- ⚠️ DATAFORSYNINGEN STÅR HER OG IKKE I RÆKKEN AF TRE (21/9).
+
+       Leveringen kom i luften 21/9, og js/adressefelt.js slår adressen op hos
+       api.dataforsyningen.dk, MENS gæsten skriver — altså fra hendes egen browser.
+       Målt samme dag: ordet stod nul gange på siden, mens databehandleraftalens
+       bilag B havde det med. Papiret og siden sagde hver sit om, hvem der ser
+       adressen.
+
+       Den hører IKKE i rækken ovenfor: de tre er databehandlere, der arbejder på
+       vores vejledning. Dataforsyningen er en dansk myndighed og en selvstændig
+       modtager — stod den i den samme liste, ville vi love gæsten et tilsyn, vi
+       ikke har. Samme sondring som i bilag B.
+
+       ⚠️ OG DER SENDES KUN ADRESSEN. Browseren sender det, gæsten har tastet;
+       serveren slår bagefter op på adressens EGET id (valider-levering.ts linje
+       184) — hverken navn eller telefonnummer er med. tests/jura.spec.js læser
+       værtsnavnet ud af koden, så linjen her ikke kan blive forkert i stilhed. -->
+  <p class="fine"><b>Din adresse bliver slået op.</b> Skriver du en leveringsadresse, spørger siden <a href="https://dataforsyningen.dk" target="_blank" rel="noopener">Dataforsyningen</a> — statens egen adressetjeneste — om adressen findes, og om den ligger inden for det område, vi kører ud til. Det sker, mens du skriver, og igen når du sender bestillingen. Vi sender kun selve adressen, ikke dit navn og ikke dit telefonnummer. Dataforsyningen er en dansk myndighed, og opslaget forlader ikke EU.</p>
 
   <div class="rev d1"><div class="eyebrow">Din browser</div><h2>Cookies<br>— og det, der ikke er cookies</h2><div class="rule"></div></div>
   <p class="sub"><b>Vi sætter ingen cookies.</b> Til gengæld ligger der tre ting i din egen browser, som aldrig forlader den:</p>

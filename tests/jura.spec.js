@@ -330,3 +330,74 @@ test.describe('Ingen cookies og ingen tredjeparter', () => {
     }
   });
 });
+
+/* ============================================================
+   EN TJENESTE, GÆSTENS BROWSER SELV SPØRGER, SKAL STÅ PÅ SIDEN
+   (21/9)
+   ------------------------------------------------------------
+   Leveringen kom i luften 21/9. Når gæsten skriver sin adresse,
+   slår js/adressefelt.js den op hos Dataforsyningen — fra HENDES
+   EGEN browser, mens hun taster — og serveren gør det igen, når
+   bestillingen sendes.
+
+   MÅLT samme dag: ordet "Dataforsyningen" stod NUL gange i
+   persondatapolitik.html, som ellers nævner Supabase, GitHub og
+   Google. Databehandleraftalens bilag B fik den med, og så sagde
+   papiret og siden hver sit om, hvem der ser gæstens adresse.
+
+   ⚠️ DEN ER IKKE EN "TREDJEPART" I CookiePRØVENS FORSTAND, og den
+   er heller ikke en underdatabehandler: det er en dansk myndighed
+   og en åben, offentlig adressetjeneste. Men gæsten skal vide,
+   at adressen forlader siden — og det er sletDEN oplysning, en
+   politik findes for.
+
+   ⚠️ PRØVEN LÆSER KODEN, IKKE EN LISTE. Værtsnavnet hentes ud af
+   js/adressefelt.js; ændres tjenesten en dag, falder prøven, i
+   stedet for at politikken stille og roligt bliver forkert. Og
+   modstykket måles med: holder vi op med at spørge tjenesten,
+   skal linjen ud igen.
+   ============================================================ */
+test.describe('Adressetjenesten står i politikken', () => {
+
+  function vaertFraKoden() {
+    const s = fs.readFileSync(path.join(ROD, 'js/adressefelt.js'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '');
+    const m = s.match(/https:\/\/([a-z0-9.-]+)\/adresser/i);
+    return m ? m[1] : null;
+  }
+
+  test('gæstens browser spørger faktisk en adressetjeneste', () => {
+    /* Uden den her består prøven nedenfor den dag, opslaget
+       forsvinder — og så ville politikken love noget, der ikke
+       sker. Tallet er kodens, ikke vores. */
+    expect(vaertFraKoden(), 'js/adressefelt.js slår ikke længere adresser op')
+      .toBe('api.dataforsyningen.dk');
+  });
+
+  test('politikken nævner den ved navn', () => {
+    const t = fs.readFileSync(path.join(ROD, 'persondatapolitik.html'), 'utf8')
+      .replace(/<!--[\s\S]*?-->/g, '');
+    expect(t, 'politikken nævner ikke Dataforsyningen')
+      .toMatch(/Dataforsyningen/);
+    /* Og den skal sige, hvad der sker — ikke bare nævne et navn i
+       en liste. Gæsten skal kunne læse, at det er ADRESSEN, der
+       bliver slået op. */
+    expect(t, 'politikken siger ikke, at det er adressen, der slås op')
+      .toMatch(/adresse/i);
+  });
+
+  /* ⚠️ OG DEN MÅ IKKE STÅ SOM EN AF DE TRE DATABEHANDLERE.
+     Overskriften siger "Kun os — og tre leverandører", og de tre
+     behandler på vores vejledning. Dataforsyningen gør ikke: det
+     er en myndighed og en selvstændig modtager. Stod den i den
+     samme liste, ville siden love gæsten et tilsyn, vi ikke har.
+     Det er den samme sondring som databehandleraftalens bilag B. */
+  test('den står ikke i rækken af databehandlere', () => {
+    const t = fs.readFileSync(path.join(ROD, 'persondatapolitik.html'), 'utf8')
+      .replace(/<!--[\s\S]*?-->/g, '');
+    const blok = t.slice(t.indexOf('class="hours rev d2"'));
+    const raekker = blok.slice(0, blok.indexOf('</div>\n  <p'));
+    expect(raekker, 'Dataforsyningen står blandt de tre databehandlere')
+      .not.toMatch(/Dataforsyningen/);
+  });
+});
