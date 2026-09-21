@@ -1022,6 +1022,41 @@ test.describe('En levering er lovet et opkald', () => {
       .toHaveCount(0);
   });
 
+  /* ⚠️ ER DER EN RUTE I DAG? (21/9)
+
+     Den, der skal køre ud, kunne ikke se det nogen steder —
+     leveringerne lå blandet ind mellem afhentningerne. Pillen
+     står KUN, når der er noget at køre med: en pille, der siger
+     "🚗 0" på de fleste dage, er en, øjet holder op med at se. */
+  test('Dagens tal siger, hvor mange der skal køres ud', async ({ page }) => {
+    const d = medLevering();
+    d.bestillinger.push(b(3, I_DAG, '13:30', 'Mia Kjær', 'Rejemad', 1,
+      { hvordan: 'levering', status: 'bekraeftet',
+        leverings_adresse: 'Havnevej 20, 2670 Greve' }));
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: d });
+    await visFane(page, 'p-bestillinger');
+
+    /* To leveringer og én afhentning i kulissen — tallet må altså
+       hverken være 1 eller 3. */
+    await expect(page.locator('#bestil-tal .bestil-tal-pille.lev'))
+      .toHaveText(/2 skal køres ud/);
+  });
+
+  test('… og pillen forsvinder, når alle er kørt ud', async ({ page }) => {
+    const d = medLevering();
+    d.bestillinger[0].status = 'afhentet';
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: d });
+    await visFane(page, 'p-bestillinger');
+    await expect(page.locator('#bestil-tal .bestil-tal-pille.lev'),
+      'pillen stod der stadig, da der ikke var mere at køre med')
+      .toHaveCount(0);
+    /* ⚠️ OG STYRKEPRØVEN: de andre piller SKAL stadig stå. Var
+       hele tal-boksen tom, ville prøven ovenfor bestå af den
+       forkerte grund. */
+    await expect(page.locator('#bestil-tal .bestil-tal-pille'))
+      .toHaveCount(2);
+  });
+
   test('Færdig på en levering spørger om opkaldet FØRST', async ({ page }) => {
     await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medLevering() });
     await visFane(page, 'p-bestillinger');

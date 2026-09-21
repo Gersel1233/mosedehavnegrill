@@ -9603,6 +9603,17 @@ body.personale .bestil-tal-pille.klar {
   background: rgba(47, 107, 70, .08);
   color: #245537;
 }
+/* "🚗 N skal køres ud" — se noten i js/admin/bestillinger.js.
+   ⚠️ --red-tekst og ikke --red: 14 px på en lys flade. Husets
+   lyse rød måler for lidt i den størrelse — samme grund som de
+   fem andre steder, der bærer den note. Den deler farve med
+   haster-pillen med vilje: begge siger "det her mangler", og to
+   nuancer rød ville læses som to forskellige slags. */
+body.personale .bestil-tal-pille.lev {
+  border-color: var(--red);
+  background: rgba(214, 42, 58, .08);
+  color: var(--red-tekst);
+}
 
 /* ---- De to grupper i listen ---- */
 body.personale .bestil-gruppe {

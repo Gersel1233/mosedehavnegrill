@@ -575,6 +575,36 @@
     var b2 = lav('span', 'bestil-tal-pille klar', '✅ ' + faerdige + ' færdige');
     boks.appendChild(a);
     boks.appendChild(b2);
+
+    /* ⚠️ ER DER EN RUTE I DAG?  (21/9)
+
+       Den, der skal køre ud, kunne ikke se det nogen steder:
+       leveringerne lå blandet ind mellem afhentningerne, og for
+       at vide, om der overhovedet var noget at køre med, måtte
+       man rulle hele dagen igennem og tælle de røde bjælker.
+
+       ⚠️ DEN STÅR KUN, NÅR DER ER NOGET AT KØRE MED. En pille,
+       der siger "🚗 0" på de fleste dage, er en pille, øjet
+       holder op med at se — samme regel som gæstetallet (20/9):
+       et mærke, der altid står der, siger ingenting.
+
+       ⚠️ OG DEN TÆLLER KUN DE UAFSLUTTEDE, som 🔥 mangler gør.
+       Tallet skal være det, der er tilbage at gøre — er alle
+       kørt ud, forsvinder pillen, og dét er svaret.
+
+       ⚠️ SPØRGSMÅLET "ER DET EN LEVERING?" BOR I Admin.typeTekst.
+       En `b.hvordan === 'levering'` her ville være husets femte
+       udgave af den samme regel — og det var præcis dén slags,
+       der 6/9 gav én bestilling to modstridende mærker. */
+    var ruten = liste.filter(function (x) {
+      if (erFaerdig(x)) return false;
+      var t = Admin.typeTekst && Admin.typeTekst(x);
+      return !!t && t.slags === 'levering';
+    }).length;
+    if (ruten) {
+      boks.appendChild(lav('span', 'bestil-tal-pille lev',
+        '🚗 ' + ruten + (ruten === 1 ? ' skal køres ud' : ' skal køres ud')));
+    }
   }
 
   function tegnBestillinger() {
