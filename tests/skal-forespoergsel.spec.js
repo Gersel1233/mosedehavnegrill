@@ -1709,15 +1709,39 @@ test.describe('Baglokalets priskort', () => {
 
   /* ⚠️ OG SIDEN MÅ IKKE LOVE FACILITETER, INGEN HAR BEKRÆFTET.
      Designbundlet leverede baglokalet med projektor og egen
-     indgang (21/8), og ingen af delene er bekræftet af ejeren.
+     indgang (21/8), og ingen af delene var bekræftet af ejeren.
      "Det får I"-listen er sælgende, og det er præcis dér,
-     fristelsen til at skrive dem ind igen ligger. */
-  test('der loves hverken projektor eller egen indgang', async ({ page }) => {
+     fristelsen til at skrive dem ind igen ligger.
+
+     ⚠️ LISTEN ER BLEVET KORTERE 21/9 — IKKE LEMPET.
+     Ejeren har SELV skrevet dem. Jim Gjermandsens besked 20/9,
+     ordret: *"Lyd system opsat. Whiteboard tavle, flip over
+     tavle, lærred samt projekter."* Altså har projektor og
+     lærred nu en kilde, og et værn mod en bekræftet oplysning
+     er et værn mod sandheden.
+
+     ⚠️ EGEN INDGANG OG EGET TOILET BLIVER STÅENDE. Jim nævner
+     dem ikke med ét ord, og så er de stadig VORES påstand.
+     Det er hele grunden til, at listen ikke bare blev slettet. */
+  test('der loves hverken egen indgang eller eget toilet', async ({ page }) => {
     await åbn(page, '/h-baglokale.html');
     const tekst = (await page.locator('#sc').innerText()).toLowerCase();
-    for (const ord of ['projektor', 'egen indgang', 'eget toilet', 'lærred']) {
+    for (const ord of ['egen indgang', 'eget toilet']) {
       expect(tekst, `siden lover "${ord}" — det er ikke bekræftet`)
         .not.toContain(ord);
+    }
+  });
+
+  /* ⚠️ MODSTYKKET: det, ejeren HAR bekræftet, skal stå der.
+     Uden den her prøve kunne nogen fjerne linjerne igen i god
+     tro — de stod jo på forbudslisten indtil 21/9. */
+  test('ejerens egne oplysninger om lokalet står på siden', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    const tekst = (await page.locator('#sc').innerText()).toLowerCase();
+    for (const ord of ['lærred', 'projektor', 'whiteboard', 'flipover',
+                       '50 til møde', 'printer']) {
+      expect(tekst, `"${ord}" mangler — ejeren har selv oplyst den`)
+        .toContain(ord);
     }
   });
 });
