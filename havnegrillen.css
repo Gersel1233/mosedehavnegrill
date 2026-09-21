@@ -2775,6 +2775,11 @@ footer .smiley-linje{
    En stille linje under den røde knap: den er en vej videre, ikke
    et andet tilbud, og to knapper med samme vægt ville tvinge
    gæsten til at vælge mellem dem. */
-.is-kortlink{display:inline-block;margin-top:10px;font-size:13px;font-weight:600;color:var(--red-tekst);text-decoration:none;border-bottom:1px solid rgba(214,42,58,.3);padding-bottom:1px}
+/* ⚠️ width:fit-content + margin auto, IKKE text-align:center. En
+   blok ville trække understregningen ud i hele kortets bredde, og
+   inline-block alene stiller sig til venstre, fordi forælderen ikke
+   centrerer sin tekst — målt på et skud: linjen stod ude i venstre
+   kant under en centreret knap. */
+.is-kortlink{display:block;width:fit-content;margin:10px auto 0;font-size:13px;font-weight:600;color:var(--red-tekst);text-decoration:none;border-bottom:1px solid rgba(214,42,58,.3);padding-bottom:1px}
 .is-kortlink:hover,.is-kortlink:focus-visible{border-bottom-color:var(--red-tekst)}
 .is-kortlink.skjult{display:none}
