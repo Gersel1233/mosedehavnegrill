@@ -409,3 +409,34 @@ test.describe('Adressen delt op', () => {
       'opdelingen stod stadig efter en rettelse').toBeHidden();
   });
 });
+
+/* ============================================================
+   KUN GÆLDENDE ADRESSER I FORSLAGENE  (21/9)
+   ------------------------------------------------------------
+   MÅLT mod det levende API: "Håndværkerbyen 17A" gav fem
+   forslag, og alle fem havde status 3 — henlagte. Serveren
+   afviste dem bagefter, så gæsten fik "Vi kunne ikke bekræfte
+   adressen" på noget, VI selv havde tilbudt hende.
+   ============================================================ */
+test.describe('Forslagene er gældende adresser', () => {
+  test('opslaget beder Dataforsyningen om status=1', async ({ page }) => {
+    /* ⚠️ PRØVEN LÆSER DEN RIGTIGE ADRESSE, koden kalder — ikke
+       koden selv. Et blik i kildeteksten ville bestå, også hvis
+       parameteren blev skrevet et sted, der aldrig sendes. */
+    let kaldt = '';
+    const t = await åbnMedSky(page);
+    await page.route('https://api.dataforsyningen.dk/**', (r) => {
+      kaldt = r.request().url();
+      return r.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify([{ tekst: 'Havnevej 20, 2670 Greve',
+          adresse: { id: '5d4b049b-1e0e-447f-abdf-62c79a92a5cc', postnr: '2670' } }]) });
+    });
+    await page.locator('[data-seg="how"] button:has-text("Levering")').click();
+    await page.locator('#fadr').fill('Havnevej');
+    await page.waitForTimeout(900);
+    expect(kaldt, 'Dataforsyningen blev ikke spurgt').toBeTruthy();
+    expect(decodeURIComponent(kaldt),
+      'forslagene henter også nedlagte adresser — dem kan gæsten ikke bestille til')
+      .toContain('status=1');
+  });
+});

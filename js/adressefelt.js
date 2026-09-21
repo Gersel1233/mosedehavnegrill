@@ -245,7 +245,25 @@
       var mit = ++nyeste;
       hentning = typeof AbortController === 'function' ? new AbortController() : null;
 
-      fetch(DAWA + '?q=' + encodeURIComponent(q) + '&per_side=' + HOEJST + '&fuzzy=', {
+      /* ⚠️ status=1 — KUN GÆLDENDE ADRESSER  (21/9)
+
+         MÅLT mod det levende API: en søgning på "Håndværkerbyen
+         17A" gav FEM forslag, og alle fem havde status 3 —
+         henlagte. Dataforsyningen foreslår dem gerne; det er et
+         register, ikke en indkøbsliste.
+
+         ⚠️ OG SERVEREN AFVISTE DEM BAGEFTER. Edge Function'en
+         kræver status 1, så gæsten fik "Vi kunne ikke bekræfte
+         adressen" på noget, VI selv havde tilbudt hende. Det er
+         den værste slags afvisning: hun gjorde præcis, hvad
+         skærmen bad om.
+
+         Med status=1 kommer de slet ikke frem. Målt: 0 forslag
+         på den henlagte, og Havnevej 20 kommer stadig. Værnet på
+         serveren bliver stående — det er dét, der afgør. Her
+         handler det om ikke at tilbyde noget, vi ikke kan holde. */
+      fetch(DAWA + '?q=' + encodeURIComponent(q) + '&per_side=' + HOEJST
+            + '&status=1&fuzzy=', {
         signal: hentning ? hentning.signal : undefined,
         headers: { accept: 'application/json' },
       }).then(function (r) {
