@@ -1342,11 +1342,31 @@ test.describe('Status og type kan ikke forveksles', () => {
     await åbnFanen(page, d);
     const kort = page.locator('#bestillinger-liste .bestil-kort').first();
     await expect(kort).toHaveClass(/b-faerdig/);
-    const type = await kort.locator('.maerke[data-type]').first()
-      .evaluate((el) => getComputedStyle(el).backgroundColor);
-    /* Leveringens røde, ikke kortets grønne. Tallet kommer udefra:
-       den røde værdi står i CSS'en som rgba(214, 42, 58, .12). */
-    expect(type, 'typemærket blev farvet af kortet').toContain('214, 42, 58');
+    /* ⚠️ BÅDE FLADEN OG SKRIFTEN (rettet 21/9). Prøven spurgte kun
+       om baggrunden, og det holdt, så længe leveringsmærket stod
+       på et hvidt kort med en bleg rød flade. Fra 21/9 flytter
+       mærket ind i leveringsbjælken og VENDES om — hvidt felt,
+       rød skrift — nøjagtig som bordmærket har gjort siden 15/9.
+       Den gamle måling faldt altså på en rettelse, der ikke var
+       fejlen, den vogtede.
+
+       Den vogter stadig DEN fejl: `.b-faerdig .maerke` bart
+       farvede hvert mærke grønt, så en levering, der var kørt ud,
+       stod med "LEVERES" i den samme grønne som "FÆRDIG". Derfor
+       to krav nu — den røde SKAL være der et af de to steder, og
+       den grønne må ingen af dem være.
+
+       Tallene kommer udefra: 214, 42, 58 er --red i css/style.css,
+       47, 138, 91 er den grønne i .bestil-kort.b-faerdig. */
+    const farver = await kort.locator('.maerke[data-type]').first()
+      .evaluate((el) => {
+        const s = getComputedStyle(el);
+        return s.backgroundColor + ' | ' + s.color;
+      });
+    expect(farver, 'typemærket bærer ikke leveringens røde')
+      .toContain('214, 42, 58');
+    expect(farver, 'typemærket blev farvet grønt af det færdige kort')
+      .not.toContain('47, 138, 91');
   });
 
   /* ============================================================
