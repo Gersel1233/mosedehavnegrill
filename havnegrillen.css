@@ -2756,3 +2756,17 @@ footer .smiley-linje{
    telefonen. Se nedeNote i js/skal/bestil.js. */
 .panel.er-nede [data-liste]{opacity:.45;pointer-events:none}
 .nede-note{margin:0 0 14px;padding:12px 14px;border-radius:14px;background:#fbe9e9;color:#7a1f27;font-weight:600;line-height:1.4}
+
+/* ============================================================
+   LOKALETS UDSTYR  (21/9) — se noten i h-baglokale.html
+   ------------------------------------------------------------
+   Sin egen klasse og ikke .facts eller .getlist: de to betyder
+   hver sin ting på den side, og begge er vogtet af en prøve.
+   Faktalinjen sælger; det her er detaljen, man læser bagefter.
+   ============================================================ */
+.lokale-udstyr{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 10px;margin:16px 0 0;padding:0;list-style:none}
+.lokale-udstyr li{padding:7px 13px;border-radius:999px;background:var(--cream2);box-shadow:var(--kant-inde);font-size:13px;line-height:1.35;color:var(--ink2)}
+.lokale-udstyr li b{color:var(--ink)}
+/* ⚠️ Den lange første linje må ikke klemme de korte sammen: på en
+   telefon får den hele bredden i stedet for at brække i to tegn. */
+@media (max-width:520px){.lokale-udstyr li:first-child{flex:1 1 100%;text-align:center}}

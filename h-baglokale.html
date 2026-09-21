@@ -208,10 +208,36 @@
      allerede fra ejerens eget felt (data-vilk="pladser"); her
      står mødetallet og hele caféen, som er det nye.
      ============================================================ -->
-<div class="facts rev">
-  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span><b>50 til møde</b> — eller book <b>hele caféen med lokalet</b>: ca. 80 mødedeltagere, 70 spisende.</span></div>
-  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v10H4z"/><path d="M9 19l3-4 3 4"/></svg><span><b>Lærred, projektor og lydanlæg</b> står klar — whiteboard og flipover med.</span></div>
-  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V4h12v5M6 18h12v3H6zM4 9h16v7H4z"/></svg><span><b>Mødeudstyr</b> — papir og blyant, printer og kopimaskine.</span></div>
+<!-- ⚠️ SIN EGEN FORM — OG DET ER TREDJE FORSØG  (21/9)
+
+     1. Først en anden `.facts`-række. Siden fik TO, og to prøver
+        faldt: faktalinjen er ÉN ting med ejerens egne tal.
+     2. Så `.getlist`. Den faldt ogsaa — og med god grund:
+        baglokale-side.spec.js kræver `.getlist` FRAVÆRENDE, fordi
+        "Det får I"-kortet blev fjernet 14/9 netop for at undgå, at
+        siden sagde det samme to gange.
+
+     Begge værn har ret, og indholdet her er hverken det ene eller
+     det andet: faktalinjen SÆLGER (jeres alene, maden, vi rydder
+     op), og det her er udstyret, man læser, når man er solgt. Så
+     får det sin egen klasse i stedet for at låne en, der betyder
+     noget andet.
+
+     ⚠️ INDHOLDET ER EJERENS EGNE ORD, Jim Gjermandsen 20/9:
+     "plads til … 50 møde deltagere … book hele caféen samt
+     lokalet, plads til ca. 70 spisende gæster, 80 møde deltagere.
+     Lyd system opsat. Whiteboard tavle, flip over tavle, lærred
+     samt projekter. Muligheder for div møde udstyr, papir og
+     blyant, Printer, kopimaskine." -->
+<div class="mid rev">
+  <ul class="lokale-udstyr">
+    <li><b>50 til møde</b> — eller hele caféen med lokalet: ca. 80 mødedeltagere, 70 spisende</li>
+    <li>Lydanlæg sat op</li>
+    <li>Lærred og projektor</li>
+    <li>Whiteboard og flipover</li>
+    <li>Printer og kopimaskine</li>
+    <li>Papir og blyant</li>
+  </ul>
 </div>
 
 <p class="sub rev d1" style="text-align:center">Frokostmøde, mindesammenkomst,
