@@ -730,8 +730,23 @@ test.describe('Menukortet læses i afsnit', () => {
    vores egen funktion blev kaldt, ville bestå den dag, hoppet
    holdt op med at virke af en helt anden grund.
 
-   ⚠️ RULLERODEN ER #sc, IKKE VINDUET. Hele siden ligger i den, og
-   window.scrollY står på nul, uanset hvor langt man er nede.
+   ⚠️ RULLEROD? DET AFHÆNGER AF SKÆRMBREDDEN — MÅLT 21/9.
+   Her stod "rulleroden ER #sc, ikke vinduet". Det gælder på
+   COMPUTER. På telefonen har #sc overflow-y: visible og
+   scrollHeight == clientHeight (3319 == 3319) — det er VINDUET,
+   der ruller, og sc.scrollTop bliver stående på nul, uanset hvor
+   langt gæsten er nede.
+
+   Prøven spurgte kun #sc og bestod derfor på computeren og faldt
+   på telefonen, selv om hoppet virkede begge steder: window.scrollY
+   1475, overskriften 272 px fra toppen — nøjagtig samme landing.
+   Sætningen var skrevet af fra .claude/skills/se-siden, som handler
+   om FORSIDEN, og aldrig målt her. En kommentar er ikke et værn.
+
+   Målingen spørger derfor begge rødder og tager den, der faktisk
+   har flyttet sig. Og den kræver nu, at overskriften er SYNLIG —
+   ikke bare at et tal er over nul: rullet forbi isen er lige så
+   forkert som ikke rullet.
    ============================================================ */
 test.describe('Genvejen fra forsiden lander på isen', () => {
 
@@ -740,11 +755,17 @@ test.describe('Genvejen fra forsiden lander på isen', () => {
       const sc = document.getElementById('sc');
       const is = document.getElementById('afsnit-is');
       return {
-        rullet: sc ? Math.round(sc.scrollTop) : -1,
+        /* Den af de tre, der faktisk har flyttet sig. På computer
+           er det #sc, på telefonen vinduet — se noten ovenfor. */
+        rullet: Math.round(Math.max(
+          sc ? sc.scrollTop : 0,
+          window.scrollY || 0,
+          document.documentElement.scrollTop || 0)),
         findes: !!is,
         /* Hvor langt fra skærmens top står overskriften? Den må
            ikke gemme sig under bjælken og hop-båndet. */
         fraToppen: is ? Math.round(is.getBoundingClientRect().top) : null,
+        skaerm: Math.round(window.innerHeight),
       };
     });
   }
@@ -758,9 +779,14 @@ test.describe('Genvejen fra forsiden lander på isen', () => {
        Står den der stadig, skete hoppet aldrig. */
     expect(m.rullet, 'siden blev stående i toppen — hoppet virkede ikke')
       .toBeGreaterThan(0);
-    /* Og overskriften skal være SYNLIG, ikke bare rullet forbi. */
+    /* Og overskriften skal være SYNLIG, ikke bare rullet forbi.
+       ⚠️ BEGGE ENDER. Kun "over nul" ville bestå, hvis siden rullede
+       til bunden og efterlod isen tre skærme oppe — og på telefonen
+       er netop dét den sandsynlige fejl. */
     expect(m.fraToppen, 'isafsnittet gemmer sig under bjælken')
       .toBeGreaterThanOrEqual(0);
+    expect(m.fraToppen, 'isafsnittet er slet ikke på skærmen')
+      .toBeLessThan(m.skaerm);
   });
 
   /* ⚠️ MODSTYKKET. Uden en hash må siden IKKE rulle af sig selv —
