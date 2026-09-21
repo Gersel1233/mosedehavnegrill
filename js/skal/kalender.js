@@ -537,6 +537,39 @@
       besked = 'Vil gerne sidde: ' + hvor + (besked ? '\n' + besked : '');
     }
 
+    /* ⚠️ ALLERGIEN BLEV ALDRIG LÆST HER  (21/9, MÅLT).
+
+       h-kalender.html har haft #kallergi og en samtykkelinje
+       siden 10/9 — og ordet "allergi" optrådte NUL gange i den
+       her fil. En gæst, der tilmeldte sig en fællesspisning og
+       skrev "skaldyr", fik hverken en linje at sige ja på eller
+       en oplysning frem til køkkenet. Det er NØJAGTIG den fejl,
+       frokostsiden fik rettet 16/9 — den blev bare rettet ét
+       sted og ikke som en klasse. tests/allergi-paa-alle.spec.js
+       læser nu alle sider og slår hvert felt op i den kode,
+       siden faktisk indlæser, så en syvende side ikke kan slippe
+       forbi.
+
+       Og fællesspisningen er netop den aften, hvor køkkenet laver
+       ÉN ret til alle — der er ingen menu at vælge sig uden om.
+
+       ⚠️ SAMTYKKET SPÆRRER KUN, NÅR DER FAKTISK STÅR NOGET.
+       Reglen er Butik.allergiMangler: kan man ikke tilmelde sig
+       uden at sige ja til at få gemt en helbredsoplysning, er
+       samtykket ikke frivilligt — og så er det ugyldigt. */
+    var allergi = String((id('kallergi') || {}).value || '').trim();
+    var aFlueben = id('kallergi-samtykke');
+    var savn = Butik.allergiMangler(allergi, aFlueben && aFlueben.checked);
+    if (savn) {
+      if (aFlueben && aFlueben.focus) aFlueben.focus();
+      if (knap) knap.disabled = false;
+      return sigFejl(savn);
+    }
+    /* Forrest, med ordet ALLERGI:. Den samme ene regel, de fire
+       andre veje bruger — og grunden til, at admin og køkkenet
+       kan kende en allergi fra en almindelig besked. */
+    besked = Butik.medAllergi(besked, allergi);
+
     Butik.reserverPlads({
       kalender_id: vælger.value,
       navn: navn,
@@ -655,6 +688,28 @@
       var el = id(n);
       if (el) el.addEventListener('input', rydFejl);
     });
+
+    /* ⚠️ FLUEBENET FINDES KUN, NÅR DER ER SKREVET NOGET (21/9).
+       Linjen ligger med klassen `skjult` i opmærkningen, og INTET
+       fjernede den før nu — så gæsten kunne skrive en allergi og
+       aldrig få mulighed for at sige ja til, at vi gemmer den.
+       Samme mønster som js/bestilling.js, js/skal/bestil.js og
+       js/skal/forespoergsel.js; se den lange note i send().
+
+       ⚠️ OG DET NULSTILLES, NÅR TEKSTEN RYDDES. Ellers stod et
+       gammelt ja og gjaldt en allergi, gæsten havde slettet. */
+    var aFelt = id('kallergi');
+    var aLinje = id('kallergi-samtykke-linje');
+    if (aFelt && aLinje) {
+      aFelt.addEventListener('input', function () {
+        var harTekst = !!aFelt.value.trim();
+        aLinje.classList.toggle('skjult', !harTekst);
+        if (!harTekst) {
+          var boks = id('kallergi-samtykke');
+          if (boks) boks.checked = false;
+        }
+      });
+    }
   }
 
   /* ⚠️ "HVAD SKER DER" OG "HVAD HAR DER VÆRET" ER ÉT STED  (13/9).

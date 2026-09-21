@@ -7736,6 +7736,27 @@ body.personale .foresp-detaljer {
   color: var(--muted);
 }
 
+/* ⚠️ ADRESSEN I DETALJELINJEN ER ET LINK  (21/9).
+
+   Resten af linjen er --muted, altså grå med vilje: det er felter,
+   man skimmer. Adressen er det ENE af dem, man kan trykke på, og
+   den skal derfor have husets linkfarve og en understregning —
+   ellers er den en knap, ingen opdager.
+
+   ⚠️ IKKE FED. Linjen har fire-fem felter i forvejen; gjorde vi
+   adressen fed, ville øjet læse den som overskriften og springe
+   resten over. Farven er nok til at skille den ud fra grå. */
+body.personale .foresp-kortlink {
+  /* ⚠️ SAMME FARVE SOM KORTETS ANDRE HANDLINGER (.foresp-link:
+     nummeret og mailen). --sea er husets overskriftsfarve og
+     næsten sort — den ville ligne resten af den grå linje. */
+  color: var(--red-tekst);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  /* Adresser brækker grimt midt i et vejnavn. */
+  white-space: nowrap;
+}
+
 /* ⚠️ KNAPPERNE STÅR TIL HØJRE, som i forlægget — sagen læses fra
    venstre, og handlingen ligger, hvor øjet ender. Det gør kortet
    to linjer lavere, og det var hele klagen.

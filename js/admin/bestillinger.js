@@ -1040,15 +1040,7 @@
        bestillinger, bare pakket ved lugen i stedet for serveret
        ved bordet. Kendingen er Admin.erAllergi, så de to skærme
        ikke kan komme til at advare om hver sit. */
-    if (b.besked) {
-      var allergi = Admin.erAllergi(b);
-      var m = lav('p', 'bestil-gaestebesked' + (allergi ? ' allergi' : ''));
-      m.appendChild(lav('strong', null,
-        allergi ? '⚠️ Gæsten skriver: ' : 'Gæsten skriver: '));
-      m.appendChild(document.createTextNode(b.besked));
-      k.appendChild(m);
-      if (allergi) k.classList.add('har-allergi');
-    }
+    Admin.gaestebesked(k, b);
 
     /* ⚠️ DEN SAMME GÆST SIDDER MÅSKE VED ET BORD LIGE NU.
 

@@ -257,12 +257,11 @@
     });
     k.appendChild(hvem);
 
-    if (r.besked) {
-      var m = lav('p', 'bestil-gaestebesked');
-      m.appendChild(lav('strong', null, 'Gæsten skriver: '));
-      m.appendChild(document.createTextNode(r.besked));
-      k.appendChild(m);
-    }
+    /* ⚠️ OGSÅ HER KAN DER STÅ EN ALLERGI  (21/9). h-kalender.html
+       har sit eget allergifelt, og fællesspisningen er netop den
+       aften, hvor køkkenet laver ÉN ret til alle. Se
+       Admin.gaestebesked i kerne.js. */
+    Admin.gaestebesked(k, r);
 
     /* ⚠️ ÉT SKRIDT FREM, RESTEN BAG "···" — HUSETS FORM SIDEN 31/8.
        Målt på en arbejdsdag: Tilmeldinger og Baglokalet var de to

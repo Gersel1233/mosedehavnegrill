@@ -913,18 +913,61 @@
     });
     if (d.length) {
       var ekstra = lav('p', 'foresp-detaljer');
-      ekstra.textContent = d.map(function (par) {
-        return par[0] + ': ' + par[1];
-      }).join(' · ');
+      /* ⚠️ ADRESSEN ER ET KORTLINK OG IKKE DØD TEKST  (21/9).
+
+         Ejerens spørgsmål efter leveringerne blev overskuelige:
+         er forespørgslerne "mindst lige så gode ... kan man se
+         hvad det indeholder?" MÅLT på et skud af fanen: "Adresse:
+         Greve Strandvej 14" stod som grå tekst midt i linjen,
+         mens den SAMME oplysning på et leveringskort er et link,
+         der åbner ruten. To skærme, den samme adresse, og kun den
+         ene kunne bruges af en, der står med en kasse mad.
+
+         ⚠️ REGLEN ER Admin.kortUrl OG IKKE EN URL SKREVET HER.
+         Den bor i kerne.js, fordi Bestillinger bruger den — to
+         udgaver ville langsomt komme til at pege hver sit sted,
+         og et kort, der åbner cafeen i stedet for gæsten, er
+         værre end ingen knap.
+
+         ⚠️ OG KUN PÅ KORTET. detaljeLinjer() bruges også til
+         mailudkastet og kalendernoten, hvor et <a> ingenting
+         betyder — derfor bygges linjen af noder her og ikke i
+         reglen. */
+      d.forEach(function (par, i) {
+        if (i) ekstra.appendChild(document.createTextNode(' · '));
+        ekstra.appendChild(document.createTextNode(par[0] + ': '));
+        var url = par[0] === 'Adresse' ? Admin.kortUrl(par[1]) : null;
+        if (!url) {
+          ekstra.appendChild(document.createTextNode(par[1]));
+          return;
+        }
+        var a = lav('a', 'foresp-kortlink', '📍 ' + par[1]);
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        /* Titlen siger, hvad der sker: et link, der uden varsel
+           åbner en app, er en ubehagelig overraskelse. Samme ord
+           som leveringskortets. */
+        a.title = 'Åbn ruten i kort';
+        ekstra.appendChild(a);
+      });
       k.appendChild(ekstra);
     }
 
-    if (f.besked) {
-      var m = lav('p', 'bestil-gaestebesked');
-      m.appendChild(lav('strong', null, '💬 '));
-      m.appendChild(document.createTextNode(f.besked));
-      k.appendChild(m);
-    }
+    /* ⚠️ EN ALLERGI ER IKKE EN BESKED  (21/9).
+
+       Kortet tegnede beskeden i den samme lyserøde kasse, uanset
+       hvad der stod i den — og frokostsiden HAR et allergifelt
+       (#fallergi, 16/9), så "ALLERGI: nødder og skaldyr" så ud
+       som "vi sidder ude bagved". MÅLT på et skærmbillede af
+       fanen, ikke læst.
+
+       Kendingen er Admin.erAllergi — den samme regel, Køkkenet
+       har haft siden 25/8 og Bestillinger siden 29/8. Fem flader
+       i admin tegner en gæstebesked, og kun ÉN spurgte reglen;
+       en kopi mere ville være en kommende fejl, så de spørger nu
+       alle den ene. */
+    Admin.gaestebesked(k, f, '💬 ', '⚠️ ');
 
     /* Personalets egen note. Den gemmes, når feltet forlades, og
        ikke ved hvert tastetryk: et kald pr. bogstav ville være

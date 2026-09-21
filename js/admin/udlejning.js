@@ -1165,12 +1165,7 @@
       k.appendChild(lav('p', 'hjaelp', 'Antal ikke oplyst.'));
     }
 
-    if (u.besked) {
-      var m = lav('p', 'bestil-gaestebesked');
-      m.appendChild(lav('strong', null, 'Gæsten skriver: '));
-      m.appendChild(document.createTextNode(u.besked));
-      k.appendChild(m);
-    }
+    Admin.gaestebesked(k, u);
 
     /* ⚠️ NOTEN FOLDES VÆK, NÅR DEN ER TOM.
 

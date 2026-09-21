@@ -1397,6 +1397,46 @@
     return /^\s*ALLERGI:/i.test(String(b && b.besked || ''));
   }
 
+  /* ---- OG SELVE NOTEN TEGNES ÉT STED  (21/9) ----
+
+     ⚠️ MÅLT: FEM flader i admin tegnede en gæstebesked —
+     Bestillinger, Forespørgsler, Tilmeldinger, Borde og
+     Udlejning — og kun ÉN af dem spurgte erAllergi ovenfor.
+     Reglen boede rigtigt; det var TEGNINGEN, der var kopieret
+     fem gange, og fire af kopierne var lavet, før reglen fandtes.
+
+     Så en allergi på en frokostforespørgsel eller en tilmelding
+     til fællesspisningen stod i den samme lyserøde kasse som
+     "vi sidder ude bagved". Fundet på et skærmbillede af
+     Forespørgsler, ikke i koden.
+
+     Nu er der ét sted at rette, og en sjette fane kan ikke tegne
+     sin egen udgave uden at vide det.
+
+     ⚠️ FORLEDDET ER FANENS EGET. Bestillingskortet siger "Gæsten
+     skriver:", mens forespørgselskortet — som er smalt og har
+     fire linjer i forvejen — nøjes med 💬. Begge dele er
+     rigtige; det, der SKAL være ens, er alarmen. */
+  function gaestebesked(kort, raekke, forled, alarmForled) {
+    var tekst = raekke && raekke.besked;
+    if (!tekst) return null;
+    var allergi = erAllergi(raekke);
+    var p = document.createElement('p');
+    p.className = 'bestil-gaestebesked' + (allergi ? ' allergi' : '');
+    var b = document.createElement('strong');
+    b.textContent = allergi
+      ? (alarmForled || '\u26a0\ufe0f Gæsten skriver: ')
+      : (forled || 'Gæsten skriver: ');
+    p.appendChild(b);
+    p.appendChild(document.createTextNode(tekst));
+    kort.appendChild(p);
+    /* ⚠️ RAMMEN HØRER TIL KORTET OG IKKE TIL NOTEN. Køkken-køen
+       har haft den siden 25/8: en rød kant, man ser på afstand,
+       før man har læst et ord. */
+    if (allergi) kort.classList.add('har-allergi');
+    return p;
+  }
+
   /* ============================================================
      DEN SAMME GÆST TO STEDER  (29/8)
      ------------------------------------------------------------
@@ -1502,6 +1542,7 @@
     kontakt: kontakt,
     pæntNavn: pæntNavn,
     erAllergi: erAllergi,
+    gaestebesked: gaestebesked,
     sammeGaest: sammeGaest,
     tlfNoegle: tlfNoegle,
     data: null,

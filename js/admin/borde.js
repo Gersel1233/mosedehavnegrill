@@ -326,12 +326,9 @@
     detaljer.appendChild(r1);
     k.appendChild(detaljer);
 
-    if (b.besked) {
-      var m = lav('p', 'bestil-gaestebesked');
-      m.appendChild(lav('strong', null, 'Gæsten skriver: '));
-      m.appendChild(document.createTextNode(b.besked));
-      k.appendChild(m);
-    }
+    /* Tegningen bor i kerne.js, så alarmen ved en allergi er den
+       samme på alle fanerne — se noten ved Admin.gaestebesked. */
+    Admin.gaestebesked(k, b);
 
     var note = lav('div', 'felt');
     var etiket = lav('label', null, 'Din note');

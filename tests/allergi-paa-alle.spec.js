@@ -209,3 +209,182 @@ test.describe('Allergien har sit eget felt', () => {
     expect(gemt.bestillinger[0].besked || '').not.toMatch(/ALLERGI/);
   });
 });
+
+/* ============================================================
+   ET ALLERGIFELT, INGEN LÆSER, ER VÆRRE END INGEN  (21/9)
+   ------------------------------------------------------------
+   16/9 blev frokostsidens #fallergi fundet: feltet stod på
+   siden, samtykkelinjen lå med klassen `skjult`, og ordet
+   "allergi" optrådte NUL gange i js/skal/forespoergsel.js. Et
+   firma skrev "nødder", trykkede send, og oplysningen fandtes
+   ikke bagefter.
+
+   ⚠️ DEN FEJL BLEV RETTET ÉT STED OG IKKE SOM EN KLASSE. MÅLT
+   21/9 ved at læse ALLE siders allergifelter og slå deres id op
+   i den kode, siden faktisk indlæser:
+
+     index.html        #allergi        → js/skal/bestil.js      ✓
+     h-smorrebrod.html #sallergi       → js/skal/bestil.js      ✓
+     h-frokost.html    #fallergi       → js/skal/forespoergsel.js ✓
+     m-tapas.html      #tallergi       → js/skal/tapas.js       ✓
+     bestil/, ved-bordet/ #bestil-allergi → js/bestilling.js    ✓
+     h-kalender.html   #kallergi       → INGEN                  ✗
+
+   js/skal/kalender.js læser #kbesked og sender den — men den har
+   aldrig kendt #kallergi. En gæst, der tilmelder sig en
+   fællesspisning og skriver "skaldyr", fik hverken en
+   samtykkelinje at sige ja på eller en oplysning frem til
+   køkkenet. Og fællesspisningen er netop den aften, hvor der
+   laves ÉN ret til alle.
+
+   ⚠️ PRØVEN HER ER FILSYSTEMETS OG IKKE EN LISTE. Skriver nogen
+   en syvende side med et allergifelt, falder den af sig selv —
+   en håndholdt liste ville bestå, fordi ingen huskede at rette
+   den.
+   ============================================================ */
+test.describe('Hvert allergifelt bliver læst af sidens egen kode', () => {
+
+  /* Siderne findes ved at LÆSE dem, og koblingen slås op i de
+     scripts, netop den side indlæser. At lede i hele js/ ville
+     bestå, hvis feltet var koblet på en HELT anden side — og det
+     er præcis den fejl, prøven findes for. */
+  function siderMedAllergifelt() {
+    const mapper = ['', 'bestil', 'bord', 'ved-bordet'];
+    const fundet = [];
+    mapper.forEach((m) => {
+      const sti = m ? path.join(ROD, m) : ROD;
+      if (!fs.existsSync(sti)) return;
+      fs.readdirSync(sti)
+        .filter((f) => f.endsWith('.html'))
+        .filter((f) => !/^google[a-z0-9]+\.html$/.test(f))
+        .forEach((f) => {
+          const rel = m ? m + '/' + f : f;
+          const s = fs.readFileSync(path.join(ROD, rel), 'utf8')
+            .replace(/<!--[\s\S]*?-->/g, '');
+          /* Selve TEKSTFELTET — ikke fluebenet ved siden af, som
+             hedder det samme plus "-samtykke". */
+          const felter = (s.match(/<input[^>]*id="([a-z-]*allergi)"[^>]*>/gi) || [])
+            .map((t) => (t.match(/id="([a-z-]*allergi)"/i) || [])[1])
+            .filter(Boolean);
+          if (!felter.length) return;
+          const scripts = (s.match(/src="([^"]+\.js)[^"]*"/g) || [])
+            .map((t) => t.replace(/^src="/, '').replace(/[?"].*$/, ''));
+          fundet.push({ fil: rel, felter, scripts });
+        });
+    });
+    return fundet;
+  }
+
+  test('der ER allergifelter at måle på', () => {
+    /* ⚠️ UDEN DEN HER BESTÅR PRØVEN NEDENFOR EN SIDE, DER IKKE
+       FINDES. Forsvandt felterne — eller holdt mønsteret op med
+       at matche — ville en tom liste melde grønt. Tallet er
+       filsystemets, ikke et, vi har skrevet ned. */
+    expect(siderMedAllergifelt().length).toBeGreaterThanOrEqual(5);
+  });
+
+  test('ingen side beder om en allergi, som dens kode aldrig læser', () => {
+    const løse = [];
+    siderMedAllergifelt().forEach((side) => {
+      side.felter.forEach((id) => {
+        /* ⚠️ STIEN ER SIDENS EGEN, IKKE RODENS. bestil/ og
+           ved-bordet/ skriver "../js/bestilling.js", og et
+           path.join fra roden peger så uden for repoet — hver
+           eneste undermappe ville blive meldt "løs", og den
+           rigtige fejl ville drukne mellem tre falske. MÅLT
+           første gang prøven kørte. */
+        const mappe = path.dirname(path.join(ROD, side.fil));
+        const læst = side.scripts.some((s) => {
+          const sti = path.resolve(mappe, s);
+          if (!fs.existsSync(sti)) return false;
+          /* ⚠️ MED ELLER UDEN #. js/skal/tapas.js slår op med
+             find('#tallergi'), de andre med id('kallergi') — en
+             søgning efter kun den ene form meldte tapassiden løs,
+             selv om den har læst feltet hele tiden. Og et nøgent
+             indexOf(id) ville bestå på ordet i en KOMMENTAR:
+             tegnet før og efter skal være en anførsel eller #. */
+          return new RegExp("['\"#]" + id + "['\"]")
+            .test(fs.readFileSync(sti, 'utf8'));
+        });
+        if (!læst) løse.push(side.fil + ' #' + id);
+      });
+    });
+    expect(løse, 'allergifelter, ingen af sidens scripts kender').toEqual([]);
+  });
+});
+
+/* ---- OG DET SAMME MÅLT GENNEM SKÆRMEN PÅ ARRANGEMENTSSIDEN ----
+
+   ⚠️ FILPRØVEN OVENFOR ER IKKE NOK. Den ser et id i en fil; den
+   ser ikke, om samtykkelinjen dukker op, eller om ordet ALLERGI:
+   kommer med på rækken. Nøjagtig den samme deling som
+   frokostsiden fik 16/9. */
+test.describe('Arrangementssidens allergifelt', () => {
+
+  const ARR = {
+    id: 11, lokation_id: 'mosede', type: 'arrangement', dato: '2026-08-16',
+    slut_dato: null, titel: 'Fællesspisning på havnen', beskrivelse: null,
+    emoji: null, lukker_kl: null, offentlig: true, tilmelding: true,
+    pladser: 40, pris_tekst: null, start_kl: '18:00',
+  };
+
+  async function åbnKalender(page) {
+    const d = grunddata();
+    d.kalender = [ARR];
+    d.reservationer = [];
+    await åbnSkal(page, '/h-kalender.html', { ur: FREDAG, data: d });
+    await page.locator('.evcard, .evtom').first().waitFor({ state: 'attached' });
+    const pille = page.locator('#bestil-pill');
+    if (await pille.getAttribute('href') === '#reserver') await pille.click();
+    await expect(page.locator('#reserver')).toBeVisible();
+  }
+
+  async function udfyld(page, allergi, sigJa) {
+    await page.locator('#kvalg button').first().click();
+    await page.locator('#knavn').fill('Anna Vind');
+    await page.locator('#ktlf').fill('20304050');
+    if (allergi) {
+      await page.locator('#kallergi').fill(allergi);
+      if (sigJa) await page.locator('#kallergi-samtykke').check();
+    }
+    await page.locator('#reserver button.g.solid.blk').click();
+  }
+
+  test('fluebenet dukker op, når der skrives en allergi', async ({ page }) => {
+    await åbnKalender(page);
+    const linje = page.locator('#kallergi-samtykke-linje');
+    await expect(linje).toBeHidden();
+    await page.locator('#kallergi').fill('skaldyr');
+    await expect(linje).toBeVisible();
+    /* Og det nulstilles igen — ellers står et gammelt ja og
+       gælder en allergi, gæsten har slettet. */
+    await page.locator('#kallergi').fill('');
+    await expect(linje).toBeHidden();
+  });
+
+  test('uden fluebenet bliver tilmeldingen ikke sendt', async ({ page }) => {
+    await åbnKalender(page);
+    await udfyld(page, 'skaldyr', false);
+    await page.waitForTimeout(400);
+    expect(((await gemteData(page)).reservationer || []).length).toBe(0);
+  });
+
+  test('med fluebenet kommer allergien med — forrest, med ordet ALLERGI:',
+    async ({ page }) => {
+      await åbnKalender(page);
+      await udfyld(page, 'skaldyr', true);
+      await expect.poll(async () =>
+        ((await gemteData(page)).reservationer || [{}])[0].besked || '')
+        .toMatch(/^ALLERGI: skaldyr/);
+    });
+
+  /* ⚠️ MODSTYKKET, OG DET VIGTIGSTE: uden en allergi må
+     ingenting spærre. Et samtykke, man ikke kan komme udenom, er
+     ikke frivilligt — og dermed ugyldigt. */
+  test('uden en allergi spærrer ingenting', async ({ page }) => {
+    await åbnKalender(page);
+    await udfyld(page, null, false);
+    await expect.poll(async () =>
+      ((await gemteData(page)).reservationer || []).length).toBe(1);
+  });
+});
