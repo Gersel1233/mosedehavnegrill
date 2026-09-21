@@ -7,6 +7,46 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**MENUKORTENE ER MÅLT MOD DATABASEN — KILDEN ER DE NYE TRYKTE KORT** (21/9).
+Ejerens ord: *"kig altid på ny trykte menukort, håndmadder er 24."* Hele
+kortsættet — elleve fotos af de trykte kort — er holdt op mod `menu_varer` i
+produktionen: **112 varer, nul afvigelser**, efter at håndmadderne er rettet
+fra 27 til 24. Den rettelse laver Mikkel selv på Grillen-kortet; systemet og de
+trykte kort siger nu det samme.
+
+⚠️ **ER DER TVIVL OM EN PRIS, ER KILDEN DE TRYKTE KORT — IKKE EN SKÆRM.** Tre
+gange har ejeren eller chefen meldt en pris forkert, og alle tre gange var det
+en **gammel fane i browseren**. Spørg efter et genindlæst skærmbillede, før du
+leder i databasen.
+
+**FORESPØRGSLERNE ER MÅLT MED SAMME BLIK SOM LEVERINGERNE** (21/9). Ejerens
+spørgsmål: er de *"mindst lige så gode, og kan man nemt skelne og vide præcist
+hvad det er og hvad man skal gøre og hvad det indeholder?"* De to første var på
+plads (mærket siger hvad, den ene røde knap siger hvad man gør). Det tredje var
+ikke — og **de tre fund kom af et skærmbillede, ikke af koden**:
+
+- **h-kalender.html spurgte om en allergi, ingen læste.** Feltet `#kallergi` og
+  samtykkelinjen har stået der siden 10/9, og ordet "allergi" stod **nul gange**
+  i `js/skal/kalender.js`. Skrev en gæst "skaldyr" til fællesspisningen,
+  forsvandt det — og fællesspisningen er netop den aften, hvor køkkenet laver
+  **én ret til alle**. Nøjagtig den fejl, frokostsiden fik rettet 16/9; den blev
+  bare rettet ét sted og ikke som en klasse. Værnet er filsystemets nu:
+  `allergi-paa-alle.spec.js` læser **hver** sides allergifelter og slår dem op i
+  den kode, netop den side indlæser.
+- **Fem flader i admin tegnede en gæstebesked — kun én spurgte `Admin.erAllergi`.**
+  Reglen boede rigtigt; det var *tegningen*, der var kopieret fem gange, og fire
+  af kopierne var lavet, før reglen fandtes. "ALLERGI: nødder og skaldyr" stod
+  derfor i samme lyserøde kasse som "vi sidder ude bagved". Tegningen bor nu ét
+  sted: `Admin.gaestebesked` i `kerne.js`.
+- **Adressen på en forespørgsel var død tekst**, mens den samme oplysning på et
+  leveringskort er et kortlink. Nu `Admin.kortUrl` begge steder.
+
+Og en fjerde, fundet af værnet undervejs: `sdato` stod stadig i `SIDER` i
+`js/skal/forespoergsel.js` med hele smørrebrødssidens opsætning, syv linjer
+under noten, der advarer mod netop det. Siden blev en bestillingsside igen 4/9.
+`doed-kode.spec.js` slår nu hver `SIDER`-nøgle op i de sider, der faktisk
+indlæser filen.
+
 **LEVERINGEN ER I LUFTEN — OG GRÆNSEN ER HENTET, IKKE TEGNET** (21/9).
 `levering-zone.sql`, `levering-valideret.sql` og Edge Function'en
 `valider-levering` er kørt i produktionen (`epwyjzakvvbxtpvnhvbn`), og koden er
