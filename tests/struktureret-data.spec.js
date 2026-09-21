@@ -345,3 +345,44 @@ test.describe('Salgssidernes titler', () => {
     });
   }
 });
+
+/* ============================================================
+   PIN'EN PÅ GOOGLES KORT  (21/9)
+   ------------------------------------------------------------
+   geo i mærket stod på { 55.5852, 12.2834 } med begrundelsen
+   "Mosede Havn, målt på kortet – ikke på adressen".
+
+   MÅLT: det punkt ligger 2,05 km fra Havnevej 20I. Det er ikke
+   indkørslen, det er et andet kvarter — og en pin to kilometer
+   nordpå koster netop de "i nærheden"-søgninger, ejerne savner.
+   ============================================================ */
+test.describe('Forretningens punkt på kortet', () => {
+  /* ⚠️ TALLENE KOMMER UDEFRA: Dataforsyningens egne koordinater
+     for Havnevej 20I, slået op 21/9 mod det levende API:
+       api.dataforsyningen.dk/adresser/autocomplete?q=Havnevej 20I
+     Prøven måler altså mærket mod et REGISTER, ikke mod sig selv. */
+  const DAWA = { lat: 55.566841, lng: 12.285649 };
+
+  /* Haversine. 150 m er rigeligt til at rumme, hvor på matriklen
+     nogen sætter nålen — og alt for lidt til at rumme en fejl. */
+  function meter(a, b) {
+    const R = 6371000, r = (g) => (g * Math.PI) / 180;
+    const dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+    const h = Math.sin(dLat / 2) ** 2
+      + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+  }
+
+  test('geo peger på forretningens egen adresse', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    await page.waitForTimeout(900);
+    const m = await maerket(page);
+    expect(m.data.geo, 'mærket har ingen koordinater').toBeTruthy();
+    const afstand = meter(DAWA, {
+      lat: Number(m.data.geo.latitude), lng: Number(m.data.geo.longitude),
+    });
+    expect(afstand,
+      `mærket peger ${Math.round(afstand)} m fra Havnevej 20I`)
+      .toBeLessThan(150);
+  });
+});

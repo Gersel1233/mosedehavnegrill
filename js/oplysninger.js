@@ -94,10 +94,24 @@ window.MOSEDE = {
     land: 'DK',
   },
 
-  /* Koordinater til JSON-LD og "Vis rute". Mosede Havn, målt på
-     kortet – ikke på adressen, for havnen er stor og en rute til
-     "Havnevej 20" lander ved indkørslen. */
-  position: { lat: 55.5852, lng: 12.2834 },
+  /* ⚠️ KOORDINATERNE ER ADRESSENS — MÅLT, IKKE AFLÆST PÅ ET KORT.
+
+     Her stod { lat: 55.5852, lng: 12.2834 } med begrundelsen
+     "Mosede Havn, målt på kortet – ikke på adressen, for havnen
+     er stor og en rute til Havnevej 20 lander ved indkørslen".
+
+     ⚠️ MÅLT 21/9: det punkt ligger **2,05 km** fra Havnevej 20I.
+     Det er ikke indkørslen, det er et andet kvarter. Tallet
+     bruges KUN til `geo` i JSON-LD (js/skal/seo.js), altså til
+     at fortælle Google, hvor forretningen ligger — og en pin to
+     kilometer nordpå koster netop de "i nærheden"-søgninger,
+     ejerne savner.
+
+     Tallene herunder er Dataforsyningens egne for Havnevej 20I,
+     slået op 21/9:
+       api.dataforsyningen.dk/adresser/autocomplete?q=Havnevej 20I
+     Ikke et gæt på et kort. */
+  position: { lat: 55.566841, lng: 12.285649 },
 
   // BEKRAEFT: dette nummer står på forretningens eget menukort.
   // Nogle tredjepartssider viser et andet.
