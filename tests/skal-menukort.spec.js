@@ -719,10 +719,16 @@ test.describe('Menukortet læses i afsnit', () => {
    Forsiden har fået "Se hele is-menukortet →", der peger på
    m-menukort.html#afsnit-is.
 
-   ⚠️ BROWSEREN NÅR DET IKKE SELV. Kortet tegnes af JavaScript,
-   efter databasen har svaret. Når browseren læser adressens hash,
-   findes #afsnit-is ikke endnu — så sker der ingenting, gæsten
-   lander i toppen, og linket ligner noget i stykker.
+   ⚠️ PRØVEN MÅLER UDFALDET, IKKE HVEM DER GØR DET.
+   Den består BÅDE med og uden husets eget hopTilHash() — målt
+   21/9, da falsificeringen ikke kunne fælde den. Chromium prøver
+   selv hoppet igen, når elementet dukker op.
+
+   Og det er med vilje: det, der betyder noget, er, at gæsten
+   lander på isen. Hvem der rullede — browseren eller os — er en
+   detalje, hun aldrig mærker. En prøve, der i stedet spurgte om
+   vores egen funktion blev kaldt, ville bestå den dag, hoppet
+   holdt op med at virke af en helt anden grund.
 
    ⚠️ RULLERODEN ER #sc, IKKE VINDUET. Hele siden ligger i den, og
    window.scrollY står på nul, uanset hvor langt man er nede.

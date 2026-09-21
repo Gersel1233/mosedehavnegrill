@@ -563,12 +563,24 @@
      Forsiden har fået "Se hele is-menukortet →", der peger på
      m-menukort.html#afsnit-is.
 
-     ⚠️ BROWSEREN NÅR DET IKKE SELV. Kortet tegnes HER, af
-     JavaScript, efter databasen har svaret. Når browseren læser
-     adressens hash, findes #afsnit-is ikke endnu — så sker der
-     ingenting, gæsten lander i toppen, og linket ligner noget i
-     stykker. Den slags fejl kan ikke ses i koden; den kan kun ses
-     ved at trykke på linket.
+     ⚠️ OG CHROMIUM KLARER DET FAKTISK SELV — MÅLT 21/9.
+     Her stod først "browseren når det ikke selv". Det er FORKERT.
+     Falsificeringen afslørede det: prøven bestod uændret, da jeg
+     fjernede kaldet. Målt med og uden, samme tal begge gange —
+     scrollTop 1277, overskriften 272 px fra toppen. Chromium
+     prøver hoppet igen, når elementet dukker op.
+
+     ⚠️ SÅ HVORFOR STÅR DEN HER? Fordi jeg IKKE kunne måle Safari:
+     WebKit er ikke installeret på maskinen, og gæsterne er på
+     iPhone. Deferred fragment-navigation til et element, der
+     tilføjes sent — og inde i en scroll-beholder med
+     scroll-behavior: smooth — er historisk det mest ustabile
+     hjørne i netop WebKit.
+
+     Det er altså en sele, ikke en motor. Koster fire linjer, som
+     ikke gør noget i Chromium, og redder linket, hvis Safari
+     opfører sig som før. Kan nogen måle Safari og vise, at den
+     også klarer det, må den gerne ryge.
 
      ⚠️ OG DEN RULLER IKKE, HVIS GÆSTEN ALLEREDE ER I GANG.
      Optegningen kaldes igen, hver gang data kommer ind på ny. Et
