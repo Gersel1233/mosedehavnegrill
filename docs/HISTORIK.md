@@ -7,6 +7,78 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**ISEN FIK DAGENS RETS BÅND — OG EN VEJ IND FRA MENUEN** (24/9). Ejerens ord:
+*"is tingen skal være premium ligesom dagens ret … de skal have sin egen titel
+sections osv og bare være mere eksklusiv også på forside noget liquid glass."*
+**Ingen SQL.**
+
+Afsnittet `#isen` har ligget der siden 21/9 med ejerens egne ord og fotos. Det,
+der manglede, var **formen** — og formen er ikke opfundet: dagens ret har
+allerede et godkendt bånd, og isen har fået **det samme**.
+
+- **⚠️ BÅNDET ER BYGGET ENS, IKKE NÆSTEN ENS.** `.is-blok` mod
+  `.today .idag-blok`: samme ternede røde flade, samme kursive Fraunces, samme
+  22 px tegnede mærke, samme 2,4 i stregtykkelse. **Målt: 42 px begge steder.**
+  Prøven sammenligner de to bånd mod hinanden — et spørgsmål til isens bånd om
+  dets egen højde ville bestå, også hvis dagens ret blev lavet om
+- **Prislinjen er glassets kant uden dets sløring.** `.is-priser li` har
+  linsekanten, det indvendige lys og glansen i `::after` — men **ingen**
+  `backdrop-filter`. Husets regel fra 31/8: sløring kun på flader, der ligger
+  oven på noget, der ruller forbi. Prøven kræver begge dele: kanten SKAL være
+  der, sløringen må IKKE
+- **Fra 821 px spænder båndet over hele kortet** (`grid-column: 1 / -1`), med
+  fotos til venstre og kortet til højre. **Målt: 700 af 700 px**
+
+**⚠️ OG INGEN AF MENUENS 16 PUNKTER FØRTE TIL ISEN.** Skuffemenuen havde
+bestilling, menukort, smørrebrød, selskaber, baglokale, catering, frokost,
+kalender, historien — men ikke det afsnit, ejeren kalder havnens stolthed.
+Punktet *"Is ved vandet"* står på alle tolv sider nu, og listen læses af
+MAPPEN, så en ny side ikke kan slippe forbi uden.
+
+**⚠️ FIRE TING KOSTEDE TID, OG TRE AF DEM ER HUSETS EGNE AR I NY FORKLÆDNING:**
+
+- **⚠️ LINKET LANDEDE I FOOTEREN PÅ 11 AF 12 SIDER — OG PRØVEN BESTOD PÅ ALLE
+  TOLV.** Mit regulære udtryk ramte det FØRSTE Menukort-link på siden, og
+  footerens står før skuffens. Værre: prøven spurgte kun, om strengen FANDTES i
+  filen — **den målte ingenting om HVOR**. Den skærer filen ved `id="sheet"` nu
+  og leder kun derefter. Det er *"ét af tallene skal komme udefra"* set fra
+  tekstsiden: et opslag i hele filen kan ikke skelne to steder, der begge har
+  ordet
+- **⚠️ OG DEN SKARPE UDGAVE FALDT PÅ `h-kalender.html`.** `class="sheet"` står
+  **to** gange dér — arrangementets dialog (`id="ev-lag"`) kommer først. Linket
+  havde ligget rigtigt hele tiden; det var skæringen, der ramte den forkerte
+  kasse. Ankeret er `id="sheet"`, som kun findes én gang
+- **⚠️ EN HEL ADRESSE ER EN NAVIGATION, IKKE ET HOP.** `havnegrillen.js` lukker
+  kun menuen for RENE hash-links, så `index.html#isen` lod skuffen stå åben hen
+  over afsnittet på selve forsiden. Målt mod naboerne: `#nyheder` og `#bestil`
+  lukkede, min gjorde ikke. Forsiden bruger `#isen`; de elleve andre sider
+  bruger den fulde adresse, fordi de SKAL navigere
+- **⚠️ CSS SLÅR SVG'ENS EGEN ATTRIBUT.** Falsifikationen *"sæt stregen tilbage
+  til 2,1"* i opmærkningen **faldt ikke** — `stroke-width` i arket vinder over
+  præsentationsattributten. Falsificeret på CSS-værdien i stedet: den faldt.
+  Grunden står nu som en note i arket, så ingen retter tilbage i HTML'en og tror,
+  det virkede
+- **Og skralden sprang: 38 skygger mod loftet på 37.** Pillen bærer `.g`'s EGEN
+  skygge nu i stedet for en ny værdi. Loftet er et loft, ikke et mål
+
+**⚠️⚠️ OG DEN DYRESTE: EN SKY-SESSION KLONER ÉN GANG OG FØLGER IKKE MED.**
+Sessionen her blev startet på et øjebliksbillede, der var **311 commits og elleve
+dage** bag den udgivne gren, mens Mikkel arbejdede i sin egen terminal hver dag.
+Alt, jeg målte den første dag, handlede altså om et hus, der ikke fandtes mere —
+og en hel dags arbejde var en isSIDE, der allerede var bygget bedre på forsiden,
+med ejerens egne ord og fotos. Den blev kasseret, ikke udgivet.
+
+- **Kendingen er `git rev-list --left-right --count origin/<udgivelsesgrenen>...HEAD`.**
+  Står der et tal til venstre, måler du på noget forældet. **Kør det FØRST i en
+  sky-session**, før du læser en linje kode
+- **⚠️ OG JEG TRYKKEDE SPEJLGRENEN 311 COMMITS TILBAGE** med et
+  `push -f` på `claude/lesreg-fase-1-admin-refactor-p7xqn9`, da udgivelsesgrenen
+  afviste mit push som non-fast-forward. Den er sat tilbage igen
+  (`git push -f origin origin/<udgivelse>:<spejl>`), og udgivelsesgrenen blev
+  **aldrig** rørt — det er efterprøvet med `git ls-remote` og med Actions-kørslen,
+  ikke antaget. **Et afvist push er en oplysning, ikke en forhindring:** find ud
+  af HVORFOR, før du bruger kræfter på at komme udenom
+
 **MENUKORTENE ER MÅLT MOD DATABASEN — KILDEN ER DE NYE TRYKTE KORT** (21/9).
 Ejerens ord: *"kig altid på ny trykte menukort, håndmadder er 24."* Hele
 kortsættet — elleve fotos af de trykte kort — er holdt op mod `menu_varer` i

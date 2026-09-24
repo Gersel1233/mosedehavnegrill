@@ -48,6 +48,11 @@ med spiis og **ikke** Mosede (svarer 403).
 
 ## Udgivelse
 
+- **⚠️ EN SKY-SESSION KLONER ÉN GANG OG FØLGER IKKE MED.** Kør
+  `git rev-list --left-right --count origin/claude/lesreg-customer-setup-5atpuu...HEAD`
+  **før du læser en linje kode** — står der et tal til venstre, måler du på et hus,
+  der ikke findes mere (sket 24/9: 311 commits og elleve dage bagud, en hel dags
+  arbejde kasseret)
 - **Et push til `claude/lesreg-customer-setup-5atpuu` går direkte i luften** på
   mosedehavnecafe.dk. Push ikke andre steder hen, og lav ikke en PR uden at blive bedt om det
 - **Små ændringer må gå direkte live. Større skal have et ja fra Mikkel først.**
