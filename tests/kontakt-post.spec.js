@@ -20,7 +20,8 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, visFane, erGoogleKvittering } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, visFane, erGoogleKvittering,
+  springIntroOver } = require('./hjaelp');
 
 const ROD = path.join(__dirname, '..');
 
@@ -942,6 +943,50 @@ test.describe('Vejen til bordbooking', () => {
       expect(tekst, f + ' har ingen vej til bordbooking — gæsten kan ikke booke et bord')
         .toMatch(/href="(\.\.\/)?bord\/"/);
     }
+  });
+
+  /* ------------------------------------------------------------
+     ⚠️ VEJEN TIL ISEN  (24/9)
+
+     Kundens ord: *"isen er meget meget vigtig og superior ift hvem
+     de er"* — og ejerens egne, gennem Jim: isen er det, de er
+     stolte af.
+
+     MÅLT FØR: forsiden HAR afsnittet siden 21/9 (`#isen`, *"Is ved
+     vandet"*, hans egne fotos, hans egne ord) — men **ingen af
+     skuffemenuens 16 punkter førte derhen.** Isen er afsnit 7 af
+     elleve, så man skulle rulle forbi seks afsnit for at finde
+     den, og fra enhver ANDEN side kunne man slet ikke komme til
+     den.
+
+     Det er den samme fejl, bordbookingen havde lige ovenfor: en
+     side, ingen kan finde, findes ikke — her bare et afsnit.
+
+     ⚠️ LISTEN LÆSES AF MAPPEN, så en ny side heller ikke kan
+     udgives uden en vej til isen.
+     ------------------------------------------------------------ */
+  test('hver gæsteside har en vej til isen', () => {
+    const sider = siderMedFooter();
+    expect(sider.length, 'der er ingen sider at måle på').toBeGreaterThan(5);
+    for (const f of sider) {
+      const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
+      expect(tekst, f + ' har ingen vej til isen — gæsten skal rulle '
+        + 'forbi seks afsnit for at finde den')
+        .toMatch(/href="index\.html#isen"/);
+    }
+  });
+
+  /* ⚠️ OG MÅLET SKAL FINDES OG VÆRE SYNLIGT. Et anker, hvis mål er
+     skjult eller mangler, gør absolut ingenting: browseren hopper
+     ikke til noget, den ikke kan se — ingen fejl, ingen bevægelse,
+     og gæsten tror, siden er i stykker. Uden den her halvdel målte
+     prøven ovenfor kun, om en tekststreng stod i filen. */
+  test('og #isen findes og er synligt på forsiden', async ({ page }) => {
+    await åbnSkal(page, '/index.html');
+    await springIntroOver(page);
+    const isen = page.locator('#isen');
+    await expect(isen).toHaveCount(1);
+    await expect(isen).toBeVisible();
   });
 
   test('og forsiden har den som en egen række i hjælpelisten', () => {
