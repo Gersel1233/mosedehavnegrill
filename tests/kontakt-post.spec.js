@@ -970,9 +970,36 @@ test.describe('Vejen til bordbooking', () => {
     expect(sider.length, 'der er ingen sider at måle på').toBeGreaterThan(5);
     for (const f of sider) {
       const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
-      expect(tekst, f + ' har ingen vej til isen — gæsten skal rulle '
-        + 'forbi seks afsnit for at finde den')
-        .toMatch(/href="index\.html#isen"/);
+      /* ⚠️ OG DEN SKAL STÅ I SKUFFEMENUEN, IKKE BARE I FILEN.
+         Første udgave spurgte kun, om teksten fandtes et sted i
+         HTML'en — og den BESTOD på elleve sider, hvor linket var
+         landet i FOOTEREN: footeren har sit eget Menukort-link, og
+         det står FØR skuffen i filen, så indsættelsen ramte den
+         første. Prøven sagde god for en menu uden en vej til isen.
+
+         Derfor klippes filen ved `class="sheet"`, og linket skal
+         findes i DEN halvdel. Fundet ved at kigge på et skud af
+         menuen, ikke af prøven — den var vacuøs. */
+      /* ⚠️ OG SNITTET ER `id="sheet"`, IKKE `class="sheet"`.
+         h-kalender.html bruger den SAMME klasse til arrangement-
+         dialogen (`id="ev-lag" role="dialog"`), og den står først
+         i filen — så et snit på klassen målte dialogen og ikke
+         menuen. Prøven faldt på en side, hvor linket var helt
+         rigtigt placeret. To ting med samme navn er husets egen
+         advarsel; her var de en klasse og et id. */
+      const skuffe = tekst.split('id="sheet"')[1] || '';
+      expect(skuffe, f + ': skuffemenuen blev ikke fundet').not.toBe('');
+      expect(skuffe, f + ' har ingen vej til isen i MENUEN — gæsten skal '
+        + 'rulle forbi seks afsnit for at finde den')
+        /* ⚠️ TO FORMER, OG DET ER HUSETS EGET MOENSTER: forsiden
+           linker til sine EGNE afsnit med et rent anker (#bestil,
+           #find, #nyheder), de andre sider med hele adressen.
+           MAALT: med index.html#isen paa forsiden blev menuen
+           STAAENDE AABEN hen over afsnittet — havnegrillen.js
+           behandler kun rene hash-links som et hop paa siden, en
+           hel adresse er en navigation. Naboerne #nyheder og
+           #bestil lukkede; mit gjorde ikke. */
+        .toMatch(/href="(index\.html)?#isen"/);
     }
   });
 
