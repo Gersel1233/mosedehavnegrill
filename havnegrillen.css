@@ -1612,10 +1612,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .is-priser li{display:flex;align-items:center;gap:10px;padding:11px 15px;border-radius:999px;
   position:relative;overflow:hidden;
   background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.72));
-  box-shadow:inset 0 1px .5px rgba(255,255,255,.95),
-             inset 0 -1px 1px rgba(255,255,255,.35),
-             inset 0 0 0 1px rgba(36,26,23,.12),
-             0 6px 16px rgba(36,26,23,.10)}
+  box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
 /* Den diagonale glans er `.g::after` — samme vinkel og samme stop. */
 .is-priser li::after{content:"";position:absolute;inset:0;border-radius:inherit;
   background:linear-gradient(150deg,rgba(255,255,255,.55),transparent 42%);
