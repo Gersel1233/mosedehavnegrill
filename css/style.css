@@ -12976,3 +12976,118 @@ body:not(.personale) .isbyg-kvit.vis { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   body:not(.personale) .isbyg-kvit { transition: none; }
 }
+
+/* ============================================================
+   ISBAREN VED BORDET — ET FORLØB PR. SLAGS IS  (26. sep 2026)
+   ------------------------------------------------------------
+   Samme forløb som på forsiden (js/isbygger.js), bordsidens
+   udseende: hvidt papir, havblå tekst, rød for det valgte. Farven
+   sættes på hvert element, der har en baggrund — se noten ved
+   .isbyg-blok om hvid tekst på hvidt papir (målt 25/9).
+   ============================================================ */
+body:not(.personale) .isbyg-slags {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
+  gap: 8px;
+  margin: 12px 0 2px;
+}
+body:not(.personale) .isbyg-slag {
+  display: grid;
+  /* ⚠️ TEGNET VED SIDEN AF NAVNET, IKKE OVER. MÅLT på 390 px: med
+     tegn, navn og pris stablet blev hver flise 150 px høj og stod
+     alene på sin linje — fire fliser skubbede selve forløbet 600 px
+     ned. Side om side er de to og to og ~60 px høje. */
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 9px;
+  row-gap: 1px;
+  align-items: center;
+  justify-items: start;
+  text-align: left;
+  padding: 11px 12px;
+  border: 1px solid rgba(36, 26, 23, .18);
+  border-radius: 14px;
+  font: inherit;
+  color: var(--sea);
+  background: #fff;
+  cursor: pointer;
+}
+body:not(.personale) .isbyg-slag-tegn { grid-row: span 2; font-size: 19px; line-height: 1; }
+body:not(.personale) .isbyg-slag-navn { font-size: 14px; font-weight: 600; line-height: 1.25; }
+body:not(.personale) .isbyg-slag-bi { font-size: 12px; color: var(--red); font-variant-numeric: tabular-nums; }
+body:not(.personale) .isbyg-slag.valgt { color: #fff; background: var(--red); border-color: var(--red); }
+body:not(.personale) .isbyg-slag.valgt .isbyg-slag-bi { color: rgba(255, 255, 255, .86); }
+
+body:not(.personale) .isbyg-beskriv { margin: 12px 0 0; font-size: 14px; color: var(--sea); }
+body:not(.personale) .isbyg-status {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+body:not(.personale) .isbyg-status.fuld { color: var(--red-tekst); }
+body:not(.personale) .isbyg-tael {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-top: 1px solid rgba(36, 26, 23, .08);
+}
+body:not(.personale) .isbyg-tael-navn { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 600; color: var(--sea); }
+body:not(.personale) .isbyg-tael-knap {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(36, 26, 23, .18);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sea);
+  background: #fff;
+  cursor: pointer;
+}
+body:not(.personale) .isbyg-tael-knap:disabled { opacity: .4; cursor: default; }
+body:not(.personale) .isbyg-tael-tal {
+  min-width: 22px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sea);
+  font-variant-numeric: tabular-nums;
+}
+
+body:not(.personale) .isbyg-desserter { display: grid; gap: 10px; margin-top: 12px; }
+body:not(.personale) .isbyg-dessert {
+  padding: 12px 13px;
+  border: 1px solid rgba(36, 26, 23, .12);
+  border-radius: 14px;
+  color: var(--sea);
+  background: #fff;
+}
+body:not(.personale) .isbyg-dessert.aaben { border-color: var(--red); }
+body:not(.personale) .isbyg-dessert-top { display: flex; align-items: flex-start; gap: 10px; }
+body:not(.personale) .isbyg-dessert-tekst { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+body:not(.personale) .isbyg-dessert-navn { font-size: 15px; font-weight: 600; }
+body:not(.personale) .isbyg-dessert-beskriv { font-size: 13px; color: var(--muted); }
+body:not(.personale) .isbyg-dessert-pris {
+  flex: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--red-tekst);
+  font-variant-numeric: tabular-nums;
+}
+body:not(.personale) .isbyg-tag {
+  margin-top: 10px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--red);
+  cursor: pointer;
+}
+body:not(.personale) .isbyg-dessert-valg { margin-top: 10px; }
+body:not(.personale) .isbyg-dessert-valg > .isbyg-valg { margin-bottom: 8px; }

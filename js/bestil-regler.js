@@ -324,6 +324,30 @@
     return Array.isArray(v) ? v.map(Number) : [];
   }
 
+  /* ⚠️ ISEN PAKKES ALDRIG  (26/9). Kundens ord: *"man skal heller
+     ikke betale for emballage på isene."*
+
+     Noten øverst har sagt "en sodavand og en is skal ikke pakkes"
+     siden 30/8 — men den var aldrig et værn. MÅLT i produktionen
+     26/9: `emballage_kategorier` er TOM, og tom betyder "alt ud af
+     huset". Så hver eneste is til afhentning på forsiden fik 10 kr.
+     i emballage lagt oveni, mens kommentaren her påstod det modsatte.
+
+     Reglen hænger på kategoriens `afdeling`, ejerens eget felt — ikke
+     på et navn, koden genkender. Og den gælder ALTID, også hvis en
+     is-kategori står på listen: en liste, ejeren har sat af en anden
+     grund, må ikke kunne lægge et gebyr på isen igen.
+
+     Databasen tjekker kun emballagens pris pr. stk.
+     (gaestens-regler.sql, afsnit C) og ikke antallet, så færre
+     emballager afvises ikke. */
+  function erIsKategori(d, katId) {
+    var k = ((d && d.menu_kategorier) || []).filter(function (x) {
+      return Number(x.id) === Number(katId);
+    })[0];
+    return !!(k && k.afdeling === 'is');
+  }
+
   /* Hvor mange portioner skal der emballage på? Linjerne er
      {kat, antal}; kalderen kender sin egen kurv. */
   function emballage(d, linjer, hvordan) {
@@ -332,6 +356,7 @@
     var kat = emballageKategorier(d);
     var antal = 0;
     (linjer || []).forEach(function (l) {
+      if (erIsKategori(d, l.kat)) return;
       /* Tom liste = alt, der bestilles ud af huset. Det er det
          rimelige udgangspunkt, når ejeren har sat en pris men
          ikke peget på kategorier. */

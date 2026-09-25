@@ -1260,8 +1260,28 @@
        blive afvist med bestilling_mangler_valg. Smagene er deres egen
        nøgle på linjen — som `emballage` og `fyld` før dem — og
        kræver derfor ingen SQL. */
-    var sm = smageI(l);
+    var sm = samletSmag(smageI(l));
     return sm.length ? ud + ' · ' + sm.join(' + ') : ud;
+  }
+
+  /* ⚠️ EN ISBOKS HAR SEKS KUGLER  (26/9). Smagene ligger på linjen
+     med én plads pr. kugle, fordi det er dét, der kan tælles og
+     tjekkes. Men på bonen blev en isboks til "Jordbær + Jordbær +
+     Vanilje + Vanilje + Chokolade + Chokolade" — seks ord, køkkenet
+     skal tælle sig igennem, mens gæsten venter. Nu står der "2×
+     Jordbær + 2× Vanilje + 2× Chokolade". Rækkefølgen er den, smagen
+     først blev valgt i; data på linjen er urørt. */
+  function samletSmag(sm) {
+    var orden = [], antal = {};
+    sm.forEach(function (x) {
+      var k = x.toLowerCase();
+      if (!antal[k]) { antal[k] = 0; orden.push(x); }
+      antal[k] += 1;
+    });
+    return orden.map(function (x) {
+      var n = antal[x.toLowerCase()];
+      return n > 1 ? n + '× ' + x : x;
+    });
   }
 
   /* EN IS BLIVER ÉN LINJE PR. PORTION  (25/9)

@@ -1182,10 +1182,10 @@ test.describe('Byg din is ved bordet', () => {
     const blok = page.locator('.isbyg-blok');
     const chip = (t) => page.locator('.kort-chip').filter({ hasText: t }).first();
 
-    await expect(chip('Byg din is')).toHaveCount(1);
+    await expect(chip('Is & sødt')).toHaveCount(1);
     await chip('Øl').click();
     await expect(blok, 'byggeren blev stående under en anden chip').toBeHidden();
-    await chip('Byg din is').click();
+    await chip('Is & sødt').click();
     await expect(blok).toBeVisible();
     await expect(page.locator('#bestil-stykker .stk-linje:visible')).toHaveCount(0);
 

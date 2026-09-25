@@ -1361,7 +1361,10 @@
      ville skride fra den dag, reglen ændrer sig. */
   function kanByggeIs() {
     if (!window.MosedeIsbygger) return false;
-    return window.MosedeIsbygger.stoerrelser(isVarer()).length > 0;
+    /* ⚠️ IKKE KUN STØRRELSERNE (26/9). En forretning kan have en
+       isboks og desserter uden en eneste kugle-is i vaffel — og så
+       skal isbaren stadig tegnes. Svaret er byggerens eget. */
+    return window.MosedeIsbygger.kanBygges(isVarer(), data);
   }
 
   function isBlok(liste) {
@@ -1371,7 +1374,12 @@
     var blok = lav('div', 'isbyg-blok');
     var hoved = lav('div', 'isbyg-blok-hoved');
     hoved.appendChild(lav('span', 'isbyg-blok-tegn', '🍦'));
-    hoved.appendChild(lav('h4', 'isbyg-blok-titel', 'Byg din is'));
+    /* ⚠️ KORTETS EGET NAVN (26/9). Blokken hed "Byg din is", men den
+       rummer nu også isboksen, pandekagerne og churros — og dem
+       bygger man ikke. Kort 05 hedder "IS & SØDT", og gæsten, der
+       har det trykte kort i hånden, skal kunne finde det samme ord
+       på skærmen. */
+    hoved.appendChild(lav('h4', 'isbyg-blok-titel', 'Is & sødt'));
     /* ⚠️ VEJEN TIL HELE SORTIMENTET  (kundens ord: "på bestil is
        skal også være se hele is-sortimentet og linke perfekt og
        korrekt op til de andre steder"). Målet #afsnit-is findes

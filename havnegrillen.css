@@ -951,8 +951,14 @@ html{touch-action:manipulation}
    dato og tid er det en hel række, man ikke kan tage fejl af;
    et 98 px felt, der bare siger "Smag", ligner en knap. Pilen
    tegnes derfor igen her — lys, så den kan ses på det mørke. */
-.glasafsnit select.is-smag{background-image:linear-gradient(45deg,transparent 50%,rgba(255,255,255,.72) 50%),linear-gradient(135deg,rgba(255,255,255,.72) 50%,transparent 50%);background-position:calc(100% - 12px) 16px,calc(100% - 8px) 16px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
-.glasafsnit select.is-smag.mangler{background-color:rgba(255,150,130,.22)}
+.glasafsnit select.is-smag,.glasafsnit select.isbyg-smag{background-image:linear-gradient(45deg,transparent 50%,rgba(255,255,255,.72) 50%),linear-gradient(135deg,rgba(255,255,255,.72) 50%,transparent 50%);background-position:calc(100% - 12px) 16px,calc(100% - 8px) 16px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.glasafsnit select.is-smag.mangler,.glasafsnit select.isbyg-smag.mangler{background-color:rgba(255,150,130,.22)}
+/* ⚠️ OG FOR ISBYGGERENS VÆLGER OGSÅ (26/9). Reglen ovenfor blev
+   skrevet til den gamle .is-smag, og isbyggeren kom med sin egen
+   klasse 25/9 — så dens smagsvælgere stod uden pil på det mørke glas
+   i et døgn, live, præcis den fejl noten beskriver. Målt på et skud,
+   ikke fundet af en prøve; prøven står nu i tests/isbyggeren.spec.js. */
+.glasafsnit .isbyg-kugle-nr{color:#ffccd1}
 .glasafsnit .item:not(.hi,.valgt) .add,.glasafsnit .item:not(.hi,.valgt) .kat-valgt,.glasafsnit .item:not(.hi,.valgt) .tag{color:#ffccd1}
 .glasafsnit .item:not(.hi,.valgt) .kat-valgt,.glasafsnit .item:not(.hi,.valgt) .tag{background:rgba(214,42,58,.28)}
 .glasafsnit .item:not(.hi,.valgt) .vare-desc{color:rgba(255,255,255,.76)}
@@ -3095,6 +3101,158 @@ input.isbyg-oenske-felt { height: 44px; font-size: 14px; }
 .glasafsnit .isbyg-hint { color: rgba(255, 255, 255, .76); }
 .glasafsnit .isbyg-kvit { color: #ffccd1; }
 
+/* ============================================================
+   ISBAREN — ET FORLØB PR. SLAGS IS  (26. sep 2026)
+   ------------------------------------------------------------
+   Trin 0 (hvad skal det være?), isboksens tællere og
+   desserternes kort. Samme byggesten som forløbet ovenfor —
+   cremen, den røde, husets kant — så de fire forløb ligner ét
+   system og ikke fire påhæng.
+
+   ⚠️ INGEN NY SKRIFTSTØRRELSE OG INGEN NY SKYGGE (skralden i
+   tests/typografi.spec.js står på loftet). 12, 13, 14, 15, 17 og
+   19 px findes alle i forvejen; kanten er var(--kant-inde).
+   ============================================================ */
+.isbyg-slags {
+  display: grid;
+  /* ⚠️ auto-fit OG IKKE fire faste kolonner: har forretningen tre
+     slags, skal der ikke stå et hul, og på en telefon (330 px inde
+     i blokken) bliver det to og to. */
+  grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
+  gap: 8px;
+  margin: 12px 0 2px;
+}
+.isbyg-slag {
+  display: grid;
+  /* ⚠️ TEGNET VED SIDEN AF NAVNET, IKKE OVER. MÅLT på 390 px: med
+     tegn, navn og pris stablet blev hver flise 150 px høj og stod
+     alene på sin linje — fire fliser skubbede selve forløbet 600 px
+     ned. Side om side er de to og to og ~60 px høje. */
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 9px;
+  row-gap: 1px;
+  align-items: center;
+  justify-items: start;
+  text-align: left;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 14px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--cream2);
+  box-shadow: var(--kant-inde);
+  cursor: pointer;
+  transition: transform .18s ease, background .18s ease, color .18s ease;
+}
+.isbyg-slag:hover { transform: translateY(-1px); }
+.isbyg-slag-tegn { grid-row: span 2; font-size: 19px; line-height: 1; }
+.isbyg-slag-navn { font-size: 14px; font-weight: 600; line-height: 1.25; }
+.isbyg-slag-bi { font-size: 12px; color: var(--red); font-variant-numeric: tabular-nums; }
+.isbyg-slag.valgt { color: #fff; background: var(--red); }
+.isbyg-slag.valgt .isbyg-slag-bi { color: rgba(255, 255, 255, .86); }
+
+/* ---- Isboksen: kugler fordelt på smagene ---- */
+.isbyg-beskriv { margin: 12px 0 0; font-size: 14px; }
+.isbyg-status {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.isbyg-status.fuld { color: var(--red); }
+.isbyg-tael {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-top: 1px solid rgba(214, 42, 58, .13);
+}
+.isbyg-tael-navn { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 600; }
+/* 42 px — samme højde som smagsvælgeren. En tæller på en telefon
+   er noget, man trykker på seks gange i træk. */
+.isbyg-tael-knap {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--cream2);
+  box-shadow: var(--kant-inde);
+  cursor: pointer;
+}
+.isbyg-tael-knap:disabled { opacity: .4; cursor: default; }
+.isbyg-tael-tal {
+  min-width: 22px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Desserterne og det løse: et kort pr. ret ---- */
+.isbyg-desserter { display: grid; gap: 10px; margin-top: 12px; }
+.isbyg-dessert {
+  padding: 12px 13px;
+  border-radius: 14px;
+  color: var(--ink);
+  background: var(--cream2);
+  box-shadow: var(--kant-inde);
+}
+.isbyg-dessert-top { display: flex; align-items: flex-start; gap: 10px; }
+.isbyg-dessert-tekst { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+.isbyg-dessert-navn { font-size: 15px; font-weight: 600; }
+.isbyg-dessert-beskriv { font-size: 13px; color: var(--muted); }
+.isbyg-dessert-pris {
+  flex: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--red);
+  font-variant-numeric: tabular-nums;
+}
+.isbyg-tag {
+  margin-top: 10px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--red);
+  cursor: pointer;
+}
+.isbyg-dessert-valg { margin-top: 10px; }
+.isbyg-dessert-valg > .isbyg-valg { margin-bottom: 8px; }
+/* Kortet er cremet på det mørke glas — dets tekst er derfor ALTID
+   blæk, også inde i glasset. Uden den linje arvede navnet glassets
+   hvide skrift (samme fælde som bordets hvide-på-hvidt 25/9). */
+.glasafsnit .isbyg-dessert, .glasafsnit .isbyg-dessert-navn { color: var(--ink); }
+/* ⚠️ OG FELTERNE I KORTET MED. `.glasafsnit .inp` giver hvid tekst på
+   en gennemsigtig flade — skrevet til det mørke glas. Inde i det
+   cremede kort blev en valgt smag hvid på creme: MÅLT 26/9 kunne man
+   ikke se, at "Vanilje" var valgt. Samme fælde som bordets
+   hvide-på-hvidt 25/9 — en baggrund uden sin farve er en halv regel. */
+.glasafsnit .isbyg-dessert .inp { color: var(--ink); background-color: #fff; box-shadow: var(--kant-inde); }
+.glasafsnit .isbyg-dessert select.isbyg-smag {
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink2) 50%), linear-gradient(135deg, var(--ink2) 50%, transparent 50%);
+}
+.glasafsnit .isbyg-dessert select.isbyg-smag.mangler { background-color: rgba(214, 42, 58, .1); }
+.glasafsnit .isbyg-dessert .isbyg-kugle-nr { color: var(--red); }
+.glasafsnit .isbyg-dessert .isbyg-hint,
+.glasafsnit .isbyg-dessert .isbyg-oenske-tekst { color: var(--muted); }
+
+.glasafsnit .isbyg-beskriv,
+.glasafsnit .isbyg-tael-navn,
+.glasafsnit .isbyg-tael-tal { color: #fff; }
+.glasafsnit .isbyg-status { color: rgba(255, 255, 255, .78); }
+.glasafsnit .isbyg-status.fuld { color: #ffccd1; }
+.glasafsnit .isbyg-tael { border-top-color: rgba(255, 255, 255, .18); }
+
 @media (prefers-reduced-motion: reduce) {
-  .isbyg-knap, .isbyg-kvit { transition: none; }
+  .isbyg-knap, .isbyg-kvit, .isbyg-slag { transition: none; }
 }

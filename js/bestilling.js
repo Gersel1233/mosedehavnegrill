@@ -581,7 +581,7 @@
        men ikke til isen, som er det eneste, der er gjort eksklusivt.
        Chippen står SIDST, fordi blokken står sidst: striben og
        listen skal sige det samme om rækkefølgen. */
-    if (medIs) chip('🍦  Byg din is', '__is');
+    if (medIs) chip('🍦  Is & sødt', '__is');
 
     var timer = null;
     soeg.addEventListener('input', function () {
@@ -931,7 +931,7 @@
        som før — samme afgørelse som på forsiden. */
     var isVarerne = liste.concat(spoerg).filter(erIsVare);
     var byggerIs = !!(window.MosedeIsbygger
-      && window.MosedeIsbygger.stoerrelser(isVarerne).length);
+      && window.MosedeIsbygger.kanBygges(isVarerne, data));
     /* ⚠️ OG KUN DET, BYGGEREN RENT FAKTISK TEGNER. `spoerg` ER de
        prisløse varer, og de udsolgte står i `liste` — ingen af dem
        kommer med i byggeren. Tog vi hele is-afdelingen ud, ville en
@@ -940,7 +940,7 @@
        prisen". Svaret er byggerens eget (iBrug), ikke en kopi. */
     var iByggeren = {};
     if (byggerIs) {
-      window.MosedeIsbygger.iBrug(isVarerne).forEach(function (v) {
+      window.MosedeIsbygger.iBrug(isVarerne, data).forEach(function (v) {
         iByggeren[v.navn] = true;
       });
     }
@@ -1158,7 +1158,7 @@
        ============================================================ */
     if (byggerIs) {
       var isBlok = lav('section', 'isbyg-blok');
-      isBlok.setAttribute('data-gruppe', 'Byg din is');
+      isBlok.setAttribute('data-gruppe', 'Is & sødt');
       /* ⚠️ SØGEORDENE ER VARERNES EGNE — ikke en liste, nogen har
          fundet på. Skriver ejeren en ny is i admin, skal den kunne
          findes med sit eget navn dagen efter, uden at nogen har
@@ -1169,7 +1169,8 @@
         + isVarerne.map(function (v) { return v.navn; }).join(' '));
       var isHoved = lav('div', 'isbyg-blok-hoved');
       isHoved.appendChild(lav('span', 'isbyg-blok-tegn', '🍦'));
-      isHoved.appendChild(lav('h3', 'isbyg-blok-titel', 'Byg din is'));
+      /* Kortets eget navn — se noten i js/skal/bestil.js. */
+      isHoved.appendChild(lav('h3', 'isbyg-blok-titel', 'Is & sødt'));
       /* ⚠️ INGEN LINK VÆK FRA BORDET. På forsiden fører hovedet til
          menukortet; her sidder gæsten med en QR-kode og en telefon,
          og et link, der forlader bestillingen, er en kurv, hun skal
