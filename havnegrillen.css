@@ -1650,35 +1650,11 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    ⚠️ .is-priser har display, så [hidden] skal have sin egen regel
    (samme fælde som .music og .lk-tegn). */
 .is-vitrine{margin-top:20px;border-radius:28px;overflow:hidden;background:var(--paper);box-shadow:var(--skygge-kort);display:grid}
-/* ---- ISENS EGET BAAND  (24/9) -----------------------------
-   Kundens ord: *"is tingen skal vaere premium ligesom dagens
-   ret ... sin egen titel section osv og bare vaere mere
-   eksklusiv — ogsaa paa forsiden noget liquid glass."*
-
-   ⚠️ FORMEN ER `.idag-blok`S, IKKE EN NY. Maalt foer: #idag er
-   366 px og baerer et ternet roedt baand med et maerke og ét ord;
-   #isen var 785 px og begyndte direkte paa to fotos. To kort paa
-   den samme forside, hvor kun det ene har et maerke, laeses som
-   ét vigtigt og ét almindeligt — og isen er halvdelen af
-   firmanavnet.
-
-   Ternet, den roede og de 11 % hvide striber er DAGENS RETS EGNE
-   TAL, skrevet af med vilje fra `.today .idag-blok`: to baand paa
-   den samme forside, der ligner hinanden 95 %, er vaerre end to,
-   der er ens. Aendres det ene, skal det andet med. */
-.is-blok{display:flex;align-items:center;gap:8px;padding:10px 18px;
-  background-color:var(--red);
-  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.11) 0 9px,transparent 9px 18px),repeating-linear-gradient(0deg,rgba(255,255,255,.11) 0 9px,transparent 9px 18px);
-  color:#fff}
-.is-blok .is-maerke{display:block;flex:none;line-height:0}
-/* ⚠️ STREGTYKKELSEN SAETTES HER, IKKE AF ATTRIBUTTEN I HTML'EN.
-   Falsifikationen fandt det: `stroke-width="2.4"` i opmaerkningen
-   blev aendret til 2,1, og proeven bestod — CSS vinder over
-   praesentationsattributten. Attributten bliver staaende som
-   reserve, hvis arket ikke naar frem, men reglen bor HER.
-   Husets egen lov: maal den BEREGNEDE stil. */
-.is-blok .is-maerke svg{display:block;width:22px;height:22px;stroke-width:2.4}
-.is-blok .is-ord{font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:19px;line-height:1}
+/* ---- ISENS BAAND ER FJERNET  (25/9) -----------------------
+   Det ternede baand med den tegnede is og "Ishuset" i kursiv er
+   taget af paa Mikkels ord: *"det lige praecis saadan noget her
+   claude lignende der skal vaek ogsaa"*. Kortet begynder paa
+   fotoerne. Se noten i index.html. */
 .is-fotos{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--cream2)}
 .is-fotos img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;object-position:50% 58%}
 .is-kort{display:grid;gap:14px;padding:18px}
@@ -1704,11 +1680,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .is-pris{flex:none;font-size:15px;font-weight:600;color:var(--red-tekst);font-variant-numeric:tabular-nums}
 .is-kort .fine{margin:0;text-align:center}
 @media (min-width:821px){
-  /* ⚠️ BAANDET SPAENDER OVER BEGGE SPALTER. Uden linjen bliver det
-     en TREDJE kolonne paa en bred skaerm, og fotoerne og kortet
-     klemmes sammen ved siden af et lodret baand. */
   .is-vitrine{grid-template-columns:3fr 2fr}
-  .is-blok{grid-column:1 / -1}
   .is-fotos img{aspect-ratio:auto;height:100%;min-height:420px}
   .is-kort{align-content:center;padding:28px}
 }

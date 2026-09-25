@@ -1351,11 +1351,11 @@
       .map(function (v) { return v && v.vare ? v.vare : v; });
   }
 
-  /* ⚠️ NAVNET ER isbyg- OG IKKE is-blok. `.is-blok` er OPTAGET af
-     forsidens is-afsnit (section#isen, is-vitrinen), og MÅLT 25/9
-     gav genbruget to blokke på skærmen — min egen og vitrinens —
-     plus at min CSS lavede vitrinen om. En klasse er et navnerum;
-     det skal slås op, ikke gættes. */
+  /* ⚠️ NAVNET ER isbyg- OG IKKE is-blok. `.is-blok` var forsidens
+     isbånd (section#isen), og MÅLT 25/9 gav genbruget to blokke på
+     skærmen — min egen og vitrinens — plus at min CSS lavede
+     vitrinen om. Båndet blev fjernet samme aften, men navnet bliver
+     isbyg-: en klasse er et navnerum; det skal slås op, ikke gættes. */
   /* Kan der overhovedet bygges en is? Svaret er isbyggerens eget —
      den kender reglen for, hvad en "størrelse" er, og en kopi her
      ville skride fra den dag, reglen ændrer sig. */

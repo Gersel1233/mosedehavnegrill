@@ -2595,77 +2595,38 @@ test.describe('Isen er premium som dagens ret', () => {
     return d;
   }
 
-  /* ⚠️ TALLET KOMMER UDEFRA — fra DET ANDET KORT.
-     Prøven spørger ikke isbåndet om dets egen baggrund; den
-     sammenligner den med dagens rets. Et spørgsmål til isbåndet
-     alene ville bestå, også hvis dagens ret blev lavet om, og så
-     stod der to bånd på den samme forside, der lignede hinanden
-     95 % — værre end to, der er ens, fordi øjet ser forskellen
-     uden at kunne sige hvad den er. MÅLT under skrivningen: 45 px
-     mod 42, og stregen 2,1 mod 2,4. */
-  test('de to bånd er bygget ens — ikke næsten ens', async ({ page }) => {
+  /* ============================================================
+     ISBÅNDET ER VÆK — KORTET BEGYNDER PÅ FOTOERNE  (25/9)
+     ------------------------------------------------------------
+     ⚠️ VENDT. Her stod to prøver: "de to bånd er bygget ens" og
+     "båndet bærer ordet og et tegnet mærke" — at isen havde et
+     ternet bånd med en tegnet is og "Ishuset" i kursiv, præcis
+     som dagens ret. Mikkels ord 25/9 med et skærmbillede af det:
+     *"det lige præcis sådan noget her claude lignende der skal
+     væk også"*. Prøven holder nu det modsatte fast.
+
+     ⚠️ OG DAGENS RETS BÅND STÅR. Det blev ikke vist, og det er
+     bygget på hans eget ønske om en markør. Prøvens anden halvdel
+     måler, at det stadig er der — ellers kunne en "oprydning" tage
+     det med i samme hug, og prøven ville være grøn. Det tal kommer
+     udefra: fra det andet kort, ikke fra isens eget.
+     ============================================================ */
+  test('isens kort har intet bånd — det begynder på fotoerne', async ({ page }) => {
     await åbn(page, '/index.html', { data: medDagensRet() });
     await springIntroOver(page);
 
-    const isBaand = page.locator('.is-blok');
-    const dagBaand = page.locator('.today .idag-blok');
-    await expect(isBaand).toHaveCount(1);
-    await expect(dagBaand).toHaveCount(1);
-
-    const læs = (l) => l.evaluate((e) => {
-      const cs = getComputedStyle(e);
-      const svg = e.querySelector('svg');
-      return {
-        grund: cs.backgroundColor,
-        tern: cs.backgroundImage,
-        hoejde: Math.round(e.getBoundingClientRect().height),
-        maerke: svg ? Math.round(svg.getBoundingClientRect().height) : null,
-        streg: svg ? getComputedStyle(svg).strokeWidth : null,
-        ordSkrift: getComputedStyle(e.querySelector('.is-ord, .idag-ord')).fontFamily,
-        ordKursiv: getComputedStyle(e.querySelector('.is-ord, .idag-ord')).fontStyle,
-      };
+    await expect(page.locator('.is-vitrine')).toHaveCount(1);
+    await expect(page.locator('.is-vitrine .is-blok, .is-vitrine .is-maerke')).toHaveCount(0);
+    await expect(page.locator('.is-vitrine'), 'ordet fra det fjernede bånd står der stadig')
+      .not.toContainText('Ishuset');
+    const første = await page.locator('.is-vitrine').evaluate((e) => {
+      const f = [...e.children].find((c) => getComputedStyle(c).display !== 'none');
+      return f ? f.className : null;
     });
-    const [is, dag] = [await læs(isBaand), await læs(dagBaand)];
+    expect(første, 'isens kort begynder ikke på fotoerne').toBe('is-fotos');
 
-    /* ⚠️ HØJDEN ER MED VILJE IKKE DEN SAMME PÅ EN BRED SKÆRM, og
-       det er ikke en undtagelse for at få prøven grøn — det er to
-       kort med hver sin form. Fra 560 px bliver dagens rets blok
-       til en VENSTRE SØJLE (målt: 181 px); isens venstre side er
-       fotoerne, så dens bånd spænder over toppen. Alt det, der
-       gør båndet til et bånd — ternet, den røde, mærkets
-       størrelse, stregtykkelsen og det kursive ord — SKAL være
-       ens, og det er dét, der måles her.
-
-       På en telefon er begge et bånd, og dér måles højden også:
-       uden den halvdel kunne det ene bånd blive dobbelt så højt
-       som det andet, uden at prøven sagde noget. */
-    const { hoejde: isH, ...isForm } = is;
-    const { hoejde: dagH, ...dagForm } = dag;
-    expect(isForm, 'isens bånd er ikke bygget som dagens rets').toEqual(dagForm);
-
-    const bredde = page.viewportSize().width;
-    if (bredde < 560) {
-      expect(isH, 'på en telefon er begge et bånd — de skal være lige høje')
-        .toBe(dagH);
-    } else {
-      /* Og modstykket: søjlen SKAL være højere end et bånd, ellers
-         er den ikke blevet en søjle. */
-      expect(dagH, 'dagens rets blok er ikke blevet en søjle')
-        .toBeGreaterThan(isH);
-    }
-  });
-
-  /* Og båndet bærer ET ORD — deres eget. "Ishuset" står i
-     firmanavnet (Grill & Ishus); det er ikke en påstand, det er
-     hvad de hedder. */
-  test('båndet bærer ordet og et tegnet mærke', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medDagensRet() });
-    await springIntroOver(page);
-    await expect(page.locator('.is-blok .is-ord')).toHaveText('Ishuset');
-    /* ⚠️ TEGNET, IKKE ET EMOJI — som dampen ved siden af. Det
-       arver currentColor og er derfor hvidt på båndet; et emoji
-       ville stå i sine egne farver på den røde flade. */
-    await expect(page.locator('.is-blok .is-maerke svg')).toHaveCount(1);
+    await expect(page.locator('.today .idag-blok'), 'dagens rets bånd gik med i samme hug')
+      .toHaveCount(1);
   });
 
   /* ⚠️ GLASSETS UDSEENDE — OG IKKE DETS SLØRING.
