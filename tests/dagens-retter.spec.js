@@ -385,8 +385,17 @@ test.describe('Ugeplanen i admin', () => {
 
    dagens_retter er den ENESTE tabel, der får lov at mangle: den
    kom til, efter siden var i luften, og den er valgfri af design.
-   De syv andre er sidens fundament — svarer menu_varer 404, ER
-   nødmenuen det rigtige svar, og prøve to holder det fast.
+   De syv andre er sidens fundament — svarer menu_varer 404, væltes
+   hentningen, og prøve to holder det fast.
+
+   ⚠️ VENDT 25/9: NØDMENUEN ER IKKE LÆNGERE SVARET. Prøve to krævede
+   før, at nødmenuens "Håndmad" stod på skærmen — altså netop det
+   menukort med "Smørrebrød 55,-" og "Håndmad 24,-", der "så helt
+   normal ud". Mikkels ord: *"Hvis databasen ikke svarer, må
+   hjemmesiden aldrig vise forældede reservepriser. Vis i stedet en
+   tydelig fejlbesked med caféens telefonnummer."* Prøvens formål
+   står urørt (en død database må ikke ligne en forretning uden
+   varer) — nu er det fejlbeskeden med nummeret, der siger det.
    ============================================================ */
 test.describe('En tabel, der kom sent, må ikke tage resten med sig', () => {
 
@@ -451,16 +460,22 @@ test.describe('En tabel, der kom sent, må ikke tage resten med sig', () => {
   });
 
   /* MEN DE SYV ANDRE SKAL STADIG VÆLTE. Svarer menu_varer 404, er
-     der ingen menu at vise, og nødmenuen ER det rigtige svar —
-     ikke en tom side. Uden den her prøve kunne nogen "løse"
+     der ingen menu at vise — og siden SIGER det, med nummeret, i
+     stedet for en tom side. Uden den her prøve kunne nogen "løse"
      ovenstående ved at pakke ALLE otte kald ind i en catch, og så
-     ville en død database se ud som en forretning uden varer. */
-  test('mangler menu_varer, falder siden tilbage på nødmenuen', async ({ page }) => {
+     ville en død database se ud som en forretning uden varer.
+     (Før 25/9 var svaret nødmenuen — se vendingen øverst.) */
+  test('mangler menu_varer, siger siden det — med nummeret, uden nødmenuens priser', async ({ page }) => {
     await medSkyen(page, 'menu_varer');
     await sætUr(page, '2026-08-07T11:00:00Z');
     await page.goto('/m-menukort.html', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.locator('#mk-kat')).toContainText('Håndmad');
+    const besked = page.locator('#mk-tom');
+    await expect(besked, 'menu_varer fejlede, og siden sagde intet').toBeVisible();
+    await expect(besked).toContainText('28 87 13 43');
+    await expect(page.locator('#mk-kat'),
+      'nødmenuens Håndmad står der — reservepriserne er tilbage')
+      .not.toContainText('Håndmad');
     await expect(page.locator('#mk-kat'),
       'menu_varer fejlede, men siden viste alligevel databasens varer')
       .not.toContainText('Flæskestegssandwich');
