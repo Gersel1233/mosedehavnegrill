@@ -47,6 +47,13 @@
     if (document.documentElement.classList.contains('film-aabner')) return;
     var fra = document.referrer;
     if (fra && fra.indexOf(location.origin + '/') === 0) return;
+    /* ⚠️ OG IKKE VED TILBAGE ELLER GENINDLÆSNING (26/9). document.referrer
+       husker, hvor gæsten OPRINDELIG kom fra: kom hun fra Google til
+       menukortet, videre til tapas og tilbage, stod der stadig Google, og
+       isvaflen fyldte skærmen i 1,2 sekund igen. Tilbage er et skridt
+       rundt i huset, ikke en ankomst. */
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (nav && (nav.type === 'back_forward' || nav.type === 'reload')) return;
   } catch (e) { return; }
   if (!document.body) return;
 

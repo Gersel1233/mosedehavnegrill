@@ -69,14 +69,18 @@
      link og reduceret bevægelse får ingen åbning: slutbilledet og
      teksten står med det samme. Og teksten kan aldrig blive hængende
      skjult — se "værn" i havnegrillen.css og js/skal/hero-film.js. -->
-<script>(function(){try{if(!location.hash&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))document.documentElement.classList.add('film-aabner')}catch(e){}})();</script>
+<!-- ⚠️ FILMEN ER ÅBNINGEN — IKKE VED TILBAGE, IKKE INDEFRA (26/9). Samme regel
+     som loaderen (js/loader.js): den vises, når gæsten KOMMER til huset. Før
+     spillede den forfra, hver gang man gik tilbage til forsiden eller trykkede
+     på "Forside" — og bjælken og pillen var skjult imens. -->
+<script>(function(){try{if(!location.hash&&!(function(){var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];return !!n&&n.type==='back_forward'})()&&!(document.referrer.indexOf(location.origin+'/')===0)&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))document.documentElement.classList.add('film-aabner')}catch(e){}})();</script>
 <!-- ⚠️ DET FØRSTE, SAFARI TEGNER, ER MØRKT UNDER ÅBNINGEN (11/9). Set
      i iOS 26-simulatoren: mellem trykket og siden stod skærmen HVID,
      fordi siden intet havde tegnet endnu. Her i head, så det gælder fra
      første billede — og kun under åbningen: bagefter maler kroppen og
      .screen deres egen farve som før. -->
 <style>html.film-aabner{background:#0b0706}</style>
-</head><body class="hav">
+<script src="js/tilbage.js?v=__V__"></script></head><body class="hav">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
