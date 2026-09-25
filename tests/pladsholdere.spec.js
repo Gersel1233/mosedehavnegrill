@@ -78,6 +78,17 @@ test.describe('Pladsholderne siger ingen dato', () => {
     expect(fund, 'en pladsholder står med en dato, en læser uden JavaScript tror på').toEqual([]);
   });
 
+  /* ⚠️ OG DESIGNETS PRISER STÅR DER HELLER IKKE (25/9, aften). Tapasfadet
+     koster 179; designets "199 kr." og "548 kr." stod i HTML'en og var
+     det, en læser uden JavaScript — og en side uden database — så.
+     Prøven i ingen-reservepriser.spec.js måler siden MED JavaScript; den
+     her måler, hvad der står, før det har kørt. */
+  test('og designets tapaspriser står der ikke', () => {
+    for (const f of ['index.html', 'm-tapas.html']) {
+      expect(renTekst(f), f + ' står med designets tapaspris').not.toMatch(/\b(199|548)\s*kr/);
+    }
+  });
+
   test('og designets arrangement står der ikke', () => {
     const t = renTekst('index.html');
     expect(t).not.toMatch(/Musik på molen/);
