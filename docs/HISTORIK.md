@@ -7,6 +7,47 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**KORTENE ER FACIT — DET, DE IKKE VISER, SLUKKES** (26/9). Mikkels ord:
+*"følg menukortene, det er alt — de skal slukkes, hvis ikke de er på
+menukortene."* Og: *"isens smage er ligegyldigt."*
+
+- `supabase/kortenes-huller-25-9.sql` er kørt (hans skud: 3 nye varer,
+  Smoothie/Milkshake-valget). Målt i produktionen: alle tre i en tændt
+  kategori
+- `supabase/sluk-det-kortene-ikke-viser.sql` slukker de **30** varer, intet
+  af de ti kort viser — pålægssalaterne med navn, Tomatmad, Bøfsandwich,
+  Brunchtallerken, Mosede Isen, Kaffe og pandekage, dåsesodavand, tillæg for
+  laktosefri og vegansk og **alle 11 ispinde**. Listen er afsnit B i
+  `sammenlign-kort.py`, ikke skrevet af i hånden. Den SLUKKER (kan tændes i
+  admin), den sletter ikke, og cateringen er med vilje ikke med.
+  **Den skal køres i Supabase.**
+- **Rapporten er ren:** 0 prisfejl, 0 poster på kortene uden en vare. De 30
+  forsvinder fra B, når filen er kørt
+- **Isens smage er droppet.** Feltet i admin står tomt, og byggerens trin 3
+  giver et frit ønskefelt — der er intet at bygge
+
+**⚠️ TRE MÅLINGER, DER RETTEDE MIT EGET ARBEJDE:**
+
+1. **"Rejemad & Tartar" var ikke en vare uden pris.** Linjen står under
+   kortets overskrift **"IKKE SOM HÅNDMAD"** — den er en henvisning til
+   smørrebrødet (Rejemad og Tartarmad, 95 kr.). Jeg havde spurgt Mikkel om en
+   pris på noget, kortet selv siger ikke findes. Hans svar, *"følg
+   menukortene"*, var det rigtige. Den er nu en `SAMLELINJE` i `kortene.py`
+2. **Rapporten talte "vare|valg" som en fremmed vare.** `paakort` fik hele
+   strengen og ikke varen, så "Smoothie eller milkshake" stod i B, selv om
+   kortet viser den to gange. `vareNavn()` skærer valget af ét sted. Set
+   begge veje: 31 med fejlen, 30 uden
+3. **Én navn ramte to rækker på en lokal Postgres** (`UPDATE 31` for en liste
+   på 30): "Hjemmelavet hønsesalat" og "…Hønsesalat" i samme kategori. Det er
+   rigtigt at slukke begge — men SQL Editoren viser kun den sidste
+   sætnings svar, så det tal ville ingen se. Rapporten tæller nu RÆKKER
+   (`raekker_slukket`) ved siden af navnene. Produktionen har ingen
+   dubletter blandt de 30 (målt)
+
+Filen står i `IKKE_I_BYGGEREN` med sin grund: fire proev-filer nævner varer,
+den slukker, og de prøver mekanismen (priser, tillæg), ikke dagens sortiment.
+
+
 **DEN GLUTENFRI VAFFEL KOSTER DET SAMME** (25/9, Mikkels afgørelse:
 *"den er samme pris, glutenfri vaffel."*). Kort 05 lovede det ordret;
 databasen tog 3 kroner ekstra på alle seks (1-4 kugler, softice lille

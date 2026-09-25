@@ -165,8 +165,17 @@ KORT = [
      ("Hjemmelavet lun delle", 25, "", "Lun delle eller steg"),
      ("Hjemmelavet flæskesvær", 35, "", "Hjemmelavet flæskesvær"),
    ]),
+   # ⚠️ LÆS OVERSKRIFTEN: "IKKE SOM HÅNDMAD". Linjen er en HENVISNING,
+   #    ikke en vare uden pris — rejemad og tartar sælges ikke som
+   #    håndmad, og kortet siger hvor de så står: som smørrebrød
+   #    (Rejemad og Tartarmad, 95 kr. på kort 03, begge i databasen).
+   #    Indtil 26/9 stod den med db-navn None, og rapporten meldte den
+   #    i afsnit D som en vare, der manglede en pris — og Mikkel blev
+   #    spurgt om prisen på noget, kortet selv siger ikke findes.
+   #    Hans svar var det rigtige: *"følg menukortene."*
    ("IKKE SOM HÅNDMAD", [
-     ("Rejemad & Tartar", None, "Rejemad fås både på rugbrød og franskbrød. Tartar fås som smørrebrød.", None),
+     ("Rejemad & Tartar", None, "Rejemad fås både på rugbrød og franskbrød. Tartar fås som smørrebrød.",
+      "SAMLELINJE: henviser til Rejemad og Tartarmad på kort 03"),
    ]),
    ("SIG TIL VED LUGEN", [
      ("Glutenfrit brød", 5, "Med eller uden smør — bare sig til", "Glutenfrit brød (tillæg)"),
