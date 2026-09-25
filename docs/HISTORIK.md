@@ -16,8 +16,31 @@ samme form, men blev IKKE vist og står (spørg, før det røres). Prisen står
 lige under smiley-kortet med smiley-kortets klasse (samme glas) og samme
 ordlyd og link som linjen i bunden, der bliver stående. Udgivet (#500).
 
-**BILLEDPLANEN — DE FIRE KATEGORIER UDEN FOTO** (25/9, nat, IKKE LAVET
-ENDNU). Mikkel vil have dem lavet med fal.ai (10 dollars på kontoen) og
+**DE FIRE FOTOS ER LAVET — GENEREREDE MED fal.ai** (25/9, nat, IKKE
+UDGIVET — venter på Mikkels ja til billederne). Planen nedenfor er fulgt.
+
+- **Filerne:** `billeder/menu-andre-retter.jpg` (biksemad med spejlæg),
+  `menu-sandwich.jpg` (frikadelle, rødkål, agurk i det grillede brød,
+  skåret over), `menu-snacks.jpg` (2 slags chips på fad + popcorn, set
+  oppefra), `menu-pindemad.jpg` (fad med pindemad på rugbrød). 720×1080
+  JPEG som de 13 andre. **ALLE FIRE ER GENEREREDE** — samme kategori som
+  tapas 11/9 og menu-billederne 13/9. Noten står også ved `FOTOS`
+- **Hvordan:** `fal-ai/nano-banana/edit`, $0.039 pr. billede, via
+  `queue.fal.run` (proxyen sætter nøglen på — `FAL_KEY` var IKKE sat, og
+  `fal.run` svarer 401 uden den). Referencer: kagebordet på molen (dug,
+  trædæk, havn — ikke kagerne) og deres egen sandwich (brød og fyld).
+  Google-biksemaden blev IKKE sendt med
+- **Forbrug:** 6 forsøg = $0.234 af budgettets 2 dollars. Sandwich og
+  pindemad fik andet forsøg: sandwich nr. 1 var deres eget foto klistret
+  ind med det trykte papir; pindemad nr. 1 havne-kompositionen fra
+  biksemaden igen og meterlange pinde. Plus ét tomt kald, der døde på 404
+  efter 0,03 sek. (en fejl i mit tjek, ingen billede)
+- **Regler:** `/^andre retter$/` og `/^sandwich$/` med ankre — "Retter"
+  (stegt flæsk) beholder sit foto. `tests/menukort-foto.spec.js` prøver
+  alle fem og er set fejle med `/retter/` uden anker
+
+**BILLEDPLANEN — DE FIRE KATEGORIER UDEN FOTO** (25/9, nat — LAVET, se
+posten ovenfor). Mikkel vil have dem lavet med fal.ai (10 dollars på kontoen) og
 *"ikke for fake … op til standarderne"*. Denne session kunne ikke: `FAL_KEY`
 læses kun, når en session starter, og `queue.fal.run`, `fal.media` og
 `api.fal.ai` var spærret (kun `fal.run` svarede).
