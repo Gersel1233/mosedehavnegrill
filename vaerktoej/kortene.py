@@ -93,7 +93,9 @@ KORT = [
      ("Kradser med det hele", 15, "", "Kradser med det hele"),
      ("Ristet hotdog, lille", 40, "", "Hotdog, lille"),
      ("Ristet hotdog, stor", 50, "", "Hotdog, stor"),
-     ("Fransk hotdog, lille", 40, "", "Fransk hotdog, alm."),
+     # ⚠️ DØBT OM 25/9 af kortene-25-9.sql: databasen hed "alm.",
+     #    kortet siger "lille". Nu siger de det samme.
+     ("Fransk hotdog, lille", 40, "", "Fransk hotdog, lille"),
      ("Fransk hotdog, stor", 50, "", "Fransk hotdog, stor"),
    ]),
  ]),

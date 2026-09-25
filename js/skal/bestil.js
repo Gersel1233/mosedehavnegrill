@@ -312,14 +312,31 @@
 
   function grupper() {
     var navne = {};
-    (data.menu_kategorier || []).forEach(function (k) { navne[k.id] = k.navn; });
+    /* ⚠️ AFDELINGEN SKAL MED UD AF DEN HER FUNKTION  (25/9).
+       Kassen bar kun {id, navn, varer}, så MosedeEmoji.afdelingFor(g)
+       så et tomt felt og svarede 'mad' for ALT. **Målt på ejerens
+       egne 268 varer:** 🍨 Kugleis, 🍦 Softice og vafler og 🍧
+       Ispinde stod alle tre som `kat-tegn-mad` — den røde. Reglerne
+       .kat-tegn-is og .kat-tegn-drikke har altså ALDRIG fyret på
+       bestillingslisten, siden tegnet kom 29/8.
+
+       Og CSS'ens egen kommentar sagde imens, at "farven kommer fra
+       afdelingen, som ejeren sætter i admin". En kommentar er ikke
+       et værn. Fundet ved at måle den BEREGNEDE klasse, ikke ved at
+       læse arket. */
+    var afd = {};
+    (data.menu_kategorier || []).forEach(function (k) {
+      navne[k.id] = k.navn;
+      afd[k.id] = k.afdeling;
+    });
 
     var rækkefølge = [];
     var kasser = {};
     function iKasse(v, slags) {
       var id = String(v.kategori_id);
       if (!kasser[id]) {
-        kasser[id] = { id: id, navn: navne[v.kategori_id] || 'Andet', varer: [] };
+        kasser[id] = { id: id, navn: navne[v.kategori_id] || 'Andet',
+                       afdeling: afd[v.kategori_id], varer: [] };
         rækkefølge.push(kasser[id]);
       }
       kasser[id].varer.push(slags ? { vare: v, slags: slags } : v);
@@ -683,6 +700,19 @@
     })[0] || null;
   }
 
+  /* Afdelingen på en RÆKKE — ét sted (25/9).
+     ⚠️ Den slås op af varens egen kategori gennem katFor(), den
+     samme vej som tegnet går. Tre rækketyper, der hver pillede
+     kategorien ud, ville skride fra hinanden den dag, en af dem
+     tegnes et nyt sted fra. Findes kategorien ikke (dagens ret har
+     ingen), sættes intet — og rækken ser ud som i dag. */
+  function sætAfdeling(række, v) {
+    if (!window.MosedeEmoji || !window.MosedeEmoji.afdelingFor) return;
+    var k = katFor(v);
+    if (!k) return;
+    række.setAttribute('data-afd', window.MosedeEmoji.afdelingFor(k));
+  }
+
   function vareRække(v, fremhævet) {
     /* ⚠️ EN VARIANT ER SIN EGEN LINJE I KURVEN, OG NØGLEN BÆRER
        STØRRELSEN MED (30/8). To smørrebrød med leverpostej og én
@@ -695,6 +725,7 @@
     var række = lav('div', 'item' + (fremhævet ? ' hi' : ''));
     række.setAttribute('data-vare', v.navn);
     if (v.variantAf) række.setAttribute('data-variant-af', v.variantAf);
+    sætAfdeling(række, v);
 
     /* ⚠️ BILLEDET, NÅR EJEREN HAR LAGT ET OP (31/8). Ingen
        pladsholder: har varen intet foto, ser rækken ud som i dag.
@@ -820,6 +851,7 @@
      rækken står i listen som alt andet. */
   function spoergRække(v) {
     var række = lav('div', 'item spoerg-pris');
+    sætAfdeling(række, v);
     række.setAttribute('data-vare', v.navn);
 
     /* ⚠️ INTET VAREFOTO HER  (13/9). Kundens ord: "de billeder man
@@ -868,6 +900,7 @@
      pris. Se noten ved udsolgteVarer(). */
   function udsolgtRække(v) {
     var række = lav('div', 'item udsolgt');
+    sætAfdeling(række, v);
     række.setAttribute('data-vare', v.navn);
 
     if (window.MosedeEmoji && window.MosedeEmoji.forVare) {
@@ -919,6 +952,17 @@
         window.MosedeEmoji.forKategori(g));
       tegn.setAttribute('aria-hidden', 'true');
       række.appendChild(tegn);
+      /* ⚠️ AFDELINGEN PÅ SELVE RÆKKEN (25/9). Kundens ord: isen skal
+         have "en anden farve ... for at inkludere det i det premium".
+         Indtil i dag var det KUN det 34 px tegn, der var farvet efter
+         afdeling — kortet under det var det samme for en burger og en
+         softice.
+
+         Den står som data og ikke som en klasse, fordi afdelingen er
+         EJERENS felt: opretter han en fjerde, arver den reglen af sig
+         selv i stedet for at kræve en ny klasse i koden. Samme greb
+         som data-vare og data-gaa. */
+      række.setAttribute('data-afd', window.MosedeEmoji.afdelingFor(g));
     }
     række.appendChild(lav('h4', null, g.navn));
 

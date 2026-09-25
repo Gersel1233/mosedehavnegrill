@@ -11,6 +11,7 @@ Retter;Mad;Fish’n’chips;105;Gyldent paneret fisk med sprøde pommes frites, 
 Retter;Mad;Fiskefilet med pommes;95;Sprød paneret fiskefilet med pommes frites, remoulade og citron.;ja;ja;nej;ja;alle;
 Retter;Mad;Pariserbøf;105;Saftig bøf på ristet brød med æggeblomme, kapers, peberrod, rødbeder og rå løg.;ja;ja;nej;ja;alle;
 Retter;Mad;Pitabrød;65;Med kebab, kylling eller tun;ja;ja;nej;ja;alle;
+Retter;Mad;Clubsandwich;105;;ja;ja;nej;ja;alle;
 Andre retter;Mad;Sandwich, stor;85;Æg, pålæg, hønsesalat, æggesalat, wienersalat, skinkesalat, kebab, kylling eller tun;ja;nej;nej;ja;alle;
 Andre retter;Mad;Mix med pommes;90;Kebab, kylling, tun eller frikadelle;ja;nej;nej;ja;alle;
 Andre retter;Mad;Pølsemix med pommes;90;;ja;ja;nej;ja;alle;
@@ -38,14 +39,15 @@ Burgere;Mad;Havnens burger;80;;ja;ja;nej;ja;alle;
 Burgere;Mad;Baconburger;85;Saftig bøf med smeltet ost og sprød bacon, salat, tomat og dressing i ristet burgerbolle.;ja;ja;nej;ja;alle;
 Burgere;Mad;Dobbelt burger;125;To saftige bøffer med smeltet ost, salat, tomat og dressing — til den store sult.;ja;ja;nej;ja;alle;
 Burgere;Mad;Bearnaiseburger;90;Saftig bøf med cremet bearnaise, salat og tomat i ristet burgerbolle.;ja;nej;nej;ja;alle;
+Burgere;Mad;Bacon & Cheeseburger;95;Saftig bøf med smeltet ost og sprød bacon, salat, tomat og dressing i ristet burgerbolle.;ja;ja;nej;ja;alle;
 Burgere;Mad;Chilinaiseburger;90;Saftig bøf med stærk chilimayo, salat og tomat i ristet burgerbolle.;ja;nej;nej;ja;alle;
 Burgere;Mad;Cheeseburger;85;Saftig bøf med smeltet ost, sprød salat, tomat, syltede agurker og dressing i ristet burgerbolle.;ja;ja;nej;ja;alle;
 Burgere;Mad;Flæskestegsburger;80;Saftig flæskesteg med sprød svær, rødkål og agurkesalat i ristet burgerbolle.;ja;nej;nej;ja;alle;
 Burgere;Mad;Frikadelleburger;80;Lun frikadelle med rødkål og dressing i ristet burgerbolle.;ja;nej;nej;ja;alle;
 Burgere;Mad;Ekstra tilbehør;10;;ja;ja;nej;ja;alle;
 Burgere;Mad;Bearnaise;10;;ja;nej;nej;ja;alle;
-Sandwich;Mad;Flæskestegssandwich;80;Saftig flæskesteg med sprød svær, rødkål og agurkesalat i blødt brød.;ja;ja;nej;ja;alle;
-Sandwich;Mad;Frikadellesandwich;80;Lun frikadelle i blødt brød med rødkål, agurkesalat og dressing.;ja;ja;nej;ja;alle;
+Sandwich;Mad;Flæskestegssandwich;75;Saftig flæskesteg med sprød svær, rødkål og agurkesalat i blødt brød.;ja;ja;nej;ja;alle;
+Sandwich;Mad;Frikadellesandwich;75;Lun frikadelle i blødt brød med rødkål, agurkesalat og dressing.;ja;ja;nej;ja;alle;
 Sandwich;Mad;Sandwich;75;Kebab, kylling, tun, frikadelle eller æg;ja;ja;nej;ja;alle;
 Sandwich;Mad;Bøfsandwich;75;Saftig bøf i blødt brød med brun sovs, rødbeder, agurk og ristede løg — den klassiske.;ja;ja;nej;ja;alle;
 Pølser;Mad;Pistolpølse;30;Pølse i et sprødt pistolbrød med sennep, ketchup og ristede løg.;ja;nej;nej;ja;alle;
@@ -61,8 +63,8 @@ Pølser;Mad;Pølsebrød;10;;ja;ja;nej;ja;alle;
 Pølser;Mad;Kradser med det hele;15;Pølse med det hele: sennep, ketchup, remoulade, rå og ristede løg og agurkesalat.;ja;ja;nej;ja;alle;
 Pølser;Mad;Hotdog, lille;40;Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.;ja;ja;nej;ja;alle;
 Pølser;Mad;Hotdog, stor;50;Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.;ja;ja;nej;ja;alle;
-Pølser;Mad;Fransk hotdog, alm.;40;Pølse i en sprød, udhulet flute med dressing.;ja;nej;nej;ja;alle;
-Pølser;Mad;Fransk hotdog, stor;50;Pølse i en sprød, udhulet flute med dressing.;ja;nej;nej;ja;alle;
+Pølser;Mad;Fransk hotdog, lille;40;Pølse i en sprød, udhulet flute med dressing.;ja;ja;nej;ja;alle;
+Pølser;Mad;Fransk hotdog, stor;50;Pølse i en sprød, udhulet flute med dressing.;ja;ja;nej;ja;alle;
 Pølser;Mad;Frankfurter;40;;ja;ja;nej;ja;alle;
 Pølser;Mad;Ostepølse;35;;ja;ja;nej;ja;alle;
 Pølser;Mad;Krydderpølse;35;;ja;ja;nej;ja;alle;
@@ -93,7 +95,7 @@ Smørrebrød;Mad;Æggemad med bacon og karry;55;;ja;ja;nej;ja;alle;Hel skive hje
 Smørrebrød;Mad;Hakkebøf med bløde løg og spejlæg;55;;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
 Smørrebrød;Mad;Ostemad Mellem lageret;55;;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
 Smørrebrød;Mad;Tomatmad;55;;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
-Smørrebrød;Mad;Rejemad;90;Med mayo og citron — hel skive;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
+Smørrebrød;Mad;Rejemad;95;Med mayo og citron — hel skive;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
 Smørrebrød;Mad;Tartarmad;95;;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
 Smørrebrød;Mad;Æbleflæsk;75;Kun efter forudbestilling;ja;nej;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
 Håndmadder;Mad;Flæskesteg med surt, håndmad;24;;ja;ja;nej;ja;alle;Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
@@ -159,16 +161,17 @@ Platter;Mad;Brunchplatte til 2 personer;349;Æg og bacon, skyr med müsli, ost o
 Kugleis;Is;1 kugle;35;;ja;ja;nej;ja;alle;
 Kugleis;Is;2 kugler;45;;ja;ja;nej;ja;alle;
 Kugleis;Is;3 kugler;55;;ja;ja;nej;ja;alle;
-Kugleis;Is;Ekstra kugle;10;;ja;ja;nej;ja;alle;
-Kugleis;Is;4 kugler;60;;ja;ja;nej;ja;alle;
+Kugleis;Is;Ekstra kugle;12;;ja;ja;nej;ja;alle;
+Kugleis;Is;4 kugler;65;;ja;ja;nej;ja;alle;
 Kugleis;Is;Strøssel, topping eller guf;8;;ja;ja;nej;ja;alle;
 Kugleis;Is;Softice-top;15;;ja;ja;nej;ja;alle;
 Kugleis;Is;Ishorn med ca. 6 kugler softice;80;;ja;nej;nej;ja;alle;
 Kugleis;Is;Løs vaffel;7;;ja;ja;nej;ja;alle;
-Kugleis;Is;Løs vaffel, glutenfri;10;;ja;ja;nej;ja;alle;
+Kugleis;Is;Løs vaffel, glutenfri;7;;ja;ja;nej;ja;alle;
 Kugleis;Is;Bøtte med topping;20;;ja;ja;nej;ja;alle;
-Kugleis;Is;Isboks, ca. 6 kugler eller softice;80;6 kugler efter eget valg — eller fyldt med softice;ja;ja;nej;ja;alle;
+Kugleis;Is;Isboks, ca. 6 kugler eller softice;90;6 kugler efter eget valg — eller fyldt med softice;ja;ja;nej;ja;alle;
 Kugleis;Is;Mosede Isen;65;;ja;ja;nej;ja;alle;
+Kugleis;Is;Havnens café-is;79;3 kugler, softice-top, guf, flødeskum og syltetøj;ja;ja;nej;ja;alle;
 Sliders;Mad;Slider med roastbeef;40;Lille blød bolle med roastbeef, remoulade og ristede løg.;ja;ja;nej;nej;alle;
 Sliders;Mad;Slider med hønsesalat;40;Lille blød bolle med cremet hønsesalat.;ja;ja;nej;nej;alle;
 Sliders;Mad;Slider med æggesalat;40;Lille blød bolle med cremet æggesalat.;ja;ja;nej;nej;alle;
@@ -187,11 +190,13 @@ Softice og vafler;Is;Belgisk vaffel;;;ja;nej;nej;ja;alle;
 Softice og vafler;Is;Bubblewaffle, 1 kugle;59;Inkl. drys og sovs;ja;ja;nej;ja;alle;
 Softice og vafler;Is;Bubblewaffle, 2 kugler eller softice;67;Inkl. drys og sovs;ja;ja;nej;ja;alle;
 Softice og vafler;Is;Churros med sukker og kanel;45;Lune, sprøde churros vendt i sukker og kanel.;ja;ja;nej;ja;alle;
-Softice og vafler;Is;Bubblewaffle mix;65;Frisk frugt efter dagen, sauce & topping;ja;ja;nej;ja;alle;
+Softice og vafler;Is;Bubblewaffle mix;67;Frisk frugt efter dagen, sauce & topping;ja;ja;nej;ja;alle;
 Softice og vafler;Is;Churros med is og sauce;67;Lune, sprøde churros med is og sauce.;ja;ja;nej;ja;alle;
-Softice og vafler;Is;2 hjemmelavede pandekager med sukker;42;;ja;ja;nej;ja;alle;
+Softice og vafler;Is;2 hjemmelavede pandekager med sukker;45;;ja;ja;nej;ja;alle;
 Softice og vafler;Is;2 hjemmelavede pandekager med is;65;;ja;ja;nej;ja;alle;
 Softice og vafler;Is;Bakke med vaffelknas, softice, sauce og topping;55;;ja;ja;nej;ja;alle;
+Softice og vafler;Is;2 hjemmelavede pandekager med 2 kugler is;77;;ja;ja;nej;ja;alle;
+Softice og vafler;Is;Affogato;65;Espresso med vaniljeis og nødder;ja;ja;nej;ja;alle;
 Reception og pindemad;Mad;Pindemad med skinke og ost;50;På toastbrød eller rugbrød;ja;ja;nej;nej;alle;På toastbrød eller rugbrød
 Reception og pindemad;Mad;Pindemad med hønsesalat;50;På toastbrød eller rugbrød;ja;ja;nej;nej;alle;På toastbrød eller rugbrød
 Reception og pindemad;Mad;Pindemad med æggesalat;50;På toastbrød eller rugbrød;ja;ja;nej;nej;alle;På toastbrød eller rugbrød
@@ -236,7 +241,7 @@ Tilkøb morgenmad;Mad;Frugt;10;;ja;ja;nej;ja;alle;
 Tilkøb morgenmad;Mad;Pandekage;10;;ja;ja;nej;ja;alle;
 Tilkøb morgenmad;Mad;Wienerbrød, en halv;10;;ja;nej;nej;ja;alle;
 Tilkøb morgenmad;Mad;Nutella;10;;ja;ja;nej;ja;alle;
-Tillæg: glutenfri, laktosefri og vegansk;Mad;Glutenfrit brød (tillæg);0;Til smørrebrød og burgere — 10 kr. pr. stk.;ja;ja;nej;ja;alle;Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.
+Tillæg: glutenfri, laktosefri og vegansk;Mad;Glutenfrit brød (tillæg);5;Til smørrebrød og burgere — 10 kr. pr. stk.;ja;ja;nej;ja;alle;Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.
 Tillæg: glutenfri, laktosefri og vegansk;Mad;Glutenfri mad;;;ja;nej;nej;ja;alle;Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.
 Tillæg: glutenfri, laktosefri og vegansk;Mad;Laktosefri (tillæg);10;10 kr. pr. stk.;ja;ja;nej;ja;alle;Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.
 Tillæg: glutenfri, laktosefri og vegansk;Mad;Vegansk (tillæg);10;10 kr. pr. stk.;ja;ja;nej;ja;alle;Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.

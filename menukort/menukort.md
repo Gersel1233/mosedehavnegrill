@@ -1,12 +1,12 @@
 # Menukortet hos Mosede Havnecafe
 
-Hentet direkte ud af databasen **2026-09-24**. Databasen er sandheden —
+Hentet direkte ud af databasen **2026-09-25**. Databasen er sandheden —
 retter ejeren en pris i admin, er filen her forældet samme sekund.
 Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
-- **261 varer** i **23 kategorier** står på kortet
+- **268 varer** i **23 kategorier** står på kortet
 - **1** af dem har ingen pris (og skal ikke have en — se nederst)
-- **219** kan bestilles online, ved lugen og fra bordet
+- **226** kan bestilles online, ved lugen og fra bordet
 
 ## Retter
 
@@ -26,6 +26,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
   <br>Saftig bøf på ristet brød med æggeblomme, kapers, peberrod, rødbeder og rå løg.
 - **Pitabrød** — 65 kr.
   <br>Med kebab, kylling eller tun
+- **Clubsandwich** — 105 kr.
 
 ## Andre retter
 
@@ -72,6 +73,8 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
   <br>Saftig bøf med smeltet ost og sprød bacon, salat, tomat og dressing i ristet burgerbolle.
 - **Dobbelt burger** — 125 kr.
   <br>To saftige bøffer med smeltet ost, salat, tomat og dressing — til den store sult.
+- **Bacon & Cheeseburger** — 95 kr.
+  <br>Saftig bøf med smeltet ost og sprød bacon, salat, tomat og dressing i ristet burgerbolle.
 - **Cheeseburger** — 85 kr.
   <br>Saftig bøf med smeltet ost, sprød salat, tomat, syltede agurker og dressing i ristet burgerbolle.
 - **Ekstra tilbehør** — 10 kr.
@@ -80,9 +83,9 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 *Mad · kan bestilles*
 
-- **Flæskestegssandwich** — 80 kr.
+- **Flæskestegssandwich** — 75 kr.
   <br>Saftig flæskesteg med sprød svær, rødkål og agurkesalat i blødt brød.
-- **Frikadellesandwich** — 80 kr.
+- **Frikadellesandwich** — 75 kr.
   <br>Lun frikadelle i blødt brød med rødkål, agurkesalat og dressing.
 - **Sandwich** — 75 kr.
   <br>Kebab, kylling, tun, frikadelle eller æg
@@ -106,6 +109,10 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
   <br>Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.
 - **Hotdog, stor** — 50 kr.
   <br>Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.
+- **Fransk hotdog, lille** — 40 kr.
+  <br>Pølse i en sprød, udhulet flute med dressing.
+- **Fransk hotdog, stor** — 50 kr.
+  <br>Pølse i en sprød, udhulet flute med dressing.
 - **Frankfurter** — 40 kr.
 - **Ostepølse** — 35 kr.
 - **Krydderpølse** — 35 kr.
@@ -141,7 +148,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Hakkebøf med bløde løg og spejlæg** — 55 kr.
 - **Ostemad Mellem lageret** — 55 kr.
 - **Tomatmad** — 55 kr.
-- **Rejemad** — 90 kr.
+- **Rejemad** — 95 kr.
   <br>Med mayo og citron — hel skive
 - **Tartarmad** — 95 kr.
 
@@ -199,16 +206,18 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **1 kugle** — 35 kr.
 - **2 kugler** — 45 kr.
 - **3 kugler** — 55 kr.
-- **Ekstra kugle** — 10 kr.
-- **4 kugler** — 60 kr.
+- **Ekstra kugle** — 12 kr.
+- **4 kugler** — 65 kr.
 - **Strøssel, topping eller guf** — 8 kr.
 - **Softice-top** — 15 kr.
 - **Løs vaffel** — 7 kr.
-- **Løs vaffel, glutenfri** — 10 kr.
+- **Løs vaffel, glutenfri** — 7 kr.
 - **Bøtte med topping** — 20 kr.
-- **Isboks, ca. 6 kugler eller softice** — 80 kr.
+- **Isboks, ca. 6 kugler eller softice** — 90 kr.
   <br>6 kugler efter eget valg — eller fyldt med softice
 - **Mosede Isen** — 65 kr.
+- **Havnens café-is** — 79 kr.
+  <br>3 kugler, softice-top, guf, flødeskum og syltetøj
 
 ## Sliders
 
@@ -252,13 +261,16 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
   <br>Inkl. drys og sovs
 - **Churros med sukker og kanel** — 45 kr.
   <br>Lune, sprøde churros vendt i sukker og kanel.
-- **Bubblewaffle mix** — 65 kr.
+- **Bubblewaffle mix** — 67 kr.
   <br>Frisk frugt efter dagen, sauce & topping
 - **Churros med is og sauce** — 67 kr.
   <br>Lune, sprøde churros med is og sauce.
-- **2 hjemmelavede pandekager med sukker** — 42 kr.
+- **2 hjemmelavede pandekager med sukker** — 45 kr.
 - **2 hjemmelavede pandekager med is** — 65 kr.
 - **Bakke med vaffelknas, softice, sauce og topping** — 55 kr.
+- **2 hjemmelavede pandekager med 2 kugler is** — 77 kr.
+- **Affogato** — 65 kr.
+  <br>Espresso med vaniljeis og nødder
 
 ## Reception og pindemad
 
@@ -350,7 +362,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 > Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.
 
-- **Glutenfrit brød (tillæg)** — 0 kr.
+- **Glutenfrit brød (tillæg)** — 5 kr.
   <br>Til smørrebrød og burgere — 10 kr. pr. stk.
 - **Laktosefri (tillæg)** — 10 kr.
   <br>10 kr. pr. stk.

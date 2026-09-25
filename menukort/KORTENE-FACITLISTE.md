@@ -1,6 +1,6 @@
 # De syv menukort — facitliste
 
-Skrevet af fra Mikkels færdige kort **2026-09-24** og holdt op mod
+Skrevet af fra Mikkels færdige kort **2026-09-25** og holdt op mod
 databasen post for post med `vaerktoej/sammenlign-kort.py`.
 
 **Kortene er facitlisten. Databasen er systemet. De to skal sige
@@ -381,9 +381,6 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 | Vare | Kortet | Databasen | Kort |
 |---|---:|---:|---|
-| Rejemad | **95,-** | 90,- | 01 MENUKORT FRA GRILLEN |
-| Rejemad | **95,-** | 90,- | 03 SMØRREBRØD |
-| Glutenfrit brød | **5,-** | 0,- | 03 SMØRREBRØD |
 | Flæskesteg med surt | **27,-** | 24,- | 04 HÅNDMADDER |
 | Fiskefilet med remoulade | **27,-** | 24,- | 04 HÅNDMADDER |
 | Frikadelle med surt | **27,-** | 24,- | 04 HÅNDMADDER |
@@ -402,25 +399,9 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 | Æggemad med mayo & løg | **27,-** | 24,- | 04 HÅNDMADDER |
 | Hakkebøf med bløde løg & spejlæg | **27,-** | 24,- | 04 HÅNDMADDER |
 | Ostemad | **27,-** | 24,- | 04 HÅNDMADDER |
-| Glutenfrit brød | **5,-** | 0,- | 04 HÅNDMADDER |
-| 4 kugler | **65,-** | 60,- | 05 IS & SØDT |
-| Ekstra kugle | **12,-** | 10,- | 05 IS & SØDT |
-| Løs vaffel, glutenfri, pr. stk. | **7,-** | 10,- | 05 IS & SØDT |
-| Isboks, ca. 6 kugler eller softice | **90,-** | 80,- | 05 IS & SØDT |
-| Bubblewaffle mix | **67,-** | 65,- | 05 IS & SØDT |
-| 2 hjemmelavede pandekager | **45,-** | 42,- | 05 IS & SØDT |
-| Sandwich · flæskesteg | **75,-** | 80,- | 08+09 BESTILLINGSLISTE — SANDWICH |
-| Sandwich · frikadelle | **75,-** | 80,- | 08+09 BESTILLINGSLISTE — SANDWICH |
-| Clubsandwich | — | findes ikke som "Clubsandwich" | 01 MENUKORT FRA GRILLEN |
-| Bacon & Cheeseburger | — | findes ikke som "Bacon & Cheeseburger" | 02 À LA CARTE, BURGERE & PØLSER |
-| Fransk hotdog, lille | — | findes ikke som "Fransk hotdog, alm." | 02 À LA CARTE, BURGERE & PØLSER |
-| Fransk hotdog, stor | — | findes ikke som "Fransk hotdog, stor" | 02 À LA CARTE, BURGERE & PØLSER |
 | Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater" | 03 SMØRREBRØD |
 | Æggemad med mayo & rejer | — | findes ikke som "Æggemad med mayo og rejer" | 03 SMØRREBRØD |
 | Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater, håndmad" | 04 HÅNDMADDER |
-| Havnens café-is | — | findes ikke som "Havnens café-is" | 05 IS & SØDT |
-| 2 hjemmelavede pandekager med 2 kugler is | — | findes ikke som "2 hjemmelavede pandekager med 2 kugler is" | 05 IS & SØDT |
-| Affogato | — | findes ikke som "Affogato" | 05 IS & SØDT |
 
 ### Varer i databasen, som intet kort viser
 

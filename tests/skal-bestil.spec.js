@@ -1472,3 +1472,53 @@ test.describe('Valg på en vare er sin egen linje', () => {
       'kassen fik ikke tillægget med').toEqual([['Kebab', 65], ['Tun', 70]]);
   });
 });
+
+/* ============================================================
+   ISEN HAR SIN EGEN FARVE  (25/9)
+   ------------------------------------------------------------
+   Kundens ord: isen skal have "en anden farve ... for at
+   inkludere det i det premium".
+
+   ⚠️ OG PRØVEN HOLDER TO RÆKKER OP MOD HINANDEN PÅ DEN SAMME
+   SIDE. Et spørgsmål til is-rækken om dens EGEN farve ville
+   bestå, også hvis maden fik nøjagtig den samme — og det er
+   præcis den fejl, der lå i koden indtil i dag: afdelingen nåede
+   aldrig ud af grupper(), så ALT stod som 'mad'. Tallet kommer
+   altså udefra: fra den anden afdeling.
+   ============================================================ */
+test.describe('Isen skiller sig ud i bestillingen', () => {
+  test('is-rækken har en anden flade end madens — og bærer sin afdeling',
+    async ({ page }) => {
+      await åbn(page);
+
+      const is = page.locator('#bestil .item[data-afd="is"]').first();
+      const mad = page.locator('#bestil .item[data-afd="mad"]').first();
+      await is.waitFor({ state: 'visible' });
+      await mad.waitFor({ state: 'visible' });
+
+      const farve = (l) => l.evaluate((e) => getComputedStyle(e).backgroundColor);
+      const [fIs, fMad] = [await farve(is), await farve(mad)];
+      expect(fIs, 'isen har samme flade som maden: ' + fIs).not.toBe(fMad);
+
+      /* ⚠️ OG TEGNET SKAL BÆRE AFDELINGEN. Reglerne .kat-tegn-is og
+         .kat-tegn-drikke har stået i arket siden 29/8 og fyrede
+         ALDRIG, fordi gruppen ikke kendte sin afdeling. */
+      await expect(is.locator('.kat-tegn'),
+        'is-kategoriens tegn står stadig som madens')
+        .toHaveClass(/kat-tegn-is/);
+    });
+
+  /* Modstykket: en regel, der bare gav HVER række sin egen farve,
+     ville bestå den første. Drikkevarerne og maden er to
+     forskellige afdelinger og skal stadig dele husets flade —
+     kun isen er trukket ud. */
+  test('og drikkevarerne er ikke trukket ud — kun isen', async ({ page }) => {
+    await åbn(page);
+    const mad = page.locator('#bestil .item[data-afd="mad"]').first();
+    const drik = page.locator('#bestil .item[data-afd="drikke"]').first();
+    await drik.waitFor({ state: 'visible' });
+    const farve = (l) => l.evaluate((e) => getComputedStyle(e).backgroundColor);
+    expect(await farve(drik), 'drikkevarerne har fået deres egen flade')
+      .toBe(await farve(mad));
+  });
+});
