@@ -7,6 +7,40 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**DEN GLUTENFRI VAFFEL KOSTER DET SAMME** (25/9, Mikkels afgørelse:
+*"den er samme pris, glutenfri vaffel."*). Kort 05 lovede det ordret;
+databasen tog 3 kroner ekstra på alle seks (1-4 kugler, softice lille
+og stor). Kortet har ret. `supabase/glutenfri-vaffel-samme-pris.sql`
+fjerner tillægget og **lader valget stå** — gæsten skal stadig kunne
+vælge glutenfri, det er dét, kortet lover.
+
+⚠️ **Den skal køres i Supabase.** Indtil da betaler en gæst, der læser
+kortet, 3 kroner for meget.
+
+**⚠️ TRE TING MÅLT PÅ EN LOKAL POSTGRES, FØR FILEN BLEV SKREVET
+FÆRDIG** — alle tre så rigtige ud på skærmen:
+
+1. **`LATERAL` i en UPDATE kan ikke se måltabellen.** Filen fejlede
+   med *"invalid reference to FROM-clause entry for table mv"*. Et
+   skalart underspørgsmål i `set` kan. Uden en lokal kørsel var det
+   gået i Supabase som en fejlbesked midt i en frokost
+2. **`kun_ejeren_saetter_priser`.** Et tillæg på et valg ER en pris,
+   og `roller.sql`s udløser spørger `auth.jwt()` — heller ikke
+   `postgres` i Supabases SQL Editor slipper igennem. Uden
+   ejer-blokken dør hele transaktionen, og der kommer **ikke én
+   rapportlinje** ud: den ligner ikke en fejl, den ligner ingenting.
+   Husets ældste ar, og `kortene-25-9.sql` faldt i det 24/9
+3. **Rapportlinjen skal tælle det, gæsten kan bestille.** `UPDATE 6`,
+   derefter `UPDATE 0` på en anden kørsel, og rapporten svarer
+   `tilbage_med_tillæg = 0 · kan_stadig_vælges = 6`
+
+**OG HVORFOR DEN IKKE BLEV FUNDET FØR:** sætningen stod som en
+PÅSTAND i `vaerktoej/kortene.py` — noget rapporten ikke kunne måle —
+og derfor så ingen den i tre uger. Den er nu seks MÅLTE poster. En
+påstand, der kan måles, hører ikke i en liste over det, ejeren selv
+skal huske at tjekke.
+
+
 **BYG DIN IS — OGSÅ VED BORDET** (25/9, sent). Forsidens isbygger kører nu
 også bag QR-koden: vaffel, kugler, smag pr. kugle, noget mere. Én fil
 (`js/isbygger.js`), to sider — en gæst ved bordet skal ikke møde en anden
