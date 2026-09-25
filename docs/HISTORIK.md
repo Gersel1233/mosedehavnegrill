@@ -7,6 +7,41 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**GÆSTENS VÆRN — FIRE HULLER LUKKET** (26/9, nat, IKKE KØRT I
+PRODUKTIONEN). En gennemgang af koden (læst, ikke kørt) fandt fire huller;
+alle fire er MÅLT på en lokal Postgres bygget af mappens egne filer, før
+rettelsen blev skrevet. Ny fil: `supabase/gaestens-vaern-26-9.sql`, prøve:
+`proev-gaestens-vaern-26-9.sql` — **uden filen 23 af 31 fejlede** (alle
+otte modstykker bestod), **med filen 31 af 31**. Hele SQL-runden bagefter:
+59 filer, 1667 BESTOD, 0 FEJLEDE (før: 58 filer, 1635/0 — hver gammel fil
+har samme tal som før).
+
+1. **`oprettet` var klientens.** Alle bremser tæller på kolonnen, og en
+   konsol kunne sende `"oprettet":"2020-01-01"` — målt: fem bestillinger
+   fra samme nummer, og den sjette gik igennem. Dateret 2099 tæller en
+   række for evigt (40 af dem = "der er travlt" for alle). Nu sætter
+   udløseren `aa_oprettet_er_serverens` databasens now() på de fem
+   gæstetabeller for alt, der kommer gennem API'et. En SQL-fil uden claims
+   beholder sin dato (demoen og tre prøver dater tilbage med vilje)
+2. **"Kun gæsten" betød "kun rollen anon"** i fire værn, mens indsættelsen
+   er åben for authenticated. En bruger, der har oprettet sig selv, slap
+   uden om pris, varsel, kategori, levering uden kvittering og bordet. Nu
+   gælder reglerne alle undtagen AKTIVT personale for forretningen
+   (`mosede_er_gaest` → `is_admin_for`, som kræver `aktiv`)
+3. **Linjens antal blev ikke kontrolleret:** 2 × Softice + Emballage × −9
+   = 0 kr. gik igennem. Nu er hvert antal et helt tal 1–500, og `antal`
+   er summen af linjerne — som `Butik.bestil` altid har bygget den
+4. **En bordordre kunne lyve om dagen** og komme forbi en lukkedag med
+   "i morgen". Nu skal en gæsts bordordre være dateret i dag, dansk tid
+
+To prøver målte en kulisse, siden aldrig sender, og er rettet:
+`proev-gaestens-regler.sql` prøve 18 spillede "personalet" med den nøgne
+rolle authenticated (netop hullet), og `proev-vare-valg.sql` sendte
+`antal` 1 på en linje med to is. `er-vi-klar.sql` har fået tjek 150.
+**Køres gaestens-regler/kanal-vaern/levering-valideret/bord-plads igen,
+skal den nye fil køres bagefter** (målt: kanal-vaern.sql kørt igen gav ❌
+i tjek 150 og et fald i prøve 13).
+
 **ISENS BÅND FJERNET, GREVE-PRISEN ØVERST** (25/9, nat). Mikkels ord med et
 skærmbillede af det ternede bånd med den tegnede is og "Ishuset" i kursiv:
 *"det lige præcis sådan noget her claude lignende der skal væk også"* — og
