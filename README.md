@@ -7705,6 +7705,21 @@ Alle oplysninger står i `js/oplysninger.js` med `godkendt: false`. Så længe d
 flag står, skriver testene en påmindelse ud ved hver kørsel. **Intet herunder er
 gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler det.
 
+**⚠️ RØDT I LUFTEN, MÅLT 25/9: DEN GLUTENFRI VAFFEL KOSTER 3 KR.,
+MEN KORTET LOVER, AT DEN ER GRATIS.** Kort 05 IS & SØDT skriver
+ordret: *"Alle kugler og al softice kan fås i glutenfri vaffel —
+samme pris som almindelig vaffel."* Databasen har `tillaeg: 3` på
+alle seks (1-4 kugler, softice lille og stor). En gæst, der læser
+kortet og vælger glutenfri, får 3 kroner mere på regningen, end
+kortet lovede.
+
+Det er ikke vores at rette: enten er kortet forkert, eller også er
+tillægget. Begge veje er en beslutning om penge og om, hvad der
+allerede er trykt. **Mikkel skal svare.** Indtil da står de seks som
+en uenighed i `vaerktoej/sammenlign-kort.py` (afsnit A), så de ikke
+kan glide ud af syne — påstanden stod indtil 25/9 i afsnit C som
+noget, rapporten ikke kunne måle, og derfor så ingen den.
+
 **⚠️ TO SPØRGSMÅL, DER IKKE ER OPLYSNINGER, MEN BESLUTNINGER**
 (faldt ud af målingerne 5/9). De er ikke kodefejl — de er valg,
 kun ejeren kan træffe:

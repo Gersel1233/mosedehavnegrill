@@ -46,7 +46,7 @@ og derfra:
   → gaestens-regler.sql → kanal-vaern.sql
   → bord-plads.sql → gaester-ved-bordet.sql
   → levering-zone.sql → levering-valideret.sql
-  → kortene-25-9.sql
+  → kortene-25-9.sql → kortenes-huller-25-9.sql
 ```
 
 **⚠️ `vare-valg.sql` er flyttet frem (20/9)** — den stod efter
@@ -114,7 +114,7 @@ tabel, siger god for dens fravær (sket 26/8 og 28/8).
 
 Datafilerne (`kortets-priser*.sql`, `borde-55.sql`, `ejerens-oplysninger.sql`,
 `tillaeg-hensyn.sql`, `levering-og-mindsteantal.sql`, `menukort-raekkefoelge.sql`,
-`kortene-25-9.sql`)
+`kortene-25-9.sql`, `kortenes-huller-25-9.sql`)
 har med vilje INTET tjek: de skriver ejerens tal, og et tjek ville sige ❌ den dag,
 han retter sit eget tal i admin.
 

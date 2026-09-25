@@ -235,6 +235,17 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 | Bakke med vaffelknas, softice, sauce & topping | 55,- |  |
 | Sauce, topping eller guf | 8,- |  |
 
+### GLUTENFRI VAFFEL — SAMME PRIS, SIGER KORTET
+
+| Vare | Pris | Note |
+|---|---:|---|
+| 1 kugle, glutenfri vaffel | 35,- | Kortet: samme pris som almindelig vaffel |
+| 2 kugler, glutenfri vaffel | 45,- | Kortet: samme pris som almindelig vaffel |
+| 3 kugler, glutenfri vaffel | 55,- | Kortet: samme pris som almindelig vaffel |
+| 4 kugler, glutenfri vaffel | 65,- | Kortet: samme pris som almindelig vaffel |
+| Softice lille, glutenfri vaffel | 37,- | Kortet: samme pris som almindelig vaffel |
+| Softice stor, glutenfri vaffel | 47,- | Kortet: samme pris som almindelig vaffel |
+
 ### SØDT
 
 | Vare | Pris | Note |
@@ -417,24 +428,12 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 | Vare | Kortet | Databasen | Kort |
 |---|---:|---:|---|
-| Flæskesteg med surt | **27,-** | 24,- | 04 HÅNDMADDER |
-| Fiskefilet med remoulade | **27,-** | 24,- | 04 HÅNDMADDER |
-| Frikadelle med surt | **27,-** | 24,- | 04 HÅNDMADDER |
-| Leverpostej med surt | **27,-** | 24,- | 04 HÅNDMADDER |
-| Dyrlægens natmad | **27,-** | 24,- | 04 HÅNDMADDER |
-| Kartoffelmad med mayo, løg & bacon | **27,-** | 24,- | 04 HÅNDMADDER |
-| Rullepølse med sky & løg | **27,-** | 24,- | 04 HÅNDMADDER |
-| Roastbeef med remoulade & løg | **27,-** | 24,- | 04 HÅNDMADDER |
-| Skinke med italiensk salat | **27,-** | 24,- | 04 HÅNDMADDER |
-| Skinke med spejlæg | **27,-** | 24,- | 04 HÅNDMADDER |
-| Kylling med bacon & karry | **27,-** | 24,- | 04 HÅNDMADDER |
-| Spegepølse med sky & løg | **27,-** | 24,- | 04 HÅNDMADDER |
-| Spegepølse med remoulade & ristet løg | **27,-** | 24,- | 04 HÅNDMADDER |
-| Hvide sild | **27,-** | 24,- | 04 HÅNDMADDER |
-| Hvide sild med karry | **27,-** | 24,- | 04 HÅNDMADDER |
-| Æggemad med mayo & løg | **27,-** | 24,- | 04 HÅNDMADDER |
-| Hakkebøf med bløde løg & spejlæg | **27,-** | 24,- | 04 HÅNDMADDER |
-| Ostemad | **27,-** | 24,- | 04 HÅNDMADDER |
+| 1 kugle, glutenfri vaffel | **35,-** | 38,- | 05 IS & SØDT |
+| 2 kugler, glutenfri vaffel | **45,-** | 48,- | 05 IS & SØDT |
+| 3 kugler, glutenfri vaffel | **55,-** | 58,- | 05 IS & SØDT |
+| 4 kugler, glutenfri vaffel | **65,-** | 68,- | 05 IS & SØDT |
+| Softice lille, glutenfri vaffel | **37,-** | 40,- | 05 IS & SØDT |
+| Softice stor, glutenfri vaffel | **47,-** | 50,- | 05 IS & SØDT |
 | Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater" | 03 SMØRREBRØD |
 | Æggemad med mayo & rejer | — | findes ikke som "Æggemad med mayo og rejer" | 03 SMØRREBRØD |
 | Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater, håndmad" | 04 HÅNDMADDER |
@@ -486,7 +485,6 @@ før kortene trykkes.
 - **01 MENUKORT FRA GRILLEN** — "Morgenbrød – spørg ved bestilling." — ingen bestillingsliste til morgenbrød
 - **03 SMØRREBRØD** — "Alle varianter 55,- · gælder alle almindelige smørrebrød på listen"
 - **04 HÅNDMADDER** — "Alle varianter 27,- · gælder alle almindelige håndmadder på listen"
-- **05 IS & SØDT** — "Alle kugler og al softice kan fås i glutenfri vaffel — samme pris som almindelig vaffel"
 - **08+09 BESTILLINGSLISTE** — "Vi leverer også gerne mad til arrangementer, selskaber og andre begivenheder" — afhentning OG levering
 - **08+09 BESTILLINGSLISTE** — "I kan leje vores isfryser til selvbetjening eller booke vores isvogn med betjening. Udvalg aftales efter ønske."
 - **10 FLYER** — "Bestillingsliste fås i caféen"

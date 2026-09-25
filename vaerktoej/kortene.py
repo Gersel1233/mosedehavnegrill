@@ -194,6 +194,22 @@ KORT = [
      ("Bakke med vaffelknas, softice, sauce & topping", 55, "", "Bakke med vaffelknas, softice, sauce og topping"),
      ("Sauce, topping eller guf", 8, "", "Sauce, topping eller guf"),
    ]),
+   # ⚠️ KORTETS EGEN SÆTNING, ORDRET: *"Alle kugler og al softice kan
+   #    fås i glutenfri vaffel — SAMME PRIS som almindelig vaffel."*
+   #    Den stod indtil 25/9 kun som en påstand i PAASTANDE, altså
+   #    noget, rapporten ikke kunne måle. Men den KAN måles: den
+   #    glutenfri vaffel er et valg på hver af de seks, og "samme
+   #    pris" betyder tillæg 0. Derfor står de her med kortets egen
+   #    pris og db-navnet "vare|Glutenfri vaffel" — så rapporten
+   #    siger det højt, hvis siden tager mere, end kortet lover.
+   ("GLUTENFRI VAFFEL — SAMME PRIS, SIGER KORTET", [
+     ("1 kugle, glutenfri vaffel", 35, "Kortet: samme pris som almindelig vaffel", "1 kugle|Glutenfri vaffel"),
+     ("2 kugler, glutenfri vaffel", 45, "Kortet: samme pris som almindelig vaffel", "2 kugler|Glutenfri vaffel"),
+     ("3 kugler, glutenfri vaffel", 55, "Kortet: samme pris som almindelig vaffel", "3 kugler|Glutenfri vaffel"),
+     ("4 kugler, glutenfri vaffel", 65, "Kortet: samme pris som almindelig vaffel", "4 kugler|Glutenfri vaffel"),
+     ("Softice lille, glutenfri vaffel", 37, "Kortet: samme pris som almindelig vaffel", "Softice, lille|Glutenfri vaffel"),
+     ("Softice stor, glutenfri vaffel", 47, "Kortet: samme pris som almindelig vaffel", "Softice, stor|Glutenfri vaffel"),
+   ]),
    ("SØDT", [
      ("Sundae med sauce og topping", 45, "", "Sundae med sauce og topping"),
      ("Bubblewaffle, 1 kugle", 59, "Inkl. drys og sovs", "Bubblewaffle, 1 kugle"),
@@ -211,8 +227,19 @@ KORT = [
  ("06 KAFFE, KOLDT & KNAS", "stemplet, rystet og hældt op", [
    # ⚠️ KAFFEN HAR TO STØRRELSER PÅ KORTET (25/9) — en LILLE- og en
    #    STOR-kolonne. Espresso har kun lille (kortet skriver en streg
-   #    i STOR-kolonnen). Databasen kender kun ÉN pris pr. kaffe, så
-   #    hver stor-udgave er en vare, der ikke findes.
+   #    i STOR-kolonnen).
+   #
+   #    STØRRELSEN ER ET VALG PÅ VAREN, ikke en vare mere. Mikkels ord:
+   #    *"det med valg giver god mening, så længe det stemmer og
+   #    passer."* Én kaffe i menuen med Lille/Stor under sig er ét sted
+   #    at rette prisen — to varer ville skride fra hinanden den dag,
+   #    kun den ene blev rettet, og gæsten ville se to priser på den
+   #    samme kaffe.
+   #
+   #    db-navnet skrives derfor "vare|valg". Rapporten regner
+   #    grundpris + tillæg og holder DET tal op mod kortet — så en
+   #    stor Americano til 60 er målt, og ikke en vare, nogen tror
+   #    mangler.
    ("KAFFE — lille", [
      ("Espresso", 35, "Kun lille — kortet skriver en streg i STOR", "Espresso"),
      ("Americano", 40, "", "Americano"),
@@ -227,16 +254,16 @@ KORT = [
      ("Kakao", 40, "", "Kakao"),
    ]),
    ("KAFFE — stor", [
-     ("Americano, stor", 60, "STOR-kolonnen på kortet", None),
-     ("Americano Ice, stor", 65, "STOR-kolonnen på kortet", None),
-     ("Cortado, stor", 65, "STOR-kolonnen på kortet", None),
-     ("Macchiato, stor", 65, "STOR-kolonnen på kortet", None),
-     ("Cappuccino, stor", 65, "STOR-kolonnen på kortet", None),
-     ("Flat White, stor", 65, "STOR-kolonnen på kortet", None),
-     ("Latte, stor", 65, "STOR-kolonnen på kortet", None),
-     ("Latte Ice, stor", 65, "STOR-kolonnen på kortet", None),
-     ("Chai, stor", 65, "STOR-kolonnen på kortet", None),
-     ("Kakao, stor", 65, "STOR-kolonnen på kortet", None),
+     ("Americano, stor", 60, "STOR-kolonnen på kortet", "Americano|Stor"),
+     ("Americano Ice, stor", 65, "STOR-kolonnen på kortet", "Americano Ice|Stor"),
+     ("Cortado, stor", 65, "STOR-kolonnen på kortet", "Cortado|Stor"),
+     ("Macchiato, stor", 65, "STOR-kolonnen på kortet", "Macchiato|Stor"),
+     ("Cappuccino, stor", 65, "STOR-kolonnen på kortet", "Cappuccino|Stor"),
+     ("Flat White, stor", 65, "STOR-kolonnen på kortet", "Flat White|Stor"),
+     ("Latte, stor", 65, "STOR-kolonnen på kortet", "Latte|Stor"),
+     ("Latte Ice, stor", 65, "STOR-kolonnen på kortet", "Latte Ice|Stor"),
+     ("Chai, stor", 65, "STOR-kolonnen på kortet", "Chai|Stor"),
+     ("Kakao, stor", 65, "STOR-kolonnen på kortet", "Kakao|Stor"),
    ]),
    ("VARMT & EKSTRA", [
      ("1 iskugle i kaffen", 20, "Tillæg", "1 iskugle i kaffen"),
@@ -328,11 +355,46 @@ KORT = [
 ]
 
 # Påstande på kortene, der IKKE er varer — de skal efterprøves for sig.
+# ============================================================
+#  AFGJORT AF EJEREN — KORTET ER TRYKT FORKERT
+#  ------------------------------------------------------------
+#  ⚠️ EN UENIGHED, DER BLIVER STÅENDE I RAPPORTEN, BLIVER RETTET
+#  DEN FORKERTE VEJ. De 18 håndmadder stod som "kort 27, db 24"
+#  hver gang rapporten blev kørt — og den næste, der læser den,
+#  retter databasen op til 27, fordi kortet ellers er facit her i
+#  huset. Det ville koste hver eneste gæst 3 kroner for meget.
+#
+#  Mikkels afgørelse 25/9, ordret: *"24 gælder — kortbilledet er
+#  forkert."* Kortet skal rettes ved næste tryk; databasen skal
+#  IKKE.
+#
+#  Formen er (kortnavn, navn på kortet) -> hvad der gælder, og
+#  hvorfor. sammenlign-kort.py flytter dem ud af A og ind i sit
+#  eget afsnit, så de ikke ser uafklarede ud — men de forsvinder
+#  IKKE: står der en dag 26 i databasen, er det en ny uenighed,
+#  og så skal den frem igen.
+# ============================================================
+AFGJORT = {}
+for _navn in [
+    "Flæskesteg med surt", "Fiskefilet med remoulade", "Frikadelle med surt",
+    "Leverpostej med surt", "Dyrlægens natmad",
+    "Kartoffelmad med mayo, løg & bacon", "Rullepølse med sky & løg",
+    "Roastbeef med remoulade & løg", "Skinke med italiensk salat",
+    "Skinke med spejlæg", "Kylling med bacon & karry",
+    "Spegepølse med sky & løg", "Spegepølse med remoulade & ristet løg",
+    "Hvide sild", "Hvide sild med karry", "Æggemad med mayo & løg",
+    "Hakkebøf med bløde løg & spejlæg", "Ostemad",
+]:
+    AFGJORT[("04 HÅNDMADDER", _navn)] = (24, "Mikkel 25/9: \"24 gælder — kortbilledet er forkert\"")
+del _navn
+
 PAASTANDE = [
   ("01 MENUKORT FRA GRILLEN", "\"Morgenbrød – spørg ved bestilling.\" — ingen bestillingsliste til morgenbrød"),
   ("03 SMØRREBRØD", "\"Alle varianter 55,- · gælder alle almindelige smørrebrød på listen\""),
   ("04 HÅNDMADDER", "\"Alle varianter 27,- · gælder alle almindelige håndmadder på listen\""),
-  ("05 IS & SØDT", "\"Alle kugler og al softice kan fås i glutenfri vaffel — samme pris som almindelig vaffel\""),
+  # ("05 IS & SØDT", "glutenfri vaffel, samme pris") er flyttet op i
+  # KORT som seks MÅLTE poster — se noten der. En påstand, der kan
+  # måles, hører ikke i en liste over det, ejeren selv skal bekræfte.
   ("08+09 BESTILLINGSLISTE", "\"Vi leverer også gerne mad til arrangementer, selskaber og andre "
    "begivenheder\" — afhentning OG levering"),
   ("08+09 BESTILLINGSLISTE", "\"I kan leje vores isfryser til selvbetjening eller booke vores isvogn "

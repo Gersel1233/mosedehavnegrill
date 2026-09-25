@@ -33,7 +33,7 @@ sys.dont_write_bytecode = True
 
 ROD = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROD, 'vaerktoej'))
-from kortene import KORT, PAASTANDE            # noqa: E402
+from kortene import KORT, PAASTANDE, AFGJORT   # noqa: E402
 
 KILDE = os.path.join(ROD, 'menukort', 'menukort.json')
 if not os.path.exists(KILDE):
@@ -62,8 +62,52 @@ def pris(v):
     return None if p is None else float(p)
 
 
+def valgTillaeg(v, valgnavn):
+    """Tillægget for ét valg på en vare — eller None, hvis valget
+       ikke findes.
+
+       ⚠️ SAMME REGEL SOM Butik.prisMedValg I js/store.js. Et valg
+       er enten en streng ("Vaffel") eller {navn, tillaeg}; en
+       streng koster ingenting oveni."""
+    for x in (v.get('valg') or []):
+        if isinstance(x, dict):
+            if x.get('navn') == valgnavn:
+                return float(x.get('tillaeg') or 0)
+        elif x == valgnavn:
+            return 0.0
+    return None
+
+
+def slaaOp(db, dbnavn):
+    """Kortets db-navn -> (rækker, pris) — og "vare|valg" regnes ud.
+
+       ⚠️ ET VALG ER IKKE EN VARE, DER MANGLER. Kaffen har en
+       Lille/Stor-vælger, og rapporten ledte efter en vare ved navn
+       "Americano, stor". Den findes ikke og skal ikke findes — men
+       PRISEN findes, som grundpris + tillæg. Uden det her råbte
+       rapporten om ti huller, der var lukket, og en rapport, der
+       råber forkert, er en rapport, ingen læser.
+
+       Svaret er (None, None), når varen eller valget ikke findes."""
+    if dbnavn and '|' in dbnavn:
+        vare, valgnavn = dbnavn.split('|', 1)
+        raekker = db.get(vare)
+        if not raekker:
+            return None, None
+        grund = pris(raekker[0])
+        t = valgTillaeg(raekker[0], valgnavn)
+        if grund is None or t is None:
+            return None, None
+        return raekker, grund + t
+    raekker = db.get(dbnavn)
+    if not raekker:
+        return None, None
+    return raekker, pris(raekker[0])
+
+
 def main():
     paakort, a_fejl, ukendt, ikke_maalt = set(), [], [], []
+    afgjort_liste = []
     # ⚠️ SAMME VARE KAN STÅ PÅ TO KORT. Tartaren står både på
     # grillkortet og på smørrebrødskortet — og hvis de to siger
     # hver sit, opdager ingen det ved at holde ét kort op mod
@@ -94,15 +138,22 @@ def main():
                 paakort.add(dbnavn)
                 if p_kort not in (None, 0):
                     pr_vare.setdefault(dbnavn, []).append((kortnavn, navn, p_kort))
-                raekker = db.get(dbnavn)
+                raekker, p_db = slaaOp(db, dbnavn)
                 if not raekker:
                     ukendt.append((kortnavn, navn, dbnavn))
                     continue
-                p_db = pris(raekker[0])
                 if p_kort is None or p_kort == 0:
                     continue          # "spørg" og "samme pris"
                 if p_db is None or float(p_kort) != p_db:
-                    a_fejl.append((kortnavn, navn, p_kort, p_db, dbnavn))
+                    # Ejeren har afgjort nogle af dem — se AFGJORT i
+                    # kortene.py. De hører ikke i A, for der er intet at
+                    # rette i databasen; men de forsvinder ikke: ændrer
+                    # det afgjorte tal sig, er de tilbage i A af sig selv.
+                    afg = AFGJORT.get((kortnavn, navn))
+                    if afg and p_db is not None and p_db == float(afg[0]):
+                        afgjort_liste.append((kortnavn, navn, p_kort, p_db, afg[1]))
+                    else:
+                        a_fejl.append((kortnavn, navn, p_kort, p_db, dbnavn))
 
     print('SAMMENLIGNING AF DE SYV KORT MOD DATABASEN  ·  %s'
           % datetime.date.today().isoformat())
@@ -124,6 +175,18 @@ def main():
     for kortnavn, navn, dbnavn in ukendt:
         print('   %-34s står IKKE i databasen som "%s"  [%s]'
               % (navn, dbnavn, kortnavn))
+
+    print()
+    print('A0 · AFGJORT AF EJEREN — KORTET ER TRYKT FORKERT')
+    if not afgjort_liste:
+        print('   ingen')
+    else:
+        print('   De står IKKE som uenighed: databasen har ret, og kortet')
+        print('   skal rettes ved næste tryk. Ændrer databasen sig fra det')
+        print('   afgjorte tal, dukker de op i A igen af sig selv.')
+    for kortnavn, navn, p_kort, p_db, hvorfor in afgjort_liste:
+        print('   %-34s kort %-5s  db %-5s   %s'
+              % (navn, '%g' % p_kort, '%g' % p_db, hvorfor))
 
     print()
     print('A2 · KORT, DER SIGER HVER SIT OM DEN SAMME VARE')
