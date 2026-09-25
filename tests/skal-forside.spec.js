@@ -537,12 +537,16 @@ test.describe('Forsidens kobling', () => {
     const data = grunddata();
     data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
     await åbn(page, '/index.html', { data });
-    const s = page.locator('a.smiley-kort');
+    /* ⚠️ KORTET FINDES PÅ SIT LINK, IKKE PÅ KLASSEN (25/9). Greve-
+       prisens kort lige under bærer også `smiley-kort` — det er
+       glassets klasse, så de to kort er ens — og prøven talte 2.
+       Det er stadig ÉT smiley-kort; det er linket, der siger hvilket. */
+    const s = page.locator('a.smiley-kort[href*="findsmiley.dk"]');
     await expect(s).toHaveCount(1);
     await expect(s).toHaveAttribute('href', /findsmiley\.dk\/app\/1480560/);
     const orden = await page.evaluate(() => {
       const fb = document.querySelector('.promo.fb');
-      const sm = document.querySelector('a.smiley-kort');
+      const sm = document.querySelector('a.smiley-kort[href*="findsmiley.dk"]');
       const ny = document.getElementById('nyheder');
       const efter = (a, b) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
       return [efter(fb, sm), efter(sm, ny)];
