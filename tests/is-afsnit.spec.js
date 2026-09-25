@@ -90,8 +90,16 @@ test.describe('Isen på forsiden', () => {
     await expect(knap).toContainText('Se iskortet');
   });
 
+  /* ⚠️ UDEN ISBYGGEREN: isen er en fold mellem de andre. Fiksturet
+     har her ingen vare med kugler og ingen vaffel/bæger-størrelser,
+     så js/isbygger.js har intet at spørge om og står af — og så er
+     det folden, knappen skal åbne. Med byggeren: prøven herunder. */
   test('kan isen bestilles på forsiden, fører knappen til bestillingen — og isen er foldet ud', async ({ page }) => {
-    await åbnForsiden(page, medIs({ bestilbare_kategorier: [15, 16] }));
+    const d = medIs({ bestilbare_kategorier: [15, 16] });
+    d.menu_varer = d.menu_varer.filter((x) => !/kugle/i.test(x.navn));
+    await åbnForsiden(page, d);
+    await expect(page.locator('#bestil .isbyg-blok'),
+      'fiksturet skulle være uden isbygger').toHaveCount(0);
     const knap = page.locator('#isen [data-is-knap]');
     await expect(knap).toHaveAttribute('href', '#bestil');
     await expect(knap).toContainText('Bestil is');
@@ -99,6 +107,21 @@ test.describe('Isen på forsiden', () => {
     await expect(page.locator('#bestil .item h4', { hasText: 'Softice, lille' })).toHaveCount(0);
     await knap.click();
     await expect(page.locator('#bestil .item h4', { hasText: 'Softice, lille' })).toBeVisible();
+  });
+
+  /* ⚠️ MED ISBYGGEREN FINDES DER INGEN FOLD AT ÅBNE (25/9). Isen
+     bestilles i sin egen blok nederst i bestillingen, og knappen
+     hoppede til #bestil — TOPPEN — så gæsten landede ved maden med
+     isen en skærmlængde længere nede. Målt af prøven ovenfor, der
+     faldt, da fiksturets "1 kugle" gjorde byggeren levende. */
+  test('med isbyggeren fører knappen helt ned til isen — ikke til toppen af bestillingen', async ({ page }) => {
+    await åbnForsiden(page, medIs({ bestilbare_kategorier: [15, 16] }));
+    const blok = page.locator('#bestil .isbyg-blok');
+    await expect(blok).toHaveCount(1);
+    await page.locator('#isen [data-is-knap]').click();
+    await expect(blok, 'knappen landede ikke ved isen').toBeInViewport({ ratio: 0.3 });
+    await expect.poll(() => blok.evaluate((b) => Math.round(b.getBoundingClientRect().top)),
+      { message: 'isen står ikke øverst på skærmen efter trykket' }).toBeLessThan(260);
   });
 
   test('fotoene venter på gæsten og siger, hvad de viser', async ({ page }) => {

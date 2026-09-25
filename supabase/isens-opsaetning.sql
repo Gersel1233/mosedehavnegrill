@@ -149,6 +149,9 @@ insert into is_kort values
   ('Softice, lille',                                 'stoerrelse', null, null),
   ('Softice, stor',                                  'stoerrelse', null, null),
   ('Ekstra kugle',                                   'tilbehoer',  1,    null),
+  /* Det gamle navn — chefens-rettelser-25-9.sql omdøber den til
+     "Sauce, topping eller guf" (linjen nedenfor rammer så begge).
+     Står her, så filen virker i begge rækkefølger. */
   ('Strøssel, topping eller guf',                    'tilbehoer',  0,    null),
   ('Softice-top',                                    'tilbehoer',  0,    null),
   ('Sauce, topping eller guf',                       'tilbehoer',  0,    null),
@@ -228,7 +231,10 @@ commit;
 --  står med det, navnet siger, til den flyttes i admin.
 -- ------------------------------------------------------------
 select
-  (select count(distinct k.navn) from is_kort k
+  /* ⚠️ RÆKKER, IKKE NAVNE: efter omdøbningen rammer "Sauce, topping
+     eller guf" to rækker (kugleis og softice), og "Strøssel …"
+     ingen. Tallet er 26 i begge rækkefølger. */
+  (select count(distinct mv.id) from is_kort k
      join public.menu_kategorier mk
        on mk.lokation_id = 'mosede' and mk.afdeling = 'is'
      join public.menu_varer mv
@@ -237,7 +243,8 @@ select
             where lokation_id = 'mosede' and noegle = 'is_opsaetning') ? mv.id::text)
                                                     as varer_fundet_skal_vaere_26,
   (select string_agg(k.navn, ', ') from is_kort k
-    where not exists (
+    where k.navn <> 'Strøssel, topping eller guf'   -- det gamle navn, se ovenfor
+      and not exists (
       select 1 from public.menu_kategorier mk
         join public.menu_varer mv on mv.kategori_id = mk.id
        where mk.lokation_id = 'mosede' and mk.afdeling = 'is'

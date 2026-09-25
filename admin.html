@@ -2587,7 +2587,12 @@
 
            id'et er stadig is-smage-kort: smagene er trin 3 i det
            samme forløb, og prøverne på smagsfeltet måler dér. -->
-      <div class="menu-afsnit luft-top" id="is-afsnit">
+      <!-- ⚠️ I SIN EGEN BOKS, som sortimentets afsnit (menu-afsnit-boks).
+           Båndet klæber under topbjælken, og uden en boks klæbede det
+           til bunden af HELE fanen — oven i "Særlige indstillinger" på
+           y=60. Målt af tests/menukort-admin.spec.js på telefonen. -->
+      <section class="menu-afsnit-boks luft-top">
+      <div class="menu-afsnit" id="is-afsnit">
         <span class="menu-afsnit-navn">🍦 Is &amp; sødt</span>
         <span class="menu-afsnit-note">sådan bestiller gæsten isen — samme forløb på forsiden og ved bordet</span>
       </div>
@@ -2608,6 +2613,7 @@
           </div>
         </div>
       </div>
+      </section>
 
       <div class="menu-afsnit luft-top">
         <span class="menu-afsnit-navn">⚙️ Særlige indstillinger</span>

@@ -1,5 +1,5 @@
 -- ============================================================
---  SLUK DET, KORTENE IKKE VISER — 26. SEPTEMBER 2026
+--  SLUK DET, KORTENE IKKE VISER — 25. SEPTEMBER 2026
 -- ============================================================
 --  Mikkels ord: *"følg menukortene, det er alt — de skal slukkes,
 --  hvis ikke de er på menukortene."*
@@ -8,8 +8,23 @@
 --  `vaerktoej/sammenlign-kort.py` — "varer i databasen, som intet
 --  kort viser" — kørt mod produktionen 25/9 med anon-nøglen, efter
 --  at kortenes-huller-25-9.sql og glutenfri-vaffel-samme-pris.sql
---  var kørt. 30 varer. En liste, der skrives af, er en liste, der
+--  var kørt. 32 varer. En liste, der skrives af, er en liste, der
 --  glemmer én.
+--
+--  ⚠️ 30 BLEV TIL 32 (25/9, før filen var kørt). Flæskestegssandwich
+--  og frikadellesandwich stod ikke på listen, fordi bestillingssedlen
+--  har "Sandwich · flæskesteg" og "Sandwich · frikadelle" — og
+--  vaerktoej/kortene.py pegede de linjer på de selvstændige varer.
+--  Mikkels afgørelse: *"Fjern de selvstændige produkter
+--  flæskestegssandwich, frikadellesandwich og bøfsandwich. Bevar
+--  flæskesteg og frikadelle som varianter af den almindelige
+--  sandwich til 75 kr."* Linjerne peger nu på valget
+--  ("Sandwich|Flæskesteg"), og så kom de to frem i afsnit B af sig
+--  selv. Varianterne lægges på i chefens-rettelser-25-9.sql.
+--
+--  ⚠️ OG DE TO ØL BLIVER. "Flaske eller dåse" (30) og "Gylden Dame /
+--  Lux" (40) er IKKE på listen — chefen bad om, at teksten "Kun take
+--  away" forsvandt, ikke varerne (chefens-rettelser-25-9.sql).
 --
 --  ⚠️ DEN SLUKKER, DEN SLETTER IKKE. `aktiv = false` er det samme
 --  som at fjerne fluebenet "Vis" i admin: varen forsvinder fra
@@ -44,6 +59,8 @@ create temporary table sluk_liste (kategori text, navn text);
 truncate sluk_liste;
 insert into sluk_liste values
   ('Sandwich', 'Bøfsandwich'),
+  ('Sandwich', 'Flæskestegssandwich'),
+  ('Sandwich', 'Frikadellesandwich'),
   ('Smørrebrød', 'Hjemmelavet Hønsesalat'),
   ('Smørrebrød', 'Hjemmelavet Æggesalat'),
   ('Smørrebrød', 'Hjemmelavet Wienersalat'),
@@ -90,7 +107,7 @@ commit;
 --  RAPPORT. Supabases SQL Editor viser kun den SIDSTE sætnings
 --  svar — derfor ét select til sidst.
 --
---  `fundet` skal være 30: hver linje på listen skal ramme en
+--  `fundet` skal være 32: hver linje på listen skal ramme en
 --  vare. Er tallet lavere, har nogen omdøbt en vare siden målingen,
 --  og så står den stadig tændt — navnene i `ikke_fundet` siger
 --  hvilke. `stadig_taendt` SKAL være 0.
@@ -102,7 +119,7 @@ commit;
 --  sætnings svar, så det tal ville ingen nogensinde se. Er
 --  `raekker_slukket` højere end `fundet`, står den samme vare to
 --  gange, og begge er slukket. Det er rigtigt; det skal bare kunne
---  ses. I produktionen var der ingen dubletter blandt de 30.
+--  ses. I produktionen var der ingen dubletter blandt de 30 (målt før de to sandwich kom på).
 -- ------------------------------------------------------------
 select
   (select count(*) from sluk_liste)                        as paa_listen,

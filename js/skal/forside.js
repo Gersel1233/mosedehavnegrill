@@ -875,7 +875,21 @@
      efter. */
   var IS_SLAGS = [/^softice\b(?!-)/i, /kugle/i, /boblevaffel/i, /churros/i];
 
+  /* ⚠️ ISBYGGEREN FØRST. Siden 25/9 bestilles isen i sin egen blok
+     nederst i bestillingen (js/isbygger.js) — og så findes der ingen
+     is-fold at åbne. Knappen "Bestil is" hoppede til #bestil, altså
+     TOPPEN af bestillingen, og gæsten stod ved smørrebrødet med isen
+     en hel skærmlængde længere nede. Målt af tests/is-afsnit.spec.js,
+     da fiksturet fik en dessert med kugler. Findes blokken, er det
+     dér, knappen fører hen; ellers åbnes folden som før. */
   function aabnIsen(ids) {
+    var blok = document.querySelector('#bestil .isbyg-blok');
+    if (blok) {
+      var roligt = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      blok.scrollIntoView({ behavior: roligt ? 'auto' : 'smooth', block: 'start' });
+      return;
+    }
     ids.some(function (id) {
       var m = document.querySelector('#bestil [data-kat-valgt="' + id + '"]');
       var raekke = m && m.parentNode;
@@ -981,6 +995,9 @@
       }
       var liste2 = (knap.getAttribute('data-is-kat') || '').split(',')
         .filter(Boolean).map(Number);
+      /* Med isbyggeren ruller aabnIsen selv — et hop til #bestil
+         først ville være et ryk op og så et glid ned. */
+      if (best.querySelector('.isbyg-blok')) e.preventDefault();
       setTimeout(function () { aabnIsen(liste2); }, 0);
     });
   }

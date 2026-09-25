@@ -190,7 +190,9 @@ KORT = [
      ("4 kugler", 65, "", "4 kugler"),
      ("Havnens café-is", 79, "3 kugler, softice-top, guf, flødeskum og syltetøj", "Havnens café-is"),
      ("Ekstra kugle", 12, "", "Ekstra kugle"),
-     ("Sauce, topping eller guf", 8, "", "Strøssel, topping eller guf"),
+     # Chefens ord: "Fjern, Strøssel, skriv Sauce". Databasens række
+     # hed "Strøssel, …" indtil supabase/chefens-rettelser-25-9.sql.
+     ("Sauce, topping eller guf", 8, "", "Sauce, topping eller guf"),
      ("Softice-top", 15, "", "Softice-top"),
      ("Løs vaffel, pr. stk.", 7, "", "Løs vaffel"),
      ("Løs vaffel, glutenfri, pr. stk.", 7, "", "Løs vaffel, glutenfri"),
@@ -356,9 +358,16 @@ KORT = [
 
  ("08+09 BESTILLINGSLISTE — SANDWICH", "udfyld og aflever ved lugen — alle sandwich 75,-", [
    ("SANDWICH", [(n, 75, "", db) for n, db in [
-     ("Sandwich · kebab", "Sandwich"),
-     ("Sandwich · flæskesteg", "Flæskestegssandwich"),
-     ("Sandwich · frikadelle", "Frikadellesandwich"),
+     # ⚠️ FYLDET ER ET VALG PÅ DEN ALMINDELIGE SANDWICH, IKKE EN VARE.
+     # Mikkels afgørelse 25/9: "Fjern de selvstændige produkter
+     # flæskestegssandwich, frikadellesandwich og bøfsandwich. Bevar
+     # flæskesteg og frikadelle som varianter af den almindelige
+     # sandwich til 75 kr." Pegede linjerne stadig på de selvstændige
+     # varer, ville rapporten kalde dem "på et kort" og aldrig foreslå
+     # at slukke dem.
+     ("Sandwich · kebab", "Sandwich|Kebab"),
+     ("Sandwich · flæskesteg", "Sandwich|Flæskesteg"),
+     ("Sandwich · frikadelle", "Sandwich|Frikadelle"),
    ]]),
    ("MERE FRA KØKKENET", [
      ("Hjemmelavet lun delle", 25, "", "Lun delle eller steg"),
