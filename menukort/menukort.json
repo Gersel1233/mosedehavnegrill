@@ -1391,21 +1391,6 @@
       "valg": null
     },
     {
-      "id": 49,
-      "kategori_id": 13,
-      "navn": "Smørrebrød",
-      "beskrivelse": null,
-      "pris": 55.0,
-      "fremhaevet": true,
-      "udsolgt": false,
-      "sortering": 2,
-      "aktiv": false,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null,
-      "valg": null
-    },
-    {
       "id": 310,
       "kategori_id": 13,
       "navn": "Fiskefilet med remoulade",
@@ -1415,6 +1400,21 @@
       "udsolgt": false,
       "sortering": 2,
       "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 49,
+      "kategori_id": 13,
+      "navn": "Smørrebrød",
+      "beskrivelse": null,
+      "pris": 55.0,
+      "fremhaevet": true,
+      "udsolgt": false,
+      "sortering": 2,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
       "billede": null,
@@ -1805,6 +1805,36 @@
       "udsolgt": false,
       "sortering": 32,
       "aktiv": false,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 378,
+      "kategori_id": 13,
+      "navn": "Dagens hjemmelavede pålægssalater",
+      "beskrivelse": "Spørg ved bestilling",
+      "pris": 55.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 33,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 379,
+      "kategori_id": 13,
+      "navn": "Æggemad med mayo og rejer",
+      "beskrivelse": null,
+      "pris": 55.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 34,
+      "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
       "billede": null,
@@ -2348,21 +2378,6 @@
       ]
     },
     {
-      "id": 82,
-      "kategori_id": 15,
-      "navn": "Ekstra kugle",
-      "beskrivelse": null,
-      "pris": 12.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 4,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null,
-      "valg": null
-    },
-    {
       "id": 234,
       "kategori_id": 15,
       "navn": "4 kugler",
@@ -2380,6 +2395,21 @@
         "Bæger",
         "Glutenfri vaffel"
       ]
+    },
+    {
+      "id": 82,
+      "kategori_id": 15,
+      "navn": "Ekstra kugle",
+      "beskrivelse": null,
+      "pris": 12.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 4,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 87,
@@ -2427,9 +2457,9 @@
       "valg": null
     },
     {
-      "id": 88,
+      "id": 350,
       "kategori_id": 15,
-      "navn": "Løs vaffel",
+      "navn": "Løs vaffel, glutenfri",
       "beskrivelse": null,
       "pris": 7.0,
       "fremhaevet": false,
@@ -2442,9 +2472,9 @@
       "valg": null
     },
     {
-      "id": 350,
+      "id": 88,
       "kategori_id": 15,
-      "navn": "Løs vaffel, glutenfri",
+      "navn": "Løs vaffel",
       "beskrivelse": null,
       "pris": 7.0,
       "fremhaevet": false,
@@ -3452,7 +3482,10 @@
       "lokation_id": "mosede",
       "antal_tilbage": null,
       "billede": null,
-      "valg": null
+      "valg": [
+        "Smoothie",
+        "Milkshake"
+      ]
     },
     {
       "id": 134,
@@ -3755,21 +3788,6 @@
       "valg": null
     },
     {
-      "id": 372,
-      "kategori_id": 21,
-      "navn": "Chips, 1 pose",
-      "beskrivelse": null,
-      "pris": 15.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 5,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null,
-      "valg": null
-    },
-    {
       "id": 147,
       "kategori_id": 21,
       "navn": "Peanuts, 2 poser",
@@ -3779,6 +3797,21 @@
       "udsolgt": false,
       "sortering": 5,
       "aktiv": false,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 372,
+      "kategori_id": 21,
+      "navn": "Chips, 1 pose",
+      "beskrivelse": null,
+      "pris": 15.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 5,
+      "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
       "billede": null,
@@ -4715,21 +4748,6 @@
       "valg": null
     },
     {
-      "id": 244,
-      "kategori_id": 32,
-      "navn": "Glutenfri mad",
-      "beskrivelse": null,
-      "pris": null,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 1,
-      "aktiv": false,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null,
-      "valg": null
-    },
-    {
       "id": 243,
       "kategori_id": 32,
       "navn": "Glutenfrit brød (tillæg)",
@@ -4739,6 +4757,21 @@
       "udsolgt": false,
       "sortering": 1,
       "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 244,
+      "kategori_id": 32,
+      "navn": "Glutenfri mad",
+      "beskrivelse": null,
+      "pris": null,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 1,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
       "billede": null,
@@ -5143,6 +5176,21 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 124,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 380,
+      "kategori_id": 39,
+      "navn": "Dagens hjemmelavede pålægssalater, håndmad",
+      "beskrivelse": "Spørg ved bestilling",
+      "pris": 24.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 127,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,

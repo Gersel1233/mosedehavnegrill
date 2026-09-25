@@ -4,9 +4,9 @@ Hentet direkte ud af databasen **2026-09-25**. Databasen er sandheden —
 retter ejeren en pris i admin, er filen her forældet samme sekund.
 Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
-- **268 varer** i **23 kategorier** står på kortet
+- **271 varer** i **23 kategorier** står på kortet
 - **1** af dem har ingen pris (og skal ikke have en — se nederst)
-- **226** kan bestilles online, ved lugen og fra bordet
+- **229** kan bestilles online, ved lugen og fra bordet
 
 ## Retter
 
@@ -151,6 +151,9 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Rejemad** — 95 kr.
   <br>Med mayo og citron — hel skive
 - **Tartarmad** — 95 kr.
+- **Dagens hjemmelavede pålægssalater** — 55 kr.
+  <br>Spørg ved bestilling
+- **Æggemad med mayo og rejer** — 55 kr.
 
 ## Håndmadder
 
@@ -182,6 +185,8 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Æggemad med bacon og karry, håndmad** — 24 kr.
 - **Hakkebøf med bløde løg og spejlæg, håndmad** — 24 kr.
 - **Ostemad, mellem lageret  håndmad** — 24 kr.
+- **Dagens hjemmelavede pålægssalater, håndmad** — 24 kr.
+  <br>Spørg ved bestilling
 
 ## Tapasfad
 

@@ -284,8 +284,12 @@ KORT = [
    ("KOLDE DRIKKE", [
      ("Sodavand, juice, iste eller cacao — lille", 30, "", "Sodavand, juice, iste eller kakao – lille"),
      ("Sodavand, juice, iste eller cacao — stor", 40, "", "Sodavand, juice, iste eller kakao – stor"),
-     ("Dagens smoothie", 59, "", "Smoothie eller milkshake"),
-     ("Milkshake", 59, "Valgfri smag, mix 2 kugler", None),
+     # ⚠️ ÉN VARE, TO VALG (25/9, supabase/kortenes-huller-25-9.sql).
+     #    Kortet har to linjer til 59; databasen har "Smoothie eller
+     #    milkshake" med valget Smoothie/Milkshake, så bonen siger,
+     #    hvad køkkenet skal lave. Hver linje peger på sit eget valg.
+     ("Dagens smoothie", 59, "", "Smoothie eller milkshake|Smoothie"),
+     ("Milkshake", 59, "Valgfri smag, mix 2 kugler", "Smoothie eller milkshake|Milkshake"),
      ("Slush Ice, lille", 25, "", "Slush Ice, lille"),
      ("Slush Ice, stor", 35, "", "Slush Ice, stor"),
      ("Capri-Sun", 20, "", "Capri Sun"),
@@ -384,6 +388,10 @@ for _navn in [
     "Spegepølse med sky & løg", "Spegepølse med remoulade & ristet løg",
     "Hvide sild", "Hvide sild med karry", "Æggemad med mayo & løg",
     "Hakkebøf med bløde løg & spejlæg", "Ostemad",
+    # Kom til 25/9 med supabase/kortenes-huller-25-9.sql. Samme kort,
+    # samme afgørelse — en håndmad til 27 ville være den eneste på
+    # siden med en anden pris end resten.
+    "Dagens hjemmelavede pålægssalater",
 ]:
     AFGJORT[("04 HÅNDMADDER", _navn)] = (24, "Mikkel 25/9: \"24 gælder — kortbilledet er forkert\"")
 del _navn

@@ -424,14 +424,6 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 ## Hvad kortene og databasen er uenige om
 
-### Priser, der ikke passer
-
-| Vare | Kortet | Databasen | Kort |
-|---|---:|---:|---|
-| Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater" | 03 SMØRREBRØD |
-| Æggemad med mayo & rejer | — | findes ikke som "Æggemad med mayo og rejer" | 03 SMØRREBRØD |
-| Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater, håndmad" | 04 HÅNDMADDER |
-
 ### Varer i databasen, som intet kort viser
 
 De kan bestilles på hjemmesiden, ved lugen og fra bordet, men

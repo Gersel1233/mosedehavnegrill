@@ -98,6 +98,8 @@ Smørrebrød;Mad;Tomatmad;55;;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød me
 Smørrebrød;Mad;Rejemad;95;Med mayo og citron — hel skive;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
 Smørrebrød;Mad;Tartarmad;95;;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
 Smørrebrød;Mad;Æbleflæsk;75;Kun efter forudbestilling;ja;nej;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
+Smørrebrød;Mad;Dagens hjemmelavede pålægssalater;55;Spørg ved bestilling;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
+Smørrebrød;Mad;Æggemad med mayo og rejer;55;;ja;ja;nej;ja;alle;Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.
 Håndmadder;Mad;Flæskesteg med surt, håndmad;24;;ja;ja;nej;ja;alle;Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
 Håndmadder;Mad;Fiskefilet med remoulade, håndmad;24;;ja;ja;nej;ja;alle;Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
 Håndmadder;Mad;Fiskefilet med rejer og mayo, håndmad;24;;ja;ja;nej;ja;alle;Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
@@ -122,6 +124,7 @@ Håndmadder;Mad;Æggemad med mayo og løg, håndmad;24;;ja;ja;nej;ja;alle;Halv s
 Håndmadder;Mad;Æggemad med bacon og karry, håndmad;24;;ja;ja;nej;ja;alle;Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
 Håndmadder;Mad;Hakkebøf med bløde løg og spejlæg, håndmad;24;;ja;ja;nej;ja;alle;Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
 Håndmadder;Mad;Ostemad, mellem lageret  håndmad;24;;ja;ja;nej;ja;alle;Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
+Håndmadder;Mad;Dagens hjemmelavede pålægssalater, håndmad;24;Spørg ved bestilling;ja;ja;nej;ja;alle;Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
 Vælg fyld til smørrebrødet;Mad;Flæskesteg med surt;;;nej;ja;nej;ja;alle;
 Vælg fyld til smørrebrødet;Mad;Fiskefilet med remoulade;;;nej;ja;nej;ja;alle;
 Vælg fyld til smørrebrødet;Mad;Fiskefilet med rejer og mayo;;;nej;ja;nej;ja;alle;

@@ -78,6 +78,19 @@ def valgTillaeg(v, valgnavn):
     return None
 
 
+def vareNavn(dbnavn):
+    """Varen, et db-navn peger på — uden valget.
+
+       ⚠️ "vare|valg" ER VAREN. Rapporten lagde hele strengen i
+       `paakort`, og så var "Smoothie eller milkshake" ikke "på et
+       kort", selv om kortet viser den to gange (som Smoothie og som
+       Milkshake). Den dukkede op i B som en vare, intet kort viser.
+       Kaffen slap kun, fordi hver kaffe OGSÅ står på kortet i sin
+       lille udgave, under sit bare navn. Målt 26/9: B gik fra 30 til
+       31, da smoothien blev det første valg uden en bar linje."""
+    return dbnavn.split('|', 1)[0] if dbnavn else dbnavn
+
+
 def slaaOp(db, dbnavn):
     """Kortets db-navn -> (rækker, pris) — og "vare|valg" regnes ud.
 
@@ -129,13 +142,13 @@ def main():
             for _, poster in afsnit:
                 for _navn, _p, _note, dbnavn in poster:
                     if dbnavn and not dbnavn.startswith('SAMLELINJE'):
-                        paakort.add(dbnavn)
+                        paakort.add(vareNavn(dbnavn))
             continue
         for _, poster in afsnit:
             for navn, p_kort, _note, dbnavn in poster:
                 if not dbnavn or dbnavn.startswith('SAMLELINJE'):
                     continue
-                paakort.add(dbnavn)
+                paakort.add(vareNavn(dbnavn))
                 if p_kort not in (None, 0):
                     pr_vare.setdefault(dbnavn, []).append((kortnavn, navn, p_kort))
                 raekker, p_db = slaaOp(db, dbnavn)
