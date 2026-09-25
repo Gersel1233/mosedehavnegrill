@@ -2306,10 +2306,7 @@
       "valg": [
         "Vaffel",
         "Bæger",
-        {
-          "navn": "Glutenfri vaffel",
-          "tillaeg": 3
-        }
+        "Glutenfri vaffel"
       ]
     },
     {
@@ -2328,10 +2325,7 @@
       "valg": [
         "Vaffel",
         "Bæger",
-        {
-          "navn": "Glutenfri vaffel",
-          "tillaeg": 3
-        }
+        "Glutenfri vaffel"
       ]
     },
     {
@@ -2350,11 +2344,23 @@
       "valg": [
         "Vaffel",
         "Bæger",
-        {
-          "navn": "Glutenfri vaffel",
-          "tillaeg": 3
-        }
+        "Glutenfri vaffel"
       ]
+    },
+    {
+      "id": 82,
+      "kategori_id": 15,
+      "navn": "Ekstra kugle",
+      "beskrivelse": null,
+      "pris": 12.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 4,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 234,
@@ -2372,26 +2378,8 @@
       "valg": [
         "Vaffel",
         "Bæger",
-        {
-          "navn": "Glutenfri vaffel",
-          "tillaeg": 3
-        }
+        "Glutenfri vaffel"
       ]
-    },
-    {
-      "id": 82,
-      "kategori_id": 15,
-      "navn": "Ekstra kugle",
-      "beskrivelse": null,
-      "pris": 12.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 4,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null,
-      "valg": null
     },
     {
       "id": 87,
@@ -2544,10 +2532,7 @@
       "valg": [
         "Vaffel",
         "Bæger",
-        {
-          "navn": "Glutenfri vaffel",
-          "tillaeg": 3
-        }
+        "Glutenfri vaffel"
       ]
     },
     {
@@ -2566,10 +2551,7 @@
       "valg": [
         "Vaffel",
         "Bæger",
-        {
-          "navn": "Glutenfri vaffel",
-          "tillaeg": 3
-        }
+        "Glutenfri vaffel"
       ]
     },
     {
@@ -2648,11 +2630,11 @@
       "valg": null
     },
     {
-      "id": 352,
+      "id": 94,
       "kategori_id": 16,
-      "navn": "Bubblewaffle mix",
-      "beskrivelse": "Frisk frugt efter dagen, sauce & topping",
-      "pris": 67.0,
+      "navn": "Churros med sukker og kanel",
+      "beskrivelse": "Lune, sprøde churros vendt i sukker og kanel.",
+      "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 8,
@@ -2663,11 +2645,11 @@
       "valg": null
     },
     {
-      "id": 94,
+      "id": 352,
       "kategori_id": 16,
-      "navn": "Churros med sukker og kanel",
-      "beskrivelse": "Lune, sprøde churros vendt i sukker og kanel.",
-      "pris": 45.0,
+      "navn": "Bubblewaffle mix",
+      "beskrivelse": "Frisk frugt efter dagen, sauce & topping",
+      "pris": 67.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 8,

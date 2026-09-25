@@ -428,12 +428,6 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 | Vare | Kortet | Databasen | Kort |
 |---|---:|---:|---|
-| 1 kugle, glutenfri vaffel | **35,-** | 38,- | 05 IS & SØDT |
-| 2 kugler, glutenfri vaffel | **45,-** | 48,- | 05 IS & SØDT |
-| 3 kugler, glutenfri vaffel | **55,-** | 58,- | 05 IS & SØDT |
-| 4 kugler, glutenfri vaffel | **65,-** | 68,- | 05 IS & SØDT |
-| Softice lille, glutenfri vaffel | **37,-** | 40,- | 05 IS & SØDT |
-| Softice stor, glutenfri vaffel | **47,-** | 50,- | 05 IS & SØDT |
 | Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater" | 03 SMØRREBRØD |
 | Æggemad med mayo & rejer | — | findes ikke som "Æggemad med mayo og rejer" | 03 SMØRREBRØD |
 | Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater, håndmad" | 04 HÅNDMADDER |
