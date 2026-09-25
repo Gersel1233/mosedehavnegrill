@@ -406,7 +406,13 @@
        ejerens eget kort også tre. */
     var visAfsnit = !!afsnitliste && afsnitliste.length > 1;
 
-    function tegnKategori(g) {
+    /* ⚠️ ÉN RÆKKEBYGGER, TO STEDER AT LÆGGE DEN  (25/9).
+       Kortbogen skal vise de samme rækker under kortet, som
+       listen nedenfor viser. En kopi af den her funktion ville
+       være to steder at rette den dag, en pris eller et
+       udsolgt-mærke skal se anderledes ud — husets ældste
+       regel. Derfor kun en ny MÅLBOKS og ikke en ny tegner. */
+    function tegnKategori(g, maal) {
       /* ⚠️ DE UDSOLGTE STÅR PÅ KORTET NU  (2/9, kundens ja).
 
          Her stod det modsatte, og grunden var god: *"et kort, der
@@ -535,24 +541,44 @@
         liste.appendChild(linje);
       });
       kort.appendChild(liste);
-      boks.appendChild(kort);
+      (maal || boks).appendChild(kort);
+      return kort;
     }
+
+    /* ⚠️ EN KATEGORI TEGNES ÉN GANG — enten under sit trykte kort
+       eller i listen nedenfor, aldrig begge steder. To lister over
+       det samme sortiment er præcis den fejl, huset er fuldt af ar
+       efter (fyldvælgeren 30/8, de 24 håndmadder 1/9). Tapasfadet,
+       platterne og tilkøbene står ikke på et trykt kort og bliver
+       derfor stående, hvor de altid har stået. */
+    function harKort(g) {
+      return !!(window.MosedeKortbog
+        && window.MosedeKortbog.kortFor(g.kategori.navn));
+    }
+    var restGrupper = grupper.filter(function (g) { return !harKort(g); });
 
     if (visAfsnit) {
       afsnitliste.forEach(function (a) {
+        var egne = a.grupper.filter(function (g) { return !harKort(g); });
+        /* En overskrift over ingenting er støj: har hele afdelingen
+           fået sit eget kort, skal dens navn ikke stå tilbage. */
+        if (!egne.length) return;
         var h = lav('h2', 'mk-afsnit', a.navn);
         h.id = 'afsnit-' + a.afdeling;
         boks.appendChild(h);
-        a.grupper.forEach(tegnKategori);
+        egne.forEach(function (g) { tegnKategori(g); });
       });
     } else {
-      grupper.forEach(tegnKategori);
+      restGrupper.forEach(function (g) { tegnKategori(g); });
     }
+
+    /* Og så bogen: kortene øverst, med hver sin liste under. */
+    byggKortbog(grupper, tegnKategori);
 
     /* ⚠️ BÅNDET LÆSER SKÆRMEN, IKKE LISTEN. Derfor får det den
        samme rækkefølge som kortene af sig selv — og en chip kan
        ikke komme til at pege på et kort, der ikke blev tegnet. */
-    visHop(grupper);
+    visHop(grupper, restGrupper);
 
     hopTilHash();
   }
@@ -587,6 +613,55 @@
      hop midt i, at nogen læser, ville rykke siden væk under
      fingeren — derfor kun én gang pr. sidevisning.
      ============================================================ */
+  /* ============================================================
+     KORTBOGEN — BILLEDET ØVERST, DEN LEVENDE LISTE UNDER  (25/9)
+     ------------------------------------------------------------
+     js/skal/kortbog.js ejer billederne, bladringen og fingeren.
+     Herfra kommer KUN listen: når bogen siger, hvilket kort der er
+     fremme, tegnes netop de kategoriers rækker — med den SAMME
+     tegner som listen nedenfor.
+
+     ⚠️ BYGGES ÉN GANG. visSortiment kaldes igen, hver gang data
+     kommer ind på ny; byggede bogen sig selv forfra hver gang,
+     ville gæsten blive kastet tilbage til kort 1 midt i at bladre.
+     ============================================================ */
+  var bogen = null;
+
+  function byggKortbog(grupper, tegner) {
+    var rod = $('kortbog');
+    var afsnit = $('mk-kortene-afsnit');
+    var liste = $('kortbog-liste');
+    if (!rod || !liste || !window.MosedeKortbog) return;
+
+    function tegnListe(kort) {
+      tøm(liste);
+      if (!kort) return;
+      var egne = grupper.filter(function (g) {
+        var k = window.MosedeKortbog.kortFor(g.kategori.navn);
+        return k && k.fil === kort.fil;
+      });
+      /* ⚠️ INGEN TOM KASSE. Har ejeren slukket hele kategorien i
+         admin, står kortet der stadig — det er et foto af noget,
+         der hænger i caféen — men listen siger hvorfor der ikke er
+         noget at trykke på, i stedet for at være et hul. */
+      if (!egne.length) {
+        liste.appendChild(lav('p', 'fine',
+          'De her retter kan ikke bestilles online lige nu. '
+          + 'Ring til os på 28 87 13 43, så tager vi imod.'));
+        return;
+      }
+      egne.forEach(function (g) { tegner(g, liste); });
+    }
+
+    if (!bogen) {
+      bogen = window.MosedeKortbog.byg(rod, function (kort) { tegnListe(kort); });
+      if (!bogen) return;
+      if (afsnit) afsnit.hidden = false;
+    } else {
+      tegnListe(window.MosedeKortbog.KORTENE[bogen.nu()]);
+    }
+  }
+
   var hoppet = false;
 
   function hopTilHash() {
@@ -614,27 +689,51 @@
      kortet bliver stående med sine rækker streget over. Men en
      kategori uden ÉN eneste vare tegnes stadig ikke, og båndet
      skal blive ved med at læse skærmen og ikke databasen. */
-  function visHop(grupper) {
+  /* ⚠️ BÅNDET SKAL BLIVE VED AT DÆKKE HELE KORTET  (25/9). Da
+     smørrebrødet, isen og drikkevarerne flyttede op i kortbogen,
+     forsvandt de ud af #mk-kat — og et bånd, der kun læser den
+     kasse, ville tavst tabe halvdelen af sortimentet. En gæst, der
+     leder efter "Smørrebrød", skal finde den chip, hvad enten
+     kategorien står under et kort eller i listen nedenfor.
+
+     Derfor to slags chips: dem med et trykt kort bladrer bogen
+     derhen, resten ruller ned til deres panel. */
+  function visHop(alle, rest) {
     var bånd = $('mk-hop');
     if (!bånd) return;
     tøm(bånd);
-
-    var kort = Array.prototype.slice.call(document.querySelectorAll('#mk-kat .panel'));
-    if (kort.length < 2) return skjul(bånd);
+    if (!alle || alle.length < 2) return skjul(bånd);
+    bånd.style.display = '';
 
     var chips = {};
-    kort.forEach(function (k) {
-      var g = grupper.filter(function (x) { return 'kat-' + x.kategori.id === k.id; })[0];
-      if (!g) return;
+    alle.forEach(function (g) {
+      var bogKort = window.MosedeKortbog
+        ? window.MosedeKortbog.kortFor(g.kategori.navn) : null;
+      var panel = document.getElementById('kat-' + g.kategori.id);
+      /* Hverken et kort eller et panel: kategorien blev ikke tegnet
+         (alt i den er dagens ret). Så skal chippen heller ikke stå
+         der og pege på ingenting. */
+      if (!bogKort && !panel) return;
+
       var chip = lav('button', null, emojiFor(g.kategori) + '  ' + g.kategori.navn);
       chip.type = 'button';
       chip.setAttribute('data-hop', g.kategori.navn);
+      if (bogKort) chip.setAttribute('data-kort', bogKort.fil);
       chip.addEventListener('click', function () {
-        k.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (bogKort && bogen) {
+          var nr = window.MosedeKortbog.KORTENE.indexOf(bogKort);
+          if (nr >= 0) bogen.til(nr);
+          var afsnit = $('mk-kortene-afsnit');
+          if (afsnit) afsnit.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+        if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
-      chips[k.id] = chip;
+      if (panel) chips[panel.id] = chip;
       bånd.appendChild(chip);
     });
+
+    var kort = Array.prototype.slice.call(document.querySelectorAll('#mk-kat .panel'));
 
     /* Den kategori, man kigger på, markerer sig selv — og ruller
        sig selv frem i båndet. Ellers kan man stå i "Øl" og se en
