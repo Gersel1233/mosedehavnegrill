@@ -30,6 +30,35 @@ async function taelPlay(page, svar = 'lykkes') {
   }, svar);
 }
 
+/* ============================================================
+   KAN BROWSEREN OVERHOVEDET AFSPILLE FILMEN?  (25/9)
+   ------------------------------------------------------------
+   Heroens film er H.264 i en .mp4. En Chromium UDEN de
+   proprietære codecs kan ikke spille den, og så sættes
+   `film-aabner` aldrig: tolv prøver her falder på en side, der
+   ikke fejler. Gæstens Safari og Chrome afspiller den fint.
+
+   ⚠️ MÅLT, IKKE ANTAGET — og målt hver gang. Filen her sagde til
+   og med 25/9 "Chromium 151 svarer probably"; det var én maskine
+   én dag. Den 25/9 svarede sky-containerens browser "" på
+   nøjagtig samme spørgsmål, og en hel runde så rød ud uden at
+   noget var i stykker. Derfor spørger prøven selv, i stedet for
+   at nogen skriver svaret ned.
+
+   ⚠️ OG DEN SPRINGER KUN DE PRØVER OVER, DER SKAL SE FILMEN
+   SPILLE. De, der måler markup, format og de stubbede grene,
+   kører som før — dem kan en browser uden codec godt svare på.
+   ============================================================ */
+let kanFilm = null;
+async function filmKanSpilles(browser) {
+  if (kanFilm !== null) return kanFilm;
+  const side = await browser.newPage();
+  kanFilm = await side.evaluate(() => !!document.createElement('video')
+    .canPlayType('video/mp4; codecs="avc1.42E01E"'));
+  await side.close();
+  return kanFilm;
+}
+
 const aabner = (page) => page.evaluate(() => document.documentElement.classList.contains('film-aabner'));
 const synlighed = (page, sel) => page.locator(sel).first().evaluate((e) => Number(getComputedStyle(e).opacity));
 
@@ -65,7 +94,9 @@ test.describe('Heroens film er åbningen', () => {
      ting: teksten er skjult, mens filmen spiller, og i det øjeblik
      klassen forsvinder, har filmen spillet færdig (målt på filmens
      eget ur og dens egen `ended`). Rigtig afspilning. */
-  test('teksten venter, til filmen har spillet færdig', async ({ page }) => {
+  test('teksten venter, til filmen har spillet færdig', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     /* ⚠️ LYTTEREN SIDDER PÅ `document`, IKKE PÅ `<html>`. Et
        init-script kører, FØR opmærkningen er læst, så
        document.documentElement er null dér — og første udgave
@@ -107,7 +138,9 @@ test.describe('Heroens film er åbningen', () => {
     expect(await aabner(page), 'åbningen var slut — prøven målte efter filmen').toBe(true);
   });
 
-  test('startbilledet går væk, når filmen faktisk spiller', async ({ page }) => {
+  test('startbilledet går væk, når filmen faktisk spiller', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await åbnSkal(page, '/', { data: grunddata() });
     await expect(page.locator('.hero-film')).toHaveClass(/afspiller/, { timeout: 8000 });
     await expect.poll(() => synlighed(page, '.hero-start')).toBe(0);
@@ -193,7 +226,9 @@ test.describe('Heroens film er åbningen', () => {
   });
 
   /* ⚠️ DEN, DER VIL VIDERE, SKAL IKKE VENTE PÅ FILMEN. */
-  test('et tryk springer filmen over — teksten og slutbilledet med det samme', async ({ page }) => {
+  test('et tryk springer filmen over — teksten og slutbilledet med det samme', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await taelPlay(page);
     await åbnSkal(page, '/', { data: grunddata() });
     expect(await aabner(page)).toBe(true);
@@ -202,7 +237,9 @@ test.describe('Heroens film er åbningen', () => {
     await expect(page.locator('.hero-slut')).toHaveClass(/vis/);
   });
 
-  test('et rul springer filmen over', async ({ page }) => {
+  test('et rul springer filmen over', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await taelPlay(page);
     await åbnSkal(page, '/', { data: grunddata() });
     expect(await aabner(page)).toBe(true);
@@ -280,7 +317,9 @@ test.describe('Heroens film er åbningen', () => {
 
   /* Startbilledet holdes tilbage: lærredet går op, så snart det står
      (13/9), og her lokalt kan det være hentet, før prøven når at måle. */
-  test('åbningen begynder som en stribe midt i skærmen', async ({ page }) => {
+  test('åbningen begynder som en stribe midt i skærmen', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await taelPlay(page);
     await page.route('**/film/hero-*-start.jpg*', () => {});
     await åbnSkal(page, '/', { data: grunddata() });
@@ -347,7 +386,9 @@ test.describe('Heroens film er åbningen', () => {
      være fullscreen — det er den ikke lige nu". Målt på 1440×900: 756
      af 900 px. Tre skærmstørrelser, så en regel, der kun passer på én,
      falder. */
-  test('filmen fylder hele skærmen — på telefonen og på computeren', async ({ page }, info) => {
+  test('filmen fylder hele skærmen — på telefonen og på computeren', async ({ page, browser }, info) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await taelPlay(page);
     const vinduer = info.project.name === 'mobil'
       ? [null, { width: 430, height: 932 }]
@@ -372,7 +413,9 @@ test.describe('Heroens film er åbningen', () => {
      flydende pille er foldet væk af sin egen regel (heroens knapper
      er i syne), og det måles her, så de to ikke kan skride fra
      hinanden. */
-  test('topbjælken og pillen venter på filmen — bjælken kommer med teksten', async ({ page }) => {
+  test('topbjælken og pillen venter på filmen — bjælken kommer med teksten', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await taelPlay(page);
     await åbnSkal(page, '/', { data: grunddata() });
     expect(await aabner(page)).toBe(true);
@@ -385,7 +428,9 @@ test.describe('Heroens film er åbningen', () => {
   /* Kransen FALDER på plads — kundens ønske om logoet består. Og den
      mørke tone kommer med teksten, så filmen står i fuld styrke,
      mens den spiller. */
-  test('kransen falder på plads, og den mørke tone kommer med teksten', async ({ page }) => {
+  test('kransen falder på plads, og den mørke tone kommer med teksten', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await taelPlay(page);
     await åbnSkal(page, '/', { data: grunddata() });
     const før = await page.locator('.hero-badge').evaluate((e) => new DOMMatrix(getComputedStyle(e).transform).m42);
@@ -403,7 +448,9 @@ test.describe('Heroens film er åbningen', () => {
      teksten 1,1 s før slut, og slutbilledet først, når filmen var helt
      færdig. I det øjeblik teksten slippes fri, skal overgangen til
      slutbilledet allerede være begyndt — målt med rigtig afspilning. */
-  test('teksten og overgangen til slutbilledet kommer i samme øjeblik', async ({ page }) => {
+  test('teksten og overgangen til slutbilledet kommer i samme øjeblik', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await page.addInitScript(() => {
       window.__ved = null;
       new MutationObserver(() => {
@@ -438,7 +485,9 @@ test.describe('Heroens film er åbningen', () => {
      spiller, og den skal være 0 hele vejen. Og tallene udefra er
      uret: filmen skal VÆRE begyndt sent og have spillet forbi de 8 s
      — ellers målte prøven den almindelige vej. */
-  test('en film, der begynder sent, får stadig lov at spille færdig', async ({ page }) => {
+  test('en film, der begynder sent, får stadig lov at spille færdig', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     test.setTimeout(45000);
     let foerste = true;
     await page.route('**/film/hero-*.mp4*', async (r) => {
@@ -531,7 +580,9 @@ test.describe('Heroens film er åbningen', () => {
     expect(maks, `filmen stod frosset ${Math.round(maks)} ms, mens den blev vist`).toBeLessThan(300);
   });
 
-  test('går filmen i stå undervejs, går den til slutbilledet i stedet for at stå frosset', async ({ page }) => {
+  test('går filmen i stå undervejs, går den til slutbilledet i stedet for at stå frosset', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await åbnSkal(page, '/', { data: grunddata() });
     await expect(page.locator('.hero-film')).toHaveClass(/afspiller/, { timeout: 10000 });
     await page.locator('.hero-film video').evaluate((v) => v.dispatchEvent(new Event('waiting')));
@@ -543,7 +594,9 @@ test.describe('Heroens film er åbningen', () => {
   /* Modstykket: et hik, den kommer over med det samme, må ikke skære
      filmen af. Uden det ville en regel, der sprang ved HVER waiting,
      bestå prøven ovenfor. */
-  test('et kort hik, den kommer over med det samme, skærer ikke filmen af', async ({ page }) => {
+  test('et kort hik, den kommer over med det samme, skærer ikke filmen af', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)),
+      'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await åbnSkal(page, '/', { data: grunddata() });
     await expect(page.locator('.hero-film')).toHaveClass(/afspiller/, { timeout: 10000 });
     await page.locator('.hero-film video').evaluate((v) => {

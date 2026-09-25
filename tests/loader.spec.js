@@ -82,7 +82,17 @@ test.describe('Loaderen', () => {
     expect((await hc(page)).ind, 'loaderen var der et øjeblik').toBeNull();
   });
 
-  test('forsiden med filmen har ingen loader — filmen ER åbningen', async ({ page }) => {
+  /* ⚠️ Prøven ser efter filmens egen klasse, og den sættes kun, når
+     browseren kan afspille H.264. Se noten i tests/hero-film.spec.js:
+     sky-containerens Chromium svarer "" på det spørgsmål (målt 25/9),
+     og så måler prøven en browser og ikke en side. */
+  test('forsiden med filmen har ingen loader — filmen ER åbningen', async ({ page, browser }) => {
+    test.skip(!(await browser.newPage().then(async (s) => {
+      const ja = await s.evaluate(() => !!document.createElement('video')
+        .canPlayType('video/mp4; codecs="avc1.42E01E"'));
+      await s.close();
+      return ja;
+    })), 'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await gæst(page, '/index.html');
     /* Vagten: uden filmens klasse målte prøven en side uden film. */
     await expect(page.locator('html')).toHaveClass(/film-aabner/);
