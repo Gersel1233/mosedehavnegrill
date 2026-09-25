@@ -7705,6 +7705,13 @@ Alle oplysninger står i `js/oplysninger.js` med `godkendt: false`. Så længe d
 flag står, skriver testene en påmindelse ud ved hver kørsel. **Intet herunder er
 gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler det.
 
+**❓ HVOR MANGE KUGLER ER DER I "CHURROS MED IS OG SAUCE"?** (25/9)
+Kort 05 siger det ikke — de andre retter med is gør ("med 1 kugle is",
+"3 kugler"). Den står til **0**, så gæsten ikke bliver spurgt om smag til
+kugler, vi ikke ved findes. Når tallet er kendt, sættes det i admin →
+Menukort → 🍦 Is & sødt → "Kugler" på rækken; så spørger bestillingen om
+smagen på dessertens eget kort.
+
 **✅ DEN GLUTENFRI VAFFEL KOSTER DET SAMME — AFGJORT 25/9.** Kort 05
 IS & SØDT skriver ordret: *"Alle kugler og al softice kan fås i
 glutenfri vaffel — samme pris som almindelig vaffel."* Databasen tog

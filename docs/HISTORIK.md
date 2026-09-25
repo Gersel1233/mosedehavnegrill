@@ -7,7 +7,72 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-**KORTENE ER FACIT — DET, DE IKKE VISER, SLUKKES** (26/9). Mikkels ord:
+**IS & SØDT: ET FORLØB PR. SLAGS IS — OG ADMIN SER UD SOM SIDEN** (25/9).
+Mikkels ord: *"hvis jeg vil vælge en isboks, skal det være et andet
+bestillingsflow ... jeg ved de har jordbær og vanilje og chokolade til at
+starte med som kugler ... man skal heller ikke betale for emballage på
+isene ... admin med isen: saml det hele i en kategori med underkategorier,
+men som udseende med flowet er på siden."*
+
+Bygget (forsiden OG ved bordet — samme `js/isbygger.js`):
+
+- **Fire fliser, to og to på en telefon:** 🍦 Is i vaffel eller bæger ·
+  📦 Isboks · 🧇 Desserter · 🥄 Løst. Hver slags har sit eget forløb:
+  - *Vaffel/bæger* som før: vaffel/bæger → antal → smag pr. kugle →
+    "Noget mere?" (kun rigtigt tilbehør: ekstra kugle, strøssel, sauce,
+    softice-top). En ekstra kugle får sin egen smagsvælger
+  - *Isboks*: boksens egen tekst, "Kugler eller softice?", og så tællere
+    pr. smag (− 2 +). "6 af 6 kugler valgt"; + slukker, når boksen er fuld.
+    Bonen siger "4× Vanilje + 2× Jordbær", ikke seks ord
+  - *Desserter*: et kort pr. ret med kortets tekst og pris. En ret uden
+    kugler er ét tryk; en med kugler spørger om smagen på sit eget kort
+  - *Løst*: løs vaffel, toppingbøtte — ét tryk
+- **Ingen emballage på isen** (`bestil-regler.js`, på kategoriens
+  afdeling "is"). Målt i produktionen: `emballage_kategorier` er tom = alt,
+  så hver is til afhentning fik 10 kr. oveni. Maden ved siden af får
+  stadig sin
+- **Admin → Menukort → 🍦 Is & sødt → "Isens forløb":** til venstre hver
+  is-vare under det trin, gæsten møder den (Størrelser — trin 2, Tilbehør —
+  trin 4, Isboks, Desserter, Løst) med "Står under", kugler og "eller
+  softice" på én linje; smagene i samme kort. Til højre den RIGTIGE isbygger
+  med det, der står på skærmen — man kan trykke sig igennem den. Gemmes
+  automatisk; "↺ Brug navnet" tager ejerens valg væk igen. Samme
+  rækkefølge begge steder (`MosedeIsbygger.ordn`)
+- **`supabase/isens-opsaetning.sql` — SKAL KØRES I SUPABASE.** Smagene
+  Jordbær, Vanilje, Chokolade (står der smage i forvejen, lægges kun de
+  manglende til) og hver af de 26 is-varer på sin plads efter kort 05.
+  Rapporten: `varer_fundet_skal_vaere_26`, `ikke_fundet` (tom), `smagene`.
+  Målt på en lokal Postgres med produktionens navne: 26 af 26, anden kørsel
+  rører intet, ejerens egne valg overlever
+
+**⚠️ TO MÅLINGER, DER RETTEDE MIT EGET ARBEJDE:**
+
+1. **Gættet uden opsætningen lagde retter på vaflen.** Alt ukendt i en
+   kategori med størrelser blev "tilbehør" — målt mod produktionens 26
+   is-varer stod ni retter til 45-79 kr. (Affogato, Sundae, churros,
+   pandekager, Havnens café-is) i "Noget mere?" som noget, man lægger OVEN
+   PÅ en kugle. Nu er tilbehør kun det, hvis navn begynder med et tilbehør;
+   resten er en ret for sig. Uden SQL-filen afviger tre varer fra kortet,
+   alle ufarligt
+2. **Admin og siden viste desserterne i hver sin rækkefølge** — siden
+   sorterede på varens sortering på tværs af kategorier. Nu gælder kortets
+   orden, og admin kalder samme funktion
+
+**Spørgsmål til Mikkel:** "Churros med is og sauce" — kortet siger ikke, hvor
+mange kugler. Den står til 0 (der spørges ikke om smag), til han siger det;
+han kan selv rette tallet under "Is & sødt".
+
+Prøverne (alle set fejle med fejlen genindført): isboksen kan ikke blive
+overfuld · softice spørger ikke om smag · dessertens smag på eget kort ·
+ingen ret som tilbehør · kortets rækkefølge · ingen emballage på is (men på
+maden) · fliserne to og to · admin: varen under sit trin, en flytning slår
+igennem i forhåndsvisningen og gemmes, samme rækkefølge som gæsten.
+`proev-smoerrebroed-kortet.sql` målte sortimentet fra 1/9 og faldt, da
+kortenes-huller lagde tre varer til — den måler nu sin egen fil og reglen
+"én pris for håndmadderne" (ejeren satte 24 i admin 21/9). SQL-runden:
+58 filer, 1635 bestod, 0 fejlede.
+
+**KORTENE ER FACIT — DET, DE IKKE VISER, SLUKKES** (25/9). Mikkels ord:
 *"følg menukortene, det er alt — de skal slukkes, hvis ikke de er på
 menukortene."* Og: *"isens smage er ligegyldigt."*
 
