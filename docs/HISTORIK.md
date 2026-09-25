@@ -7,6 +7,51 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**F1–F4 FRA DEN EKSTERNE KONTROL — RETTET** (25/9, aften). Kontrollen læste
+siden uden JavaScript og fandt designets pladsholdere; min egen gennemgang
+(`kontrolrapport-498.html`, sendt til Mikkel) fandt fire ting. Mikkels ord:
+*"Du må gerne rette alle fire punkter … Bevar alle chefens godkendte
+produkter og priser. Foretag ikke andre ændringer."*
+
+- **F1 — ingen august-datoer i HTML'en.** Forsidens pladsholdere (dagens
+  ret, ugen 23.–29. august, "Musik på molen den 29. august", nyhederne,
+  datovælgeren) siger nu "Henter …". Tapassidens datovælger det samme.
+  `tests/pladsholdere.spec.js` læser ALLE gæstesider af mappen og tæller
+  datoer i teksten uden JavaScript. To rigtige datoer står i en liste med
+  deres grund (Greve Business Awards 8. oktober, persondatapolitikkens
+  15. september); historiesiden er undtaget (1710)
+- **F2 — uden database vises ALDRIG en reservepris.** Målt før: menukortet
+  viste "Smørrebrød 55,-" og "Softice, stor 45,-" (rigtig pris 47), bestil/
+  de samme, tapas og forsiden designets "199 kr." (fadet koster 179),
+  cateringen "fra 24,- stk.". Nu: `Butik.reservedata(d)` er stadig den ene
+  regel, og hver side, der viser priser, spørger den. Menukortet viser en
+  lyserød boks med 28 87 13 43, forsidens og bestil/'s varelister skjules
+  (før: gennemsigtige), tapas skjuler prisboksene og siger "Ring 28 87 13
+  43", cateringens "fra"-pris skjules. **Designets 199/548 er fjernet fra
+  HTML'en** — prisboksene står skjulte, til databasen har svaret.
+  ⚠️ Tapassidens tre `.tnote`-linjer (vin 175, levering 79, kage 30) er
+  ejerens egne faste tilbud fra 21/9, ikke reservedata — de står. Målt på
+  alle 21 gæstesider med databasen afskåret: 0 priser ud over de tre.
+  `tests/ingen-reservepriser.spec.js` prøver begge veje (med og uden
+  database; fiksturets fad koster 145, et tal hverken designet eller
+  produktionen har)
+- **F3 — glutenfrit brød: teksten siger 5 kr., som prisen.** Teksten bor i
+  databasen, så rettelsen er `supabase/glutenfrit-broed-5-kr.sql` (kategori-
+  noten og varens beskrivelse, "10 kr. pr. stk." → "5 kr. pr. stk.";
+  prisen røres ikke). ⚠️ **SKAL KØRES AF MIKKEL** — koden på siden ændrer
+  intet her
+- **F4 — smagene talt i kurvens sumlinje:** "2× Jordbær + 3× Vanilje + 1×
+  Chokolade". Når bare én smag er der mere end én af, får ALLE et tal (også
+  "1×"), så en travl person ikke skal gætte, hvad et navn uden tal betyder.
+  ⚠️ Det er `samletSmag` i `js/store.js`, så kvitteringen og bonen i
+  køkkenet siger det samme — én regel. Er der kun én af hver, står navnene
+  som før. Portioner i samme linje skilles med " / "
+
+Prøver, der blev vendt, står med deres grund: `skal-forside` (uden pris er
+prisen skjult, ikke "199"), `robusthed` (varelisten er skjult uden
+database, ikke gennemsigtig). Alle nye prøver er set fejle med fejlen
+genindført — også den statiske 199, som JavaScript ellers skjulte.
+
 **`isens-opsaetning.sql` DØDE I SQL EDITOREN — OG ER SKREVET OM TIL REN SQL**
 (25/9, aften). Mikkels skud: *"syntax error at or near "loop" — LINE 1: end
 loop"*. Teksten i editoren var 155 linjer; filen var 255 — noget var faldet
