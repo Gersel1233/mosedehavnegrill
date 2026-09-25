@@ -223,3 +223,69 @@ test('engangsrettelsens opdateringer er alle bundet til én forretning', () => {
   expect(s, 'engangsrettelsen sletter hårdt — det kan ikke fortrydes')
     .not.toMatch(/delete\s+from\s+public\./);
 });
+
+
+/* ============================================================
+   KORTENE FRA 25/9 — TEKSTVAGT PÅ DEN, DER RETTER PRISER
+   ------------------------------------------------------------
+   kortene-25-9.sql retter ti priser i en database i drift, og
+   det er penge, gæsten betaler. proev-kortene-25-9.sql prøver
+   REGLERNE med sine egne rækker og en naboforretning — men den
+   kan ikke se, om selve filen stadig BRUGER dem. Samme deling
+   som ryd-proevedata.sql og ret-produktionen-9-9.sql.
+
+   Tre ting læses derfor her:
+     · hver opdatering er bundet til ÉN forretning
+     · filen sletter aldrig en vare
+     · og den sætter sig som EJER først — uden det dør den på
+       den første pris (roller.sql, målt 24/9), og en fil, der
+       dør før sin første rapportlinje, forsvinder ud af både
+       BESTOD og FEJLEDE
+   ============================================================ */
+test('prisrettelsen fra de nye kort er bundet til én forretning', () => {
+  const s = fs.readFileSync('supabase/kortene-25-9.sql', 'utf8')
+    .replace(/^\s*--.*$/gm, '');            // kommentarer tæller ikke med
+
+  const opdateringer = [...s.matchAll(/update\s+public\.menu_varer[\s\S]*?returning/g)];
+  expect(opdateringer.length, 'filen har ikke sine tre opdateringer længere — '
+    + 'er den skrevet om, skal vagten her følge med').toBe(3);
+
+  for (const [sætning] of opdateringer) {
+    expect(sætning, 'uden en forretning rammer opdateringen ANDRE forretninger')
+      .toMatch(/lokation_id\s*=\s*'mosede'/);
+  }
+
+  /* ⚠️ Oprettelsen af de nye varer skal have samme gard — ellers
+     lander Clubsandwich hos naboen. */
+  const nye = s.match(/insert into public\.menu_varer[\s\S]*?returning navn/);
+  expect(nye, 'oprettelsen af de nye varer blev ikke fundet').not.toBeNull();
+  expect(nye[0], 'de nye varer oprettes uden en forretning')
+    .toMatch(/lokation_id\s*=\s*'mosede'/);
+
+  /* ⚠️ "En dublet er værre end en manglende vare." */
+  expect(nye[0], 'oprettelsen spørger ikke, om varen findes i forvejen')
+    .toMatch(/not exists/);
+
+  expect(s, 'filen sletter en vare — det kan ikke fortrydes. Sluk den i stedet')
+    .not.toMatch(/delete\s+from\s+public\./);
+
+  /* ⚠️ EJEREN LÆSES AF admin_adgang, den skrives ikke af. Et navn
+     i filen holder op med at virke den dag, ejeren skifter sin
+     e-mail — og det ville være tavst: prisen ville bare ikke
+     blive sat. */
+  /* ⚠️ OG DER SKAL SPØRGES PÅ DEN BYGGEDE CLAIM, IKKE BARE PÅ
+     `set_config`. Filen RYDDER også claims til sidst med den samme
+     funktion — så en vagt, der kun ledte efter navnet, bestod med
+     ejer-opslaget fjernet. Målt 25/9: falsifikationen faldt ikke.
+     Det er "en falsifikation, der ikke falder, er et spørgsmål og
+     ikke et bevis". */
+  expect(s, 'filen bygger ikke sin claim af ejerens e-mail — den dør på den første pris')
+    .toMatch(/set_config\(\s*'request\.jwt\.claims',\s*\n?\s*json_build_object\('email', v_ejer\)/);
+  expect(s, 'ejerens e-mail slås ikke op i admin_adgang')
+    .toMatch(/from public\.admin_adgang/);
+
+  /* Og den skal sættes FØR den første pris — bagefter er det for sent. */
+  const iClaim = s.search(/json_build_object\('email', v_ejer\)/);
+  const iPris = s.search(/update public\.menu_varer/);
+  expect(iClaim, 'ejer-claimen sættes EFTER den første prisrettelse').toBeLessThan(iPris);
+});

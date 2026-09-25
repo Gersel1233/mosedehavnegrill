@@ -74,8 +74,14 @@ select pg_temp.svar('2. Alle fem hensyn står i den',
 -- ------------------------------------------------------------
 --  DE SYV, DER MANGLEDE
 -- ------------------------------------------------------------
+/* ⚠️ VENDT 25/9 — DEN LILLE HEDDER "lille" NU.
+   Kort 02 fra 25/9 lister "Fransk hotdog, lille 40,-" og
+   "Fransk hotdog, stor 50,-", og `kortene-25-9.sql` døber
+   "alm." om, så skærmen siger det samme som kortet i gæstens
+   hånd. Reglen er urørt og stadig den vigtige: der skal være
+   TO størrelser. Kun navnet er skiftet. */
 select pg_temp.svar('3. Fransk hotdog står i to størrelser',
-  pg_temp.har('Pølser', 'Fransk hotdog, alm.')
+  pg_temp.har('Pølser', 'Fransk hotdog, lille')
   and pg_temp.har('Pølser', 'Fransk hotdog, stor'));
 
 select pg_temp.svar('4. Pølsemix og den lune frikadelle er på pladen',

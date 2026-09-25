@@ -39,10 +39,24 @@ select pg_temp.svar('1. Kategorien siger, at det er et tillæg',
              and navn = 'Tillæg: glutenfri, laktosefri og vegansk'
              and note like '%10 kr. pr. stk.%'));
 
-select pg_temp.svar('2. De tre tillæg koster 10 kr.',
-  pg_temp.pris('Glutenfrit brød (tillæg)') = 10
-  and pg_temp.pris('Laktosefri (tillæg)') = 10
+/* ⚠️ VENDT 25/9 — GLUTENFRIT BRØD ER IKKE 10 LÆNGERE.
+   Ejerens ark sagde 1/9 "10 kr." om alle tre. Siden er
+   glutenfrit brød gået sin egen vej: håndmadskortet 3/9 skrev
+   "SAMME PRIS" (og produktionen står på 0), og de NYE kort fra
+   25/9 skriver "GLUTENFRIT BRØD +5,-" på BÅDE smørrebrøds- og
+   håndmadskortet. `kortene-25-9.sql` sætter derfor 5.
+
+   Det er en beslutning, ikke en forældet prøve — derfor står
+   grunden her, og reglen er IKKE svækket: de to andre tillæg
+   skal stadig være ejerens 10, og glutenfrit brød skal have en
+   pris, der passer med kortene. Er tallet på kortet et andet
+   næste gang, falder linjen her. */
+select pg_temp.svar('2. Laktosefri og vegansk koster ejerens 10 kr.',
+  pg_temp.pris('Laktosefri (tillæg)') = 10
   and pg_temp.pris('Vegansk (tillæg)') = 10);
+
+select pg_temp.svar('2b. Glutenfrit brød koster kortenes 5 kr.',
+  pg_temp.pris('Glutenfrit brød (tillæg)') = 5);
 
 /* ⚠️ NAVNET SKAL SIGE DET. "Vegansk mad 10 kr." på et menukort
    læses som vegansk mad TIL ti kroner — og det er præcis den
@@ -105,7 +119,12 @@ begin
     '%\n\n%\n'
     '=============================================',
     case when fejl = 0
-      then 'ALLE ' || antal || ' AF 7 BESTOD.'
+      /* ⚠️ TALLET KOMMER FRA LINJERNE, IKKE FRA EN KONSTANT.
+         Der stod "AF 7" her, og da prøve 2 blev delt i to 25/9,
+         skrev rapporten "ALLE 8 AF 7 BESTOD". Samme ar som
+         proev-menukort-ejerens-liste fik 5/9: et fast tal holder
+         op med at måle den dag, prøven vokser. */
+      then 'ALLE ' || antal || ' AF ' || antal || ' BESTOD.'
       else fejl || ' AF ' || antal || ' FEJLEDE — se linjerne herunder.'
     end, rapport;
 end $$;
