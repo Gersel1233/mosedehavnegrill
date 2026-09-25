@@ -2651,3 +2651,53 @@ test.describe('Isen er premium som dagens ret', () => {
       + 'det koster billeder i sekundet uden at være til at se').toBe('none');
   });
 });
+
+/* ============================================================
+   GREVE-PRISEN ØVERST, I SMILEYENS GLAS  (25/9)
+   ------------------------------------------------------------
+   Mikkels ord: *"greve iværksætter prisen op øverst med facebook
+   og smileyen og det liquid glass"*. Indtil i dag stod den kun i
+   bunden.
+
+   ⚠️ GLASSET MÅLES MOD SMILEY-KORTET, ikke mod et tal skrevet
+   her: prøven spørger ikke prisens kort om dets egen baggrund,
+   den sammenligner det med kortet lige over. Et tal skrevet af
+   fra CSS'en ville bestå, også hvis smileyen skiftede udseende,
+   og så stod der to kort under hinanden, der næsten lignede
+   hinanden.
+
+   ⚠️ OG ORDLYDEN ER "INDSTILLET TIL". En nominering, der bliver
+   til en sejr på vejen fra en besked til en hjemmeside, er den
+   slags, ingen opdager, før nogen spørger til pokalen.
+   ============================================================ */
+test.describe('Greve-prisen øverst', () => {
+  test('står lige under smileyen, i samme glas, med linket og "indstillet til"', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await springIntroOver(page);
+
+    const pris = page.locator('.pris-kort');
+    await expect(pris).toHaveCount(1);
+    await pris.scrollIntoViewIfNeeded();
+    await expect(pris).toBeVisible();
+    await expect(pris).toHaveAttribute('href', 'https://erhvervscentret.greve.dk/gba');
+    await expect(pris).toContainText('Indstillet til Greve Iværksætterpris 2026');
+    await expect(pris).not.toContainText(/vinder/i);
+
+    const m = await page.evaluate(() => {
+      const smil = document.querySelector('.smiley-kort:not(.pris-kort)');
+      const pris = document.querySelector('.pris-kort');
+      const læs = (e) => { const cs = getComputedStyle(e);
+        return { grund: cs.backgroundColor, skygge: cs.boxShadow, hjoerne: cs.borderRadius }; };
+      const a = smil.getBoundingClientRect(), b = pris.getBoundingClientRect();
+      return { lige_under: smil.nextElementSibling === pris, afstand: Math.round(b.top - a.bottom),
+        smil: læs(smil), pris: læs(pris) };
+    });
+    expect(m.lige_under, 'prisen står ikke lige under smileyen').toBe(true);
+    expect(m.afstand, 'prisen hænger ikke sammen med smileyen').toBeLessThanOrEqual(16);
+    expect(m.pris, 'prisens kort er ikke i smileyens glas').toEqual(m.smil);
+    expect(m.pris.skygge, 'kortet har ingen linsekant').toContain('inset');
+
+    /* Og bunden beholder sin linje — ligesom smileyen står begge steder. */
+    await expect(page.locator('footer a[href="https://erhvervscentret.greve.dk/gba"]')).toHaveCount(1);
+  });
+});
