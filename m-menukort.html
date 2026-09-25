@@ -57,38 +57,6 @@
   <div class="panel mk-uge rev d1" id="mk-uge"></div>
 </section>
 
-<!-- BLADR I DE TRYKTE MENUKORT  (25/9)
-     Kundens ord: "selve menukortene ligger inde på se menukort,
-     hvor man kan bladre igennem menukortene og stadig klikke ind
-     på nogle af tingene."
-
-     ⚠️ KORTET SÆLGER, LISTEN ER SANDHEDEN. Under hvert kort står
-     databasens egen liste — så en pris kan aldrig komme til at
-     stå to steder med to tal. Hele begrundelsen i js/skal/kortbog.js.
-
-     ⚠️ HELE AFSNITTET ER hidden, INDTIL JS HAR BYGGET DET. Uden
-     billeder er en tom scene værre end ingen scene, og en gæst
-     uden JavaScript skal gå direkte videre til listen nedenfor. -->
-<section id="mk-kortene-afsnit" style="padding-top:18px" hidden>
-  <div class="mid rev"><div class="eyebrow red">Som de ligger i caféen</div><h2>Bladr i menukortene</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
-  <p class="sub" style="max-width:36ch">Træk til siden — og tryk på en ret i listen under kortet for at se, hvad der er i den.</p></div>
-
-  <div class="kortbog rev d1" id="kortbog" tabindex="-1">
-    <div class="kortbog-scene">
-      <button class="kortbog-pil kortbog-bag" data-bag type="button" aria-label="Forrige menukort">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>
-      </button>
-      <div class="kortbog-blade" data-blade></div>
-      <button class="kortbog-pil kortbog-frem" data-frem type="button" aria-label="Næste menukort">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6l6 6-6 6"/></svg>
-      </button>
-    </div>
-    <div class="kortbog-titel" data-titel aria-live="polite"></div>
-    <div class="kortbog-prikker" data-prikker role="tablist" aria-label="Vælg menukort"></div>
-    <div class="kortbog-liste" id="kortbog-liste"></div>
-  </div>
-</section>
-
 <!-- FAST SORTIMENT. Ét kort pr. kategori, som ejeren har sat dem
      op i admin — ikke en liste, koden finder på. -->
 <section id="mk-kat-afsnit">
@@ -187,6 +155,5 @@
 <script src="js/skal/seo.js?v=__V__"></script>
 <script src="js/skal/kontakt.js?v=__V__"></script>
 <script src="js/menu-emoji.js?v=__V__"></script>
-<script src="js/skal/kortbog.js?v=__V__"></script>
 <script src="js/skal/menukort.js?v=__V__"></script>
 </body></html>
