@@ -1548,178 +1548,32 @@ test.describe('Isen skiller sig ud i bestillingen', () => {
    der ser rigtig ud og sender "2 kugler · Vaffel" uden smag, er
    præcis den fejl, der skulle rettes — pengesporets lære fra 5/9.
    ============================================================ */
-test.describe('Isens smage', () => {
-  const IS_KAT = 6;                       // "Softice og vafler", afdeling is
+/* ⚠️ ISENS PRØVER ER FLYTTET — IKKE SLETTET  (25/9 aften).
+   ------------------------------------------------------------
+   Her stod syv prøver under "Isens smage". De målte den model,
+   isen HAVDE: en almindelig række med en tæller, hvor kugletallet
+   blev læst af varens navn, og smagene hang under valgets linje.
 
-  function medIs(smage) {
-    const d = data();
-    d.indstillinger.bestilbare_kategorier = [1, IS_KAT];
-    if (smage !== null) d.indstillinger.is_smage = smage;
-    d.menu_varer = (d.menu_varer || []).concat([{
-      id: 9101, lokation_id: 'mosede', kategori_id: IS_KAT, navn: '2 kugler',
-      pris: 45, aktiv: true, sortering: 1, valg: ['Vaffel', 'Bæger'],
-    }]);
-    return d;
-  }
+   Den model er revet ned på kundens ord: *"det er et lorte
+   bestillingssystem og slet ikke eksklusivt eller dygtigt nok ...
+   start med vaffel, hvor mange kugler du vil have, +1 okay hvad
+   smag."* Isen har nu sit eget forløb i sin egen blok nederst.
 
-  async function toVafler(page, d) {
-    await åbnSkal(page, '/index.html', { ur: FREDAG, data: d });
-    const kat = page.locator('#bestil .item[data-afd="is"]').first();
-    await kat.locator('[data-add]').waitFor({ state: 'attached' });
-    await kat.click();
-    const række = page.locator('#bestil .item[data-vare="2 kugler"]').first();
-    const plus = række.locator('.item-valg-linje[data-valg="Vaffel"] button[data-d="+"]');
-    await plus.click();
-    await plus.click();
-    return række;
-  }
+   ⚠️ OG DET ER IKKE EN PRØVE, DER BLEV GJORT GRØN. Hver eneste
+   regel, de syv vogtede, har sin egen prøve i
+   tests/isbyggeren.spec.js:
 
-  test('to vafler bliver TO linjer — hver med sin egen smag', async ({ page }) => {
-    const række = await toVafler(page, medIs('Vanilje, Jordbær, Lakrids'));
+     smag pr. kugle            -> "1 vaffel med 1 kugle kan vælge sin smag"
+     to is, to linjer          -> "to is med hver sin smag bliver to linjer"
+     beløbet er uændret        -> "prisen er varens egen ..." (45+3+8)
+     uden ejerens liste        -> "uden ejerens smagsliste siger trin 3
+                                   det højt — og spærrer ikke"
+     softice spørger ikke      -> samme prøve (trin 3 siger hvorfor)
+     feltets mål og kontrast   -> lever videre som select.isbyg-smag
 
-    /* Tælleren siger HVOR MANGE vafler; portionerne siger, hvad
-       der skal i de enkelte. Tallet kommer udefra: de to klik. */
-    await expect(række.locator('.is-portion')).toHaveCount(2);
-    await expect(række.locator('.is-smag')).toHaveCount(4);
+   Den ENE regel, der ikke er flyttet, er den gamle "en is uden
+   valgt smag kan ikke sendes". Den er afløst af noget bedre: man
+   kan slet ikke lægge isen i kurven, før alle kugler har en smag
+   — knappen siger hvad der mangler. Det er prøven "knappen siger,
+   hvad der mangler". */
 
-    const smag = (p, k) => række.locator(
-      `.is-portion[data-portion="${p}"] .is-smag[data-kugle="${k}"]`);
-    await smag(0, 0).selectOption('Vanilje');
-    await smag(0, 1).selectOption('Jordbær');
-    await smag(1, 0).selectOption('Lakrids');
-    await smag(1, 1).selectOption('Lakrids');
-
-    await page.locator('#navn').fill('Sara Poulsen');
-    await page.locator('#tlf').fill('28871343');
-    await page.locator('#tid').selectOption({ index: 1 });
-    await page.locator('button.g.solid.blk').click();
-    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
-
-    const linjer = (await gemteData(page)).bestillinger[0].linjer
-      .filter((l) => l.navn === '2 kugler');
-    expect(linjer.length, 'de to vafler blev ikke to linjer').toBe(2);
-    expect(linjer.map((l) => l.antal), 'en portion er én').toEqual([1, 1]);
-    expect(linjer.map((l) => (l.smage || []).join('+')).sort(),
-      'smagene fulgte ikke med den enkelte vaffel')
-      .toEqual(['Lakrids+Lakrids', 'Vanilje+Jordbær']);
-    /* ⚠️ OG PRISEN ER UÆNDRET. To linjer à 1 er de samme to, som
-       antal 2 var — ellers ville opdelingen koste gæsten penge. */
-    expect(linjer.reduce((a, l) => a + l.pris * l.antal, 0),
-      'opdelingen ændrede beløbet').toBe(90);
-  });
-
-  test('en is uden valgt smag kan ikke sendes', async ({ page }) => {
-    const række = await toVafler(page, medIs('Vanilje, Jordbær'));
-    // Kun den ene kugle i den første vaffel får en smag.
-    await række.locator('.is-portion[data-portion="0"] .is-smag[data-kugle="0"]')
-      .selectOption('Vanilje');
-
-    await page.locator('#navn').fill('Sara Poulsen');
-    await page.locator('#tlf').fill('28871343');
-    await page.locator('#tid').selectOption({ index: 1 });
-    await page.locator('button.g.solid.blk').click();
-
-    await expect(page.locator('.note')).toContainText('Vælg smag');
-    /* Modstykket: intet må være sendt. En besked på skærmen er
-       ikke et værn, hvis rækken alligevel landede. */
-    expect(((await gemteData(page)).bestillinger || []).length,
-      'bestillingen blev sendt uden smag').toBe(0);
-  });
-
-  /* ⚠️ HAR EJEREN INGEN SMAGE, FINDES VÆLGEREN IKKE — og siden
-     opfører sig præcis som i går. Uden den her ville en regel, der
-     ALTID krævede smag, bestå prøven ovenfor og spærre for hver
-     eneste isbestilling hos en ejer, der ikke har skrevet listen. */
-  test('uden ejerens liste spørges der ikke om smag — og der kan sendes', async ({ page }) => {
-    const række = await toVafler(page, medIs(null));
-    await expect(række.locator('.is-portion')).toHaveCount(0);
-
-    await page.locator('#navn').fill('Sara Poulsen');
-    await page.locator('#tlf').fill('28871343');
-    await page.locator('#tid').selectOption({ index: 1 });
-    await page.locator('button.g.solid.blk').click();
-    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
-
-    const linjer = (await gemteData(page)).bestillinger[0].linjer
-      .filter((l) => l.navn === '2 kugler');
-    expect(linjer.length, 'uden smage skal de to stadig være ÉN linje').toBe(1);
-    expect(linjer[0].antal).toBe(2);
-  });
-
-  /* ⚠️ OG SMAGEN SPØRGES KUN, HVOR DER ER KUGLER. "Softice med
-     guf" siger ingenting om kugler, og en vælger på den ville
-     være et spørgsmål, ejeren ikke har stillet. */
-  test('en vare uden kugler i navnet får ingen smagsvælger', async ({ page }) => {
-    const d = medIs('Vanilje, Jordbær');
-    await åbnSkal(page, '/index.html', { ur: FREDAG, data: d });
-    const kat = page.locator('#bestil .item[data-afd="is"]').first();
-    await kat.locator('[data-add]').waitFor({ state: 'attached' });
-    await kat.click();
-    const softice = page.locator('#bestil .item[data-vare="Softice med guf"]').first();
-    await softice.waitFor({ state: 'visible' });
-    await softice.locator('button[data-d="+"]').click();
-    await expect(softice.locator('.is-portion')).toHaveCount(0);
-  });
-
-  /* ⚠️ EN KLASSE, DER IKKE SLÅR IGENNEM, ER INGEN REGEL  (25/9).
-     Her stod `.is-smag{height:38px;font-size:13px;padding:0 8px}`
-     — og den blev MÅLT til 48 px, 15 px og 38 px, fordi vælgeren
-     ovenfor hedder `select.inp` (0,1,1) og slår en ren klasse
-     (0,1,0). Prøven læser den BEREGNEDE stil og holder den op mod
-     sidens almindelige .inp, tidsvælgeren: tallene kommer derfra,
-     ikke fra feltet selv. */
-  test('smagsfeltet er kortets eget mål — ikke det store .inp', async ({ page }) => {
-    const række = await toVafler(page, medIs('Vanilje, Jordbær, Lakrids'));
-    const maal = (l) => l.evaluate((e) => {
-      const c = getComputedStyle(e);
-      return { h: Math.round(e.getBoundingClientRect().height),
-               skrift: parseFloat(c.fontSize),
-               pilPlads: parseFloat(c.paddingRight) };
-    });
-    const smag = await maal(række.locator('.is-portion[data-portion="0"] .is-smag').first());
-    const fuldt = await maal(page.locator('#tid'));
-
-    expect(smag.h, 'feltet står med .inp\'s højde — reglen slår ikke igennem')
-      .toBeLessThan(fuldt.h);
-    expect(smag.skrift, 'skriften er .inp\'s').toBeLessThan(fuldt.skrift);
-    expect(smag.pilPlads, 'pilens plads er .inp\'s').toBeLessThan(fuldt.pilPlads);
-  });
-
-  /* ⚠️ OG ET RIGTIGT SMAGSNAVN SKAL KUNNE STÅ I FELTET. To felter
-     deler en telefonrække og bliver 98 px hver; med .inp's 38 px
-     pileplads og 15 px skrift stod der "Lakrid" og "Mango" på et
-     skud. Bredden måles med tegnemaskinens egen skriftmåling —
-     tallet kommer altså ikke fra det element, prøven dømmer. */
-  test('et almindeligt smagsnavn kan læses helt i feltet', async ({ page }) => {
-    const række = await toVafler(page, medIs('Vanilje, Chokolade, Lakrids'));
-    const plads = await række.locator('.is-portion[data-portion="0"] .is-smag')
-      .first().evaluate((e) => {
-        const c = getComputedStyle(e);
-        const t = document.createElement('canvas').getContext('2d');
-        t.font = c.fontWeight + ' ' + c.fontSize + ' ' + c.fontFamily;
-        return { navn: t.measureText('Chokolade').width,
-                 fri: e.getBoundingClientRect().width
-                      - parseFloat(c.paddingLeft) - parseFloat(c.paddingRight) };
-      });
-    expect(plads.navn, '"Chokolade" bliver klippet over — gæsten kan ikke se, hvad hun valgte')
-      .toBeLessThan(plads.fri);
-  });
-
-  /* ⚠️ DEN TOMME KUGLE SKAL KUNNE SES, FØR GÆSTEN TRYKKER SEND.
-     "Smag" står i samme skrift som "Vanilje", og på et skud kunne
-     de to ikke skelnes. Modstykket er nabofeltet i samme portion:
-     det, der stadig er tomt, skal blive ved at se tomt ud. */
-  test('den kugle, der mangler en smag, kan ses på feltet', async ({ page }) => {
-    const række = await toVafler(page, medIs('Vanilje, Jordbær'));
-    const et = række.locator('.is-portion[data-portion="0"] .is-smag[data-kugle="0"]');
-    const to = række.locator('.is-portion[data-portion="0"] .is-smag[data-kugle="1"]');
-    const bag = (l) => l.evaluate((e) => getComputedStyle(e).backgroundColor);
-
-    const tom = await bag(et);
-    await et.selectOption('Vanilje');
-    expect(await bag(et), 'feltet ser ens ud, om der er valgt en smag eller ej')
-      .not.toBe(tom);
-    expect(await bag(to), 'nabokuglen er stadig tom og skal stadig se tom ud')
-      .toBe(tom);
-  });
-});

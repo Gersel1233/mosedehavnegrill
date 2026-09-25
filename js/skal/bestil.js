@@ -1344,6 +1344,14 @@
      gav genbruget to blokke på skærmen — min egen og vitrinens —
      plus at min CSS lavede vitrinen om. En klasse er et navnerum;
      det skal slås op, ikke gættes. */
+  /* Kan der overhovedet bygges en is? Svaret er isbyggerens eget —
+     den kender reglen for, hvad en "størrelse" er, og en kopi her
+     ville skride fra den dag, reglen ændrer sig. */
+  function kanByggeIs() {
+    if (!window.MosedeIsbygger) return false;
+    return window.MosedeIsbygger.stoerrelser(isVarer()).length > 0;
+  }
+
   function isBlok(liste) {
     var varer = isVarer();
     if (!varer.length) return;
@@ -1370,14 +1378,11 @@
       laeg: laegIs,
     });
 
-    /* ⚠️ INGEN BYGGER, INGEN IS-BLOK — men heller ingen tom ramme.
-       Har ejeren ingen kugleis med et valg, falder vi tilbage til
-       de almindelige rækker, så isen stadig kan bestilles. */
-    if (!byg) {
-      grupper().filter(function (g) { return g.afdeling === 'is'; })
-        .forEach(function (g) { kategoriRække(g, liste); });
-      return;
-    }
+    /* Kan byggeren ikke tegnes, er vi slet ikke her: kanByggeIs()
+       har afgjort det, før listen blev tegnet, og is-kategorierne
+       står da som almindelige rækker på deres egen plads. Et værn
+       alligevel — en tom ramme er værre end ingen ramme. */
+    if (!byg) return;
     liste.appendChild(blok);
   }
 
@@ -1484,9 +1489,17 @@
          fold som pølser og øl. Nu er den sidste blok på listen og
          har sin egen form — og den bygges, den bestilles ikke af
          en tæller på en række. */
-      grupper().filter(function (g) { return g.afdeling !== 'is'; })
-        .forEach(function (g) { kategoriRække(g, liste); });
-      isBlok(liste);
+      /* ⚠️ AFGJORT FØR LISTEN TEGNES. Kan isen ikke BYGGES — ejeren
+         har ingen kugleis med et valg — skal is-kategorierne stå på
+         deres egen plads i rækkefølgen, præcis som før. Første
+         udgave tog dem altid ud og lagde dem nederst i en nødudgang,
+         og MÅLT faldt prøven "kategorierne står i menukortets
+         rækkefølge": isen lå efter Øl i stedet for før. */
+      var byggerKanTegnes = kanByggeIs();
+      grupper().filter(function (g) {
+        return !byggerKanTegnes || g.afdeling !== 'is';
+      }).forEach(function (g) { kategoriRække(g, liste); });
+      if (byggerKanTegnes) isBlok(liste);
     } else {
       /* ⚠️ FYLDET STÅR ØVERST, IKKE UNDER DE FÆRDIGE RETTER.
          Det er dét, gæsten kommer efter; rejemad, tartar og
