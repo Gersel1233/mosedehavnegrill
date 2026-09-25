@@ -7,40 +7,38 @@
 --
 --  Filen skriver to indstillinger — og INGEN varer, INGEN priser:
 --
---  1) `is_smage` — smagene, gæsten vælger mellem til hver kugle.
---     Jordbær, vanilje og chokolade. Står der allerede smage (ejeren
---     har skrevet dem i admin), bliver de stående, og de tre lægges
---     til, hvis de mangler. Ejerens egne ord overskrives aldrig.
+--  1) `is_smage` — smagene til hver kugle: Jordbær, Vanilje,
+--     Chokolade. Står der smage i forvejen, bliver de stående, og kun
+--     de manglende lægges til. Ejerens egne ord overskrives aldrig.
+--  2) `is_opsaetning` — hvor i bestillingen hver is-vare står
+--     (størrelse, tilbehør, isboks, dessert, løst), hvor mange kugler
+--     den har, og om den kan fås med softice. KORT 05, ordret.
 --
---  2) `is_opsaetning` — hvor i bestillingen hver is-vare står: en
---     størrelse (trin 2 i "Is i vaffel eller bæger"), tilbehør
---     (trin 4), en isboks, en dessert eller løst. Plus hvor mange
---     kugler der er i den, og om den også kan fås med softice.
---     Tallene er KORT 05 IS & SØDT, ordret — se tabellen i punkt 2.
+--  ⚠️ REN SQL — INGEN DO-BLOKKE, INGEN LØKKER (25/9, aften).
+--     Første udgave havde to plpgsql-blokke med en `foreach … loop`,
+--     og i Supabases SQL Editor døde den med *"syntax error at or near
+--     "loop" — LINE 1: end loop"*: `end loop` blev læst som en
+--     sætning for sig. Teksten i editoren var 155 linjer mod filens
+--     255 — noget var faldet ud under kopieringen, og en halv
+--     plpgsql-blok giver en fejl, ingen kan læse. Nu er hver sætning
+--     hel for sig, og der står ikke ét semikolon inde i en tekst.
+--     Filen skrev INGENTING dengang (målt bagefter): intet er halvt.
 --
---  ⚠️ HVORFOR DET SKAL STÅ I DATABASEN OG IKKE LÆSES AF NAVNET.
---     Målt 25/9 mod produktionens 26 is-varer: navnet alene siger
---     ikke, at "Havnens café-is" er 3 kugler (det står i noten), at
---     "2 hjemmelavede pandekager med is" er 1 kugle (det står på
---     kortet, ikke i navnet), eller at "Bøtte med topping" sælges
---     løst. Uden filen står de tre som retter for sig uden at spørge
---     om smag — ufarligt, men ikke kortet. Med filen er de kortet.
+--  ⚠️ TJEK LINJETALLET. Sidste linje i filen siger, hvilket nummer
+--     den har. Står der et andet tal ud for den i editoren, mangler
+--     der noget — kopiér hele filen igen (Ctrl+A i "Raw" på GitHub).
 --
 --  ⚠️ DEN MATCHER PÅ NAVN, ALDRIG PÅ ID. Indstillingen gemmer id'et
---     (det er det, siden slår op på), men id'et FINDES af filen ud
---     fra varens navn blandt varerne i afdelingen "is". Arret er
+--     (det slår siden op på), men id'et FINDES ud fra varens navn
+--     blandt varerne i afdelingen "is". Arret er
 --     `kortets-priser-2.sql` (1/9). Står samme navn i to is-
---     kategorier (en database bygget af mappen har "Sauce, topping
---     eller guf" både under kugleis og softice), får begge samme
---     plads — de er det samme tilbehør.
+--     kategorier ("Sauce, topping eller guf" efter
+--     chefens-rettelser-25-9.sql), får begge samme plads.
 --
 --  ⚠️ EJERENS VALG VINDER. Har ejeren flyttet en vare i admin under
---     "Is & sødt", står hans valg tilbage: filen lægger kun de varer
---     ind, der ikke har et valg i forvejen. Den kan køres igen.
---
---  ⚠️ INGEN EJER-BLOK. `menu_vare_pris_ejer` vogter priser på
---     menu_varer; filen her skriver kun i `indstillinger`, som SQL
---     Editoren (rollen postgres) må skrive i.
+--     "Is & sødt", står hans valg: filen lægger kun de varer ind, der
+--     ikke har et valg i forvejen. Den kan køres igen uden at røre
+--     noget. Ingen ejer-blok: filen skriver kun i `indstillinger`.
 --
 --  Kør den i Mosede-projektet (epwyjzakvvbxtpvnhvbn).
 -- ============================================================
@@ -48,94 +46,64 @@
 begin;
 
 -- ------------------------------------------------------------
---  0) FINDES IS-AFDELINGEN? Et opslag, der rammer nul rækker,
---     fejler ikke — det er bare tavst. Så spørges der først.
---
---     ⚠️ DER SPØRGES PÅ AFDELINGEN, IKKE PÅ KATEGORIENS NAVN.
---     Produktionen kalder den "Kugleis"; en database bygget af
---     mappens egne filer kalder den "Kugleis og ishorn". Målt 25/9
---     på en lokal Postgres: første udgave spurgte på navnet og døde
---     her. Afdelingen "is" er ejerens eget felt og det, siden læser.
--- ------------------------------------------------------------
-do $$
-begin
-  if not exists (
-    select 1 from public.menu_kategorier mk
-     where mk.lokation_id = 'mosede' and mk.afdeling = 'is' and mk.aktiv) then
-    raise exception 'Ingen taendt kategori staar under afdelingen "is". Saet afdelingen paa isens kategorier i admin -> Menukort foerst.';
-  end if;
-end $$;
-
--- ------------------------------------------------------------
 --  1) SMAGENE — de tre lægges til, intet fjernes
 --     ---------------------------------------------------------
---     Feltet er en tekst med én smag pr. linje (sådan skriver admin
---     det), men siden læser også komma og en liste. Er det en
---     liste, læses den som en liste — en gammel form må ikke blive
---     til én lang smag.
+--     Feltet er en tekst med én smag pr. linje (sådan skriver
+--     admin det), men siden læser også komma, semikolon og en
+--     liste. Skilletegnene står som chr(), så der ikke er et
+--     semikolon inde i en tekst, en editor kan klippe over.
 -- ------------------------------------------------------------
-do $$
-declare
-  raa   jsonb;
-  har   text[] := array[]::text[];
-  ny    text[];
-  s     text;
-begin
-  select i.vaerdi into raa
-    from public.indstillinger i
-   where i.lokation_id = 'mosede' and i.noegle = 'is_smage';
-
-  if raa is not null and jsonb_typeof(raa) = 'array' then
-    select coalesce(array_agg(btrim(x)), array[]::text[]) into har
-      from jsonb_array_elements_text(raa) x where btrim(x) <> '';
-  elsif raa is not null and jsonb_typeof(raa) = 'string' then
-    select coalesce(array_agg(btrim(x)), array[]::text[]) into har
-      from regexp_split_to_table(raa #>> '{}', '[,;\n]+') x where btrim(x) <> '';
-  end if;
-
-  ny := har;
-  foreach s in array array['Jordbær', 'Vanilje', 'Chokolade'] loop
-    if not exists (select 1 from unnest(har) h where lower(h) = lower(s)) then
-      ny := ny || s;
-    end if;
-  end loop;
-
-  insert into public.indstillinger (lokation_id, noegle, vaerdi, aendret)
-  values ('mosede', 'is_smage', to_jsonb(array_to_string(ny, E'\n')), now())
-  on conflict (lokation_id, noegle)
-    do update set vaerdi = excluded.vaerdi, aendret = now()
-    where public.indstillinger.vaerdi is distinct from excluded.vaerdi;
-end $$;
+insert into public.indstillinger (lokation_id, noegle, vaerdi, aendret)
+select 'mosede', 'is_smage', to_jsonb(string_agg(alle.s, chr(10) order by alle.nr)), now()
+  from (
+    with raa as (
+      select i.vaerdi from public.indstillinger i
+       where i.lokation_id = 'mosede' and i.noegle = 'is_smage'
+    ), har as (
+      select btrim(t.x) as s, t.nr
+        from raa, regexp_split_to_table(
+               case when jsonb_typeof(raa.vaerdi) = 'string' then raa.vaerdi #>> '{}' else '' end,
+               '[,' || chr(59) || chr(10) || ']+') with ordinality as t(x, nr)
+       where btrim(t.x) <> ''
+      union all
+      select btrim(t.x), t.nr
+        from raa, jsonb_array_elements_text(
+               case when jsonb_typeof(raa.vaerdi) = 'array' then raa.vaerdi else '[]'::jsonb end)
+               with ordinality as t(x, nr)
+       where btrim(t.x) <> ''
+    )
+    select har.s, har.nr from har
+    union all
+    select n.s, 1000 + n.nr
+      from (values ('Jordbær', 1), ('Vanilje', 2), ('Chokolade', 3)) as n(s, nr)
+     where not exists (select 1 from har where lower(har.s) = lower(n.s))
+  ) as alle
+on conflict (lokation_id, noegle)
+  do update set vaerdi = excluded.vaerdi, aendret = now()
+  where public.indstillinger.vaerdi is distinct from excluded.vaerdi;
 
 -- ------------------------------------------------------------
 --  2) HVOR HVER IS-VARE STÅR — kort 05, ordret
 --     ---------------------------------------------------------
 --     rolle:  stoerrelse = "Hvor mange kugler?" (trin 2)
 --             tilbehoer  = "Noget mere?" (trin 4)
---             boks       = "Isboks" — sit eget forløb: fordel
---                          kuglerne på smagene
+--             boks       = "Isboks" — fordel kuglerne på smagene
 --             dessert    = "Desserter" — et kort pr. ret
 --             loes       = "Løst" — sælges, som det er
---     kugler: tomt = læses af navnet ("3 kugler" er tre)
---     softice: tomt = læses af navnet ("eller softice")
+--     kugler / softice: tomt = læses af navnet
 --
 --     Kortets egne ord bag de tal, der ikke står i navnet:
---       Havnens café-is        "3 kugler, softice-top, guf, …"
---       Isboks                 "Tag med på turen — 6 valgfrie kugler"
---       Pandekager med is      "2 hjemmelavede pandekager med 1 kugle is"
---       Affogato               "Espresso med vaniljeis" — smagen er
---                              givet, så der spørges ikke (0)
+--       Havnens café-is    "3 kugler, softice-top, guf, …"
+--       Isboks             "Tag med på turen — 6 valgfrie kugler"
+--       Pandekager med is  "2 hjemmelavede pandekager med 1 kugle is"
+--       Affogato           "Espresso med vaniljeis" — smagen er givet
 --       Churros med is og sauce — kortet siger IKKE hvor mange
---                              kugler. 0 = der spørges ikke om smag,
---                              til ejeren har sagt det (admin, "Is &
---                              sødt"). Et gæt var en gæst, der valgte
---                              to smage til én kugle.
+--                          kugler. 0 = der spørges ikke om smag, til
+--                          ejeren har sat tallet i admin
+--
+--     ⚠️ IKKE `on commit drop`: rapporten nederst står EFTER commit
+--     og læser listen. Tabellen forsvinder med forbindelsen.
 -- ------------------------------------------------------------
-/* ⚠️ IKKE `on commit drop`. Rapporten nederst står EFTER commit —
-   SQL Editoren viser kun den sidste sætnings svar, og står commit
-   sidst, viser den ingenting. Tabellen er midlertidig og forsvinder
-   med forbindelsen; `drop … if exists` gør, at filen kan køres igen
-   på en forbindelse, der er genbrugt. */
 drop table if exists is_kort;
 create temporary table is_kort (
   navn text, rolle text, kugler int, softice boolean
@@ -149,9 +117,7 @@ insert into is_kort values
   ('Softice, lille',                                 'stoerrelse', null, null),
   ('Softice, stor',                                  'stoerrelse', null, null),
   ('Ekstra kugle',                                   'tilbehoer',  1,    null),
-  /* Det gamle navn — chefens-rettelser-25-9.sql omdøber den til
-     "Sauce, topping eller guf" (linjen nedenfor rammer så begge).
-     Står her, så filen virker i begge rækkefølger. */
+  -- det gamle navn, før chefens-rettelser-25-9.sql — virker i begge rækkefølger
   ('Strøssel, topping eller guf',                    'tilbehoer',  0,    null),
   ('Softice-top',                                    'tilbehoer',  0,    null),
   ('Sauce, topping eller guf',                       'tilbehoer',  0,    null),
@@ -172,68 +138,43 @@ insert into is_kort values
   ('Løs vaffel, glutenfri',                          'loes',       0,    null),
   ('Bøtte med topping',                              'loes',       0,    null);
 
-do $$
-declare
-  raa     jsonb;
-  ejerens jsonb := '{}'::jsonb;
-  fra_kort jsonb;
-begin
-  select i.vaerdi into raa
-    from public.indstillinger i
-   where i.lokation_id = 'mosede' and i.noegle = 'is_opsaetning';
-
-  /* Siden læser både et objekt og en tekst med JSON i (js/isbygger.js,
-     opsaetning()). Filen gør det samme — ellers ville en tekst-form
-     blive overskrevet, og ejerens valg forsvandt tavst. */
-  if raa is not null and jsonb_typeof(raa) = 'object' then
-    ejerens := raa;
-  elsif raa is not null and jsonb_typeof(raa) = 'string' then
-    begin
-      ejerens := (raa #>> '{}')::jsonb;
-      if jsonb_typeof(ejerens) <> 'object' then ejerens := '{}'::jsonb; end if;
-    exception when others then
-      ejerens := '{}'::jsonb;
-    end;
-  end if;
-
-  select coalesce(jsonb_object_agg(
-           mv.id::text,
-           jsonb_strip_nulls(jsonb_build_object(
-             'rolle',   k.rolle,
-             'kugler',  k.kugler,
-             'softice', k.softice))), '{}'::jsonb)
-    into fra_kort
-    from is_kort k
-    join public.menu_kategorier mk
-      on mk.lokation_id = 'mosede'
-     and mk.afdeling = 'is'
-    join public.menu_varer mv
-      on mv.kategori_id = mk.id
-     and lower(btrim(mv.navn)) = lower(btrim(k.navn));
-
-  /* `||` lader HØJRE side vinde: ejerens valg lægges oven på kortets. */
-  insert into public.indstillinger (lokation_id, noegle, vaerdi, aendret)
-  values ('mosede', 'is_opsaetning', fra_kort || ejerens, now())
-  on conflict (lokation_id, noegle)
-    do update set vaerdi = excluded.vaerdi, aendret = now()
-    where public.indstillinger.vaerdi is distinct from excluded.vaerdi;
-end $$;
+/* `||` lader HØJRE side vinde: ejerens valg lægges oven på kortets.
+   Ejerens valg læses kun, når de er et objekt — sådan skriver admin
+   dem. Målt i produktionen 25/9: der var ingen i forvejen. */
+insert into public.indstillinger (lokation_id, noegle, vaerdi, aendret)
+select 'mosede', 'is_opsaetning',
+       coalesce((
+         select jsonb_object_agg(mv.id::text, jsonb_strip_nulls(jsonb_build_object(
+                  'rolle', k.rolle, 'kugler', k.kugler, 'softice', k.softice)))
+           from is_kort k
+           join public.menu_kategorier mk
+             on mk.lokation_id = 'mosede' and mk.afdeling = 'is'
+           join public.menu_varer mv
+             on mv.kategori_id = mk.id
+            and lower(btrim(mv.navn)) = lower(btrim(k.navn))
+       ), '{}'::jsonb)
+       || coalesce((
+         select i.vaerdi from public.indstillinger i
+          where i.lokation_id = 'mosede' and i.noegle = 'is_opsaetning'
+            and jsonb_typeof(i.vaerdi) = 'object'
+       ), '{}'::jsonb),
+       now()
+on conflict (lokation_id, noegle)
+  do update set vaerdi = excluded.vaerdi, aendret = now()
+  where public.indstillinger.vaerdi is distinct from excluded.vaerdi;
 
 commit;
 
 
 -- ------------------------------------------------------------
---  RAPPORT. Supabases SQL Editor viser kun den SIDSTE sætnings
---  svar — derfor ét select til sidst, efter commit.
+--  RAPPORT. SQL Editoren viser kun den SIDSTE sætnings svar.
 --
---  `varer_fundet` skal være 26. Er den mindre, står navnene på det,
---  filen ikke fandt, i `ikke_fundet` — så er en vare omdøbt, og den
---  står med det, navnet siger, til den flyttes i admin.
+--  `varer_fundet` skal være 26 (RÆKKER: efter chefens rettelser
+--  rammer "Sauce, topping eller guf" to rækker og "Strøssel …"
+--  ingen — 26 i begge rækkefølger). `ikke_fundet` skal være tom.
+--  `smagene` skal vise Jordbær, Vanilje og Chokolade.
 -- ------------------------------------------------------------
 select
-  /* ⚠️ RÆKKER, IKKE NAVNE: efter omdøbningen rammer "Sauce, topping
-     eller guf" to rækker (kugleis og softice), og "Strøssel …"
-     ingen. Tallet er 26 i begge rækkefølger. */
   (select count(distinct mv.id) from is_kort k
      join public.menu_kategorier mk
        on mk.lokation_id = 'mosede' and mk.afdeling = 'is'
@@ -243,13 +184,15 @@ select
             where lokation_id = 'mosede' and noegle = 'is_opsaetning') ? mv.id::text)
                                                     as varer_fundet_skal_vaere_26,
   (select string_agg(k.navn, ', ') from is_kort k
-    where k.navn <> 'Strøssel, topping eller guf'   -- det gamle navn, se ovenfor
+    where k.navn <> 'Strøssel, topping eller guf'
       and not exists (
       select 1 from public.menu_kategorier mk
         join public.menu_varer mv on mv.kategori_id = mk.id
        where mk.lokation_id = 'mosede' and mk.afdeling = 'is'
          and lower(btrim(mv.navn)) = lower(btrim(k.navn))))
                                                     as ikke_fundet,
-  (select vaerdi #>> '{}' from public.indstillinger
+  (select replace(vaerdi #>> '{}', chr(10), ', ') from public.indstillinger
     where lokation_id = 'mosede' and noegle = 'is_smage')
                                                     as smagene;
+
+-- ⚠️ SLUT PÅ FILEN — det her er linje 198.

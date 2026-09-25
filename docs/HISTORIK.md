@@ -7,6 +7,22 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**`isens-opsaetning.sql` DØDE I SQL EDITOREN — OG ER SKREVET OM TIL REN SQL**
+(25/9, aften). Mikkels skud: *"syntax error at or near "loop" — LINE 1: end
+loop"*. Teksten i editoren var 155 linjer; filen var 255 — noget var faldet
+ud under kopieringen, og en halv plpgsql-blok gav en fejl, ingen kunne læse.
+Målt bagefter med anon-nøglen: **fil 1 og 2 er kørt og landet** (271 aktive
+varer = 303 − 32, sandwichen har sine syv fyld, øl-teksten er væk, Strøssel
+er omdøbt), og **fil 3 skrev ingenting** — intet er halvt.
+
+Filen har nu ingen do-blokke, ingen løkker og ikke ét semikolon inde i en
+tekst eller kommentar, så en editor, der klipper sætninger ved `;`, får de
+samme otte sætninger. Sidste linje siger sit eget nummer (198), så et
+kopieringshul kan ses. Prøvet på den lokale kopi af produktionen: 26 varer,
+anden kørsel rører intet, "Pistacie; vanilje" bliver til fire smage uden
+dublet, ejerens egne valg vinder, og uden is-afdeling siger rapporten 0 og
+nævner alle navne.
+
 **CHEFENS RETTELSER — HOLDT OP MOD KORTENE OG DATABASEN** (25/9, aften).
 Chefens besked er læst post for post mod de trykte kort fra 25/9 og mod
 databasen (læst med anon-nøglen kl. 18.57). Mikkels afgørelser samme aften:
