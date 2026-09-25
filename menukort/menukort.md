@@ -4,9 +4,9 @@ Hentet direkte ud af databasen **2026-09-25**. Databasen er sandheden —
 retter ejeren en pris i admin, er filen her forældet samme sekund.
 Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
-- **271 varer** i **23 kategorier** står på kortet
+- **239 varer** i **23 kategorier** står på kortet
 - **1** af dem har ingen pris (og skal ikke have en — se nederst)
-- **229** kan bestilles online, ved lugen og fra bordet
+- **197** kan bestilles online, ved lugen og fra bordet
 
 ## Retter
 
@@ -83,14 +83,8 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 *Mad · kan bestilles*
 
-- **Flæskestegssandwich** — 75 kr.
-  <br>Saftig flæskesteg med sprød svær, rødkål og agurkesalat i blødt brød.
-- **Frikadellesandwich** — 75 kr.
-  <br>Lun frikadelle i blødt brød med rødkål, agurkesalat og dressing.
 - **Sandwich** — 75 kr.
-  <br>Kebab, kylling, tun, frikadelle eller æg
-- **Bøfsandwich** — 75 kr.
-  <br>Saftig bøf i blødt brød med brun sovs, rødbeder, agurk og ristede løg — den klassiske.
+  <br>Kebab, kylling/bacon, tun, frikadelle, æg, flæskesteg, roastbeef m.fl.
 
 ## Pølser
 
@@ -127,10 +121,6 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Fiskefilet med remoulade** — 55 kr.
 - **Fiskefilet med rejer og mayo** — 55 kr.
 - **Frikadelle med surt** — 55 kr.
-- **Hjemmelavet Hønsesalat** — 55 kr.
-- **Hjemmelavet Æggesalat** — 55 kr.
-- **Hjemmelavet Wienersalat** — 55 kr.
-- **Hjemmelavet Skinkesalat** — 55 kr.
 - **Leverpostej med surt** — 55 kr.
 - **Dyrlægens natmad** — 55 kr.
 - **Kartoffelmad med mayo, løg og bacon** — 55 kr.
@@ -144,10 +134,8 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Hvide sild** — 55 kr.
 - **Hvide sild med karry** — 55 kr.
 - **Æggemad med mayo og løg** — 55 kr.
-- **Æggemad med bacon og karry** — 55 kr.
 - **Hakkebøf med bløde løg og spejlæg** — 55 kr.
 - **Ostemad Mellem lageret** — 55 kr.
-- **Tomatmad** — 55 kr.
 - **Rejemad** — 95 kr.
   <br>Med mayo og citron — hel skive
 - **Tartarmad** — 95 kr.
@@ -163,12 +151,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 - **Flæskesteg med surt, håndmad** — 24 kr.
 - **Fiskefilet med remoulade, håndmad** — 24 kr.
-- **Fiskefilet med rejer og mayo, håndmad** — 24 kr.
 - **Frikadelle med surt, håndmad** — 24 kr.
-- **Hjemmelavet hønsesalat, håndmad** — 24 kr.
-- **Hjemmelavet Æggesalat, håndmad** — 24 kr.
-- **Hjemmelavet Wienersalat med tomat og løg, håndmad** — 24 kr.
-- **Hjemmelavet skinkesalat med tomat og løg, håndmad** — 24 kr.
 - **Leverpostej med surt, håndmad** — 24 kr.
 - **Dyrlægens natmad, håndmad** — 24 kr.
 - **Kartoffelmad med mayo, løg og bacon, håndmad** — 24 kr.
@@ -182,7 +165,6 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Hvide sild, håndmad** — 24 kr.
 - **Hvide sild med karry, håndmad** — 24 kr.
 - **Æggemad med mayo og løg, håndmad** — 24 kr.
-- **Æggemad med bacon og karry, håndmad** — 24 kr.
 - **Hakkebøf med bløde løg og spejlæg, håndmad** — 24 kr.
 - **Ostemad, mellem lageret  håndmad** — 24 kr.
 - **Dagens hjemmelavede pålægssalater, håndmad** — 24 kr.
@@ -213,14 +195,13 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **3 kugler** — 55 kr.
 - **Ekstra kugle** — 12 kr.
 - **4 kugler** — 65 kr.
-- **Strøssel, topping eller guf** — 8 kr.
+- **Sauce, topping eller guf** — 8 kr.
 - **Softice-top** — 15 kr.
 - **Løs vaffel** — 7 kr.
 - **Løs vaffel, glutenfri** — 7 kr.
 - **Bøtte med topping** — 20 kr.
 - **Isboks, ca. 6 kugler eller softice** — 90 kr.
   <br>6 kugler efter eget valg — eller fyldt med softice
-- **Mosede Isen** — 65 kr.
 - **Havnens café-is** — 79 kr.
   <br>3 kugler, softice-top, guf, flødeskum og syltetøj
 
@@ -322,28 +303,10 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
   <br>Toastbrød eller rugbrød · ost · skinke · spejlæg
 - **Franskbrød med pålæg** — 35 kr.
   <br>Franskbrød med smør og pålæg.
-- **Brunchtallerken** — 349 kr.
-  <br>Spejl- eller røræg · bacon · pølse · skyr med knas · pålæg · marmelade · frugt · grønt · pandekage · bønner i tomat · brød · smør
 - **Wienerbrød** — 30 kr.
   <br>Sælges kun helt.
 - **Morgenbrød** — _spørg_
   <br>Rundstykker og morgenbrød kan bestilles — sig til dagen før
-
-## Ispinde
-
-*Is · kan bestilles*
-
-- **Excellence, chokolade og brombær** — 32 kr.
-- **Excellence, chokolade og mandel** — 32 kr.
-- **Maxibon** — 31 kr.
-- **Ternet Ninja** — 28 kr.
-- **Raketis med drys** — 25 kr.
-- **50'eren** — 25 kr.
-- **Vandmelon** — 24 kr.
-- **Isbjørn, gul** — 22 kr.
-- **Isbjørn, pink** — 22 kr.
-- **Star-is** — 20 kr.
-- **Sort/hvid is** — 20 kr.
 
 ## Tilkøb morgenmad
 
@@ -369,10 +332,6 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 - **Glutenfrit brød (tillæg)** — 5 kr.
   <br>Til smørrebrød og burgere — 10 kr. pr. stk.
-- **Laktosefri (tillæg)** — 10 kr.
-  <br>10 kr. pr. stk.
-- **Vegansk (tillæg)** — 10 kr.
-  <br>10 kr. pr. stk.
 
 ## Tilkøb ud af huset
 
@@ -426,7 +385,6 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Gammeldags æblekage** — 35 kr.
 - **Flødekager** — 40 kr.
 - **Kaffe og kage** — 65 kr.
-- **Kaffe og pandekage** — 65 kr.
 
 ## Øl
 
@@ -437,9 +395,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Fadøl lux, lille** — 40 kr.
 - **Fadøl lux, stor** — 60 kr.
 - **Flaske eller dåse** — 30 kr.
-  <br>Kun take away
 - **Gylden Dame / Lux** — 40 kr.
-  <br>Kun take away
 - **Alkoholfri øl** — 30 kr.
 - **Specialøl, lille** — 50 kr.
 - **Specialøl, stor** — 70 kr.
@@ -464,7 +420,6 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Sodavand, juice, iste eller kakao – lille** — 30 kr.
 - **Sodavand, juice, iste eller kakao – stor** — 40 kr.
 - **Smoothie eller milkshake** — 59 kr.
-- **Dåse eller flaske sodavand** — 30 kr.
 - **Mælk** — 20 kr.
 - **Cocio** — 35 kr.
 - **Kildevand** — 20 kr.

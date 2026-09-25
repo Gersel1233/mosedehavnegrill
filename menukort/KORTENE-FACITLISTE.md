@@ -424,45 +424,6 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 ## Hvad kortene og databasen er uenige om
 
-### Varer i databasen, som intet kort viser
-
-De kan bestilles på hjemmesiden, ved lugen og fra bordet, men
-en gæst med et trykt kort i hånden ser dem ikke. Enten skal de
-på et kort, eller også skal de slukkes i admin.
-
-| Kategori | Vare | Pris |
-|---|---|---:|
-| Sandwich | Bøfsandwich | 75,- |
-| Smørrebrød | Hjemmelavet Hønsesalat | 55,- |
-| Smørrebrød | Hjemmelavet Æggesalat | 55,- |
-| Smørrebrød | Hjemmelavet Wienersalat | 55,- |
-| Smørrebrød | Hjemmelavet Skinkesalat | 55,- |
-| Smørrebrød | Æggemad med bacon og karry | 55,- |
-| Smørrebrød | Tomatmad | 55,- |
-| Håndmadder | Fiskefilet med rejer og mayo, håndmad | 24,- |
-| Håndmadder | Hjemmelavet hønsesalat, håndmad | 24,- |
-| Håndmadder | Hjemmelavet Æggesalat, håndmad | 24,- |
-| Håndmadder | Hjemmelavet Wienersalat med tomat og løg, håndmad | 24,- |
-| Håndmadder | Hjemmelavet skinkesalat med tomat og løg, håndmad | 24,- |
-| Håndmadder | Æggemad med bacon og karry, håndmad | 24,- |
-| Kugleis | Mosede Isen | 65,- |
-| Ispinde | Excellence, chokolade og brombær | 32,- |
-| Ispinde | Excellence, chokolade og mandel | 32,- |
-| Ispinde | Maxibon | 31,- |
-| Ispinde | Ternet Ninja | 28,- |
-| Ispinde | Raketis med drys | 25,- |
-| Ispinde | 50'eren | 25,- |
-| Ispinde | Vandmelon | 24,- |
-| Ispinde | Isbjørn, gul | 22,- |
-| Ispinde | Isbjørn, pink | 22,- |
-| Ispinde | Star-is | 20,- |
-| Ispinde | Sort/hvid is | 20,- |
-| Morgenmad | Brunchtallerken | 349,- |
-| Tillæg: glutenfri, laktosefri og vegansk | Laktosefri (tillæg) | 10,- |
-| Tillæg: glutenfri, laktosefri og vegansk | Vegansk (tillæg) | 10,- |
-| Kaffe og varme drikke | Kaffe og pandekage | 65,- |
-| Sodavand, juice og kakao | Dåse eller flaske sodavand | 30,- |
-
 ### Påstande på kortene, der ikke er varer
 
 De kan ikke måles mod databasen. De skal bekræftes af ejeren,
