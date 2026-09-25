@@ -7,6 +7,87 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**ISEN BESTILLES NU PR. PORTION — HVAD SKAL DER I DEN ENKELTE VAFFEL**
+(25/9). Mikkels ord: *"når man bestiller en is skal man med kugler smage
+osv osv kunne gøre det rigtigt og ikke bare bestille 10 kugler til 1
+vaffel og være konkret og godt i admin og på bestillingssiden hvor mange
+vafler man har købt og hvad der skal i de enkelte — altså det skal næsten
+være et helt andet bestillingssystem."*
+
+**Ingen SQL.** `linjer` er jsonb, og kun `navn`/`antal`/`pris`/`variant` er
+værnet; smagene er en ny nøgle på linjen, og ejerens liste er en nøgle i
+`indstillinger`. Der er intet at køre.
+
+Sådan hænger det sammen:
+
+- **Hvor mange vafler** svarede tælleren allerede: 2 kugler × Vaffel = to
+  portioner. Ti kugler til én vaffel er strukturelt umuligt, når
+  kugletallet læses af varens EGET navn (`Butik.kuglerI`)
+- **Hvilke smage** fandtes ingen steder. Ejeren skriver dem i admin →
+  Menukort → **Isens smage**, én pr. linje. **Vi finder ikke på smage:**
+  er feltet tomt, spørger bestillingen slet ikke, og siden opfører sig
+  præcis som i går
+- **Ved afsendelsen deles linjen op** (`Butik.delIPortioner`): to vafler
+  bliver to linjer à 1 med hver sine smage. Beløbet er uændret — to gange
+  antal 1 er det, antal 2 var. Køkkenet, Overblik, bonen, skraldespanden
+  og `min-bestilling/` viser dem alle, fordi de alle går gennem
+  `Butik.linjeNavn`
+- **Alle tre veje** har det: forsiden og bordet bag QR-koden tegner hver
+  sin liste, men reglerne — `smagTilAntal`, `smagMangler`, `isSmage`,
+  `kuglerI`, `delIPortioner` — bor i `Butik`
+
+**⚠️ TRE MÅLINGER, DER VÆLTEDE EN ANTAGELSE:**
+
+1. **Afdelingsfarven har aldrig virket i bestillingen.** `grupper()` bar
+   aldrig `afdeling` med over, så hver kategoriflise har stået i madens
+   røde siden 29/8 — også isen og drikkevarerne — mens kommentaren i
+   stilarket påstod *"farven kommer fra afdelingen, som ejeren sætter i
+   admin"*. Fundet ved at måle den beregnede klasse, ikke ved at læse
+2. **`.is-smag` slog aldrig igennem.** `select.inp` (0,1,1) slår en ren
+   klasse (0,1,0): feltet stod med 48 px, 15 px skrift og 38 px pileplads
+   — ikke de 38, 13 og 8, der stod i filen. På et skud læste der
+   *"Lakrid"* og *"Mango"*. Nu `select.is-smag`, og prøven læser den
+   BEREGNEDE stil op mod tidsvælgeren
+3. **Kurven bygges op PÅ NY efter en afsendelse** — ikke tømt — af en fast
+   liste felter, og `smage` var ikke med. Fra anden bestilling og frem var
+   den `undefined`, og andet tryk på Send åbnede slet ikke det sidste kig:
+   ingen fejl på skærmen, bare ingenting. Tre prøver faldt på det. **Samme
+   fælde som `Butik.bestil`s faste felter (4/9: emballagen og
+   fragtlinjen) — tredje gang i huset.** Værnet er nu en prøve, der IKKE
+   kender feltnavnene: den læser kurvens nøgler før og efter en
+   afsendelse og kræver, at ingen forsvandt
+
+**⚠️ HEROENS FILM: 25 RØDE, DER IKKE VAR EN FEJL.** Den fulde runde gav
+4609 bestod / 25 fejlede, alle i `hero-film.spec.js` og `loader.spec.js`.
+De fejlede også alene med én arbejder — altså ikke en sulten maskine — og
+de fejlede NØJAGTIG ens på grundlaget `b625ee7`, hvis egen commit-besked
+siger *"4576 bestod, 0 fejlede"*. Målt i prøvebrowseren:
+
+```
+canPlayType('video/mp4; codecs="avc1.42E01E")  →  ""          (kan ikke)
+canPlayType('video/webm; codecs="vp9")         →  "probably"
+```
+
+Sky-containerens Chromium har ingen proprietære codecs. Filmen kan ikke
+spille, `film-aabner` sættes aldrig, og tolv prøver falder på en side, der
+ikke fejler — gæstens Safari og Chrome afspiller H.264 fint. **Filen sagde
+selv *"målt 11/9: Chromium 151 svarer probably"*: én maskine, én dag,
+skrevet ned som en sandhed.** Nu spørger prøven selv, hver gang, og
+springer kun de tolv over, der skal se filmen SPILLE. Kan browseren
+H.264, kører alle tolv igen. Efter: 32 bestod, 13 sprunget over, 0
+fejlede, begge profiler.
+
+**Det, der IKKE er lavet — og hvorfor ikke:** tilbehøret (Ekstra kugle 12,
+Strøssel/topping/guf, Softice-top) hænger stadig som løse linjer uden at
+pege på en bestemt vaffel. Hvilke varer der ER tilbehør til en is, står
+ingen steder i data, og et gæt ville stå på siden som ejerens ord. Det
+kræver enten et flueben pr. vare i admin eller et svar fra Mikkel.
+
+**Stadig ubesvaret fra 25/9:** de 18 håndmadpriser (27 på kortene mod 24 i
+databasen — ejerens eget ord fra 21/9), kort **06 Kaffe** og **07 Øl**, der
+aldrig blev sendt, og de syv andre spørgsmål i rapportpunkt 9 i
+`supabase/kortene-25-9.sql`.
+
 **DE NYE TRYKTE KORT ER MÅLT MOD DATABASEN — 40 UOVERENSSTEMMELSER**
 (25/9). Mikkels ord med ni filer: *"ret hele sortimentet så det passer
 perfekt med de her nye menukort, ændrer priser og fjern/tilføj varer hvis
