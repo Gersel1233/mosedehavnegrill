@@ -2844,7 +2844,7 @@
   }
 
   /* ============================================================
-     IS & SØDT — ISENS FORLØB  (26/9)
+     IS & SØDT — ISENS FORLØB  (25/9)
      ------------------------------------------------------------
      Kundens ord: *"admin med isen — saml det hele i én kategori
      med underkategorier inde i, men som udseende med flowet er på

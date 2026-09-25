@@ -1264,7 +1264,7 @@
     return sm.length ? ud + ' · ' + sm.join(' + ') : ud;
   }
 
-  /* ⚠️ EN ISBOKS HAR SEKS KUGLER  (26/9). Smagene ligger på linjen
+  /* ⚠️ EN ISBOKS HAR SEKS KUGLER  (25/9). Smagene ligger på linjen
      med én plads pr. kugle, fordi det er dét, der kan tælles og
      tjekkes. Men på bonen blev en isboks til "Jordbær + Jordbær +
      Vanilje + Vanilje + Chokolade + Chokolade" — seks ord, køkkenet

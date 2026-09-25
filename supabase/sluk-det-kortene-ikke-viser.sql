@@ -6,7 +6,7 @@
 --
 --  Listen er IKKE skrevet af i hånden. Den er afsnit B i
 --  `vaerktoej/sammenlign-kort.py` — "varer i databasen, som intet
---  kort viser" — kørt mod produktionen 26/9 med anon-nøglen, efter
+--  kort viser" — kørt mod produktionen 25/9 med anon-nøglen, efter
 --  at kortenes-huller-25-9.sql og glutenfri-vaffel-samme-pris.sql
 --  var kørt. 30 varer. En liste, der skrives af, er en liste, der
 --  glemmer én.
@@ -95,7 +95,7 @@ commit;
 --  og så står den stadig tændt — navnene i `ikke_fundet` siger
 --  hvilke. `stadig_taendt` SKAL være 0.
 --
---  ⚠️ `raekker_slukket` TÆLLER RÆKKER, IKKE NAVNE. Målt 26/9 på en
+--  ⚠️ `raekker_slukket` TÆLLER RÆKKER, IKKE NAVNE. Målt 25/9 på en
 --  lokal Postgres: én linje på listen ramte TO rækker ("Hjemmelavet
 --  hønsesalat" og "Hjemmelavet Hønsesalat" i samme kategori), og
 --  psql sagde `UPDATE 31` — men SQL Editoren viser kun den sidste

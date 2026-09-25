@@ -13134,7 +13134,7 @@ body.personale .isbar-under {
 }
 body.personale .isbar-note { margin: 3px 0 8px; font-size: 13px; color: var(--muted); }
 body.personale .isbar-tom { margin: 0; font-size: 13px; font-style: italic; color: var(--muted); }
-/* ⚠️ ÉN LINJE PR. VARE. MÅLT 26/9 på 1440 px: navn, felter og en
+/* ⚠️ ÉN LINJE PR. VARE. MÅLT 25/9 på 1440 px: navn, felter og en
    knap under hinanden gav rækker på 140 px — 26 is-varer blev
    3.600 px, ejeren skulle rulle igennem for at nå desserterne. Side
    om side er de ~52 px, og de brydes kun, når der ikke er plads. */

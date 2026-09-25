@@ -6,7 +6,7 @@
    vaffel, hvor mange kugler du vil have, +1 okay hvad smag, bam +2
    hvad smag, skal du have andet."*
 
-   Og 26/9: *"kig is-menukortene igennem og dimensionér — hvis jeg
+   Og 25/9: *"kig is-menukortene igennem og dimensionér — hvis jeg
    vil vælge en isboks, skal det være et andet bestillingsflow ...
    tænk: okay, bestillingsflowet er typisk sådan her andre
    is-steder, den her skal have noget anderledes, og de her skal
@@ -261,7 +261,7 @@ window.MosedeIsbygger = (function () {
   /* ⚠️ ISBAREN OVERTAGER KUN, NÅR DER ER NOGET AT SPØRGE OM.
      Husets beslutning 25/9: *"kan isen ikke bygges, skal
      is-kategorierne stå på deres egen plads i rækkefølgen, præcis
-     som før."* Første udgave af 26/9 lod en forretning med én
+     som før."* Første udgave af 25/9 lod en forretning med én
      softice uden valg få en hel isbar med én flise — og så forsvandt
      dens almindelige række med tælleren (MÅLT: prøven "is-rækken
      har en anden flade" faldt). Isbaren har sin berettigelse, når

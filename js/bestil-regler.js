@@ -324,12 +324,12 @@
     return Array.isArray(v) ? v.map(Number) : [];
   }
 
-  /* ⚠️ ISEN PAKKES ALDRIG  (26/9). Kundens ord: *"man skal heller
+  /* ⚠️ ISEN PAKKES ALDRIG  (25/9). Kundens ord: *"man skal heller
      ikke betale for emballage på isene."*
 
      Noten øverst har sagt "en sodavand og en is skal ikke pakkes"
      siden 30/8 — men den var aldrig et værn. MÅLT i produktionen
-     26/9: `emballage_kategorier` er TOM, og tom betyder "alt ud af
+     25/9: `emballage_kategorier` er TOM, og tom betyder "alt ud af
      huset". Så hver eneste is til afhentning på forsiden fik 10 kr.
      i emballage lagt oveni, mens kommentaren her påstod det modsatte.
 

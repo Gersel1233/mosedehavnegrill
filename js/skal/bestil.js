@@ -1361,7 +1361,7 @@
      ville skride fra den dag, reglen ændrer sig. */
   function kanByggeIs() {
     if (!window.MosedeIsbygger) return false;
-    /* ⚠️ IKKE KUN STØRRELSERNE (26/9). En forretning kan have en
+    /* ⚠️ IKKE KUN STØRRELSERNE (25/9). En forretning kan have en
        isboks og desserter uden en eneste kugle-is i vaffel — og så
        skal isbaren stadig tegnes. Svaret er byggerens eget. */
     return window.MosedeIsbygger.kanBygges(isVarer(), data);
@@ -1374,7 +1374,7 @@
     var blok = lav('div', 'isbyg-blok');
     var hoved = lav('div', 'isbyg-blok-hoved');
     hoved.appendChild(lav('span', 'isbyg-blok-tegn', '🍦'));
-    /* ⚠️ KORTETS EGET NAVN (26/9). Blokken hed "Byg din is", men den
+    /* ⚠️ KORTETS EGET NAVN (25/9). Blokken hed "Byg din is", men den
        rummer nu også isboksen, pandekagerne og churros — og dem
        bygger man ikke. Kort 05 hedder "IS & SØDT", og gæsten, der
        har det trykte kort i hånden, skal kunne finde det samme ord
