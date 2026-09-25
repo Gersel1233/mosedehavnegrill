@@ -1444,21 +1444,29 @@ test.describe('Isens smage', () => {
       .toBe('Vanilje\nJordbær\nLakrids');
 
     /* ⚠️ OG SÅ UD PÅ SIDEN. En liste, der bliver i admin, er
-       ingen liste. Gæsten åbner isen og lægger ÉN vaffel i
-       kurven; så skal der stå to smagsvælgere — én pr. kugle —
-       med præcis ejerens tre navne i. */
-    await page.goto('/index.html');
-    const kat = page.locator('#bestil .item[data-afd="is"]').first();
-    await kat.locator('[data-add]').waitFor({ state: 'attached' });
-    await kat.click();
-    const række = page.locator('#bestil .item[data-vare="2 kugler"]').first();
-    await række.locator('.item-valg-linje[data-valg="Vaffel"] button[data-d="+"]').click();
+       ingen liste. Gæsten vælger vaffel og to kugler; så skal der
+       stå to smagsvælgere — én pr. kugle — med præcis ejerens tre
+       navne i.
 
-    const vælgere = række.locator('.is-portion[data-portion="0"] .is-smag');
+       ⚠️ STEDET ER FLYTTET, IKKE REGLEN (25/9). Prøven målte før
+       `.is-portion .is-smag` på en almindelig varerække. Isen har
+       siden fået sit eget forløb (js/isbygger.js), og rækken
+       findes ikke mere på forsiden. Reglen — ejerens liste ER
+       gæstens valgmuligheder — er præcis den samme og er dét,
+       hele feltet i admin findes for, så prøven er flyttet med og
+       ikke fjernet. Selve byggerens egne regler prøves i
+       tests/isbyggeren.spec.js. */
+    await page.goto('/index.html');
+    await page.waitForSelector('.isbyg-blok');
+    const trin = (nr) => page.locator(`.isbyg-trin[data-trin="${nr}"]`);
+    await trin(1).locator('.isbyg-knap').filter({ hasText: 'Vaffel' }).first().click();
+    await trin(2).locator('.isbyg-knap').filter({ hasText: '2 kugler' }).first().click();
+
+    const vælgere = trin(3).locator('select');
     await expect(vælgere, '"2 kugler" gav ikke to vælgere').toHaveCount(2);
     expect(await vælgere.first().locator('option').allTextContents(),
       'gæsten fik ikke ejerens smage at vælge imellem')
-      .toEqual(['Smag', 'Vanilje', 'Jordbær', 'Lakrids']);
+      .toEqual(['Vælg smag', 'Vanilje', 'Jordbær', 'Lakrids']);
   });
 
   /* ⚠️ EN SMAG ER ET NAVN, IKKE EN HISTORIE. Uden grænsen kunne
@@ -1586,6 +1594,118 @@ test.describe('En slukket kategori er ikke en manglende pris', () => {
    — tallet kommer altså udefra, ikke fra den funktion, der skal
    kontrolleres.
    ============================================================ */
+/* ============================================================
+   FANEN ÅBNER PÅ DET, MAN KOM FOR  (25. sep 2026)
+   ------------------------------------------------------------
+   Kundens ord: *"ift hele admin med menukort og hvad vises hvor
+   osv osv — det skal være tydeligt, overskueligt og nemt at se og
+   navigere i med udseendet, sektioner, emojis ... ligesom det vi
+   gjorde med bestillingerne."*
+
+   ⚠️ OG DET VAR EN MÅLING, DER FANDT DET. Kommentaren i admin.html
+   sagde, at tapaskortet stod først, fordi det var "lille nok til
+   ikke at skubbe sortimentets tal og søgning ud af skærmen". Det
+   passede, da den blev skrevet. MÅLT med ejerens rigtige kort (336
+   varer, hentet af produktionen): tapaskortet er 803 px og isens
+   smage 328, så sortimentets tal begyndte 1.410 px nede — to hele
+   skærme forbi dét, man åbner fanen for.
+
+   ⚠️ PRØVEN MÅLER PÅ ET STORT KORT. Med grunddatas otte varer
+   fylder ingenting noget, og en prøve på fiksturet ville bestå,
+   uanset hvordan siden så ud hos ejeren. Derfor skrives der 40
+   varer ind — over FOLD_FRA, som er admins eget tal for "nu er
+   kortet langt".
+   ============================================================ */
+test.describe('Menukortfanen åbner på sortimentet', () => {
+
+  function stortKort() {
+    const d = grunddata();
+    for (let i = 0; i < 40; i++) {
+      d.menu_varer.push({ id: 7000 + i, kategori_id: 1, navn: 'Prøvemad ' + i,
+        beskrivelse: null, pris: 49, fremhaevet: false, udsolgt: false,
+        sortering: 100 + i, aktiv: true });
+    }
+    return d;
+  }
+
+  test('sortimentet står før tapasfadet og isens smage', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    const top = (v) => page.locator(v).first().evaluate(
+      (e) => Math.round(e.getBoundingClientRect().top + window.scrollY));
+
+    const sortiment = await top('#menu-status');
+    const tapas = await top('#tapas-kort');
+    const is = await top('#is-smage-kort');
+
+    expect(sortiment, `sortimentets tal begynder ${sortiment} px nede, `
+      + `tapaskortet ${tapas} px`).toBeLessThan(tapas);
+    expect(sortiment, 'isens smage står før sortimentet').toBeLessThan(is);
+    /* Og det er på FØRSTE skærm — ikke bare før. En telefon er 844
+       px høj, og et tal, man skal rulle efter, er et tal, man ikke
+       ser. Højden kommer udefra: iPhone 13's egen. */
+    expect(sortiment, 'sortimentet er ikke på den første skærm').toBeLessThan(844);
+  });
+
+  /* De to indstillinger må ikke bare blive smidt nedenunder uden
+     et ord om, hvad de er. En overskrift er forskellen på "de
+     ligger der" og "de hører sammen". */
+  test('de to indstillinger har fået deres egen overskrift', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    const ord = page.locator('.menu-afsnit-navn', { hasText: 'Særlige indstillinger' });
+    await expect(ord).toHaveCount(1);
+    const overskrift = await ord.first().evaluate(
+      (e) => Math.round(e.getBoundingClientRect().top + window.scrollY));
+    const tapas = await page.locator('#tapas-kort').first().evaluate(
+      (e) => Math.round(e.getBoundingClientRect().top + window.scrollY));
+    expect(overskrift, 'overskriften står ikke over de to kort')
+      .toBeLessThan(tapas);
+  });
+
+  /* ⚠️ EMOJIEN ER GÆSTESIDENS EGEN, og det er hele pointen: et sæt
+     tegn i admin og et andet på hjemmesiden ville betyde, at
+     ejeren leder efter 🍺 i en liste, hvor øllet står med 🍽️.
+     Tallet kommer udefra — js/menu-emoji.js er gæstesidens fil. */
+  test('kategorierne bærer det samme tegn som på hjemmesiden', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    const svar = await page.evaluate(() => {
+      const ud = [];
+      document.querySelectorAll('.menu-fold').forEach((f) => {
+        const id = Number(f.getAttribute('data-fold'));
+        const k = (window.Admin.data.menu_kategorier || [])
+          .filter((x) => Number(x.id) === id)[0];
+        const tegn = f.querySelector('.menu-fold-tegn');
+        ud.push({ navn: k && k.navn, vist: tegn && tegn.textContent,
+          gaesten: k && window.MosedeEmoji.forKategori(k) });
+      });
+      return ud;
+    });
+    expect(svar.length, 'der var ingen folde at måle på').toBeGreaterThan(0);
+    svar.forEach((r) => {
+      expect(r.vist, `"${r.navn}" bærer ikke gæstesidens tegn`).toBe(r.gaesten);
+    });
+  });
+
+  /* ⚠️ OG FOLDEN MÅ IKKE SKRIDE AF DET. Folden er et grid med
+     faste kolonner; MÅLT 25/9 rykkede tegnet hver eneste celle én
+     plads, så navnet stod yderst til højre og "30 varer" yderst
+     til venstre. Prøven læser den BEREGNEDE placering: navnet skal
+     stå til venstre for antallet. */
+  test('tegnet skubber ikke foldens navn og antal ud af plads', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    const fold = page.locator('.menu-fold').first();
+    const x = (v) => fold.locator(v).evaluate(
+      (e) => Math.round(e.getBoundingClientRect().left));
+    const pil = await x('.menu-fold-pil');
+    const tegn = await x('.menu-fold-tegn');
+    const navn = await x('.menu-fold-navn');
+    const antal = await x('.menu-fold-antal');
+    expect(pil, 'pilen står ikke først').toBeLessThan(tegn);
+    expect(tegn, 'tegnet står ikke før navnet').toBeLessThan(navn);
+    expect(navn, `navnet (${navn} px) står efter antallet (${antal} px)`)
+      .toBeLessThan(antal);
+  });
+});
+
 test.describe('Menukortet er delt op efter, hvor varerne sælges', () => {
 
   /* Grunddatas fire kategorier rammer hvert sit afsnit:

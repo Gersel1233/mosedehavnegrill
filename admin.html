@@ -2507,6 +2507,71 @@
 
     <!-- Menukort -->
     <div id="p-menu" class="panel skjult">
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Fast sortiment</h2>
+          <span class="kort-note">ændringer er på hjemmesiden med det samme</span>
+        </div>
+        <!-- ⚠️ ÉN BLOK PROSA, IKKE TRE (26/8). Der stod tre afsnit
+             her, og de sagde tilsammen 90 ord over et kort med 242
+             rækker. Reglen står i CLAUDE.md: højst én blok løs
+             prosa pr. kort — resten hører til ved feltet, hvor det
+             betyder noget.
+
+             ⚠️ OG HER STOD, AT DE TO KLIPPEDE VAR FLYTTET (27/8).
+             Det passede kun halvt, og det kostede to prøver:
+
+             · "Det står nu som titel på prisfeltets eget panel" —
+               det gjorde det ikke. Panelets eyebrow sagde bare
+               "Priser". Sætningen var væk.
+             · "Det står nu på Udsolgt-knappen selv (title)" — det
+               gjorde det, og det er værre end ingenting: fanen
+               bruges på en iPad i et køkken, og en title er en
+               tooltip, som en finger aldrig fremkalder.
+
+             Begge dele står i blokken herunder nu. Den er stadig
+             ÉN blok — en sætning mere er ikke et afsnit mere.
+             En kommentar er ikke en flytning. -->
+        <p class="hjaelp">
+          Alt gemmes automatisk, mens du skriver. <strong>Tom pris</strong> =
+          varen kan ses, men ikke bestilles. <strong>Udsolgt</strong> streger
+          den ud med det samme — også for en telefon, der havde kortet åbent
+          i forvejen; <strong>Vis</strong> tager den helt af kortet.
+          ⚠️ Retter I en pris, står det gamle tal stadig på kortet ved lugen,
+          til I får trykt det om.
+        </p>
+        <div id="menu-redigering"></div>
+      </div>
+
+      <!-- ============ SÆRLIGE INDSTILLINGER =================
+           ⚠️ DE HER TO STOD ØVERST, OG DET VAR MÅLT FORKERT (25/9).
+           Kommentaren ved tapaskortet sagde, at det stod først,
+           fordi det var "lille nok til ikke at skubbe sortimentets
+           tal og søgning ud af skærmen". Det passede, da det blev
+           skrevet. Med ejerens rigtige kort MÅLT: tapaskortet er
+           803 px og isens smage 328, så sortimentets tal og
+           søgefelt begyndte 1.410 px nede — to hele skærme forbi
+           dét, man åbner fanen for.
+
+           Kundens ord: *"det skal være tydeligt, overskueligt og
+           nemt at se og navigere i ... ligesom det vi gjorde med
+           bestillingerne."* Altså: sortimentet først, og de to
+           ting, man retter én gang om året, i deres eget afsnit
+           med en overskrift, der siger hvad de er.
+
+           En kommentar, der påstår et tal, skal måles igen, når
+           indholdet vokser — den her gjorde ikke, og så stod den
+           og var forkert i tre uger. -->
+      <!-- ⚠️ SAMME OVERSKRIFT SOM SORTIMENTETS EGNE AFSNIT. Første
+           udgave fandt en ny klasse på (.h-afsnit), og en ny klasse
+           er en ny skriftstørrelse, et nyt loft i tests/typografi
+           og to steder at rette det samme. .menu-afsnit er
+           kategoriernes egen overskrift lige ovenfor. -->
+      <div class="menu-afsnit luft-top">
+        <span class="menu-afsnit-navn">⚙️ Særlige indstillinger</span>
+        <span class="menu-afsnit-note">tapasfadet og isens smage — ændrer sig sjældent</span>
+      </div>
+
       <!-- ============ HAVNENS TAPAS ========================
            Spiis' menukort-fane har tapassen som sit eget kort
            (kundens forlæg 29/8), og herovre bor tallene i
@@ -2545,42 +2610,6 @@
           <span class="kort-note">gæsten vælger en smag pr. kugle — gemmes automatisk</span>
         </div>
         <div id="is-smage-felter"></div>
-      </div>
-
-      <div class="kort luft-top">
-        <div class="kort-hoved">
-          <h2 class="h-panel">Fast sortiment</h2>
-          <span class="kort-note">ændringer er på hjemmesiden med det samme</span>
-        </div>
-        <!-- ⚠️ ÉN BLOK PROSA, IKKE TRE (26/8). Der stod tre afsnit
-             her, og de sagde tilsammen 90 ord over et kort med 242
-             rækker. Reglen står i CLAUDE.md: højst én blok løs
-             prosa pr. kort — resten hører til ved feltet, hvor det
-             betyder noget.
-
-             ⚠️ OG HER STOD, AT DE TO KLIPPEDE VAR FLYTTET (27/8).
-             Det passede kun halvt, og det kostede to prøver:
-
-             · "Det står nu som titel på prisfeltets eget panel" —
-               det gjorde det ikke. Panelets eyebrow sagde bare
-               "Priser". Sætningen var væk.
-             · "Det står nu på Udsolgt-knappen selv (title)" — det
-               gjorde det, og det er værre end ingenting: fanen
-               bruges på en iPad i et køkken, og en title er en
-               tooltip, som en finger aldrig fremkalder.
-
-             Begge dele står i blokken herunder nu. Den er stadig
-             ÉN blok — en sætning mere er ikke et afsnit mere.
-             En kommentar er ikke en flytning. -->
-        <p class="hjaelp">
-          Alt gemmes automatisk, mens du skriver. <strong>Tom pris</strong> =
-          varen kan ses, men ikke bestilles. <strong>Udsolgt</strong> streger
-          den ud med det samme — også for en telefon, der havde kortet åbent
-          i forvejen; <strong>Vis</strong> tager den helt af kortet.
-          ⚠️ Retter I en pris, står det gamle tal stadig på kortet ved lugen,
-          til I får trykt det om.
-        </p>
-        <div id="menu-redigering"></div>
       </div>
 
       <!-- ⚠️ TIL DEN, DER SKAL TRYKKE ET MENUKORT (3/9).
@@ -3367,6 +3396,13 @@
      Rækkefølgen er ikke valgfri: den sætter Butik.skrive, og
      hver eneste fanefil bruger den. -->
 <script src="js/store-skriv.js?v=__V__"></script>
+<!-- ⚠️ SAMME TEGN SOM GÆSTEN SER. Kundens ord om admin: *"det skal
+     være tydeligt, overskueligt og nemt at se og navigere i med
+     udseendet, sektioner, emojis."* Filen er gæstesidens egen
+     (js/menu-emoji.js), og det er meningen: et sæt tegn i admin og
+     et andet på hjemmesiden ville betyde, at ejeren leder efter 🍺
+     i en liste, hvor øllet står med 🍽️. -->
+<script src="js/menu-emoji.js?v=__V__"></script>
 <script src="js/admin/kerne.js?v=__V__"></script>
 <script src="js/admin/frisk.js?v=__V__"></script>
 <script src="js/admin/live.js?v=__V__"></script>

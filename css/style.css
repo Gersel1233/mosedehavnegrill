@@ -10028,6 +10028,14 @@ body.personale .menu-fold {
 body.personale .menu-fold:hover { border-color: var(--sea3); background: var(--sand); }
 body.personale .menu-fold.aaben { border-style: solid; }
 body.personale .menu-fold-pil { color: var(--sea); font-size: 12px; }
+/* Kategoriens ansigt, det SAMME som gæsten ser (js/menu-emoji.js).
+   Ingen ny skriftstørrelse: 20px er foldenavnets egen, og
+   tests/typografi.spec.js har et loft, der ikke må vokse. */
+body.personale .menu-fold-tegn {
+  flex: none;
+  font-size: 20px;
+  line-height: 1;
+}
 body.personale .menu-fold-navn {
   flex: 1 1 auto;
   font-family: var(--display);
@@ -12458,7 +12466,13 @@ body.personale .menu-afsnit-boks:first-of-type { margin-top: 8px; }
    en finger gør. */
 body.personale .menu-fold {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  /* ⚠️ FIRE KOLONNER OG EN PLADS TIL HVER  (25/9): pil · tegn ·
+     navn · antal. Griddet havde tre, og da kategoriens emoji kom
+     til, rykkede hver eneste celle én plads: MÅLT stod navnet
+     yderst til højre og "30 varer" yderst til venstre. Et grid
+     uden en udpeget plads pr. barn er et grid, der laver om på sig
+     selv, hver gang nogen tilføjer et element. */
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 12px;
   row-gap: 2px;
@@ -12468,14 +12482,19 @@ body.personale .menu-fold {
   padding: 10px 14px;
 }
 body.personale .menu-fold:hover { border-color: var(--sea3); background: #fff; }
-body.personale .menu-fold-genvej { grid-column: 2 / -1; justify-self: start; }
+body.personale .menu-fold-pil { grid-column: 1; }
+body.personale .menu-fold-tegn { grid-column: 2; }
 body.personale .menu-fold-navn {
+  grid-column: 3;
   font-size: 19px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-body.personale .menu-fold-antal { white-space: nowrap; }
+body.personale .menu-fold-antal { grid-column: 4; white-space: nowrap; }
+/* Linjen under navnet og genvejstallene starter, hvor navnet gør. */
+body.personale .menu-fold-salg { grid-column: 3 / -1; }
+body.personale .menu-fold-genvej { grid-column: 3 / -1; justify-self: start; }
 body.personale .menu-afsnit-boks > .menu-afsnit { margin: 0 0 14px; }
 
 body.personale .kat-indstillinger {

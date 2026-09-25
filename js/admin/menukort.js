@@ -637,6 +637,25 @@
     knap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
 
     knap.appendChild(lav('span', 'menu-fold-pil', aaben ? '▾' : '▸'));
+    /* ⚠️ TEGNET ER GÆSTESIDENS EGET. MosedeEmoji.forKategori er den
+       samme funktion, menukortet og bestillingen bruger — og det er
+       hele pointen: står øllet med 🍺 på hjemmesiden og 🍽️ her,
+       leder ejeren efter det forkerte ansigt. Ejerens eget `emoji`
+       på kategorien slår alt, præcis som på gæstesiden.
+
+       ⚠️ OG SPAN'EN TEGNES ALTID, OGSÅ TOM. Folden er et GRID med
+       faste kolonner, og et barn, der nogle gange er der og nogle
+       gange ikke, skubber hver eneste celle én plads — MÅLT 25/9:
+       navnet endte yderst til højre og "30 varer" til venstre.
+       Mangler js/menu-emoji.js, står cellen tom, og resten står
+       præcis, hvor den skal.
+
+       Tegnet er pynt for øjet; navnet ved siden af siger det
+       samme, så en skærmlæser skal ikke læse det op. */
+    var tegn = lav('span', 'menu-fold-tegn',
+      window.MosedeEmoji ? window.MosedeEmoji.forKategori(k) : '');
+    tegn.setAttribute('aria-hidden', 'true');
+    knap.appendChild(tegn);
     /* NAVNET STÅR PÅ FOLDEN, ikke kun i feltet indeni. Et felt,
        man ikke kan se, er ikke en overskrift — og en lukket
        kategori uden navn er en linje, ingen kan vælge fra. */
