@@ -100,8 +100,12 @@
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9.6c3-3 6.5-3 9.5 0s6.5 3 9.5 0"/><path d="M2.5 15.6c3-3 6.5-3 9.5 0s6.5 3 9.5 0"/></svg>Frugt</span>
       <span class="wide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9.6c3-3 6.5-3 9.5 0s6.5 3 9.5 0"/><path d="M2.5 15.6c3-3 6.5-3 9.5 0s6.5 3 9.5 0"/></svg>Vores hjemmelavede langtidshævede havnebrød</span>
     </div>
-    <div class="pricebox"><b data-tapas-pris>199 kr.</b><p>pr. person</p></div>
-    <div class="pricebox"><b data-tapas-par>548 kr.</b><p>for 2 personer inkl. en flaske Cava Brut Nature — anbefalet af vores vinmand</p></div>
+    <!-- ⚠️ KASSERNE STÅR SKJULT OG TOMME  (25/9, aften). Designets "199 kr."
+         og "548 kr." stod her mod menukortets 179 — og blev stående, når
+         databasen ikke svarede. js/skal/tapas.js (visHeroPris) skriver
+         tallet ind og viser kassen, når prisen er ejerens. -->
+    <div class="pricebox" style="display:none"><b data-tapas-pris></b><p>pr. person</p></div>
+    <div class="pricebox" style="display:none"><b data-tapas-par></b><p>for 2 personer inkl. en flaske Cava Brut Nature — anbefalet af vores vinmand</p></div>
     <div class="tnote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg><span data-varsel>bestilles senest 2 dage før</span></div>
     <div class="tnote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 18h16M6 18a6 6 0 0112 0M12 12V9"/><circle cx="12" cy="7" r="1.4"/></svg><span>Kan anrettes på porcelænsfade, så det hele er klar til servering — og på <b>store fade</b>, hvis I er flere sammen</span></div>
     <!-- ============================================================
@@ -157,7 +161,7 @@
          en prøve også pege på; en stilklasse kunne ikke skelne. -->
     <div class="field">
       <label for="tdato">Dato</label>
-      <select class="inp" id="tdato"><option>Mandag d. 24. august</option><option>Tirsdag d. 25. august</option><option>Onsdag d. 26. august</option><option>Torsdag d. 27. august</option><option>Fredag d. 28. august</option><option>Lørdag d. 29. august</option></select>
+      <select class="inp" id="tdato"><option>Henter datoer …</option></select>
       <p class="hint" data-tapas-varsel>Tidligst i morgen</p>
     </div>
     <div class="field two-col">

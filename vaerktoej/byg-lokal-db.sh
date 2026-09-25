@@ -106,7 +106,8 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   sagsnummer aabent-og-antal-vaern ugepaamindelse gaestens-regler
   kanal-vaern bord-plads gaester-ved-bordet
   levering-zone levering-valideret kortene-25-9 kortenes-huller-25-9
-  glutenfri-vaffel-samme-pris chefens-rettelser-25-9 isens-opsaetning"
+  glutenfri-vaffel-samme-pris chefens-rettelser-25-9 isens-opsaetning
+  glutenfrit-broed-5-kr"
 # ⚠️ vare-valg er flyttet op foran roller (20/9): da et valg fik lov at
 #    koste ekstra, blev mosede_valg_navn/_tillaeg/_aftryk faelles
 #    ordforraad, som baade roller og gaestens-regler kalder. Stod den

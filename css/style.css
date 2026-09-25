@@ -6676,12 +6676,16 @@ body.underside { padding-top: var(--topbjaelke); }
 }
 .form-kort .stepper-knap:active { transform: scale(.96); }
 
-/* Siden er nede (16/9): listen dæmpes og kan ikke trykkes, og linjen
-   over den siger hvorfor. Se nedeNote i js/skal/bestil.js. Kun på
-   gæstesiderne — admin deler arket. */
+/* Siden er nede (16/9): linjen over listen siger hvorfor og nummeret.
+   Se nedeNote i js/skal/bestil.js. Kun på gæstesiderne — admin deler
+   arket.
+
+   ⚠️ LISTEN SKJULES, DEN DÆMPES IKKE  (25/9, aften). Dæmpet stod den
+   stadig med reservedataenes "Smørrebrød 55,-" og "Håndmad 24,-" —
+   priser, koden selv har skrevet. Mikkels ord: "Hvis databasen ikke
+   svarer, må hjemmesiden aldrig vise forældede reservepriser." */
 body:not(.personale) #bestil-form.er-nede #bestil-stykker {
-  opacity: .45;
-  pointer-events: none;
+  display: none;
 }
 body:not(.personale) .nede-note {
   margin: 0 0 14px;

@@ -96,6 +96,13 @@
      stykke, et tapasfad er pr. person. Uden den ville "179,-" læses
      som prisen for hele fadet. */
   function priser(d) {
+    /* ⚠️ ALDRIG KODENS EGNE TAL  (25/9, aften). Svarer databasen ikke,
+       står siden på reservedataene — og så sagde punktet "fra 24,-
+       stk." af en håndmad, koden selv har skrevet. Mikkels ord: "Hvis
+       databasen ikke svarer, må hjemmesiden aldrig vise forældede
+       reservepriser." Punkterne står uden tal, som når ejeren ikke har
+       sat en pris. */
+    if (Butik.reservedata && Butik.reservedata(d)) return;
     var kat = (d && d.menu_kategorier) || [];
     var varer = (d && d.menu_varer) || [];
     Array.prototype.forEach.call(document.querySelectorAll('[data-fra]'), function (el) {

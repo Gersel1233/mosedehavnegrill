@@ -578,13 +578,17 @@ test.describe('Uden forbindelse kan der ikke sendes', () => {
     await nede(page, '/h-smorrebrod.html');
     await expect(page.locator('.nede-note')).toBeVisible();
     await expect(page.locator('.nede-note')).toContainText(/ring 28 87 13 43/i);
-    await expect(page.locator('.panel.er-nede [data-liste]')).toHaveCSS('pointer-events', 'none');
+    /* ⚠️ SKJULT, IKKE DÆMPET (25/9, aften). Dæmpet stod listen med
+       reservedataenes priser; Mikkels ord: "må hjemmesiden aldrig vise
+       forældede reservepriser". En skjult liste kan heller ikke trykkes. */
+    await expect(page.locator('.panel.er-nede [data-liste]')).toBeHidden();
   });
 
   test('bestil/s liste siger, at den er nede, og kan ikke trykkes', async ({ page }) => {
     await nede(page, '/bestil/');
     await expect(page.locator('#bestil-nede-note')).toBeVisible();
-    await expect(page.locator('#bestil-form.er-nede #bestil-stykker')).toHaveCSS('pointer-events', 'none');
+    /* Skjult, ikke dæmpet (25/9, aften) — se prøven ovenfor. */
+    await expect(page.locator('#bestil-form.er-nede #bestil-stykker')).toBeHidden();
   });
 
   /* ⚠️ ET KALD, DER HÆNGER, ER NEDE (16/9). fetch havde ingen

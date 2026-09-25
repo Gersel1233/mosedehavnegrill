@@ -323,6 +323,30 @@ test.describe('Et forløb pr. slags is', () => {
     expect(l[0].pris).toBe(90);
   });
 
+  /* ⚠️ KURVENS LINJE SIGER DET SAMME SOM KVITTERINGEN  (25/9, aften).
+     MÅLT i en browser mod produktionens data: kvitteringen sagde "2×
+     Jordbær + 3× Vanilje + Chokolade", sumlinjen under formularen sagde
+     "Jordbær,Jordbær,Vanilje,Vanilje,Vanilje,Chokolade" — kurven gemmer
+     smagene pr. portion, og listen blev gjort til én tekst. Mikkels
+     ord: »2× Jordbær + 3× Vanilje + 1× Chokolade«. Tælles der, tælles
+     den med én også. */
+  test('kurvens linje tæller smagene — også den, der kun er én af', async ({ page }) => {
+    await åbnAlt(page);
+    await slag(page, 'boks').click();
+    await page.locator('.isbyg-knap[data-form="kugler"]').click();
+    for (let i = 0; i < 2; i++) await plus(page, 'Jordbær').click();
+    for (let i = 0; i < 3; i++) await plus(page, 'Vanilje').click();
+    await plus(page, 'Lakrids').click();
+    await page.locator('.isbyg-laeg').click();
+
+    /* Rækkefølgen er ejerens liste (Vanilje, Jordbær, Lakrids), ikke
+       trykkenes — tallene er dem, der blev trykket. */
+    const rigtig = '3× Vanilje + 2× Jordbær + 1× Lakrids';
+    await expect(page.locator('.isbyg-kvit')).toContainText(rigtig);
+    await expect(page.locator('#sumline'), 'sumlinjen tæller ikke smagene').toContainText(rigtig);
+    await expect(page.locator('#sumline')).not.toContainText('Jordbær,Jordbær');
+  });
+
   /* "eller softice" står i boksens navn: så er softice et svar, og
      softice har ingen smag at vælge. */
   test('isboksen med softice spørger ikke om smag', async ({ page }) => {

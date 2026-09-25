@@ -841,6 +841,12 @@
   function visTapasPris(d) {
     var felt = find('.tapasec .pris');
     if (!felt) return;
+    /* ⚠️ PRISEN STÅR KUN, NÅR DATABASEN HAR SAGT DEN  (25/9, aften).
+       Feltet står skjult i HTML'en; før stod designets "199 kr." der —
+       mod menukortets 179 — og blev stående, når databasen ikke svarede.
+       Reservedata er aldrig en pris: Mikkels ord, "må hjemmesiden aldrig
+       vise forældede reservepriser". */
+    if (Butik.reservedata && Butik.reservedata(d)) { felt.style.display = 'none'; return; }
 
     var fad = null;
     (d.menu_varer || []).forEach(function (v) {
@@ -853,6 +859,7 @@
     var lille = find('small', felt);
     felt.textContent = kroner(fad.pris, 'kr');
     if (lille) felt.appendChild(lille);
+    felt.style.display = '';
   }
 
   // ----------------------------------------------------------

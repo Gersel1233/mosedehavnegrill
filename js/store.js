@@ -1260,8 +1260,19 @@
        blive afvist med bestilling_mangler_valg. Smagene er deres egen
        nøgle på linjen — som `emballage` og `fyld` før dem — og
        kræver derfor ingen SQL. */
-    var sm = samletSmag(smageI(l));
-    return sm.length ? ud + ' · ' + sm.join(' + ') : ud;
+    /* ⚠️ KURVEN GEMMER SMAGENE PR. PORTION  (25/9, aften). En post i
+       forsidens kurv har `smage: [[Jordbær, Jordbær, Vanilje, …]]` —
+       én liste pr. portion — og smageI gjorde hele portionen til ÉN
+       tekst: sumlinjen sagde "Jordbær,Jordbær,Vanilje,Vanilje,…",
+       mens kvitteringen over den sagde "2× Jordbær + 3× Vanilje".
+       Målt i en browser mod produktionens data. Nu læses hver portion
+       for sig, og flere portioner på én linje skilles med " / ". */
+    var sm = l && l.smage;
+    var tekst = (Array.isArray(sm) && sm.some(Array.isArray))
+      ? sm.map(function (p) { return samletSmag(smageI({ smage: p })).join(' + '); })
+        .filter(Boolean).join(' / ')
+      : samletSmag(smageI(l)).join(' + ');
+    return tekst ? ud + ' · ' + tekst : ud;
   }
 
   /* ⚠️ EN ISBOKS HAR SEKS KUGLER  (25/9). Smagene ligger på linjen
@@ -1271,6 +1282,11 @@
      skal tælle sig igennem, mens gæsten venter. Nu står der "2×
      Jordbær + 2× Vanilje + 2× Chokolade". Rækkefølgen er den, smagen
      først blev valgt i; data på linjen er urørt. */
+  /* ⚠️ TÆLLES DER, TÆLLES DER HELT  (25/9, aften). Mikkels ord:
+     »2× Jordbær + 3× Vanilje + 1× Chokolade«. Står én smag med et
+     antal, får de andre det også — "2× Jordbær + Chokolade" lod
+     køkkenet regne ud, at det sidste var én. Er hver smag der kun én
+     gang, er der intet at tælle: "Vanilje + Jordbær". */
   function samletSmag(sm) {
     var orden = [], antal = {};
     sm.forEach(function (x) {
@@ -1278,9 +1294,9 @@
       if (!antal[k]) { antal[k] = 0; orden.push(x); }
       antal[k] += 1;
     });
+    var tæl = orden.some(function (x) { return antal[x.toLowerCase()] > 1; });
     return orden.map(function (x) {
-      var n = antal[x.toLowerCase()];
-      return n > 1 ? n + '× ' + x : x;
+      return tæl ? antal[x.toLowerCase()] + '× ' + x : x;
     });
   }
 

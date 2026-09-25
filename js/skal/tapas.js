@@ -343,18 +343,32 @@
      regne den af kortet, er tallet et loefte, ingen har givet.
      Vi finder ikke paa et beloeb paa forretningens vegne. */
   function visHeroPris() {
+    /* ⚠️ RESERVEDATA ER ALDRIG EN PRIS  (25/9, aften). Mikkels ord:
+       "Hvis databasen ikke svarer, må hjemmesiden aldrig vise forældede
+       reservepriser." Begge kasser står skjult i HTML'en og vises kun,
+       når tallet er ejerens. */
+    var nede = !!(Butik.reservedata && Butik.reservedata(data));
     var et = find('[data-tapas-pris]', document);
-    if (et && pris(fad) !== null) et.textContent = S.kroner(fad.pris);
+    var enKasse = et && et.closest ? et.closest('.pricebox') : null;
+    if (et && enKasse) {
+      if (!nede && pris(fad) !== null) {
+        et.textContent = S.kroner(fad.pris);
+        enKasse.style.display = '';
+      } else {
+        enKasse.style.display = 'none';
+      }
+    }
 
     var par = find('[data-tapas-par]', document);
     var kasse = par && par.closest ? par.closest('.pricebox') : null;
     if (!par || !kasse) return;
 
     var flaske = bobler && /flaske/i.test(bobler.navn) ? bobler : null;
-    if (pris(fad) === null || !flaske || pris(flaske) === null) {
+    if (nede || pris(fad) === null || !flaske || pris(flaske) === null) {
       kasse.style.display = 'none';
       return;
     }
+    kasse.style.display = '';
     par.textContent = S.kroner(2 * fad.pris + flaske.pris);
     var tekst = find('p', kasse);
     if (tekst) tekst.textContent = 'for 2 personer inkl. en ' + flaske.navn;
@@ -563,6 +577,30 @@
     });
   }
 
+  /* ⚠️ SVARER DATABASEN IKKE, SIGER SIDEN DET  (25/9, aften). Panelet
+     forsvinder (der er intet fad at bestille), og i dets sted står en
+     tydelig besked med nummeret — samme ord og samme klasse som
+     bestillingens nede-note (js/skal/bestil.js). Nummeret læses af
+     sidens eget tel:-link, som pegVidere() gør. */
+  function nedeBesked(nede) {
+    var note = document.getElementById('tapas-nede-note');
+    if (!nede) { if (note) note.style.display = 'none'; return; }
+    var link = document.querySelector('a[href^="tel:"]');
+    var cifre = link ? (link.getAttribute('href') || '').replace(/\D/g, '').slice(-8) : '';
+    var nr = cifre.length === 8 ? cifre.replace(/(\d\d)(?=\d)/g, '$1 ') : '';
+    if (!note && panel && panel.parentNode) {
+      note = document.createElement('p');
+      note.id = 'tapas-nede-note';
+      note.className = 'nede-note';
+      note.setAttribute('role', 'status');
+      panel.parentNode.insertBefore(note, panel);
+    }
+    if (!note) return;
+    note.textContent = 'Vi kan ikke hente priserne lige nu, så tapas kan ikke bestilles her. '
+      + (nr ? 'Ring ' + nr + ' — så tager vi den i telefonen.' : 'Ring til os — så tager vi den i telefonen.');
+    note.style.display = '';
+  }
+
   // ----------------------------------------------------------
   //  START
   // ----------------------------------------------------------
@@ -591,8 +629,10 @@
     if (lukket || !fad) {
       panel.style.display = 'none';
       pegVidere(false);
+      nedeBesked(!!(Butik.reservedata && Butik.reservedata(d)));
       return;
     }
+    nedeBesked(false);
     pegVidere(true);
 
     visVarselTekst();

@@ -662,7 +662,31 @@
     kort.forEach(function (k) { spejder.observe(k); });
   }
 
+  /* ⚠️ SVARER DATABASEN IKKE, VISES INGEN PRISER  (25/9, aften).
+     MÅLT i en browser: uden forbindelse stod kortet på kodens
+     reservedata — "Smørrebrød 55,-", "Håndmad 24,-", "Softice, stor
+     45,-" (den rigtige pris er 47) — og beskeden nedenunder kom aldrig
+     frem, fordi listen jo ikke var tom. Mikkels ord: "Hvis databasen
+     ikke svarer, må hjemmesiden aldrig vise forældede reservepriser.
+     Vis i stedet en tydelig fejlbesked med caféens telefonnummer."
+     Dagens ret og ugen skjules også: reservedataene ved intet om dem,
+     og "Følger snart" ville være en påstand. Reglen for, HVORNÅR tallene
+     er kodens egne, bor i Butik.reservedata — ét sted for hele huset. */
+  function visNede() {
+    ['mk-idag-afsnit', 'mk-uge-afsnit'].forEach(function (id) { skjul($(id)); });
+    var sortiment = document.querySelector('#mk-kat-afsnit .mk-sortiment');
+    skjul(sortiment);
+    tøm($('mk-kat'));
+    var tom = $('mk-tom');
+    if (tom) {
+      tom.className = 'nede-note';
+      tom.setAttribute('role', 'status');
+      tom.style.display = '';
+    }
+  }
+
   Butik.hent().then(function (d) {
+    if (Butik.reservedata && Butik.reservedata(d)) { visNede(); return; }
     visIDag(d);
     visUgen(d);
     visSortiment(d);
@@ -677,7 +701,6 @@
     if (typeof revealFallback === 'function') revealFallback($('sc'));
   }).catch(function (fejl) {
     console.warn('Menukortets kobling fejlede:', fejl);
-    var tom = $('mk-tom');
-    if (tom) tom.style.display = '';
+    visNede();
   });
 }());

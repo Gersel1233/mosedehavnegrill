@@ -709,10 +709,15 @@ test.describe('Forsidens kobling', () => {
   });
 
   test('tapasprisen skrives kun, når forretningen har sat den', async ({ page }) => {
-    // Ejerens liste kom uden ét eneste tal (23/8). Uden en pris
-    // skal designets pladsholder blive stående.
+    /* ⚠️ VENDT 25/9 (aften). Prøven krævede, at designets "199 kr."
+       blev stående uden en pris. Men produktionens fad koster 179, og
+       199 stod der netop, når databasen ikke svarede — en pris, ingen
+       har sat. Mikkels ord: "Hvis databasen ikke svarer, må hjemmesiden
+       aldrig vise forældede reservepriser." Uden en pris står der nu
+       INGEN pris; reglen om, at ejerens tal vinder, er den samme. */
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN });
-    await expect(page.locator('.tapasec .pris')).toContainText('199');
+    await expect(page.locator('.tapasec .pris'), 'designets 199 kr. stod der stadig').toBeHidden();
+    await expect(page.locator('.tapasec')).not.toContainText('199');
 
     const data = grunddata();
     data.menu_kategorier.push({ id: 20, afdeling: 'mad', navn: 'Til selskabet', sortering: 30, aktiv: true });
@@ -721,6 +726,7 @@ test.describe('Forsidens kobling', () => {
       pris: 145, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
     });
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data });
+    await expect(page.locator('.tapasec .pris')).toBeVisible();
     await expect(page.locator('.tapasec .pris')).toContainText('145 kr.');
     // "pr. person" under prisen er designets og skal overleve
     await expect(page.locator('.tapasec .pris small')).toHaveText('pr. person');
@@ -1280,7 +1286,11 @@ test.describe('Forsidens tomme billedpladser', () => {
        venter på databasen: tegnet og filen står i HTML'en.
        ⚠️ Tapasfadet var en flade indtil 11/9 — nu har pladsen sin
        fil (data-fil), og den skal også op, når hentningen fejler. */
-    await expect(page.locator('.foto-felt')).toHaveCount(2);
+    /* ⚠️ ÉN, IKKE TO (25/9, aften): designets to nyhedskort med datoer
+       fra august blev til ÉN neutral pladsholder ("Henter nyheder …"),
+       se tests/pladsholdere.spec.js. Reglen er den samme: dens flade
+       kommer op, selv når hentningen fejler. */
+    await expect(page.locator('.foto-felt')).toHaveCount(1);
     await expect(page.locator('.tapasec img.foto-fyldt')).toHaveCount(1);
     const synlige = await page.locator('image-slot').evaluateAll(
       (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),

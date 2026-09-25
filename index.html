@@ -225,7 +225,13 @@
 
 <div class="music rev">
   <div class="bic"><div class="eq"><i></i><i></i><i></i><i></i></div></div>
-  <div><h4>Musik på molen · lørdag d. 29. august</h4><p>Ronni &amp; de Salte spiller 19–22. Grillen er tændt til 21, og der er plads ved langbordene.</p><a class="cta" href="h-kalender.html">Se kalenderen →</a></div>
+  <!-- ⚠️ PLADSHOLDEREN SIGER INGEN DATO OG INGEN KUNSTNER  (25/9). Her stod
+       designets "Musik på molen · lørdag d. 29. august · Ronni & de Salte"
+       — og en læser uden JavaScript (en ekstern kontrol, en link-
+       forhåndsvisning) læste det som husets næste arrangement en måned
+       efter. js/skal/forside.js (visMusik) skriver kalenderens næste
+       arrangement ind eller skjuler boksen. Se tests/pladsholdere.spec.js. -->
+  <div><h4>Henter næste arrangement …</h4><p>Kalenderen indlæses.</p><a class="cta" href="h-kalender.html">Se kalenderen →</a></div>
 </div>
 
 <div class="promo fb rev" style="margin:10px var(--pad) 0"><div class="bic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg></div><h4>Følg os på Facebook</h4><p>Dagens ret, musik og små beskeder fra lugen — hver morgen.</p><a class="cta" href="#" data-social="facebook">Følg os →</a></div>
@@ -273,13 +279,16 @@
          hoppede hen til nyhederne: et spring, der føles som en fejl. Der
          findes ingen nyhedsside at gå til, og "Læs mere" er væk af samme
          grund. En boks lover ingenting og holder det. -->
-    <div class="nw rev d1"><image-slot id="nyhed-1" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">21. august</div><h3>Havnens tapas er landet</h3><p>Vores nye tapasfad med oste, charcuteri og hjemmebagt brød kan nu bestilles til afhentning.</p></div></div>
-    <div class="nw rev d2"><image-slot id="nyhed-2" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">14. august</div><h3>Længere åbent i weekenden</h3><p>Fra september holder vi åbent til 21 fredag og lørdag. Ishuset lukker en halv time efter grillen.</p></div></div>
+    <!-- Pladsholder uden dato (25/9): forside.js kloner kortet og fylder
+         det med ejerens nyheder — eller rydder det, når der ingen er. -->
+    <div class="nw rev d1"><image-slot id="nyhed-1" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when"></div><h3>Henter nyheder …</h3><p></p></div></div>
   </div>
 </section>
 
 <section id="idag" style="padding-bottom:6px">
-  <div class="rev"><div class="eyebrow red">Søndag d. 23. august</div><h2>Dagens ret i dag</h2></div>
+  <!-- Pladsholder uden dato, ret og pris (25/9) — visDagensRet i
+       forside.js skriver dagens dato og ret ind eller skjuler afsnittet. -->
+  <div class="rev"><div class="eyebrow red">Dagens ret</div><h2>Dagens ret i dag</h2></div>
   <!-- ⚠️ TRE TING KOM TIL 7/9 PÅ KUNDENS SKÆRMBILLEDE, og de er
        hans beslutning om sit eget kort, ikke en pyntetilføjelse:
        "I dag"-blokken i venstre kant, prisen som en pille, og
@@ -297,22 +306,20 @@
     <div class="idag-blok" aria-hidden="true"><span class="damp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 21c-1.6-1.8 1.6-3.4 0-5.2s1.6-3.4 0-5.2"/><path d="M12 19c-1.6-1.8 1.6-3.4 0-5.2s1.6-3.4 0-5.2S13.6 5.2 12 3.4"/><path d="M17 21c-1.6-1.8 1.6-3.4 0-5.2s1.6-3.4 0-5.2"/></svg></span><span class="idag-ord">I dag</span></div>
     <div class="in">
     <div class="lbl">Fra grillen · 11.30–14.00</div>
-    <h3>Stegt flæsk med persillesovs</h3>
-    <p>Sprødt flæsk, hjemmerørt persillesovs og nye kartofler. Kan bestilles som to-go hele dagen.</p>
-    <div class="row"><span class="price">95,-</span><span class="rest" hidden></span><a class="g solid" href="#bestil">Bestil dagens ret<span class="sheen"></span></a></div>
+    <h3>Henter dagens ret …</h3>
+    <p></p>
+    <div class="row"><span class="price"></span><span class="rest" hidden></span><a class="g solid" href="#bestil">Bestil dagens ret<span class="sheen"></span></a></div>
   </div></div>
 </section>
 
 <section id="ugen" style="padding-top:6px">
   <div class="rev"><div class="eyebrow red">Ugen der kommer</div><h2>Dagens retter</h2><div class="rule"></div></div>
   <div class="week rev d1">
-    <div class="day closed"><div class="dw">Søndag · i dag</div><div class="dd">23. august</div><h4>Lukket</h4><p>Lukket for bestillinger denne dag.</p></div>
-    <div class="day"><div class="dw">Mandag</div><div class="dd">24. august</div><h4>Frikadeller med rødkål</h4><p>Hjemmelavede frikadeller, kogte kartofler og syltet rødkål.</p><div class="pr">95,-</div></div>
-    <div class="day"><div class="dw">Tirsdag</div><div class="dd">25. august</div><h4>Fiskefilet med remoulade</h4><p>Panéret rødspættefilet, remoulade og citron.</p><div class="pr">98,-</div></div>
-    <div class="day"><div class="dw">Onsdag</div><div class="dd">26. august</div><h4>Millionbøf</h4><p>Med kartoffelmos og syltede agurker.</p><div class="pr">92,-</div></div>
-    <div class="day"><div class="dw">Torsdag</div><div class="dd">27. august</div><h4>Skipperlabskovs</h4><p>Med rugbrød, rødbeder og purløg.</p><div class="pr">95,-</div></div>
-    <div class="day"><div class="dw">Fredag</div><div class="dd">28. august</div><h4>Stjerneskud</h4><p>Dampet og friteret fisk, rejer og asparges.</p><div class="pr">145,-</div></div>
-    <div class="day"><div class="dw">Lørdag</div><div class="dd">29. august</div><h4>Grill fra pladen</h4><p>Bøf, pølser og salater — musik på molen 19–22.</p><div class="pr">fra 89,-</div></div>
+    <!-- Pladsholder (25/9): designets syv dage stod med datoer fra 23.-29.
+         august og opdigtede retter med priser. visUgen i forside.js
+         bygger ugen af ejerens dagens retter; den her ene dag er bare
+         skabelonen, den leder efter. -->
+    <div class="day closed"><div class="dw">Ugen der kommer</div><div class="dd"></div><h4>Henter ugens retter …</h4><p></p></div>
   </div>
 </section>
 
@@ -379,11 +386,11 @@
       <p class="adr-status skjult" id="lev-svar"></p>
     </div>
     <div class="field"><label for="dato">Dato</label>
-      <select class="inp" id="dato"><option>I dag – søndag d. 23. august · Stegt flæsk med persillesovs</option><option>I morgen – mandag d. 24. august</option><option>Tirsdag d. 25. august</option></select>
-      <p class="hint">Dagens ret: Stegt flæsk med persillesovs · 95,-</p>
+      <select class="inp" id="dato"><option>Henter datoer …</option></select>
+      <p class="hint"></p>
     </div>
     <div class="field"><label>Vælg jeres retter</label>
-      <div class="item hi"><div><h4>Stegt flæsk med persillesovs</h4><span class="tag">Dagens ret · 95,-</span></div>
+      <div class="item hi"><div><h4>Dagens ret</h4><span class="tag">Henter …</span></div>
         <div class="step" data-step><button data-d="-">–</button><b>2</b><button data-d="+">+</button></div></div>
       <div class="item"><h4>Grill fra pladen</h4><span class="add">+ tilføj</span></div>
       <div class="item"><h4>Smørrebrød</h4><span class="add">+ tilføj</span></div>
@@ -462,7 +469,7 @@
       <h3>Havnens tapas</h3>
       <p>Fem slags ost, serranoskinke, chorizo, paté, hummus og oliven — med baguette, dip og frugt.</p>
       <div class="bits"><span>5 slags ost</span><span>Charcuteri</span><span>Dip og oliven</span><span>Baguette og smør</span></div>
-      <div class="foot"><div class="pris">199 kr.<small>pr. person</small></div><a class="g solid" href="m-tapas.html">Se og bestil tapas<span class="sheen"></span></a></div>
+      <div class="foot"><div class="pris" style="display:none"><small>pr. person</small></div><a class="g solid" href="m-tapas.html">Se og bestil tapas<span class="sheen"></span></a></div>
     </div>
   </div>
   </section>

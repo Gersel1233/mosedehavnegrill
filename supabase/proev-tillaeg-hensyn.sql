@@ -37,7 +37,11 @@ select pg_temp.svar('1. Kategorien siger, at det er et tillæg',
   exists (select 1 from public.menu_kategorier
            where lokation_id = 'mosede' and aktiv
              and navn = 'Tillæg: glutenfri, laktosefri og vegansk'
-             and note like '%10 kr. pr. stk.%'));
+             /* Beløbet er ejerens og står ikke her (25/9): efter
+                glutenfrit-broed-5-kr.sql siger noten 5 kr., for
+                kategoriens eneste tændte tillæg er glutenfrit brød.
+                Prøven måler, at noten SIGER et tillæg pr. stk. */
+             and note like '%tillæg%kr. pr. stk.%'));
 
 /* ⚠️ VENDT 25/9 — GLUTENFRIT BRØD ER IKKE 10 LÆNGERE.
    Ejerens ark sagde 1/9 "10 kr." om alle tre. Siden er
