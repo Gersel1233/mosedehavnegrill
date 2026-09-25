@@ -27,6 +27,16 @@
 */
 
 const { test, expect } = require('@playwright/test');
+
+/* Kontrastregnestykket er WCAG's eget og staar magen til i
+   tests/find-foto.spec.js. Det maaler den BEREGNEDE farve mod den
+   BEREGNEDE grund — en klasse, der ikke slaar igennem, er ingen
+   regel. */
+const lin = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const lum = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+const kontrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+const rgba = (s) => { const m = s.match(/[\d.]+/g).map(Number); return { rgb: m.slice(0, 3), a: m.length > 3 ? m[3] : 1 }; };
+const over = (top, bund) => top.rgb.map((c, i) => c * top.a + bund[i] * (1 - top.a));
 const { åbn, grunddata, gemteData } = require('./hjaelp');
 
 const SIDE = '/ved-bordet/';
@@ -1100,6 +1110,67 @@ test.describe('Byg din is ved bordet', () => {
       .filter({ hasText: 'Softice, stor' })).toHaveCount(0);
     await expect(trin(page, 4).locator('.isbyg-knap')
       .filter({ hasText: 'Isdessert' })).toHaveCount(0);
+  });
+
+  /* ⚠️ 112 PX TOMT SAND, MAALT 25/9. Blokken er et <section>, og
+     arket har en generisk `section { padding-block: clamp(56px,
+     7vw, 104px) }`. Blokken blev 744 px hoej, hvor indholdet
+     fylder 632. Det er NOEJAGTIG den faelde, .dagens-blok faldt i,
+     med kommentaren staaende ved siden af — derfor en proeve her,
+     saa den tredje <section>-blok i huset ikke falder i den igen.
+     Maalt paa den BEREGNEDE stil: reglen, der giver de 56 px,
+     staar slet ikke i den blok, nogen ville laese. */
+  test('is-blokken arver ikke sidens afsnits-luft', async ({ page }) => {
+    await åbnIs(page);
+    const luft = await page.evaluate(() => {
+      const c = getComputedStyle(document.querySelector('.isbyg-blok'));
+      return { top: c.paddingTop, bund: c.paddingBottom };
+    });
+    expect(parseFloat(luft.top),
+      `blokken har ${luft.top} luft foroven, den ikke har bedt om`)
+      .toBeLessThanOrEqual(16);
+    expect(parseFloat(luft.bund),
+      `blokken har ${luft.bund} luft forneden, den ikke har bedt om`)
+      .toBeLessThanOrEqual(16);
+  });
+
+  /* ⚠️ HVID PAA HVIDT — MAALT 25/9, OG INGEN ANDEN PROEVE FANGEDE
+     DET. Blokkens baggrund blev sat til papir, men farven ikke, og
+     saa arvede teksten bordsidens hvide skrift: "Vaffel eller
+     bæger?" stod i #fff paa #fff, og gaesten saa fire roede tal og
+     ingen spoergsmaal. Alle otte oevrige proever bestod med fejlen
+     inde — en klasse, der ikke slaar igennem, er ingen regel, og
+     en proeve, der laeser klassen, maaler ingenting.
+
+     Derfor maales den BEREGNEDE farve mod den BEREGNEDE grund, og
+     kravet (4,5:1) kommer udefra: det er WCAG's, ikke sidens. */
+  test('spørgsmålene kan læses på blokkens egen grund', async ({ page }) => {
+    await åbnIs(page);
+    const maal = await page.evaluate(() => {
+      const blok = document.querySelector('.isbyg-blok');
+      /* Grunden er den FOERSTE forfader med en uigennemsigtig
+         baggrund — teksten ligger oven paa dét, ikke oven paa en
+         klasse, nogen har skrevet. */
+      let e = blok, grund = null;
+      while (e && !grund) {
+        const bg = getComputedStyle(e).backgroundColor;
+        const m = bg.match(/[\d.]+/g);
+        if (m && (m.length < 4 || Number(m[3]) === 1)) grund = bg;
+        e = e.parentElement;
+      }
+      const ud = { grund };
+      ['.isbyg-blok-titel', '.isbyg-titel'].forEach((v) => {
+        const n = document.querySelector(v);
+        if (n) ud[v] = getComputedStyle(n).color;
+      });
+      return ud;
+    });
+    const grund = rgba(maal.grund).rgb;
+    ['.isbyg-blok-titel', '.isbyg-titel'].forEach((v) => {
+      const k = kontrast(over(rgba(maal[v]), grund), grund);
+      expect(k, `${v} har kun ${k.toFixed(2)}:1 mod blokkens grund`)
+        .toBeGreaterThanOrEqual(4.5);
+    });
   });
 
   /* Blokken har ingen .stk-linje-rækker, og søgningen og chipsene
