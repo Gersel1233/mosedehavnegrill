@@ -12788,7 +12788,7 @@ body:not(.personale) select.is-smag.mangler {
    eksklusiv ting og skille sig ud fra de andre ligesom dagens
    ret."* Formen er derfor dagens rets, som allerede findes her.
    ============================================================ */
-body:not(.personale) .isbyg-blok {
+:is(body:not(.personale), .is-forhaand) .isbyg-blok {
   /* ⚠️ PADDING SKAL SÆTTES — SAMME FÆLDE SOM .dagens-blok, OG DEN
      BLEV MÅLT IGEN 25/9. Blokken er et <section>, og arket har en
      generisk `section { padding-block: clamp(56px, 7vw, 104px) }`.
@@ -12810,31 +12810,31 @@ body:not(.personale) .isbyg-blok {
   color: var(--sea);
   overflow: hidden;
 }
-body:not(.personale) .isbyg-blok-hoved {
+:is(body:not(.personale), .is-forhaand) .isbyg-blok-hoved {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 11px 14px 9px;
   border-bottom: 1px solid rgba(36, 26, 23, .08);
 }
-body:not(.personale) .isbyg-blok-tegn { font-size: 18px; line-height: 1; flex: none; }
-body:not(.personale) .isbyg-blok-titel {
+:is(body:not(.personale), .is-forhaand) .isbyg-blok-tegn { font-size: 18px; line-height: 1; flex: none; }
+:is(body:not(.personale), .is-forhaand) .isbyg-blok-titel {
   font: 600 18px/1.15 var(--display), Georgia, serif;
   margin: 0;
 }
-body:not(.personale) .isbyg-blok-krop { padding: 4px 14px 14px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-blok-krop { padding: 4px 14px 14px; }
 
 /* ---- Trinnene ---- */
-body:not(.personale) .isbyg-trin {
+:is(body:not(.personale), .is-forhaand) .isbyg-trin {
   padding: 13px 0;
   border-bottom: 1px solid rgba(36, 26, 23, .08);
 }
-body:not(.personale) .isbyg-trin:last-of-type { border-bottom: 0; }
+:is(body:not(.personale), .is-forhaand) .isbyg-trin:last-of-type { border-bottom: 0; }
 /* Et låst trin er dæmpet, ikke skjult — gæsten skal kunne se,
    hvor mange skridt der er tilbage. */
-body:not(.personale) .isbyg-trin.laast { opacity: .42; }
-body:not(.personale) .isbyg-hoved { display: flex; align-items: center; gap: 8px; }
-body:not(.personale) .isbyg-nr {
+:is(body:not(.personale), .is-forhaand) .isbyg-trin.laast { opacity: .42; }
+:is(body:not(.personale), .is-forhaand) .isbyg-hoved { display: flex; align-items: center; gap: 8px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-nr {
   flex: none;
   width: 22px;
   height: 22px;
@@ -12847,12 +12847,12 @@ body:not(.personale) .isbyg-nr {
   background: var(--red);
   font-variant-numeric: tabular-nums;
 }
-body:not(.personale) .isbyg-titel { font-size: 15px; font-weight: 600; margin: 0; }
-body:not(.personale) .isbyg-krop { margin-top: 10px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-titel { font-size: 15px; font-weight: 600; margin: 0; }
+:is(body:not(.personale), .is-forhaand) .isbyg-krop { margin-top: 10px; }
 
-body:not(.personale) .isbyg-valg,
-body:not(.personale) .isbyg-ekstra { display: flex; flex-wrap: wrap; gap: 8px; }
-body:not(.personale) .isbyg-knap {
+:is(body:not(.personale), .is-forhaand) .isbyg-valg,
+:is(body:not(.personale), .is-forhaand) .isbyg-ekstra { display: flex; flex-wrap: wrap; gap: 8px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-knap {
   display: flex;
   align-items: baseline;
   gap: 7px;
@@ -12865,29 +12865,29 @@ body:not(.personale) .isbyg-knap {
   background: #fff;
   cursor: pointer;
 }
-body:not(.personale) .isbyg-knap-navn { font-weight: 600; }
-body:not(.personale) .isbyg-knap-bi {
+:is(body:not(.personale), .is-forhaand) .isbyg-knap-navn { font-weight: 600; }
+:is(body:not(.personale), .is-forhaand) .isbyg-knap-bi {
   font-size: 12px;
   color: var(--red);
   font-variant-numeric: tabular-nums;
 }
-body:not(.personale) .isbyg-knap.valgt {
+:is(body:not(.personale), .is-forhaand) .isbyg-knap.valgt {
   color: #fff;
   background: var(--red);
   border-color: var(--red);
 }
-body:not(.personale) .isbyg-knap.valgt .isbyg-knap-bi { color: rgba(255, 255, 255, .86); }
-body:not(.personale) .isbyg-knap:disabled { cursor: default; }
+:is(body:not(.personale), .is-forhaand) .isbyg-knap.valgt .isbyg-knap-bi { color: rgba(255, 255, 255, .86); }
+:is(body:not(.personale), .is-forhaand) .isbyg-knap:disabled { cursor: default; }
 
 /* Kuglerne: ét spørgsmål pr. linje. */
-body:not(.personale) .isbyg-kugle {
+:is(body:not(.personale), .is-forhaand) .isbyg-kugle {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 8px;
 }
-body:not(.personale) .isbyg-kugle:first-child { margin-top: 0; }
-body:not(.personale) .isbyg-kugle-nr {
+:is(body:not(.personale), .is-forhaand) .isbyg-kugle:first-child { margin-top: 0; }
+:is(body:not(.personale), .is-forhaand) .isbyg-kugle-nr {
   flex: none;
   min-width: 62px;
   font-size: 13px;
@@ -12898,21 +12898,21 @@ body:not(.personale) .isbyg-kugle-nr {
    er 46 px høj med 16 px skrift, og en ren klasse (0,1,0) taber
    til den ikke — men til `select.inp` andre steder i huset gør
    den. Samme fælde blev målt 25/9 på forsiden. */
-body:not(.personale) select.isbyg-smag {
+:is(body:not(.personale), .is-forhaand) select.isbyg-smag {
   flex: 1 1 auto;
   width: auto;
   min-width: 0;
   min-height: 42px;
   font-size: 14px;
 }
-body:not(.personale) select.isbyg-smag.mangler { background: rgba(214, 42, 58, .07); }
+:is(body:not(.personale), .is-forhaand) select.isbyg-smag.mangler { background: rgba(214, 42, 58, .07); }
 
 /* Ønskefeltet — når ejeren ikke har skrevet sin liste. */
-body:not(.personale) .isbyg-oenske { display: grid; gap: 7px; }
-body:not(.personale) .isbyg-oenske-tekst { font-size: 13px; color: var(--ink2); }
-body:not(.personale) input.isbyg-oenske-felt { min-height: 44px; font-size: 14px; }
-body:not(.personale) .isbyg-hint { font-size: 13px; color: var(--ink2); }
-body:not(.personale) .isbyg-mangler {
+:is(body:not(.personale), .is-forhaand) .isbyg-oenske { display: grid; gap: 7px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-oenske-tekst { font-size: 13px; color: var(--ink2); }
+:is(body:not(.personale), .is-forhaand) input.isbyg-oenske-felt { min-height: 44px; font-size: 14px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-hint { font-size: 13px; color: var(--ink2); }
+:is(body:not(.personale), .is-forhaand) .isbyg-mangler {
   padding: 10px 13px;
   border: 1px solid rgba(214, 42, 58, .32);
   border-radius: 12px;
@@ -12921,7 +12921,7 @@ body:not(.personale) .isbyg-mangler {
   background: rgba(214, 42, 58, .07);
 }
 
-body:not(.personale) .isbyg-bund {
+:is(body:not(.personale), .is-forhaand) .isbyg-bund {
   /* ⚠️ BUNDEN SKAL KUNNE BRYDE. Målt på 390 px: knappen stod
      flex:none ved siden af summen, og "Vælg smag til alle
      kuglerne" blev brækket til tre linjer inde i knappen — en
@@ -12935,7 +12935,7 @@ body:not(.personale) .isbyg-bund {
   gap: 12px;
   margin-top: 14px;
 }
-body:not(.personale) .isbyg-sum {
+:is(body:not(.personale), .is-forhaand) .isbyg-sum {
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -12950,7 +12950,7 @@ body:not(.personale) .isbyg-sum {
 /* ⚠️ EGEN KLASSE, IKKE SIDENS KNAPKLASSER. På forsiden blev
    byggerens knap fundet som SENDEKNAPPEN, fordi den delte klasser
    med den og stod først i panelet — målt 25/9. */
-body:not(.personale) .isbyg-laeg {
+:is(body:not(.personale), .is-forhaand) .isbyg-laeg {
   flex: 1 1 220px;
   margin-left: auto;
   padding: 12px 22px;
@@ -12963,8 +12963,8 @@ body:not(.personale) .isbyg-laeg {
   background: var(--red);
   cursor: pointer;
 }
-body:not(.personale) .isbyg-laeg:disabled { opacity: .5; cursor: default; }
-body:not(.personale) .isbyg-kvit {
+:is(body:not(.personale), .is-forhaand) .isbyg-laeg:disabled { opacity: .5; cursor: default; }
+:is(body:not(.personale), .is-forhaand) .isbyg-kvit {
   margin-top: 9px;
   font-size: 13px;
   font-weight: 600;
@@ -12972,7 +12972,7 @@ body:not(.personale) .isbyg-kvit {
   opacity: 0;
   transition: opacity .25s ease;
 }
-body:not(.personale) .isbyg-kvit.vis { opacity: 1; }
+:is(body:not(.personale), .is-forhaand) .isbyg-kvit.vis { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   body:not(.personale) .isbyg-kvit { transition: none; }
 }
@@ -12985,13 +12985,13 @@ body:not(.personale) .isbyg-kvit.vis { opacity: 1; }
    sættes på hvert element, der har en baggrund — se noten ved
    .isbyg-blok om hvid tekst på hvidt papir (målt 25/9).
    ============================================================ */
-body:not(.personale) .isbyg-slags {
+:is(body:not(.personale), .is-forhaand) .isbyg-slags {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
   gap: 8px;
   margin: 12px 0 2px;
 }
-body:not(.personale) .isbyg-slag {
+:is(body:not(.personale), .is-forhaand) .isbyg-slag {
   display: grid;
   /* ⚠️ TEGNET VED SIDEN AF NAVNET, IKKE OVER. MÅLT på 390 px: med
      tegn, navn og pris stablet blev hver flise 150 px høj og stod
@@ -13011,30 +13011,30 @@ body:not(.personale) .isbyg-slag {
   background: #fff;
   cursor: pointer;
 }
-body:not(.personale) .isbyg-slag-tegn { grid-row: span 2; font-size: 19px; line-height: 1; }
-body:not(.personale) .isbyg-slag-navn { font-size: 14px; font-weight: 600; line-height: 1.25; }
-body:not(.personale) .isbyg-slag-bi { font-size: 12px; color: var(--red); font-variant-numeric: tabular-nums; }
-body:not(.personale) .isbyg-slag.valgt { color: #fff; background: var(--red); border-color: var(--red); }
-body:not(.personale) .isbyg-slag.valgt .isbyg-slag-bi { color: rgba(255, 255, 255, .86); }
+:is(body:not(.personale), .is-forhaand) .isbyg-slag-tegn { grid-row: span 2; font-size: 19px; line-height: 1; }
+:is(body:not(.personale), .is-forhaand) .isbyg-slag-navn { font-size: 14px; font-weight: 600; line-height: 1.25; }
+:is(body:not(.personale), .is-forhaand) .isbyg-slag-bi { font-size: 12px; color: var(--red); font-variant-numeric: tabular-nums; }
+:is(body:not(.personale), .is-forhaand) .isbyg-slag.valgt { color: #fff; background: var(--red); border-color: var(--red); }
+:is(body:not(.personale), .is-forhaand) .isbyg-slag.valgt .isbyg-slag-bi { color: rgba(255, 255, 255, .86); }
 
-body:not(.personale) .isbyg-beskriv { margin: 12px 0 0; font-size: 14px; color: var(--sea); }
-body:not(.personale) .isbyg-status {
+:is(body:not(.personale), .is-forhaand) .isbyg-beskriv { margin: 12px 0 0; font-size: 14px; color: var(--sea); }
+:is(body:not(.personale), .is-forhaand) .isbyg-status {
   margin: 0 0 6px;
   font-size: 13px;
   font-weight: 600;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-body:not(.personale) .isbyg-status.fuld { color: var(--red-tekst); }
-body:not(.personale) .isbyg-tael {
+:is(body:not(.personale), .is-forhaand) .isbyg-status.fuld { color: var(--red-tekst); }
+:is(body:not(.personale), .is-forhaand) .isbyg-tael {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 7px 0;
   border-top: 1px solid rgba(36, 26, 23, .08);
 }
-body:not(.personale) .isbyg-tael-navn { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 600; color: var(--sea); }
-body:not(.personale) .isbyg-tael-knap {
+:is(body:not(.personale), .is-forhaand) .isbyg-tael-navn { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 600; color: var(--sea); }
+:is(body:not(.personale), .is-forhaand) .isbyg-tael-knap {
   flex: none;
   width: 42px;
   height: 42px;
@@ -13047,8 +13047,8 @@ body:not(.personale) .isbyg-tael-knap {
   background: #fff;
   cursor: pointer;
 }
-body:not(.personale) .isbyg-tael-knap:disabled { opacity: .4; cursor: default; }
-body:not(.personale) .isbyg-tael-tal {
+:is(body:not(.personale), .is-forhaand) .isbyg-tael-knap:disabled { opacity: .4; cursor: default; }
+:is(body:not(.personale), .is-forhaand) .isbyg-tael-tal {
   min-width: 22px;
   text-align: center;
   font-size: 15px;
@@ -13057,27 +13057,27 @@ body:not(.personale) .isbyg-tael-tal {
   font-variant-numeric: tabular-nums;
 }
 
-body:not(.personale) .isbyg-desserter { display: grid; gap: 10px; margin-top: 12px; }
-body:not(.personale) .isbyg-dessert {
+:is(body:not(.personale), .is-forhaand) .isbyg-desserter { display: grid; gap: 10px; margin-top: 12px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-dessert {
   padding: 12px 13px;
   border: 1px solid rgba(36, 26, 23, .12);
   border-radius: 14px;
   color: var(--sea);
   background: #fff;
 }
-body:not(.personale) .isbyg-dessert.aaben { border-color: var(--red); }
-body:not(.personale) .isbyg-dessert-top { display: flex; align-items: flex-start; gap: 10px; }
-body:not(.personale) .isbyg-dessert-tekst { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
-body:not(.personale) .isbyg-dessert-navn { font-size: 15px; font-weight: 600; }
-body:not(.personale) .isbyg-dessert-beskriv { font-size: 13px; color: var(--muted); }
-body:not(.personale) .isbyg-dessert-pris {
+:is(body:not(.personale), .is-forhaand) .isbyg-dessert.aaben { border-color: var(--red); }
+:is(body:not(.personale), .is-forhaand) .isbyg-dessert-top { display: flex; align-items: flex-start; gap: 10px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-dessert-tekst { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-dessert-navn { font-size: 15px; font-weight: 600; }
+:is(body:not(.personale), .is-forhaand) .isbyg-dessert-beskriv { font-size: 13px; color: var(--muted); }
+:is(body:not(.personale), .is-forhaand) .isbyg-dessert-pris {
   flex: none;
   font-size: 14px;
   font-weight: 600;
   color: var(--red-tekst);
   font-variant-numeric: tabular-nums;
 }
-body:not(.personale) .isbyg-tag {
+:is(body:not(.personale), .is-forhaand) .isbyg-tag {
   margin-top: 10px;
   padding: 9px 16px;
   border: 0;
@@ -13089,5 +13089,108 @@ body:not(.personale) .isbyg-tag {
   background: var(--red);
   cursor: pointer;
 }
-body:not(.personale) .isbyg-dessert-valg { margin-top: 10px; }
-body:not(.personale) .isbyg-dessert-valg > .isbyg-valg { margin-bottom: 8px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-dessert-valg { margin-top: 10px; }
+:is(body:not(.personale), .is-forhaand) .isbyg-dessert-valg > .isbyg-valg { margin-bottom: 8px; }
+
+
+/* ============================================================
+   IS & SØDT I ADMIN — ISENS FORLØB  (26. sep 2026)
+   ------------------------------------------------------------
+   Til venstre varerne under det trin, de hører til; til højre
+   forløbet, som gæsten ser det. På en bred skærm står
+   forhåndsvisningen fast ved siden af, mens man ruller i
+   varerne — ellers er det "ret noget, rul ned, se, rul op".
+   Forhåndsvisningens egne regler er bordsidens (se
+   :is(..., .is-forhaand) ovenfor): ét udseende, ikke to.
+   ============================================================ */
+body.personale .isbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 6px;
+}
+@media (min-width: 1100px) {
+  body.personale .isbar { grid-template-columns: minmax(0, 1fr) 390px; align-items: start; }
+  body.personale .isbar-vis { position: sticky; top: 16px; }
+}
+body.personale .isbar-afsnit { display: flex; align-items: center; gap: 8px; margin: 18px 0 6px; }
+body.personale .isbar-afsnit:first-child { margin-top: 4px; }
+body.personale .isbar-afsnit-tegn { font-size: 20px; line-height: 1; }
+body.personale .isbar-afsnit-navn { font-family: var(--display); font-size: 19px; color: var(--sea); }
+body.personale .isbar-gruppe {
+  margin-bottom: 10px;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--streg);
+  border-radius: 12px;
+  background: #fff;
+}
+body.personale .isbar-under {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--red-tekst);
+}
+body.personale .isbar-note { margin: 3px 0 8px; font-size: 13px; color: var(--muted); }
+body.personale .isbar-tom { margin: 0; font-size: 13px; font-style: italic; color: var(--muted); }
+/* ⚠️ ÉN LINJE PR. VARE. MÅLT 26/9 på 1440 px: navn, felter og en
+   knap under hinanden gav rækker på 140 px — 26 is-varer blev
+   3.600 px, ejeren skulle rulle igennem for at nå desserterne. Side
+   om side er de ~52 px, og de brydes kun, når der ikke er plads. */
+body.personale .isbar-raekke {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 7px 0;
+  border-top: 1px solid var(--streg);
+}
+body.personale .isbar-raekke > .isbar-navn { flex: 1 1 200px; min-width: 0; }
+body.personale .isbar-raekke > .isbar-felter { margin-top: 0; }
+body.personale .isbar-raekke > .isbar-advarsel { flex: 1 1 100%; }
+body.personale .isbar-nulstil {
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  background: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+body.personale .isbar-nulstil:hover { color: var(--sea); }
+body.personale .isbar-navn { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+body.personale .isbar-vare { font-weight: 600; color: var(--sea); }
+body.personale .isbar-pris { font-size: 13px; color: var(--red-tekst); font-variant-numeric: tabular-nums; }
+/* "læst af navnet" og "udsolgt": små mærker, ikke sætninger — de
+   skal kunne ses på en række af 25 uden at blive læst op. */
+body.personale .isbar-maerke {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--muted);
+  background: var(--sand);
+}
+body.personale .isbar-gaet { color: var(--red-tekst); background: rgba(214, 42, 58, .08); }
+body.personale .isbar-felter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 7px; }
+body.personale .isbar-felt { display: flex; align-items: center; gap: 7px; margin: 0; }
+body.personale .isbar-etiket { font-size: 13px; color: var(--muted); }
+body.personale .isbar-felt select.inp { width: auto; min-width: 210px; height: 38px; }
+body.personale .isbar-felt-kort input.inp { width: 72px; height: 38px; }
+body.personale .isbar-flueben { font-size: 14px; color: var(--sea); cursor: pointer; }
+body.personale .isbar-fast { font-size: 13px; color: var(--muted); }
+body.personale .isbar-advarsel { margin: 6px 0 0; font-size: 13px; color: var(--red-tekst); }
+body.personale .isbar-vis-titel {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* Telefonens bredde — de fleste gæster bestiller isen på en. */
+body.personale .is-forhaand { max-width: 390px; }
+body.personale .is-forhaand .isbyg-blok { margin-top: 0; }

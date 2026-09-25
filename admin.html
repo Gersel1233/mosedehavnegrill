@@ -2567,9 +2567,51 @@
            er en ny skriftstørrelse, et nyt loft i tests/typografi
            og to steder at rette det samme. .menu-afsnit er
            kategoriernes egen overskrift lige ovenfor. -->
+      <!-- ============ IS & SØDT — ISENS FORLØB  (26/9) =========
+           Kundens ord: *"admin med isen — saml det hele i én
+           kategori med underkategorier inde i, men som udseende med
+           flowet er på siden, så de kan ændre og se præcis, hvordan
+           det ser ud på siden med isen, og hvorhenne i processen og
+           til hvilken."*
+
+           ⚠️ ÉT STED FOR ISEN, OPSTILLET SOM GÆSTEN MØDER DEN. Til
+           venstre står hver is-vare under det trin, den hører til
+           (is i vaffel/bæger, isboks, desserter, løst) — og kan
+           flyttes. Til højre står det RIGTIGE forløb (js/isbygger.js,
+           den samme fil som forsiden og bordet), tegnet af det, der
+           står til venstre. Et billede af forløbet ville være en
+           kopi, der skred fra siden første gang, nogen rettede den.
+
+           Navn, pris og udsolgt rettes stadig i kategorien ovenfor:
+           ét sted pr. felt. Kortet her ejer KUN, hvor varen står.
+
+           id'et er stadig is-smage-kort: smagene er trin 3 i det
+           samme forløb, og prøverne på smagsfeltet måler dér. -->
+      <div class="menu-afsnit luft-top" id="is-afsnit">
+        <span class="menu-afsnit-navn">🍦 Is &amp; sødt</span>
+        <span class="menu-afsnit-note">sådan bestiller gæsten isen — samme forløb på forsiden og ved bordet</span>
+      </div>
+      <div class="kort" id="is-smage-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Isens forløb</h2>
+          <span class="kort-note">hver vare står dér, gæsten møder den — gemmes automatisk</span>
+        </div>
+        <div class="isbar">
+          <div class="isbar-ret">
+            <div id="is-flow-felter"></div>
+            <div id="is-smage-felter"></div>
+          </div>
+          <div class="isbar-vis">
+            <p class="isbar-vis-titel">Sådan ser gæsten det</p>
+            <div class="is-forhaand" id="is-forhaand"></div>
+            <p class="hjaelp">Tryk dig igennem den — det er det rigtige forløb. Der lægges intet i nogen kurv.</p>
+          </div>
+        </div>
+      </div>
+
       <div class="menu-afsnit luft-top">
         <span class="menu-afsnit-navn">⚙️ Særlige indstillinger</span>
-        <span class="menu-afsnit-note">tapasfadet og isens smage — ændrer sig sjældent</span>
+        <span class="menu-afsnit-note">tapasfadet — ændrer sig sjældent</span>
       </div>
 
       <!-- ============ HAVNENS TAPAS ========================
@@ -2591,26 +2633,6 @@
         <div id="tapas-felter"></div>
       </div>
 
-      <!-- ⚠️ ISENS SMAGE — EJERENS LISTE, IKKE VORES  (25/9).
-           Kundens ord: "naar man bestiller en is skal man med
-           kugler smage osv kunne goere det rigtigt."
-
-           Hvilke is forretningen har, ved kun ejeren. Skrev vi
-           "vanilje, jordbaer, chokolade" i koden, stod det paa
-           hjemmesiden som hans — husets aeldste regel. Er feltet
-           tomt, spoerger bestillingen slet ikke om smag, og siden
-           opfoerer sig praecis som foer.
-
-           Kortet staar her og ikke paa Aabningstider, fordi det
-           er en del af menukortet: det afgoer, hvad gaesten kan
-           vaelge. js/admin/menukort.js tegner feltet. -->
-      <div class="kort luft-top" id="is-smage-kort">
-        <div class="kort-hoved">
-          <h2 class="h-panel">Isens smage</h2>
-          <span class="kort-note">gæsten vælger en smag pr. kugle — gemmes automatisk</span>
-        </div>
-        <div id="is-smage-felter"></div>
-      </div>
 
       <!-- ⚠️ TIL DEN, DER SKAL TRYKKE ET MENUKORT (3/9).
            Kundens ord: "giv mig det hele som filer, da jeg skal
@@ -3423,6 +3445,10 @@
 <script src="js/admin/salg.js?v=__V__"></script>
 <script src="js/admin/beskrivelsesforslag.js?v=__V__"></script>
 <script src="js/admin/valgforslag.js?v=__V__"></script>
+<!-- Isens forløb i admin er gæstesidens EGEN fil — se noten ved
+     "Is & sødt". En forhåndsvisning, der var en kopi, ville vise noget
+     andet end siden den dag, nogen rettede den ene. -->
+<script src="js/isbygger.js?v=__V__"></script>
 <script src="js/admin/menukort.js?v=__V__"></script>
 <script src="js/admin/nyheder.js?v=__V__"></script>
 <script src="js/admin/beskeder.js?v=__V__"></script>

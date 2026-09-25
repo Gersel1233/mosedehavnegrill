@@ -2843,25 +2843,357 @@
         + 'køkkenet får "2 kugler · Vaffel" og må selv spørge.'));
   }
 
-  /* Autogem registreres ÉN gang — roden er KORTET, ikke feltet. */
+  /* ============================================================
+     IS & SØDT — ISENS FORLØB  (26/9)
+     ------------------------------------------------------------
+     Kundens ord: *"admin med isen — saml det hele i én kategori
+     med underkategorier inde i, men som udseende med flowet er på
+     siden, så de kan ændre og se præcis, hvordan det ser ud på
+     siden med isen, og hvorhenne i processen og til hvilken."*
+
+     Til venstre: hver is-vare under det trin, den hører til, med
+     "Står under" til at flytte den, antal kugler og "eller
+     softice". Til højre: det RIGTIGE forløb — js/isbygger.js, den
+     samme fil som forsiden og bordet — tegnet af det, der står til
+     venstre, i samme øjeblik det ændres.
+
+     ⚠️ KORTET EJER KUN, HVOR VAREN STÅR. Navn, pris og udsolgt rettes
+     i kategorien ovenfor: ét sted pr. felt. Opsætningen gemmes i
+     indstillinger som `is_opsaetning` (vare-id → rolle, kugler,
+     softice) — nøgle/værdi, altså ingen SQL.
+
+     ⚠️ KUN DET, EJEREN HAR SAGT, GEMMES. En vare, han ikke har rørt,
+     står der ikke noget om, og så læses dens plads af dens eget
+     navn (MosedeIsbygger.rolle). Rækken siger "læst af navnet", så
+     han kan se forskel. */
+  var isTilstand = {};
+  var isSidstGemt = null;
+  var forhaandSlag = null;
+
+  var IS_AFSNIT = [
+    { rolle: 'stoerrelse', tegn: '🍦', titel: 'Is i vaffel eller bæger', under: 'Størrelser — trin 2',
+      note: 'Trin 1 er valget på varen (Vaffel, Bæger, Glutenfri vaffel). Trin 3 er smagene nederst.' },
+    { rolle: 'tilbehoer', tegn: '🍦', titel: 'Is i vaffel eller bæger', under: 'Tilbehør — trin 4',
+      note: 'Vises til en is fra samme kategori. En ekstra kugle med "1 kugle" spørger om sin smag.' },
+    { rolle: 'boks', tegn: '📦', titel: 'Isboks',
+      note: 'Kugler eller softice — og så fordeler gæsten kuglerne på smagene.' },
+    { rolle: 'dessert', tegn: '🧇', titel: 'Desserter',
+      note: 'Et kort pr. ret. Har retten kugler, vælges deres smag — ellers er det ét tryk.' },
+    { rolle: 'loes', tegn: '🥄', titel: 'Løst', note: 'Købes, som det er.' },
+  ];
+  var IS_ETIKET = {
+    stoerrelse: 'Is i vaffel/bæger — størrelse',
+    tilbehoer: 'Is i vaffel/bæger — tilbehør',
+    boks: 'Isboks',
+    dessert: 'Desserter',
+    loes: 'Løst',
+  };
+
+  function kopiAf(o) { return JSON.parse(JSON.stringify(o || {})); }
+
+  /* Isens varer: dem i en tændt kategori med afdelingen "is". En
+     slukket vare er taget af kortet og har intet trin at stå på. */
+  function isVarerAdmin() {
+    var kat = {};
+    (Admin.data.menu_kategorier || []).forEach(function (k) { kat[k.id] = k; });
+    return (Admin.data.menu_varer || []).filter(function (v) {
+      var k = kat[v.kategori_id];
+      return k && k.afdeling === 'is' && k.aktiv !== false && v.aktiv !== false;
+    }).sort(function (a, b) {
+      var ka = kat[a.kategori_id], kb = kat[b.kategori_id];
+      return ((ka.sortering || 0) - (kb.sortering || 0))
+        || ((a.sortering || 0) - (b.sortering || 0));
+    });
+  }
+
+  /* Datasættet, som det står PÅ SKÆRMEN lige nu — også det, der ikke
+     er gemt endnu. Forhåndsvisningen skal vise det, ejeren lige har
+     valgt, ikke det, databasen sagde for et øjeblik siden. */
+  function isData() {
+    var ind = Object.assign({}, Admin.data.indstillinger || {},
+      { is_opsaetning: isTilstand });
+    var f = $('is-smage');
+    if (f) ind.is_smage = f.value;
+    return Object.assign({}, Admin.data, { indstillinger: ind });
+  }
+
+  function tegnIsbar() {
+    var kort = $('is-smage-kort');
+    if (!kort || !window.MosedeIsbygger) return;
+    /* ⚠️ IKKE MENS DER ARBEJDES I KORTET. Admin tegner alle faner om
+       efter hvert rigtigt gem; river det feltet ud under fingeren,
+       mister ejeren det, han var ved at skrive (samme regel som
+       tapaskortet). */
+    if (kort.contains(document.activeElement)
+        && /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
+    isTilstand = kopiAf(MosedeIsbygger.opsaetning(Admin.data));
+    isSidstGemt = JSON.stringify(isTilstand);
+    tegnIsSmage();
+    tegnIsFlow();
+    tegnForhaand();
+  }
+
+  function tegnIsFlow() {
+    var rod = $('is-flow-felter');
+    if (!rod) return;
+    Admin.tøm(rod);
+    var d = isData();
+    var varer = isVarerAdmin();
+    if (!varer.length) {
+      rod.appendChild(lav('p', 'hjaelp',
+        'Der er ingen is-varer endnu. En kategori bliver til is, når dens afdeling står på "Is".'));
+      return;
+    }
+    var pr = {};
+    varer.forEach(function (v) {
+      var r = MosedeIsbygger.rolle(v, d);
+      (pr[r.rolle] = pr[r.rolle] || []).push({ v: v, r: r });
+    });
+
+    var sidsteTitel = null;
+    IS_AFSNIT.forEach(function (a) {
+      if (a.titel !== sidsteTitel) {
+        var h = lav('div', 'isbar-afsnit');
+        h.setAttribute('data-afsnit', a.rolle);
+        h.appendChild(lav('span', 'isbar-afsnit-tegn', a.tegn));
+        h.appendChild(lav('span', 'isbar-afsnit-navn', a.titel));
+        rod.appendChild(h);
+        sidsteTitel = a.titel;
+      }
+      var gruppe = lav('div', 'isbar-gruppe');
+      gruppe.setAttribute('data-rolle', a.rolle);
+      if (a.under) gruppe.appendChild(lav('p', 'isbar-under', a.under));
+      gruppe.appendChild(lav('p', 'isbar-note', a.note));
+      /* Samme rækkefølge som forhåndsvisningen ved siden af — ellers
+         leder ejeren efter en vare det forkerte sted. */
+      var liste = MosedeIsbygger.ordn((pr[a.rolle] || []).map(function (x) { return x.v; }), a.rolle, d)
+        .map(function (v) { return pr[a.rolle].filter(function (x) { return x.v === v; })[0]; });
+      if (!liste.length) {
+        gruppe.appendChild(lav('p', 'isbar-tom', 'Ingen varer her. Flyt en hertil med "Står under".'));
+      }
+      liste.forEach(function (x) { gruppe.appendChild(isRaekke(x.v, x.r)); });
+      rod.appendChild(gruppe);
+    });
+  }
+
+  function isRaekke(v, r) {
+    var række = lav('div', 'isbar-raekke');
+    række.setAttribute('data-vare-id', String(v.id));
+    række.setAttribute('data-vare', v.navn);
+
+    var navn = lav('div', 'isbar-navn');
+    navn.appendChild(lav('span', 'isbar-vare', v.navn));
+    navn.appendChild(lav('span', 'isbar-pris',
+      v.pris === null || v.pris === undefined ? 'mangler pris' : Butik.kroner(v.pris)));
+    if (v.udsolgt) navn.appendChild(lav('span', 'isbar-maerke', 'udsolgt'));
+    if (!r.sagt) navn.appendChild(lav('span', 'isbar-maerke isbar-gaet', 'læst af navnet'));
+    række.appendChild(navn);
+
+    var felter = lav('div', 'isbar-felter');
+
+    var fRolle = lav('label', 'isbar-felt');
+    fRolle.appendChild(lav('span', 'isbar-etiket', 'Står under'));
+    var sel = document.createElement('select');
+    sel.className = 'inp';
+    sel.setAttribute('data-felt', 'rolle');
+    sel.setAttribute('aria-label', 'Hvor står ' + v.navn + ' i bestillingen');
+    MosedeIsbygger.ROLLER.forEach(function (x) {
+      var o = lav('option', null, IS_ETIKET[x]);
+      o.value = x;
+      sel.appendChild(o);
+    });
+    sel.value = r.rolle;
+    fRolle.appendChild(sel);
+    felter.appendChild(fRolle);
+
+    if (r.rolle === 'stoerrelse') {
+      /* Det, gæsten bliver SPURGT om — ikke en gentagelse af varens
+         navn. "1 kugle — 1 kugle" ville være en linje, ingen læser. */
+      felter.appendChild(lav('span', 'isbar-fast',
+        r.kugler ? 'spørger om ' + r.kugler + (r.kugler === 1 ? ' smag' : ' smage')
+          : 'softice — ingen smag at vælge'));
+    } else if (r.rolle !== 'loes') {
+      var fK = lav('label', 'isbar-felt isbar-felt-kort');
+      fK.appendChild(lav('span', 'isbar-etiket', 'Kugler'));
+      var tal = document.createElement('input');
+      tal.type = 'number';
+      tal.min = '0';
+      tal.max = '12';
+      tal.className = 'inp';
+      tal.setAttribute('data-felt', 'kugler');
+      tal.setAttribute('aria-label', 'Antal kugler i ' + v.navn);
+      tal.value = String(r.kugler || 0);
+      fK.appendChild(tal);
+      felter.appendChild(fK);
+    }
+
+    if (r.rolle === 'boks' || r.rolle === 'dessert') {
+      var fS = lav('label', 'isbar-felt isbar-flueben');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.setAttribute('data-felt', 'softice');
+      cb.checked = !!r.softice;
+      fS.appendChild(cb);
+      fS.appendChild(lav('span', null, 'eller softice'));
+      felter.appendChild(fS);
+    }
+
+    if (r.sagt) {
+      var nul = lav('button', 'isbar-nulstil', '↺ Brug navnet');
+      nul.type = 'button';
+      nul.title = 'Glem det, der er valgt her, og læs pladsen af varens navn igen';
+      felter.appendChild(nul);
+    }
+    række.appendChild(felter);
+
+    /* ⚠️ HVAD TROR EN TRAVL PERSON, DER SKER? Sætter ejeren
+       "størrelse" på en vare uden valget vaffel/bæger, står den
+       under desserterne — og uden en linje, der siger hvorfor,
+       ligner det, at valget ikke blev gemt. */
+    var sagtRolle = (isTilstand[String(v.id)] || {}).rolle;
+    if (sagtRolle === 'stoerrelse' && r.rolle !== 'stoerrelse') {
+      række.appendChild(lav('p', 'isbar-advarsel',
+        'Har ikke valget vaffel/bæger — derfor står den under desserterne. '
+        + 'Sæt valget på varen i kategorien ovenfor.'));
+    }
+    return række;
+  }
+
+  function tegnForhaand() {
+    var rod = $('is-forhaand');
+    if (!rod || !window.MosedeIsbygger) return;
+    Admin.tøm(rod);
+    var blok = lav('div', 'isbyg-blok');
+    var hoved = lav('div', 'isbyg-blok-hoved');
+    hoved.appendChild(lav('span', 'isbyg-blok-tegn', '🍦'));
+    hoved.appendChild(lav('h3', 'isbyg-blok-titel', 'Is & sødt'));
+    blok.appendChild(hoved);
+    var krop = lav('div', 'isbyg-blok-krop');
+    blok.appendChild(krop);
+    /* laeg gør ingenting: det er en forhåndsvisning, og der er ingen
+       kurv i admin. Forløbets egen kvittering bliver stående, fordi
+       det er præcis dén, gæsten ser. */
+    var b = MosedeIsbygger.byg(krop, { data: isData(), varer: isVarerAdmin(), laeg: function () {} });
+    if (!b) {
+      rod.appendChild(lav('p', 'hjaelp',
+        'Der er ikke noget at bygge endnu. Sæt en vare under "Is i vaffel eller bæger", '
+        + '"Isboks" eller en dessert med kugler — så står forløbet her. Indtil da står '
+        + 'isen som almindelige rækker på siden.'));
+      return;
+    }
+    rod.appendChild(blok);
+    /* Bliv på den flise, ejeren kiggede på: ændrer han en dessert,
+       skal han se desserterne, ikke springe tilbage til vaflen. */
+    if (forhaandSlag && blok.querySelector('.isbyg-slag[data-slag="' + forhaandSlag + '"]')) {
+      b.vis(forhaandSlag);
+    }
+  }
+
+  /* Rækkens tre felter → det, ejeren har sagt om varen. */
+  function læsRække(række) {
+    var id = række.getAttribute('data-vare-id');
+    var v = (Admin.data.menu_varer || []).filter(function (x) { return String(x.id) === id; })[0];
+    var før = v ? MosedeIsbygger.rolle(v, isData()) : { kugler: 0, softice: false };
+    var sel = række.querySelector('[data-felt="rolle"]');
+    var tal = række.querySelector('[data-felt="kugler"]');
+    var cb = række.querySelector('[data-felt="softice"]');
+    var o = { rolle: sel ? sel.value : før.rolle };
+    o.kugler = tal ? Number(tal.value) : før.kugler;
+    o.softice = cb ? !!cb.checked : før.softice;
+    return { id: id, o: o };
+  }
+
+  (function () {
+    var kort = $('is-smage-kort');
+    if (!kort) return;
+
+    /* ⚠️ TILSTANDEN OPDATERES FØR AUTOGEM LÆSER DEN — derfor i
+       CAPTURE-fasen. Autogems lytter er registreret først og kører
+       først i boblefasen; læste den tilstanden, før rækken var
+       skrevet ind, ville den gemme valget FØR det sidste. */
+    function fang(e) {
+      var række = e.target && e.target.closest && e.target.closest('.isbar-raekke');
+      if (!række || !e.target.getAttribute('data-felt')) return;
+      var x = læsRække(række);
+      isTilstand[x.id] = x.o;
+    }
+    kort.addEventListener('change', fang, true);
+    kort.addEventListener('input', fang, true);
+
+    kort.addEventListener('click', function (e) {
+      var nul = e.target && e.target.closest && e.target.closest('.isbar-nulstil');
+      if (nul) {
+        var række = nul.closest('.isbar-raekke');
+        delete isTilstand[række.getAttribute('data-vare-id')];
+        gemIsOpsaetning().then(function () {}, function () {});
+        opdaterIs();
+        return;
+      }
+      var flise = e.target && e.target.closest && e.target.closest('#is-forhaand .isbyg-slag');
+      if (flise) forhaandSlag = flise.getAttribute('data-slag');
+    });
+  }());
+
+  function gemIsOpsaetning() {
+    var nu = JSON.stringify(isTilstand);
+    if (nu === isSidstGemt) return Promise.resolve();
+    return Butik.skrive.indstilling('is_opsaetning', kopiAf(isTilstand)).then(function (r) {
+      isSidstGemt = nu;
+      return r;
+    });
+  }
+
+  /* Autogem registreres ÉN gang — roden er KORTET, ikke feltet. Den
+     gemmer smagene OG opsætningen; hver for sig, så en fejl i den
+     ene ikke tager den anden med. */
   Admin.autogem($('is-smage-kort'), function () {
     var f = $('is-smage');
     if (!f) return false;
     /* ⚠️ GEMT SOM ÉN TEKST, ikke som en liste: `indstillinger` er
-       nøgle/værdi, og en jsonb-kolonne til fem ord ville være en
-       SQL-fil, ejeren skal køre. Butik.isSmage deler den op — ét
-       sted, så siden og admin ikke kan blive uenige. */
+       nøgle/værdi, og Butik.isSmage deler den op — ét sted, så siden
+       og admin ikke kan blive uenige. */
     var linjer = String(f.value || '').split(/[,\n;]+/)
       .map(function (x) { return x.trim(); }).filter(Boolean);
     if (linjer.length > 40) return 'Der er plads til 40 smage — ikke flere.';
     var forLang = linjer.filter(function (x) { return x.length > 60; })[0];
     if (forLang) return 'En smag må fylde 60 tegn: “' + forLang.slice(0, 20) + '…”';
-    return Butik.skrive.indstilling('is_smage', linjer.join('\n'));
+    var forMange = Object.keys(isTilstand).filter(function (id) {
+      var k = Number(isTilstand[id].kugler);
+      return !(k >= 0 && k <= 12 && Math.round(k) === k);
+    })[0];
+    if (forMange) return 'Kugler skal være et helt tal fra 0 til 12.';
+    return Butik.skrive.indstilling('is_smage', linjer.join('\n')).then(gemIsOpsaetning);
   });
+
+  /* Og EFTER autogem: skærmen følger med. Admin.data opdateres i
+     hukommelsen, så resten af fanen og forhåndsvisningen ser det
+     samme som det, der lige blev gemt. */
+  function opdaterIs() {
+    Admin.data.indstillinger = Admin.data.indstillinger || {};
+    Admin.data.indstillinger.is_opsaetning = kopiAf(isTilstand);
+    var f = $('is-smage');
+    if (f) Admin.data.indstillinger.is_smage = f.value;
+    tegnIsFlow();
+    tegnForhaand();
+  }
+  (function () {
+    var kort = $('is-smage-kort');
+    if (!kort) return;
+    kort.addEventListener('change', function (e) {
+      if (e.target && e.target.closest && e.target.closest('#is-forhaand')) return;
+      opdaterIs();
+    });
+    /* Smagene tegnes med ved hvert tastetryk i forhåndsvisningen —
+       det er dét, ejeren skriver for at se. Rækkerne tegnes ikke om,
+       før feltet forlades. */
+    kort.addEventListener('input', function (e) {
+      if (e.target && e.target.id === 'is-smage') tegnForhaand();
+    });
+  }());
 
   Admin.tegnere.push(tegnMenu);
   Admin.tegnere.push(tegnTapas);
-  Admin.tegnere.push(tegnIsSmage);
+  Admin.tegnere.push(tegnIsbar);
 
   /* ============================================================
      HENT KORTET SOM REGNEARK  (3/9)

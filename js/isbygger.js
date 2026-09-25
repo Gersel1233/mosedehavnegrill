@@ -185,13 +185,26 @@ window.MosedeIsbygger = (function () {
   }
 
   /* Varerne delt ud på de fem roller — kun dem, der kan bestilles. */
-  function grupper(varer, data) {
-    var g = { stoerrelse: [], tilbehoer: [], boks: [], dessert: [], loes: [] };
-    (varer || []).forEach(function (v) {
-      if (!bestilbar(v)) return;
-      g[rolle(v, data).rolle].push(v);
+  /* ⚠️ SAMME RÆKKEFØLGE PÅ SIDEN OG I ADMIN. Første udgave sorterede
+     desserterne på varens egen `sortering` alene — på tværs af
+     kategorier. "Havnens café-is" (Kugleis, sortering 21) røg derfor
+     ned under alt fra "Softice og vafler" (sortering 4-10) på siden,
+     mens admin viste den øverst. Ejeren så én rækkefølge og gæsten
+     en anden. Nu gælder kortets orden: kategorien først, så varen —
+     og admin kalder den samme funktion. */
+  function ordn(liste, rolleNavn, data) {
+    var katOrden = {};
+    ((data && data.menu_kategorier) || []).forEach(function (k) {
+      if (k) katOrden[k.id] = Number(k.sortering) || 0;
     });
-    g.stoerrelse.sort(function (a, b) {
+    function efterKort(a, b) {
+      return ((katOrden[a.kategori_id] || 0) - (katOrden[b.kategori_id] || 0))
+        || ((a.sortering || 0) - (b.sortering || 0))
+        || ((a.pris || 0) - (b.pris || 0));
+    }
+    var kopi = (liste || []).slice();
+    if (rolleNavn !== 'stoerrelse') return kopi.sort(efterKort);
+    return kopi.sort(function (a, b) {
       /* Kuglerne først, i stigende antal; softice bagefter. */
       var ka = rolle(a, data).kugler, kb = rolle(b, data).kugler;
       if (ka && kb) return ka - kb;
@@ -199,11 +212,15 @@ window.MosedeIsbygger = (function () {
       if (kb) return 1;
       return (a.pris || 0) - (b.pris || 0);
     });
-    function efterKort(a, b) {
-      return (a.sortering || 0) - (b.sortering || 0) || (a.pris || 0) - (b.pris || 0);
-    }
-    g.boks.sort(efterKort); g.dessert.sort(efterKort);
-    g.loes.sort(efterKort); g.tilbehoer.sort(efterKort);
+  }
+
+  function grupper(varer, data) {
+    var g = { stoerrelse: [], tilbehoer: [], boks: [], dessert: [], loes: [] };
+    (varer || []).forEach(function (v) {
+      if (!bestilbar(v)) return;
+      g[rolle(v, data).rolle].push(v);
+    });
+    Object.keys(g).forEach(function (n) { g[n] = ordn(g[n], n, data); });
     /* ⚠️ TILBEHØR UDEN EN IS AT LÆGGE DET PÅ, FINDES IKKE. Er der
        ingen størrelser, tegnes forløbet med trin 4 ikke — og så må
        tilbehøret heller ikke regnes som "i byggeren", ellers ville
@@ -567,7 +584,7 @@ window.MosedeIsbygger = (function () {
       function næsteSkridt() {
         if (!valgtVariant) return 'Vælg vaffel eller bæger';
         if (!valgtVare) return 'Vælg hvor mange kugler';
-        return 'Vælg smag til alle kuglerne';
+        return antalKugler() > 1 ? 'Vælg smag til alle kuglerne' : 'Vælg smagen';
       }
 
       function tegnOm() {
@@ -899,7 +916,8 @@ window.MosedeIsbygger = (function () {
           b.knap.className = 'isbyg-laeg isbyg-laeg-dessert';
           b.sum.textContent = 'I alt ' + kr(v.pris);
           b.knap.textContent = klar() ? 'Læg i kurven · ' + kr(v.pris)
-            : (!form ? 'Vælg kugler eller softice' : 'Vælg smag til alle kuglerne');
+            : (!form ? 'Vælg kugler eller softice'
+              : (r.kugler > 1 ? 'Vælg smag til alle kuglerne' : 'Vælg smagen'));
           b.knap.disabled = !klar();
           b.knap.addEventListener('click', function () {
             if (!klar()) return;
@@ -954,6 +972,7 @@ window.MosedeIsbygger = (function () {
     erSoftice: erSoftice,
     rolle: rolle,
     grupper: grupper,
+    ordn: ordn,
     opsaetning: opsaetning,
     stoerrelser: stoerrelser,
     iBrug: iBrug,
