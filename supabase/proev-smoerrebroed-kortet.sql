@@ -50,17 +50,36 @@ select pg_temp.svar('2. Begge kategorier bærer kortets egen manchet',
 -- ------------------------------------------------------------
 --  DE 48 (+ tomatmaden)
 -- ------------------------------------------------------------
-select pg_temp.svar('3. Alle 24 håndmadder står til 27 kr.',
-  pg_temp.antal('Håndmadder') = 24
-  and (select bool_and(v.pris = 27) from public.menu_varer v
-         join public.menu_kategorier k on k.id = v.kategori_id
-        where k.navn = 'Håndmadder' and k.lokation_id = 'mosede' and v.aktiv));
+/* ⚠️ PRØVEN MÅLER smoerrebroed-kortet.sql — IKKE DET, DER KOM BAGEFTER.
+   Rettet 25/9. Første udgave talte ALLE aktive rækker og krævede
+   27 kr. Så faldt den to gange uden en fejl i databasen:
+   · kortenes-huller-25-9.sql lagde tre varer til, kortene viser
+     ("Dagens hjemmelavede pålægssalater" som skive og som håndmad,
+     og "Æggemad med mayo og rejer") — antallet var ikke 24 og 25
+     mere. De tre står i `senere` herunder og tælles ikke med.
+   · ejeren satte håndmadderne til 24 kr. i admin 21/9 (*"håndmadder
+     er 24"*). En prøve, der kræver 27, siger ❌ den dag, ejeren
+     retter sit eget tal — derfor måles REGLEN: én pris for alle
+     håndmadder, ikke hvilken. */
+create temp table senere (navn text) on commit drop;
+insert into senere values
+  ('Dagens hjemmelavede pålægssalater'),
+  ('Æggemad med mayo og rejer'),
+  ('Dagens hjemmelavede pålægssalater, håndmad');
+
+select pg_temp.svar('3. De 24 håndmadder fra kortet står til én og samme pris',
+  (select count(*) = 24 and count(distinct v.pris) = 1
+     from public.menu_varer v
+     join public.menu_kategorier k on k.id = v.kategori_id
+    where k.navn = 'Håndmadder' and k.lokation_id = 'mosede' and v.aktiv
+      and v.navn not in (select navn from senere)));
 
 select pg_temp.svar('4. De 25 hele skiver står til 55 kr.',
   (select count(*) = 25 from public.menu_varer v
      join public.menu_kategorier k on k.id = v.kategori_id
     where k.navn = 'Smørrebrød' and k.lokation_id = 'mosede'
-      and v.aktiv and v.pris = 55));
+      and v.aktiv and v.pris = 55
+      and v.navn not in (select navn from senere)));
 
 -- ------------------------------------------------------------
 --  ⚠️ NAVNENE MÅ IKKE VÆRE ENS — hele fundamentet

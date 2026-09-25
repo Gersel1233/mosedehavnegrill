@@ -143,13 +143,30 @@ window.MosedeIsbygger = (function () {
     if (erStørrelse(v)) gæt = 'stoerrelse';
     else if (/isboks/i.test(navn)) gæt = 'boks';
     else if (kuglerI(v) > 0 || /eller\s+softice/i.test(navn)) gæt = 'dessert';
-    /* ⚠️ TILBEHØR KRÆVER EN IS AT LÆGGE DET PÅ. MÅLT 26/9 med
+    /* ⚠️ TILBEHØR KRÆVER EN IS AT LÆGGE DET PÅ. MÅLT med
        produktionens varer: ispindene (Maxibon, Excellence …) stod i
        "Noget mere?" som noget, man kunne lægge oven på en kugle-is,
        fordi reglen gættede "tilbehør" om alt, den ikke kendte. En
        vare fra en kategori UDEN en eneste is i vaffel eller bæger
-       sælges, som den er. Svaret hænger på ejerens egen inddeling. */
-    else gæt = kategorienHarStørrelser(v, data) ? 'tilbehoer' : 'loes';
+       sælges, som den er. Svaret hænger på ejerens egen inddeling.
+
+       ⚠️ OG KUN DET, DER SIGER DET SELV. Anden udgave gættede stadig
+       "tilbehør" om ALT andet i en kategori med størrelser. Målt 25/9
+       mod produktionens 26 is-varer: Affogato, Sundae, begge churros,
+       pandekagerne og "Havnens café-is" — ni retter til 45-79 kr. —
+       stod i "Noget mere?" som noget, man lægger OVEN PÅ en kugle i
+       vaffel. En gæst, der ville have en affogato, skulle først vælge
+       en vaffel. Tilbehør er nu kun det, hvis navn begynder med et
+       tilbehør ("Ekstra kugle", "Strøssel …", "Sauce …", "Softice-
+       top"); resten er en ret for sig. Et forkert gæt den vej koster
+       ingenting: en ret for sig kan altid bestilles ved siden af isen.
+       Ejeren flytter den i admin under "Is & sødt". */
+    else if (/^løs\b/i.test(navn)) gæt = 'loes';
+    else if (kategorienHarStørrelser(v, data)) {
+      gæt = /^(ekstra\b|strøssel|drys|sauce\b|topping|guf\b|softice-top)/i.test(navn)
+        ? 'tilbehoer' : 'dessert';
+    }
+    else gæt = 'loes';
 
     var sagt = !!(o && ROLLER.indexOf(o.rolle) !== -1);
     var r = sagt ? o.rolle : gæt;
