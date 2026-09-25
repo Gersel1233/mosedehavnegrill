@@ -1404,6 +1404,91 @@ test.describe('Havnens tapas-kort', () => {
 });
 
 /* ============================================================
+   ISENS SMAGE — EJERENS LISTE, IKKE VORES  (25/9)
+   ------------------------------------------------------------
+   Kundens ord: *"når man bestiller en is skal man med kugler
+   smage osv kunne gøre det rigtigt."*
+
+   Hvilke is forretningen har, ved kun ejeren. Feltet er
+   `indstillinger.is_smage` — nøgle/værdi, altså ingen SQL — og
+   prøven her måler HELE vejen: det, ejeren taster i admin, skal
+   stå som valgmuligheder ude i gæstens bestilling. Tallene
+   kommer udefra: de tre navne, der tastes.
+   ------------------------------------------------------------ */
+test.describe('Isens smage', () => {
+
+  const IS_KAT = 6;   // grunddata: "Softice og vafler", afdeling is
+
+  function medIs() {
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [1, IS_KAT, 9];
+    d.indstillinger.bestilling_varsel_timer = 2;
+    d.menu_varer.push({
+      id: 9101, kategori_id: IS_KAT, navn: '2 kugler', beskrivelse: null,
+      pris: 45, fremhaevet: false, udsolgt: false, sortering: 9, aktiv: true,
+      valg: ['Vaffel', 'Bæger'],
+    });
+    return d;
+  }
+
+  test('det ejeren taster, bliver gæstens valgmuligheder', async ({ page }) => {
+    await åbnMenufanen(page, { data: medIs() });
+
+    await page.fill('#is-smage', 'Vanilje\nJordbær\nLakrids');
+    /* change (blur) gemmer straks — det er autogems kontrakt. */
+    await page.locator('#is-smage').blur();
+    await expect(page.locator('#is-smage-kort .gemt-maerke')).toContainText('Gemt');
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.is_smage, 'listen nåede ikke ned i indstillingerne')
+      .toBe('Vanilje\nJordbær\nLakrids');
+
+    /* ⚠️ OG SÅ UD PÅ SIDEN. En liste, der bliver i admin, er
+       ingen liste. Gæsten åbner isen og lægger ÉN vaffel i
+       kurven; så skal der stå to smagsvælgere — én pr. kugle —
+       med præcis ejerens tre navne i. */
+    await page.goto('/index.html');
+    const kat = page.locator('#bestil .item[data-afd="is"]').first();
+    await kat.locator('[data-add]').waitFor({ state: 'attached' });
+    await kat.click();
+    const række = page.locator('#bestil .item[data-vare="2 kugler"]').first();
+    await række.locator('.item-valg-linje[data-valg="Vaffel"] button[data-d="+"]').click();
+
+    const vælgere = række.locator('.is-portion[data-portion="0"] .is-smag');
+    await expect(vælgere, '"2 kugler" gav ikke to vælgere').toHaveCount(2);
+    expect(await vælgere.first().locator('option').allTextContents(),
+      'gæsten fik ikke ejerens smage at vælge imellem')
+      .toEqual(['Smag', 'Vanilje', 'Jordbær', 'Lakrids']);
+  });
+
+  /* ⚠️ EN SMAG ER ET NAVN, IKKE EN HISTORIE. Uden grænsen kunne
+     et tastefejlet afsnit blive én valgmulighed i en rulleliste
+     på 104 px — og gæsten ville vælge i blinde. Fejlen skal ses,
+     OG intet må være gemt: en besked på skærmen er ikke et værn,
+     hvis rækken alligevel landede. */
+  test('en smag, der fylder for meget, afvises — og intet gemmes', async ({ page }) => {
+    await åbnMenufanen(page, { data: medIs() });
+
+    await page.fill('#is-smage', 'Vanilje\n' + 'a'.repeat(61));
+    await page.locator('#is-smage').blur();
+    await expect(page.locator('#is-smage-kort .gemt-maerke')).toContainText('60 tegn');
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.is_smage, 'den for lange smag blev gemt alligevel')
+      .toBeUndefined();
+  });
+
+  /* Modstykket: står feltet tomt, spørger bestillingen ikke om
+     smag, og hjælpelinjen siger det — ellers ville en ejer, der
+     ikke har skrevet listen, tro, at gæsten bliver spurgt. */
+  test('uden en liste siger kortet, at der ikke spørges om smag', async ({ page }) => {
+    await åbnMenufanen(page, { data: medIs() });
+    await expect(page.locator('#is-smage-felter .hjaelp'))
+      .toContainText('spørger bestillingen ikke om smag');
+  });
+});
+
+/* ============================================================
    "MANGLER PRIS" ER EN OPGAVE, IKKE ET FAKTUM  (7/9)
 
    Kundens spørgsmål: "hvorfor er der stadig manglende priser?"

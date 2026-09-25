@@ -719,7 +719,11 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    ⚠️ INGEN NY SKYGGE OG INGEN NY SKRIFTSTØRRELSE. Skralden stod på
    37 af 37 skygger og 29 af 30 størrelser, da det her blev skrevet
    (målt). Felterne er husets .inp, og 13px er rækkens egen. */
-.is-portioner{display:grid;gap:6px;margin-top:8px}
+/* ⚠️ PORTIONERNE HÆNGER PÅ VALGETS LINJE — stregen til venstre er
+   det eneste, der siger det. Målt på et skud (iPhone 13, 25/9):
+   uden den lå de to rullelister midt imellem "Vaffel" og "Bæger",
+   og en travl gæst kunne ikke se, hvilken af dem de hørte til. */
+.is-portioner{display:grid;gap:6px;margin:6px 0 2px;padding-left:10px;border-left:2px solid rgba(214,42,58,.3)}
 .is-portion{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 /* ⚠️ Nummeret må ikke skrumpe: uden flex:none klemmes det til en
    streg, når tre smagsnavne skal dele en telefonbredde. */
@@ -728,7 +732,27 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    LÆNGSTE option, og "Chokolade med lakrids" ville skubbe rækken ud
    over kanten på en iPhone. Målt-fælden fra .item-valg-navn, samme
    sted. */
-.is-smag{flex:1 1 92px;min-width:0;height:38px;padding:0 8px;font-size:13px}
+/* ⚠️ OG PILENS PLADS MÅ IKKE ÆDE NAVNET. select.inp holder 38 px fri
+   til sin egen pil — tal for et felt i fuld bredde. Her deler to
+   felter en telefonrække og bliver 98 px hver, så de 38 var over
+   en tredjedel: på et skud (iPhone 13) stod der "Lakrid" og
+   "Mango". Pilen flyttes ind, og skriften er kortets egen 12 px
+   (samme som .item-valg-tillaeg — ingen ny størrelse i skralden). */
+/* ⚠️ select.is-smag OG IKKE .is-smag. Vælgeren ovenfor hedder
+   "select.inp" (0,1,1) og slog en ren klasse (0,1,0): MÅLT 25/9
+   stod feltet med 48 px, 15 px skrift og 38 px pileplads, mens
+   der her i filen stod 38, 13 og 8. En klasse, der ikke slår
+   igennem, er ingen regel — husets ældste målefælde, og den kan
+   kun ses på den BEREGNEDE stil. Prøven er tests/skal-bestil.spec.js
+   "smagsfeltet er det, filen siger". */
+select.is-smag{flex:1 1 92px;min-width:0;height:38px;padding:0 20px 0 9px;font-size:12px;background-position:calc(100% - 12px) 16px,calc(100% - 8px) 16px}
+/* ⚠️ DEN KUGLE, DER MANGLER EN SMAG, SKAL KUNNE SES — ikke først når
+   gæsten trykker Send. "Smag" står i samme skrift som "Vanilje", og
+   på et skud kunne de to ikke skelnes. Tonen og ikke en kant: husets
+   felter tegner deres kant med box-shadow, og skralden stod på 37 af
+   37 skygger (tests/typografi.spec.js). background-color alene lader
+   rullelistens egen pil blive stående. */
+select.is-smag.mangler{background-color:rgba(214,42,58,.1)}
 .item .add{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:var(--red)}
 /* ⚠️ ET ANSIGT PR. KATEGORI I BESTILLINGEN (29/8). Fem rækker ren
    tekst — Grill fra pladen, Smørrebrød, Is og desserter … — hvor
@@ -921,6 +945,14 @@ html{touch-action:manipulation}
 /* Smagsfelterne i glasafsnittet — samme behandling som sidens øvrige
    .inp dernede, så de ikke står som en hvid blok i en mørk række. */
 .glasafsnit .is-portion-nr{color:#ffccd1}
+.glasafsnit .is-portioner{border-left-color:rgba(255,190,175,.5)}
+/* ⚠️ .glasafsnit .inp sætter background som GENVEJ, og en genvej
+   nulstiller billedet: dernede har intet <select> en pil. For
+   dato og tid er det en hel række, man ikke kan tage fejl af;
+   et 98 px felt, der bare siger "Smag", ligner en knap. Pilen
+   tegnes derfor igen her — lys, så den kan ses på det mørke. */
+.glasafsnit select.is-smag{background-image:linear-gradient(45deg,transparent 50%,rgba(255,255,255,.72) 50%),linear-gradient(135deg,rgba(255,255,255,.72) 50%,transparent 50%);background-position:calc(100% - 12px) 16px,calc(100% - 8px) 16px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.glasafsnit select.is-smag.mangler{background-color:rgba(255,150,130,.22)}
 .glasafsnit .item:not(.hi,.valgt) .add,.glasafsnit .item:not(.hi,.valgt) .kat-valgt,.glasafsnit .item:not(.hi,.valgt) .tag{color:#ffccd1}
 .glasafsnit .item:not(.hi,.valgt) .kat-valgt,.glasafsnit .item:not(.hi,.valgt) .tag{background:rgba(214,42,58,.28)}
 .glasafsnit .item:not(.hi,.valgt) .vare-desc{color:rgba(255,255,255,.76)}

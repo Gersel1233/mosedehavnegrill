@@ -1660,4 +1660,66 @@ test.describe('Isens smage', () => {
     await softice.locator('button[data-d="+"]').click();
     await expect(softice.locator('.is-portion')).toHaveCount(0);
   });
+
+  /* ⚠️ EN KLASSE, DER IKKE SLÅR IGENNEM, ER INGEN REGEL  (25/9).
+     Her stod `.is-smag{height:38px;font-size:13px;padding:0 8px}`
+     — og den blev MÅLT til 48 px, 15 px og 38 px, fordi vælgeren
+     ovenfor hedder `select.inp` (0,1,1) og slår en ren klasse
+     (0,1,0). Prøven læser den BEREGNEDE stil og holder den op mod
+     sidens almindelige .inp, tidsvælgeren: tallene kommer derfra,
+     ikke fra feltet selv. */
+  test('smagsfeltet er kortets eget mål — ikke det store .inp', async ({ page }) => {
+    const række = await toVafler(page, medIs('Vanilje, Jordbær, Lakrids'));
+    const maal = (l) => l.evaluate((e) => {
+      const c = getComputedStyle(e);
+      return { h: Math.round(e.getBoundingClientRect().height),
+               skrift: parseFloat(c.fontSize),
+               pilPlads: parseFloat(c.paddingRight) };
+    });
+    const smag = await maal(række.locator('.is-portion[data-portion="0"] .is-smag').first());
+    const fuldt = await maal(page.locator('#tid'));
+
+    expect(smag.h, 'feltet står med .inp\'s højde — reglen slår ikke igennem')
+      .toBeLessThan(fuldt.h);
+    expect(smag.skrift, 'skriften er .inp\'s').toBeLessThan(fuldt.skrift);
+    expect(smag.pilPlads, 'pilens plads er .inp\'s').toBeLessThan(fuldt.pilPlads);
+  });
+
+  /* ⚠️ OG ET RIGTIGT SMAGSNAVN SKAL KUNNE STÅ I FELTET. To felter
+     deler en telefonrække og bliver 98 px hver; med .inp's 38 px
+     pileplads og 15 px skrift stod der "Lakrid" og "Mango" på et
+     skud. Bredden måles med tegnemaskinens egen skriftmåling —
+     tallet kommer altså ikke fra det element, prøven dømmer. */
+  test('et almindeligt smagsnavn kan læses helt i feltet', async ({ page }) => {
+    const række = await toVafler(page, medIs('Vanilje, Chokolade, Lakrids'));
+    const plads = await række.locator('.is-portion[data-portion="0"] .is-smag')
+      .first().evaluate((e) => {
+        const c = getComputedStyle(e);
+        const t = document.createElement('canvas').getContext('2d');
+        t.font = c.fontWeight + ' ' + c.fontSize + ' ' + c.fontFamily;
+        return { navn: t.measureText('Chokolade').width,
+                 fri: e.getBoundingClientRect().width
+                      - parseFloat(c.paddingLeft) - parseFloat(c.paddingRight) };
+      });
+    expect(plads.navn, '"Chokolade" bliver klippet over — gæsten kan ikke se, hvad hun valgte')
+      .toBeLessThan(plads.fri);
+  });
+
+  /* ⚠️ DEN TOMME KUGLE SKAL KUNNE SES, FØR GÆSTEN TRYKKER SEND.
+     "Smag" står i samme skrift som "Vanilje", og på et skud kunne
+     de to ikke skelnes. Modstykket er nabofeltet i samme portion:
+     det, der stadig er tomt, skal blive ved at se tomt ud. */
+  test('den kugle, der mangler en smag, kan ses på feltet', async ({ page }) => {
+    const række = await toVafler(page, medIs('Vanilje, Jordbær'));
+    const et = række.locator('.is-portion[data-portion="0"] .is-smag[data-kugle="0"]');
+    const to = række.locator('.is-portion[data-portion="0"] .is-smag[data-kugle="1"]');
+    const bag = (l) => l.evaluate((e) => getComputedStyle(e).backgroundColor);
+
+    const tom = await bag(et);
+    await et.selectOption('Vanilje');
+    expect(await bag(et), 'feltet ser ens ud, om der er valgt en smag eller ej')
+      .not.toBe(tom);
+    expect(await bag(to), 'nabokuglen er stadig tom og skal stadig se tom ud')
+      .toBe(tom);
+  });
 });

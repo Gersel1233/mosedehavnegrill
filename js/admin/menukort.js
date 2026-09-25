@@ -2773,8 +2773,76 @@
     });
   });
 
+  /* ============================================================
+     ISENS SMAGE  (25/9)
+     ------------------------------------------------------------
+     Kundens ord: *"når man bestiller en is skal man med kugler
+     smage osv kunne gøre det rigtigt."*
+
+     ⚠️ VI FINDER IKKE PÅ SMAGE. Hvilke is forretningen har, ved
+     kun ejeren. Feltet er `is_smage` i indstillinger (nøgle/værdi,
+     altså ingen SQL), og er det tomt, spørger bestillingen slet
+     ikke om smag — siden opfører sig præcis som i går.
+
+     ⚠️ ÉN PR. LINJE, fordi det er sådan, man skriver en liste i et
+     tekstfelt. Komma tages også imod (Butik.isSmage læser begge),
+     så en ejer, der taster "vanilje, jordbær", ikke får én lang
+     smag ud af det.
+
+     ⚠️ OG OPTEGNINGEN RØRER IKKE KORTET, MENS DER SKRIVES I DET —
+     samme regel som tapaskortet lige ovenfor. */
+  function tegnIsSmage() {
+    var rod = $('is-smage-felter');
+    if (!rod) return;
+    if (rod.contains(document.activeElement)) return;
+
+    var smage = Butik.isSmage ? Butik.isSmage(Admin.data) : [];
+    var aftryk = smage.join('|');
+    if (rod.getAttribute('data-aftryk') === aftryk) return;
+    rod.setAttribute('data-aftryk', aftryk);
+
+    Admin.tøm(rod);
+
+    var felt = Admin.lav('div', 'felt');
+    var m = Admin.lav('label', null, 'Smagene, én pr. linje');
+    m.setAttribute('for', 'is-smage');
+    var ind = document.createElement('textarea');
+    ind.id = 'is-smage';
+    ind.rows = 5;
+    ind.placeholder = 'Vanilje\nJordbær\nChokolade';
+    ind.value = smage.join('\n');
+    felt.appendChild(m);
+    felt.appendChild(ind);
+    rod.appendChild(felt);
+
+    /* ⚠️ LINJEN SIGER, HVAD DER SKER UDE PÅ SIDEN — ikke hvad
+       feltet hedder. Husets regel for .hjaelp siden 26/8. */
+    rod.appendChild(Admin.lav('p', 'hjaelp', smage.length
+      ? 'Gæsten vælger én smag pr. kugle, når hun bestiller "2 kugler" '
+        + 'eller "3 kugler". Køkkenet får dem at se på hver enkelt vaffel.'
+      : 'Står feltet tomt, spørger bestillingen ikke om smag — '
+        + 'køkkenet får "2 kugler · Vaffel" og må selv spørge.'));
+  }
+
+  /* Autogem registreres ÉN gang — roden er KORTET, ikke feltet. */
+  Admin.autogem($('is-smage-kort'), function () {
+    var f = $('is-smage');
+    if (!f) return false;
+    /* ⚠️ GEMT SOM ÉN TEKST, ikke som en liste: `indstillinger` er
+       nøgle/værdi, og en jsonb-kolonne til fem ord ville være en
+       SQL-fil, ejeren skal køre. Butik.isSmage deler den op — ét
+       sted, så siden og admin ikke kan blive uenige. */
+    var linjer = String(f.value || '').split(/[,\n;]+/)
+      .map(function (x) { return x.trim(); }).filter(Boolean);
+    if (linjer.length > 40) return 'Der er plads til 40 smage — ikke flere.';
+    var forLang = linjer.filter(function (x) { return x.length > 60; })[0];
+    if (forLang) return 'En smag må fylde 60 tegn: “' + forLang.slice(0, 20) + '…”';
+    return Butik.skrive.indstilling('is_smage', linjer.join('\n'));
+  });
+
   Admin.tegnere.push(tegnMenu);
   Admin.tegnere.push(tegnTapas);
+  Admin.tegnere.push(tegnIsSmage);
 
   /* ============================================================
      HENT KORTET SOM REGNEARK  (3/9)

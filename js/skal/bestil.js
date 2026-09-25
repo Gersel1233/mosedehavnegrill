@@ -517,7 +517,14 @@
             });
             var valgt = ((post.smage || [])[nr] || [])[kugle] || '';
             vælg.value = valgt;
+            /* ⚠️ DEN TOMME KUGLE SKAL KUNNE SES MED ØJNENE, ikke først
+               når Send siger fra: "Smag" står i samme skrift som
+               "Vanilje", og på et skud kunne de to ikke skelnes.
+               Klassen sættes her OG ved hvert skift, så den følger
+               feltet og ikke kun optegningen. */
+            vælg.classList.toggle('mangler', !vælg.value);
             vælg.addEventListener('change', function () {
+              vælg.classList.toggle('mangler', !vælg.value);
               var post2 = kurv[nøgle];
               if (!post2 || !Array.isArray(post2.smage)) return;
               if (!Array.isArray(post2.smage[nr])) post2.smage[nr] = nyPortion(kugler);
