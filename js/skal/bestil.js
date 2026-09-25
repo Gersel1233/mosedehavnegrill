@@ -541,10 +541,22 @@
 
   /* Mangler der en smag et sted? Svaret bruges af sumlinjen og af
      afsendelsen, så de to ikke kan komme til at sige hver sit. */
+  /* ⚠️ KUN NØDUDGANGENS RÆKKER — IKKE BYGGERENS  (25/9 aften).
+     Isen kommer normalt fra isbyggeren, som har sin egen regel:
+     knappen er slukket, til alle kugler har en smag. Men kan
+     byggeren ikke tegnes (ejeren har ingen kugleis med et valg),
+     falder isen tilbage til almindelige rækker med portioner —
+     og DEM skal der stadig være et værn på.
+
+     MÅLT, da de to regler mødtes: byggerens frie ØNSKE ("vanilje
+     og lakrids" i ét felt) blev afvist her, fordi et ønske ikke er
+     én smag pr. kugle. To regler om det samme, hvor den ene er
+     strengere, er den ene for meget. */
   function manglerSmag() {
     var k, post;
     for (k in kurv) {
       if (!Object.prototype.hasOwnProperty.call(kurv, k)) continue;
+      if (k.indexOf('is|') === 0 || k.indexOf('is-ekstra|') === 0) continue;
       post = kurv[k];
       if (post && Butik.smagMangler(post.smage, post.kugler)) return post.navn;
     }
@@ -2233,12 +2245,21 @@
     if (mangler) {
       return brøl('Der skal mindst bestilles ' + mangler + ' stk. smørrebrød.');
     }
-    /* ⚠️ EN IS UDEN SMAG ER ET OPKALD  (25/9). Har ejeren skrevet
-       sine smage i admin, SKAL de vælges — ellers står køkkenet med
-       "2 kugler · Vaffel" og gætter, og det er præcis dét, hele
-       vælgeren blev bygget for. Uden en liste i admin findes
-       spærringen slet ikke: `manglerSmag` kan kun svare på poster,
-       der HAR kugler, og dem laves der ingen af. */
+    /* ⚠️ SPÆRRINGEN FOR EN IS UDEN SMAG ER VÆK HERFRA  (25/9 aften).
+       Den stod her fra den gamle model, hvor isen var en række med
+       en tæller, og enhver kunne lægge "2 kugler" i kurven uden at
+       svare på noget.
+
+       Nu kan isen kun komme i kurven gennem isbyggeren, og DEN har
+       reglen: knappen "Læg i kurven" er slukket, til alle kugler
+       har en smag, og siger hvad der mangler. Blev spærringen
+       stående, ville den samme regel bo to steder — og den her
+       udgave var strengere end byggerens: den afviste også gæstens
+       frie ØNSKE, fordi et ønske ikke er én smag pr. kugle. MÅLT:
+       "Vælg smag til jeres 2 kugler", efter gæsten havde skrevet
+       "vanilje og lakrids" i feltet.
+
+       Den står stadig for NØDUDGANGENS rækker — se manglerSmag. */
     var udenSmag = manglerSmag();
     if (udenSmag) {
       return brøl('Vælg smag til jeres ' + udenSmag.toLowerCase() + '.');

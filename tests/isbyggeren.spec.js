@@ -92,17 +92,26 @@ test.describe('Byg din is', () => {
     await knapMed(page, 1, 'Vaffel').click();
     await trin(page, 2).locator('.isbyg-knap[data-vare="2 kugler"]').click();
 
+    /* ⚠️ INGEN RULLELISTE — men heller ikke et tomt trin. Mikkels
+       valg 25/9: et frit ønskefelt, som IKKE er obligatorisk. */
     await expect(trin(page, 3).locator('.isbyg-smag'),
-      'der blev spurgt om smag uden en liste').toHaveCount(0);
-    await expect(trin(page, 3).locator('.isbyg-mangler'),
-      'spørgsmålet forsvandt tavst — præcis den fejl, der blev meldt')
-      .toContainText('ikke lagt ind endnu');
+      'der blev spurgt med en rulleliste uden en liste').toHaveCount(0);
+    await expect(trin(page, 3).locator('.isbyg-oenske-felt'),
+      'spørgsmålet forsvandt — præcis den fejl, der blev meldt')
+      .toHaveCount(1);
 
-    /* Og isen kan stadig bestilles. */
+    /* Isen kan sendes UDEN at skrive noget ... */
     await expect(page.locator('.isbyg-laeg')).toBeEnabled();
+    /* ... men skriver hun noget, følger det med hele vejen til
+       køkkenet — som en smag, ikke som en fjerde slags data. */
+    await trin(page, 3).locator('.isbyg-oenske-felt').fill('Vanilje og lakrids');
     await page.locator('.isbyg-laeg').click();
     await sendBestilling(page);
     await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+
+    const l = (await gemteData(page)).bestillinger[0].linjer
+      .filter((x) => x.navn === '2 kugler');
+    expect(l[0].smage, 'ønsket nåede ikke linjen').toEqual(['Vanilje og lakrids']);
   });
 
   /* Rækkefølgen ER forløbet: et trin, man ikke kan svare på endnu,

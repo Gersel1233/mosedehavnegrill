@@ -124,6 +124,7 @@ window.MosedeIsbygger = (function () {
     var valgtVariant = null;
     var valgtVare = null;
     var smage = [];
+    var ønsket = '';
     var ekstra = [];
 
     var ud = lav('div', 'isbyg');
@@ -192,15 +193,22 @@ window.MosedeIsbygger = (function () {
 
     knapLæg.addEventListener('click', function () {
       if (!klar()) return;
+      /* Ejerens liste ELLER gæstens eget ønske — aldrig begge, for
+         de to kan ikke findes på samme tid. */
+      var n = kuglerI(valgtVare);
+      var smagene = (n && smageListe.length) ? smage.slice()
+        : (String(ønsket).trim() ? [String(ønsket).trim()] : []);
       valg.laeg({
         vare: valgtVare,
         variant: valgtVariant,
-        kugler: kuglerI(valgtVare),
-        smage: smage.slice(),
+        kugler: n,
+        smage: smagene,
         ekstra: ekstra.slice(),
       });
-      /* Klar til den næste is — man bestiller sjældent kun én. */
-      valgtVare = null; smage = []; ekstra = [];
+      /* Klar til den næste is — man bestiller sjældent kun én.
+         ⚠️ Ønsket ryddes MED: to is i træk med den samme tekst
+         ville være et ønske, gæsten kun har skrevet én gang. */
+      valgtVare = null; smage = []; ønsket = ''; ekstra = [];
       marker(v2, null);
       tegnOm();
       kvitter();
@@ -296,15 +304,19 @@ window.MosedeIsbygger = (function () {
         t3.krop.appendChild(lav('p', 'isbyg-hint',
           'Softice kommer, som den er — der er ingen smag at vælge.'));
       } else if (!smageListe.length) {
-        /* ⚠️ HØJT, IKKE TAVST. Det var præcis det, der gik galt før:
-           uden ejerens liste forsvandt spørgsmålet, og gæsten fik
-           en is uden smag uden at vide det. */
-        var m = lav('p', 'isbyg-mangler');
-        m.appendChild(lav('strong', null, 'Smagene er ikke lagt ind endnu. '));
-        m.appendChild(document.createTextNode(
-          'Skriv i bemærkningsfeltet længere nede, hvad I gerne vil have, '
-          + 'eller ring på 28 87 13 43 — så tager vi imod.'));
-        t3.krop.appendChild(m);
+        /* ⚠️ ET ØNSKE, IKKE ET TOMT TRIN  (25/9, Mikkels valg: "lav
+           det som en option ... måske et skrivefelt, som ikke er
+           obligatorisk — du vælger selv hvad der giver mest mening").
+
+           Har ejeren ikke skrevet sin liste, spørger vi alligevel —
+           bare åbent. Gæsten kan skrive "vanilje og lakrids", og
+           køkkenet får det at se; hun kan også lade være.
+
+           ⚠️ OG ØNSKET REJSER SOM EN SMAG. Så behøver hverken bonen,
+           køkken-køen, Overblik eller kvitteringen at kende to slags:
+           Butik.linjeNavn sætter det efter navnet, præcis som en
+           valgt smag. Ét spor, ikke to. */
+        t3.krop.appendChild(oenskeRække());
       } else {
         for (var i = 0; i < n; i++) {
           t3.krop.appendChild(kugleRække(i, n));
@@ -347,6 +359,27 @@ window.MosedeIsbygger = (function () {
       if (!valgtVariant) return 'Vælg vaffel eller bæger';
       if (!valgtVare) return 'Vælg hvor mange kugler';
       return 'Vælg smag til alle kuglerne';
+    }
+
+    function oenskeRække() {
+      var r = lav('div', 'isbyg-oenske');
+      var m = lav('label', 'isbyg-oenske-tekst',
+        'Har I en yndlingssmag? Skriv den — ellers vælger vi noget godt.');
+      m.setAttribute('for', 'isbyg-oenske-felt');
+      var felt = document.createElement('input');
+      felt.type = 'text';
+      felt.id = 'isbyg-oenske-felt';
+      felt.className = 'inp isbyg-oenske-felt';
+      felt.placeholder = 'Fx vanilje og jordbær';
+      /* ⚠️ 60 TEGN, samme loft som Butik.smageI klipper ved. Et felt,
+         der tager imod mere, end linjen kan bære, er en gæst, der
+         skriver noget, køkkenet aldrig ser. */
+      felt.maxLength = 60;
+      felt.value = ønsket;
+      felt.addEventListener('input', function () { ønsket = felt.value; });
+      r.appendChild(m);
+      r.appendChild(felt);
+      return r;
     }
 
     function kugleRække(nr, ialt) {

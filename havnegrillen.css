@@ -3022,6 +3022,14 @@ select.isbyg-smag { flex: 1 1 auto; min-width: 0; height: 42px; font-size: 14px;
 select.isbyg-smag.mangler { background-color: rgba(214, 42, 58, .1); }
 
 .isbyg-hint { font-size: 13px; color: var(--muted); }
+/* ØNSKEFELTET — når ejeren ikke har skrevet sin liste. Mikkels
+   valg 25/9: "et skrivefelt, som ikke er obligatorisk". Det er
+   ikke en advarsel, så det skal ikke ligne én: almindeligt felt,
+   almindelig etiket. */
+.isbyg-oenske { display: grid; gap: 7px; }
+.isbyg-oenske-tekst { font-size: 13px; color: var(--muted); }
+input.isbyg-oenske-felt { height: 44px; font-size: 14px; }
+.glasafsnit .isbyg-oenske-tekst { color: rgba(255, 255, 255, .78); }
 /* ⚠️ HØJT, IKKE TAVST. Uden ejerens smagsliste forsvandt husets
    vigtigste spørgsmål før — nu står det som en advarsel. */
 .isbyg-mangler {
