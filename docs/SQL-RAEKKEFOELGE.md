@@ -49,8 +49,16 @@ og derfra:
   → kortene-25-9.sql → kortenes-huller-25-9.sql
   → glutenfri-vaffel-samme-pris.sql → sluk-det-kortene-ikke-viser.sql
   → chefens-rettelser-25-9.sql → isens-opsaetning.sql
-  → glutenfrit-broed-5-kr.sql
+  → glutenfrit-broed-5-kr.sql → gaestens-vaern-26-9.sql
 ```
+
+**⚠️ `gaestens-vaern-26-9.sql` SKAL STÅ SIDST (26/9) — og er IKKE kørt i
+produktionen endnu.** Den skriver de nyeste udgaver af
+`mosede_gaestens_regler`, `mosede_kanal_vaern`, `mosede_levering_valideret`
+og `mosede_bord_plads_vaern` om, så gæstens regler gælder alle uden for
+personalet (ikke kun rollen `anon`), og den gør `oprettet` til databasens
+på de fem gæstetabeller. Se tabellen herunder: køres en af de fire filer
+igen, skal den her med bagefter. `er-vi-klar.sql` tjek 150 fanger det.
 
 **⚠️ `vare-valg.sql` er flyttet frem (20/9)** — den stod efter
 `gaestens-regler.sql`. Da et valg fik lov at koste ekstra, blev
@@ -94,6 +102,7 @@ tavst — derfor listen:
 | `borde.sql` | `bord-udeblev.sql` | "Udeblev" gør ingenting ved bordene (tjek 111) |
 | `dagsregler.sql` eller `lukkedag-vaern.sql` | `dagsbesked-og-qr.sql` | QR-spærren skrives væk (tjek 107, 140) |
 | `dagsregler.sql`, `lukkedag-vaern.sql` eller `dagsbesked-og-qr.sql` | `aabent-og-antal-vaern.sql` | åbningstiderne skrives ud af værnet (tjek 136) |
+| `gaestens-regler.sql`, `kanal-vaern.sql`, `levering-valideret.sql` eller `bord-plads.sql` | `gaestens-vaern-26-9.sql` | den gamle dør ("kun rollen anon") kommer tilbage, så en bruger, der har oprettet sig selv, slipper uden om gæstens regler — og linjens antal og bordets dato holder op med at blive tjekket (tjek 150) |
 
 Og to rækkefølger inden i rækkefølgen: `bestilling-dato-vaern.sql` FØR
 `bestillingsnummer.sql`, og `dato-vaern-resten.sql` FØR `bordnummer.sql` — ellers

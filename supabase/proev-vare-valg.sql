@@ -79,10 +79,16 @@ returns text language plpgsql as $$
 begin
   perform set_config('request.jwt.claims',
     case when rolle is null then '' else json_build_object('role', rolle)::text end, true);
+  /* ⚠️ antal ER SUMMEN AF LINJERNE (26/9), som Butik.bestil bygger
+     den. Her stod et fast 1 — også på en linje med to is — og
+     gaestens-vaern-26-9.sql afviser nu en bestilling, hvis kolonne
+     ikke passer til linjerne. Kulissen skal sende det, siden sender. */
   insert into public.bestillinger
     (reference, lokation_id, navn, telefon, hent_dato, hent_tid, antal, linjer, status, hvordan)
   values (ref, 'proev-vv', 'Prøve Person', '3400' || lpad(nr::text, 4, '0'),
-          current_date + 3, tid, 1, linjer, 'ny', 'afhentning');
+          current_date + 3, tid,
+          (select coalesce(sum((l ->> 'antal')::int), 0) from jsonb_array_elements(linjer) l),
+          linjer, 'ny', 'afhentning');
   perform set_config('request.jwt.claims', '', true);
   return null;
 exception when others then

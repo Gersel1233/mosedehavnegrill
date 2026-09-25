@@ -107,7 +107,12 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   kanal-vaern bord-plads gaester-ved-bordet
   levering-zone levering-valideret kortene-25-9 kortenes-huller-25-9
   glutenfri-vaffel-samme-pris chefens-rettelser-25-9 isens-opsaetning
-  glutenfrit-broed-5-kr"
+  glutenfrit-broed-5-kr gaestens-vaern-26-9"
+# ⚠️ gaestens-vaern-26-9 SKAL STÅ SIDST (26/9): den skriver de nyeste
+#    udgaver af mosede_gaestens_regler, mosede_kanal_vaern,
+#    mosede_levering_valideret og mosede_bord_plads_vaern om. Stod en
+#    af de fire filer efter den, ville den gamle dør ("kun rollen
+#    anon") komme tilbage — tavst. Se docs/SQL-RAEKKEFOELGE.md.
 # ⚠️ vare-valg er flyttet op foran roller (20/9): da et valg fik lov at
 #    koste ekstra, blev mosede_valg_navn/_tillaeg/_aftryk faelles
 #    ordforraad, som baade roller og gaestens-regler kalder. Stod den
