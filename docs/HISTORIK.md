@@ -96,6 +96,8 @@ fast tal. Den kommer fra linjerne nu — samme ar som
 `proev-menukort-ejerens-liste` fik 5/9.
 
 **SQL-runden bagefter: 58 filer, 1635 BESTOD, 0 FEJLEDE.**
+**Og den fulde Playwright-runde: 4576 bestod, 0 fejlede, 0 flakes**
+(computer 2277 på 27,9 min · telefonen i tre bidder, 782 + 745 + 772).
 **Og ikke én gæstevendt fil er rørt** — kun SQL, værktøj, prøver og
 papirer. Det er værd at skrive ned, fordi det er dét, der gør udgivelsen
 ufarlig FØR den fulde runde.
