@@ -7,6 +7,49 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**CHEFENS RETTELSER — HOLDT OP MOD KORTENE OG DATABASEN** (25/9, aften).
+Chefens besked er læst post for post mod de trykte kort fra 25/9 og mod
+databasen (læst med anon-nøglen kl. 18.57). Mikkels afgørelser samme aften:
+
+- **Flaske/dåse (30) og Gylden Dame/Lux (40) BLIVER.** Chefen bad om, at
+  teksten *"Kun take away"* forsvandt under dem — ikke varerne. Jeg havde
+  læst det som "fjern varen"; Mikkel rettede det
+- **De tre selvstændige sandwich slukkes** (bøf-, flæskestegs- og
+  frikadellesandwich); **flæskesteg og frikadelle er VARIANTER** af den
+  almindelige sandwich til 75
+- **"Strøssel, topping eller guf" hedder "Sauce, topping eller guf"**, 8 kr.
+
+Tre filer i Supabase, i den rækkefølge (hver har sin rapport nederst):
+
+1. `sluk-det-kortene-ikke-viser.sql` — nu **32** (de to sandwich kom på:
+   `kortene.py` pegede bestillingssedlens "Sandwich · flæskesteg" på den
+   selvstændige vare, så rapporten kaldte den "på et kort"). **Målt 18.57:
+   filen var IKKE kørt** — salaterne, fiskefilet-håndmaden og
+   bøfsandwichen var tændte. Fiskefilet med rejer og mayo bliver som
+   SMØRREBRØD; kun håndmaden slukkes
+2. `chefens-rettelser-25-9.sql` — "Kun take away" væk, Strøssel → Sauce,
+   sandwichens fyld som valg (de syv, kort 02 nævner: kebab, kylling/bacon,
+   tun, frikadelle, æg, flæskesteg, roastbeef). **"m.fl." er Mikkels** —
+   resten fra bestillingssedlen skrives ind i admin under varen
+3. `isens-opsaetning.sql` — virker med både det gamle og det nye saucenavn
+
+Målt på en lokal kopi af produktionens HELE menu (339 varer): efter de tre
+filer siger  **0 prisfejl · 0 varer uden for kortene · 0
+poster på kortene uden en vare**. Omvendt rækkefølge og genkørsel: samme tal.
+
+**Og en LIVE fejl, prøverunden fandt:** "Bestil is" på forsiden hoppede til
+TOPPEN af bestillingen, når isen bestilles i byggeren — gæsten landede ved
+maden med isen en skærmlængde længere nede. Knappen ruller nu ned til
+isblokken (`js/skal/forside.js`, `aabnIsen`). Prøven fandt den, fordi
+fiksturets "1 kugle" gjorde byggeren levende.
+
+Og i admin på telefonen klæbede det nye "🍦 Is & sødt"-bånd oven i "⚙️
+Særlige indstillinger" på y=60 — sortimentets afsnit ligger hver i sin
+, is-afsnittet gjorde ikke. Nu gør det.
+
+Fuld runde (før de tre rettelser): computer 2314 bestod / 1 fejlede, telefon
+2335 bestod / 2 fejlede — præcis de tre ovenfor. Rettet og set fejle.
+
 **IS & SØDT: ET FORLØB PR. SLAGS IS — OG ADMIN SER UD SOM SIDEN** (25/9).
 Mikkels ord: *"hvis jeg vil vælge en isboks, skal det være et andet
 bestillingsflow ... jeg ved de har jordbær og vanilje og chokolade til at
