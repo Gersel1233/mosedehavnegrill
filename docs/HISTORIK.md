@@ -34,7 +34,7 @@ Tre filer i Supabase, i den rækkefølge (hver har sin rapport nederst):
 3. `isens-opsaetning.sql` — virker med både det gamle og det nye saucenavn
 
 Målt på en lokal kopi af produktionens HELE menu (339 varer): efter de tre
-filer siger  **0 prisfejl · 0 varer uden for kortene · 0
+filer siger `sammenlign-kort.py` **0 prisfejl · 0 varer uden for kortene · 0
 poster på kortene uden en vare**. Omvendt rækkefølge og genkørsel: samme tal.
 
 **Og en LIVE fejl, prøverunden fandt:** "Bestil is" på forsiden hoppede til
@@ -45,7 +45,7 @@ fiksturets "1 kugle" gjorde byggeren levende.
 
 Og i admin på telefonen klæbede det nye "🍦 Is & sødt"-bånd oven i "⚙️
 Særlige indstillinger" på y=60 — sortimentets afsnit ligger hver i sin
-, is-afsnittet gjorde ikke. Nu gør det.
+`menu-afsnit-boks`, is-afsnittet gjorde ikke. Nu gør det.
 
 Fuld runde (før de tre rettelser): computer 2314 bestod / 1 fejlede, telefon
 2335 bestod / 2 fejlede — præcis de tre ovenfor. Rettet og set fejle.
