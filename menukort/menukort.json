@@ -1,5 +1,5 @@
 {
-  "hentet": "2026-09-10",
+  "hentet": "2026-09-24",
   "kilde": "menu_kategorier + menu_varer + indstillinger (Mosede)",
   "kategorier": [
     {
@@ -16,7 +16,7 @@
       "id": 10,
       "lokation_id": "mosede",
       "afdeling": "mad",
-      "navn": "Sandwich og retter fra pladen",
+      "navn": "Andre retter",
       "sortering": 2,
       "aktiv": true,
       "note": null,
@@ -26,8 +26,18 @@
       "id": 11,
       "lokation_id": "mosede",
       "afdeling": "mad",
-      "navn": "Burgere og sandwich",
+      "navn": "Burgere",
       "sortering": 3,
+      "aktiv": true,
+      "note": null,
+      "dage": "alle"
+    },
+    {
+      "id": 63,
+      "lokation_id": "mosede",
+      "afdeling": "mad",
+      "navn": "Sandwich",
+      "sortering": 4,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -37,7 +47,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Pølser",
-      "sortering": 4,
+      "sortering": 5,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -47,7 +57,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Smørrebrød",
-      "sortering": 5,
+      "sortering": 6,
       "aktiv": true,
       "note": "Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.",
       "dage": "alle"
@@ -57,7 +67,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Håndmadder",
-      "sortering": 6,
+      "sortering": 7,
       "aktiv": true,
       "note": "Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.",
       "dage": "alle"
@@ -67,7 +77,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Tapasfad",
-      "sortering": 7,
+      "sortering": 8,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -77,7 +87,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Vælg fyld til smørrebrødet",
-      "sortering": 7,
+      "sortering": 8,
       "aktiv": false,
       "note": null,
       "dage": "alle"
@@ -87,16 +97,6 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Platter",
-      "sortering": 8,
-      "aktiv": true,
-      "note": null,
-      "dage": "alle"
-    },
-    {
-      "id": 28,
-      "lokation_id": "mosede",
-      "afdeling": "mad",
-      "navn": "Sliders",
       "sortering": 9,
       "aktiv": true,
       "note": null,
@@ -106,20 +106,20 @@
       "id": 15,
       "lokation_id": "mosede",
       "afdeling": "is",
-      "navn": "Kugleis og ishorn",
+      "navn": "Kugleis",
       "sortering": 10,
       "aktiv": true,
       "note": null,
       "dage": "alle"
     },
     {
-      "id": 29,
+      "id": 28,
       "lokation_id": "mosede",
       "afdeling": "mad",
-      "navn": "Reception og pindemad",
+      "navn": "Sliders",
       "sortering": 10,
       "aktiv": true,
-      "note": "På toastbrød eller rugbrød",
+      "note": null,
       "dage": "alle"
     },
     {
@@ -133,11 +133,31 @@
       "dage": "alle"
     },
     {
+      "id": 29,
+      "lokation_id": "mosede",
+      "afdeling": "mad",
+      "navn": "Reception og pindemad",
+      "sortering": 11,
+      "aktiv": true,
+      "note": "På toastbrød eller rugbrød",
+      "dage": "alle"
+    },
+    {
+      "id": 64,
+      "lokation_id": "mosede",
+      "afdeling": "is",
+      "navn": "Ispinde",
+      "sortering": 12,
+      "aktiv": true,
+      "note": null,
+      "dage": "alle"
+    },
+    {
       "id": 8,
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Morgenmad",
-      "sortering": 11,
+      "sortering": 12,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -147,7 +167,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Tilkøb morgenmad",
-      "sortering": 12,
+      "sortering": 13,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -157,7 +177,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Tillæg: glutenfri, laktosefri og vegansk",
-      "sortering": 13,
+      "sortering": 14,
       "aktiv": true,
       "note": "Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.",
       "dage": "alle"
@@ -167,7 +187,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Tilkøb ud af huset",
-      "sortering": 14,
+      "sortering": 15,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -236,7 +256,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 4,
@@ -250,13 +271,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 7,
       "kategori_id": 8,
       "navn": "Rundstykke med pålæg",
-      "beskrivelse": null,
+      "beskrivelse": "Friskt rundstykke med smør og pålæg.",
       "pris": 35.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -264,7 +286,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 3,
@@ -278,27 +301,29 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 5,
       "kategori_id": 8,
       "navn": "Frugtmix",
-      "beskrivelse": null,
+      "beskrivelse": "En skål frisk, skåret frugt.",
       "pris": 25.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 5,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 206,
       "kategori_id": 8,
       "navn": "Franskbrød med pålæg",
-      "beskrivelse": null,
+      "beskrivelse": "Franskbrød med smør og pålæg.",
       "pris": 35.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -306,7 +331,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 207,
@@ -320,7 +346,23 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 369,
+      "kategori_id": 8,
+      "navn": "Wienerbrød",
+      "beskrivelse": "Sælges kun helt.",
+      "pris": 30.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 8,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 268,
@@ -334,21 +376,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 13,
-      "kategori_id": 9,
-      "navn": "Dagens ret",
-      "beskrivelse": null,
-      "pris": 85.0,
-      "fremhaevet": true,
-      "udsolgt": false,
-      "sortering": 1,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 12,
@@ -362,7 +391,8 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 16,
@@ -376,13 +406,14 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 18,
       "kategori_id": 9,
       "navn": "Lun delle eller steg",
-      "beskrivelse": null,
+      "beskrivelse": "En lun, saftig frikadelle eller en skive varm steg — klassisk og mættende.",
       "pris": 25.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -390,21 +421,23 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 14,
       "kategori_id": 9,
-      "navn": "Lun delle eller steg med leverpostej",
+      "navn": "Lun delle, steg eller leverpostej med brød og surt",
       "beskrivelse": "Med brød og smør",
-      "pris": 55.0,
+      "pris": 65.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 11,
@@ -418,7 +451,8 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 9,
@@ -432,7 +466,8 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 19,
@@ -446,13 +481,14 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 15,
       "kategori_id": 9,
       "navn": "Stjerneskud",
-      "beskrivelse": null,
+      "beskrivelse": "Sprød stegt og mild dampet fiskefilet på franskbrød med rejer, asparges, dressing og citron.",
       "pris": 105.0,
       "fremhaevet": true,
       "udsolgt": false,
@@ -460,27 +496,29 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 20,
       "kategori_id": 9,
       "navn": "Fish’n’chips",
-      "beskrivelse": null,
-      "pris": 110.0,
+      "beskrivelse": "Gyldent paneret fisk med sprøde pommes frites, remoulade og en citronbåd.",
+      "pris": 105.0,
       "fremhaevet": true,
       "udsolgt": false,
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 17,
       "kategori_id": 9,
       "navn": "Fiskefilet med pommes",
-      "beskrivelse": null,
+      "beskrivelse": "Sprød paneret fiskefilet med pommes frites, remoulade og citron.",
       "pris": 95.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -488,21 +526,23 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 8,
       "kategori_id": 9,
       "navn": "Pariserbøf",
-      "beskrivelse": null,
-      "pris": 110.0,
+      "beskrivelse": "Saftig bøf på ristet brød med æggeblomme, kapers, peberrod, rødbeder og rå løg.",
+      "pris": 105.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 10,
@@ -516,21 +556,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 24,
-      "kategori_id": 10,
-      "navn": "Sandwich, lille",
-      "beskrivelse": "Æg, pålæg, hønsesalat, æggesalat, wienersalat, skinkesalat, kebab, kylling eller tun",
-      "pris": 75.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 1,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 32,
@@ -541,24 +568,71 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 2,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 26,
       "kategori_id": 10,
-      "navn": "Mix med pommes og salat",
+      "navn": "Mix med pommes",
       "beskrivelse": "Kebab, kylling, tun eller frikadelle",
       "pris": 90.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 3,
+      "aktiv": false,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 248,
+      "kategori_id": 10,
+      "navn": "Pølsemix med pommes",
+      "beskrivelse": null,
+      "pris": 90.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 356,
+      "kategori_id": 10,
+      "navn": "Kebabmix med pommes",
+      "beskrivelse": null,
+      "pris": 90.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 5,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 357,
+      "kategori_id": 10,
+      "navn": "Kyllingmix med pommes",
+      "beskrivelse": null,
+      "pris": 90.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 6,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 25,
@@ -568,11 +642,12 @@
       "pris": 85.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 4,
+      "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 29,
@@ -582,95 +657,102 @@
       "pris": 55.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 5,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 31,
-      "kategori_id": 10,
-      "navn": "Nachos med tilbehør og ost",
-      "beskrivelse": "Kylling, kebab eller oksekød 10 kr. ekstra",
-      "pris": 85.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 6,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 27,
-      "kategori_id": 10,
-      "navn": "Gammeldags rejecocktail",
-      "beskrivelse": "Med brød og smør",
-      "pris": 90.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 7,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 22,
-      "kategori_id": 10,
-      "navn": "Hjemmelavet hvidløgsbrød",
-      "beskrivelse": "Med ost og tomat",
-      "pris": 45.0,
-      "fremhaevet": false,
-      "udsolgt": false,
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
-      "id": 33,
+      "id": 31,
       "kategori_id": 10,
-      "navn": "Indbagte rejer med pommes",
-      "beskrivelse": null,
-      "pris": 95.0,
+      "navn": "Nachos med tilbehør & ost",
+      "beskrivelse": "Kylling, kebab eller oksekød 10 kr. ekstra",
+      "pris": 85.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
-      "id": 34,
+      "id": 27,
       "kategori_id": 10,
-      "navn": "Nuggets med pommes",
-      "beskrivelse": null,
-      "pris": 85.0,
+      "navn": "Gammeldags rejecocktail med brød og smør",
+      "beskrivelse": "Med brød og smør",
+      "pris": 90.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
-      "id": 23,
+      "id": 22,
       "kategori_id": 10,
-      "navn": "Hjemmelavet toast",
-      "beskrivelse": "Med ost og skinke",
-      "pris": 35.0,
+      "navn": "Hjemmelavet hvidløgsbrød med tomat & ost",
+      "beskrivelse": "Med ost og tomat",
+      "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 33,
+      "kategori_id": 10,
+      "navn": "Indbagte rejer med pommes",
+      "beskrivelse": "Sprøde indbagte rejer med gyldne pommes frites og dip.",
+      "pris": 95.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 12,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 34,
+      "kategori_id": 10,
+      "navn": "Nuggets med pommes",
+      "beskrivelse": "Sprøde kyllingenuggets med pommes frites og dip.",
+      "pris": 85.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 13,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 23,
+      "kategori_id": 10,
+      "navn": "Hjemmelavet toast, ost og skinke",
+      "beskrivelse": "Med ost og skinke",
+      "pris": 35.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 14,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 28,
@@ -680,11 +762,12 @@
       "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 12,
+      "sortering": 15,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 21,
@@ -694,53 +777,42 @@
       "pris": 85.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 13,
+      "sortering": 16,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 30,
       "kategori_id": 10,
       "navn": "Pommes frites med dip",
-      "beskrivelse": null,
+      "beskrivelse": "En portion gyldne, sprøde pommes frites med dip.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 14,
+      "sortering": 17,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 248,
-      "kategori_id": 10,
-      "navn": "Pølsemix",
-      "beskrivelse": null,
-      "pris": null,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 15,
-      "aktiv": false,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 249,
       "kategori_id": 10,
       "navn": "Hjemmelavet lun frikadelle",
-      "beskrivelse": null,
+      "beskrivelse": "Lun, saftig frikadelle lige fra panden.",
       "pris": 25.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 16,
+      "sortering": 19,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 265,
@@ -750,11 +822,12 @@
       "pris": 10.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 17,
+      "sortering": 20,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 264,
@@ -764,11 +837,12 @@
       "pris": 10.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 18,
+      "sortering": 21,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 263,
@@ -778,11 +852,12 @@
       "pris": 10.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 19,
+      "sortering": 22,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 273,
@@ -792,11 +867,12 @@
       "pris": 10.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 91,
-      "aktiv": true,
+      "sortering": 94,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 276,
@@ -806,45 +882,18 @@
       "pris": 10.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 92,
-      "aktiv": true,
+      "sortering": 95,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 35,
-      "kategori_id": 11,
-      "navn": "Flæskestegssandwich",
-      "beskrivelse": null,
-      "pris": 80.0,
-      "fremhaevet": true,
-      "udsolgt": false,
-      "sortering": 1,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 39,
-      "kategori_id": 11,
-      "navn": "Frikadellesandwich",
-      "beskrivelse": null,
-      "pris": 80.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 2,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 37,
       "kategori_id": 11,
       "navn": "Kyllingeburger",
-      "beskrivelse": null,
+      "beskrivelse": "Sprød kylling i en blød burgerbolle med salat, tomat og cremet dressing.",
       "pris": 80.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -852,7 +901,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 40,
@@ -866,27 +916,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 36,
-      "kategori_id": 11,
-      "navn": "Bøfsandwich",
-      "beskrivelse": null,
-      "pris": 75.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 5,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 38,
       "kategori_id": 11,
-      "navn": "Cheesebaconburger",
-      "beskrivelse": null,
+      "navn": "Baconburger",
+      "beskrivelse": "Saftig bøf med smeltet ost og sprød bacon, salat, tomat og dressing i ristet burgerbolle.",
       "pris": 85.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -894,13 +931,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 223,
       "kategori_id": 11,
-      "navn": "Dobbeltburger",
-      "beskrivelse": null,
+      "navn": "Dobbelt burger",
+      "beskrivelse": "To saftige bøffer med smeltet ost, salat, tomat og dressing — til den store sult.",
       "pris": 125.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -908,41 +946,44 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 222,
       "kategori_id": 11,
       "navn": "Bearnaiseburger",
-      "beskrivelse": null,
+      "beskrivelse": "Saftig bøf med cremet bearnaise, salat og tomat i ristet burgerbolle.",
       "pris": 90.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 8,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 224,
       "kategori_id": 11,
       "navn": "Chilinaiseburger",
-      "beskrivelse": null,
+      "beskrivelse": "Saftig bøf med stærk chilimayo, salat og tomat i ristet burgerbolle.",
       "pris": 90.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 9,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 219,
       "kategori_id": 11,
       "navn": "Cheeseburger",
-      "beskrivelse": null,
+      "beskrivelse": "Saftig bøf med smeltet ost, sprød salat, tomat, syltede agurker og dressing i ristet burgerbolle.",
       "pris": 85.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -950,35 +991,38 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 221,
       "kategori_id": 11,
       "navn": "Flæskestegsburger",
-      "beskrivelse": null,
+      "beskrivelse": "Saftig flæskesteg med sprød svær, rødkål og agurkesalat i ristet burgerbolle.",
       "pris": 80.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 11,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 220,
       "kategori_id": 11,
       "navn": "Frikadelleburger",
-      "beskrivelse": null,
+      "beskrivelse": "Lun frikadelle med rødkål og dressing i ristet burgerbolle.",
       "pris": 80.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 12,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 270,
@@ -992,7 +1036,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 277,
@@ -1003,38 +1048,41 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 92,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 42,
       "kategori_id": 12,
       "navn": "Pistolpølse",
-      "beskrivelse": null,
+      "beskrivelse": "Pølse i et sprødt pistolbrød med sennep, ketchup og ristede løg.",
       "pris": 30.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 1,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 45,
       "kategori_id": 12,
       "navn": "Specialpølse med baconsvøb",
-      "beskrivelse": null,
+      "beskrivelse": "Pølse svøbt i sprød bacon, i brød med dressing.",
       "pris": 35.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 2,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 43,
@@ -1045,10 +1093,11 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 3,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 46,
@@ -1059,10 +1108,11 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 4,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 41,
@@ -1073,30 +1123,32 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 5,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 44,
       "kategori_id": 12,
       "navn": "Dürümrulle",
-      "beskrivelse": null,
+      "beskrivelse": "Pølse rullet ind i en tynd, varm dürüm med salat og dressing.",
       "pris": 80.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 6,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 228,
       "kategori_id": 12,
       "navn": "Ristet pølse",
-      "beskrivelse": null,
+      "beskrivelse": "Ristet pølse med brød, sennep, ketchup og remoulade — som ved pølsevognen.",
       "pris": 30.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -1104,13 +1156,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 226,
       "kategori_id": 12,
       "navn": "Ristet pølse med bacon",
-      "beskrivelse": null,
+      "beskrivelse": "Ristet pølse svøbt i sprød bacon, med brød og dressing.",
       "pris": 35.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -1118,13 +1171,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 225,
       "kategori_id": 12,
       "navn": "Frankfurter med bacon",
-      "beskrivelse": null,
+      "beskrivelse": "Frankfurter svøbt i sprød bacon, med brød og dressing.",
       "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -1132,7 +1186,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 229,
@@ -1146,13 +1201,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 230,
       "kategori_id": 12,
       "navn": "Kradser med det hele",
-      "beskrivelse": null,
+      "beskrivelse": "Pølse med det hele: sennep, ketchup, remoulade, rå og ristede løg og agurkesalat.",
       "pris": 15.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -1160,13 +1216,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 231,
       "kategori_id": 12,
-      "navn": "Ristet hotdog, lille",
-      "beskrivelse": null,
+      "navn": "Hotdog, lille",
+      "beskrivelse": "Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -1174,13 +1231,17 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Fransk",
+        "Ristet"
+      ]
     },
     {
       "id": 227,
       "kategori_id": 12,
-      "navn": "Ristet hotdog, stor",
-      "beskrivelse": null,
+      "navn": "Hotdog, stor",
+      "beskrivelse": "Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.",
       "pris": 50.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -1188,49 +1249,86 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Fransk",
+        "Ristet"
+      ]
     },
     {
       "id": 246,
       "kategori_id": 12,
       "navn": "Fransk hotdog, alm.",
-      "beskrivelse": null,
+      "beskrivelse": "Pølse i en sprød, udhulet flute med dressing.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 14,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 247,
       "kategori_id": 12,
       "navn": "Fransk hotdog, stor",
-      "beskrivelse": null,
+      "beskrivelse": "Pølse i en sprød, udhulet flute med dressing.",
       "pris": 50.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 15,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
-      "id": 297,
-      "kategori_id": 13,
-      "navn": "Flæskesteg med surt",
+      "id": 353,
+      "kategori_id": 12,
+      "navn": "Frankfurter",
       "beskrivelse": null,
-      "pris": 55.0,
+      "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 1,
+      "sortering": 16,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 354,
+      "kategori_id": 12,
+      "navn": "Ostepølse",
+      "beskrivelse": null,
+      "pris": 35.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 17,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 355,
+      "kategori_id": 12,
+      "navn": "Krydderpølse",
+      "beskrivelse": null,
+      "pris": 35.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 18,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 48,
@@ -1244,7 +1342,23 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 297,
+      "kategori_id": 13,
+      "navn": "Flæskesteg med surt",
+      "beskrivelse": null,
+      "pris": 55.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 1,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 49,
@@ -1258,7 +1372,8 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 310,
@@ -1272,7 +1387,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 305,
@@ -1286,7 +1402,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 323,
@@ -1300,12 +1417,13 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 280,
       "kategori_id": 13,
-      "navn": "Hjemmelavet hønsesalat",
+      "navn": "Hjemmelavet Hønsesalat",
       "beskrivelse": null,
       "pris": 55.0,
       "fremhaevet": false,
@@ -1314,12 +1432,13 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 313,
       "kategori_id": 13,
-      "navn": "Æggesalat",
+      "navn": "Hjemmelavet Æggesalat",
       "beskrivelse": null,
       "pris": 55.0,
       "fremhaevet": false,
@@ -1328,12 +1447,13 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 304,
       "kategori_id": 13,
-      "navn": "Wienersalat med tomat og løg",
+      "navn": "Hjemmelavet Wienersalat",
       "beskrivelse": null,
       "pris": 55.0,
       "fremhaevet": false,
@@ -1342,12 +1462,13 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 285,
       "kategori_id": 13,
-      "navn": "Hjemmelavet skinkesalat med tomat og løg",
+      "navn": "Hjemmelavet Skinkesalat",
       "beskrivelse": null,
       "pris": 55.0,
       "fremhaevet": false,
@@ -1356,7 +1477,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 295,
@@ -1370,7 +1492,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 308,
@@ -1384,7 +1507,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 293,
@@ -1398,7 +1522,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 290,
@@ -1412,12 +1537,13 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 292,
       "kategori_id": 13,
-      "navn": "Roastbeef med remoulade og løg",
+      "navn": "Hjemmelavet Roastbeef med remoulade og løg",
       "beskrivelse": null,
       "pris": 55.0,
       "fremhaevet": false,
@@ -1426,7 +1552,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 296,
@@ -1440,7 +1567,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 300,
@@ -1454,7 +1582,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 326,
@@ -1468,7 +1597,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 288,
@@ -1482,7 +1612,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 301,
@@ -1496,7 +1627,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 307,
@@ -1510,7 +1642,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 316,
@@ -1524,7 +1657,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 311,
@@ -1538,7 +1672,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 302,
@@ -1552,7 +1687,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 322,
@@ -1566,12 +1702,13 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 314,
       "kategori_id": 13,
-      "navn": "Ostemad, mild",
+      "navn": "Ostemad Mellem lageret",
       "beskrivelse": null,
       "pris": 55.0,
       "fremhaevet": false,
@@ -1580,7 +1717,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 284,
@@ -1594,35 +1732,38 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 47,
       "kategori_id": 13,
-      "navn": "Rejemad med mayo og citron",
-      "beskrivelse": null,
-      "pris": 85.0,
+      "navn": "Rejemad",
+      "beskrivelse": "Med mayo og citron — hel skive",
+      "pris": 90.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 30,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 50,
       "kategori_id": 13,
-      "navn": "Tartar",
-      "beskrivelse": "Kun efter forudbestilling",
-      "pris": 99.0,
+      "navn": "Tartarmad",
+      "beskrivelse": null,
+      "pris": 95.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 31,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 51,
@@ -1633,10 +1774,11 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 32,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 58,
@@ -1650,7 +1792,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 67,
@@ -1664,7 +1807,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 77,
@@ -1678,7 +1822,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 57,
@@ -1692,7 +1837,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 55,
@@ -1706,7 +1852,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 60,
@@ -1720,7 +1867,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 52,
@@ -1734,7 +1882,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 54,
@@ -1748,7 +1897,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 59,
@@ -1762,7 +1912,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 63,
@@ -1776,7 +1927,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 74,
@@ -1790,7 +1942,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 72,
@@ -1804,7 +1957,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 62,
@@ -1818,7 +1972,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 75,
@@ -1832,7 +1987,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 79,
@@ -1846,7 +2002,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 66,
@@ -1860,7 +2017,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 76,
@@ -1874,7 +2032,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 71,
@@ -1888,7 +2047,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 53,
@@ -1902,7 +2062,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 78,
@@ -1916,7 +2077,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 69,
@@ -1930,7 +2092,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 70,
@@ -1944,7 +2107,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 56,
@@ -1958,7 +2122,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 65,
@@ -1972,7 +2137,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 64,
@@ -1986,7 +2152,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 73,
@@ -2000,7 +2167,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 80,
@@ -2014,7 +2182,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 61,
@@ -2028,7 +2197,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 68,
@@ -2042,7 +2212,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 232,
@@ -2056,7 +2227,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 233,
@@ -2070,7 +2242,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 250,
@@ -2084,7 +2257,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 85,
@@ -2098,7 +2272,15 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Vaffel",
+        "Bæger",
+        {
+          "navn": "Glutenfri vaffel",
+          "tillaeg": 3
+        }
+      ]
     },
     {
       "id": 86,
@@ -2112,7 +2294,15 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Vaffel",
+        "Bæger",
+        {
+          "navn": "Glutenfri vaffel",
+          "tillaeg": 3
+        }
+      ]
     },
     {
       "id": 89,
@@ -2126,21 +2316,37 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Vaffel",
+        "Bæger",
+        {
+          "navn": "Glutenfri vaffel",
+          "tillaeg": 3
+        }
+      ]
     },
     {
       "id": 234,
       "kategori_id": 15,
       "navn": "4 kugler",
       "beskrivelse": null,
-      "pris": 65.0,
+      "pris": 60.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Vaffel",
+        "Bæger",
+        {
+          "navn": "Glutenfri vaffel",
+          "tillaeg": 3
+        }
+      ]
     },
     {
       "id": 82,
@@ -2154,35 +2360,38 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 87,
       "kategori_id": 15,
-      "navn": "Sauce, topping eller guf",
+      "navn": "Strøssel, topping eller guf",
       "beskrivelse": null,
-      "pris": 7.0,
+      "pris": 8.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 83,
       "kategori_id": 15,
       "navn": "Softice-top",
       "beskrivelse": null,
-      "pris": 18.0,
+      "pris": 15.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 81,
@@ -2193,24 +2402,41 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 7,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 88,
       "kategori_id": 15,
       "navn": "Løs vaffel",
       "beskrivelse": null,
-      "pris": 4.0,
+      "pris": 7.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 350,
+      "kategori_id": 15,
+      "navn": "Løs vaffel, glutenfri",
+      "beskrivelse": null,
+      "pris": 10.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 8,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 84,
@@ -2224,27 +2450,44 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 235,
       "kategori_id": 15,
-      "navn": "Thermobox",
-      "beskrivelse": "Ca. 6 kugler is — eller fyldt med softice",
-      "pris": null,
+      "navn": "Isboks, ca. 6 kugler eller softice",
+      "beskrivelse": "6 kugler efter eget valg — eller fyldt med softice",
+      "pris": 80.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 10,
-      "aktiv": false,
+      "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 371,
+      "kategori_id": 15,
+      "navn": "Mosede Isen",
+      "beskrivelse": null,
+      "pris": 65.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 20,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 99,
       "kategori_id": 16,
       "navn": "Softice, lille",
-      "beskrivelse": null,
+      "beskrivelse": "Cremet softice i sprød vaffel — med guf, sauce eller drys, hvis du vil.",
       "pris": 37.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -2252,13 +2495,21 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Vaffel",
+        "Bæger",
+        {
+          "navn": "Glutenfri vaffel",
+          "tillaeg": 3
+        }
+      ]
     },
     {
       "id": 91,
       "kategori_id": 16,
       "navn": "Softice, stor",
-      "beskrivelse": null,
+      "beskrivelse": "En stor, cremet softice i sprød vaffel — med guf, sauce eller drys, hvis du vil.",
       "pris": 47.0,
       "fremhaevet": true,
       "udsolgt": false,
@@ -2266,27 +2517,36 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Vaffel",
+        "Bæger",
+        {
+          "navn": "Glutenfri vaffel",
+          "tillaeg": 3
+        }
+      ]
     },
     {
       "id": 98,
       "kategori_id": 16,
       "navn": "Sauce, topping eller guf",
       "beskrivelse": null,
-      "pris": 7.0,
+      "pris": 8.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 95,
       "kategori_id": 16,
-      "navn": "Sundae med frugt og sauce",
-      "beskrivelse": null,
+      "navn": "Sundae med sauce og topping",
+      "beskrivelse": "Softice i bæger med sauce og topping.",
       "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -2294,7 +2554,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 97,
@@ -2308,13 +2569,14 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 96,
       "kategori_id": 16,
-      "navn": "Boblevaffel med 1 kugle",
-      "beskrivelse": null,
+      "navn": "Bubblewaffle, 1 kugle",
+      "beskrivelse": "Inkl. drys og sovs",
       "pris": 59.0,
       "fremhaevet": true,
       "udsolgt": false,
@@ -2322,13 +2584,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 90,
       "kategori_id": 16,
-      "navn": "Boblevaffel med 2 kugler eller softice",
-      "beskrivelse": "Inklusive drys og sovs",
+      "navn": "Bubblewaffle, 2 kugler eller softice",
+      "beskrivelse": "Inkl. drys og sovs",
       "pris": 67.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -2336,13 +2599,29 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 352,
+      "kategori_id": 16,
+      "navn": "Bubblewaffle mix",
+      "beskrivelse": "Frisk frugt efter dagen, sauce & topping",
+      "pris": 65.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 8,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 94,
       "kategori_id": 16,
       "navn": "Churros med sukker og kanel",
-      "beskrivelse": null,
+      "beskrivelse": "Lune, sprøde churros vendt i sukker og kanel.",
       "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -2350,13 +2629,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 93,
       "kategori_id": 16,
       "navn": "Churros med is og sauce",
-      "beskrivelse": null,
+      "beskrivelse": "Lune, sprøde churros med is og sauce.",
       "pris": 67.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -2364,12 +2644,13 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 100,
       "kategori_id": 16,
-      "navn": "Hjemmelavede pandekager med sukker",
+      "navn": "2 hjemmelavede pandekager med sukker",
       "beskrivelse": null,
       "pris": 42.0,
       "fremhaevet": false,
@@ -2378,12 +2659,13 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 92,
       "kategori_id": 16,
-      "navn": "Hjemmelavede pandekager med is",
+      "navn": "2 hjemmelavede pandekager med is",
       "beskrivelse": null,
       "pris": 65.0,
       "fremhaevet": false,
@@ -2392,49 +2674,23 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 251,
       "kategori_id": 16,
-      "navn": "Bæger med vaffelknas, softice og topping",
+      "navn": "Bakke med vaffelknas, softice, sauce og topping",
       "beskrivelse": null,
-      "pris": 40.0,
+      "pris": 55.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 107,
-      "kategori_id": 17,
-      "navn": "Americano",
-      "beskrivelse": null,
-      "pris": 40.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 1,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 105,
-      "kategori_id": 17,
-      "navn": "Iced americano",
-      "beskrivelse": null,
-      "pris": 45.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 2,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 101,
@@ -2444,11 +2700,69 @@
       "pris": 35.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 3,
+      "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 351,
+      "kategori_id": 17,
+      "navn": "Irish coffee, stor",
+      "beskrivelse": null,
+      "pris": 145.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 15,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 107,
+      "kategori_id": 17,
+      "navn": "Americano",
+      "beskrivelse": null,
+      "pris": 40.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 20,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 20
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "kategori_id": 17,
+      "navn": "Americano Ice",
+      "beskrivelse": null,
+      "pris": 45.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 30,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 20
+        }
+      ]
     },
     {
       "id": 106,
@@ -2458,11 +2772,18 @@
       "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 4,
+      "sortering": 40,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 20
+        }
+      ]
     },
     {
       "id": 104,
@@ -2472,11 +2793,18 @@
       "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 5,
+      "sortering": 50,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 20
+        }
+      ]
     },
     {
       "id": 102,
@@ -2486,53 +2814,39 @@
       "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 6,
+      "sortering": 60,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 20
+        }
+      ]
     },
     {
       "id": 116,
       "kategori_id": 17,
-      "navn": "Flat white",
+      "navn": "Flat White",
       "beskrivelse": null,
       "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 7,
+      "sortering": 70,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 114,
-      "kategori_id": 17,
-      "navn": "Chai",
-      "beskrivelse": null,
-      "pris": 45.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 8,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 117,
-      "kategori_id": 17,
-      "navn": "Kakao",
-      "beskrivelse": null,
-      "pris": 40.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 9,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 20
+        }
+      ]
     },
     {
       "id": 111,
@@ -2542,25 +2856,96 @@
       "pris": 45.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 10,
+      "sortering": 80,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 20
+        }
+      ]
     },
     {
       "id": 112,
       "kategori_id": 17,
-      "navn": "Iced latte",
+      "navn": "Latte Ice",
       "beskrivelse": null,
       "pris": 50.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 11,
+      "sortering": 90,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 15
+        }
+      ]
+    },
+    {
+      "id": 237,
+      "kategori_id": 17,
+      "navn": "1 iskugle i kaffen",
+      "beskrivelse": null,
+      "pris": 20.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 100,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 114,
+      "kategori_id": 17,
+      "navn": "Chai",
+      "beskrivelse": null,
+      "pris": 45.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 110,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 20
+        }
+      ]
+    },
+    {
+      "id": 117,
+      "kategori_id": 17,
+      "navn": "Kakao",
+      "beskrivelse": null,
+      "pris": 40.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 120,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": [
+        "Lille",
+        {
+          "navn": "Stor",
+          "tillaeg": 25
+        }
+      ]
     },
     {
       "id": 115,
@@ -2570,95 +2955,12 @@
       "pris": 25.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 12,
+      "sortering": 130,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 110,
-      "kategori_id": 17,
-      "navn": "Irish coffee",
-      "beskrivelse": null,
-      "pris": 75.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 13,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 103,
-      "kategori_id": 17,
-      "navn": "Te",
-      "beskrivelse": null,
-      "pris": 25.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 14,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 113,
-      "kategori_id": 17,
-      "navn": "Kage",
-      "beskrivelse": "Spørg til dagens udvalg",
-      "pris": 30.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 15,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 108,
-      "kategori_id": 17,
-      "navn": "Kaffe og kage",
-      "beskrivelse": null,
-      "pris": 65.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 16,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 109,
-      "kategori_id": 17,
-      "navn": "Kaffe og pandekage",
-      "beskrivelse": null,
-      "pris": 65.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 17,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 237,
-      "kategori_id": 17,
-      "navn": "Iskugle i kaffen",
-      "beskrivelse": null,
-      "pris": 35.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 18,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 236,
@@ -2668,11 +2970,27 @@
       "pris": 5.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 19,
+      "sortering": 140,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 103,
+      "kategori_id": 17,
+      "navn": "Te",
+      "beskrivelse": null,
+      "pris": 25.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 150,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 238,
@@ -2682,11 +3000,42 @@
       "pris": 75.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 20,
+      "sortering": 160,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 110,
+      "kategori_id": 17,
+      "navn": "Irish coffee",
+      "beskrivelse": null,
+      "pris": 75.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 170,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 113,
+      "kategori_id": 17,
+      "navn": "Kage & desserter",
+      "beskrivelse": "Spørg for dagens udvalg",
+      "pris": 30.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 200,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 240,
@@ -2696,11 +3045,12 @@
       "pris": 35.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 21,
+      "sortering": 210,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 266,
@@ -2710,11 +3060,42 @@
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
-      "sortering": 25,
+      "sortering": 220,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 108,
+      "kategori_id": 17,
+      "navn": "Kaffe og kage",
+      "beskrivelse": null,
+      "pris": 65.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 230,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 109,
+      "kategori_id": 17,
+      "navn": "Kaffe og pandekage",
+      "beskrivelse": null,
+      "pris": 65.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 240,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 120,
@@ -2728,7 +3109,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 122,
@@ -2742,7 +3124,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 123,
@@ -2756,7 +3139,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 119,
@@ -2770,13 +3154,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 124,
       "kategori_id": 18,
-      "navn": "Flaskeøl",
-      "beskrivelse": null,
+      "navn": "Flaske eller dåse",
+      "beskrivelse": "Kun take away",
       "pris": 30.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -2784,13 +3169,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 121,
       "kategori_id": 18,
-      "navn": "Flaskeøl lux",
-      "beskrivelse": null,
+      "navn": "Gylden Dame / Lux",
+      "beskrivelse": "Kun take away",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -2798,7 +3184,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 118,
@@ -2812,12 +3199,13 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 267,
       "kategori_id": 18,
-      "navn": "Specialøl",
+      "navn": "Specialøl, lille",
       "beskrivelse": null,
       "pris": 50.0,
       "fremhaevet": false,
@@ -2826,7 +3214,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 279,
@@ -2840,7 +3229,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 131,
@@ -2854,7 +3244,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 125,
@@ -2868,7 +3259,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 127,
@@ -2882,7 +3274,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 126,
@@ -2896,7 +3289,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 128,
@@ -2910,7 +3304,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 129,
@@ -2924,7 +3319,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 130,
@@ -2938,7 +3334,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 132,
@@ -2952,7 +3349,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 133,
@@ -2966,7 +3364,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 143,
@@ -2980,7 +3379,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 136,
@@ -2994,21 +3394,23 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 134,
       "kategori_id": 20,
       "navn": "Dåse eller flaske sodavand",
       "beskrivelse": null,
-      "pris": 25.0,
+      "pris": 30.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 144,
@@ -3019,10 +3421,11 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 5,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 140,
@@ -3036,7 +3439,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 142,
@@ -3050,7 +3454,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 141,
@@ -3064,7 +3469,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 145,
@@ -3078,7 +3484,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 137,
@@ -3092,7 +3499,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 139,
@@ -3106,7 +3514,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 146,
@@ -3120,7 +3529,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 138,
@@ -3134,7 +3544,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 135,
@@ -3148,7 +3559,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 239,
@@ -3162,7 +3574,8 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 274,
@@ -3176,7 +3589,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 278,
@@ -3190,7 +3604,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 269,
@@ -3204,7 +3619,23 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 349,
+      "kategori_id": 20,
+      "navn": "Capri Sun",
+      "beskrivelse": null,
+      "pris": 20.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 94,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 151,
@@ -3218,7 +3649,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 149,
@@ -3232,7 +3664,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 150,
@@ -3246,7 +3679,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 152,
@@ -3260,7 +3694,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 147,
@@ -3271,15 +3706,31 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 5,
+      "aktiv": false,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 372,
+      "kategori_id": 21,
+      "navn": "Chips, 1 pose",
+      "beskrivelse": null,
+      "pris": 15.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
-      "id": 153,
+      "id": 348,
       "kategori_id": 21,
-      "navn": "Chips eller svær, 1 pose",
+      "navn": "2 slags chips på fad",
       "beskrivelse": null,
       "pris": 35.0,
       "fremhaevet": false,
@@ -3288,7 +3739,23 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 153,
+      "kategori_id": 21,
+      "navn": "Flæskesvær, 1 pose",
+      "beskrivelse": null,
+      "pris": 35.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 6,
+      "aktiv": false,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 148,
@@ -3299,10 +3766,26 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 7,
+      "aktiv": false,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 192,
+      "kategori_id": 21,
+      "navn": "Popcorn",
+      "beskrivelse": null,
+      "pris": 30.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 162,
@@ -3316,13 +3799,29 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 331,
+      "kategori_id": 26,
+      "navn": "Kage",
+      "beskrivelse": null,
+      "pris": 10.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 2,
+      "aktiv": false,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 163,
       "kategori_id": 27,
-      "navn": "Platte til 1 person",
-      "beskrivelse": "Fisk med remoulade, æg med rejer, flæskesteg, skinke med italiensk salat, roastbeef, sild med karrysalat og ost. Hvidt og mørkt brød, smør og fedt.",
+      "navn": "Platte",
+      "beskrivelse": "Skal bestilles",
       "pris": 179.0,
       "fremhaevet": true,
       "udsolgt": false,
@@ -3330,7 +3829,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 164,
@@ -3344,13 +3844,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 171,
       "kategori_id": 28,
       "navn": "Slider med roastbeef",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med roastbeef, remoulade og ristede løg.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3358,13 +3859,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 168,
       "kategori_id": 28,
       "navn": "Slider med hønsesalat",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med cremet hønsesalat.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3372,13 +3874,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 165,
       "kategori_id": 28,
       "navn": "Slider med æggesalat",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med cremet æggesalat.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3386,13 +3889,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 170,
       "kategori_id": 28,
       "navn": "Slider med leverpostej",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med leverpostej.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3400,13 +3904,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 167,
       "kategori_id": 28,
       "navn": "Slider med æg",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med æg.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3414,13 +3919,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 173,
       "kategori_id": 28,
       "navn": "Slider med æg og rejer",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med æg og rejer.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3428,13 +3934,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 169,
       "kategori_id": 28,
       "navn": "Slider med flæskesteg",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med flæskesteg og rødkål.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3442,13 +3949,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 174,
       "kategori_id": 28,
       "navn": "Slider med frikadelle",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med frikadelle og rødkål.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3456,13 +3964,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 172,
       "kategori_id": 28,
       "navn": "Slider med spegepølse",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med spegepølse.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3470,13 +3979,14 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 166,
       "kategori_id": 28,
       "navn": "Slider med laks",
-      "beskrivelse": null,
+      "beskrivelse": "Lille blød bolle med laks.",
       "pris": 40.0,
       "fremhaevet": false,
       "udsolgt": false,
@@ -3484,7 +3994,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 185,
@@ -3498,7 +4009,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 175,
@@ -3512,7 +4024,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 178,
@@ -3526,7 +4039,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 186,
@@ -3540,7 +4054,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 179,
@@ -3554,7 +4069,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 176,
@@ -3568,7 +4084,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 183,
@@ -3582,7 +4099,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 180,
@@ -3596,7 +4114,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 177,
@@ -3610,7 +4129,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 184,
@@ -3624,7 +4144,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 182,
@@ -3638,7 +4159,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 181,
@@ -3652,7 +4174,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 191,
@@ -3666,7 +4189,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 197,
@@ -3680,7 +4204,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 193,
@@ -3694,7 +4219,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 198,
@@ -3708,7 +4234,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 196,
@@ -3722,7 +4249,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 201,
@@ -3736,7 +4264,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 189,
@@ -3750,7 +4279,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 194,
@@ -3764,7 +4294,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 190,
@@ -3778,7 +4309,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 203,
@@ -3792,7 +4324,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 200,
@@ -3806,7 +4339,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 199,
@@ -3820,7 +4354,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 204,
@@ -3834,7 +4369,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 188,
@@ -3848,21 +4384,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 192,
-      "kategori_id": 30,
-      "navn": "Popcorn",
-      "beskrivelse": null,
-      "pris": 20.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 15,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 195,
@@ -3876,7 +4399,8 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 187,
@@ -3890,7 +4414,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 202,
@@ -3904,7 +4429,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 205,
@@ -3918,21 +4444,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 252,
-      "kategori_id": 30,
-      "navn": "Isbar med eller uden betjening",
-      "beskrivelse": null,
-      "pris": null,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 20,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 275,
@@ -3946,7 +4459,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 272,
@@ -3960,7 +4474,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 210,
@@ -3974,7 +4489,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 213,
@@ -3988,7 +4504,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 217,
@@ -4002,7 +4519,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 209,
@@ -4016,7 +4534,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 214,
@@ -4030,7 +4549,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 211,
@@ -4044,7 +4564,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 215,
@@ -4058,7 +4579,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 208,
@@ -4072,7 +4594,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 216,
@@ -4086,7 +4609,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 218,
@@ -4100,7 +4624,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 212,
@@ -4111,10 +4636,11 @@
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 11,
-      "aktiv": true,
+      "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 271,
@@ -4128,21 +4654,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
-    },
-    {
-      "id": 243,
-      "kategori_id": 32,
-      "navn": "Glutenfrit brød (tillæg)",
-      "beskrivelse": "Til smørrebrød og burgere — 10 kr. pr. stk.",
-      "pris": 10.0,
-      "fremhaevet": false,
-      "udsolgt": false,
-      "sortering": 1,
-      "aktiv": true,
-      "lokation_id": "mosede",
-      "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 244,
@@ -4156,7 +4669,23 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 243,
+      "kategori_id": 32,
+      "navn": "Glutenfrit brød (tillæg)",
+      "beskrivelse": "Til smørrebrød og burgere — 10 kr. pr. stk.",
+      "pris": 0.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 1,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     },
     {
       "id": 241,
@@ -4170,7 +4699,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 242,
@@ -4184,7 +4714,8 @@
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 245,
@@ -4198,343 +4729,593 @@
       "aktiv": false,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 303,
       "kategori_id": 39,
       "navn": "Flæskesteg med surt, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 101,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 317,
       "kategori_id": 39,
       "navn": "Fiskefilet med remoulade, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 102,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 294,
       "kategori_id": 39,
       "navn": "Fiskefilet med rejer og mayo, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 103,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 306,
       "kategori_id": 39,
       "navn": "Frikadelle med surt, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 104,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 325,
       "kategori_id": 39,
       "navn": "Hjemmelavet hønsesalat, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 105,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 289,
       "kategori_id": 39,
-      "navn": "Æggesalat, håndmad",
+      "navn": "Hjemmelavet Æggesalat, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 106,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 298,
       "kategori_id": 39,
-      "navn": "Wienersalat med tomat og løg, håndmad",
+      "navn": "Hjemmelavet Wienersalat med tomat og løg, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 107,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 318,
       "kategori_id": 39,
       "navn": "Hjemmelavet skinkesalat med tomat og løg, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 108,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 319,
       "kategori_id": 39,
       "navn": "Leverpostej med surt, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 109,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 299,
       "kategori_id": 39,
       "navn": "Dyrlægens natmad, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 110,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 324,
       "kategori_id": 39,
       "navn": "Kartoffelmad med mayo, løg og bacon, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 111,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 287,
       "kategori_id": 39,
       "navn": "Rullepølse med sky og løg, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 112,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 320,
       "kategori_id": 39,
-      "navn": "Roastbeef med remoulade og løg, håndmad",
+      "navn": "Hjemmelavet Roastbeef med remoulade og løg, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 113,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 321,
       "kategori_id": 39,
       "navn": "Skinke med italiensk salat, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 114,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 328,
       "kategori_id": 39,
       "navn": "Skinke med spejlæg, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 115,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 286,
       "kategori_id": 39,
       "navn": "Kylling med bacon og karry, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 116,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 312,
       "kategori_id": 39,
       "navn": "Spegepølse med sky og løg, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 117,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 327,
       "kategori_id": 39,
       "navn": "Spegepølse med remoulade og ristet løg, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 118,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 291,
       "kategori_id": 39,
       "navn": "Hvide sild, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 119,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 282,
       "kategori_id": 39,
       "navn": "Hvide sild med karry, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 120,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 283,
       "kategori_id": 39,
       "navn": "Æggemad med mayo og løg, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 121,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 281,
       "kategori_id": 39,
       "navn": "Æggemad med bacon og karry, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 122,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 309,
       "kategori_id": 39,
       "navn": "Hakkebøf med bløde løg og spejlæg, håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 123,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
     },
     {
       "id": 315,
       "kategori_id": 39,
-      "navn": "Ostemad, mild, håndmad",
+      "navn": "Ostemad, mellem lageret  håndmad",
       "beskrivelse": null,
-      "pris": 27.0,
+      "pris": 24.0,
       "fremhaevet": false,
       "udsolgt": false,
       "sortering": 124,
       "aktiv": true,
       "lokation_id": "mosede",
       "antal_tilbage": null,
-      "billede": null
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 35,
+      "kategori_id": 63,
+      "navn": "Flæskestegssandwich",
+      "beskrivelse": "Saftig flæskesteg med sprød svær, rødkål og agurkesalat i blødt brød.",
+      "pris": 80.0,
+      "fremhaevet": true,
+      "udsolgt": false,
+      "sortering": 1,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 39,
+      "kategori_id": 63,
+      "navn": "Frikadellesandwich",
+      "beskrivelse": "Lun frikadelle i blødt brød med rødkål, agurkesalat og dressing.",
+      "pris": 80.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 2,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 24,
+      "kategori_id": 63,
+      "navn": "Sandwich",
+      "beskrivelse": "Kebab, kylling, tun, frikadelle eller æg",
+      "pris": 75.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 4,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 36,
+      "kategori_id": 63,
+      "navn": "Bøfsandwich",
+      "beskrivelse": "Saftig bøf i blødt brød med brun sovs, rødbeder, agurk og ristede løg — den klassiske.",
+      "pris": 75.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 5,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 358,
+      "kategori_id": 64,
+      "navn": "Excellence, chokolade og brombær",
+      "beskrivelse": null,
+      "pris": 32.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 1,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 359,
+      "kategori_id": 64,
+      "navn": "Excellence, chokolade og mandel",
+      "beskrivelse": null,
+      "pris": 32.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 2,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 360,
+      "kategori_id": 64,
+      "navn": "Maxibon",
+      "beskrivelse": null,
+      "pris": 31.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 3,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 361,
+      "kategori_id": 64,
+      "navn": "Ternet Ninja",
+      "beskrivelse": null,
+      "pris": 28.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 4,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 362,
+      "kategori_id": 64,
+      "navn": "Raketis med drys",
+      "beskrivelse": null,
+      "pris": 25.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 5,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 363,
+      "kategori_id": 64,
+      "navn": "50'eren",
+      "beskrivelse": null,
+      "pris": 25.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 6,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 364,
+      "kategori_id": 64,
+      "navn": "Vandmelon",
+      "beskrivelse": null,
+      "pris": 24.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 7,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 365,
+      "kategori_id": 64,
+      "navn": "Isbjørn, gul",
+      "beskrivelse": null,
+      "pris": 22.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 8,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 366,
+      "kategori_id": 64,
+      "navn": "Isbjørn, pink",
+      "beskrivelse": null,
+      "pris": 22.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 9,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 367,
+      "kategori_id": 64,
+      "navn": "Star-is",
+      "beskrivelse": null,
+      "pris": 20.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 10,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
+    },
+    {
+      "id": 368,
+      "kategori_id": 64,
+      "navn": "Sort/hvid is",
+      "beskrivelse": null,
+      "pris": 20.0,
+      "fremhaevet": false,
+      "udsolgt": false,
+      "sortering": 11,
+      "aktiv": true,
+      "lokation_id": "mosede",
+      "antal_tilbage": null,
+      "billede": null,
+      "valg": null
     }
   ],
   "bestilbare_kategorier": [
@@ -4545,10 +5326,18 @@
     12,
     13,
     14,
+    15,
+    16,
+    17,
     18,
     19,
     20,
     21,
-    39
+    27,
+    31,
+    32,
+    39,
+    63,
+    64
   ]
 }

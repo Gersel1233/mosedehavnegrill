@@ -1,6 +1,6 @@
 # De syv menukort — facitliste
 
-Skrevet af fra Mikkels færdige kort **2026-09-10** og holdt op mod
+Skrevet af fra Mikkels færdige kort **2026-09-24** og holdt op mod
 databasen post for post med `vaerktoej/sammenlign-kort.py`.
 
 **Kortene er facitlisten. Databasen er systemet. De to skal sige
@@ -9,20 +9,21 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 ---
 
-## MENUKORT FRA GRILLEN
+## 01 MENUKORT FRA GRILLEN
 
-*Morgenmad fra tidligt, klassikerne fra pladen og burgere lavet på bestilling - alt sammen ved lugen.*
+*Morgenmad fra tidligt, klassikerne fra pladen og burgere lavet på bestilling — alt sammen ved lugen.*
 
 ### MORGENMAD
 
 | Vare | Pris | Note |
 |---|---:|---|
-| Morgen komplet | 99,- | Kaffe eller juice, rundstykke med pålæg, æg eller bacon & frugt |
-| English Breakfast | 99,- |  |
+| Morgen komplet | 99,- | Kaffe eller juice, rundstykke med pålæg, æg eller bacon & grønt |
+| English Breakfast | 99,- | Ristet toastbrød, spejlæg, bacon, bønner, grønt, ost, ½ pølse, stegte champignoner og ½ stegt tomat |
 | Rundstykke med pålæg | 35,- |  |
-| Havnens All in One | 40,- | Brød, skinke & spejlæg |
-| Frugt Mix | 25,- |  |
-| Morgenbrød | **SPØRG** | Kan bestilles |
+| Franskbrød med pålæg | 35,- |  |
+| Havnens All in One | 40,- | Brød, skinke & spejlæg · + ost 10,- |
+| Wienerbrød | 30,- | Sælges kun helt |
+| Morgenbrød | **SPØRG** | Spørg ved bestilling |
 | Æg, bacon, pålæg, marmelade, Nutella, baked beans m.m. | 10,- |  |
 
 ### FISK & KLASSIKERE
@@ -30,14 +31,15 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 | Vare | Pris | Note |
 |---|---:|---|
 | Stjerneskud | 105,- |  |
-| Fish'n'chips | 110,- |  |
+| Fish'n'chips | 105,- |  |
 | Fiskefilet med pommes | 95,- |  |
-| Tartarmad | 99,- | Bestilles dagen før |
-| Rejemad | 85,- |  |
+| Tartarmad | 95,- |  |
+| Rejemad | 95,- |  |
 | Platte | 179,- | Skal bestilles |
 | Smørrebrød | 55,- | Se smørrebrødskortet |
 | Håndmadder | 27,- | Se håndmadskortet |
-| Pariserbøf | 110,- |  |
+| Pariserbøf | 105,- |  |
+| Clubsandwich | 105,- |  |
 
 ### EKSTRA
 
@@ -48,7 +50,7 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 ---
 
-## BURGERE, PØLSER & PLADE
+## 02 À LA CARTE, BURGERE & PØLSER
 
 *stegt på bestilling*
 
@@ -56,19 +58,22 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 | Vare | Pris | Note |
 |---|---:|---|
-| Mix med pommes & salat | 90,- | Kebab, kylling, tun eller pølse |
-| Lun frikadelle med brød | 25,- |  |
+| Pølsemix med pommes | 90,- |  |
+| Kebabmix med pommes | 90,- |  |
+| Kyllingmix med pommes | 90,- |  |
+| Lun delle, steg eller leverpostej | 65,- | Med brød og surt |
+| Hjemmelavet lun frikadelle | 25,- |  |
+| Pitabrød | 65,- | Kebab, kylling eller tun |
 | Hjemmelavet biksemad med spejlæg | 85,- |  |
 | Ekstra spejlæg | 10,- |  |
 | Blandet salat | 55,- |  |
-| Ekstra æg, tun, kebab, kylling eller pasta | 10,- |  |
 | Nachos med tilbehør & ost | 85,- |  |
-| Ekstra kylling, kebab eller oksekød | 10,- |  |
+| Ekstra kød eller tilbehør | 10,- |  |
 | Gammeldags rejecocktail med brød og smør | 90,- |  |
 | Hjemmelavet hvidløgsbrød med tomat & ost | 45,- |  |
-| Indbagte rejer med pommes | 95,- |  |
-| Nuggets med pommes | 85,- |  |
-| Hjemmelavet toast, ost eller skinke | 35,- |  |
+| 8 indbagte rejer med pommes | 95,- |  |
+| 10 nuggets med pommes | 85,- |  |
+| Hjemmelavet toast, ost og skinke | 35,- |  |
 | Hjemmelavet cowboytoast | 45,- |  |
 | Snackkurv | 85,- |  |
 | Pommes frites med dip | 40,- |  |
@@ -80,33 +85,33 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 | Dobbelt burger | 125,- |  |
 | Cheeseburger | 85,- |  |
 | Baconburger | 85,- |  |
+| Bacon & Cheeseburger | 95,- |  |
 | Havnens burger | 80,- |  |
 | Kyllingeburger | 80,- |  |
-| Flæskestegssandwich | 80,- |  |
-| Frikadellesandwich | 80,- |  |
-| Bøfsandwich | 75,- |  |
-| Sandwich | 75,- | Kebab, kylling, tun, frikadelle eller æg |
-| Ekstra tilbehør | 10,- |  |
-| Bearnaise | 10,- |  |
+| Sandwich | 75,- | Kebab, kylling/bacon, tun, frikadelle, æg, flæskesteg, roastbeef m.fl. — se bestillingslisten for hele udvalget |
 
 ### PØLSER
 
 | Vare | Pris | Note |
 |---|---:|---|
 | Ristet pølse | 30,- |  |
-| Specialpølse eller bacon-svøb | 35,- |  |
-| Frankfurter eller stor specialpølse | 40,- |  |
-| Bacon-svøb | 5,- | tillæg |
+| Ristet pølse med bacon | 35,- |  |
+| Frankfurter | 40,- |  |
+| Frankfurter med bacon | 45,- |  |
+| Ostepølse | 35,- |  |
+| Krydderpølse | 35,- |  |
 | Brød | 10,- |  |
 | Kradser med det hele | 15,- |  |
-| Hotdog, lille | 40,- | Fransk eller ristet |
-| Hotdog, stor | 50,- | Fransk eller ristet |
+| Ristet hotdog, lille | 40,- |  |
+| Ristet hotdog, stor | 50,- |  |
+| Fransk hotdog, lille | 40,- |  |
+| Fransk hotdog, stor | 50,- |  |
 
 ---
 
-## SMØRREBRØD — hel skive rugbrød
+## 03 SMØRREBRØD
 
-*Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.*
+*Friskbagt rugbrød, smurt når du bestiller. Glutenfrit brød, med eller uden smør — bare sig til.*
 
 ### VARIANTER - alle 55,-
 
@@ -114,41 +119,46 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 |---|---:|---|
 | Flæskesteg med surt | 55,- |  |
 | Fiskefilet med remoulade | 55,- |  |
-| Fiskefilet med rejer og mayo | 55,- |  |
+| Fiskefilet med rejer & mayo | 55,- |  |
 | Frikadelle med surt | 55,- |  |
-| Hjemmelavet hønsesalat | 55,- |  |
-| Æggesalat | 55,- |  |
-| Wienersalat med tomat og løg | 55,- |  |
-| Hjemmelavet skinkesalat med tomat og løg | 55,- |  |
+| Dagens hjemmelavede pålægssalater | 55,- | Spørg ved bestilling |
 | Leverpostej med surt | 55,- |  |
 | Dyrlægens natmad | 55,- |  |
-| Kartoffelmad med mayo, løg og bacon | 55,- |  |
-| Rullepølse med sky og løg | 55,- |  |
-| Roastbeef med remoulade og løg | 55,- |  |
+| Kartoffelmad med mayo, løg & bacon | 55,- |  |
+| Rullepølse med sky & løg | 55,- |  |
+| Roastbeef med remoulade & løg | 55,- |  |
 | Skinke med italiensk salat | 55,- |  |
 | Skinke med spejlæg | 55,- |  |
-| Kylling med bacon og karry | 55,- |  |
-| Spegepølse med sky og løg | 55,- |  |
-| Spegepølse med remoulade og ristet løg | 55,- |  |
+| Kylling med bacon & karry | 55,- |  |
+| Spegepølse med sky & løg | 55,- |  |
+| Spegepølse med remoulade & ristet løg | 55,- |  |
 | Hvide sild | 55,- |  |
 | Hvide sild med karry | 55,- |  |
-| Æggemad med mayo og løg | 55,- |  |
-| Æggemad med bacon og karry | 55,- |  |
-| Hakkebøf med bløde løg og spejlæg | 55,- |  |
-| Ostemad, mild | 55,- |  |
+| Æggemad med mayo & løg | 55,- |  |
+| Æggemad med mayo & rejer | 55,- |  |
+| Hakkebøf med bløde løg & spejlæg | 55,- |  |
+| Ostemad | 55,- |  |
 
 ### EGEN PRIS
 
 | Vare | Pris | Note |
 |---|---:|---|
-| Rejemad | 85,- | Med mayo og citron — hel skive |
-| Tartar | 99,- | Bestilles dagen før — ring til lugen |
+| Hjemmelavet lun delle | 25,- |  |
+| Hjemmelavet flæskesvær | 35,- |  |
+| Rejemad | 95,- | Fås både på rugbrød og franskbrød |
+| Tartar | 95,- | Bestilles dagen før |
+
+### SIG TIL VED LUGEN
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Glutenfrit brød | 5,- | Med eller uden smør — bare sig til |
 
 ---
 
-## HÅNDMADDER — halv skive ved lugen
+## 04 HÅNDMADDER
 
-*Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave. Glutenfrit brød eller uden smør, bare sig til.*
+*Friskbagt rugbrød, smurt når du bestiller. Glutenfrit brød, med eller uden smør — bare sig til.*
 
 ### VARIANTER - alle 27,-
 
@@ -156,46 +166,48 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 |---|---:|---|
 | Flæskesteg med surt | 27,- |  |
 | Fiskefilet med remoulade | 27,- |  |
-| Fiskefilet med rejer og mayo | 27,- |  |
 | Frikadelle med surt | 27,- |  |
-| Hjemmelavet hønsesalat | 27,- |  |
-| Æggesalat | 27,- |  |
-| Wienersalat med tomat og løg | 27,- |  |
-| Hjemmelavet skinkesalat med tomat og løg | 27,- |  |
+| Dagens hjemmelavede pålægssalater | 27,- |  |
 | Leverpostej med surt | 27,- |  |
 | Dyrlægens natmad | 27,- |  |
-| Kartoffelmad med mayo, løg og bacon | 27,- |  |
-| Rullepølse med sky og løg | 27,- |  |
-| Roastbeef med remoulade og løg | 27,- |  |
+| Kartoffelmad med mayo, løg & bacon | 27,- |  |
+| Rullepølse med sky & løg | 27,- |  |
+| Roastbeef med remoulade & løg | 27,- |  |
 | Skinke med italiensk salat | 27,- |  |
 | Skinke med spejlæg | 27,- |  |
-| Kylling med bacon og karry | 27,- |  |
-| Spegepølse med sky og løg | 27,- |  |
-| Spegepølse med remoulade og ristet løg | 27,- |  |
+| Kylling med bacon & karry | 27,- |  |
+| Spegepølse med sky & løg | 27,- |  |
+| Spegepølse med remoulade & ristet løg | 27,- |  |
 | Hvide sild | 27,- |  |
 | Hvide sild med karry | 27,- |  |
-| Æggemad med mayo og løg | 27,- |  |
-| Æggemad med bacon og karry | 27,- |  |
-| Hakkebøf med bløde løg og spejlæg | 27,- |  |
-| Ostemad, mild | 27,- |  |
+| Æggemad med mayo & løg | 27,- |  |
+| Hakkebøf med bløde løg & spejlæg | 27,- |  |
+| Ostemad | 27,- |  |
 
-### KUN SOM SMØRREBRØD
+### EGEN PRIS
 
 | Vare | Pris | Note |
 |---|---:|---|
-| Rejemad & Tartar | **SPØRG** | De to laves kun på hel skive — se smørrebrødskortet |
+| Hjemmelavet lun delle | 25,- |  |
+| Hjemmelavet flæskesvær | 35,- |  |
+
+### IKKE SOM HÅNDMAD
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Rejemad & Tartar | **SPØRG** | Rejemad fås både på rugbrød og franskbrød. Tartar fås som smørrebrød. |
 
 ### SIG TIL VED LUGEN
 
 | Vare | Pris | Note |
 |---|---:|---|
-| Glutenfrit brød | — | SAMME PRIS — eller uden smør |
+| Glutenfrit brød | 5,- | Med eller uden smør — bare sig til |
 
 ---
 
-## IS & DRIKKEVARER
+## 05 IS & SØDT
 
-*Kugleis og softice fra lugen, bubblewaffles, churros og pandekager — og kaffen der hører til.*
+*Kugleis og cremet softice, sprøde bubblewaffles, churros og hjemmelavede pandekager — til en tur langs vandet.*
 
 ### IS
 
@@ -204,12 +216,15 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 | 1 kugle | 35,- |  |
 | 2 kugler | 45,- |  |
 | 3 kugler | 55,- |  |
-| Ekstra kugle | 10,- |  |
-| Strøssel, topping eller guf | 7,- |  |
-| Softice-top | 18,- |  |
-| Løs vaffel | 4,- |  |
-| Isbox, ca. 6 kugler eller softice | 80,- |  |
-| Bøtte med topping | 20,- |  |
+| 4 kugler | 65,- |  |
+| Havnens café-is | 79,- | 3 kugler, softice-top, guf, flødeskum og syltetøj |
+| Ekstra kugle | 12,- |  |
+| Sauce, topping eller guf | 8,- |  |
+| Softice-top | 15,- |  |
+| Løs vaffel, pr. stk. | 7,- |  |
+| Løs vaffel, glutenfri, pr. stk. | 7,- |  |
+| Isboks, ca. 6 kugler eller softice | 90,- | Tag med på turen — 6 valgfrie kugler |
+| Toppingbøtte | 20,- |  |
 
 ### SOFTICE
 
@@ -217,32 +232,48 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 |---|---:|---|
 | Lille | 37,- |  |
 | Stor | 47,- |  |
-| Sauce, topping eller guf | 7,- |  |
+| Bakke med vaffelknas, softice, sauce & topping | 55,- |  |
+| Sauce, topping eller guf | 8,- |  |
 
 ### SØDT
 
 | Vare | Pris | Note |
 |---|---:|---|
-| Sundae med frugt og sauce | 45,- |  |
+| Sundae med sauce og topping | 45,- |  |
 | Bubblewaffle, 1 kugle | 59,- | Inkl. drys og sovs |
 | Bubblewaffle, 2 kugler eller softice | 67,- | Inkl. drys og sovs |
+| Bubblewaffle mix | 67,- | Frisk frugt efter dagen, sauce & topping |
 | Churros med sukker og kanel | 45,- |  |
 | Churros med is og sauce | 67,- |  |
-| Hjemmelavede pandekager med sukker | 42,- |  |
-| Hjemmelavede pandekager med is | 65,- |  |
-
-### KAGE
-
-| Vare | Pris | Note |
-|---|---:|---|
-| Kage & desserter | 30,- | Spørg for dagens udvalg |
-| Flødekager | 40,- |  |
-| Kaffe & kage | 65,- |  |
-| Kaffe & pandekage | 65,- |  |
+| 2 hjemmelavede pandekager | 45,- |  |
+| 2 hjemmelavede pandekager med 1 kugle is | 65,- |  |
+| 2 hjemmelavede pandekager med 2 kugler is | 77,- |  |
+| Affogato | 65,- | Espresso med vaniljeis og nødder |
 
 ---
 
-## KAFFE, KOLDT & KNAS
+## 08+09 BESTILLINGSLISTE — SANDWICH
+
+*udfyld og aflever ved lugen — alle sandwich 75,-*
+
+### SANDWICH
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Sandwich · kebab | 75,- |  |
+| Sandwich · flæskesteg | 75,- |  |
+| Sandwich · frikadelle | 75,- |  |
+
+### MERE FRA KØKKENET
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Hjemmelavet lun delle | 25,- |  |
+| Hjemmelavet flæskesvær | 35,- |  |
+
+---
+
+## 06 KAFFE, KOLDT & KNAS  ⚠️ IKKE MODTAGET — udgaven fra 3/9
 
 *stemplet, rystet og hældt op*
 
@@ -293,7 +324,7 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 ---
 
-## ØL, VIN & BAR
+## 07 ØL, VIN & BAR  ⚠️ IKKE MODTAGET — udgaven fra 3/9
 
 *fadøl fra hanen og bobler til fest*
 
@@ -346,6 +377,51 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 ## Hvad kortene og databasen er uenige om
 
+### Priser, der ikke passer
+
+| Vare | Kortet | Databasen | Kort |
+|---|---:|---:|---|
+| Rejemad | **95,-** | 90,- | 01 MENUKORT FRA GRILLEN |
+| Rejemad | **95,-** | 90,- | 03 SMØRREBRØD |
+| Glutenfrit brød | **5,-** | 0,- | 03 SMØRREBRØD |
+| Flæskesteg med surt | **27,-** | 24,- | 04 HÅNDMADDER |
+| Fiskefilet med remoulade | **27,-** | 24,- | 04 HÅNDMADDER |
+| Frikadelle med surt | **27,-** | 24,- | 04 HÅNDMADDER |
+| Leverpostej med surt | **27,-** | 24,- | 04 HÅNDMADDER |
+| Dyrlægens natmad | **27,-** | 24,- | 04 HÅNDMADDER |
+| Kartoffelmad med mayo, løg & bacon | **27,-** | 24,- | 04 HÅNDMADDER |
+| Rullepølse med sky & løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Roastbeef med remoulade & løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Skinke med italiensk salat | **27,-** | 24,- | 04 HÅNDMADDER |
+| Skinke med spejlæg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Kylling med bacon & karry | **27,-** | 24,- | 04 HÅNDMADDER |
+| Spegepølse med sky & løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Spegepølse med remoulade & ristet løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Hvide sild | **27,-** | 24,- | 04 HÅNDMADDER |
+| Hvide sild med karry | **27,-** | 24,- | 04 HÅNDMADDER |
+| Æggemad med mayo & løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Hakkebøf med bløde løg & spejlæg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Ostemad | **27,-** | 24,- | 04 HÅNDMADDER |
+| Glutenfrit brød | **5,-** | 0,- | 04 HÅNDMADDER |
+| 4 kugler | **65,-** | 60,- | 05 IS & SØDT |
+| Ekstra kugle | **12,-** | 10,- | 05 IS & SØDT |
+| Løs vaffel, glutenfri, pr. stk. | **7,-** | 10,- | 05 IS & SØDT |
+| Isboks, ca. 6 kugler eller softice | **90,-** | 80,- | 05 IS & SØDT |
+| Bubblewaffle mix | **67,-** | 65,- | 05 IS & SØDT |
+| 2 hjemmelavede pandekager | **45,-** | 42,- | 05 IS & SØDT |
+| Sandwich · flæskesteg | **75,-** | 80,- | 08+09 BESTILLINGSLISTE — SANDWICH |
+| Sandwich · frikadelle | **75,-** | 80,- | 08+09 BESTILLINGSLISTE — SANDWICH |
+| Clubsandwich | — | findes ikke som "Clubsandwich" | 01 MENUKORT FRA GRILLEN |
+| Bacon & Cheeseburger | — | findes ikke som "Bacon & Cheeseburger" | 02 À LA CARTE, BURGERE & PØLSER |
+| Fransk hotdog, lille | — | findes ikke som "Fransk hotdog, alm." | 02 À LA CARTE, BURGERE & PØLSER |
+| Fransk hotdog, stor | — | findes ikke som "Fransk hotdog, stor" | 02 À LA CARTE, BURGERE & PØLSER |
+| Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater" | 03 SMØRREBRØD |
+| Æggemad med mayo & rejer | — | findes ikke som "Æggemad med mayo og rejer" | 03 SMØRREBRØD |
+| Dagens hjemmelavede pålægssalater | — | findes ikke som "Dagens hjemmelavede pålægssalater, håndmad" | 04 HÅNDMADDER |
+| Havnens café-is | — | findes ikke som "Havnens café-is" | 05 IS & SØDT |
+| 2 hjemmelavede pandekager med 2 kugler is | — | findes ikke som "2 hjemmelavede pandekager med 2 kugler is" | 05 IS & SØDT |
+| Affogato | — | findes ikke som "Affogato" | 05 IS & SØDT |
+
 ### Varer i databasen, som intet kort viser
 
 De kan bestilles på hjemmesiden, ved lugen og fra bordet, men
@@ -354,42 +430,61 @@ på et kort, eller også skal de slukkes i admin.
 
 | Kategori | Vare | Pris |
 |---|---|---:|
-| Retter | Dagens ret | 85,- |
-| Retter | Lun delle eller steg | 25,- |
-| Retter | Lun delle eller steg med leverpostej | 55,- |
-| Retter | Pitabrød | 65,- |
-| Sandwich og retter fra pladen | Sandwich, stor | 85,- |
-| Burgere og sandwich | Bearnaiseburger | 90,- |
-| Burgere og sandwich | Chilinaiseburger | 90,- |
-| Burgere og sandwich | Flæskestegsburger | 80,- |
-| Burgere og sandwich | Frikadelleburger | 80,- |
-| Pølser | Pistolpølse | 30,- |
-| Pølser | Hansen fransk vaffel, stor | 50,- |
-| Pølser | Hansen fransk vaffel, lille | 40,- |
-| Pølser | Dürümrulle | 80,- |
-| Pølser | Ristet pølse med bacon | 35,- |
-| Pølser | Frankfurter med bacon | 45,- |
-| Pølser | Fransk hotdog, alm. | 40,- |
-| Pølser | Fransk hotdog, stor | 50,- |
+| Sandwich | Bøfsandwich | 75,- |
+| Smørrebrød | Hjemmelavet Hønsesalat | 55,- |
+| Smørrebrød | Hjemmelavet Æggesalat | 55,- |
+| Smørrebrød | Hjemmelavet Wienersalat | 55,- |
+| Smørrebrød | Hjemmelavet Skinkesalat | 55,- |
+| Smørrebrød | Æggemad med bacon og karry | 55,- |
 | Smørrebrød | Tomatmad | 55,- |
-| Smørrebrød | Æbleflæsk | 75,- |
-| Kugleis og ishorn | 4 kugler | 65,- |
-| Softice og vafler | Bæger med vaffelknas, softice og topping | 40,- |
-| Morgenmad | Franskbrød med pålæg | 35,- |
+| Håndmadder | Fiskefilet med rejer og mayo, håndmad | 24,- |
+| Håndmadder | Hjemmelavet hønsesalat, håndmad | 24,- |
+| Håndmadder | Hjemmelavet Æggesalat, håndmad | 24,- |
+| Håndmadder | Hjemmelavet Wienersalat med tomat og løg, håndmad | 24,- |
+| Håndmadder | Hjemmelavet skinkesalat med tomat og løg, håndmad | 24,- |
+| Håndmadder | Æggemad med bacon og karry, håndmad | 24,- |
+| Kugleis | Mosede Isen | 65,- |
+| Ispinde | Excellence, chokolade og brombær | 32,- |
+| Ispinde | Excellence, chokolade og mandel | 32,- |
+| Ispinde | Maxibon | 31,- |
+| Ispinde | Ternet Ninja | 28,- |
+| Ispinde | Raketis med drys | 25,- |
+| Ispinde | 50'eren | 25,- |
+| Ispinde | Vandmelon | 24,- |
+| Ispinde | Isbjørn, gul | 22,- |
+| Ispinde | Isbjørn, pink | 22,- |
+| Ispinde | Star-is | 20,- |
+| Ispinde | Sort/hvid is | 20,- |
 | Morgenmad | Brunchtallerken | 349,- |
 | Tillæg: glutenfri, laktosefri og vegansk | Laktosefri (tillæg) | 10,- |
 | Tillæg: glutenfri, laktosefri og vegansk | Vegansk (tillæg) | 10,- |
-| Kaffe og varme drikke | Iskugle i kaffen | 35,- |
+| Kaffe og varme drikke | Irish coffee, stor | 145,- |
+| Kaffe og varme drikke | Americano Ice | 45,- |
+| Kaffe og varme drikke | Flat White | 45,- |
+| Kaffe og varme drikke | Latte Ice | 50,- |
+| Kaffe og varme drikke | 1 iskugle i kaffen | 20,- |
+| Kaffe og varme drikke | Kage & desserter | 30,- |
 | Kaffe og varme drikke | Gammeldags æblekage | 35,- |
-| Sodavand, juice og kakao | Dåse eller flaske sodavand | 25,- |
-| Snacks og slik | Peanuts, 2 poser | 45,- |
-| Snacks og slik | Chips eller svær, 2 poser | 50,- |
+| Kaffe og varme drikke | Flødekager | 40,- |
+| Kaffe og varme drikke | Kaffe og pandekage | 65,- |
+| Øl | Flaske eller dåse | 30,- |
+| Øl | Gylden Dame / Lux | 40,- |
+| Øl | Specialøl, lille | 50,- |
+| Sodavand, juice og kakao | Dåse eller flaske sodavand | 30,- |
+| Sodavand, juice og kakao | Capri Sun | 20,- |
+| Snacks og slik | Chips, 1 pose | 15,- |
+| Snacks og slik | 2 slags chips på fad | 35,- |
+| Snacks og slik | Popcorn | 30,- |
 
 ### Påstande på kortene, der ikke er varer
 
 De kan ikke måles mod databasen. De skal bekræftes af ejeren,
 før kortene trykkes.
 
-- **ØL, VIN & BAR** — ISBAR & BAR: "Vi rykker fadøl, drinks og isbar ud i baglokalet — op til 40 personer."
-- **HÅNDMADDER** — "Glutenfrit brød — SAMME PRIS"
-- **SMØRREBRØD** — "Glutenfrit brød eller uden smør — bare sig til"
+- **01 MENUKORT FRA GRILLEN** — "Morgenbrød – spørg ved bestilling." — ingen bestillingsliste til morgenbrød
+- **03 SMØRREBRØD** — "Alle varianter 55,- · gælder alle almindelige smørrebrød på listen"
+- **04 HÅNDMADDER** — "Alle varianter 27,- · gælder alle almindelige håndmadder på listen"
+- **05 IS & SØDT** — "Alle kugler og al softice kan fås i glutenfri vaffel — samme pris som almindelig vaffel"
+- **08+09 BESTILLINGSLISTE** — "Vi leverer også gerne mad til arrangementer, selskaber og andre begivenheder" — afhentning OG levering
+- **08+09 BESTILLINGSLISTE** — "I kan leje vores isfryser til selvbetjening eller booke vores isvogn med betjening. Udvalg aftales efter ønske."
+- **10 FLYER** — "Bestillingsliste fås i caféen"

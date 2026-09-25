@@ -63,7 +63,7 @@ def pris(v):
 
 
 def main():
-    paakort, a_fejl, ukendt = set(), [], []
+    paakort, a_fejl, ukendt, ikke_maalt = set(), [], [], []
     # ⚠️ SAMME VARE KAN STÅ PÅ TO KORT. Tartaren står både på
     # grillkortet og på smørrebrødskortet — og hvis de to siger
     # hver sit, opdager ingen det ved at holde ét kort op mod
@@ -71,6 +71,22 @@ def main():
     pr_vare = {}
 
     for kortnavn, _, afsnit in KORT:
+        # ⚠️ ET KORT, VI IKKE HAR FÅET, KAN IKKE MÅLES — OG MÅ IKKE
+        # LADE SOM OM DET ER. Udgaven fra 3/9 står stadig i kortene.py
+        # for de to, der manglede 25/9, så deres varer ikke forsvinder
+        # ud af B-listen. Men at holde en GAMMEL pris op mod databasen
+        # og kalde uenigheden en fejl ville fylde rapporten med støj,
+        # og en rapport, hvor en fjerdedel er støj, læses ikke til ende
+        # (arret fra Googles kvittering 9/9).
+        if 'IKKE MODTAGET' in kortnavn:
+            ikke_maalt.append(kortnavn)
+            # Varerne tælles STADIG som "på et kort", så de ikke
+            # pludselig dukker op i B som huller, vi ikke har.
+            for _, poster in afsnit:
+                for _navn, _p, _note, dbnavn in poster:
+                    if dbnavn and not dbnavn.startswith('SAMLELINJE'):
+                        paakort.add(dbnavn)
+            continue
         for _, poster in afsnit:
             for navn, p_kort, _note, dbnavn in poster:
                 if not dbnavn or dbnavn.startswith('SAMLELINJE'):
@@ -92,6 +108,13 @@ def main():
           % datetime.date.today().isoformat())
     print('=' * 62)
     print()
+    if ikke_maalt:
+        print('⚠️  KORT, DER IKKE ER MODTAGET — OG DERFOR IKKE MÅLT')
+        for k in ikke_maalt:
+            print('   %s' % k)
+        print('   Deres varer tælles stadig med i B, så de ikke forsvinder.')
+        print()
+
     print('A · PRISER, DER IKKE PASSER')
     if not a_fejl and not ukendt:
         print('   ingen')
