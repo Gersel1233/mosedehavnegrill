@@ -252,6 +252,144 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 ---
 
+## 06 KAFFE, KOLDT & KNAS
+
+*stemplet, rystet og hældt op*
+
+### KAFFE — lille
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Espresso | 35,- | Kun lille — kortet skriver en streg i STOR |
+| Americano | 40,- |  |
+| Americano Ice | 45,- |  |
+| Cortado | 45,- |  |
+| Macchiato | 45,- |  |
+| Cappuccino | 45,- |  |
+| Flat White | 45,- |  |
+| Latte | 45,- |  |
+| Latte Ice | 50,- |  |
+| Chai | 45,- |  |
+| Kakao | 40,- |  |
+
+### KAFFE — stor
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Americano, stor | 60,- | STOR-kolonnen på kortet |
+| Americano Ice, stor | 65,- | STOR-kolonnen på kortet |
+| Cortado, stor | 65,- | STOR-kolonnen på kortet |
+| Macchiato, stor | 65,- | STOR-kolonnen på kortet |
+| Cappuccino, stor | 65,- | STOR-kolonnen på kortet |
+| Flat White, stor | 65,- | STOR-kolonnen på kortet |
+| Latte, stor | 65,- | STOR-kolonnen på kortet |
+| Latte Ice, stor | 65,- | STOR-kolonnen på kortet |
+| Chai, stor | 65,- | STOR-kolonnen på kortet |
+| Kakao, stor | 65,- | STOR-kolonnen på kortet |
+
+### VARMT & EKSTRA
+
+| Vare | Pris | Note |
+|---|---:|---|
+| 1 iskugle i kaffen | 20,- | Tillæg |
+| Ekstra shot kaffe | 25,- |  |
+| Sirup | 5,- |  |
+| Te | 25,- |  |
+| Lumumba, varm eller kold | 75,- |  |
+| Irish Coffee | 75,- |  |
+| Irish Coffee, stor | 145,- |  |
+| Affogato | 65,- | Espresso med vaniljeis og nødder |
+
+### KAGE
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Kage & desserter | 30,- | Spørg for dagens udvalg |
+| Wienerbrød | 30,- | Sælges kun helt |
+| Gammeldags æblekage | 35,- |  |
+| Flødekager | 40,- |  |
+
+### KOLDE DRIKKE
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Sodavand, juice, iste eller cacao — lille | 30,- |  |
+| Sodavand, juice, iste eller cacao — stor | 40,- |  |
+| Dagens smoothie | 59,- |  |
+| Milkshake | 59,- | Valgfri smag, mix 2 kugler |
+| Slush Ice, lille | 25,- |  |
+| Slush Ice, stor | 35,- |  |
+| Capri-Sun | 20,- |  |
+| Brik juice eller cacao | 15,- |  |
+| Mælk | 20,- |  |
+| Cocio | 35,- |  |
+| Kildevand | 20,- |  |
+| Isvand | 25,- |  |
+| Red Bull | 40,- |  |
+| RTD | 40,- |  |
+
+### PAUSEN — kaffe & kage
+
+| Vare | Pris | Note |
+|---|---:|---|
+| En kop kaffe og et stykke af dagens kage — eller en pandekage | 65,- |  |
+
+---
+
+## 07 ØL, VIN & BAR
+
+*fadøl fra hanen og bobler til fest*
+
+### ØL
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Fadøl, lille | 35,- |  |
+| Fadøl, stor | 55,- |  |
+| Fadøl Lux, lille | 40,- |  |
+| Fadøl Lux, stor | 60,- |  |
+| Flaske eller dåse | 30,- |  |
+| Gylden Dame / Lux | 40,- | Hed 'Flaske eller dåse, Lux' 3/9 |
+| Specialøl, lille | 50,- |  |
+| Specialøl, stor | 70,- |  |
+| Alkoholfri øl | 30,- |  |
+
+### VIN, CAVA & CHAMPAGNE
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Vin, glas | 59,- |  |
+| Vin, flaske | 249,- |  |
+| Alkoholfri vin, glas | 59,- |  |
+| Alkoholfri vin, flaske | 249,- |  |
+| Cava, glas | 69,- |  |
+| Cava, flaske | 299,- |  |
+| Champagne, glas | 69,- |  |
+| Champagne, flaske | 299,- |  |
+
+### BAR
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Drinks | 75,- |  |
+| Cocktail | 85,- |  |
+| Snaps, spiritus og shots | 30,- |  |
+
+### SLIK & SNACKS
+
+| Vare | Pris | Note |
+|---|---:|---|
+| Slik, 1 stk. | 10,- |  |
+| Slik, 3 stk. | 25,- |  |
+| Chokolade | 20,- |  |
+| Peanuts | 25,- |  |
+| Chips, 1 pose | 15,- | Hed 'Chips eller svær 35' 3/9 |
+| 2 slags chips på fad | 35,- |  |
+| Popcorn | 30,- |  |
+| Hjemmelavet flæskesvær | 35,- |  |
+
+---
+
 ## 08+09 BESTILLINGSLISTE — SANDWICH
 
 *udfyld og aflever ved lugen — alle sandwich 75,-*
@@ -270,108 +408,6 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 |---|---:|---|
 | Hjemmelavet lun delle | 25,- |  |
 | Hjemmelavet flæskesvær | 35,- |  |
-
----
-
-## 06 KAFFE, KOLDT & KNAS  ⚠️ IKKE MODTAGET — udgaven fra 3/9
-
-*stemplet, rystet og hældt op*
-
-### KAFFE & VARME DRIKKE
-
-| Vare | Pris | Note |
-|---|---:|---|
-| Espresso | 35,- |  |
-| Americano | 40,- |  |
-| Americano Ice | 45,- |  |
-| Cortado | 45,- |  |
-| Macchiato | 45,- |  |
-| Cappuccino | 45,- |  |
-| Flat White | 45,- |  |
-| Latte | 45,- |  |
-| Latte Ice | 50,- |  |
-| Chai | 45,- |  |
-| Kakao | 40,- |  |
-| Te | 25,- |  |
-| Ekstra shot kaffe | 25,- |  |
-| Sirup | 5,- |  |
-| Lumumba, varm eller kold | 75,- |  |
-| Irish Coffee | 75,- |  |
-
-### KOLDE DRIKKE
-
-| Vare | Pris | Note |
-|---|---:|---|
-| Sodavand, juice, iste eller cacao - lille | 30,- |  |
-| Sodavand, juice, iste eller cacao - stor | 40,- |  |
-| Smoothie eller milkshake | 59,- |  |
-| Slush Ice, lille | 25,- |  |
-| Slush Ice, stor | 35,- |  |
-| Capri-Sun | 15,- |  |
-| Brik juice eller cacao | 15,- |  |
-| Mælk | 20,- |  |
-| Cocio | 35,- |  |
-| Kildevand | 20,- |  |
-| Isvand | 25,- |  |
-| Red Bull | 40,- |  |
-| RTD | 40,- |  |
-
-### PAUSEN — kaffe & kage
-
-| Vare | Pris | Note |
-|---|---:|---|
-| En kop kaffe og et stykke af dagens kage — eller en pandekage | 65,- |  |
-
----
-
-## 07 ØL, VIN & BAR  ⚠️ IKKE MODTAGET — udgaven fra 3/9
-
-*fadøl fra hanen og bobler til fest*
-
-### ØL
-
-| Vare | Pris | Note |
-|---|---:|---|
-| Fadøl, lille | 35,- |  |
-| Fadøl, stor | 55,- |  |
-| Fadøl Lux, lille | 40,- |  |
-| Fadøl Lux, stor | 60,- |  |
-| Flaske eller dåse | 30,- |  |
-| Flaske eller dåse, Lux | 40,- |  |
-| Specialøl | 50,- |  |
-| Specialøl, stor | 70,- |  |
-| Alkoholfri øl | 30,- |  |
-
-### BAR
-
-| Vare | Pris | Note |
-|---|---:|---|
-| Drinks | 75,- |  |
-| Cocktail | 85,- |  |
-| Snaps, spiritus og shots | 30,- |  |
-
-### SLIK & SNACKS
-
-| Vare | Pris | Note |
-|---|---:|---|
-| Slik, 1 stk. | 10,- |  |
-| Slik, 3 stk. | 25,- |  |
-| Chokolade | 20,- |  |
-| Peanuts | 25,- |  |
-| Chips eller svær | 35,- |  |
-
-### VIN, CAVA & CHAMPAGNE
-
-| Vare | Pris | Note |
-|---|---:|---|
-| Vin, glas | 59,- |  |
-| Vin, flaske | 249,- |  |
-| Alkoholfri vin, glas | 59,- |  |
-| Alkoholfri vin, flaske | 249,- |  |
-| Cava, glas | 69,- |  |
-| Cava, flaske | 299,- |  |
-| Champagne, glas | 69,- |  |
-| Champagne, flaske | 299,- |  |
 
 ---
 
@@ -439,23 +475,8 @@ på et kort, eller også skal de slukkes i admin.
 | Morgenmad | Brunchtallerken | 349,- |
 | Tillæg: glutenfri, laktosefri og vegansk | Laktosefri (tillæg) | 10,- |
 | Tillæg: glutenfri, laktosefri og vegansk | Vegansk (tillæg) | 10,- |
-| Kaffe og varme drikke | Irish coffee, stor | 145,- |
-| Kaffe og varme drikke | Americano Ice | 45,- |
-| Kaffe og varme drikke | Flat White | 45,- |
-| Kaffe og varme drikke | Latte Ice | 50,- |
-| Kaffe og varme drikke | 1 iskugle i kaffen | 20,- |
-| Kaffe og varme drikke | Kage & desserter | 30,- |
-| Kaffe og varme drikke | Gammeldags æblekage | 35,- |
-| Kaffe og varme drikke | Flødekager | 40,- |
 | Kaffe og varme drikke | Kaffe og pandekage | 65,- |
-| Øl | Flaske eller dåse | 30,- |
-| Øl | Gylden Dame / Lux | 40,- |
-| Øl | Specialøl, lille | 50,- |
 | Sodavand, juice og kakao | Dåse eller flaske sodavand | 30,- |
-| Sodavand, juice og kakao | Capri Sun | 20,- |
-| Snacks og slik | Chips, 1 pose | 15,- |
-| Snacks og slik | 2 slags chips på fad | 35,- |
-| Snacks og slik | Popcorn | 30,- |
 
 ### Påstande på kortene, der ikke er varer
 

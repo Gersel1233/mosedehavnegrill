@@ -5,11 +5,10 @@
    sammen med `00_Kontrolrapport.md`. Den forrige udgave (3/9, syv
    kort) ligger i git-historikken.
 
-   ⚠️ KORT 06 (Kaffe, koldt og knas) OG 07 (Øl, vin og bar) ER IKKE
-   MODTAGET. Kontrolrapporten nævner dem som to af de ti filer, men
-   de var ikke vedhæftet. De to afsnit nedenfor står derfor som de
-   var 3/9, og de er MÆRKET. En sammenligning, der lader som om den
-   har målt dem, er værre end ingen sammenligning.
+   ⚠️ KORT 06 OG 07 KOM SENERE PÅ DAGEN (25/9) og er nu læst af
+   PDF'erne som de otte andre. Indtil da stod de som udgaven fra 3/9
+   og var mærket IKKE MODTAGET — den mærkning er væk, fordi de nu
+   ER målt. Hvad de to kort lavede om, står i docs/HISTORIK.md.
 
    Hver post er (navn på kortet, pris, note på kortet, db-navn eller None).
    db-navn er den række i menu_varer, posten svarer til; None = står ikke
@@ -209,44 +208,60 @@ KORT = [
    ]),
  ]),
 
- ("08+09 BESTILLINGSLISTE — SANDWICH", "udfyld og aflever ved lugen — alle sandwich 75,-", [
-   ("SANDWICH", [(n, 75, "", db) for n, db in [
-     ("Sandwich · kebab", "Sandwich"),
-     ("Sandwich · flæskesteg", "Flæskestegssandwich"),
-     ("Sandwich · frikadelle", "Frikadellesandwich"),
-   ]]),
-   ("MERE FRA KØKKENET", [
-     ("Hjemmelavet lun delle", 25, "", "Lun delle eller steg"),
-     ("Hjemmelavet flæskesvær", 35, "", "Hjemmelavet flæskesvær"),
-   ]),
- ]),
-
- ("06 KAFFE, KOLDT & KNAS  ⚠️ IKKE MODTAGET — udgaven fra 3/9", "stemplet, rystet og hældt op", [
-   ("KAFFE & VARME DRIKKE", [
-     ("Espresso", 35, "", "Espresso"),
+ ("06 KAFFE, KOLDT & KNAS", "stemplet, rystet og hældt op", [
+   # ⚠️ KAFFEN HAR TO STØRRELSER PÅ KORTET (25/9) — en LILLE- og en
+   #    STOR-kolonne. Espresso har kun lille (kortet skriver en streg
+   #    i STOR-kolonnen). Databasen kender kun ÉN pris pr. kaffe, så
+   #    hver stor-udgave er en vare, der ikke findes.
+   ("KAFFE — lille", [
+     ("Espresso", 35, "Kun lille — kortet skriver en streg i STOR", "Espresso"),
      ("Americano", 40, "", "Americano"),
-     ("Americano Ice", 45, "", "Iced americano"),
+     ("Americano Ice", 45, "", "Americano Ice"),
      ("Cortado", 45, "", "Cortado"),
      ("Macchiato", 45, "", "Macchiato"),
      ("Cappuccino", 45, "", "Cappuccino"),
-     ("Flat White", 45, "", "Flat white"),
+     ("Flat White", 45, "", "Flat White"),
      ("Latte", 45, "", "Latte"),
-     ("Latte Ice", 50, "", "Iced latte"),
+     ("Latte Ice", 50, "", "Latte Ice"),
      ("Chai", 45, "", "Chai"),
      ("Kakao", 40, "", "Kakao"),
-     ("Te", 25, "", "Te"),
+   ]),
+   ("KAFFE — stor", [
+     ("Americano, stor", 60, "STOR-kolonnen på kortet", None),
+     ("Americano Ice, stor", 65, "STOR-kolonnen på kortet", None),
+     ("Cortado, stor", 65, "STOR-kolonnen på kortet", None),
+     ("Macchiato, stor", 65, "STOR-kolonnen på kortet", None),
+     ("Cappuccino, stor", 65, "STOR-kolonnen på kortet", None),
+     ("Flat White, stor", 65, "STOR-kolonnen på kortet", None),
+     ("Latte, stor", 65, "STOR-kolonnen på kortet", None),
+     ("Latte Ice, stor", 65, "STOR-kolonnen på kortet", None),
+     ("Chai, stor", 65, "STOR-kolonnen på kortet", None),
+     ("Kakao, stor", 65, "STOR-kolonnen på kortet", None),
+   ]),
+   ("VARMT & EKSTRA", [
+     ("1 iskugle i kaffen", 20, "Tillæg", "1 iskugle i kaffen"),
      ("Ekstra shot kaffe", 25, "", "Ekstra shot kaffe"),
      ("Sirup", 5, "", "Sirup"),
+     ("Te", 25, "", "Te"),
      ("Lumumba, varm eller kold", 75, "", "Lumumba"),
      ("Irish Coffee", 75, "", "Irish coffee"),
+     ("Irish Coffee, stor", 145, "", "Irish coffee, stor"),
+     ("Affogato", 65, "Espresso med vaniljeis og nødder", "Affogato"),
+   ]),
+   ("KAGE", [
+     ("Kage & desserter", 30, "Spørg for dagens udvalg", "Kage & desserter"),
+     ("Wienerbrød", 30, "Sælges kun helt", "Wienerbrød"),
+     ("Gammeldags æblekage", 35, "", "Gammeldags æblekage"),
+     ("Flødekager", 40, "", "Flødekager"),
    ]),
    ("KOLDE DRIKKE", [
-     ("Sodavand, juice, iste eller cacao - lille", 30, "", "Sodavand, juice, iste eller kakao – lille"),
-     ("Sodavand, juice, iste eller cacao - stor", 40, "", "Sodavand, juice, iste eller kakao – stor"),
-     ("Smoothie eller milkshake", 59, "", "Smoothie eller milkshake"),
+     ("Sodavand, juice, iste eller cacao — lille", 30, "", "Sodavand, juice, iste eller kakao – lille"),
+     ("Sodavand, juice, iste eller cacao — stor", 40, "", "Sodavand, juice, iste eller kakao – stor"),
+     ("Dagens smoothie", 59, "", "Smoothie eller milkshake"),
+     ("Milkshake", 59, "Valgfri smag, mix 2 kugler", None),
      ("Slush Ice, lille", 25, "", "Slush Ice, lille"),
      ("Slush Ice, stor", 35, "", "Slush Ice, stor"),
-     ("Capri-Sun", 15, "", "Juice eller Capri-Sun"),
+     ("Capri-Sun", 20, "", "Capri Sun"),
      ("Brik juice eller cacao", 15, "", "Brik juice eller cacao"),
      ("Mælk", 20, "", "Mælk"),
      ("Cocio", 35, "", "Cocio"),
@@ -260,17 +275,27 @@ KORT = [
    ]),
  ]),
 
- ("07 ØL, VIN & BAR  ⚠️ IKKE MODTAGET — udgaven fra 3/9", "fadøl fra hanen og bobler til fest", [
+ ("07 ØL, VIN & BAR", "fadøl fra hanen og bobler til fest", [
    ("ØL", [
      ("Fadøl, lille", 35, "", "Fadøl, lille"),
      ("Fadøl, stor", 55, "", "Fadøl, stor"),
      ("Fadøl Lux, lille", 40, "", "Fadøl lux, lille"),
      ("Fadøl Lux, stor", 60, "", "Fadøl lux, stor"),
-     ("Flaske eller dåse", 30, "", "Flaskeøl"),
-     ("Flaske eller dåse, Lux", 40, "", "Flaskeøl lux"),
-     ("Specialøl", 50, "", "Specialøl"),
+     ("Flaske eller dåse", 30, "", "Flaske eller dåse"),
+     ("Gylden Dame / Lux", 40, "Hed 'Flaske eller dåse, Lux' 3/9", "Gylden Dame / Lux"),
+     ("Specialøl, lille", 50, "", "Specialøl, lille"),
      ("Specialøl, stor", 70, "", "Specialøl, stor"),
      ("Alkoholfri øl", 30, "", "Alkoholfri øl"),
+   ]),
+   ("VIN, CAVA & CHAMPAGNE", [
+     ("Vin, glas", 59, "", "Vin, glas"),
+     ("Vin, flaske", 249, "", "Vin, flaske"),
+     ("Alkoholfri vin, glas", 59, "", "Alkoholfri vin, glas"),
+     ("Alkoholfri vin, flaske", 249, "", "Alkoholfri vin, flaske"),
+     ("Cava, glas", 69, "", "Cava, glas"),
+     ("Cava, flaske", 299, "", "Cava, flaske"),
+     ("Champagne, glas", 69, "", "Champagne, glas"),
+     ("Champagne, flaske", 299, "", "Champagne, flaske"),
    ]),
    ("BAR", [
      ("Drinks", 75, "", "Drinks"),
@@ -282,17 +307,22 @@ KORT = [
      ("Slik, 3 stk.", 25, "", "Slik, 3 stk."),
      ("Chokolade", 20, "", "Chokolade"),
      ("Peanuts", 25, "", "Peanuts, 1 pose"),
-     ("Chips eller svær", 35, "", "Chips eller svær, 1 pose"),
+     ("Chips, 1 pose", 15, "Hed 'Chips eller svær 35' 3/9", "Chips, 1 pose"),
+     ("2 slags chips på fad", 35, "", "2 slags chips på fad"),
+     ("Popcorn", 30, "", "Popcorn"),
+     ("Hjemmelavet flæskesvær", 35, "", "Hjemmelavet flæskesvær"),
    ]),
-   ("VIN, CAVA & CHAMPAGNE", [
-     ("Vin, glas", 59, "", "Vin, glas"),
-     ("Vin, flaske", 249, "", "Vin, flaske"),
-     ("Alkoholfri vin, glas", 59, "", "Alkoholfri vin, glas"),
-     ("Alkoholfri vin, flaske", 249, "", "Alkoholfri vin, flaske"),
-     ("Cava, glas", 69, "", "Cava, glas"),
-     ("Cava, flaske", 299, "", "Cava, flaske"),
-     ("Champagne, glas", 69, "", "Champagne, glas"),
-     ("Champagne, flaske", 299, "", "Champagne, flaske"),
+ ]),
+
+ ("08+09 BESTILLINGSLISTE — SANDWICH", "udfyld og aflever ved lugen — alle sandwich 75,-", [
+   ("SANDWICH", [(n, 75, "", db) for n, db in [
+     ("Sandwich · kebab", "Sandwich"),
+     ("Sandwich · flæskesteg", "Flæskestegssandwich"),
+     ("Sandwich · frikadelle", "Frikadellesandwich"),
+   ]]),
+   ("MERE FRA KØKKENET", [
+     ("Hjemmelavet lun delle", 25, "", "Lun delle eller steg"),
+     ("Hjemmelavet flæskesvær", 35, "", "Hjemmelavet flæskesvær"),
    ]),
  ]),
 ]

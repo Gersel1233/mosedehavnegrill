@@ -161,6 +161,38 @@ def main():
     print('    med vilje — de hører ikke på lugens kort, eller de står som')
     print('    ÉN samlelinje. Se CATERING og SAMLET i filen her.)')
 
+    # ------------------------------------------------------------
+    #  D · POSTER PAA KORTENE, DER SLET IKKE ER VARER  (25/9)
+    #  ------------------------------------------------------------
+    #  ⚠️ ET HUL, DER VAR TAVST. En post med db-navn None blev
+    #  sprunget over uden et ord — og sektion A kunne derfor ikke
+    #  sige fra. Da kort 06 kom ind, stod der ti KAFFER I STOR til
+    #  60-65 kr., som databasen slet ikke kender: en gaest laeser
+    #  dem paa kortet og kan ikke bestille dem paa siden.
+    #
+    #  SAMLELINJE-posterne er ikke huller. De peger med vilje paa
+    #  et andet kort ("Smoerrebroed — se smoerrebroedskortet"), og
+    #  de er maerket i kortene.py.
+    # ------------------------------------------------------------
+    print()
+    print('D · POSTER PÅ KORTENE, DER IKKE ER VARER I DATABASEN')
+    print('   Gæsten kan læse dem på kortet, men ikke bestille dem på siden.')
+    d_huller = 0
+    for kortnavn, _, afsnit in KORT:
+        for _, poster in afsnit:
+            for post in poster:
+                navn, p_kort, note, dbnavn = post
+                if dbnavn is not None:
+                    continue
+                if str(navn).startswith('SAMLELINJE'):
+                    continue
+                d_huller += 1
+                print('   %-42s kort %-7s [%s]'
+                      % (navn[:42], '??' if p_kort is None else '%g,-' % p_kort,
+                         kortnavn))
+    if not d_huller:
+        print('   ingen')
+
     print()
     print('C · PÅSTANDE PÅ KORTENE, DER IKKE ER VARER')
     print('   De kan ikke måles mod databasen. De skal bekræftes af ejeren.')
@@ -169,8 +201,9 @@ def main():
 
     print()
     print('=' * 62)
-    print('%d prisuoverensstemmelser · %d varer uden for kortene'
-          % (len(a_fejl) + len(ukendt), huller))
+    print('%d prisuoverensstemmelser · %d varer uden for kortene · '
+          '%d poster på kortene uden en vare'
+          % (len(a_fejl) + len(ukendt), huller, d_huller))
     print('Skrevet: %s' % facitliste(a_fejl, ukendt, huller_liste, uenige))
 
 
