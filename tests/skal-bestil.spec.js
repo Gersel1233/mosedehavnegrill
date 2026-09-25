@@ -1506,6 +1506,18 @@ test.describe('Isen skiller sig ud i bestillingen', () => {
       await expect(is.locator('.kat-tegn'),
         'is-kategoriens tegn står stadig som madens')
         .toHaveClass(/kat-tegn-is/);
+
+      /* ⚠️ OG VARERÆKKEN INDE I FOLDEN SKAL OGSÅ BÆRE DEN.
+         Første udgave målte KUN kategorirækken — og den får sin
+         afdeling af gruppen, ikke af sætAfdeling(). Falsifikationen
+         "sætAfdeling fjernet fra varerækken" BESTOD derfor, og en
+         prøve, der ikke kan falde, er et spørgsmål og ikke et bevis.
+         Folden åbnes som en finger gør det. */
+      await is.click();
+      const vare = page.locator('#bestil .item[data-afd="is"]:not(:has([data-add]))').first();
+      await vare.waitFor({ state: 'visible' });
+      expect(await farve(vare), 'varen inde i is-folden fik madens flade')
+        .toBe(fIs);
     });
 
   /* Modstykket: en regel, der bare gav HVER række sin egen farve,
