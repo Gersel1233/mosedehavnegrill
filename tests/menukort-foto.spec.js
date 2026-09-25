@@ -31,7 +31,12 @@ test.describe('Menukortets kategorier står på et foto', () => {
      uden foto — dér ville husets hvide .panel skinne op under sløret.
      Og gennemgangens kontrastmåler ser ikke kortene (#mk-kat står på
      opacity 0, til man ruller), så reglen har sin egen prøve. */
-  test('fotokortet har en tæt, mørk bund under fotoet', async ({ page }) => {
+  test('fotokortet har en tæt, mørk bund under fotoet', async ({ page }, info) => {
+    /* ⚠️ TELEFONENS KORT (26/9). På en computer står varerne ikke på
+       fotoet — det er et bånd øverst med kun navnet på, og varerne
+       står på den lyse bund (menukort.css, "ET TRYKT KORT"). Båndets
+       egen læsbarhed måles i prøven nedenfor. */
+    test.skip(info.project.name === 'computer', 'computerens kort har fotoet som et bånd, varerne står på lys bund');
     await åbnSkal(page, '/m-menukort.html', { data: grunddata() });
     const kort = page.locator('#mk-kat .panel.mk-foto-kort').first();
     await expect(kort).toHaveCount(1);
@@ -51,7 +56,8 @@ test.describe('Menukortets kategorier står på et foto', () => {
     }
   });
 
-  test('teksten kan læses, også hvor fotoet er lyst', async ({ page }) => {
+  test('teksten kan læses, også hvor fotoet er lyst', async ({ page }, info) => {
+    test.skip(info.project.name === 'computer', 'computerens bånd måles i sin egen prøve nedenfor');
     await åbnSkal(page, '/m-menukort.html', { data: grunddata() });
     const kort = page.locator('#mk-kat .panel.mk-foto-kort').first();
     await expect(kort).toHaveCount(1);
@@ -80,5 +86,42 @@ test.describe('Menukortets kategorier står på et foto', () => {
       return ud;
     });
     expect(fund, 'tekst, der ikke kan læses mod en lys del af fotoet').toEqual([]);
+  });
+  /* ============================================================
+     COMPUTERENS BÅND KAN LÆSES  (26/9)
+     På en computer er fotoet et bredt bånd med kategoriens navn og
+     antal nederst; sløret er en gradient, der er tættest dér. Prøven
+     regner navnet mod gradientens tætteste stop lagt over en HVID
+     sky — det lyseste, fotoet kan være. Et tal udefra: det første
+     stop læses af den beregnede stil, ikke skrevet af her.
+     ============================================================ */
+  test('computerens bånd: navnet kan læses mod en hvid sky', async ({ page }, info) => {
+    test.skip(info.project.name !== 'computer', 'båndet findes kun på en bred skærm');
+    await åbnSkal(page, '/m-menukort.html', { data: grunddata() });
+    const kort = page.locator('#mk-kat .panel.mk-foto-kort').first();
+    await expect(kort).toHaveCount(1);
+    const m = await kort.evaluate((k) => {
+      const tal = (x) => (x.match(/[\d.]+/g) || []).map(Number);
+      const gi = getComputedStyle(k.querySelector('.mk-slor')).backgroundImage;
+      const stop = gi.match(/rgba?\([^)]*\)/);
+      if (!stop) return { fejl: 'ingen gradient: ' + gi };
+      const s = tal(stop[0]); const a = s.length > 3 ? s[3] : 1;
+      const bund = [0, 1, 2].map((i) => a * s[i] + (1 - a) * 255);
+      const lys = (c) => { const v = c.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+      const ud = {};
+      for (const sel of ['.mk-hoved h3', '.mk-antal']) {
+        const f = tal(getComputedStyle(k.querySelector(sel)).color); const fa = f.length > 3 ? f[3] : 1;
+        const farve = [0, 1, 2].map((i) => fa * f[i] + (1 - fa) * bund[i]);
+        const [h, l] = [lys(farve), lys(bund)].sort((x, y) => y - x);
+        ud[sel] = +((h + 0.05) / (l + 0.05)).toFixed(2);
+      }
+      /* Og varerne står IKKE på fotoet: første linje er under båndet. */
+      ud.varerUnder = k.querySelector('.mk-linje').getBoundingClientRect().top >= k.querySelector('.mk-bg').getBoundingClientRect().bottom - 1;
+      return ud;
+    });
+    expect(m.fejl).toBeUndefined();
+    expect(m['.mk-hoved h3'], 'kategoriens navn på båndet').toBeGreaterThanOrEqual(4.5);
+    expect(m['.mk-antal'], 'antallet på båndet').toBeGreaterThanOrEqual(4.5);
+    expect(m.varerUnder, 'varerne står på fotoet på en computer').toBe(true);
   });
 });

@@ -64,19 +64,23 @@ test.describe('Menukortet', () => {
     await expect(page.locator('#mk-idag-afsnit')).toBeHidden();
   });
 
-  test('ugelisten er syv dage med i dag først', async ({ page }) => {
+  /* ⚠️ VENDT 26/9: DE TOMME DAGE SAMLES I ÉN LINJE. Prøven krævede
+     syv rækker, og uden en ugeplan stod "Følger snart…" seks gange i
+     træk under i dag. Forsiden samlede de tomme dage i én linje 13/9
+     (kundens ord: "noget er forældet … kedelige"); menukortet følger
+     nu samme regel. Stadig ingen opdigtet ret på torsdag. */
+  test('ugen har i dag først — og de tomme dage efter i én linje', async ({ page }) => {
     await åbn(page);
 
     const dage = page.locator('#mk-uge .mk-dag');
-    await expect(dage).toHaveCount(7);
     await expect(dage.first()).toHaveClass(/mk-nu/);
     await expect(dage.first()).toContainText('Fredag · i dag');
     await expect(dage.first()).toContainText('Stegt rødspætte');
 
-    /* Resten står som "Følger snart…" — og det er sandt: der er
-       kun ét felt til dagens ret i admin. En opdigtet ret på
-       torsdag ville være et løfte, køkkenet ikke har givet. */
-    await expect(dage.nth(1)).toContainText('Følger snart');
+    await expect(page.locator('#mk-uge'), 'ugen gentager "Følger snart" for hver tom dag')
+      .not.toContainText('Følger snart');
+    await expect(page.locator('#mk-uge .mk-uge-mere')).toHaveText('Resten af ugen lægges op løbende.');
+    await expect(dage, 'de tomme dage står stadig hver for sig').toHaveCount(1);
   });
 
   /* Kundens ord (31/8): "gør så man kan trykke ingen dagens ret
@@ -91,9 +95,11 @@ test.describe('Menukortet', () => {
     const iDag = page.locator('#mk-uge [data-dag="2026-08-07"]');
     await expect(iDag).toContainText('Ingen dagens ret i dag');
     await expect(iDag).not.toContainText('Følger snart');
-    // Og kun i dag: i morgen er der ikke svaret noget endnu.
-    await expect(page.locator('#mk-uge [data-dag="2026-08-08"]'))
-      .toContainText('Følger snart');
+    /* Og kun i dag: i morgen er der ikke svaret noget endnu — den
+       dag er tom og står i ugens samlede linje (26/9), ikke som en
+       "ingen dagens ret". */
+    await expect(page.locator('#mk-uge [data-dag="2026-08-08"]')).toHaveCount(0);
+    await expect(page.locator('#mk-uge .mk-uge-mere')).toBeVisible();
   });
 
   /* En SKREVET ret vinder over trykket — står der en ret på

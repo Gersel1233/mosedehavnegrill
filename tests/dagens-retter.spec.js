@@ -76,12 +76,15 @@ test.describe('Ugen er ikke halvt tom længere', () => {
     await expect(torsdag).toContainText('Boller i karry');
   });
 
-  test('en dag uden en ret siger stadig "Følger snart"', async ({ page }) => {
-    /* En opdigtet ret på torsdag ville være et løfte, køkkenet
-       ikke har givet. */
+  /* ⚠️ VENDT 26/9: en tom dag EFTER i dag står ikke som sin egen
+     række — ugen samler dem i én linje (forsidens regel fra 13/9).
+     I dag siger stadig "Følger snart", og ingen dag får en opdigtet
+     ret: det var prøvens formål, og det står. */
+  test('en dag uden en ret får ingen opdigtet ret — i dag siger "Følger snart"', async ({ page }) => {
     await åbnSkal(page, '/m-menukort.html', { ur: UR, data: medRetter([]) });
-    await expect(page.locator('.mk-uge [data-dag="2026-08-13"]'))
-      .toContainText('Følger snart');
+    await expect(page.locator('.mk-uge [data-dag="2026-08-07"]')).toContainText('Følger snart');
+    await expect(page.locator('.mk-uge [data-dag="2026-08-13"]')).toHaveCount(0);
+    await expect(page.locator('.mk-uge .mk-uge-mere')).toHaveText('Resten af ugen lægges op løbende.');
   });
 });
 
@@ -174,8 +177,12 @@ test.describe('Den gamle indstilling lever videre', () => {
     d.indstillinger.dagens_ret = { navn: 'Kun i dag', beskrivelse: '', pris: 89 };
     await åbnSkal(page, '/m-menukort.html', { ur: UR, data: d });
 
-    await expect(page.locator('.mk-uge [data-dag="' + I_MORGEN + '"]'))
-      .not.toContainText('Kun i dag');
+    /* ⚠️ (26/9) De tomme dage efter i dag står ikke længere som hver
+       sin række — de samles i én linje. Spørgsmålet er det samme:
+       står den gamle ret på en ANDEN dag end i dag? */
+    await expect(page.locator('.mk-uge .mk-dag').first()).toBeAttached();
+    await expect(page.locator('.mk-uge .mk-dag:not(.mk-nu)', { hasText: 'Kun i dag' })).toHaveCount(0);
+    await expect(page.locator('.mk-uge [data-dag="' + I_MORGEN + '"]', { hasText: 'Kun i dag' })).toHaveCount(0);
   });
 });
 

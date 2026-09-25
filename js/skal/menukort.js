@@ -167,6 +167,13 @@
     var i_dag = Butik.nu().dato;
     tøm(boks);
 
+    /* ⚠️ DE TOMME DAGE EFTER I DAG SAMLES I ÉN LINJE (26/9) — samme
+       regel som forsidens ugestribe fra 13/9 (kundens ord: "noget er
+       forældet … kedelige"). Her stod "Følger snart…" syv gange i
+       træk, når ugen ikke var lagt op — en side under opbygning. En
+       lukket dag og "ingen dagens ret" står stadig: de er
+       beslutninger, ikke huller. */
+    var skjulte = 0;
     for (var i = 0; i < 7; i++) {
       var iso = Butik.isoPlus(i_dag, i);
       var række = lav('div', 'mk-dag' + (i === 0 ? ' mk-nu' : ''));
@@ -192,13 +199,19 @@
       } else if (Butik.ingenDagensRet && Butik.ingenDagensRet(d, iso)) {
         /* Ejeren har TRYKKET, at der ingen er (31/8) — "Følger
            snart…" ville love en ret, køkkenet har sagt nej til. */
+        /* ⚠️ "I DAG" KUN PÅ I DAG (26/9). Der stod "Ingen dagens ret i
+           dag" ud for en torsdag, når det var mandag. */
         højre.appendChild(lav('span', 'mk-tom',
-          'Ingen dagens ret i dag — menukortet gælder'));
+          'Ingen dagens ret' + (i === 0 ? ' i dag' : '') + ' — menukortet gælder'));
       } else {
+        if (i > 0) { skjulte++; continue; }
         højre.appendChild(lav('span', 'mk-tom', 'Følger snart…'));
       }
       række.appendChild(højre);
       boks.appendChild(række);
+    }
+    if (skjulte) {
+      boks.appendChild(lav('p', 'mk-uge-mere', 'Resten af ugen lægges op løbende.'));
     }
   }
 
@@ -626,7 +639,24 @@
     kort.forEach(function (k) {
       var g = grupper.filter(function (x) { return 'kat-' + x.kategori.id === k.id; })[0];
       if (!g) return;
-      var chip = lav('button', null, emojiFor(g.kategori) + '  ' + g.kategori.navn);
+      /* ⚠️ AFSNITTET STÅR OGSÅ I LISTEN (26/9). Kortet har
+         overskrifterne Mad, Is og dessert og Drikke; listen ude i
+         siden havde dem ikke, og tyve navne i én søjle er ikke til
+         at finde rundt i. Etiketten er tekst, ikke en knap — og
+         telefonens bånd skjuler den (menukort.css). */
+      var før = k.previousElementSibling;
+      if (før && før.classList.contains('mk-afsnit')) {
+        var etiket = lav('span', 'mk-hop-afsnit', før.textContent);
+        etiket.setAttribute('aria-hidden', 'true');
+        bånd.appendChild(etiket);
+      }
+      /* Tegnet i sit eget element (26/9): på en computer er listen
+         en ren tekstliste (menukort.css), på telefonen står det. */
+      var chip = lav('button', null);
+      var chipTegn = lav('span', 'mk-hop-tegn', emojiFor(g.kategori) + '  ');
+      chipTegn.setAttribute('aria-hidden', 'true');
+      chip.appendChild(chipTegn);
+      chip.appendChild(document.createTextNode(g.kategori.navn));
       chip.type = 'button';
       chip.setAttribute('data-hop', g.kategori.navn);
       chip.addEventListener('click', function () {
@@ -647,7 +677,15 @@
           var på = id === p.target.id;
           chips[id].classList.toggle('on', på);
           if (på && chips[id].scrollIntoView) {
-            bånd.scrollTo({ left: Math.max(0, chips[id].offsetLeft - 70), behavior: 'smooth' });
+            /* ⚠️ TO RETNINGER (26/9). På telefonen ruller båndet
+               sidelæns; på en computer er det en lodret liste, der
+               ruller for sig selv — og markeringen skal kunne ses dér
+               også, ellers står "Øl" markeret under skærmens kant. */
+            if (bånd.scrollWidth > bånd.clientWidth) {
+              bånd.scrollTo({ left: Math.max(0, chips[id].offsetLeft - 70), behavior: 'smooth' });
+            } else if (bånd.scrollHeight > bånd.clientHeight) {
+              bånd.scrollTo({ top: Math.max(0, chips[id].offsetTop - bånd.clientHeight / 2 + chips[id].offsetHeight / 2), behavior: 'smooth' });
+            }
           }
         });
       });

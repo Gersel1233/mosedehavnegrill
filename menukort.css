@@ -116,6 +116,8 @@
   border-bottom: 1px solid rgba(36, 26, 23, .08);
 }
 .mk-uge .mk-dag:last-child { border-bottom: 0; }
+/* Ugens tomme dage samlet i én linje (26/9) — forsidens .day-mere. */
+.mk-uge .mk-uge-mere { margin: 0; padding: 14px 4px 4px; font-size: 13px; color: var(--muted); }
 /* I dag skiller sig ud med sandfarven OG en rød kant. Farven
    alene forsvinder på en telefon i solen ved vandet. */
 .mk-uge .mk-dag.mk-nu {
@@ -563,4 +565,224 @@
   content: "🍦";
   margin-right: 9px;
   font-size: .86em;
+}
+
+/* ============================================================
+   MENUKORTET PÅ EN COMPUTER ER ET TRYKT KORT  (26/9)
+   ------------------------------------------------------------
+   Mikkels ord med et skærmbillede af det: *"du kan se det ikke er
+   desktop egnet, cinematisk og bare generelt rodet"*.
+
+   MÅLT på 1440 px med produktionens kort (271 varer): siden var
+   12.807 px høj, sortimentet stod som tre spalter kort på ~290 px
+   i vidt forskellig højde (Smørrebrød 23 varer ved siden af
+   Sandwich med én), så der stod huller på flere hundrede pixels,
+   mørke fotokort og lyse kort skiftede tilfældigt, og en emoji stod
+   foran hver af de 271 linjer. Det var telefonens kort, lagt ved
+   siden af hinanden.
+
+   Nu er det ét langt, roligt kort, som et trykt menukort:
+   · afsnittene (Mad, Is og dessert, Drikke) er store overskrifter
+     med en hårstreg ud til kanten
+   · hver kategori er navnet over en streg og varerne i TO SPALTER
+     — navn, beskrivelse og pris — uden kasser om
+   · kategorierne med et foto åbner med fotoet som et bredt,
+     filmisk bånd med navnet ovenpå
+   · listen ude til venstre passer til skærmen, ruller for sig selv
+     og viser afsnittene
+
+   ⚠️ KUN OVER 820 PX. Telefonens kort er urørt — det er stadig
+   kortene, båndet i toppen og tegnene ved hver vare.
+
+   ⚠️ EMOJIEN VED HVER VARE ER VÆK HERUDE — MEN KUN HERUDE. Kundens
+   beslutning 5/9 var emoji FREM FOR tegnede ikoner, og den står
+   på telefonen. På et trykt kort med to spalter er 271 små billeder
+   det, der gjorde siden rodet; kategoriens foto og navnet siger
+   det. Vil Mikkel have dem tilbage, er det én linje:
+   `.mk-kat .mk-linje .mk-vare-tegn{display:none}` nedenfor.
+   ============================================================ */
+@media (min-width: 821px) {
+  .mk-sortiment {
+    width: min(100vw - 80px, 1200px);
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 64px;
+  }
+
+  /* ---- listen ude til venstre ---- */
+  .mk-hop {
+    top: 92px;
+    max-height: calc(100vh - 116px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    gap: 1px;
+    padding: 2px 6px 28px 0;
+    -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(180deg, #000 calc(100% - 36px), transparent);
+  }
+  .mk-hop::-webkit-scrollbar { display: none; }
+  .mk-hop button {
+    min-height: 0;
+    padding: 7px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink2, #5c4a45);
+  }
+  .mk-hop button:hover { background: rgba(36, 26, 23, .05); color: var(--ink); }
+  .mk-hop button.on { color: #fff; background: var(--red); box-shadow: none; }
+  .mk-hop .mk-hop-afsnit {
+    display: block;
+    margin: 18px 12px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .mk-hop .mk-hop-afsnit:first-child { margin-top: 4px; }
+
+  /* ---- selve kortet ---- */
+  .mk-sortiment .mk-kat { display: block; }
+
+  .mk-kat > .mk-afsnit {
+    display: flex;
+    align-items: baseline;
+    gap: 22px;
+    margin: 96px 0 34px;
+    padding: 0;
+    border: 0;
+    font-size: 46px;
+    line-height: 1.05;
+    letter-spacing: -.01em;
+  }
+  .mk-kat > .mk-afsnit::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(36, 26, 23, .18);
+  }
+  .mk-kat > .mk-afsnit:first-child { margin-top: 0; }
+  /* Isens afsnit er et afsnit som de andre herude — flade og tegn
+     er telefonens måde at gøre det synligt i en smal stribe. */
+  #afsnit-is { margin-top: 96px; padding: 0; border-radius: 0; background: none; box-shadow: none; scroll-margin-top: 104px; }
+  #afsnit-is::before { content: none; }
+
+  /* ⚠️ max-width:none — havnegrillen-desktop.css holder hvert .panel
+     på 640 px midt på siden (resten af huset er én smal spalte). Her
+     ER spalten kortet, og de 640 efterlod 400 px tomt til højre. */
+  .mk-sortiment .mk-kat .panel {
+    max-width: none;
+    margin: 0 0 64px;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    scroll-margin-top: 104px;
+  }
+
+  .mk-kat .mk-hoved {
+    align-items: baseline;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .mk-kat .mk-tegn { display: none; }
+  .mk-kat .mk-hoved h3 { font-size: 30px; line-height: 1.1; }
+  .mk-kat .mk-antal { font-size: 12px; letter-spacing: .02em; }
+  .mk-kat .mk-note { max-width: 64ch; margin-top: 14px; font-size: 14px; }
+
+  .mk-kat .mk-liste { columns: 2; column-gap: 56px; margin-top: 2px; }
+  .mk-kat .mk-linje {
+    break-inside: avoid;
+    align-items: baseline;
+    gap: 16px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(36, 26, 23, .1);
+  }
+  .mk-kat .mk-linje:last-child { border-bottom: 1px solid rgba(36, 26, 23, .1); }
+  .mk-kat .mk-linje .mk-vare-tegn { display: none; }
+  .mk-kat .mk-linje h4 { font-size: 16px; }
+  .mk-kat .mk-linje p { font-size: 13.5px; }
+  .mk-kat .mk-linje .mk-pris { font-size: 16px; }
+  /* ⚠️ PILEN ER VÆK HERUDE. Den stod efter prisen på de varer, der
+     har en beskrivelse, og skubbede netop de priser ind fra kanten —
+     to priser i samme spalte, der ikke flugtede. Herude viser musen
+     det: hele linjen kan trykkes, og navnet bliver rødt. */
+  .mk-linje .mk-mere { display: none; }
+  .mk-linje.mk-kan-aabnes:hover h4 { color: var(--red-tekst, #b41f2e); }
+  .mk-linje.mk-kan-aabnes:hover .mk-pris { color: var(--red-tekst, #b41f2e); }
+  .mk-hop .mk-hop-tegn { display: none; }
+
+  /* ---- kategorierne med et foto: et bredt, filmisk bånd ----
+     Fotoet og sløret deler én celle med navnet; varerne står
+     nedenunder på kortets lyse bund som alle andre. Sløret er en
+     gradient mod bunden, hvor navnet står — ikke det tunge slør,
+     telefonen har, fordi varerne ikke længere står på fotoet. */
+  .mk-sortiment .mk-kat .panel.mk-foto-kort {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    isolation: auto;
+    overflow: visible;
+    background: none;
+    color: var(--ink);
+  }
+  .mk-foto-kort .mk-bg,
+  .mk-foto-kort .mk-slor,
+  .mk-foto-kort .mk-hoved { grid-area: 1 / 1; }
+  .mk-foto-kort .mk-bg {
+    position: relative;
+    inset: auto;
+    z-index: 0;
+    height: clamp(240px, 26vw, 340px);
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--cream2, #f5e9d9);
+  }
+  .mk-foto-kort .mk-bg img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 55%;
+  }
+  .mk-foto-kort .mk-slor {
+    position: relative;
+    inset: auto;
+    z-index: 1;
+    border-radius: 20px;
+    background-color: transparent;
+    background-image: linear-gradient(0deg, rgba(20, 14, 12, .8) 0%, rgba(20, 14, 12, .38) 36%, rgba(20, 14, 12, 0) 68%);
+  }
+  .mk-foto-kort .mk-hoved {
+    position: relative;
+    z-index: 2;
+    align-self: end;
+    padding: 0 30px 24px;
+    border-bottom: 0;
+  }
+  .mk-foto-kort .mk-hoved h3 { color: #fff; font-size: 44px; }
+  .mk-foto-kort .mk-antal { color: rgba(255, 255, 255, .86); }
+  .mk-foto-kort .mk-note,
+  .mk-foto-kort .mk-linje p { color: var(--muted); }
+  .mk-foto-kort .mk-note { margin-top: 18px; }
+  .mk-foto-kort .mk-liste { margin-top: 8px; }
+  .mk-foto-kort .mk-linje h4 { color: var(--ink); }
+  .mk-foto-kort .mk-linje { border-bottom-color: rgba(36, 26, 23, .1); }
+  .mk-foto-kort .mk-pris { color: var(--red-tekst, #b41f2e); }
+  .mk-foto-kort .mk-pris.mk-spoerg,
+  .mk-foto-kort .mk-pris.mk-udsolgt-maerke,
+  .mk-foto-kort .mk-linje.mk-udsolgt .mk-txt h4 { color: var(--ink2, #5c4a45); }
+  .mk-foto-kort .mk-linje .mk-mere { color: var(--muted); }
+}
+/* En smal computerskærm: én spalte varer, så navnene ikke knækker. */
+@media (min-width: 821px) and (max-width: 1120px) {
+  .mk-kat .mk-liste { columns: 1; }
+}
+/* Afsnittenes etiketter i listen findes kun herude. */
+@media (max-width: 820px) {
+  .mk-hop .mk-hop-afsnit { display: none; }
 }
