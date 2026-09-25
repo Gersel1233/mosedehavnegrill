@@ -224,3 +224,222 @@ test.describe('Byg din is', () => {
       'linket peger på et afsnit, menukortet ikke har').toHaveCount(1);
   });
 });
+
+/* ============================================================
+   ET FORLØB PR. SLAGS IS  (25/9)
+   ------------------------------------------------------------
+   Mikkels ord: *"hvis jeg vil vælge en isboks, skal det være et
+   andet bestillingsflow ... den her skal have noget anderledes, og
+   de her skal også have noget anderledes"* — og *"man skal heller
+   ikke betale for emballage på isene"*.
+
+   Fiksturet er kort 05's egne linjer og tekster: isboksen til 90
+   med "Tag med på turen — 6 valgfrie kugler", en bubblewaffle med
+   "2 kugler eller softice", en sundae, en affogato og en løs
+   vaffel. INGEN is_opsaetning: prøverne måler det, siden læser af
+   navnene alene — den dag, ejeren opretter en ny vare og ikke
+   rører "Is & sødt" i admin.
+   ============================================================ */
+test.describe('Et forløb pr. slags is', () => {
+
+  const IS_KUGLE = 60;              // en is-kategori FØR "Softice og vafler"
+
+  function alt(smage, ekstra) {
+    const d = data(smage);
+    d.indstillinger.bestilbare_kategorier.push(IS_KUGLE);
+    d.menu_kategorier.push(
+      { id: IS_KUGLE, afdeling: 'is', navn: 'Kugleis', sortering: 10, aktiv: true });
+    const b = { fremhaevet: false, udsolgt: false, aktiv: true };
+    d.menu_varer.push(
+      { id: 9020, kategori_id: IS_KAT, navn: 'Isboks, ca. 6 kugler eller softice', pris: 90,
+        beskrivelse: 'Tag med på turen — 6 valgfrie kugler', sortering: 20, ...b },
+      { id: 9021, kategori_id: IS_KAT, navn: 'Bubblewaffle, 2 kugler eller softice', pris: 67,
+        beskrivelse: 'Inkl. drys og sovs', sortering: 5, ...b },
+      { id: 9022, kategori_id: IS_KAT, navn: 'Sundae med sauce og topping', pris: 45,
+        beskrivelse: null, sortering: 4, ...b },
+      { id: 9023, kategori_id: IS_KAT, navn: 'Affogato', pris: 65,
+        beskrivelse: 'Espresso med vaniljeis og nødder', sortering: 30, ...b },
+      { id: 9024, kategori_id: IS_KAT, navn: 'Løs vaffel', pris: 7,
+        beskrivelse: null, sortering: 31, ...b },
+      /* Kortets rækkefølge: Kugleis (10) står før Softice og vafler
+         (11) — også selv om varens egen sortering er højere. */
+      { id: 9025, kategori_id: IS_KUGLE, navn: 'Havnens café-is', pris: 79,
+        beskrivelse: '3 kugler, softice-top, guf, flødeskum og syltetøj', sortering: 21, ...b },
+      /* Som på kort 05 står kugleisen i vaffel i SAMME kategori som
+         café-isen — ellers var kategorien en uden størrelser, og så
+         sælges alt i den løst. */
+      { id: 9026, kategori_id: IS_KUGLE, navn: '4 kugler', pris: 65, valg: VALG,
+        beskrivelse: null, sortering: 4, ...b });
+    Object.assign(d.indstillinger, ekstra || {});
+    return d;
+  }
+
+  async function åbnAlt(page, smage, ekstra) {
+    await åbnSkal(page, '/index.html', { ur: UR, data: alt(smage, ekstra) });
+    await page.waitForSelector('.isbyg-blok');
+  }
+
+  const slag = (page, id) => page.locator(`.isbyg-slag[data-slag="${id}"]`);
+  const tæl = (page, smag) => page.locator(`.isbyg-tael[data-smag="${smag}"]`);
+  const plus = (page, smag) => tæl(page, smag).locator('.isbyg-tael-knap').last();
+
+  /* ⚠️ SEKS RULLELISTER EFTER HINANDEN er seks tryk og seks lister
+     at læse på en telefon. En isboks er ét antal, der fordeles —
+     og den kan ikke blive fuldere end fuld: kan man trykke en
+     syvende kugle ind i en boks til seks, skal køkkenet vælge,
+     hvilken der ikke kommer med. */
+  test('isboksen fordeler seks kugler på smagene — og kan ikke blive fuldere end fuld', async ({ page }) => {
+    await åbnAlt(page);
+    await slag(page, 'boks').click();
+
+    await expect(page.locator('.isbyg-beskriv'), 'boksen sagde ikke, hvad den er')
+      .toContainText('6 valgfrie kugler');
+    await page.locator('.isbyg-knap[data-form="kugler"]').click();
+
+    const knap = page.locator('.isbyg-laeg');
+    await expect(page.locator('.isbyg-status')).toHaveText('0 af 6 kugler valgt');
+    await expect(knap).toHaveText('Fordel 6 kugler på smagene');
+    await expect(knap).toBeDisabled();
+
+    for (let i = 0; i < 4; i++) await plus(page, 'Vanilje').click();
+    for (let i = 0; i < 2; i++) await plus(page, 'Jordbær').click();
+
+    await expect(page.locator('.isbyg-status')).toHaveText('6 af 6 kugler valgt');
+    for (const s of ['Vanilje', 'Jordbær', 'Lakrids']) {
+      await expect(plus(page, s), `der kunne trykkes en syvende kugle ind (${s})`).toBeDisabled();
+    }
+    await expect(knap).toBeEnabled();
+    await expect(knap).toContainText('90');
+    await knap.click();
+
+    /* Kvitteringen tæller for køkkenet — ikke seks ord at tælle. */
+    await expect(page.locator('.isbyg-kvit')).toContainText('4× Vanilje + 2× Jordbær');
+
+    await sendBestilling(page);
+    const l = (await gemteData(page)).bestillinger[0].linjer
+      .filter((x) => x.navn === 'Isboks, ca. 6 kugler eller softice');
+    expect(l.length, 'isboksen nåede ikke køkkenet').toBe(1);
+    expect(l[0].smage).toEqual(['Vanilje', 'Vanilje', 'Vanilje', 'Vanilje', 'Jordbær', 'Jordbær']);
+    expect(l[0].pris).toBe(90);
+  });
+
+  /* "eller softice" står i boksens navn: så er softice et svar, og
+     softice har ingen smag at vælge. */
+  test('isboksen med softice spørger ikke om smag', async ({ page }) => {
+    await åbnAlt(page);
+    await slag(page, 'boks').click();
+    await page.locator('.isbyg-knap[data-form="softice"]').click();
+
+    await expect(page.locator('.isbyg-tael:visible'), 'der blev spurgt om smag til softice')
+      .toHaveCount(0);
+    await expect(page.locator('.isbyg-laeg')).toBeEnabled();
+    await page.locator('.isbyg-laeg').click();
+
+    await sendBestilling(page);
+    const l = (await gemteData(page)).bestillinger[0].linjer
+      .find((x) => x.navn === 'Isboks, ca. 6 kugler eller softice');
+    expect(l.smage).toEqual(['Softice']);
+  });
+
+  /* En ret uden kugler er ét tryk; en ret med kugler spørger om
+     deres smag PÅ SIT EGET KORT — ikke i et fælles trin længere
+     nede, hvor gæsten skal regne ud, hvilken ret spørgsmålet
+     gælder. */
+  test('en dessert uden kugler er ét tryk — en med kugler spørger på sit eget kort', async ({ page }) => {
+    await åbnAlt(page);
+    await slag(page, 'dessert').click();
+
+    const sundae = page.locator('.isbyg-dessert[data-vare="Sundae med sauce og topping"]');
+    await expect(sundae.locator('.isbyg-tag')).toHaveText('Læg i kurven');
+    await sundae.locator('.isbyg-tag').click();
+    await expect(page.locator('.isbyg-kvit')).toContainText('Sundae med sauce og topping');
+
+    const bw = page.locator('.isbyg-dessert[data-vare="Bubblewaffle, 2 kugler eller softice"]');
+    await expect(bw, 'retten sagde ikke, hvad den er').toContainText('Inkl. drys og sovs');
+    await expect(bw.locator('.isbyg-tag')).toHaveText('Vælg');
+    await bw.locator('.isbyg-tag').click();
+    await bw.locator('.isbyg-knap[data-form="kugler"]').click();
+
+    const vælgere = bw.locator('select.isbyg-smag');
+    await expect(vælgere, '"2 kugler" gav ikke to vælgere på kortet').toHaveCount(2);
+    const knap = bw.locator('.isbyg-laeg');
+    await expect(knap).toHaveText('Vælg smag til alle kuglerne');
+    await vælgere.nth(0).selectOption('Jordbær');
+    await vælgere.nth(1).selectOption('Lakrids');
+    await expect(knap).toContainText('67');
+    await knap.click();
+
+    await sendBestilling(page);
+    const linjer = (await gemteData(page)).bestillinger[0].linjer;
+    expect(linjer.find((x) => x.navn === 'Sundae med sauce og topping').pris).toBe(45);
+    const l = linjer.find((x) => x.navn === 'Bubblewaffle, 2 kugler eller softice');
+    expect(l.smage).toEqual(['Jordbær', 'Lakrids']);
+    expect(l.pris).toBe(67);
+  });
+
+  /* ⚠️ EN RET FOR SIG ER ALDRIG TILBEHØR PÅ EN VAFFEL. Målt 25/9
+     mod produktionens 26 is-varer: ni retter til 45-79 kr. —
+     Affogato, Sundae, churros, pandekager — stod i "Noget mere?"
+     som noget, man lægger oven på en kugle. En gæst, der ville have
+     en affogato, skulle først vælge en vaffel. */
+  test('en ret for sig står aldrig som tilbehør på en vaffel', async ({ page }) => {
+    await åbnAlt(page);
+    await knapMed(page, 1, 'Vaffel').click();
+    await trin(page, 2).locator('.isbyg-knap[data-vare="1 kugle"]').click();
+
+    const t4 = trin(page, 4);
+    await expect(t4.locator('.isbyg-knap').filter({ hasText: 'Ekstra kugle' })).toHaveCount(1);
+    await expect(t4.locator('.isbyg-knap').filter({ hasText: 'Strøssel' })).toHaveCount(1);
+    for (const n of ['Affogato', 'Sundae', 'Havnens café-is', 'Løs vaffel']) {
+      await expect(t4.locator('.isbyg-knap').filter({ hasText: n }),
+        `"${n}" stod som noget, man lægger oven på en is`).toHaveCount(0);
+    }
+  });
+
+  /* Samme rækkefølge som kortet: kategorien først, så varen. Den
+     første udgave sorterede på varens egen sortering alene, så
+     "Havnens café-is" (Kugleis, 21) stod under alt fra softice-
+     kategorien — og admin viste den et andet sted end siden. */
+  test('desserterne står i kortets rækkefølge — kategorien først', async ({ page }) => {
+    await åbnAlt(page);
+    await slag(page, 'dessert').click();
+    const navne = await page.locator('.isbyg-dessert .isbyg-dessert-navn').allTextContents();
+    expect(navne[0], 'kategoriens plads på kortet blev ikke fulgt').toBe('Havnens café-is');
+  });
+
+  /* ⚠️ ISEN PAKKES ALDRIG. Målt i produktionen: emballage_kategorier
+     er tom, og tom betyder "alt ud af huset" — så hver is til
+     afhentning fik 10 kr. i emballage. Maden ved siden af skal
+     stadig have sin: reglen er isens, ikke bestillingens. */
+  test('isen koster ingen emballage — maden ved siden af gør', async ({ page }) => {
+    await åbnAlt(page, undefined, { emballage_pris: 10 });
+    await knapMed(page, 1, 'Vaffel').click();
+    await trin(page, 2).locator('.isbyg-knap[data-vare="1 kugle"]').click();
+    await trin(page, 3).locator('.isbyg-smag').selectOption('Vanilje');
+    await page.locator('.isbyg-laeg').click();
+    await slag(page, 'boks').click();
+    await page.locator('.isbyg-knap[data-form="softice"]').click();
+    await page.locator('.isbyg-laeg').click();
+
+    const sum = page.locator('#sumline');
+    await expect(sum).toContainText('125');
+    await expect(sum, 'isen fik emballage lagt oveni').not.toContainText('emballage');
+
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    await page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]').click();
+    await expect(sum, 'maden mistede sin emballage').toContainText('emballage 1 × 10');
+  });
+
+  /* ⚠️ FIRE FLISER PÅ EN TELEFON ER TO OG TO. Første udgave stod én
+     pr. række og 150 px høje — fire skærmhøjder væk fra selve isen,
+     før gæsten havde valgt noget. */
+  test('de fire slags står to og to — og fylder ikke skærmen', async ({ page }) => {
+    await åbnAlt(page);
+    const f = page.locator('.isbyg-slag');
+    await expect(f).toHaveCount(4);
+    const k = [];
+    for (let i = 0; i < 4; i++) k.push(await f.nth(i).boundingBox());
+    expect(Math.abs(k[0].y - k[1].y), 'de to første står ikke på samme række').toBeLessThan(2);
+    for (const b of k) expect(b.height, 'en flise er for høj').toBeLessThanOrEqual(96);
+  });
+});

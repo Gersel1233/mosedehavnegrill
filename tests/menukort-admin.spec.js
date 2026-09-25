@@ -1497,6 +1497,107 @@ test.describe('Isens smage', () => {
 });
 
 /* ============================================================
+   ISENS FORLØB — SAMLET ÉT STED, OPSTILLET SOM PÅ SIDEN  (25/9)
+   ------------------------------------------------------------
+   Mikkels ord: *"admin med isen — saml det hele i en kategori med
+   underkategorier, men som udseende med flowet er på siden, så de
+   kan ændre og se præcis, hvordan det ser ud på siden, og hvorhenne
+   i processen hver ting går."*
+
+   Til venstre står hver is-vare under det trin, gæsten møder den;
+   til højre er den RIGTIGE isbygger tegnet med det, der står på
+   skærmen. Prøverne måler begge sider — og at et valg gemmes.
+   ============================================================ */
+test.describe('Isens forløb i admin', () => {
+
+  const IS_KAT = 6;   // grunddata: "Softice og vafler", afdeling is
+
+  function medIs() {
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [1, IS_KAT, 9];
+    const b = { beskrivelse: null, fremhaevet: false, udsolgt: false, aktiv: true };
+    d.menu_varer.push(
+      { id: 9201, kategori_id: IS_KAT, navn: '2 kugler', pris: 45, sortering: 1,
+        valg: ['Vaffel', 'Bæger'], ...b },
+      { id: 9202, kategori_id: IS_KAT, navn: 'Ekstra kugle', pris: 12, sortering: 2, ...b },
+      { id: 9203, kategori_id: IS_KAT, navn: 'Isboks, ca. 6 kugler eller softice', pris: 90,
+        sortering: 3, ...b },
+      { id: 9204, kategori_id: IS_KAT, navn: 'Affogato', pris: 65, sortering: 4, ...b });
+    return d;
+  }
+
+  const række = (page, navn) => page.locator(`.isbar-raekke[data-vare="${navn}"]`);
+  const under = (page, rolle, navn) =>
+    page.locator(`.isbar-gruppe[data-rolle="${rolle}"] .isbar-raekke[data-vare="${navn}"]`);
+
+  test('hver is-vare står under det trin, gæsten møder den', async ({ page }) => {
+    await åbnMenufanen(page, { data: medIs() });
+    await page.waitForSelector('#is-smage-kort .isbar-raekke');
+
+    await expect(under(page, 'stoerrelse', '2 kugler')).toHaveCount(1);
+    await expect(under(page, 'tilbehoer', 'Ekstra kugle')).toHaveCount(1);
+    await expect(under(page, 'boks', 'Isboks, ca. 6 kugler eller softice')).toHaveCount(1);
+    await expect(under(page, 'dessert', 'Affogato'),
+      'en ret for sig stod som tilbehør til en vaffel').toHaveCount(1);
+
+    /* Og forhåndsvisningen er gæstens egen: tre slags, ingen "Løst". */
+    const fliser = page.locator('#is-forhaand .isbyg-slag');
+    await expect(fliser).toHaveCount(3);
+    await expect(page.locator('#is-forhaand .isbyg-slag[data-slag="loes"]')).toHaveCount(0);
+  });
+
+  /* ⚠️ ET VALG, DER KUN STÅR PÅ SKÆRMEN, ER INTET VALG. Ejeren
+     flytter affogatoen til "Løst"; forhåndsvisningen skal vise den
+     nye slags MED DET SAMME, og valget skal stå i indstillingerne.
+     "↺ Brug navnet" tager den tilbage — også i databasen. */
+  test('en flytning slår igennem i forhåndsvisningen, gemmes — og kan tages tilbage', async ({ page }) => {
+    await åbnMenufanen(page, { data: medIs() });
+    await page.waitForSelector('#is-smage-kort .isbar-raekke');
+
+    await række(page, 'Affogato').locator('[data-felt="rolle"]').selectOption('loes');
+    await expect(page.locator('#is-forhaand .isbyg-slag[data-slag="loes"]'),
+      'forhåndsvisningen fulgte ikke med').toHaveCount(1);
+    await expect(under(page, 'loes', 'Affogato')).toHaveCount(1);
+
+    await expect.poll(async () => {
+      const o = (await gemteData(page)).indstillinger.is_opsaetning || {};
+      return o['9204'] && o['9204'].rolle;
+    }, { message: 'valget nåede ikke indstillingerne' }).toBe('loes');
+
+    await række(page, 'Affogato').locator('.isbar-nulstil').click();
+    await expect(under(page, 'dessert', 'Affogato')).toHaveCount(1);
+    await expect(page.locator('#is-forhaand .isbyg-slag[data-slag="loes"]')).toHaveCount(0);
+    await expect.poll(async () => {
+      const o = (await gemteData(page)).indstillinger.is_opsaetning || {};
+      return '9204' in o;
+    }, { message: '"Brug navnet" fjernede ikke valget i databasen' }).toBe(false);
+  });
+
+  /* ⚠️ SAMME RÆKKEFØLGE SOM PÅ SIDEN. Ejeren skal finde varen dér,
+     hvor gæsten ser den — ikke lede. Rækkefølgen i admin måles op
+     mod forhåndsvisningen ved siden af, ikke op mod en liste her. */
+  test('desserterne står i samme rækkefølge i admin som hos gæsten', async ({ page }) => {
+    const d = medIs();
+    d.menu_kategorier.push({ id: 61, afdeling: 'is', navn: 'Kugleis', sortering: 10, aktiv: true });
+    d.indstillinger.bestilbare_kategorier.push(61);
+    d.menu_varer.push(
+      { id: 9205, kategori_id: 61, navn: 'Havnens café-is', pris: 79, sortering: 21,
+        beskrivelse: null, fremhaevet: false, udsolgt: false, aktiv: true },
+      { id: 9206, kategori_id: 61, navn: '3 kugler', pris: 55, sortering: 3,
+        valg: ['Vaffel', 'Bæger'], beskrivelse: null, fremhaevet: false, udsolgt: false, aktiv: true });
+    await åbnMenufanen(page, { data: d });
+    await page.waitForSelector('#is-smage-kort .isbar-raekke');
+    await page.locator('#is-forhaand .isbyg-slag[data-slag="dessert"]').click();
+
+    const admin = await page.locator('.isbar-gruppe[data-rolle="dessert"] .isbar-raekke')
+      .evaluateAll((r) => r.map((x) => x.getAttribute('data-vare')));
+    const gæst = await page.locator('#is-forhaand .isbyg-dessert .isbyg-dessert-navn').allTextContents();
+    expect(gæst.length, 'forhåndsvisningen viste ingen desserter').toBeGreaterThan(1);
+    expect(admin, 'admin og gæsten viser desserterne i hver sin rækkefølge').toEqual(gæst);
+  });
+});
+
+/* ============================================================
    "MANGLER PRIS" ER EN OPGAVE, IKKE ET FAKTUM  (7/9)
 
    Kundens spørgsmål: "hvorfor er der stadig manglende priser?"
