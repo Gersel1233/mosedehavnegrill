@@ -3046,15 +3046,28 @@ input.isbyg-oenske-felt { height: 44px; font-size: 14px; }
   box-shadow: inset 0 0 0 1.5px rgba(214,42,58,.32);
 }
 
-.isbyg-bund { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
-.isbyg-sum { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.isbyg-bund {
+  /* ⚠️ BUNDEN SKAL KUNNE BRYDE. Målt på 390 px: knappen stod
+     flex:none ved siden af summen, og "Vælg smag til alle
+     kuglerne" blev brækket til tre linjer inde i knappen — en
+     knap på 69 px, der ligner en fejl. Med et brud på 220 px
+     falder knappen ned på sin egen linje i fuld bredde på en
+     telefon (og bliver et større trykfelt), mens den bliver
+     stående ved siden af summen, når der er plads. */
+  flex-wrap: wrap; display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.isbyg-sum {
+  /* ⚠️ BELØBET MÅ IKKE BRÆKKE: "I alt 45,-" blev til to linjer
+     med tallet under ordet, fordi knappen tog pladsen først. Et
+     beløb på to linjer læser gæsten to gange. */
+  flex: none;
+  white-space: nowrap; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
 /* ⚠️ EGEN STIL, IKKE `g solid blk`. Den klasse er sendeknappens,
    og forsiden finder sendeknappen som den FØRSTE af dem i panelet
    — se noten i js/isbygger.js. Formen er den samme, så gæsten ser
    den samme slags knap; kun navnet er byggerens eget. */
 .isbyg-laeg {
+  flex: 1 1 220px;
   margin-left: auto;
-  flex: none;
   padding: 12px 22px;
   border: 0;
   border-radius: 999px;

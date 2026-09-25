@@ -66,7 +66,7 @@
      tallet et objekt, ville hver af dem tavst regne forkert.
      kurv.smage er nøgle → en liste pr. portion, hver med én plads
      pr. kugle: {"2 kugler||Vaffel": [["Vanilje","Lakrids"],["",""]]}. */
-  var kurv = { stk: {}, smage: {}, fyld: [], hvordan: 'afhentning' };
+  var kurv = { stk: {}, smage: {}, ispris: {}, fyld: [], hvordan: 'afhentning' };
   /* ADRESSEFELTET OG DETS SVAR  (20/9). adresseKontrol er
      komponenten fra js/adressefelt.js; leveringsSvar er dens sidste
      melding. `klar` er sandt, når gæsten har VALGT en officiel
@@ -86,6 +86,40 @@
     var i = String(k).indexOf(VALG_SKEL);
     return i < 0 ? { navn: k, valg: null }
       : { navn: k.slice(0, i), valg: k.slice(i + VALG_SKEL.length) };
+  }
+
+  /* ⚠️ ÉT OPSLAG FOR HELE KURVEN  (25/9). Otte steder i den her fil
+     slog varen op på NAVNET i nøglen — summen, kurvlisten,
+     emballagen, loftet, smørretællingen, bonen. Isbyggerens nøgle
+     bærer ikke et navn, der findes: "is||2 kugler||Vaffel||Vanilje"
+     giver navnet "is", og hvert eneste af de otte opslag ville
+     tavst svare "ingen vare" — isen ville stå uden pris i kurven,
+     tælle nul i summen, ikke få emballage og lande prisløs på bonen.
+
+     Det er husets faste feltliste-fælde i en ny form, femte gang
+     (Butik.bestil 4/9, kurvens genopbygning, ryddedeKurven,
+     optegningens klasseliste). Derfor ÉT sted: alle otte spørger
+     her, og isbyggeren lagde selv sit svar i kurv.ispris, da isen
+     blev lagt i.
+
+     `liste` er bestilbare() — kalderen sender den med, når den
+     alligevel står med den, så en løkke over kurven ikke bygger
+     varelisten om for hver nøgle. */
+  function kurvPost(k, liste) {
+    var e = kurv.ispris && kurv.ispris[k];
+    if (e) {
+      return { navn: e.navn, valg: e.variant || null,
+        pris: (e.pris === null || e.pris === undefined) ? null : Number(e.pris),
+        kat: (e.kat === undefined ? null : e.kat), vare: null, is: true };
+    }
+    var dn = delNøgle(k);
+    var v = (liste || bestilbare()).filter(function (x) {
+      return x.navn === dn.navn;
+    })[0];
+    var harPris = v && v.pris !== null && v.pris !== undefined;
+    return { navn: dn.navn, valg: dn.valg,
+      pris: harPris ? Butik.prisMedValg(v, dn.valg) : null,
+      kat: v ? v.kategori_id : null, vare: v || null, is: false };
   }
   /* ============================================================
      ISENS PORTIONER — HVAD SKAL DER I DEN ENKELTE VAFFEL  (25/9)
@@ -158,11 +192,46 @@
     }
   }
 
+  /* ⚠️ ÉN IS ER ÉN LINJE — og to is med hver sin smag er to.
+     Nøglen bærer derfor smagene, præcis som på forsiden. Uden dem
+     ville "2 kugler · Vaffel med vanilje" og "... med lakrids"
+     lægge sig oven i hinanden som antal 2, og køkkenet ville lave
+     to ens. */
+  function laegIs(is) {
+    var pris = Butik.prisMedValg
+      ? Butik.prisMedValg(is.vare, is.variant) : is.vare.pris;
+    var nk = 'is' + VALG_SKEL + is.vare.navn + VALG_SKEL + (is.variant || '')
+      + VALG_SKEL + (is.smage || []).join('+');
+    kurv.stk[nk] = (kurv.stk[nk] || 0) + 1;
+    /* ⚠️ PRISEN SKAL MED I KURVEN. Bordets afsendelse slår prisen op
+       på varens NAVN, og "is||2 kugler||Vaffel||Vanilje" er ikke et
+       navn. Uden det her ville isen lande uden pris. */
+    kurv.ispris = kurv.ispris || {};
+    kurv.ispris[nk] = { navn: is.vare.navn, pris: pris,
+                        variant: is.variant || null,
+                        kat: is.vare.kategori_id };
+    if ((is.smage || []).length) kurv.smage[nk] = [is.smage.slice()];
+    (is.ekstra || []).forEach(function (v) {
+      var ek = 'is-ekstra' + VALG_SKEL + v.navn;
+      kurv.stk[ek] = (kurv.stk[ek] || 0) + 1;
+      kurv.ispris[ek] = { navn: v.navn, pris: v.pris, variant: null,
+                          kat: v.kategori_id };
+    });
+    gemKurv();
+    visSum();
+  }
+
   /* Navnet på den første vare, der mangler en smag — eller null.
      Kun det, der ER i kurven: en efterladt liste må ikke spærre. */
   function manglerSmag() {
     for (var k in kurv.smage) {
       if (!kurv.stk[k]) continue;
+      /* ⚠️ ISBYGGEREN HAR SIN EGEN REGEL. Den spærrer sin egen knap,
+         til trin 3 er svaret — og når ejeren ingen smagsliste har,
+         er et frit ønske et gyldigt svar. Lod vi den her løkke se
+         med, ville en is, gæsten HAR svaret på, blive afvist med
+         "Vælg smag" og navnet "is", som ingen vare hedder. */
+      if (kurv.ispris && kurv.ispris[k]) continue;
       var sm = kurv.smage[k];
       if (!Array.isArray(sm) || !sm.length) continue;
       if (Butik.smagMangler(sm, (sm[0] || []).length)) return delNøgle(k).navn;
@@ -191,6 +260,7 @@
       if (k && typeof k === 'object') {
         kurv.stk = k.stk || {};
         kurv.smage = (k.smage && typeof k.smage === 'object') ? k.smage : {};
+        kurv.ispris = (k.ispris && typeof k.ispris === 'object') ? k.ispris : {};
         kurv.fyld = Array.isArray(k.fyld) ? k.fyld : [];
         /* ⚠️ SMAGE UDEN EN VARE SKAL VÆK. Fjerner gæsten sin is og
            kommer tilbage i morgen, ville en efterladt liste spærre
@@ -198,6 +268,9 @@
            ikke er i kurven. */
         for (var sk in kurv.smage) {
           if (!kurv.stk[sk]) delete kurv.smage[sk];
+        }
+        for (var pk in kurv.ispris) {
+          if (!kurv.stk[pk]) delete kurv.ispris[pk];
         }
       }
     } catch (e) { /* privat browsing – kurven starter bare tom */ }
@@ -329,7 +402,13 @@
     kortValgtChip = 'alt';
   }
 
-  function byggSoegOgChips(boks, rækkefølge) {
+  /* `medIs` er sandt, når isbyggeren tegner sin egen blok nederst.
+     Blokken har ingen .stk-linje-rækker, og uden det her ville
+     hverken søgningen eller chipsene kunne se den: filtrerede
+     gæsten til "Øl", blev is-blokken stående under ølene, fordi
+     ingen af de to løkker nedenfor rører noget uden for en
+     .kort-gruppe. Målt 25/9. */
+  function byggSoegOgChips(boks, rækkefølge, medIs) {
     var bar = lav('div', 'kort-vaerktoej');
 
     var soeg = document.createElement('input');
@@ -404,6 +483,20 @@
           if (vis) traf++;
         });
 
+      /* ⚠️ OG IS-BLOKKEN, SOM IKKE ER EN RÆKKE  (25/9). Den har
+         ingen .stk-linje at skjule — den ER hele svaret på "is".
+         Den tæller som ÉT træf, så søgningen på "vaffel" ikke
+         siger "Vi fandt ikke vaffel" med byggeren stående lige
+         under beskeden. */
+      var isb = boks.querySelector('.isbyg-blok');
+      if (isb) {
+        var isSoeg = foldNed(isb.getAttribute('data-soeg') || '');
+        var isVis = (!q || isSoeg.indexOf(q) !== -1)
+          && (kortValgtChip === 'alt' || kortValgtChip === '__is');
+        isb.hidden = !isVis;
+        if (isVis) traf++;
+      }
+
       /* SØGNING UDEN TRÆF ER ET SVAR, ikke en tom skærm — og ved
          bordet skal svaret pege på lugen, som er tyve meter væk. */
       var tom = boks.querySelector('.kort-intet');
@@ -462,6 +555,7 @@
        filteret skjule ALT — og gæsten møde en tom menu uden at
        kunne se hvorfor. Så falder den tilbage til Alt. */
     if (kortValgtChip !== 'alt' && kortValgtChip !== '__favorit'
+        && !(kortValgtChip === '__is' && medIs)
         && rækkefølge.indexOf(kortValgtChip) === -1) {
       kortValgtChip = 'alt';
     }
@@ -482,6 +576,12 @@
         : '';
       chip(t + g, g);
     });
+    /* ⚠️ ISEN HAR INGEN KATEGORI I STRIBEN MERE — den har en blok.
+       Uden en chip kunne gæsten hoppe til øllene og smørrebrødet,
+       men ikke til isen, som er det eneste, der er gjort eksklusivt.
+       Chippen står SIDST, fordi blokken står sidst: striben og
+       listen skal sige det samme om rækkefølgen. */
+    if (medIs) chip('🍦  Byg din is', '__is');
 
     var timer = null;
     soeg.addEventListener('input', function () {
@@ -799,6 +899,14 @@
     /* Gruppen er kategoriens eget navn — undtagen for fyldet, som
        får sine læsegrupper. Så hedder grillens gruppe det, den
        hedder i menukortet, uden at nogen har fundet på et ord. */
+    /* Er varen isens? Svaret er ejerens felt `afdeling` på
+       kategorien — ikke et navn, koden genkender. */
+    function erIsVare(v) {
+      if (!v || v.kategori_id === '__dagens') return false;
+      var k = s.katFor && s.katFor(v);
+      return !!(k && k.afdeling === 'is');
+    }
+
     function gruppeNavnFor(v) {
       if (v.kategori_id === '__dagens') return 'Dagens ret';
       return s.erFyld(v) ? gruppeFor(v.navn) : s.kategoriNavn(v);
@@ -811,7 +919,34 @@
        hele kategorien forsvinde, og så opretter nogen varen, der
        allerede findes. De tælles IKKE med i kurv eller sum: de
        står aldrig i `liste`. */
+    /* ⚠️ ISEN HAR SIT EGET FORLØB  (25/9). Kundens ord: *"lad hele
+       is-blokken ryge ned og stå som en eksklusiv ting ... start med
+       vaffel, hvor mange kugler du vil have, +1 okay hvad smag."*
+       Det samme skal gælde bag QR-koden som på forsiden — en gæst
+       ved bordet skal ikke møde en anden slags isbestilling end en
+       gæst ved lugen.
+
+       ⚠️ OG KUN HVIS DEN KAN BYGGES. Har ejeren ingen kugleis med
+       et valg, bliver is-varerne stående i deres grupper, præcis
+       som før — samme afgørelse som på forsiden. */
+    var isVarerne = liste.concat(spoerg).filter(erIsVare);
+    var byggerIs = !!(window.MosedeIsbygger
+      && window.MosedeIsbygger.stoerrelser(isVarerne).length);
+    /* ⚠️ OG KUN DET, BYGGEREN RENT FAKTISK TEGNER. `spoerg` ER de
+       prisløse varer, og de udsolgte står i `liste` — ingen af dem
+       kommer med i byggeren. Tog vi hele is-afdelingen ud, ville en
+       udsolgt softice og en is uden pris forsvinde sporløst fra
+       bordet i stedet for at stå med "Udsolgt" og "Spørg os om
+       prisen". Svaret er byggerens eget (iBrug), ikke en kopi. */
+    var iByggeren = {};
+    if (byggerIs) {
+      window.MosedeIsbygger.iBrug(isVarerne).forEach(function (v) {
+        iByggeren[v.navn] = true;
+      });
+    }
+
     liste.concat(spoerg).forEach(function (v) {
+      if (byggerIs && erIsVare(v) && iByggeren[v.navn]) return;
       var navn = gruppeNavnFor(v);
       if (!iGruppe[navn]) iGruppe[navn] = [];
       iGruppe[navn].push(v);
@@ -943,7 +1078,11 @@
 
     /* Søgefeltet og chipsene tegnes FØR afsnittene, så de kan nå
        at kende dem. De findes kun i kortvisningen. */
-    if (!brugFolde) byggSoegOgChips(boks, rækkefølge);
+    if (!brugFolde) byggSoegOgChips(boks, rækkefølge, byggerIs);
+
+    /* ⚠️ IS-BLOKKEN TEGNES TIL SIDST — se isBlok() nedenfor. Kaldet
+       står her, fordi rækkefølgen i listen er: dagens ret, søgning,
+       grupperne, isen. Selve blokken lægges på efter løkken. */
 
     rækkefølge.forEach(function (gruppeNavn, nr) {
       /* ---- KORTVISNINGEN: åbne afsnit ---------------------
@@ -1005,6 +1144,49 @@
       iGruppe[gruppeNavn].note = note;
     });
 
+    /* ============================================================
+       BYG DIN IS — SAMME FORLØB SOM PÅ FORSIDEN  (25/9)
+       ------------------------------------------------------------
+       Forløbet bor i js/isbygger.js, som forsiden også bruger. Én
+       fil, to sider: en gæst ved bordet skal ikke møde en anden
+       slags isbestilling end en gæst ved lugen — det er præcis dén
+       slags skred, huset er fuldt af ar efter (fyldvælgeren 30/8,
+       de 24 håndmadder 1/9).
+
+       Kurven er bordets egen: kurv.stk tæller, kurv.smage bærer
+       smagene. Byggeren kender ingen af dem.
+       ============================================================ */
+    if (byggerIs) {
+      var isBlok = lav('section', 'isbyg-blok');
+      isBlok.setAttribute('data-gruppe', 'Byg din is');
+      /* ⚠️ SØGEORDENE ER VARERNES EGNE — ikke en liste, nogen har
+         fundet på. Skriver ejeren en ny is i admin, skal den kunne
+         findes med sit eget navn dagen efter, uden at nogen har
+         rørt den her fil. "is" og "vaffel" står med, fordi det er
+         det, gæsten SKRIVER, og ingen af varerne nødvendigvis
+         hedder det ("2 kugler", "Softice, lille"). */
+      isBlok.setAttribute('data-soeg', 'is vaffel bæger kugler softice smag guf '
+        + isVarerne.map(function (v) { return v.navn; }).join(' '));
+      var isHoved = lav('div', 'isbyg-blok-hoved');
+      isHoved.appendChild(lav('span', 'isbyg-blok-tegn', '🍦'));
+      isHoved.appendChild(lav('h3', 'isbyg-blok-titel', 'Byg din is'));
+      /* ⚠️ INGEN LINK VÆK FRA BORDET. På forsiden fører hovedet til
+         menukortet; her sidder gæsten med en QR-kode og en telefon,
+         og et link, der forlader bestillingen, er en kurv, hun skal
+         bygge forfra. Hele sortimentet står længere nede på den
+         SAMME side. */
+      isBlok.appendChild(isHoved);
+      var isKrop = lav('div', 'isbyg-blok-krop');
+      isBlok.appendChild(isKrop);
+
+      var bygget = window.MosedeIsbygger.byg(isKrop, {
+        data: data,
+        varer: isVarerne,
+        laeg: laegIs,
+      });
+      if (bygget) boks.appendChild(isBlok);
+    }
+
     /* Tallet i gruppehovedet skal følge tælleren MED DET SAMME.
        Gjorde det ikke det, stod der "+ tilføj" på en gruppe med
        tre stykker i, så snart gæsten lukkede den — og så tæller
@@ -1022,13 +1204,23 @@
 
     liste.forEach(function (v) {
       var gNavn = gruppeNavnFor(v);
-      var boks = iGruppe[gNavn].boks;
       /* Varen hører til en anden slags end den valgte, og dens
          gruppe er derfor ikke tegnet. Uden det her linjestykke
          faldt hele siden fra hinanden med "Cannot read properties
          of undefined": grupperne blev filtreret, varerne blev
          ikke — og gæsten mødte "Vi kan ikke tage imod lige nu" på
-         en side, hvor alt virkede. */
+         en side, hvor alt virkede.
+
+         ⚠️ OG DET SKETE IGEN 25/9, MÅLT. Værnet stod på `.boks`,
+         men opslaget `iGruppe[gNavn].boks` kastede ét tegn
+         tidligere, når HELE gruppen manglede — og det gør den for
+         is-varerne, som isbyggeren har taget ud af grupperingen.
+         Resultatet var præcis den side, kommentaren ovenfor
+         advarer mod: bord 7 med "Vi kan ikke hente kortet lige
+         nu" og et menukort, der lå usynligt bag beskeden.
+         Værnet skal stå på gruppen, ikke på dens boks. */
+      var g = iGruppe[gNavn];
+      var boks = g && g.boks;
       if (!boks) return;
       var r = lav('div', 'stk-linje');
 
@@ -1983,8 +2175,8 @@
     var liste = bestilbare();
     var n = 0;
     for (var k in kurv.stk) {
-      var v = liste.filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
-      if (v && ids.indexOf(v.kategori_id) !== -1) n += kurv.stk[k];
+      var p = kurvPost(k, liste);
+      if (p.kat !== null && ids.indexOf(p.kat) !== -1) n += kurv.stk[k];
     }
     return n;
   }
@@ -1997,9 +2189,7 @@
     var sum = 0;
     var liste = bestilbare();
     for (var k in kurv.stk) {
-      var dk = delNøgle(k);
-      var v = liste.filter(function (x) { return x.navn === dk.navn; })[0];
-      if (v) sum += Number(Butik.prisMedValg(v, dk.valg) || 0) * kurv.stk[k];
+      sum += Number(kurvPost(k, liste).pris || 0) * kurv.stk[k];
     }
     return sum + emballagen().ialt + fragten().ialt;
   }
@@ -2037,8 +2227,8 @@
     var liste = bestilbare();
     var linjer = [];
     for (var k in kurv.stk) {
-      var v = liste.filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
-      if (v) linjer.push({ kat: v.kategori_id, antal: kurv.stk[k] });
+      var p = kurvPost(k, liste);
+      if (p.kat !== null) linjer.push({ kat: p.kat, antal: kurv.stk[k] });
     }
     return R.emballage(data, linjer, kurv.hvordan);
   }
@@ -2124,16 +2314,23 @@
       var n = kurv.stk[navn];
       if (!(n > 0)) return;
       var dn = delNøgle(navn);   // nøglen kan bære et valg (15/9)
-      var v = alle.filter(function (x) { return x.navn === dn.navn; })[0];
+      var post = kurvPost(navn, alle);
 
       var r = lav('div', 'kurv-linje');
       var t = lav('div', 'kurv-tekst');
-      t.appendChild(lav('span', 'kurv-navn', dn.navn + (dn.valg ? ' · ' + dn.valg : '')));
+      /* ⚠️ ISENS SMAGE SKAL STÅ I LINJEN. Det er hele grunden til,
+         at de sidder i nøglen: to vafler med hver sin smag er to
+         linjer, og kan gæsten ikke SE forskellen, er de to linjer
+         bare en fejl, hun prøver at rette ved at trykke minus. */
+      var smagene = (kurv.smage[navn] && kurv.smage[navn][0] || [])
+        .filter(function (x) { return String(x || '').trim(); });
+      t.appendChild(lav('span', 'kurv-navn',
+        post.navn + (post.valg ? ' · ' + post.valg : '')
+        + (smagene.length ? ' · ' + smagene.join(', ') : '')));
       /* Prisen er linjens EGEN sum. "2 × 89" tvinger gæsten til at
          gange i hovedet, mens hun sidder og skal betale bagefter. */
-      if (v && v.pris !== null && v.pris !== undefined) {
-        t.appendChild(lav('span', 'kurv-pris',
-          window.MosedePris(Butik.prisMedValg(v, dn.valg) * n)));
+      if (post.pris !== null && post.pris !== undefined) {
+        t.appendChild(lav('span', 'kurv-pris', window.MosedePris(post.pris * n)));
       } else {
         t.appendChild(lav('span', 'kurv-pris kurv-uden', 'pris følger'));
       }
@@ -2144,8 +2341,8 @@
       var tal = lav('span', 'taeller-tal', n);
       var op = lav('button', 'glass rund', '+');
       ned.type = op.type = 'button';
-      ned.setAttribute('aria-label', 'Én færre ' + dn.navn + (dn.valg ? ', ' + dn.valg : ''));
-      op.setAttribute('aria-label', 'Én mere ' + dn.navn + (dn.valg ? ', ' + dn.valg : ''));
+      ned.setAttribute('aria-label', 'Én færre ' + post.navn + (post.valg ? ', ' + post.valg : ''));
+      op.setAttribute('aria-label', 'Én mere ' + post.navn + (post.valg ? ', ' + post.valg : ''));
 
       /* ⚠️ SAMME VEJ IND SOM MENUENS EGEN TÆLLER. Skrev den her
          direkte i kurv.stk, ville menuens tal blive stående på det
@@ -2153,7 +2350,7 @@
          hver sit om det samme. saetAntal() tegner begge. */
       ned.addEventListener('click', function () { saetAntal(navn, n - 1); });
       op.addEventListener('click', function () { saetAntal(navn, n + 1); });
-      op.disabled = n >= loftFor(dn.navn);
+      op.disabled = n >= loftFor(post.navn);
       taeller.appendChild(ned); taeller.appendChild(tal); taeller.appendChild(op);
       r.appendChild(taeller);
       boks.appendChild(r);
@@ -2215,7 +2412,18 @@
     var dn = delNøgle(navn);   // "navn" er kurvens nøgle og kan bære et valg
     var loft = loftFor(dn.navn);
     n = Math.max(0, Math.min(loft, n));
-    if (n) kurv.stk[navn] = n; else delete kurv.stk[navn];
+    if (n) {
+      kurv.stk[navn] = n;
+    } else {
+      delete kurv.stk[navn];
+      /* ⚠️ ISENS FØLGESVENDE SKAL MED UD. Tager gæsten den sidste
+         is ud af kurven, ville prisen og smagene blive stående i
+         kurv.ispris/kurv.smage og følge med i localStorage — og
+         læsKurv rydder dem først ved NÆSTE indlæsning. Imens ville
+         den samme nøgle, lagt i igen, arve den gamle pris. */
+      delete kurv.smage[navn];
+      if (kurv.ispris) delete kurv.ispris[navn];
+    }
     gemKurv();
 
     /* ⚠️ MENUENS EGEN RÆKKE SKAL FØLGE MED — men ved at RETTE
@@ -2277,10 +2485,11 @@
     /* Er der en ??-vare i kurven, må summen ikke lyve: "70,-" for
        en kurv med en burger uden pris er et tal, gæsten vil holde
        os op på i telefonen. Så står der "+ det uden pris". */
+    var alleVarer = bestilbare();
     var udenPris = Object.keys(kurv.stk).some(function (k) {
       if (!(kurv.stk[k] > 0)) return false;
-      var v = bestilbare().filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
-      return v && (v.pris === null || v.pris === undefined);
+      var p = kurvPost(k, alleVarer);
+      return p.vare && p.pris === null;
     });
 
     tegnKurvliste();
@@ -2554,15 +2763,18 @@
     var linjer = [];
     var liste = bestilbare();
     for (var k in kurv.stk) {
-      var dk = delNøgle(k);
-      var v = liste.filter(function (x) { return x.navn === dk.navn; })[0];
       /* Valget rejser som linjens `variant` — samme felt som køkkenet,
          Overblik og bonen allerede viser (15/9). Og prisen er valgets,
          ikke varens (20/9): det er DEN linje, kassen og databasens
-         prisværn regner på. */
-      var l = { navn: dk.navn, antal: kurv.stk[k],
-        pris: v ? Butik.prisMedValg(v, dk.valg) : null,
-        variant: dk.valg || undefined };
+         prisværn regner på.
+
+         ⚠️ ISENS LINJE KAN IKKE SLÅS OP PÅ NAVNET — nøglen er
+         "is||2 kugler||Vaffel||Vanilje". kurvPost() kender begge
+         slags nøgler, og det er dét, der gør bonen ens uanset om
+         isen kom fra en tæller eller fra isbyggeren. */
+      var p = kurvPost(k, liste);
+      var l = { navn: p.navn, antal: kurv.stk[k], pris: p.pris,
+                variant: p.valg || undefined };
       /* ⚠️ ÉN LINJE PR. PORTION, når der er valgt smage: to vafler
          med hver sin smag er to forskellige ting, og køkkenet skal
          kunne se hvilken kugle hører til hvilken vaffel. Opdelingen
@@ -2752,7 +2964,7 @@
          ingenting. Samme fælde som Butik.bestil's faste felter
          (4/9: emballagen og fragtlinjen). */
       kurv = {
-        stk: {}, smage: {}, fyld: [],
+        stk: {}, smage: {}, ispris: {}, fyld: [],
         hvordan: vedBordet() ? 'spis_her' : 'afhentning',
       };
       gemKurv();

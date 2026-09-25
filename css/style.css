@@ -12759,3 +12759,201 @@ body:not(.personale) select.is-smag.mangler {
   margin-top: 8px; padding: 9px 13px; border-radius: 13px; font-weight: 600;
   background: rgba(60, 150, 90, .16); color: #1f6b3c;
 }
+
+/* ============================================================
+   BYG DIN IS — VED BORDET OG PÅ bestil/  (25. sep 2026)
+   ------------------------------------------------------------
+   Forløbet er det SAMME som forsidens (js/isbygger.js); kun
+   stilarket er et andet, fordi de to sider har hver sit design.
+   Kundens ord: *"lad hele is-blokken ryge ned og stå som en
+   eksklusiv ting og skille sig ud fra de andre ligesom dagens
+   ret."* Formen er derfor dagens rets, som allerede findes her.
+   ============================================================ */
+body:not(.personale) .isbyg-blok {
+  /* ⚠️ PADDING SKAL SÆTTES — SAMME FÆLDE SOM .dagens-blok, OG DEN
+     BLEV MÅLT IGEN 25/9. Blokken er et <section>, og arket har en
+     generisk `section { padding-block: clamp(56px, 7vw, 104px) }`.
+     Målt på 390 px: 56 px foroven og 56 forneden, altså 112 px tomt
+     sand omkring et forløb, gæsten skal igennem på fire tryk.
+     Noten står allerede ved dagens ret; den er skrevet her igen,
+     fordi den tredje, der laver en <section>-blok her, ellers
+     falder i den en tredje gang. */
+  padding: 0;
+  margin-top: 16px;
+  border: 2px solid var(--red);
+  border-radius: 16px;
+  background: #fff;
+  /* ⚠️ OG FARVEN SKAL SÆTTES MED. MÅLT: teksten arvede bordsidens
+     hvide skrift ned på blokkens hvide papir — "Vaffel eller
+     bæger?" stod i #fff på #fff, og gæsten så fire røde tal og
+     ingen spørgsmål. En baggrund uden en farve er en halv regel;
+     `background` her og `color` fra samme sæt. */
+  color: var(--sea);
+  overflow: hidden;
+}
+body:not(.personale) .isbyg-blok-hoved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px 9px;
+  border-bottom: 1px solid rgba(36, 26, 23, .08);
+}
+body:not(.personale) .isbyg-blok-tegn { font-size: 18px; line-height: 1; flex: none; }
+body:not(.personale) .isbyg-blok-titel {
+  font: 600 18px/1.15 var(--display), Georgia, serif;
+  margin: 0;
+}
+body:not(.personale) .isbyg-blok-krop { padding: 4px 14px 14px; }
+
+/* ---- Trinnene ---- */
+body:not(.personale) .isbyg-trin {
+  padding: 13px 0;
+  border-bottom: 1px solid rgba(36, 26, 23, .08);
+}
+body:not(.personale) .isbyg-trin:last-of-type { border-bottom: 0; }
+/* Et låst trin er dæmpet, ikke skjult — gæsten skal kunne se,
+   hvor mange skridt der er tilbage. */
+body:not(.personale) .isbyg-trin.laast { opacity: .42; }
+body:not(.personale) .isbyg-hoved { display: flex; align-items: center; gap: 8px; }
+body:not(.personale) .isbyg-nr {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--red);
+  font-variant-numeric: tabular-nums;
+}
+body:not(.personale) .isbyg-titel { font-size: 15px; font-weight: 600; margin: 0; }
+body:not(.personale) .isbyg-krop { margin-top: 10px; }
+
+body:not(.personale) .isbyg-valg,
+body:not(.personale) .isbyg-ekstra { display: flex; flex-wrap: wrap; gap: 8px; }
+body:not(.personale) .isbyg-knap {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 1px solid rgba(36, 26, 23, .18);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--sea);
+  background: #fff;
+  cursor: pointer;
+}
+body:not(.personale) .isbyg-knap-navn { font-weight: 600; }
+body:not(.personale) .isbyg-knap-bi {
+  font-size: 12px;
+  color: var(--red);
+  font-variant-numeric: tabular-nums;
+}
+body:not(.personale) .isbyg-knap.valgt {
+  color: #fff;
+  background: var(--red);
+  border-color: var(--red);
+}
+body:not(.personale) .isbyg-knap.valgt .isbyg-knap-bi { color: rgba(255, 255, 255, .86); }
+body:not(.personale) .isbyg-knap:disabled { cursor: default; }
+
+/* Kuglerne: ét spørgsmål pr. linje. */
+body:not(.personale) .isbyg-kugle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+body:not(.personale) .isbyg-kugle:first-child { margin-top: 0; }
+body:not(.personale) .isbyg-kugle-nr {
+  flex: none;
+  min-width: 62px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+}
+/* ⚠️ select.isbyg-smag OG IKKE .isbyg-smag: sidens bare `select`
+   er 46 px høj med 16 px skrift, og en ren klasse (0,1,0) taber
+   til den ikke — men til `select.inp` andre steder i huset gør
+   den. Samme fælde blev målt 25/9 på forsiden. */
+body:not(.personale) select.isbyg-smag {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 42px;
+  font-size: 14px;
+}
+body:not(.personale) select.isbyg-smag.mangler { background: rgba(214, 42, 58, .07); }
+
+/* Ønskefeltet — når ejeren ikke har skrevet sin liste. */
+body:not(.personale) .isbyg-oenske { display: grid; gap: 7px; }
+body:not(.personale) .isbyg-oenske-tekst { font-size: 13px; color: var(--ink2); }
+body:not(.personale) input.isbyg-oenske-felt { min-height: 44px; font-size: 14px; }
+body:not(.personale) .isbyg-hint { font-size: 13px; color: var(--ink2); }
+body:not(.personale) .isbyg-mangler {
+  padding: 10px 13px;
+  border: 1px solid rgba(214, 42, 58, .32);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  background: rgba(214, 42, 58, .07);
+}
+
+body:not(.personale) .isbyg-bund {
+  /* ⚠️ BUNDEN SKAL KUNNE BRYDE. Målt på 390 px: knappen stod
+     flex:none ved siden af summen, og "Vælg smag til alle
+     kuglerne" blev brækket til tre linjer inde i knappen — en
+     knap på 69 px, der ligner en fejl. Med et brud på 220 px
+     falder knappen ned på sin egen linje i fuld bredde på en
+     telefon (og bliver et større trykfelt), mens den bliver
+     stående ved siden af summen, når der er plads. */
+  flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+body:not(.personale) .isbyg-sum {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  /* ⚠️ BELØBET MÅ IKKE BRÆKKE. Knappen stod flex:none, så summen
+     var den, der gav plads — målt på 390 px blev "I alt 45,-" til
+     to linjer med tallet under ordet. Et beløb på to linjer er et
+     beløb, gæsten læser to gange. Nu er det knappen, der må give
+     sig; dens tekst er en sætning og tåler det. */
+  flex: none;
+  white-space: nowrap;
+}
+/* ⚠️ EGEN KLASSE, IKKE SIDENS KNAPKLASSER. På forsiden blev
+   byggerens knap fundet som SENDEKNAPPEN, fordi den delte klasser
+   med den og stod først i panelet — målt 25/9. */
+body:not(.personale) .isbyg-laeg {
+  flex: 1 1 220px;
+  margin-left: auto;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--red);
+  cursor: pointer;
+}
+body:not(.personale) .isbyg-laeg:disabled { opacity: .5; cursor: default; }
+body:not(.personale) .isbyg-kvit {
+  margin-top: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+body:not(.personale) .isbyg-kvit.vis { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  body:not(.personale) .isbyg-kvit { transition: none; }
+}

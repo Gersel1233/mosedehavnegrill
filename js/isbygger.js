@@ -98,6 +98,26 @@ window.MosedeIsbygger = (function () {
     });
   }
 
+  /* ⚠️ HVAD BYGGEREN FAKTISK TEGNER — og dermed præcis det, siden
+     må tage ud af sine egne grupper.
+
+     MÅLT 25/9: begge sider tog HELE is-afdelingen ud, når byggeren
+     kunne tegnes. Men byggeren viser kun det, man kan bestille:
+     resten() kaster det udsolgte og det prisløse væk, og
+     stoerrelser() kaster det, der hverken er kugler eller softice.
+     En udsolgt "Softice, stor" forsvandt altså sporløst fra både
+     forsiden og bordet — stik imod husets egen regel om, at
+     menukortet OGSÅ viser det udsolgte (aftalt 2/9), og uden at
+     nogen af de to sider så forkert ud for sig selv.
+
+     Reglen bor her, fordi det er byggeren, der ejer den. Spurgte
+     siderne hver for sig, ville de to svar skride fra hinanden
+     den dag, "en størrelse" bliver noget andet. */
+  function iBrug(varer) {
+    var st = stoerrelser(varer);
+    return st.concat(resten(varer, st));
+  }
+
   function kr(p) { return Butik.kroner ? Butik.kroner(p) : String(p); }
 
   /* ============================================================ */
@@ -416,5 +436,5 @@ window.MosedeIsbygger = (function () {
   }
 
   return { byg: byg, kuglerI: kuglerI, erSoftice: erSoftice,
-           stoerrelser: stoerrelser };
+           stoerrelser: stoerrelser, iBrug: iBrug };
 }());

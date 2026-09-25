@@ -854,98 +854,273 @@ test('dagens ret fra ugeplanen bliver i kurven ved bordet', async ({ page }) => 
    det netop isen, gæsterne sidder og bestiller. Prøverne går
    hele vejen: rækken, det sidste kig og den GEMTE linje.
    ============================================================ */
-test.describe('Isens smage ved bordet', () => {
-  const IS_KAT = 6;                        // grunddata: afdeling is
+/* ============================================================
+   BYG DIN IS — VED BORDET  (25. sep 2026)
+   ------------------------------------------------------------
+   Her stod "Isens smage ved bordet" med tre prøver, der målte
+   det GAMLE forløb: en almindelig række med en tæller pr. valg
+   og en smagsvælger pr. kugle under den (.is-portion, .is-smag).
+   Det forløb findes ikke mere ved bordet — isen har fået sin egen
+   blok, og reglerne bor nu i js/isbygger.js.
 
-  function medKugler(smage) {
-    const g = grunddata();
-    g.menu_varer.push({ id: 310, kategori_id: IS_KAT, navn: '2 kugler',
-      beskrivelse: null, pris: 45, fremhaevet: false, udsolgt: false,
-      sortering: 1, aktiv: true, valg: ['Vaffel', 'Bæger'] });
+   Prøverne er ikke slettet uden videre; hver af dem har en
+   afløser her, så ingen af reglerne kan falde på gulvet:
+
+     "to vafler bliver TO linjer, hver med sin egen smag"
+        → 'to is med hver sin smag bliver to linjer'
+     "en is uden valgt smag kan ikke sendes fra bordet"
+        → 'knappen spærrer, til smagen er valgt' (byggeren
+          spærrer NU ved knappen i stedet for ved Send — gæsten
+          rettes dér, hvor hun står)
+     "uden ejerens liste spørges der ikke om smag"
+        → 'uden ejerens liste spørger trin 3 frit' (reglen er
+          VENDT 25/9, med vilje: den gamle udgave lod spørgsmålet
+          forsvinde tavst, og det var præcis den fejl, kunden
+          meldte. Nu spørges der altid — med en vælger, hvis
+          ejeren har en liste, og med et frit felt, hvis ikke.)
+
+   Fiksturet er ejerens rigtige is, og tallene i prøverne kommer
+   derfra: 35/45/55 for kuglerne, 37 for softicen, 12 for den
+   ekstra kugle, 8 for guffet, +3 for den glutenfri vaffel.
+   ============================================================ */
+test.describe('Byg din is ved bordet', () => {
+  const IS_KAT = 6;                        // grunddata: afdeling is
+  const VALG = ['Vaffel', 'Bæger', { navn: 'Glutenfri vaffel', tillaeg: 3 }];
+
+  /* `ekstra` slår de to varer til, som byggerens trin 4 lever af.
+     `udsolgt` lægger en udsolgt og en prisløs is i, som byggeren
+     IKKE kan tegne — de skal stadig stå på siden. */
+  function medIs({ smage = 'Vanilje\nJordbær\nLakrids', ekstra = true,
+                   udsolgt = false } = {}) {
+    const g = grunddata({ borde: BORDE });
+    const b = { beskrivelse: null, fremhaevet: false, udsolgt: false, aktiv: true };
+    g.menu_varer.push(
+      { id: 9001, kategori_id: IS_KAT, navn: '1 kugle', pris: 35, valg: VALG, sortering: 1, ...b },
+      { id: 9002, kategori_id: IS_KAT, navn: '2 kugler', pris: 45, valg: VALG, sortering: 2, ...b },
+      { id: 9003, kategori_id: IS_KAT, navn: '3 kugler', pris: 55, valg: VALG, sortering: 3, ...b },
+      { id: 9005, kategori_id: IS_KAT, navn: 'Softice, lille', pris: 37, valg: VALG, sortering: 5, ...b });
+    if (ekstra) g.menu_varer.push(
+      { id: 9006, kategori_id: IS_KAT, navn: 'Ekstra kugle', pris: 12, sortering: 6, ...b },
+      { id: 9007, kategori_id: IS_KAT, navn: 'Strøssel, topping eller guf', pris: 8, sortering: 7, ...b });
+    if (udsolgt) g.menu_varer.push(
+      { id: 9010, kategori_id: IS_KAT, navn: 'Softice, stor', pris: 45, sortering: 8,
+        ...b, udsolgt: true },
+      { id: 9011, kategori_id: IS_KAT, navn: 'Isdessert efter aftale', pris: null,
+        sortering: 9, ...b });
     const ind = { bestilbare_kategorier: [1, IS_KAT, 9] };
     if (smage !== null) ind.is_smage = smage;
-    return { menu_kategorier: g.menu_kategorier, menu_varer: g.menu_varer,
-      indstillinger: ind };
+    g.indstillinger = Object.assign({}, grunddata().indstillinger, ind);
+    return g;
   }
 
-  async function toVafler(page, smage) {
-    await åbnBord(page, '?bord=7', { data: medKugler(smage) });
-    const række = page.locator('#bestil-stykker .stk-linje[data-vare="2 kugler"]');
-    const plus = række.locator('.stk-valg-linje[data-valg="Vaffel"] button', { hasText: '+' });
-    await plus.click();
-    await plus.click();
-    return række;
+  async function åbnIs(page, valg) {
+    await åbn(page, SIDE + '?bord=7', { ur: UR, data: medIs(valg) });
+    await page.waitForSelector('.isbyg-blok');
   }
 
-  test('to vafler ved bordet bliver TO linjer — hver med sin egen smag', async ({ page }) => {
-    const række = await toVafler(page, 'Vanilje, Jordbær, Lakrids');
+  const trin = (page, nr) => page.locator(`.isbyg-trin[data-trin="${nr}"]`);
+  const knap = (page, nr, tekst) =>
+    trin(page, nr).locator('.isbyg-knap').filter({ hasText: tekst }).first();
 
-    /* Tælleren siger HVOR MANGE vafler; portionerne siger, hvad der
-       skal i de enkelte. Tallet kommer udefra: de to klik. */
-    await expect(række.locator('.is-portion')).toHaveCount(2);
-    await expect(række.locator('.is-smag')).toHaveCount(4);
-
-    const smag = (p, k) => række.locator(
-      `.is-portion[data-portion="${p}"] .is-smag[data-kugle="${k}"]`);
-    await smag(0, 0).selectOption('Vanilje');
-    await smag(0, 1).selectOption('Jordbær');
-    await smag(1, 0).selectOption('Lakrids');
-    await smag(1, 1).selectOption('Lakrids');
-
+  async function sendFraBordet(page) {
     await page.fill('#bestil-navn', 'Sara Holm');
     await page.locator('#bestil-send').click();
-    /* Kiget er gæstens eget værn — står smagene ikke dér, kan hun
-       ikke se, at hun har bestilt det rigtige. */
-    await expect(page.locator('#bestil-kig')).toContainText('Vanilje + Jordbær');
     await page.locator('#kig-send').click();
     await expect(page.locator('#bestil-tak')).toBeVisible();
+  }
 
+  /* ⚠️ KUNDENS EGEN FEJLMELDING, ORD FOR ORD: *"når jeg bestiller
+     1 vaffel med 1 kugle, så kan jeg ikke vælge kuglen."* Bordet
+     skal spørge om det samme som lugen — en gæst med en QR-kode
+     må ikke møde en ringere isbestilling end en gæst ved lugen. */
+  test('1 vaffel med 1 kugle kan vælge sin smag', async ({ page }) => {
+    await åbnIs(page);
+    await knap(page, 1, 'Vaffel').click();
+    await knap(page, 2, '1 kugle').click();
+
+    const vælger = trin(page, 3).locator('select');
+    await expect(vælger, 'med én kugle blev der ikke spurgt om smag')
+      .toHaveCount(1);
+    await vælger.selectOption({ label: 'Jordbær' });
+    await page.locator('.isbyg-laeg').click();
+
+    await sendFraBordet(page);
+    const l = (await gemteData(page)).bestillinger[0].linjer[0];
+    expect(l.navn).toBe('1 kugle');
+    expect(l.variant).toBe('Vaffel');
+    expect(l.smage, 'smagen nåede ikke ud på bestillingen').toEqual(['Jordbær']);
+  });
+
+  /* Afløser "to vafler bliver TO linjer". Nøglen bærer smagene,
+     og uden det ville de to lægge sig oven i hinanden som antal 2
+     — og køkkenet lave to ens. */
+  test('to is med hver sin smag bliver to linjer', async ({ page }) => {
+    await åbnIs(page);
+    for (const smag of ['Vanilje', 'Lakrids']) {
+      await knap(page, 1, 'Vaffel').click();
+      await knap(page, 2, '2 kugler').click();
+      const vælgere = trin(page, 3).locator('select');
+      await expect(vælgere).toHaveCount(2);
+      await vælgere.nth(0).selectOption({ label: smag });
+      await vælgere.nth(1).selectOption({ label: smag });
+      await page.locator('.isbyg-laeg').click();
+    }
+
+    /* Kurvens egen liste er gæstens kvittering, FØR hun sender.
+       Står de to linjer der uden deres smage, kan hun ikke se
+       forskel på dem — og så ligner to linjer en fejl, hun retter
+       ved at trykke minus. */
+    await page.locator('#kurv-abn').click();
+    await expect(page.locator('.kurv-linje').filter({ hasText: 'Vanilje' }))
+      .toHaveCount(1);
+    await expect(page.locator('.kurv-linje').filter({ hasText: 'Lakrids' }))
+      .toHaveCount(1);
+
+    await page.locator('#kurv-videre').click();
+    await sendFraBordet(page);
     const linjer = (await gemteData(page)).bestillinger[0].linjer
       .filter((l) => l.navn === '2 kugler');
-    expect(linjer.length, 'de to vafler blev ikke to linjer').toBe(2);
-    expect(linjer.map((l) => l.antal), 'en portion er én').toEqual([1, 1]);
-    expect(linjer.map((l) => (l.smage || []).join('+')).sort(),
-      'smagene fulgte ikke med den enkelte vaffel')
-      .toEqual(['Lakrids+Lakrids', 'Vanilje+Jordbær']);
-    /* ⚠️ OG BELØBET ER DET SAMME. To linjer à 1 er de samme to, som
-       antal 2 var — ellers ville opdelingen koste gæsten penge. */
+    expect(linjer.length, 'de to is blev ikke to linjer').toBe(2);
+    expect(linjer.map((l) => (l.smage || []).join('+')).sort())
+      .toEqual(['Lakrids+Lakrids', 'Vanilje+Vanilje']);
+    /* ⚠️ OG PRISEN ER VARENS EGEN, ikke nul. Bordets afsendelse slår
+       prisen op på NAVNET, og byggerens nøgle hedder ikke noget,
+       der findes ("is||2 kugler||Vaffel||Vanilje"). Tallet 45 kommer
+       fra fiksturet — ikke fra noget siden selv har regnet ud. */
     expect(linjer.reduce((a, l) => a + l.pris * l.antal, 0),
-      'opdelingen ændrede beløbet').toBe(90);
+      'isen landede uden sin pris').toBe(90);
   });
 
-  test('en is uden valgt smag kan ikke sendes fra bordet', async ({ page }) => {
-    const række = await toVafler(page, 'Vanilje, Jordbær');
-    await række.locator('.is-portion[data-portion="0"] .is-smag[data-kugle="0"]')
-      .selectOption('Vanilje');
+  /* Prisen skal være den samme hele vejen: byggerens egen sum,
+     kurvbjælken og den gemte linje. Det glutenfri tillæg er med,
+     fordi det er DÉT tal, der tavst forsvinder, når nogen slår
+     prisen op på varen i stedet for på valget. */
+  test('tillægget for den glutenfri vaffel følger med hele vejen', async ({ page }) => {
+    await åbnIs(page);
+    await knap(page, 1, 'Glutenfri vaffel').click();
+    await knap(page, 2, '2 kugler').click();
+    const vælgere = trin(page, 3).locator('select');
+    await vælgere.nth(0).selectOption({ label: 'Vanilje' });
+    await vælgere.nth(1).selectOption({ label: 'Vanilje' });
+    await knap(page, 4, 'Strøssel').click();
 
-    await page.fill('#bestil-navn', 'Sara Holm');
-    await page.locator('#bestil-send').click();
+    // 45 + 3 + 8 — alle tre tal står i fiksturet
+    await expect(page.locator('.isbyg-sum')).toContainText('56');
+    await page.locator('.isbyg-laeg').click();
+    await expect(page.locator('#bestil-sum-tekst')).toContainText('56');
 
-    await expect(page.locator('#bestil-fejl')).toContainText('Vælg smag');
-    /* Modstykket: intet må være sendt, og kiget må ikke være åbnet.
-       En besked på skærmen er ikke et værn, hvis rækken alligevel
-       landede. */
-    await expect(page.locator('#bestil-kig')).toBeHidden();
-    expect(((await gemteData(page)).bestillinger || []).length,
-      'bestillingen blev sendt uden smag').toBe(0);
+    await sendFraBordet(page);
+    const linjer = (await gemteData(page)).bestillinger[0].linjer;
+    const isen = linjer.filter((l) => l.navn === '2 kugler')[0];
+    expect(isen.variant).toBe('Glutenfri vaffel');
+    expect(isen.pris, 'tillægget faldt af på vejen').toBe(48);
+    expect(linjer.filter((l) => l.navn === 'Strøssel, topping eller guf')[0].pris)
+      .toBe(8);
   });
 
-  /* ⚠️ HAR EJEREN INGEN LISTE, FINDES VÆLGEREN IKKE — og bordet
-     opfører sig præcis som i går. Uden den her ville en regel, der
-     ALTID krævede smag, bestå prøven ovenfor og spærre for hver
-     eneste isbestilling hos en ejer, der ikke har skrevet listen. */
-  test('uden ejerens liste spørges der ikke om smag ved bordet', async ({ page }) => {
-    const række = await toVafler(page, null);
-    await expect(række.locator('.is-portion')).toHaveCount(0);
+  /* Afløser "en is uden valgt smag kan ikke sendes". Byggeren
+     spærrer NU ved sin egen knap — gæsten rettes dér, hvor hun
+     står, i stedet for efter at have udfyldt hele formularen. */
+  test('knappen spærrer, til smagen er valgt — og siger hvad der mangler', async ({ page }) => {
+    await åbnIs(page);
+    const læg = page.locator('.isbyg-laeg');
+    await expect(læg).toBeDisabled();
+    await expect(læg).toContainText('Vælg vaffel eller bæger');
 
-    await page.fill('#bestil-navn', 'Sara Holm');
-    await page.locator('#bestil-send').click();
-    await page.locator('#kig-send').click();
-    await expect(page.locator('#bestil-tak')).toBeVisible();
+    await knap(page, 1, 'Vaffel').click();
+    await expect(læg).toContainText('Vælg hvor mange kugler');
+    await knap(page, 2, '2 kugler').click();
+    await expect(læg).toContainText('Vælg smag');
+    await expect(læg, 'knappen var åben, før smagen var valgt').toBeDisabled();
 
-    const linjer = (await gemteData(page)).bestillinger[0].linjer
-      .filter((l) => l.navn === '2 kugler');
-    expect(linjer.length, 'uden smage skal de to stadig være ÉN linje').toBe(1);
-    expect(linjer[0].antal).toBe(2);
+    const vælgere = trin(page, 3).locator('select');
+    await vælgere.nth(0).selectOption({ label: 'Vanilje' });
+    await expect(læg, 'én af to kugler var nok').toBeDisabled();
+    await vælgere.nth(1).selectOption({ label: 'Lakrids' });
+    await expect(læg).toBeEnabled();
+    await expect(læg).toContainText('Læg i kurven');
+  });
+
+  /* ⚠️ REGLEN ER VENDT MED VILJE (25/9). Før forsvandt spørgsmålet
+     tavst, når ejeren ikke havde skrevet sin liste — og MÅLT mod
+     produktionen var det præcis dét, der skete: indstillingen
+     `is_smage` fandtes slet ikke, så ingen gæst er nogensinde
+     blevet spurgt. Det var kundens fejlmelding, og det var en
+     designfejl, ikke en brugerfejl. Nu spørges der altid: et frit
+     felt, som IKKE er obligatorisk, så en ejer uden liste ikke
+     spærrer sin egen isbestilling. */
+  test('uden ejerens liste spørger trin 3 frit — og spærrer ikke', async ({ page }) => {
+    await åbnIs(page, { smage: null });
+    await knap(page, 1, 'Vaffel').click();
+    await knap(page, 2, '2 kugler').click();
+
+    await expect(trin(page, 3).locator('select'),
+      'der blev vist en tom vælger').toHaveCount(0);
+    const felt = trin(page, 3).locator('.isbyg-oenske-felt');
+    await expect(felt, 'spørgsmålet forsvandt tavst igen').toHaveCount(1);
+    /* Ikke obligatorisk: knappen er åben, FØR der er skrevet noget. */
+    await expect(page.locator('.isbyg-laeg')).toBeEnabled();
+
+    await felt.fill('vanilje og lakrids tak');
+    await page.locator('.isbyg-laeg').click();
+    await sendFraBordet(page);
+    expect((await gemteData(page)).bestillinger[0].linjer[0].smage)
+      .toEqual(['vanilje og lakrids tak']);
+  });
+
+  /* ⚠️ MÅLT 25/9, OG DEN VÆLTEDE HELE SIDEN. Byggeren tager
+     is-varerne ud af grupperingen, og rækkebyggeren slog bagefter
+     `iGruppe[gruppens navn].boks` op UDEN at spørge, om gruppen
+     fandtes. Resultatet var bord 7 med "Vi kan ikke hente kortet
+     lige nu" og et helt menukort liggende usynligt bag beskeden —
+     nøjagtig den fejl, husets egen kommentar to linjer længere
+     oppe advarer mod. Prøven måler det, gæsten SER: at maden står
+     der. */
+  test('menukortet står der stadig, når isen har sit eget forløb', async ({ page }) => {
+    await åbnIs(page);
+    await expect(page.locator('.isbyg-blok')).toHaveCount(1);
+    await expect(page.locator('#bestil-stykker .stk-linje').first()).toBeVisible();
+    await expect(page.locator('#bestil-lukket')).toBeHidden();
+    /* Og is-varerne står ikke BEGGE steder. "2 kugler" hører til i
+       byggeren nu; en dublet ville give to tællere for den samme is. */
+    await expect(page.locator('.stk-linje[data-vare="2 kugler"]')).toHaveCount(0);
+  });
+
+  /* ⚠️ BYGGEREN VISER IKKE DET UDSOLGTE OG DET PRISLØSE — den kan
+     ikke bestille dem. Tog siden alligevel HELE is-afdelingen ud,
+     forsvandt de sporløst, stik imod husets aftale fra 2/9 om, at
+     bordet også viser det, der er udsolgt. Målt: begge stod væk. */
+  test('en udsolgt is og en is uden pris bliver stående', async ({ page }) => {
+    await åbnIs(page, { udsolgt: true });
+    await expect(page.locator('.stk-linje[data-vare="Softice, stor"]')).toHaveCount(1);
+    await expect(page.locator('.stk-linje[data-vare="Isdessert efter aftale"]'))
+      .toHaveCount(1);
+    // ... og de er IKKE havnet i byggeren, som ikke kan sælge dem
+    await expect(trin(page, 2).locator('.isbyg-knap')
+      .filter({ hasText: 'Softice, stor' })).toHaveCount(0);
+    await expect(trin(page, 4).locator('.isbyg-knap')
+      .filter({ hasText: 'Isdessert' })).toHaveCount(0);
+  });
+
+  /* Blokken har ingen .stk-linje-rækker, og søgningen og chipsene
+     rører kun rækker. Uden en regel for blokken blev byggeren
+     stående under ølene, når gæsten filtrerede — og "Vi fandt ikke
+     vaffel", mens byggeren stod lige under beskeden. */
+  test('is-blokken adlyder chipsene og søgningen', async ({ page }) => {
+    await åbnIs(page);
+    const blok = page.locator('.isbyg-blok');
+    const chip = (t) => page.locator('.kort-chip').filter({ hasText: t }).first();
+
+    await expect(chip('Byg din is')).toHaveCount(1);
+    await chip('Øl').click();
+    await expect(blok, 'byggeren blev stående under en anden chip').toBeHidden();
+    await chip('Byg din is').click();
+    await expect(blok).toBeVisible();
+    await expect(page.locator('#bestil-stykker .stk-linje:visible')).toHaveCount(0);
+
+    await chip('Alt').click();
+    await page.locator('.kort-soeg').fill('vaffel');
+    await expect(blok, 'søgningen på "vaffel" fandt ikke isen').toBeVisible();
+    await expect(page.locator('.kort-intet')).toBeHidden();
   });
 });
