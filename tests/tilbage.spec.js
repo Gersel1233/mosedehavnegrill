@@ -146,24 +146,33 @@ test.describe('Tilbage lander, hvor man var', () => {
        måler prøven nedenfor ingenting. */
     expect(await page.evaluate(() => window.__film), 'filmen spiller ikke engang ved en ankomst').toBe(true);
     await page.goto('/m-tapas.html', { waitUntil: 'domcontentloaded' });
-    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.goBack({ waitUntil: 'load' });
+    await page.waitForTimeout(300);
     expect(await page.evaluate(() => window.__film), 'filmen spillede forfra, da gæsten gik tilbage').toBe(false);
   });
 
   test('isvaflen (loaderen) kommer ikke igen, når man går tilbage', async ({ page, baseURL }) => {
     /* Loaderen springer over i en automatiseret browser — samme greb
-       som tests/loader.spec.js for at gå gæstens vej. */
+       som tests/loader.spec.js for at gå gæstens vej.
+
+       ⚠️ PRØVEN NOTERER, OM DEN NOGENSINDE VISTES — ikke om den står
+       der nu. Første udgave spurgte `toHaveCount(0)`, og det venter
+       Playwright på: isvaflen forsvinder af sig selv efter højst 5
+       sekunder, så prøven bestod OGSÅ uden værnet. Set 26/9. */
     await page.addInitScript(() => {
       try { Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false, configurable: true }); } catch (e) {}
       try { Object.defineProperty(navigator, 'webdriver', { get: () => false, configurable: true }); } catch (e) {}
+      window.__loader = false;
+      new MutationObserver(() => { if (document.querySelector('.hc-load')) window.__loader = true; })
+        .observe(document, { childList: true, subtree: true });
     });
     await medLangsomSky(page, 50);
     await page.goto('/m-menukort.html', { waitUntil: 'domcontentloaded', referer: 'https://www.google.com/' });
     /* Tallet udefra: ved ankomsten fra Google SKAL den vises. */
-    await expect(page.locator('.hc-load'), 'loaderen vises ikke engang ved en ankomst').toBeAttached();
+    expect(await page.evaluate(() => window.__loader), 'loaderen vises ikke engang ved en ankomst').toBe(true);
     await page.goto('/m-tapas.html', { waitUntil: 'domcontentloaded', referer: baseURL + '/m-menukort.html' });
-    await page.goBack({ waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(150);
-    await expect(page.locator('.hc-load'), 'isvaflen kom igen ved tilbage').toHaveCount(0);
+    await page.goBack({ waitUntil: 'load' });
+    await page.waitForTimeout(200);
+    expect(await page.evaluate(() => window.__loader), 'isvaflen kom igen ved tilbage').toBe(false);
   });
 });
