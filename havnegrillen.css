@@ -711,6 +711,24 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 /* TILLÆGGET PÅ ET VALG (20/9): is-kortet lover "glutenfri vaffel +3,-", og de tre kroner skal stå VED valget, ikke først på kvitteringen. margin-right:auto holder det op ad navnet — uden den lander det midt i linjen, fordi rækken er space-between.
    ⚠️ nowrap: MÅLT på iPhone 13, at mærket blev 21 px bredt og 30 px højt — "+3 kr." brækkede over to linjer midt i en prisoplysning. */
 .item-valg-tillaeg{margin-right:auto;flex:0 0 auto;white-space:nowrap;font-size:12px;font-weight:600;color:var(--red)}
+/* ⚠️ ISENS PORTIONER — HVAD SKAL DER I DEN ENKELTE VAFFEL  (25/9).
+   Én række pr. portion under valgets linje, og ét felt pr. kugle.
+   Nummeret foran siger, hvilken vaffel man er i gang med; med ÉN
+   portion står der et 🍨 i stedet, for et "1" på en enlig is er støj.
+
+   ⚠️ INGEN NY SKYGGE OG INGEN NY SKRIFTSTØRRELSE. Skralden stod på
+   37 af 37 skygger og 29 af 30 størrelser, da det her blev skrevet
+   (målt). Felterne er husets .inp, og 13px er rækkens egen. */
+.is-portioner{display:grid;gap:6px;margin-top:8px}
+.is-portion{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+/* ⚠️ Nummeret må ikke skrumpe: uden flex:none klemmes det til en
+   streg, når tre smagsnavne skal dele en telefonbredde. */
+.is-portion-nr{flex:none;min-width:22px;font-size:13px;font-weight:600;color:var(--red);font-variant-numeric:tabular-nums}
+/* ⚠️ min-width:0 OG flex:1: uden dem vokser et <select> efter sit
+   LÆNGSTE option, og "Chokolade med lakrids" ville skubbe rækken ud
+   over kanten på en iPhone. Målt-fælden fra .item-valg-navn, samme
+   sted. */
+.is-smag{flex:1 1 92px;min-width:0;height:38px;padding:0 8px;font-size:13px}
 .item .add{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:var(--red)}
 /* ⚠️ ET ANSIGT PR. KATEGORI I BESTILLINGEN (29/8). Fem rækker ren
    tekst — Grill fra pladen, Smørrebrød, Is og desserter … — hvor
@@ -900,6 +918,9 @@ html{touch-action:manipulation}
    beholder sin #ffccd1, så kontrasten er den, der allerede er målt. */
 .glasafsnit .item:not(.hi,.valgt)[data-afd="is"]{background:rgba(255,150,130,.19)}
 .glasafsnit .item:not(.hi,.valgt)[data-afd="is"] .kat-tegn{background:rgba(255,190,175,.28)}
+/* Smagsfelterne i glasafsnittet — samme behandling som sidens øvrige
+   .inp dernede, så de ikke står som en hvid blok i en mørk række. */
+.glasafsnit .is-portion-nr{color:#ffccd1}
 .glasafsnit .item:not(.hi,.valgt) .add,.glasafsnit .item:not(.hi,.valgt) .kat-valgt,.glasafsnit .item:not(.hi,.valgt) .tag{color:#ffccd1}
 .glasafsnit .item:not(.hi,.valgt) .kat-valgt,.glasafsnit .item:not(.hi,.valgt) .tag{background:rgba(214,42,58,.28)}
 .glasafsnit .item:not(.hi,.valgt) .vare-desc{color:rgba(255,255,255,.76)}

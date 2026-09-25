@@ -1534,3 +1534,130 @@ test.describe('Isen skiller sig ud i bestillingen', () => {
       .toBe(await farve(mad));
   });
 });
+
+
+/* ============================================================
+   ISEN: HVAD SKAL DER I DEN ENKELTE VAFFEL  (25/9)
+   ------------------------------------------------------------
+   Kundens ord: *"når man bestiller en is skal man med kugler
+   smage osv kunne gøre det rigtigt og ikke bare bestille 10
+   kugler til 1 vaffel ... hvor mange vafler man har købt og hvad
+   der skal i de enkelte."*
+
+   ⚠️ PRØVERNE LÆSER DEN GEMTE RÆKKE, IKKE SKÆRMEN. En vælger,
+   der ser rigtig ud og sender "2 kugler · Vaffel" uden smag, er
+   præcis den fejl, der skulle rettes — pengesporets lære fra 5/9.
+   ============================================================ */
+test.describe('Isens smage', () => {
+  const IS_KAT = 6;                       // "Softice og vafler", afdeling is
+
+  function medIs(smage) {
+    const d = data();
+    d.indstillinger.bestilbare_kategorier = [1, IS_KAT];
+    if (smage !== null) d.indstillinger.is_smage = smage;
+    d.menu_varer = (d.menu_varer || []).concat([{
+      id: 9101, lokation_id: 'mosede', kategori_id: IS_KAT, navn: '2 kugler',
+      pris: 45, aktiv: true, sortering: 1, valg: ['Vaffel', 'Bæger'],
+    }]);
+    return d;
+  }
+
+  async function toVafler(page, d) {
+    await åbnSkal(page, '/index.html', { ur: FREDAG, data: d });
+    const kat = page.locator('#bestil .item[data-afd="is"]').first();
+    await kat.locator('[data-add]').waitFor({ state: 'attached' });
+    await kat.click();
+    const række = page.locator('#bestil .item[data-vare="2 kugler"]').first();
+    const plus = række.locator('.item-valg-linje[data-valg="Vaffel"] button[data-d="+"]');
+    await plus.click();
+    await plus.click();
+    return række;
+  }
+
+  test('to vafler bliver TO linjer — hver med sin egen smag', async ({ page }) => {
+    const række = await toVafler(page, medIs('Vanilje, Jordbær, Lakrids'));
+
+    /* Tælleren siger HVOR MANGE vafler; portionerne siger, hvad
+       der skal i de enkelte. Tallet kommer udefra: de to klik. */
+    await expect(række.locator('.is-portion')).toHaveCount(2);
+    await expect(række.locator('.is-smag')).toHaveCount(4);
+
+    const smag = (p, k) => række.locator(
+      `.is-portion[data-portion="${p}"] .is-smag[data-kugle="${k}"]`);
+    await smag(0, 0).selectOption('Vanilje');
+    await smag(0, 1).selectOption('Jordbær');
+    await smag(1, 0).selectOption('Lakrids');
+    await smag(1, 1).selectOption('Lakrids');
+
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+
+    const linjer = (await gemteData(page)).bestillinger[0].linjer
+      .filter((l) => l.navn === '2 kugler');
+    expect(linjer.length, 'de to vafler blev ikke to linjer').toBe(2);
+    expect(linjer.map((l) => l.antal), 'en portion er én').toEqual([1, 1]);
+    expect(linjer.map((l) => (l.smage || []).join('+')).sort(),
+      'smagene fulgte ikke med den enkelte vaffel')
+      .toEqual(['Lakrids+Lakrids', 'Vanilje+Jordbær']);
+    /* ⚠️ OG PRISEN ER UÆNDRET. To linjer à 1 er de samme to, som
+       antal 2 var — ellers ville opdelingen koste gæsten penge. */
+    expect(linjer.reduce((a, l) => a + l.pris * l.antal, 0),
+      'opdelingen ændrede beløbet').toBe(90);
+  });
+
+  test('en is uden valgt smag kan ikke sendes', async ({ page }) => {
+    const række = await toVafler(page, medIs('Vanilje, Jordbær'));
+    // Kun den ene kugle i den første vaffel får en smag.
+    await række.locator('.is-portion[data-portion="0"] .is-smag[data-kugle="0"]')
+      .selectOption('Vanilje');
+
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+
+    await expect(page.locator('.note')).toContainText('Vælg smag');
+    /* Modstykket: intet må være sendt. En besked på skærmen er
+       ikke et værn, hvis rækken alligevel landede. */
+    expect(((await gemteData(page)).bestillinger || []).length,
+      'bestillingen blev sendt uden smag').toBe(0);
+  });
+
+  /* ⚠️ HAR EJEREN INGEN SMAGE, FINDES VÆLGEREN IKKE — og siden
+     opfører sig præcis som i går. Uden den her ville en regel, der
+     ALTID krævede smag, bestå prøven ovenfor og spærre for hver
+     eneste isbestilling hos en ejer, der ikke har skrevet listen. */
+  test('uden ejerens liste spørges der ikke om smag — og der kan sendes', async ({ page }) => {
+    const række = await toVafler(page, medIs(null));
+    await expect(række.locator('.is-portion')).toHaveCount(0);
+
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+
+    const linjer = (await gemteData(page)).bestillinger[0].linjer
+      .filter((l) => l.navn === '2 kugler');
+    expect(linjer.length, 'uden smage skal de to stadig være ÉN linje').toBe(1);
+    expect(linjer[0].antal).toBe(2);
+  });
+
+  /* ⚠️ OG SMAGEN SPØRGES KUN, HVOR DER ER KUGLER. "Softice med
+     guf" siger ingenting om kugler, og en vælger på den ville
+     være et spørgsmål, ejeren ikke har stillet. */
+  test('en vare uden kugler i navnet får ingen smagsvælger', async ({ page }) => {
+    const d = medIs('Vanilje, Jordbær');
+    await åbnSkal(page, '/index.html', { ur: FREDAG, data: d });
+    const kat = page.locator('#bestil .item[data-afd="is"]').first();
+    await kat.locator('[data-add]').waitFor({ state: 'attached' });
+    await kat.click();
+    const softice = page.locator('#bestil .item[data-vare="Softice med guf"]').first();
+    await softice.waitFor({ state: 'visible' });
+    await softice.locator('button[data-d="+"]').click();
+    await expect(softice.locator('.is-portion')).toHaveCount(0);
+  });
+});

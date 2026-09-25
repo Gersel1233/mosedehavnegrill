@@ -1247,7 +1247,96 @@
   function linjeNavn(l) {
     var n = String((l && l.navn) || '').trim();
     var v = String((l && l.variant) || '').trim();
-    return v ? n + ' · ' + v : n;
+    var ud = v ? n + ' · ' + v : n;
+    /* ⚠️ SMAGENE HØRER MED TIL LINJENS NAVN  (25/9). Kundens ord:
+       "når man bestiller en is skal man med kugler smage ... og være
+       konkret og godt i admin og på bestillingssiden hvad der skal i
+       de enkelte." Står de kun i et felt, som kortet i admin skal
+       huske at hente, får køkkenet "2 kugler · Vaffel" og gætter —
+       præcis den fejl, valget blev bygget for 15/9.
+
+       Her og ikke i `variant`: databasen kræver, at variant er ÉT af
+       varens valg (gaestens-regler.sql), så "Vaffel · vanilje" ville
+       blive afvist med bestilling_mangler_valg. Smagene er deres egen
+       nøgle på linjen — som `emballage` og `fyld` før dem — og
+       kræver derfor ingen SQL. */
+    var sm = smageI(l);
+    return sm.length ? ud + ' · ' + sm.join(' + ') : ud;
+  }
+
+  /* EN IS BLIVER ÉN LINJE PR. PORTION  (25/9)
+     ⚠️ Kundens ord: køkkenet skal kunne se "hvor mange vafler man har
+     købt og hvad der skal i de enkelte". To vafler med hver sin smag
+     er to forskellige ting — samlet på én linje med antal 2 ville
+     smagene stå i en klump, og køkkenet skulle gætte, hvilken der
+     hørte til hvilken.
+
+     ⚠️ Summen ændrer sig ikke: tre portioner à 1 er de samme tre, som
+     antal 3 var. Emballagen og fragten tæller `antal` pr. linje, så
+     de er urørte — det er målt i prøven.
+
+     Den bor her og ikke i formularen, fordi BEGGE bestillingsveje
+     (forsiden/smørrebrødssiden og bestil//ved-bordet) skal dele den.
+     To udgaver ville betyde, at den samme is blev to forskellige
+     bonner alt efter, hvilken side gæsten kom ind ad. */
+  function delIPortioner(l) {
+    var sm = l && l.smage;
+    if (!Array.isArray(sm) || !sm.length) return [l];
+    return sm.map(function (s) {
+      var k = {}, n;
+      for (n in l) if (Object.prototype.hasOwnProperty.call(l, n)) k[n] = l[n];
+      k.antal = 1;
+      k.smage = smageI({ smage: s });
+      return k;
+    });
+  }
+
+  /* Smagene på ÉN linje — ét sted. Både kurven, kvitteringen,
+     bestillingskortet og køkken-køen læser dem herfra, så de ikke
+     hver pillede listen fra hinanden. */
+  function smageI(l) {
+    if (!l || !Array.isArray(l.smage)) return [];
+    return l.smage.map(function (x) { return String(x || '').trim(); })
+      .filter(Boolean);
+  }
+
+  /* ISENS SMAGE ER EJERENS LISTE  (25/9)
+     ⚠️ VI FINDER IKKE PÅ SMAGE. Hvilke is forretningen har, ved kun
+     ejeren, og en liste med "vanilje, jordbær, chokolade" skrevet
+     her ville stå på hjemmesiden som hans — husets ældste regel.
+     Feltet er `is_smage` i indstillinger (nøgle/værdi, altså ingen
+     SQL), og er det tomt, spørger siden slet ikke om smag: den
+     opfører sig præcis som i går.
+
+     ⚠️ Adskilt af komma ELLER linjeskift. Ejeren skriver dem i et
+     tekstfelt, og en, der taster en pr. linje, skal ikke få én lang
+     smag ud af det. */
+  function isSmage(d) {
+    var r = d && d.indstillinger && d.indstillinger.is_smage;
+    if (!r) return [];
+    if (Array.isArray(r)) r = r.join(',');
+    return String(r).split(/[,\n;]+/)
+      .map(function (x) { return x.trim(); })
+      .filter(Boolean);
+  }
+
+  /* HVOR MANGE KUGLER ER DER I DEN HER VARE?  (25/9)
+     ⚠️ SVARET LÆSES AF EJERENS EGET NAVN og gættes ikke. "2 kugler"
+     er to; "Softice, lille" og "Havnens café-is" siger ingenting om
+     kugler, og så spørges der ikke om smag på dem. Det er den
+     ufarlige vej: en vare, reglen ikke kan læse, opfører sig som i
+     dag, og ejeren kan altid navngive sig ud af det.
+
+     ⚠️ OG DEN GÆLDER KUN ISEN. Står der "2 kugler" i en ret i
+     køkkenet en dag, skal den ikke pludselig spørge om smag —
+     afdelingen er ejerens felt og afgør det. */
+  function kuglerI(v, kat) {
+    if (!v || !kat || kat.afdeling !== 'is') return 0;
+    var m = String(v.navn || '').match(/(^|[^\d])(\d+)\s*kugle/i);
+    var n = m ? Number(m[2]) : 0;
+    /* Et loft: ejeren kan skrive hvad som helst, og tyve
+       smagsvælgere i en række er ikke en bestilling. */
+    return n > 0 && n <= 6 ? n : 0;
   }
 
   /* UDEN FORBINDELSE SENDES DER INGENTING — OG DET SIGES FØR SEND
@@ -2294,6 +2383,20 @@
          madlinje ville være en kolonne fuld af støj i en jsonb,
          personalet også kigger i. */
       if (l.emballage === true) ud.emballage = true;
+      /* ⚠️ OG SMAGENE SKAL MED — SAMME FÆLDE, TREDJE GANG  (25/9).
+         `emballage: true` blev tørret af her 4/9, fragten samme dag,
+         og nu isens smage: linjen bygges af FASTE felter, så alt
+         andet forsvinder tavst på vejen ind. Første kørsel gemte to
+         portioner med `smage: []`, og prøven, der læser den GEMTE
+         række, fandt det — kurven på skærmen så helt rigtig ud.
+
+         Længden er skåret som variantens: ejeren skriver selv
+         smagene, og en liste uden loft er en kolonne, ingen har
+         sat en grænse for. Tom liste sendes ikke: en `smage: []` på
+         hver eneste madlinje ville være støj i en jsonb, personalet
+         også kigger i — samme grund som `emballage: false`. */
+      var sm = smageI(l).map(function (x) { return x.slice(0, 60); }).slice(0, 6);
+      if (sm.length) ud.smage = sm;
       return ud;
     }).filter(function (l) { return l.navn && l.antal > 0; });
 
@@ -4745,6 +4848,10 @@
     valgTillaeg: valgTillaeg,
     prisMedValg: prisMedValg,
     linjeNavn: linjeNavn,
+    smageI: smageI,
+    delIPortioner: delIPortioner,
+    isSmage: isSmage,
+    kuglerI: kuglerI,
     reservedata: reservedata,
     bestillingNede: bestillingNede,
     allergiMangler: allergiMangler,

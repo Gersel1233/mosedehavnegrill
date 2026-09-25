@@ -434,7 +434,126 @@
   //  smørrebrødssiden er der kun smørrebrød, og så står stykkerne
   //  direkte med tæller, som designet tegnede dem.
   // ----------------------------------------------------------
-  function tællerFor(nøgle, navn, pris, variant, kat, loft) {
+  /* ============================================================
+     ISEN: HVAD SKAL DER I DEN ENKELTE VAFFEL?  (25/9)
+     ------------------------------------------------------------
+     Kundens ord: *"når man bestiller en is skal man med kugler
+     smage osv kunne gøre det rigtigt og ikke bare bestille 10
+     kugler til 1 vaffel ... hvor mange vafler man har købt og
+     hvad der skal i de enkelte."*
+
+     ⚠️ TÆLLEREN SVAREDE ALLEREDE PÅ "HVOR MANGE VAFLER" — målt:
+     "2 kugler × Vaffel = 2" er to portioner à to kugler, ikke fire
+     løse kugler. Og de ti kugler til én vaffel kan strukturelt
+     ikke opstå her: antallet af kugler er varens eget ("2 kugler"
+     = to felter), så gæsten kan ikke lægge en ellevte i.
+
+     Det, der manglede, var SMAGEN. Den fandtes ikke ét sted i
+     databasen, så køkkenet fik "2 × 2 kugler (Vaffel)" og måtte
+     spørge.
+
+     ⚠️ OG SMAGENE ER EJERENS LISTE. Står der ingen i admin,
+     findes vælgeren ikke, og siden opfører sig præcis som i går —
+     husets regel om, at et afsnit uden noget at vise ikke findes.
+     ============================================================ */
+
+  /* Hver portion har sin egen liste af smage. Kurvens post bærer
+     dem som en liste af lister — én pr. vaffel — så de ikke kan
+     skride fra antallet. */
+  function retSmage(nøgle, antal) {
+    var post = kurv[nøgle];
+    if (!post) return;
+    if (!antal || !post.kugler) { delete post.smage; return; }
+    var sm = Array.isArray(post.smage) ? post.smage.slice(0, antal) : [];
+    while (sm.length < antal) sm.push(nyPortion(post.kugler));
+    post.smage = sm;
+  }
+
+  function nyPortion(kugler) {
+    var ud = [];
+    for (var i = 0; i < kugler; i++) ud.push('');
+    return ud;
+  }
+
+  /* ⚠️ TEGNET OM VED HVERT SKIFT, IKKE FLYTTET RUNDT. Blokken
+     indeholder <select>'er, og en gæst, der står midt i at vælge,
+     mister ikke noget: skiftet sker på + og –, aldrig mens hun har
+     en liste åben. */
+  function tegnPortioner(boks, nøgle, kugler, smage) {
+    boks.textContent = '';
+    var post = kurv[nøgle];
+    var antal = (post && post.antal) || 0;
+    boks.hidden = !antal;
+    if (!antal) return;
+
+    for (var i = 0; i < antal; i++) {
+      (function (nr) {
+        var p = lav('div', 'is-portion');
+        p.setAttribute('data-portion', String(nr));
+        /* Nummeret er det, gæsten og køkkenet taler om: "den
+           anden vaffel". Med ÉN portion siger vi det ikke — et
+           "1" på en enlig is er støj. */
+        p.appendChild(lav('span', 'is-portion-nr',
+          antal > 1 ? String(nr + 1) : '🍨'));
+        for (var k = 0; k < kugler; k++) {
+          (function (kugle) {
+            var vælg = lav('select', 'inp is-smag');
+            vælg.setAttribute('data-kugle', String(kugle));
+            vælg.setAttribute('aria-label',
+              'Smag ' + (kugle + 1) + ' i vaffel ' + (nr + 1));
+            /* ⚠️ "Smag" OG IKKE "Vælg smag"  (målt på et skud, iPhone
+               13). To felter deler rækken, så hvert bliver 104 px —
+               og et <select> skal have plads til sin egen pil
+               ovenikøbet. Der stod "Vælg sr" på skærmen. Etiketten
+               for skærmlæseren er den lange (aria-label ovenfor);
+               det er kun DET, der kan læses på 104 px, der er kort. */
+            var tom = lav('option', null, 'Smag');
+            tom.value = '';
+            vælg.appendChild(tom);
+            smage.forEach(function (sm) {
+              var o = lav('option', null, sm);
+              o.value = sm;
+              vælg.appendChild(o);
+            });
+            var valgt = ((post.smage || [])[nr] || [])[kugle] || '';
+            vælg.value = valgt;
+            vælg.addEventListener('change', function () {
+              var post2 = kurv[nøgle];
+              if (!post2 || !Array.isArray(post2.smage)) return;
+              if (!Array.isArray(post2.smage[nr])) post2.smage[nr] = nyPortion(kugler);
+              post2.smage[nr][kugle] = vælg.value;
+              visSum();
+            });
+            p.appendChild(vælg);
+          }(k));
+        }
+        boks.appendChild(p);
+      }(i));
+    }
+  }
+
+  /* Mangler der en smag et sted? Svaret bruges af sumlinjen og af
+     afsendelsen, så de to ikke kan komme til at sige hver sit. */
+  function manglerSmag() {
+    var k, post, i, j;
+    for (k in kurv) {
+      if (!Object.prototype.hasOwnProperty.call(kurv, k)) continue;
+      post = kurv[k];
+      if (!post || !post.kugler || !Array.isArray(post.smage)) continue;
+      for (i = 0; i < post.smage.length; i++) {
+        for (j = 0; j < post.kugler; j++) {
+          if (!String((post.smage[i] || [])[j] || '').trim()) return post.navn;
+        }
+      }
+    }
+    return null;
+  }
+
+  /* ⚠️ `efter` er valgfri (25/9): isens portionsliste skal tegnes om,
+     når tælleren skifter. Et tilbagekald og ikke en ny tæller — to
+     tællere ville være to steder at rette den dag, loftet eller
+     mindsteantallet ændrer sig. */
+  function tællerFor(nøgle, navn, pris, variant, kat, loft, kugler, efter) {
     var boks = lav('div', 'step');
     boks.setAttribute('data-step', '');
     var ned = lav('button', null, '–');
@@ -474,8 +593,16 @@
       /* kat følger med, fordi mindsteantallet KUN gælder
          smørrebrødet (se R.minStkMangler). Uden den kunne
          formularen ikke se forskel på fem stykker og fem øl. */
-      else kurv[nøgle] = { navn: navn, pris: pris, antal: ny, variant: variant || null, kat: kat };
+      else {
+        var gammel = kurv[nøgle] || {};
+        kurv[nøgle] = { navn: navn, pris: pris, antal: ny, variant: variant || null, kat: kat,
+                        /* Kuglerne følger POSTEN og ikke rækken: sumlinjen og
+                           afsendelsen læser kurven, ikke DOM'en. */
+                        kugler: kugler || 0, smage: gammel.smage };
+      }
+      retSmage(nøgle, ny);
       tegnTal(ny);
+      if (efter) efter(ny);
       visSum();
       visKategoriTal();
     }
@@ -808,6 +935,15 @@
        databasen holder den (bestilling_mangler_valg). */
     var valg = !v.variantAf && Butik.vareValg ? Butik.vareValg(v) : null;
     if (valg) {
+      /* ⚠️ HVOR MANGE KUGLER OG HVILKE SMAGE — begge dele er regler,
+         der bor i Butik, ikke i formularen (25/9). Kuglerne læses af
+         varens eget navn, smagene af ejerens liste i admin. Er en af
+         dem tom, findes vælgeren ikke, og rækken er den, der stod her
+         i går. */
+      var kugler = Butik.kuglerI ? Butik.kuglerI(v, katFor(v)) : 0;
+      var smage = Butik.isSmage ? Butik.isSmage(data) : [];
+      if (!smage.length) kugler = 0;
+
       række.classList.add('har-valg');
       var valgListe = lav('div', 'item-valg');
       valg.forEach(function (valgNavn) {
@@ -826,10 +962,25 @@
         if (tillæg) {
           linje.appendChild(lav('span', 'item-valg-tillaeg', '+' + Butik.kroner(tillæg)));
         }
-        linje.appendChild(tællerFor(nøgle + '|valg|' + valgNavn, v.navn,
+        var valgNøgle = nøgle + '|valg|' + valgNavn;
+        /* Portionerne står UNDER valgets linje og ikke inde i den:
+           linjen er en flex-række med navn, tillæg og tæller, og en
+           liste med tre selects i den ville klemme navnet ud. */
+        var portioner = kugler ? lav('div', 'is-portioner') : null;
+        linje.appendChild(tællerFor(valgNøgle, v.navn,
           Butik.prisMedValg ? Butik.prisMedValg(v, valgNavn) : v.pris, valgNavn,
-          v.kategori_id, Butik.antalLoft && Butik.antalLoft(v)));
+          v.kategori_id, Butik.antalLoft && Butik.antalLoft(v), kugler,
+          portioner ? function () {
+            tegnPortioner(portioner, valgNøgle, kugler, smage);
+          } : null));
         valgListe.appendChild(linje);
+        if (portioner) {
+          /* ⚠️ Tegnet FØR den hænges op, så en kurv, der allerede
+             har portioner (gæsten folder kategorien ud igen), står
+             med sine valgte smage og ikke tom. */
+          tegnPortioner(portioner, valgNøgle, kugler, smage);
+          valgListe.appendChild(portioner);
+        }
       });
       venstre.appendChild(valgListe);
       return række;
@@ -1940,6 +2091,16 @@
     if (mangler) {
       return brøl('Der skal mindst bestilles ' + mangler + ' stk. smørrebrød.');
     }
+    /* ⚠️ EN IS UDEN SMAG ER ET OPKALD  (25/9). Har ejeren skrevet
+       sine smage i admin, SKAL de vælges — ellers står køkkenet med
+       "2 kugler · Vaffel" og gætter, og det er præcis dét, hele
+       vælgeren blev bygget for. Uden en liste i admin findes
+       spærringen slet ikke: `manglerSmag` kan kun svare på poster,
+       der HAR kugler, og dem laves der ingen af. */
+    var udenSmag = manglerSmag();
+    if (udenSmag) {
+      return brøl('Vælg smag til jeres ' + udenSmag.toLowerCase() + '.');
+    }
     /* ⚠️ SAMTYKKET TIL HELBREDSOPLYSNINGEN. Reglen bor i
        `Butik.allergiMangler`, og fire skærme spørger den — se
        noten dér om, hvorfor navn og nummer IKKE er samtykke. */
@@ -2036,11 +2197,17 @@
          teksten ovenfor er kun det, gæsten så. */
       leverings_token: leveringsSvar.token,
       besked: besked,
-      linjer: medTillaeg(Object.keys(kurv).map(function (k) {
-        return {
+      /* ⚠️ ÉN LINJE PR. PORTION, IKKE ÉN MED ANTAL 2  (25/9).
+         To vafler med hver sin smag er to forskellige ting;
+         Butik.delIPortioner deler dem, og reglen bor dér, fordi
+         bestil/ og ved-bordet/ skal dele den. Varer uden smage
+         går uberørt igennem. */
+      linjer: medTillaeg([].concat.apply([], Object.keys(kurv).map(function (k) {
+        return Butik.delIPortioner({
           navn: kurv[k].navn,
           antal: kurv[k].antal,
           pris: kurv[k].pris,
+          smage: kurv[k].smage,
           /* ⚠️ FYLDET FØLGER LINJEN, DET ER IKKE EN LINJE FOR SIG.
              Stod det i kolonnen fyld sammen med ønskerne, ville
              køkkenet få "2 × Smørrebrød" og et løsrevet ønske om
@@ -2048,8 +2215,8 @@
              Se noten i Butik.bestil om hvorfor navnet forbliver
              størrelsens. */
           variant: kurv[k].variant || null,
-        };
-      })),
+        });
+      }))),
       /* ⚠️ FYLDET ER SIT EGET FELT, IKKE EN LINJE. De 29 slags er
          ØNSKER uden pris (se model A i README): de må ikke lægges
          til summen, og de må ikke stå som varer, køkkenet skal
