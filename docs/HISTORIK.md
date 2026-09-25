@@ -7,6 +7,99 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**DE NYE TRYKTE KORT ER MÅLT MOD DATABASEN — 40 UOVERENSSTEMMELSER**
+(25/9). Mikkels ord med ni filer: *"ret hele sortimentet så det passer
+perfekt med de her nye menukort, ændrer priser og fjern/tilføj varer hvis
+menukortene tyder på du skal ... læs dem alle grundigt og ret korrekt."*
+
+**⚠️ Kør `supabase/kortene-25-9.sql` + `proev-kortene-25-9.sql`**
+(10 × BESTOD på en lokal Postgres 16, seks falsifikationer, seks fald).
+
+Filerne er `01 Morgenmad/fisk/klassikere`, `02 À la carte/burgere/pølser`,
+`03 Smørrebrød`, `04 Håndmadder`, `05 Is og sødt`, de to bestillingslister
+`08`/`09`, flyeren `10` og `00_Kontrolrapport.md`. **PDF'erne er
+rasteriserede** — hver side er ét JPEG på 2382×3369 — så de er læst som
+billeder, ikke som tekst.
+
+Kortene står nu i `vaerktoej/kortene.py`, og `vaerktoej/sammenlign-kort.py`
+holder dem op mod produktionen post for post. **Det, målingen fandt:**
+
+- **Ti priser er rettet:** rejemaden 90 → 95 (tre kort siger 95),
+  glutenfrit brød 0 → 5, 4 kugler 60 → 65, ekstra kugle 10 → 12, den
+  glutenfri vaffel 10 → 7, isboksen 80 → 90, bubblewaffle mix 65 → 67, to
+  pandekager 42 → 45, og flæskestegs- og frikadellesandwichen 80 → 75
+  (bestillingslisten sætter **alle** sandwich til 75)
+- **Fem varer er nye:** Clubsandwich 105, Bacon & Cheeseburger 95, Havnens
+  café-is 79, to pandekager med 2 kugler is 77 og Affogato 65
+- **Og den franske hotdog er på kortet igen.** Den stod slukket i
+  databasen som *"Fransk hotdog, alm."*; kort 02 lister den som
+  **lille** og **stor**, så den er døbt om og tændt
+
+**⚠️ OG DEN FØRSTE KØRSEL DØDE PÅ EN REGEL, INGEN HAVDE MØDT ENDNU.**
+`roller.sql` lagde 2/9 udløseren `menu_vare_pris_ejer` på `menu_varer`: kun
+en EJER må rette en pris. Værnet spørger `auth.jwt()` og **ikke**
+databaserollen — så heller ikke `postgres` i Supabases SQL Editor slipper
+igennem. **Målt:** filen døde på den FØRSTE pris med
+`kun_ejeren_saetter_priser`, hele transaktionen blev afbrudt, og der kom
+**ikke én rapportlinje** ud.
+
+- **Den ligner ikke en fejl — den ligner ingenting.** Det er husets ældste
+  ar, og `proev-pris-vaern.sql` faldt i præcis samme hul 9/9. **Enhver
+  fremtidig fil, der sætter en pris, skal gøre det samme**
+- **E-mailen læses af `admin_adgang`, den skrives ikke af.** Et navn i
+  filen ville holde op med at virke den dag, ejeren skifter sin — og det
+  ville være tavst: prisen ville bare ikke blive sat. Findes der ingen
+  aktiv ejer, standser filen med ord
+
+**⚠️ HÅNDMADDERNES PRIS ER MED VILJE IKKE RØRT — OG DET ER ET SPØRGSMÅL
+TIL EJEREN.** Kortene 01, 04, 09 og flyeren siger alle fire **27,-**.
+Databasen siger **24,-**, fordi han sagde det ordret 21/9: *"kig altid på
+ny trykte menukort, håndmadder er 24."* Og netop det kort, han dengang
+sagde han selv ville rette — Grillen-kortet — bærer stadig 27. Nitten
+gæstepriser er for meget at gætte på. Prøve 3 holder fast i de 24, så en
+senere oprydning ikke kan sætte dem op, uden at nogen har sagt ja.
+
+**⚠️ OG KORT 06 (Kaffe, koldt og knas) OG 07 (Øl, vin og bar) VAR IKKE
+MED.** Kontrolrapporten nævner dem som to af de ti filer. Drikkevarerne er
+derfor **ikke målt**, og sammenligningen springer dem over i prisdelen
+med en linje, der siger det: at holde en pris fra 3/9 op mod databasen og
+kalde uenigheden en fejl ville fylde en fjerdedel af rapporten med støj,
+og **en rapport, hvor en fjerdedel er støj, læses ikke til ende** (arret
+fra Googles kvittering 9/9). Deres varer tælles stadig som "på et kort",
+så de ikke dukker op som huller, vi ikke har.
+
+**Syv spørgsmål mere står i filens rapport (punkt 9)** i stedet for at
+blive gættet: ét kort-punkt *"Dagens hjemmelavede pålægssalater"* mod
+databasens fire salater, *"Æggemad med mayo & rejer"* mod *"med bacon og
+karry"*, *"Mosede Isen 65"* mod *"Havnens café-is 79"*, Tomatmaden og
+Bøfsandwichen som intet kort viser, håndmadden uden *"Fiskefilet med rejer
+og mayo"*, og Baconburgerens beskrivelse, der siger *"med smeltet ost"* —
+nu hvor der ER en Bacon & Cheeseburger ved siden af.
+
+**⚠️ OG TEKSTVAGTENS FØRSTE UDGAVE MÅLTE INGENTING.** Den ledte efter
+`set_config('request.jwt.claims')` i migreringen — men filen **rydder**
+også claims med den samme funktion til sidst, så falsifikationen
+*"ejer-opslaget fjernet"* **bestod**. En falsifikation, der ikke falder,
+er et spørgsmål og ikke et bevis. Den spørger nu på den byggede claim
+(`json_build_object('email', v_ejer)`) **og** på, at den står FØR den
+første prisrettelse; begge falder.
+
+**To gamle prøver er VENDT med grunden skrevet ned**, ikke rettet for at
+blive grønne: *"De tre tillæg koster 10 kr."* er delt i to, fordi
+glutenfrit brød er gået sin egen vej (arket 10 den 1/9, håndmadskortet
+*"SAMME PRIS"* og produktionen 0, de nye kort **+5**) — ejerens 10 på de
+to andre er stadig vogtet. Og *"Fransk hotdog står i to størrelser"*
+måler `lille`/`stor` nu; reglen om **to** størrelser er urørt.
+
+**⚠️ Og rapporten skrev "ALLE 8 AF 7 BESTOD"**, fordi totalen stod som et
+fast tal. Den kommer fra linjerne nu — samme ar som
+`proev-menukort-ejerens-liste` fik 5/9.
+
+**SQL-runden bagefter: 58 filer, 1635 BESTOD, 0 FEJLEDE.**
+**Og ikke én gæstevendt fil er rørt** — kun SQL, værktøj, prøver og
+papirer. Det er værd at skrive ned, fordi det er dét, der gør udgivelsen
+ufarlig FØR den fulde runde.
+
 **ISEN FIK DAGENS RETS BÅND — OG EN VEJ IND FRA MENUEN** (24/9). Ejerens ord:
 *"is tingen skal være premium ligesom dagens ret … de skal have sin egen titel
 sections osv og bare være mere eksklusiv også på forside noget liquid glass."*
