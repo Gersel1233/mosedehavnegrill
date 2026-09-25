@@ -49,8 +49,14 @@ produkter og priser. Foretag ikke andre ændringer."*
 
 Prøver, der blev vendt, står med deres grund: `skal-forside` (uden pris er
 prisen skjult, ikke "199"), `robusthed` (varelisten er skjult uden
-database, ikke gennemsigtig). Alle nye prøver er set fejle med fejlen
-genindført — også den statiske 199, som JavaScript ellers skjulte.
+database, ikke gennemsigtig) og `dagens-retter` (uden `menu_varer` var
+svaret NØDMENUEN med "Håndmad 24,-" — nu fejlboksen med nummeret; den
+fangede den fulde runde, ikke mig). Alle nye prøver er set fejle med
+fejlen genindført — også den statiske 199, som JavaScript ellers skjulte.
+
+Fuld runde i halvdele (to arbejdere): 4.678 bestået, 190 sprunget over, og
+kun nødmenu-prøven fejlede (i begge profiler). Den blev vendt, set fejle
+med nødmenuen genindført, og hele filen kørte grøn (74).
 
 **`isens-opsaetning.sql` DØDE I SQL EDITOREN — OG ER SKREVET OM TIL REN SQL**
 (25/9, aften). Mikkels skud: *"syntax error at or near "loop" — LINE 1: end
