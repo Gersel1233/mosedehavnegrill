@@ -460,19 +460,19 @@
   /* Hver portion har sin egen liste af smage. Kurvens post bærer
      dem som en liste af lister — én pr. vaffel — så de ikke kan
      skride fra antallet. */
+  /* ⚠️ REGNESTYKKET BOR I BUTIK, IKKE HER (25/9). bestil/ og
+     ved-bordet/ har den samme liste med portioner, og to udgaver
+     af "hvad sker der, når tælleren skifter" ville skride fra
+     hinanden. Her er kun kurvens egen bogføring. */
   function retSmage(nøgle, antal) {
     var post = kurv[nøgle];
     if (!post) return;
-    if (!antal || !post.kugler) { delete post.smage; return; }
-    var sm = Array.isArray(post.smage) ? post.smage.slice(0, antal) : [];
-    while (sm.length < antal) sm.push(nyPortion(post.kugler));
-    post.smage = sm;
+    var sm = Butik.smagTilAntal(post.smage, antal, post.kugler);
+    if (sm) post.smage = sm; else delete post.smage;
   }
 
   function nyPortion(kugler) {
-    var ud = [];
-    for (var i = 0; i < kugler; i++) ud.push('');
-    return ud;
+    return Butik.smagTilAntal(null, 1, kugler)[0];
   }
 
   /* ⚠️ TEGNET OM VED HVERT SKIFT, IKKE FLYTTET RUNDT. Blokken
@@ -542,16 +542,11 @@
   /* Mangler der en smag et sted? Svaret bruges af sumlinjen og af
      afsendelsen, så de to ikke kan komme til at sige hver sit. */
   function manglerSmag() {
-    var k, post, i, j;
+    var k, post;
     for (k in kurv) {
       if (!Object.prototype.hasOwnProperty.call(kurv, k)) continue;
       post = kurv[k];
-      if (!post || !post.kugler || !Array.isArray(post.smage)) continue;
-      for (i = 0; i < post.smage.length; i++) {
-        for (j = 0; j < post.kugler; j++) {
-          if (!String((post.smage[i] || [])[j] || '').trim()) return post.navn;
-        }
-      }
+      if (post && Butik.smagMangler(post.smage, post.kugler)) return post.navn;
     }
     return null;
   }

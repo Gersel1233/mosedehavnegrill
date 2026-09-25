@@ -569,6 +569,34 @@ test.describe('Når den er sendt', () => {
     await expect(page.locator('#kig-fejl')).toContainText('allerede sendt');
     expect((await gemteData(page)).bestillinger).toHaveLength(1);
   });
+
+  /* ⚠️ KURVEN BYGGES OP PÅ NY EFTER EN AFSENDELSE — OG HVERT FELT
+     SKAL NÆVNES  (25/9). Den tømmes ikke; den erstattes af et nyt
+     objekt med en FAST liste felter, og et felt, der ikke står i
+     listen, er `undefined` fra anden bestilling og frem. Målt den
+     dag isens smage kom til: andet tryk på Send åbnede slet ikke
+     det sidste kig — ingen fejl på skærmen, bare ingenting.
+
+     Prøven kender ingen feltnavne. Den læser kurven, som den ser
+     ud MED noget i, og kræver, at de samme nøgler stadig findes
+     bagefter — så en ny slags data i kurven er beskyttet fra den
+     dag, den skrives, uden at nogen skal huske at rette her. */
+  test('kurven mister ikke et felt, når den bygges op igen', async ({ page }) => {
+    await åbnBestil(page);
+    await vaelg(page, 2);
+    const foer = await page.evaluate(
+      () => Object.keys(JSON.parse(localStorage.getItem('mosede_kurv_v1') || '{}')));
+    expect(foer.length, 'kurven blev slet ikke gemt').toBeGreaterThan(1);
+
+    await udfyld(page);
+    await sendMedKig(page);
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const efter = await page.evaluate(
+      () => Object.keys(JSON.parse(localStorage.getItem('mosede_kurv_v1') || '{}')));
+    expect(efter.sort(), 'et felt faldt ud af kurven ved nulstillingen')
+      .toEqual(foer.sort());
+  });
 });
 
 test.describe('Personalet ser bestillingerne', () => {

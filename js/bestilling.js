@@ -61,7 +61,12 @@
      form står med To-go forvalgt. Før manglede feltet, og så stod
      begge knapper umarkerede, til gæsten selv trykkede: et valg
      uden forvalg ligner et spørgsmål, man ikke kan springe over. */
-  var kurv = { stk: {}, fyld: [], hvordan: 'afhentning' };
+  /* ⚠️ SMAGENE LIGGER FOR SIG, IKKE I stk  (25/9). kurv.stk er
+     nøgle → ANTAL og læses af antalAf, loftFor og sumlinjen; blev
+     tallet et objekt, ville hver af dem tavst regne forkert.
+     kurv.smage er nøgle → en liste pr. portion, hver med én plads
+     pr. kugle: {"2 kugler||Vaffel": [["Vanilje","Lakrids"],["",""]]}. */
+  var kurv = { stk: {}, smage: {}, fyld: [], hvordan: 'afhentning' };
   /* ADRESSEFELTET OG DETS SVAR  (20/9). adresseKontrol er
      komponenten fra js/adressefelt.js; leveringsSvar er dens sidste
      melding. `klar` er sandt, når gæsten har VALGT en officiel
@@ -82,6 +87,89 @@
     return i < 0 ? { navn: k, valg: null }
       : { navn: k.slice(0, i), valg: k.slice(i + VALG_SKEL.length) };
   }
+  /* ============================================================
+     ISENS PORTIONER — HVAD SKAL DER I DEN ENKELTE VAFFEL  (25/9)
+     ------------------------------------------------------------
+     Kundens ord: *"når man bestiller en is skal man med kugler
+     smage osv kunne gøre det rigtigt og ikke bare bestille 10
+     kugler til 1 vaffel."*
+
+     Forsiden fik det først; her er den SAMME model, så de tre veje
+     ikke viser hver sit. Reglerne — hvor mange kugler varen har,
+     hvilke smage ejeren sælger, hvad der sker med listen når
+     tælleren skifter, og om der mangler en — bor alle i Butik.
+     Her står kun kurvens bogføring og felterne på skærmen.
+     ============================================================ */
+  function retSmage(nk, antal, kugler) {
+    var sm = Butik.smagTilAntal(kurv.smage[nk], antal, kugler);
+    if (sm) kurv.smage[nk] = sm; else delete kurv.smage[nk];
+  }
+
+  /* ⚠️ TEGNET OM VED HVERT SKIFT, IKKE FLYTTET RUNDT. Skiftet sker
+     på + og –, aldrig mens gæsten har en rulleliste åben. */
+  function tegnPortioner(boks, nk, kugler, smage) {
+    tøm(boks);
+    var antal = kurv.stk[nk] || 0;
+    boks.hidden = !antal;
+    if (!antal) return;
+
+    for (var i = 0; i < antal; i++) {
+      (function (nr) {
+        var p = lav('div', 'is-portion');
+        p.setAttribute('data-portion', String(nr));
+        /* Nummeret er det, gæsten og køkkenet taler om: "den anden
+           vaffel". Med ÉN portion siger vi det ikke — et "1" på en
+           enlig is er støj. */
+        p.appendChild(lav('span', 'is-portion-nr', antal > 1 ? String(nr + 1) : '🍨'));
+        for (var k = 0; k < kugler; k++) {
+          (function (kugle) {
+            var vælg = document.createElement('select');
+            vælg.className = 'is-smag';
+            vælg.setAttribute('data-kugle', String(kugle));
+            /* Den lange etiket er skærmlæserens; på skærmen er der
+               kun plads til "Smag" (målt på forsiden 25/9). */
+            vælg.setAttribute('aria-label', 'Smag ' + (kugle + 1) + ' i vaffel ' + (nr + 1));
+            var tom = lav('option', null, 'Smag');
+            tom.value = '';
+            vælg.appendChild(tom);
+            smage.forEach(function (sm) {
+              var o = lav('option', null, sm);
+              o.value = sm;
+              vælg.appendChild(o);
+            });
+            vælg.value = ((kurv.smage[nk] || [])[nr] || [])[kugle] || '';
+            /* Den tomme kugle skal kunne ses, før gæsten trykker
+               Send — "Smag" står i samme skrift som "Vanilje". */
+            vælg.classList.toggle('mangler', !vælg.value);
+            vælg.addEventListener('change', function () {
+              vælg.classList.toggle('mangler', !vælg.value);
+              var liste = kurv.smage[nk];
+              if (!Array.isArray(liste)) return;
+              if (!Array.isArray(liste[nr])) liste[nr] = Butik.smagTilAntal(null, 1, kugler)[0];
+              liste[nr][kugle] = vælg.value;
+              gemKurv();
+              visSum();
+            });
+            p.appendChild(vælg);
+          }(k));
+        }
+        boks.appendChild(p);
+      }(i));
+    }
+  }
+
+  /* Navnet på den første vare, der mangler en smag — eller null.
+     Kun det, der ER i kurven: en efterladt liste må ikke spærre. */
+  function manglerSmag() {
+    for (var k in kurv.smage) {
+      if (!kurv.stk[k]) continue;
+      var sm = kurv.smage[k];
+      if (!Array.isArray(sm) || !sm.length) continue;
+      if (Butik.smagMangler(sm, (sm[0] || []).length)) return delNøgle(k).navn;
+    }
+    return null;
+  }
+
   function antalAf(navn) {
     var n = 0;
     for (var k in kurv.stk) if (delNøgle(k).navn === navn) n += kurv.stk[k];
@@ -102,7 +190,15 @@
       var k = JSON.parse(r);
       if (k && typeof k === 'object') {
         kurv.stk = k.stk || {};
+        kurv.smage = (k.smage && typeof k.smage === 'object') ? k.smage : {};
         kurv.fyld = Array.isArray(k.fyld) ? k.fyld : [];
+        /* ⚠️ SMAGE UDEN EN VARE SKAL VÆK. Fjerner gæsten sin is og
+           kommer tilbage i morgen, ville en efterladt liste spærre
+           for afsendelsen med et krav om en smag til en vare, der
+           ikke er i kurven. */
+        for (var sk in kurv.smage) {
+          if (!kurv.stk[sk]) delete kurv.smage[sk];
+        }
       }
     } catch (e) { /* privat browsing – kurven starter bare tom */ }
   }
@@ -1016,8 +1112,20 @@
       if (valgListe) {
         r.classList.add('har-valg');
         var vl = lav('div', 'stk-valg');
+        /* ⚠️ HVOR MANGE KUGLER OG HVILKE SMAGE  (25/9). Kuglerne
+           læses af varens eget navn, smagene af ejerens liste i
+           admin. Mangler en af dem, findes vælgeren ikke, og
+           rækken er den, der stod her i går. */
+        var isKugler = Butik.kuglerI ? Butik.kuglerI(v, s.katFor && s.katFor(v)) : 0;
+        var isSmagene = Butik.isSmage ? Butik.isSmage(data) : [];
+        if (!isSmagene.length) isKugler = 0;
         valgListe.forEach(function (valgNavn) {
           var nk = kurvNøgle(v.navn, valgNavn);
+          /* Portionerne står UNDER valgets linje og ikke inde i
+             den: linjen er en flex-række med navn, tillæg og
+             tæller, og tre rullelister i den ville klemme navnet
+             ud over kanten. */
+          var portioner = isKugler ? lav('div', 'is-portioner') : null;
           var linje = lav('div', 'stk-valg-linje');
           linje.setAttribute('data-valg', valgNavn);
           linje.appendChild(lav('span', 'stk-valg-navn', valgNavn));
@@ -1048,6 +1156,8 @@
           function saet2(n) {
             n = Math.max(0, Math.min(loftFor(v.navn), n));
             if (n) kurv.stk[nk] = n; else delete kurv.stk[nk];
+            retSmage(nk, n, isKugler);
+            if (portioner) tegnPortioner(portioner, nk, isKugler, isSmagene);
             tegn2(n);
             opdaterNote(gNavn);
             gemKurv();
@@ -1058,6 +1168,16 @@
           t2.appendChild(ned2); t2.appendChild(tal2); t2.appendChild(op2);
           linje.appendChild(t2);
           vl.appendChild(linje);
+          /* ⚠️ OG LISTEN RETTES TIL HER OGSÅ — ikke kun på + og –.
+             Kommer gæsten tilbage til en gemt kurv, skal de valgte
+             smage stå der; har ejeren slettet sin liste i mellem-
+             tiden, skal de efterladte væk, så de ikke spærrer for
+             afsendelsen med et krav, skærmen ikke stiller. */
+          retSmage(nk, kurv.stk[nk] || 0, isKugler);
+          if (portioner) {
+            tegnPortioner(portioner, nk, isKugler, isSmagene);
+            vl.appendChild(portioner);
+          }
           tegn2(kurv.stk[nk] || 0);
         });
         r.appendChild(vl);
@@ -2422,6 +2542,15 @@
       return;
     }
 
+    /* ⚠️ EN KUGLE UDEN SMAG ER EN BON, KØKKENET IKKE KAN LAVE
+       (25/9). Spørges FØR det sidste kig: gæsten skal rettes dér,
+       hvor felterne står, ikke i et vindue oven på dem. */
+    var udenSmag = manglerSmag();
+    if (udenSmag) {
+      sigFejl('Vælg smag til jeres ' + udenSmag.toLowerCase() + '.');
+      return;
+    }
+
     var linjer = [];
     var liste = bestilbare();
     for (var k in kurv.stk) {
@@ -2431,9 +2560,18 @@
          Overblik og bonen allerede viser (15/9). Og prisen er valgets,
          ikke varens (20/9): det er DEN linje, kassen og databasens
          prisværn regner på. */
-      linjer.push({ navn: dk.navn, antal: kurv.stk[k],
+      var l = { navn: dk.navn, antal: kurv.stk[k],
         pris: v ? Butik.prisMedValg(v, dk.valg) : null,
-        variant: dk.valg || undefined });
+        variant: dk.valg || undefined };
+      /* ⚠️ ÉN LINJE PR. PORTION, når der er valgt smage: to vafler
+         med hver sin smag er to forskellige ting, og køkkenet skal
+         kunne se hvilken kugle hører til hvilken vaffel. Opdelingen
+         bor i Butik.delIPortioner, så forsiden og siden her ikke kan
+         dele dem hver sin vej. Beløbet er det samme: antal 1 to
+         gange er det, antal 2 var. */
+      var sm = kurv.smage[k];
+      if (Array.isArray(sm) && sm.length) l.smage = sm;
+      linjer = linjer.concat(Butik.delIPortioner(l));
     }
 
     /* ⚠️ HANDELSBETINGELSERNE, FØRSTE GANG PÅ ENHEDEN (14/9). Reglen
@@ -2606,8 +2744,15 @@
          ved lugen, mens gæsten sad og ventede.
 
          Fundet af en prøve, ikke ved at læse. */
+      /* ⚠️ HVERT FELT I KURVEN SKAL NÆVNES HER. Kurven bygges op
+         PÅ NY og ikke tømmes, og et felt, der ikke står i listen,
+         er `undefined` fra anden bestilling og frem. Målt 25/9:
+         `smage` manglede, og det andet tryk på Send åbnede slet
+         ikke det sidste kig — ingen fejl på skærmen, bare
+         ingenting. Samme fælde som Butik.bestil's faste felter
+         (4/9: emballagen og fragtlinjen). */
       kurv = {
-        stk: {}, fyld: [],
+        stk: {}, smage: {}, fyld: [],
         hvordan: vedBordet() ? 'spis_her' : 'afhentning',
       };
       gemKurv();

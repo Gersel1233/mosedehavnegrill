@@ -1279,6 +1279,37 @@
      (forsiden/smørrebrødssiden og bestil//ved-bordet) skal dele den.
      To udgaver ville betyde, at den samme is blev to forskellige
      bonner alt efter, hvilken side gæsten kom ind ad. */
+  /* PORTIONERNES SMAGE FØLGER TÆLLEREN  (25/9)
+     Gæsten skifter fra to vafler til tre: den tredje skal være
+     tom, og de to, hun allerede har valgt, skal blive stående.
+     Begge bestillingsveje (forsiden og bestil//ved-bordet) skal
+     svare det samme, og derfor er regnestykket her og ikke i hver
+     sin formular — det er den slags kopi, der skrider fra hinanden
+     den dag, loftet eller rækkefølgen ændrer sig. */
+  function smagTilAntal(smage, antal, kugler) {
+    if (!antal || !kugler) return null;
+    var sm = Array.isArray(smage) ? smage.slice(0, antal) : [];
+    while (sm.length < antal) {
+      var tom = [];
+      for (var i = 0; i < kugler; i++) tom.push('');
+      sm.push(tom);
+    }
+    return sm;
+  }
+
+  /* MANGLER DER EN SMAG?  Samme svar til sumlinjen, til knappen og
+     til de to formularer. En kugle uden smag er en bon, køkkenet
+     ikke kan lave — og gæsten er gået hjem. */
+  function smagMangler(smage, kugler) {
+    if (!kugler || !Array.isArray(smage)) return false;
+    for (var i = 0; i < smage.length; i++) {
+      for (var j = 0; j < kugler; j++) {
+        if (!String((smage[i] || [])[j] || '').trim()) return true;
+      }
+    }
+    return false;
+  }
+
   function delIPortioner(l) {
     var sm = l && l.smage;
     if (!Array.isArray(sm) || !sm.length) return [l];
@@ -4851,6 +4882,8 @@
     smageI: smageI,
     delIPortioner: delIPortioner,
     isSmage: isSmage,
+    smagTilAntal: smagTilAntal,
+    smagMangler: smagMangler,
     kuglerI: kuglerI,
     reservedata: reservedata,
     bestillingNede: bestillingNede,

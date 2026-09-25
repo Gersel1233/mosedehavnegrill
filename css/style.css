@@ -12683,6 +12683,62 @@ body:not(.personale) .stk-valg-tillaeg {
   color: var(--red);
 }
 
+/* ---- ISENS PORTIONER — bestil/ og bordet  (25/9) ----
+   Kundens ord: "når man bestiller en is skal man med kugler smage
+   osv kunne gøre det rigtigt og ikke bare bestille 10 kugler til 1
+   vaffel". Én række pr. portion under valgets linje, ét felt pr.
+   kugle. Samme model som forsidens (havnegrillen.css) — de tre
+   veje skal vise det samme.
+
+   ⚠️ Stregen til venstre er det eneste, der siger, HVILKET valg
+   portionerne hører til. Målt på et skud af forsiden (iPhone 13):
+   uden den lå rullelisterne midt imellem "Vaffel" og "Bæger". */
+body:not(.personale) .stk-valg > .is-portioner {
+  display: grid;
+  gap: 6px;
+  margin: 2px 0 4px;
+  padding-left: 10px;
+  border-left: 2px solid rgba(214, 42, 58, .3);
+}
+body:not(.personale) .is-portion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+/* ⚠️ flex:none — uden den klemmes nummeret til en streg, når tre
+   smagsnavne skal dele en telefonbredde. */
+body:not(.personale) .is-portion-nr {
+  flex: none;
+  min-width: 22px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+  font-variant-numeric: tabular-nums;
+}
+/* ⚠️ select.is-smag OG IKKE .is-smag: sidens bare `select` (0,0,1)
+   er 46 px høj med 16 px skrift, og på forsiden blev nøjagtig den
+   fælde målt — en klasse alene slog ikke igennem, og feltet stod
+   med tal, der ikke stod i filen.
+   ⚠️ Og min-width:0 + flex:1: uden dem vokser et <select> efter sit
+   LÆNGSTE valg, og "Mango sorbet" ville skubbe rækken ud over
+   kanten. */
+body:not(.personale) select.is-smag {
+  flex: 1 1 92px;
+  width: auto;
+  min-width: 0;
+  min-height: 38px;
+  height: 38px;
+  padding: 0 9px;
+  font-size: 13px;
+}
+/* Den kugle, der stadig mangler en smag: "Smag" står i samme skrift
+   som "Vanilje", og det skal kunne ses FØR gæsten trykker Send. */
+body:not(.personale) select.is-smag.mangler {
+  background: rgba(214, 42, 58, .07);
+  border-color: rgba(214, 42, 58, .45);
+}
+
 /* ============================================================
    KØRER VI DERUD? — SVARET UNDER ADRESSEN  (16/9)
    ------------------------------------------------------------

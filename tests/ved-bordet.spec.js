@@ -840,3 +840,112 @@ test('dagens ret fra ugeplanen bliver i kurven ved bordet', async ({ page }) => 
   const kurv = await page.evaluate(() => JSON.parse(localStorage.getItem('mosede_kurv_v1')));
   expect(kurv.stk).toEqual({ 'Stegt flæsk': 1 });
 });
+
+/* ============================================================
+   ISENS SMAGE VED BORDET  (25/9)
+   ------------------------------------------------------------
+   Kundens ord: *"når man bestiller en is skal man med kugler
+   smage osv kunne gøre det rigtigt og ikke bare bestille 10
+   kugler til 1 vaffel."*
+
+   Forsiden fik det først. Huset er fuldt af ar efter en regel,
+   der kun kom det ene sted hen — fyldvælgeren 30/8, de 24
+   håndmadder 1/9, tillægget på valget 20/9 — og bag QR-koden er
+   det netop isen, gæsterne sidder og bestiller. Prøverne går
+   hele vejen: rækken, det sidste kig og den GEMTE linje.
+   ============================================================ */
+test.describe('Isens smage ved bordet', () => {
+  const IS_KAT = 6;                        // grunddata: afdeling is
+
+  function medKugler(smage) {
+    const g = grunddata();
+    g.menu_varer.push({ id: 310, kategori_id: IS_KAT, navn: '2 kugler',
+      beskrivelse: null, pris: 45, fremhaevet: false, udsolgt: false,
+      sortering: 1, aktiv: true, valg: ['Vaffel', 'Bæger'] });
+    const ind = { bestilbare_kategorier: [1, IS_KAT, 9] };
+    if (smage !== null) ind.is_smage = smage;
+    return { menu_kategorier: g.menu_kategorier, menu_varer: g.menu_varer,
+      indstillinger: ind };
+  }
+
+  async function toVafler(page, smage) {
+    await åbnBord(page, '?bord=7', { data: medKugler(smage) });
+    const række = page.locator('#bestil-stykker .stk-linje[data-vare="2 kugler"]');
+    const plus = række.locator('.stk-valg-linje[data-valg="Vaffel"] button', { hasText: '+' });
+    await plus.click();
+    await plus.click();
+    return række;
+  }
+
+  test('to vafler ved bordet bliver TO linjer — hver med sin egen smag', async ({ page }) => {
+    const række = await toVafler(page, 'Vanilje, Jordbær, Lakrids');
+
+    /* Tælleren siger HVOR MANGE vafler; portionerne siger, hvad der
+       skal i de enkelte. Tallet kommer udefra: de to klik. */
+    await expect(række.locator('.is-portion')).toHaveCount(2);
+    await expect(række.locator('.is-smag')).toHaveCount(4);
+
+    const smag = (p, k) => række.locator(
+      `.is-portion[data-portion="${p}"] .is-smag[data-kugle="${k}"]`);
+    await smag(0, 0).selectOption('Vanilje');
+    await smag(0, 1).selectOption('Jordbær');
+    await smag(1, 0).selectOption('Lakrids');
+    await smag(1, 1).selectOption('Lakrids');
+
+    await page.fill('#bestil-navn', 'Sara Holm');
+    await page.locator('#bestil-send').click();
+    /* Kiget er gæstens eget værn — står smagene ikke dér, kan hun
+       ikke se, at hun har bestilt det rigtige. */
+    await expect(page.locator('#bestil-kig')).toContainText('Vanilje + Jordbær');
+    await page.locator('#kig-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const linjer = (await gemteData(page)).bestillinger[0].linjer
+      .filter((l) => l.navn === '2 kugler');
+    expect(linjer.length, 'de to vafler blev ikke to linjer').toBe(2);
+    expect(linjer.map((l) => l.antal), 'en portion er én').toEqual([1, 1]);
+    expect(linjer.map((l) => (l.smage || []).join('+')).sort(),
+      'smagene fulgte ikke med den enkelte vaffel')
+      .toEqual(['Lakrids+Lakrids', 'Vanilje+Jordbær']);
+    /* ⚠️ OG BELØBET ER DET SAMME. To linjer à 1 er de samme to, som
+       antal 2 var — ellers ville opdelingen koste gæsten penge. */
+    expect(linjer.reduce((a, l) => a + l.pris * l.antal, 0),
+      'opdelingen ændrede beløbet').toBe(90);
+  });
+
+  test('en is uden valgt smag kan ikke sendes fra bordet', async ({ page }) => {
+    const række = await toVafler(page, 'Vanilje, Jordbær');
+    await række.locator('.is-portion[data-portion="0"] .is-smag[data-kugle="0"]')
+      .selectOption('Vanilje');
+
+    await page.fill('#bestil-navn', 'Sara Holm');
+    await page.locator('#bestil-send').click();
+
+    await expect(page.locator('#bestil-fejl')).toContainText('Vælg smag');
+    /* Modstykket: intet må være sendt, og kiget må ikke være åbnet.
+       En besked på skærmen er ikke et værn, hvis rækken alligevel
+       landede. */
+    await expect(page.locator('#bestil-kig')).toBeHidden();
+    expect(((await gemteData(page)).bestillinger || []).length,
+      'bestillingen blev sendt uden smag').toBe(0);
+  });
+
+  /* ⚠️ HAR EJEREN INGEN LISTE, FINDES VÆLGEREN IKKE — og bordet
+     opfører sig præcis som i går. Uden den her ville en regel, der
+     ALTID krævede smag, bestå prøven ovenfor og spærre for hver
+     eneste isbestilling hos en ejer, der ikke har skrevet listen. */
+  test('uden ejerens liste spørges der ikke om smag ved bordet', async ({ page }) => {
+    const række = await toVafler(page, null);
+    await expect(række.locator('.is-portion')).toHaveCount(0);
+
+    await page.fill('#bestil-navn', 'Sara Holm');
+    await page.locator('#bestil-send').click();
+    await page.locator('#kig-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const linjer = (await gemteData(page)).bestillinger[0].linjer
+      .filter((l) => l.navn === '2 kugler');
+    expect(linjer.length, 'uden smage skal de to stadig være ÉN linje').toBe(1);
+    expect(linjer[0].antal).toBe(2);
+  });
+});
