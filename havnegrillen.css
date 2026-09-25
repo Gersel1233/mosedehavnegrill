@@ -2905,3 +2905,155 @@ footer .smiley-linje{
 .is-kortlink{display:block;width:fit-content;margin:10px auto 0;font-size:13px;font-weight:600;color:var(--red-tekst);text-decoration:none;border-bottom:1px solid rgba(214,42,58,.3);padding-bottom:1px}
 .is-kortlink:hover,.is-kortlink:focus-visible{border-bottom-color:var(--red-tekst)}
 .is-kortlink.skjult{display:none}
+
+/* ============================================================
+   BYG DIN IS — ISENS EGEN BLOK  (25. sep 2026)
+   ------------------------------------------------------------
+   Kundens ord: *"lad hele is-blokken ryge ned og stå som en
+   eksklusiv ting og skille sig ud fra de andre ligesom dagens
+   ret ... et ordentligt bestillingssystem, der er dygtigt."*
+
+   ⚠️ FORMEN ER DAGENS RETS, IKKE EN NY. Den blok har allerede
+   husets svar på "det her er vigtigere end resten": egen ramme,
+   eget hoved. En tredje slags fremhævelse ville være en tredje
+   ting at holde i sync.
+
+   ⚠️ INGEN NY SKRIFTSTØRRELSE OG INGEN NY SKYGGE. Skralden i
+   tests/typografi.spec.js stod på 30 af 30 størrelser og 37 af
+   37 skygger, da det her blev skrevet.
+   ============================================================ */
+.isbyg-blok {
+  margin-top: 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 139, 118, .22), rgba(255, 139, 118, .10));
+  box-shadow: var(--kant-inde);
+  overflow: hidden;
+}
+.isbyg-blok-hoved {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 15px 11px;
+  border-bottom: 1px solid rgba(214, 42, 58, .16);
+}
+.isbyg-blok-tegn { font-size: 19px; line-height: 1; flex: none; }
+.isbyg-blok-titel { font-size: 17px; font-weight: 600; margin: 0; }
+/* Vejen videre står i hovedet og ikke nederst: gæsten skal kunne
+   se hele sortimentet, FØR hun er halvvejs gennem et forløb. */
+.isbyg-blok-link {
+  margin-left: auto;
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.isbyg-blok-link::after { content: " ›"; }
+.isbyg-blok-krop { padding: 4px 15px 15px; }
+.glasafsnit .isbyg-blok-titel, .glasafsnit .isbyg-blok { color: #fff; }
+.glasafsnit .isbyg-blok { background: linear-gradient(180deg, rgba(255, 150, 130, .26), rgba(255, 150, 130, .12)); }
+.glasafsnit .isbyg-blok-link { color: #ffccd1; }
+
+/* ---- Forløbet: ét trin ad gangen ---- */
+.isbyg-trin { padding: 13px 0; border-bottom: 1px solid rgba(214, 42, 58, .13); }
+.isbyg-trin:last-of-type { border-bottom: 0; }
+/* ⚠️ ET LÅST TRIN ER DÆMPET, IKKE SKJULT. Gæsten skal kunne se,
+   hvor mange skridt der er tilbage; et trin, der dukker op af
+   ingenting, føles som en side, der skifter under fingeren. */
+.isbyg-trin.laast { opacity: .42; }
+.isbyg-hoved { display: flex; align-items: center; gap: 8px; }
+/* Nummeret er forløbets rygrad — det er dét, der gør det til en
+   rækkefølge og ikke fire spørgsmål i en bunke. */
+.isbyg-nr {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--red);
+  font-variant-numeric: tabular-nums;
+}
+.isbyg-titel { font-size: 15px; font-weight: 600; margin: 0; }
+.isbyg-krop { margin-top: 10px; }
+
+.isbyg-valg, .isbyg-ekstra { display: flex; flex-wrap: wrap; gap: 8px; }
+.isbyg-knap {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--cream2);
+  box-shadow: var(--kant-inde);
+  cursor: pointer;
+  transition: transform .18s ease, background .18s ease, color .18s ease;
+}
+.isbyg-knap-navn { font-weight: 600; }
+.isbyg-knap-bi { font-size: 12px; color: var(--red); font-variant-numeric: tabular-nums; }
+.isbyg-knap:hover:not(:disabled) { transform: translateY(-1px); }
+.isbyg-knap.valgt { color: #fff; background: var(--red); }
+.isbyg-knap.valgt .isbyg-knap-bi { color: rgba(255, 255, 255, .86); }
+.isbyg-knap:disabled { cursor: default; transform: none; }
+
+/* Kuglerne: ét spørgsmål pr. linje, så det ER en rækkefølge og
+   ikke et gitter, man skal regne ud. */
+.isbyg-kugle { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.isbyg-kugle:first-child { margin-top: 0; }
+.isbyg-kugle-nr {
+  flex: none;
+  min-width: 62px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+}
+/* ⚠️ select.isbyg-smag OG IKKE .isbyg-smag: sidens `select.inp`
+   (0,1,1) slår en ren klasse (0,1,0) — den fælde blev målt 25/9
+   på isens gamle felter, hvor 38 px blev til 48. */
+select.isbyg-smag { flex: 1 1 auto; min-width: 0; height: 42px; font-size: 14px; }
+select.isbyg-smag.mangler { background-color: rgba(214, 42, 58, .1); }
+
+.isbyg-hint { font-size: 13px; color: var(--muted); }
+/* ⚠️ HØJT, IKKE TAVST. Uden ejerens smagsliste forsvandt husets
+   vigtigste spørgsmål før — nu står det som en advarsel. */
+.isbyg-mangler {
+  padding: 10px 13px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  background: rgba(214, 42, 58, .1);
+  /* ⚠️ DEN SKYGGE FINDES I FORVEJEN. Skralden i
+     tests/typografi.spec.js stod på 37 af 37, og en ny værdi
+     ville hæve loftet for en advarselsboks — ikke en grund god
+     nok. `inset 0 0 0 1.5px rgba(214,42,58,.32)` er husets
+     røde ramme og bruges to steder i forvejen. */
+  box-shadow: inset 0 0 0 1.5px rgba(214,42,58,.32);
+}
+
+.isbyg-bund { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.isbyg-sum { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.isbyg-laeg { margin-left: auto; flex: none; }
+.isbyg-laeg:disabled { opacity: .5; cursor: default; }
+.isbyg-kvit {
+  margin-top: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+.isbyg-kvit.vis { opacity: 1; }
+.glasafsnit .isbyg-hint { color: rgba(255, 255, 255, .76); }
+.glasafsnit .isbyg-kvit { color: #ffccd1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .isbyg-knap, .isbyg-kvit { transition: none; }
+}

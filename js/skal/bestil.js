@@ -1302,6 +1302,101 @@
     });
   }
 
+  /* ============================================================
+     IS-BLOKKEN — BYG DIN IS  (25/9 2026)
+     ------------------------------------------------------------
+     Kundens ord: *"lad hele is-blokken ryge ned og stå som en
+     eksklusiv ting og skille sig ud fra de andre ligesom dagens
+     ret ... start med vaffel, hvor mange kugler du vil have, +1
+     okay hvad smag, bam +2 hvad smag, skal du have andet."*
+
+     Formen er dagens rets: en egen ramme med sit eget hoved. Selve
+     forløbet bor i js/isbygger.js, som bordet også skal bruge —
+     så de to veje ikke kan komme til at spørge om forskellige
+     ting.
+     ============================================================ */
+  function isVarer() {
+    return grupper().filter(function (g) { return g.afdeling === 'is'; })
+      .reduce(function (ud, g) { return ud.concat(g.varer || []); }, [])
+      /* En "slags" er smørrebrødets form — den findes ikke i isen,
+         men grupper() kan pakke en vare ind, og så ville bygger'en
+         få en kasse i stedet for en vare. */
+      .map(function (v) { return v && v.vare ? v.vare : v; });
+  }
+
+  /* ⚠️ NAVNET ER isbyg- OG IKKE is-blok. `.is-blok` er OPTAGET af
+     forsidens is-afsnit (section#isen, is-vitrinen), og MÅLT 25/9
+     gav genbruget to blokke på skærmen — min egen og vitrinens —
+     plus at min CSS lavede vitrinen om. En klasse er et navnerum;
+     det skal slås op, ikke gættes. */
+  function isBlok(liste) {
+    var varer = isVarer();
+    if (!varer.length) return;
+
+    var blok = lav('div', 'isbyg-blok');
+    var hoved = lav('div', 'isbyg-blok-hoved');
+    hoved.appendChild(lav('span', 'isbyg-blok-tegn', '🍦'));
+    hoved.appendChild(lav('h4', 'isbyg-blok-titel', 'Byg din is'));
+    /* ⚠️ VEJEN TIL HELE SORTIMENTET  (kundens ord: "på bestil is
+       skal også være se hele is-sortimentet og linke perfekt og
+       korrekt op til de andre steder"). Målet #afsnit-is findes
+       allerede på menukortet og har sin egen scroll-margin. */
+    var mere = lav('a', 'isbyg-blok-link', 'Se hele is-sortimentet');
+    mere.href = 'm-menukort.html#afsnit-is';
+    hoved.appendChild(mere);
+    blok.appendChild(hoved);
+
+    var krop = lav('div', 'isbyg-blok-krop');
+    blok.appendChild(krop);
+
+    var byg = window.MosedeIsbygger && window.MosedeIsbygger.byg(krop, {
+      data: data,
+      varer: varer,
+      laeg: laegIs,
+    });
+
+    /* ⚠️ INGEN BYGGER, INGEN IS-BLOK — men heller ingen tom ramme.
+       Har ejeren ingen kugleis med et valg, falder vi tilbage til
+       de almindelige rækker, så isen stadig kan bestilles. */
+    if (!byg) {
+      grupper().filter(function (g) { return g.afdeling === 'is'; })
+        .forEach(function (g) { kategoriRække(g, liste); });
+      return;
+    }
+    liste.appendChild(blok);
+  }
+
+  /* ⚠️ ÉN IS ER ÉN LINJE — og to is med hver sin smag er to.
+     Nøglen bærer derfor smagene: uden dem ville "2 kugler · Vaffel
+     med vanilje" og "... med lakrids" lægge sig oven i hinanden som
+     antal 2, og køkkenet ville lave to ens. */
+  function laegIs(is) {
+    var pris = Butik.prisMedValg
+      ? Butik.prisMedValg(is.vare, is.variant) : is.vare.pris;
+    var nøgle = 'is|' + is.vare.navn + '|' + (is.variant || '')
+      + '|' + (is.smage || []).join('+');
+    var post = kurv[nøgle];
+    if (post) {
+      post.antal += 1;
+    } else {
+      kurv[nøgle] = { navn: is.vare.navn, pris: pris, antal: 1,
+                      variant: is.variant || null, kat: is.vare.kategori_id,
+                      kugler: is.kugler || 0,
+                      /* Smagene ligger som ÉN portion pr. linje —
+                         antallet på linjen er antallet af den
+                         nøjagtig samme is. */
+                      smage: (is.smage || []).length ? [is.smage.slice()] : undefined };
+    }
+    (is.ekstra || []).forEach(function (v) {
+      var n2 = 'is-ekstra|' + v.navn;
+      if (kurv[n2]) kurv[n2].antal += 1;
+      else kurv[n2] = { navn: v.navn, pris: v.pris, antal: 1,
+                        variant: null, kat: v.kategori_id, kugler: 0 };
+    });
+    visSum();
+    visKategoriTal();
+  }
+
   function visVarer() {
     var liste = panel && panel.querySelector('[data-liste]');
     if (!liste) return;
@@ -1322,7 +1417,15 @@
        tegnet. Gæsten trykkede "+ tilføj" og der skete ingenting.
        Fejlen stod kun i konsollen. */
     Array.prototype.slice.call(liste.children).forEach(function (r) {
-      if (r.classList.contains('item') || r.classList.contains('dagens-blok')) {
+      /* ⚠️ HVER BLOK I LISTEN SKAL NÆVNES HER. Optegningen rydder
+         KUN det, den kender, og en blok, der ikke står på listen,
+         bliver liggende og får en ny ved siden af sig ved hvert
+         tryk. MÅLT 25/9, da is-blokken kom til: to is-blokke på
+         skærmen efter ét klik. Samme familie som kurvens faste
+         felter (4/9) — en liste, der skal holdes ved lige. */
+      if (r.classList.contains('item')
+          || r.classList.contains('dagens-blok')
+          || r.classList.contains('isbyg-blok')) {
         liste.removeChild(r);
       }
     });
@@ -1359,7 +1462,16 @@
     }
 
     if (side.folder) {
-      grupper().forEach(function (g) { kategoriRække(g, liste); });
+      /* ⚠️ ISEN LIGGER FOR SIG — OG NEDERST  (25/9). Kundens ord:
+         *"lad hele is-blokken ryge ned og stå som en eksklusiv ting
+         og skille sig ud fra de andre ligesom dagens ret."* Så
+         længe isen var en kategori mellem de andre, var den en
+         fold som pølser og øl. Nu er den sidste blok på listen og
+         har sin egen form — og den bygges, den bestilles ikke af
+         en tæller på en række. */
+      grupper().filter(function (g) { return g.afdeling !== 'is'; })
+        .forEach(function (g) { kategoriRække(g, liste); });
+      isBlok(liste);
     } else {
       /* ⚠️ FYLDET STÅR ØVERST, IKKE UNDER DE FÆRDIGE RETTER.
          Det er dét, gæsten kommer efter; rejemad, tartar og
