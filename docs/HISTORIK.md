@@ -7,6 +7,66 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**BYG DIN IS — OGSÅ VED BORDET** (25/9, sent). Forsidens isbygger kører nu
+også bag QR-koden: vaffel, kugler, smag pr. kugle, noget mere. Én fil
+(`js/isbygger.js`), to sider — en gæst ved bordet skal ikke møde en anden
+slags isbestilling end en gæst ved lugen. `bestil/` er `kun-smoer` og kan
+aldrig vise is; den side er derfor urørt.
+
+**⚠️ FIRE FEJL, MÅLT I EN BROWSER — ingen af dem var synlige i koden:**
+
+1. **Hele siden væltede.** Rækkebyggeren slog `iGruppe[navn].boks` op uden at
+   spørge, om gruppen fandtes — og den findes ikke for is-varerne, som
+   byggeren har taget ud. Bord 7 svarede *"Vi kan ikke hente kortet lige
+   nu"* med hele menukortet liggende usynligt bag beskeden. Husets egen
+   kommentar to linjer længere oppe advarer mod præcis dét; værnet stod
+   bare på `.boks` i stedet for på gruppen
+2. **Hvid tekst på hvidt papir.** Blokkens baggrund blev sat, farven ikke —
+   så arvede teksten bordsidens hvide skrift. *"Vaffel eller bæger?"* stod
+   i #fff på #fff, og gæsten så fire røde tal og ingen spørgsmål
+3. **112 px tomt sand.** Blokken er et `<section>`, og arket har en generisk
+   `section { padding-block: clamp(56px, 7vw, 104px) }`. Nøjagtig samme
+   fælde som `.dagens-blok` faldt i, med kommentaren stående ved siden af.
+   Højden faldt fra 744 til 632 px
+4. **Det udsolgte forsvandt.** Byggeren viser ikke det udsolgte og det
+   prisløse — den kan ikke sælge dem — men siden tog HELE is-afdelingen ud.
+   En udsolgt softice stod væk fra bordet i stedet for med sit "Udsolgt".
+   Listen kommer nu fra byggeren selv (`MosedeIsbygger.iBrug`)
+
+**ÉT OPSLAG FOR HELE KURVEN** (`kurvPost`). Otte steder i `js/bestilling.js`
+slog varen op på NAVNET i nøglen, og byggerens nøgle bærer ikke et navn, der
+findes (`is||2 kugler||Vaffel||Vanilje`). Uden det ville isen stå uden pris i
+kurven, tælle nul i summen, ikke få emballage og lande prisløs på bonen.
+Husets faste feltliste-fælde, femte gang.
+
+**OG FALSIFIKATIONEN AFSLØREDE TO HULLER I PRØVERNE.** Da jeg fjernede
+farven og `padding: 0` igen, bestod alle otte nye prøver. En falsifikation,
+der ikke falder, er et spørgsmål, ikke et bevis — så der kom to prøver til,
+begge på den BEREGNEDE stil: WCAG-kontrasten mod blokkens egen grund (set
+fejle: 1,00:1) og `padding` på `<section>` (set fejle: 56px).
+
+**KORTENE MOD DATABASEN: 21 UENIGHEDER OG 12 HULLER BLEV TIL 9 OG 2** (25/9).
+Rapporten råbte om ting, der var i orden, og tav om én, der ikke var:
+
+- **Ti falske huller.** Kaffens stor-priser ER i databasen, som et *valg* på
+  varen (Lille/Stor med tillæg). Rapporten ledte efter en VARE ved navn
+  "Americano, stor". db-navnet kan nu skrives `vare|valg`, og alle ti
+  stemmer med kortet
+- **Atten afgjorte uenigheder.** Håndmadderne stod som "kort 27, db 24" hver
+  eneste kørsel, og den næste, der læser rapporten, retter databasen OP til
+  27. Mikkels afgørelse 25/9 (*"24 gælder — kortbilledet er forkert"*) ligger
+  nu i `kortene.py` som `AFGJORT` og står i sit eget afsnit
+- **⚠️ OG EN, DER ALDRIG BLEV MÅLT: DEN GLUTENFRI VAFFEL.** Kort 05 lover
+  ordret *"samme pris som almindelig vaffel"*; databasen tager **3 kroner
+  ekstra** på alle seks. Påstanden stod i afsnit C — det, rapporten ikke kan
+  måle — og derfor så ingen den. Den kan måles, og den står nu i A.
+  **Mikkel skal svare på, om kortet eller tillægget er forkert.**
+
+`supabase/kortenes-huller-25-9.sql` lukker de fire huller, kortene selv giver
+prisen på. Prøvet på en lokal Postgres: kørt to gange uden dubletter, værnet
+set fejle. Tre ting er med vilje ikke i filen — de står nederst i den.
+
+
 **ISEN BESTILLES NU PR. PORTION — HVAD SKAL DER I DEN ENKELTE VAFFEL**
 (25/9). Mikkels ord: *"når man bestiller en is skal man med kugler smage
 osv osv kunne gøre det rigtigt og ikke bare bestille 10 kugler til 1
