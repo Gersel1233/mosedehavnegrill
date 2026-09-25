@@ -3040,7 +3040,27 @@ select.isbyg-smag.mangler { background-color: rgba(214, 42, 58, .1); }
 
 .isbyg-bund { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .isbyg-sum { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.isbyg-laeg { margin-left: auto; flex: none; }
+/* ⚠️ EGEN STIL, IKKE `g solid blk`. Den klasse er sendeknappens,
+   og forsiden finder sendeknappen som den FØRSTE af dem i panelet
+   — se noten i js/isbygger.js. Formen er den samme, så gæsten ser
+   den samme slags knap; kun navnet er byggerens eget. */
+.isbyg-laeg {
+  margin-left: auto;
+  flex: none;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--red);
+  /* ⚠️ DEN SKYGGE FINDES I FORVEJEN — husets røde knap bruger den.
+     Skralden står på 37 af 37, og en ny værdi ville hæve loftet for
+     en knap, der skal ligne de andre alligevel. */
+  box-shadow: inset 0 1px .5px rgba(255,255,255,.45),0 8px 20px rgba(214,42,58,.35);
+  cursor: pointer;
+}
 .isbyg-laeg:disabled { opacity: .5; cursor: default; }
 .isbyg-kvit {
   margin-top: 9px;

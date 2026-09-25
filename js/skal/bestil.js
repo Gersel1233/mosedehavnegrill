@@ -1189,10 +1189,25 @@
     dagensRetter().forEach(function (r) { lovlige['dagens|' + r.navn] = true; });
 
     Object.keys(kurv).forEach(function (k) {
-      /* Et valg (15/9) hænger på varens nøgle: "12|Pitabrød|valg|Kebab". */
-      var ok = k.indexOf('v|') === 0
-        ? lovlige['variant|' + k.slice(k.lastIndexOf('|') + 1)]
-        : lovlige[k.split('|valg|')[0]];
+      /* ⚠️ HVER NØGLEFORM SKAL KENDES HER. Hvidlisten slår op på
+         "kategori|navn", og en nøgle, den ikke kan læse, bliver
+         SLETTET — tavst. Målt 25/9, da isbyggeren kom til: en is,
+         der var lagt i kurven, forsvandt i det øjeblik gæsten rørte
+         klokkeslættet, fordi "is|2 kugler|Vaffel|Vanilje" ikke
+         ligner noget på listen. Samme familie som kurvens faste
+         felter i js/bestilling.js (4/9) og Butik.bestil (4/9) —
+         tredje gang på én dag.
+
+         Isens nøgle bærer ikke kategorien, men POSTEN gør: den har
+         både `kat` og `navn`, og de to er præcis det, hvidlisten
+         er bygget af. */
+      var post = kurv[k];
+      var ok = (k.indexOf('is|') === 0 || k.indexOf('is-ekstra|') === 0)
+        ? lovlige[post.kat + '|' + post.navn]
+        : k.indexOf('v|') === 0
+          /* Et valg (15/9) hænger på varens nøgle: "12|Pitabrød|valg|Kebab". */
+          ? lovlige['variant|' + k.slice(k.lastIndexOf('|') + 1)]
+          : lovlige[k.split('|valg|')[0]];
       if (!ok) delete kurv[k];
     });
   }

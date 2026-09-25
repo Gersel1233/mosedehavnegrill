@@ -177,7 +177,14 @@ window.MosedeIsbygger = (function () {
     /* ---------- BUNDEN ---------- */
     var bund = lav('div', 'isbyg-bund');
     var sum = lav('div', 'isbyg-sum');
-    var knapLæg = lav('button', 'g solid blk isbyg-laeg');
+    /* ⚠️ IKKE `g solid blk`. MÅLT 25/9: forsidens visKnap() finder
+       sendeknappen med `find('button.g.solid.blk', panel)` — altså
+       den FØRSTE i panelet — og byggerens knap står før den i
+       listen. Så skrev siden sin egen tekst oven i min ("Vælg noget
+       først"), og sendeknappen blev aldrig fundet: der kunne slet
+       ikke bestilles. Knappen her har sin egen klasse og sin egen
+       stil. */
+    var knapLæg = lav('button', 'isbyg-laeg');
     knapLæg.type = 'button';
     bund.appendChild(sum);
     bund.appendChild(knapLæg);
