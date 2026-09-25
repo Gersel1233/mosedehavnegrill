@@ -214,6 +214,8 @@
      håndmadder er EJERENS egne fotos; resten er GENERERET (Sjinn),
      på kundens beslutning — samme kategori som tapasbillederne
      11/9. Skiftes de til rigtige fotos, er det én linje her.
+     Andre retter, Sandwich, Snacks og Reception (25/9) er ligeledes
+     GENEREREDE (fal.ai) — se nederst i listen.
 
      ⚠️ KENDINGEN ER NAVNET, og rækkefølgen betyder noget:
      "Sandwich og retter fra pladen" indeholder "retter", og
@@ -244,6 +246,16 @@
     [/^øl$/, 'billeder/menu-oel.jpg'],
     [/^vin\b|cava|champagne/, 'billeder/menu-vin.jpg'],
     [/sodavand/, 'billeder/menu-sodavand.jpg'],
+    /* De fire, der stod uden foto (25/9). Også GENEREREDE — fal.ai,
+       nano-banana/edit — men med stedets egne fotos som reference:
+       kagebordet på molen for dugen og udsigten, og deres egen
+       sandwich for brødet og fyldet. Retterne er kortets egne.
+       ⚠️ PRÆCISE NAVNE: "Retter" (stegt flæsk) står ovenfor med sit
+       eget foto, og "andre retter" må ikke tage det. */
+    [/^andre retter$/, 'billeder/menu-andre-retter.jpg'],
+    [/^sandwich$/, 'billeder/menu-sandwich.jpg'],
+    [/snacks/, 'billeder/menu-snacks.jpg'],
+    [/pindemad/, 'billeder/menu-pindemad.jpg'],
   ];
   function fotoFor(k) {
     var n = String((k && k.navn) || '').toLowerCase().trim();

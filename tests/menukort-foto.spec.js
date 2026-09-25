@@ -26,6 +26,31 @@ test.describe('Menukortets kategorier står på et foto', () => {
     await expect(fyld.locator('.mk-bg')).toHaveCount(0);
   });
 
+  /* DE FIRE, DER STOD UDEN FOTO (25/9). Navnene er produktionens.
+     ⚠️ "Andre retter" indeholder "retter" — den må ikke tage stegt
+     flæsks foto, og "Retter" må ikke miste det. */
+  test('Andre retter, Sandwich, Snacks og Reception får hver sit foto', async ({ page }) => {
+    const d = grunddata();
+    const nye = [
+      [40, 'Retter', /menu-retter\.jpg/],
+      [41, 'Andre retter', /menu-andre-retter\.jpg/],
+      [42, 'Sandwich', /menu-sandwich\.jpg/],
+      [43, 'Snacks og slik', /menu-snacks\.jpg/],
+      [44, 'Reception og pindemad', /menu-pindemad\.jpg/],
+    ];
+    for (const [id, navn] of nye) {
+      d.menu_kategorier.push({ id, afdeling: 'mad', navn, sortering: id, aktiv: true });
+      d.menu_varer.push({ id: id * 10, kategori_id: id, navn: navn + ' vare', beskrivelse: null, pris: 50,
+        fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true });
+    }
+    await åbnSkal(page, '/m-menukort.html', { data: d });
+    for (const [, navn, fil] of nye) {
+      const img = page.locator(`#mk-kat .panel[data-kategori="${navn}"] .mk-bg img`);
+      await expect(img, navn).toHaveCount(1);
+      await expect(img, navn).toHaveAttribute('src', fil);
+    }
+  });
+
   /* ⚠️ BUNDEN UNDER FOTOET SKAL VÆRE MØRK OG TÆT. Fotoet er højst
      skærmhøjt og sticky, så i et langt kort er der stykker af kortet
      uden foto — dér ville husets hvide .panel skinne op under sløret.
