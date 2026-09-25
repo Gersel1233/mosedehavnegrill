@@ -123,66 +123,143 @@
     return ud;
   }
 
-  function fyld(indstillinger) {
+  /* ============================================================
+     FOTOET STÅR DER MED DET SAMME — OG TONER IND  (26/9)
+     ------------------------------------------------------------
+     Mikkels ord: *"animationerne på billederne der loader på
+     siderne som f.eks tapas og alle dem nedenunder skal gøres
+     bedre"*.
+
+     MÅLT: pladsen blev først fyldt, når Butik.hent() havde svaret
+     (8-9 kald). Imens stod designværktøjets stiplede grå kasse med
+     "Foto af tapasfadet" — og trykkede man på den, åbnede telefonens
+     FILVÆLGER (image-slot.js er Claude Designs redigeringsværktøj).
+     Så poppede fotoet hårdt frem uden overgang.
+
+     Nu fyldes pladserne, SÅ SNART siden er læst, med husets egne
+     fotos (data-fil / data-filer), og hvert foto venter usynligt, til
+     det er hentet, og toner så ind. Når databasen svarer, kaldes
+     fyld() igen med ejerens indstillinger: har han lagt andre fotos
+     op i admin, tones de ind i stedet — ellers røres intet. Admin
+     slår stadig repoet; den kommer bare et sekund senere.
+
+     ⚠️ PLADSEN HUSKES PÅ SIT ID. Første kald skifter <image-slot>
+     ud; derfor gemmes originalen her, så andet kald kan regne det
+     samme ud fra de samme attributter — og kan se, om svaret er det
+     samme (så skiftes intet, og intet blinker).
+     ============================================================ */
+  var pladser = {};
+  var næsteId = 0;
+
+  function tegnFelt(orig) {
+    var felt = document.createElement('div');
+    felt.className = 'foto-felt f-' + (orig.getAttribute('data-flade') || 'mad')
+      + ' ' + (orig.className || '');
+    felt.setAttribute('aria-hidden', 'true');
+    felt.textContent = orig.getAttribute('data-tegn');
+    return felt;
+  }
+
+  /* Et foto toner ind, når det ER hentet — ikke når tagget er sat
+     ind. Kan det ikke hentes, bliver pladsen havnens flade med sit
+     tegn i stedet for et brækket billede. */
+  var roligt = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function tonInd(img, rod, orig) {
+    img.addEventListener('error', function () {
+      if (rod.parentNode) rod.parentNode.replaceChild(tegnFelt(orig), rod);
+      if (rod._stop) rod._stop();
+    }, { once: true });
+    /* Ved reduceret bevægelse står fotoet fremme med det samme —
+       også mens det hentes. Ingen indtoning. */
+    if (roligt) return;
+    rod.classList.add('foto-venter');
+    function klar() { rod.classList.remove('foto-venter'); }
+    if (img.complete && img.naturalWidth > 0) { klar(); return; }
+    img.addEventListener('load', klar, { once: true });
+  }
+
+  function byg(orig, i) {
+    var noegle = NOEGLER[orig.id];
+    var fraAdmin = orig.hasAttribute('data-pulje') ? pulje(orig, i)
+      : (noegle && String(i[noegle] || '').trim() ? [String(i[noegle]).trim()] : []);
+    var reserve = !fraAdmin.length;
+    var liste = reserve ? filer(orig) : fraAdmin;
+    if (liste.length > 1) {
+      var g = galleri(liste, orig);
+      if (reserve) g.setAttribute('data-reserve', '1');
+      return { el: g, spor: 'g:' + liste.join(' '), img: g.querySelector('img') };
+    }
+    var url = liste[0] || '';
+    /* Ejerens egne fotos ligger i repoet, til han skifter dem i
+       admin. Adressen står i HTML'en ved pladsen — samme grund
+       som tegnet: den, der flytter pladsen, tager billedet med. */
+    if (!url) url = String(orig.getAttribute('data-fil') || '').trim();
+
+    if (url) {
+      var foto = document.createElement('img');
+      /* ⚠️ HVOR KOM BILLEDET FRA? Historiesiden skal kunne sige,
+         at dens billeder er STEMNINGSBILLEDER og ikke arkivfotos
+         fra Mosede — men kun så længe det er repoets, der står
+         der. I det sekund ejeren lægger sit eget op i admin, er
+         sætningen forkert. Flaget er derfor et faktum om DEN
+         viste fil, ikke en fast tekst i HTML'en. */
+      if (reserve) foto.setAttribute('data-reserve', '1');
+      foto.decoding = 'async';
+      /* ⚠️ KLASSERNE FØLGER MED. .tall og .short er galleriets to
+         højder, og uden dem falder rækkerne sammen til nul. */
+      foto.className = 'foto-fyldt ' + (orig.className || '');
+      /* ⚠️ ALT-TEKSTEN ER FOTOETS, IKKE PLADSENS. Designets
+         placeholder siger, hvad pladsen var TÆNKT til ("Foto:
+         tapasfad") — og der ligger nu et billede af tartar i
+         den. En skærmlæser, der siger "tapasfad" over et foto af
+         tartar, oplyser forkert om maden. Er der ingen data-alt,
+         falder vi tilbage på tom: et forkert alt er værre end
+         intet alt. */
+      foto.alt = orig.getAttribute('data-alt') || '';
+      foto.loading = 'lazy';
+      foto.src = url;
+      return { el: foto, spor: 'f:' + url, img: foto };
+    }
+
+    /* ⚠️ ELEMENTET SKIFTES UD, ikke fyldes. <image-slot> er en
+       rigtig komponent med sin egen indmad — sætter man tekst i
+       den, står tegnet oven i dens "Foto … / or browse files /
+       Replace / Remove". Præcis den fejl blev målt på
+       nyhedskortene 26/8. */
+    return { el: tegnFelt(orig), spor: 't:' + orig.getAttribute('data-tegn'), img: null };
+  }
+
+  /* ⚠️ DET TIDLIGE KALD MÅ ALDRIG KOMME EFTER DET RIGTIGE. I
+     øvetilstanden (og med en hurtig database) svarer Butik.hent(),
+     FØR siden er færdiglæst — så kom fyld(ejerens) først og fyld({})
+     bagefter, og repoets fotos skrev ejerens over. Set 26/9 i
+     prøverne "ejerens egne fotos slår sidens". */
+  var harSvar = false;
+  function fyldTidligt() { if (!harSvar) fyldMed({}); }
+  function fyld(indstillinger) { harSvar = true; fyldMed(indstillinger); }
+
+  function fyldMed(indstillinger) {
     var i = indstillinger || {};
-    var pladser = document.querySelectorAll('image-slot[data-tegn]');
 
-    Array.prototype.forEach.call(pladser, function (plads) {
-      var noegle = NOEGLER[plads.id];
-      var fraAdmin = plads.hasAttribute('data-pulje') ? pulje(plads, i)
-        : (noegle && String(i[noegle] || '').trim() ? [String(i[noegle]).trim()] : []);
-      var reserve = !fraAdmin.length;
-      var liste = reserve ? filer(plads) : fraAdmin;
-      if (liste.length > 1) {
-        var g = galleri(liste, plads);
-        if (reserve) g.setAttribute('data-reserve', '1');
-        plads.parentNode.replaceChild(g, plads);
-        return;
-      }
-      var url = liste[0] || '';
-      /* Ejerens egne fotos ligger i repoet, til han skifter dem i
-         admin. Adressen står i HTML'en ved pladsen — samme grund
-         som tegnet: den, der flytter pladsen, tager billedet med. */
-      if (!url) url = String(plads.getAttribute('data-fil') || '').trim();
+    /* Nye pladser (første kald — eller en plads, der er kommet til). */
+    Array.prototype.forEach.call(document.querySelectorAll('image-slot[data-tegn]'), function (plads) {
+      if (!plads.id) plads.id = 'billedplads-' + (++næsteId);
+      pladser[plads.id] = { orig: plads, nu: plads, spor: null };
+    });
 
-      if (url) {
-        var foto = document.createElement('img');
-        /* ⚠️ HVOR KOM BILLEDET FRA? Historiesiden skal kunne sige,
-           at dens billeder er STEMNINGSBILLEDER og ikke arkivfotos
-           fra Mosede — men kun så længe det er repoets, der står
-           der. I det sekund ejeren lægger sit eget op i admin, er
-           sætningen forkert. Flaget er derfor et faktum om DEN
-           viste fil, ikke en fast tekst i HTML'en. */
-        if (reserve) foto.setAttribute('data-reserve', '1');
-        foto.decoding = 'async';
-        /* ⚠️ KLASSERNE FØLGER MED. .tall og .short er galleriets to
-           højder, og uden dem falder rækkerne sammen til nul. */
-        foto.className = 'foto-fyldt ' + (plads.className || '');
-        foto.src = url;
-        /* ⚠️ ALT-TEKSTEN ER FOTOETS, IKKE PLADSENS. Designets
-           placeholder siger, hvad pladsen var TÆNKT til ("Foto:
-           tapasfad") — og der ligger nu et billede af tartar i
-           den. En skærmlæser, der siger "tapasfad" over et foto af
-           tartar, oplyser forkert om maden. Er der ingen data-alt,
-           falder vi tilbage på tom: et forkert alt er værre end
-           intet alt. */
-        foto.alt = plads.getAttribute('data-alt') || '';
-        foto.loading = 'lazy';
-        plads.parentNode.replaceChild(foto, plads);
-        return;
-      }
-
-      /* ⚠️ ELEMENTET SKIFTES UD, ikke fyldes. <image-slot> er en
-         rigtig komponent med sin egen indmad — sætter man tekst i
-         den, står tegnet oven i dens "Foto … / or browse files /
-         Replace / Remove". Præcis den fejl blev målt på
-         nyhedskortene 26/8. */
-      var felt = document.createElement('div');
-      felt.className = 'foto-felt f-' + (plads.getAttribute('data-flade') || 'mad')
-        + ' ' + (plads.className || '');
-      felt.setAttribute('aria-hidden', 'true');
-      felt.textContent = plads.getAttribute('data-tegn');
-      plads.parentNode.replaceChild(felt, plads);
+    Object.keys(pladser).forEach(function (id) {
+      var p = pladser[id];
+      if (!p.nu.parentNode) return;             // siden har selv fjernet den
+      var ny = byg(p.orig, i);
+      if (ny.spor === p.spor) return;           // det samme svar: intet blinker
+      ny.el.setAttribute('data-plads', id);
+      if (ny.img) tonInd(ny.img, ny.el, p.orig);
+      if (p.nu._stop) p.nu._stop();
+      p.nu.parentNode.replaceChild(ny.el, p.nu);
+      p.nu = ny.el;
+      p.spor = ny.spor;
     });
   }
 
@@ -260,8 +337,19 @@
       }, forskudt);
     }
     start();
+    /* Skiftes galleriet ud (ejerens fotos kom efter repoets), skal
+       dets ur stoppe — ellers skifter et galleri, ingen kan se. */
+    rod._stop = function () { if (ur) clearInterval(ur); ur = null; };
     return rod;
   }
 
   window.MosedeBilledplads = { fyld: fyld, NOEGLER: NOEGLER };
+
+  /* Husets egne fotos MED DET SAMME — ejerens fra admin kommer, når
+     databasen svarer, og siderne kalder fyld() igen. */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fyldTidligt);
+  } else {
+    fyldTidligt();
+  }
 }());
