@@ -16,7 +16,13 @@ const { åbnSkal, grunddata } = require('./hjaelp');
 test.describe('Menukortet på en computer', () => {
   test.beforeEach(async ({ page }, info) => {
     test.skip(info.project.name !== 'computer', 'reglen gælder den brede skærm');
-    await åbnSkal(page, '/m-menukort.html', { data: grunddata() });
+    /* Halvdelen af varerne får en beskrivelse. Det er DEM, der får en
+       pil og kan trykkes — og pilen var det, der skubbede netop deres
+       priser ind fra kanten. Uden beskrivelser ville prisprøven bestå
+       med den gamle regel (set 26/9). */
+    const d = grunddata();
+    d.menu_varer.forEach((v, i) => { if (i % 2 === 0) v.beskrivelse = 'En linje om ' + v.navn.toLowerCase() + '.'; });
+    await åbnSkal(page, '/m-menukort.html', { data: d });
     await expect(page.locator('#mk-kat .panel').nth(2)).toBeAttached();
   });
 
