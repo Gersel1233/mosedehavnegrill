@@ -7,6 +7,44 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**ISENS BÅND FJERNET, GREVE-PRISEN ØVERST** (25/9, nat). Mikkels ord med et
+skærmbillede af det ternede bånd med den tegnede is og "Ishuset" i kursiv:
+*"det lige præcis sådan noget her claude lignende der skal væk også"* — og
+*"greve iværksætter prisen op øverst med facebook og smileyen og det liquid
+glass"*. Isens kort begynder nu på fotoerne; dagens rets "I dag"-bånd har
+samme form, men blev IKKE vist og står (spørg, før det røres). Prisen står
+lige under smiley-kortet med smiley-kortets klasse (samme glas) og samme
+ordlyd og link som linjen i bunden, der bliver stående. Udgivet (#500).
+
+**BILLEDPLANEN — DE FIRE KATEGORIER UDEN FOTO** (25/9, nat, IKKE LAVET
+ENDNU). Mikkel vil have dem lavet med fal.ai (10 dollars på kontoen) og
+*"ikke for fake … op til standarderne"*. Denne session kunne ikke: `FAL_KEY`
+læses kun, når en session starter, og `queue.fal.run`, `fal.media` og
+`api.fal.ai` var spærret (kun `fal.run` svarede).
+
+- **Hvad mangler** (målt i produktionen med anon-nøglen): *Andre retter*
+  (18 varer), *Sandwich* (1 vare, 7 slags fyld), *Snacks og slik* (7),
+  *Reception og pindemad* (12). Tilkøb og tillæg får med vilje intet foto.
+  Kortet over fotos er `FOTOS` i `js/skal/menukort.js`
+- **Motiver:** biksemad med spejlæg · sandwich i det grillede brød ·
+  2 slags chips på fad + popcorn · en bakke pindemad på rugbrød og toast.
+  Kun ting, der står på kortet
+- **Referencer i Mikkels Drev (25/9 kl. 00.30-00.32):**
+  `Screenshot 2026-09-26 at 00.31.01.png` er DERES kagebord på molen —
+  brugt for udsigten (motorbåde, trædæk) og DUGEN (vævet rød-hvid ternet
+  voksdug), ikke for kagerne. `00.31.09` og `00.30.36` er DERES sandwich
+  (grillet langt brød; frikadelle/rødkål/agurk og paneret fisk/salat).
+  `00.32.45` er et Google-billede af biksemad — IKKE deres; kun til at se
+  retten, aldrig som input, der kopieres
+- **De 13 eksisterende menu-*.jpg** er 720×1080 (2:3), JPEG. Nye i samme
+  format. De eksisterende er solnedgang og sejlbåde; de nye følger DERES
+  foto af stedet
+- **Budget: højst 2 dollars.** Pris pr. billede slås op hos fal, før der
+  trykkes. Ét prøvebillede først, vist til Mikkel; derefter de tre, højst
+  to forsøg hver
+- **Til gengæld:** noten ved `FOTOS` og her skal sige, hvilke der er
+  genererede (samme kategori som tapas 11/9 og menu-billederne 13/9)
+
 **F1–F4 FRA DEN EKSTERNE KONTROL — RETTET** (25/9, aften). Kontrollen læste
 siden uden JavaScript og fandt designets pladsholdere; min egen gennemgang
 (`kontrolrapport-498.html`, sendt til Mikkel) fandt fire ting. Mikkels ord:
