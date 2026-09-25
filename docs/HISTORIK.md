@@ -16,6 +16,29 @@ samme form, men blev IKKE vist og står (spørg, før det røres). Prisen står
 lige under smiley-kortet med smiley-kortets klasse (samme glas) og samme
 ordlyd og link som linjen i bunden, der bliver stående. Udgivet (#500).
 
+**TOLV NYE HAVNEFOTOS I STEDET FOR SOLNEDGANGEN** (26/9, nat, IKKE
+UDGIVET). Mikkels ord: *"nu fylder vi også resten ud … med de sidste ting
+ift deres sortiment"* — og *"tapas skal ikke og håndmader og smørrebrød
+skal heller ikke"*.
+
+- **`billeder/havn-*.jpg`** (retter, burgere, poelser, platter, kugleis,
+  sliders, softice, morgenmad, kaffe, oel, vin, sodavand), 720×1080 JPEG.
+  **ALLE ER GENEREREDE** (fal.ai, `nano-banana/edit`) med kagebordet på
+  molen som reference — dug, trædæk, havn — i samme stil som de fire fra
+  25/9, men hvert sit sted: bordet, en pæl ved vandet, rækværket, et rundt
+  træbord, tidlig morgen. Kun varer fra kortet: fish'n'chips, cheese-
+  burger, ristet pølse, brunchplatte, 3 kugler (jordbær/vanilje/chokolade),
+  fire sliders, softice med drys, morgenkomplet, cappuccino og gammeldags
+  æblekage, to fadøl, hvidvin og cava, iste/milkshake/slush
+- **Nye navne, ikke overskrevet:** de gamle `menu-*.jpg` ligger der stadig
+  (forsidens isafsnit bruger `menu-softice.jpg` — ikke skiftet). `FOTOS`
+  peger på de nye. "Retter" viser nu fish'n'chips: stegt flæsk står ikke
+  på kortet (`menukort.json`, 25/9)
+- **Forbrug:** 12 forsøg, alle brugt i første hug. I alt $0.702 af 2
+  dollars for begge runder
+- `tests/menukort-foto.spec.js` peger på de nye navne og er set fejle med
+  det gamle softice-foto sat ind igen
+
 **DE FIRE FOTOS ER LAVET — GENEREREDE MED fal.ai** (25/9, nat, IKKE
 UDGIVET — venter på Mikkels ja til billederne). Planen nedenfor er fulgt.
 
