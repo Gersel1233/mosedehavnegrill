@@ -113,6 +113,56 @@
     if (Date.now() - senest > 5 * 1000) friskOp();
   });
 
+  /* ============================================================
+     NETTET ER VÆK — OG SKÆRMEN SIGER DET  (26/9)
+     ------------------------------------------------------------
+     Fundet i en gennemgang af koden: faldt nettet ud på køkkenets
+     iPad, blev køen stående med de gamle kort, og klokken i hovedet
+     tikkede videre — skærmen så levende ud. Det eneste tegn var en
+     gul prik og en tekst på 12 px. Et køkken, der tror, der ingen
+     bestillinger er, fordi skærmen står stille, er det dyreste, der
+     kan ske på en lørdag.
+
+     Nu står der et rødt bånd fast øverst på skærmen, når databasen
+     ikke har svaret i 45 sekunder (takten henter hvert 8.-30. sek.,
+     så 45 er aldrig en almindelig pause), eller når browseren selv
+     siger, at den er offline. Det går væk af sig selv, når svaret
+     kommer. Tidspunktet er Butik.sidstSvar — det eneste sted, en
+     fejlet og en lykket hentning kan skelnes. I øvetilstand er der
+     intet net at miste, og så siger den ingenting.
+     ============================================================ */
+  var NET_GRAENSE_MS = 45 * 1000;
+  function kl(ms) {
+    var d = new Date(ms);
+    return ('0' + d.getHours()).slice(-2) + '.' + ('0' + d.getMinutes()).slice(-2);
+  }
+  function tjekNettet() {
+    var baand = document.getElementById('net-nede');
+    var sidst = Butik.sidstSvar ? Butik.sidstSvar() : null;
+    var nede = !$('admin').classList.contains('skjult') && sidst !== null
+      && (navigator.onLine === false || Date.now() - sidst > NET_GRAENSE_MS);
+    if (!nede) { if (baand) baand.parentNode.removeChild(baand); return; }
+    if (!baand) {
+      baand = document.createElement('div');
+      baand.id = 'net-nede';
+      baand.className = 'net-nede';
+      baand.setAttribute('role', 'alert');
+      document.body.appendChild(baand);
+    }
+    baand.textContent = '';
+    var b = document.createElement('b');
+    b.textContent = '\u26a0\ufe0f Ingen forbindelse' + (sidst ? ' siden kl. ' + kl(sidst) : '');
+    var s = document.createElement('span');
+    s.textContent = 'Det, du ser, kan være gammelt — nye bestillinger kommer ikke frem. '
+      + 'Tjek wifi. Skærmen prøver selv igen.';
+    baand.appendChild(b);
+    baand.appendChild(s);
+  }
+  Admin.tjekNettet = tjekNettet;
+  setInterval(tjekNettet, 5000);
+  window.addEventListener('offline', tjekNettet);
+  window.addEventListener('online', function () { friskOp(); tjekNettet(); });
+
   // 4) Takten
   setInterval(function () {
     if (document.visibilityState === 'visible' && Date.now() - senest >= takt()) {

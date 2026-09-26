@@ -562,6 +562,13 @@
      spærres og siger telefonen, og genopret() prøver igen. */
   var HENT_LOFT_MS = 12000;
 
+  /* ⚠️ HVORNÅR SVAREDE DATABASEN SIDST? (26/9) Admin viser et rødt bånd,
+     når svaret er gammelt (js/admin/frisk.js). Fanerne fanger selv deres
+     fejl, så en hentning, der fejlede, og én, der lykkedes, så ens ud
+     udefra — tidspunktet her er det eneste sted, de to kan skelnes.
+     0 = aldrig; i øvetilstand er der intet net at miste (null). */
+  var sidstSvar = 0;
+
   function hentTabel(navn, forespørgsel, harFornyet) {
     var url = cfg.url + '/rest/v1/' + navn + '?' + (forespørgsel || 'select=*');
     var styr = typeof AbortController === 'function' ? new AbortController() : null;
@@ -576,7 +583,7 @@
       : { headers: hoveder() });
     return Promise.race([kald, loft]).then(function (r) {
       clearTimeout(ur);
-      if (r.ok) return r.json();
+      if (r.ok) { sidstSvar = Date.now(); return r.json(); }
 
       if (r.status === 401 && !harFornyet) {
         return auth.forny().then(function (gik) {
@@ -4893,6 +4900,7 @@
   }
 
   window.Butik = {
+    sidstSvar: function () { return SKY ? sidstSvar : null; },
     tjek: tjek,
     bestil: bestil,
     noedudgangSms: noedudgangSms,

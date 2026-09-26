@@ -10280,6 +10280,28 @@ body.personale .vare-raekke:last-of-type { border-bottom: 0; }
 
 
 /* ============================================================
+   INGEN FORBINDELSE  (26/9) — se tjekNettet() i js/admin/frisk.js.
+   ------------------------------------------------------------
+   Fast øverst og RØDT, i modsætning til udgave-båndet nedenfor: det
+   her er en fejl, der koster bestillinger, og den skal ses, også når
+   køkkenet har rullet ned i køen. Scopet til body.personale.
+   ============================================================ */
+body.personale .net-nede {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 12px 18px;
+  color: #fff;
+  background: var(--red);
+}
+body.personale .net-nede b { font-size: 16px; }
+body.personale .net-nede span { font-size: 14px; }
+
+/* ============================================================
    "DER ER KOMMET EN NY UDGAVE"  (30/8)
    ------------------------------------------------------------
    Båndet står øverst på personalesiden, når fanen kører gammel
