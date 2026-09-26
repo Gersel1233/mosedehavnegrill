@@ -60,7 +60,7 @@
       kanal: 'forside',
       udvalg: 'uden-fyld',
       felter: { dato: 'dato', tid: 'tid', navn: 'navn', tlf: 'tlf',
-        besked: 'besked', allergi: 'allergi', adresse: 'fadr' },
+        besked: 'besked', allergi: 'allergi', adresse: 'fadr', personer: 'fpers' },
       seg: '[data-seg="how"]',
       /* ⚠️ LEVERING KOM TIL 20/9. Ejernes punkt nummer ét: "Leverings
          muligheden mangler." Den fandtes kun på smørrebrødssiden og i
@@ -75,6 +75,8 @@
       segSvar: ['afhentning', 'spis_her', 'levering'],
       segKraever: ['spis_her', 'levering'],
       adresseFelt: '#flevfelt',
+      /* "Hvor mange spiser med?" — kun ved Spis her (26/9). */
+      personerFelt: '#fpersfelt',
       dagensRet: true,
       folder: true,
       dagensHint: true,
@@ -2495,6 +2497,12 @@
          levering og OVERSKRIVER adressen med den validerede —
          teksten ovenfor er kun det, gæsten så. */
       leverings_token: leveringsSvar.token,
+      /* ⚠️ KUN VED SPIS HER, OG KUN NÅR DER ER SKREVET NOGET (26/9).
+         Et tal, der blev stående fra et forsøg med "Spis her", må ikke
+         følge med en to-go. Butik.bestil kaster et tal uden for
+         databasens skive (1-60) væk og sender ellers ikke kolonnen. */
+      antal_personer: svar === 'spis_her' && felt('personer')
+        ? felt('personer').value : undefined,
       besked: besked,
       /* ⚠️ ÉN LINJE PR. PORTION, IKKE ÉN MED ANTAL 2  (25/9).
          To vafler med hver sin smag er to forskellige ting;
@@ -2766,6 +2774,8 @@
         (felten || seg).style.display = 'none';
         var ekstra = side.adresseFelt ? find(side.adresseFelt, panel) : null;
         if (ekstra) ekstra.style.display = 'none';
+        var pers = side.personerFelt ? find(side.personerFelt, panel) : null;
+        if (pers) pers.style.display = 'none';
       } else {
         /* ⚠️ EN MÅDE, FORRETNINGEN HAR SLÅET FRA, SKAL VÆK  (20/9).
            Feltet vises nu, hvis bare én ekstra måde er slået til —
@@ -2789,10 +2799,21 @@
         };
         visAdresse();
 
+        /* Antallet hører til "Spis her" — samme greb som adressen. */
+        var visPersoner = function () {
+          var f = side.personerFelt ? find(side.personerFelt, panel) : null;
+          if (!f) return;
+          var paa = hvordan() === 'spis_her';
+          f.hidden = !paa;
+          f.style.display = paa ? '' : 'none';
+        };
+        visPersoner();
+
         // EFTER havnegrillen.js' egen lytter, så vores sumlinje
         // står sidst — ellers skriver designets sum() hen over.
         seg.addEventListener('click', function () {
           visAdresse();
+          visPersoner();
           visSum();
           visLeveringsSvar();
           visTidLabel();

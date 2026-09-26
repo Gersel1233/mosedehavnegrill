@@ -1672,3 +1672,73 @@ test.describe('Dagen ved Send og kvitteringens sætning', () => {
     expect(tekst, 'et punktum og så et lille bogstav').not.toMatch(/bekræfter\. [a-zæøå]/);
   });
 });
+
+/* ============================================================
+   HVOR MANGE SPISER MED  (26/9)
+   ------------------------------------------------------------
+   Mikkels spørgsmål: "hvad hvis man bestiller 10 ting men kun er 1
+   person der sidder og spiser". Svaret er et frivilligt felt ved
+   "Spis her" — så køkkenet ser "4 pers. · mad til 2"
+   (Admin.gaesteMaerke). Tallene i prøverne er prøvens egne (4 og 3),
+   ikke sidens.
+   ============================================================ */
+test.describe('Hvor mange spiser med — ved Spis her på forsiden', () => {
+  const medSpisHer = () => {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    return d;
+  };
+  const spisHer = (page) => page.locator('[data-seg="how"] button').nth(1);
+  const toGo = (page) => page.locator('[data-seg="how"] button').nth(0);
+  const felt = (page) => page.locator('#fpers');
+
+  async function send(page) {
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('.item', { hasText: 'Fadøl, lille' }).first()
+      .locator('button', { hasText: '+' }).click();
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+    return (await gemteData(page)).bestillinger[0];
+  }
+
+  test('feltet står kun, når gæsten har valgt Spis her', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await expect(felt(page), 'feltet står ved to-go').toBeHidden();
+    await spisHer(page).click();
+    await expect(felt(page), 'feltet kom ikke frem ved Spis her').toBeVisible();
+    await toGo(page).click();
+    await expect(felt(page), 'feltet blev stående, da gæsten skiftede tilbage').toBeHidden();
+  });
+
+  test('tallet når hele vejen til den gemte bestilling', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await spisHer(page).click();
+    await felt(page).fill('4');
+    const b = await send(page);
+    expect(b.hvordan).toBe('spis_her');
+    expect(b.antal_personer, 'køkkenet fik ikke at vide, hvor mange der spiser').toBe(4);
+    expect(b.antal, '`antal` er retterne, ikke personerne').toBe(1);
+  });
+
+  test('et tal fra Spis her følger ikke med, når gæsten skifter til to-go', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await spisHer(page).click();
+    await felt(page).fill('3');
+    await toGo(page).click();
+    const b = await send(page);
+    expect(b.hvordan).toBe('afhentning');
+    expect(b.antal_personer === undefined || b.antal_personer === null,
+      'en to-go fik et antal personer med').toBe(true);
+  });
+
+  test('feltet er frivilligt — tomt sender ingen kolonne', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await spisHer(page).click();
+    const b = await send(page);
+    expect(b.hvordan).toBe('spis_her');
+    expect(b.antal_personer === undefined || b.antal_personer === null).toBe(true);
+  });
+});
