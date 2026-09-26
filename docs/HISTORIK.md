@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**HAVNEFOTOENE UDGIVET — OG FORSIDENS IS SKIFTET** (26/9). Mikkels ord:
+*"udgiv og skift forsiden too"*. Forsidens isafsnit viser nu
+`havn-softice.jpg` og `havn-kugleis.jpg` (nye alt-tekster); intet peger
+længere på de gamle `menu-*.jpg` for de tolv. `tests/is-afsnit.spec.js`
+måler filnavnet og at fotoet kommer — set fejle med det gamle foto.
+Flettet med de 18 commits, der var udgivet i mellemtiden (ingen konflikt).
+
 **NATTEN MELLEM 25. OG 26. SEPTEMBER: RULNING, TILBAGE, MENUKORTET PÅ COMPUTER,
 FOTOERNE OG ADMIN**. Det startede med Mikkels besked (stavningen rettet):
 *"siden er virkelig langsom, sløv og ikke 120fps … animationerne på billederne
