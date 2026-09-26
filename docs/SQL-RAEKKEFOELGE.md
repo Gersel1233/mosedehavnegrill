@@ -53,7 +53,7 @@ og derfra:
   → bremse-uden-borde-26-9.sql
 ```
 
-**⚠️ `bremse-uden-borde-26-9.sql` (26/9) — IKKE kørt i produktionen endnu.**
+**⚠️ `bremse-uden-borde-26-9.sql` (26/9) — kørt i produktionen af Mikkel 26/9.**
 Mikkels ord: *"lad bordene ikke tælle med i bremsen"*. Den skriver
 `bestilling_bremse` forfra: bordene tæller ikke med i de 40 i timen og de 5
 pr. nummer, og hvert bord har sit eget loft (20 i timen). Skraldespandens
@@ -61,8 +61,8 @@ pr. nummer, og hvert bord har sit eget loft (20 i timen). Skraldespandens
 bagefter — `er-vi-klar.sql` tjek 151 fanger det. Prøve:
 `proev-bremse-uden-borde-26-9.sql` (14 af 14).
 
-**⚠️ `gaestens-vaern-26-9.sql` SKAL STÅ SIDST (26/9) — og er IKKE kørt i
-produktionen endnu.** Den skriver de nyeste udgaver af
+**⚠️ `gaestens-vaern-26-9.sql` SKAL STÅ EFTER DE FIRE (26/9) — kørt i
+produktionen af Mikkel 26/9.** Den skriver de nyeste udgaver af
 `mosede_gaestens_regler`, `mosede_kanal_vaern`, `mosede_levering_valideret`
 og `mosede_bord_plads_vaern` om, så gæstens regler gælder alle uden for
 personalet (ikke kun rollen `anon`), og den gør `oprettet` til databasens
