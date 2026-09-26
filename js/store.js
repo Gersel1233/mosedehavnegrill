@@ -2862,6 +2862,14 @@
         return new Error('Der er meget travlt lige nu. Prøv igen om et par '
           + 'minutter, eller ring til os.');
       }
+      /* BORDETS EGET LOFT (supabase/bremse-uden-borde-26-9.sql, 26/9):
+         bordene tæller ikke med i de 40 i timen, men ét bord kan højst
+         sende 20. Gæsten SIDDER her — "ring til os" ville være en
+         omvej; lugen er ti meter væk. */
+      if (/bestilling_bremse_bord/.test(t)) {
+        return new Error('Der er sendt mange bestillinger fra bordet på kort '
+          + 'tid. Sig det til os ved lugen, så tager vi den derfra.');
+      }
       if (/bestilling_hvordan_ok/.test(t)) {
         return new Error('Vælg om maden skal spises her, tages med eller leveres.');
       }

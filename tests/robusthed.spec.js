@@ -245,6 +245,24 @@ test.describe('Databasens afslag siger navnet', () => {
     });
   }
 
+  test('bordets eget loft sender gæsten hen til lugen — ikke et kodenavn', async ({ page }) => {
+    /* supabase/bremse-uden-borde-26-9.sql (26/9): bordene tæller ikke
+       med i de 40 i timen, men ét bord kan højst sende 20. Gæsten
+       sidder ved bordet, så beskeden peger på lugen, ikke telefonen.
+       Uden linjen i js/store.js fik hun den generelle "ring til os". */
+    await åbnMedSky(page, '/bestil/', {
+      data: medRet(),
+      plan: (route) => route.fulfill({
+        status: 400, contentType: 'application/json',
+        body: afslag('bestilling_bremse_bord'),
+      }),
+    });
+    await sendFraSiden(page);
+    const fejl = page.locator('#kig-fejl');
+    await expect(fejl).toContainText('ved lugen');
+    expect(await fejl.textContent()).not.toMatch(/[{}]|bestilling_|P0001/);
+  });
+
   test('lugens loft siger klokkeslættet, som gæsten skriver det', async ({ page }) => {
     await åbnMedSky(page, '/bestil/', {
       data: medRet(),

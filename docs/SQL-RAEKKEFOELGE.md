@@ -50,7 +50,16 @@ og derfra:
   → glutenfri-vaffel-samme-pris.sql → sluk-det-kortene-ikke-viser.sql
   → chefens-rettelser-25-9.sql → isens-opsaetning.sql
   → glutenfrit-broed-5-kr.sql → gaestens-vaern-26-9.sql
+  → bremse-uden-borde-26-9.sql
 ```
+
+**⚠️ `bremse-uden-borde-26-9.sql` (26/9) — IKKE kørt i produktionen endnu.**
+Mikkels ord: *"lad bordene ikke tælle med i bremsen"*. Den skriver
+`bestilling_bremse` forfra: bordene tæller ikke med i de 40 i timen og de 5
+pr. nummer, og hvert bord har sit eget loft (20 i timen). Skraldespandens
+`slettet is null` er skrevet med. Køres `bremse.sql` igen, skal den her med
+bagefter — `er-vi-klar.sql` tjek 151 fanger det. Prøve:
+`proev-bremse-uden-borde.sql` (14 af 14).
 
 **⚠️ `gaestens-vaern-26-9.sql` SKAL STÅ SIDST (26/9) — og er IKKE kørt i
 produktionen endnu.** Den skriver de nyeste udgaver af
@@ -102,6 +111,7 @@ tavst — derfor listen:
 | `borde.sql` | `bord-udeblev.sql` | "Udeblev" gør ingenting ved bordene (tjek 111) |
 | `dagsregler.sql` eller `lukkedag-vaern.sql` | `dagsbesked-og-qr.sql` | QR-spærren skrives væk (tjek 107, 140) |
 | `dagsregler.sql`, `lukkedag-vaern.sql` eller `dagsbesked-og-qr.sql` | `aabent-og-antal-vaern.sql` | åbningstiderne skrives ud af værnet (tjek 136) |
+| `bremse.sql` | `skraldespand.sql` og `bremse-uden-borde-26-9.sql` | bordene tæller med i de 40 i timen igen, så en travl dag ved bordene lukker for al online-bestilling (tjek 151) |
 | `gaestens-regler.sql`, `kanal-vaern.sql`, `levering-valideret.sql` eller `bord-plads.sql` | `gaestens-vaern-26-9.sql` | den gamle dør ("kun rollen anon") kommer tilbage, så en bruger, der har oprettet sig selv, slipper uden om gæstens regler — og linjens antal og bordets dato holder op med at blive tjekket (tjek 150) |
 
 Og to rækkefølger inden i rækkefølgen: `bestilling-dato-vaern.sql` FØR
