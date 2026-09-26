@@ -53,8 +53,8 @@ og derfra:
   → gaestens-vaern-26-9.sql
 ```
 
-**⚠️ `gaestens-vaern-26-9.sql` SKAL STÅ SIDST (26/9) — og er IKKE kørt i
-produktionen endnu.** Den skriver de nyeste udgaver af
+**⚠️ `gaestens-vaern-26-9.sql` SKAL STÅ SIDST (26/9) — kørt i produktion 26/9 af Mikkel. (Før stod: er IKKE kørt i
+produktionen endnu.)** Den skriver de nyeste udgaver af
 `mosede_gaestens_regler`, `mosede_kanal_vaern`, `mosede_levering_valideret`
 og `mosede_bord_plads_vaern` om, så gæstens regler gælder alle uden for
 personalet (ikke kun rollen `anon`), og den gør `oprettet` til databasens

@@ -7,7 +7,7 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-**MENUKORTET SOM DE TRYKTE KORT — IKKE UDGIVET ENDNU** (26/9). Mikkels ord:
+**MENUKORTET SOM DE TRYKTE KORT — UDGIVET** (26/9, efter Mikkels "ja udgiv"). Mikkels ord:
 *"de skal naturligvis matche 1:1 med de her"* og *"Brug så vidt muligt de
 samme kategorinavne som på de trykte kort"*. `m-menukort.html` er bygget om
 til kapitler (`js/skal/menukort-kort.js` = kortenes opbygning,
@@ -21,7 +21,7 @@ bestil/ og ved bordet. Bevidst ændrede prøver: menukortets priser står nu i
 Bebas (ikke "én talstemme"), overskrifterne er kortenes, og fotoprøverne måler
 kapitlernes fotos.
 
-**HÅNDMADDERNE TIL 27 KR. — SQL SKAL KØRES AF MIKKEL** (26/9).
+**HÅNDMADDERNE TIL 27 KR. — KØRT AF MIKKEL** (26/9, sammen med gaestens-vaern-26-9.sql; sammenlign-kort.py bagefter: 0 prisforskelle).
 `supabase/haandmadder-27-kr.sql` sætter de 19 aktive håndmadder fra 24 til 27.
 Den tager afgørelsen fra 25/9 ("24 gælder") tilbage. De 6 slukkede til 24 røres
 ikke; det kræver Mikkels ja. Supabase-MCP'en var nede (ERR_PROXY_TUNNEL), og
