@@ -7,6 +7,105 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**NATTEN MELLEM 25. OG 26. SEPTEMBER: RULNING, TILBAGE, MENUKORTET PÅ COMPUTER,
+FOTOERNE OG ADMIN**. Det startede med Mikkels besked (stavningen rettet):
+*"siden er virkelig langsom, sløv og ikke 120fps … animationerne på billederne
+der loader på siderne som f.eks tapas … skal gøres bedre, scrollingen ude i
+venstre på menukort skal fixes og … desktop udseendet og især menukortet …
+gå hjemmesiden igennem og find steder den ikke er dygtig, intelligent nok både
+front og backend og admin … og hvad med når man trykker tilbage"*. Dertil et
+skærmbillede af menukortet på en computer: *"det ikke er desktop egnet,
+cinematisk og bare generelt rodet"*. Telefonen skulle ikke røres.
+
+- **Computeren ruller i dokumentet, ligesom telefonen.** Over 820 px rullede
+  siden før inde i `.screen#sc`, altså telefon-artboardets boks. Hjulet midt
+  på siden rullede 0 px (den glatte rulning i boksen). Nu ruller det 798 px,
+  som ved kanterne. Tilbage-knappen, rullebjælken og tastaturet hører til
+  dokumentet (`havnegrillen-desktop.css`, noten "DOKUMENTET RULLER OGSAA PAA
+  EN COMPUTER")
+- **Tilbage lander, hvor man var** (`js/tilbage.js` på 16 gæstesider).
+  Positionen gemmes i historikkens egen post (`history.state`), ikke i en
+  cookie eller i localStorage. Menukortet tegnes af JavaScript, efter
+  databasen har svaret, så browserens egen gendannelse landede i toppen.
+  Tilbage-pilen (`data-tilbage`) går ét skridt tilbage, når man kom fra
+  huset; udefra fører den til forsiden. Filmen og isvaflen kommer ikke igen
+  ved tilbage. `tests/tilbage.spec.js` bruger en database, der med vilje er
+  700 ms forsinket, og hver af de fire regler er set fejle
+- **Menukortet på en computer er et trykt kort** (`menukort.css`, sidste blok,
+  kun over 820 px). Før målt på 1440 px med produktionens 271 varer: 12.807 px
+  højt, med tre spalter kort i vidt forskellig højde, emoji ved hver vare og en
+  liste i venstre side, der løb ud over skærmen. Nu har afsnittene store
+  overskrifter, og hver kategori har sit navn over en streg og to spalter varer
+  uden kasser (én under 1120 px). Fotokategorierne åbner med et bredt bånd.
+  Listen passer i skærmen, ruller selv og viser afsnittene. ⚠️ **Emojien ved
+  hver vare er væk HERUDE** (`.mk-vare-tegn`, én linje at vende). På telefonen
+  står den — spørg Mikkel
+- **Ugen på menukortet og forsiden**: "Ingen dagens ret i dag" stod ud for
+  HVER dag. Nu står "i dag" kun på i dag, og de tomme dage efter i dag samles i
+  én linje ("Resten af ugen lægges op løbende")
+- **Fotoet står der, før databasen svarer, og toner ind**
+  (`js/skal/billedplads.js`). Før blev pladsen fyldt først efter `Butik.hent()`;
+  imens stod designværktøjets stiplede kasse, og et tryk åbnede filvælgeren.
+  Med en database på 2 s tog tapas 2,2 s → 0,2 s og smørrebrød 4,2 → 0,2.
+  Ejerens foto fra admin slår stadig repoets. Ved reduceret bevægelse vises det
+  med det samme. Uden JavaScript er `.rev` synlig: 38 blokke var usynlige
+  (`@media (scripting:none)`). `tests/fotoet-straks.spec.js`
+- **Fart, målt** (skud-værktøjet med produktionens data, kladden):
+  - Rulning: 16,7 ms pr. billede, og 0 billeder over 33 ms på forsiden og
+    menukortet
+  - Menukortets CLS med produktionsdata er 0,05 på telefonen og 0,09 på
+    computeren med dagens ret (under Googles 0,1). Øvedataene giver 0,17, fordi
+    de har andre kategorier
+  - Forsidens LCP ≈ 3,0 s er introfilmen, altså designet — ikke rørt
+- **Admin: to telefoner kan ikke genåbne en færdig bestilling.** En note blev
+  gemt med den status, skærmen havde, da kortet blev tegnet. Nu sender
+  skrivelaget kun status, når den skifter (fem funktioner i `store-skriv.js`),
+  og 15 statusknapper sender kun noten, hvis den er skrevet om
+  (`Admin.nyNote`). `tests/admin-to-telefoner.spec.js`
+- **Admin: gemning med loft.** `skriv()` giver op efter 20 s med et ærligt svar.
+  Før stod knappen på "Gemmer…" for evigt. "Load failed" og "bestillinger:
+  401" siges på dansk (`Admin.forklarFejl`). "✓ Færdig" på en bestilling til en
+  SENERE dag spørger først; før forsvandt den fra den dags Overblik. Afvis uden
+  nummer sagde "Husk at ringe til null"
+- **Gæstesiderne (gennemgangens hurtige fund)**: 18 telefon-, navne- og
+  mailfelter giver taltastatur og autoudfyldning. Forkerte links er rettet
+  ("Selskab" → baglokalet, skufferne, bordsidens "Bestil mad"). Samtykkelinjen
+  på forespørgsler siger ikke længere "lave og udlevere bestillingen". Tapas-
+  teksten "Sådan ser et tapasfad fra havnen ud" stod under genererede fotos og
+  påstod noget uden belæg. "— hver morgen" ved Facebook er også væk (ingen har
+  sagt det). Det samme gælder de kursive accentord i de juridiske sider
+- **SQL: gæstens værn** — se posten nedenfor. IKKE kørt i produktionen
+- **Den fulde runde** (i halvdele, to arbejdere): computer 2.348 bestod,
+  telefon 2.367 (805 + 765 + 797). Den ene fejl var den samme prøve på begge
+  profiler: `bestilling.spec.js` trykkede Færdig på en bestilling til dagen
+  efter uret og fik det nye spørgsmål. Prøven svarer nu ja og kræver, at
+  spørgsmålet blev stillet (set fejle uden reglen). Sprunget over: 108 og 89
+
+**Ikke rørt — Mikkels afgørelse:** emojien ved varerne (computer), loaderens
+minimum på 1,2 s, dagens rets "I dag"-bånd, den ternede stribe i admins
+sidemenu, glansstriben på knapperne, de små versal-overskrifter
+("eyebrows"), og tapassidens "Besked" over "Ring til os med ønsker".
+
+**Gennemgangens fund, der IKKE er rettet** (læst i koden, ikke kørt):
+- *Backend:* bremsen på 40 bestillinger i timen tæller alt (også personale og
+  borde) og kan lukke for alle. Databasen lader en medarbejder (ikke kun ejeren)
+  oprette og slette varer, kategorier og lukkedage (`flerlejer.sql` 338-360) —
+  om det er meningen, er Mikkels afgørelse.
+  Genkørsel af `flerlejer.sql`/`aabent-og-antal-vaern.sql` ruller værn tilbage.
+  Bestillingerne slettes aldrig automatisk, og logbogen gemmer navn og telefon
+  i 180 dage — mål det op mod persondatapolitikken, før der ændres noget.
+  Bordordrens `hent_tid` kan stadig sendes af gæsten
+- *Admin:* ~43 slet-knapper uden fortryd. Priser gemmes ikke af sig selv, og
+  der er ingen advarsel ved luk. Medarbejderen ser knapper, databasen afviser
+  (dagens besked, hurtigfelt, regler). "Find en sag" søger kun i det hentede.
+  Salget har ingen perioder eller eksport. Ingen print/bon. Lyd kun i
+  Køkkenet. `VEJLEDNING.md` beskriver stadig den gamle statuskæde
+- *Gæstesiderne:* varelaget og menuen på menukortet laver ingen
+  historik-post (tilbage-gestus forlader siden). `image-slot.js`
+  (designværktøjet) indlæses stadig. To designsystemer (bord/, bestil/,
+  ved-bordet/ og min-bestilling/ bruger `style.css`). Skabelontekster
+  ("Vi elsker at…", "skræddersy" ×10, "inden for et døgn" ×10)
+
 **GÆSTENS VÆRN — FIRE HULLER LUKKET** (26/9, nat, IKKE KØRT I
 PRODUKTIONEN). En gennemgang af koden (læst, ikke kørt) fandt fire huller;
 alle fire er MÅLT på en lokal Postgres bygget af mappens egne filer, før
