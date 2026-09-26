@@ -147,7 +147,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 *Mad · kan bestilles*
 
-> Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
+> Hel skive friskbagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
 
 - **Flæskesteg med surt, håndmad** — 27 kr.
 - **Fiskefilet med remoulade, håndmad** — 27 kr.

@@ -13,8 +13,10 @@ Mikkels ord: *"ja 27 tak og det er hel skive og friskbagt rugbrød tak"*.
 til 27 og skriver kategoriens note om fra "Halv skive hjemmebagt rugbrød … den
 lille sultne udgave" til "Hel skive friskbagt rugbrød med smør …". Prøvet lokalt
 på produktionens menu: 0 håndmadder til 24, anden kørsel rører intet, lun delle
-og flæskesvær uændret. SQL-runden: 1667 bestod, 0 fejlede. **Skal køres af
-Mikkel.**
+og flæskesvær uændret. SQL-runden: 1667 bestod, 0 fejlede. **Kørt af Mikkel
+26/9** — hentet bagefter: alle 25 håndmadder til 27 (19 tændte, 6 slukkede),
+noten er den nye, og sammenlign-kort.py siger 0 prisforskelle. Smørrebrødets
+note bliver ved "hjemmebagt" (Mikkel: *"hjemmebagt er fint nok"*).
 
 **BESTILLINGEN OG KØKKENET GJORT PROFESSIONELT** (26/9, eftermiddag og
 aften). Mikkels ord: *"læg i kurven virker ikke på is siden og hele
