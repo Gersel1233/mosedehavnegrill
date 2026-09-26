@@ -156,8 +156,8 @@ en, gæsten ikke har set.
 
 **Hvor mange kan I have klar kl. 12.00?** Under *Regler for
 bestilling* står feltet **"Hvor mange kan I have klar pr.
-tidsrum?"**. Skriver I fx 8, kan der højst bestilles 8 til hvert
-klokkeslæt; er de otte taget, står tiden som *fyldt op* på
+kvarter?"**. Gæsterne vælger tid i kvarterer (12.00, 12.15, 12.30 …).
+Skriver I fx 8, kan der højst bestilles 8 til hvert klokkeslæt; er de otte taget, står tiden som *fyldt op* på
 hjemmesiden, og gæsten vælger et andet. **Tomt betyder ingen
 grænse.** Det gælder kun lugen — bordene har deres eget.
 

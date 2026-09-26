@@ -7,6 +7,28 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**TIDEN UNDER DATOEN, KVARTERER, OG BESTIL/ SENDER VIDERE** (26/9, aften).
+Mikkel fik fire skærmbilleder og svarede på hvert:
+- **Tidspunktet står lige under datoen** — forsiden og smørrebrødssiden.
+  Det stod efter hele varelisten og isbyggeren, men klokkeslættet
+  bestemmer listen (morgenmad 10-12.30), så gæsten valgte mad, valgte tid
+  til sidst og fik varer taget ud
+- **Klokkeslættene går i kvarterer** (`tiderFor` i `js/bestil-regler.js`,
+  `TRIN = 15`). Kl. 13.01 med 30 min varsel gav 14.00 som første tid; nu
+  13.45. Forsiden, smørrebrødet, bestil/ og tapas følger med.
+  Bordbookingen (`js/bord.js`) står stadig i halve timer. Lugens loft
+  tæller pr. tidspunkt, så admin siger "pr. kvarter" — loftet er ikke sat
+  i produktionen
+- **bestil/ sender en rigtig gæst videre til h-smorrebrod.html** og er ude
+  af sitemap; canonical og og:url peger på smørrebrødssiden. Siden er
+  IKKE slettet: den er prøvebænken for `js/bestilling.js` (bordenes
+  motor), ~150 prøver. Derfor ingen meta-refresh — en automatiseret
+  browser (`navigator.webdriver`) bliver. `tests/bestil-videre.spec.js`
+  måler begge halvdele. QR-skiltene peger på ved-bordet/ og rammes ikke
+- **"Vi kommer med det" ved bordet er rigtigt.** Ejerens fulde ord 15/9:
+  *"de må lette røven og gå ned med det selv"* — det er personalet, der
+  bærer maden ned. Mikkel bekræftede det 26/9. Intet ændret
+
 **HÅNDMADDERNE: HEL SKIVE, FRISKBAGT — DE SLUKKEDE OGSÅ TIL 27** (26/9).
 Mikkels ord: *"ja 27 tak og det er hel skive og friskbagt rugbrød tak"*.
 `supabase/haandmadder-hel-skive.sql` sætter de 6 slukkede håndmadder fra 24
