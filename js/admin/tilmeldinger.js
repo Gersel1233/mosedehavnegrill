@@ -321,16 +321,23 @@
       mere.appendChild(af);
     }
 
-    /* ⚠️ SAMLET NØJAGTIG SOM PÅ BORDE-FANEN: "···" står i
-       knaprækken, og panelet hænger på KORTET — ikke inde i
-       rækken. Lægges det i rækken, folder det ud ved siden af
-       knappen i stedet for under kortet, og de to faner ville se
-       forskellige ud igen. Døren findes kun, når der er noget
-       bag den. */
+    /* ⚠️ PANELET HÆNGER I KNAPRÆKKEN, IKKE PÅ KORTET  (26/9).
+       Mikkels skærmbillede af et udlejet baglokale: "de tre prikker
+       virker ikke". MÅLT: panelet er position:absolute, og kortet er
+       ikke placeret — så det lagde sig efter et element langt oppe
+       på siden, og "Afvis" stod 800 px over skærmens top på computeren
+       (1.800 på telefonen). Knaprækken (.bestil-handling) ER placeret,
+       så panelet folder ud lige under "···" — som på Bestillinger,
+       Køkkenet og Overblik, hvor det altid har virket.
+       tests/admin-ens-kort.spec.js måler, hvad en finger rammer. */
+    /* (Her stod, at panelet skulle hænge på KORTET for at folde ud
+       under det. Det virkede kun, hvor kortet selv var placeret — og
+       det er Tilmeldingers kort ikke. Døren findes stadig kun, når
+       der er noget bag den.) */
     if (mere.childNodes.length) {
       raekke.appendChild(merKnap);
+      raekke.appendChild(mere);
       k.appendChild(raekke);
-      k.appendChild(mere);
     } else {
       k.appendChild(raekke);
     }

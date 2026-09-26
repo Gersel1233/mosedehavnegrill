@@ -130,3 +130,74 @@ test('døren skjuler faktisk noget — og åbner det', async ({ page }) => {
   await H.aabnMere(kort);
   await expect(skjult).toBeVisible();
 });
+
+/* ============================================================
+   "···" FOLDER UD, HVOR FINGEREN ER  (26/9)
+   ------------------------------------------------------------
+   Mikkels skærmbillede af et udlejet baglokale: "de tre prikker
+   virker ikke". MÅLT: panelet er position:absolute, og på tre faner
+   hang det på et kort, der ikke er placeret — så "Afvis" stod 800 px
+   over skærmens top på computeren og 1.800 på telefonen. Den gamle
+   prøve ("Udeblev og Afvis ligger bag ···") bestod, fordi toBeVisible
+   kun spørger, om knappen HAR en kasse — ikke om den står et sted,
+   man kan trykke.
+
+   ⚠️ DERFOR MÅLER PRØVEN TO TING UDEFRA: at panelet står lige under
+   "···" (knappens egen kasse er tallet, der sammenlignes med), og at
+   elementFromPoint midt på den første knap rammer netop den knap.
+   ============================================================ */
+test.describe('"···" folder ud, hvor fingeren er', () => {
+  const FANER = [['Bestillinger', 'p-bestillinger'], ['Forespørgsler', 'p-forespoergsler'],
+    ['Baglokalet', 'p-lokale'], ['Køkkenet', 'p-borde'], ['Tilmeldinger', 'p-tilmeldinger'],
+    ['Overblik', 'p-overblik']];
+
+  async function maal(page, panel) {
+    const dør = page.locator('#' + panel + ' .knap-mere:visible').first();
+    await expect(dør, 'fanen har ingen "···" at måle på').toHaveCount(1);
+    await dør.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await dør.click();
+    await page.waitForTimeout(250);
+    return page.evaluate((p) => {
+      const d = document.querySelector('#' + p + ' .knap-mere[aria-expanded="true"]');
+      const b = document.querySelector('#' + p + ' .bestil-mere.aaben .knap');
+      if (!d || !b) return { fejl: 'intet åbent panel' };
+      /* Står panelet under skærmens kant, ruller en rigtig bruger ned.
+         Afstanden til "···" er det, der fanger et panel på afveje. */
+      b.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+      const rd = d.getBoundingClientRect();
+      const rb = b.getBoundingClientRect();
+      const ramt = document.elementFromPoint(rb.left + rb.width / 2, rb.top + rb.height / 2);
+      return { afstand: Math.round(rb.top - rd.bottom), ramt: ramt === b || b.contains(ramt) };
+    }, panel);
+  }
+
+  for (const [navn, panel] of FANER) {
+    test(navn + ': panelet står under "···", og knappen kan rammes', async ({ page }) => {
+      await H.åbnAdmin(page, { data: arbejdsdag() });
+      await H.visFane(page, panel);
+      const m = await maal(page, panel);
+      expect(m.fejl, m.fejl).toBeUndefined();
+      expect(m.afstand, 'panelet står ikke lige under "···"').toBeGreaterThanOrEqual(-4);
+      expect(m.afstand, 'panelet står ikke lige under "···"').toBeLessThan(60);
+      expect(m.ramt, 'en finger på knappen rammer noget andet').toBe(true);
+    });
+  }
+
+  /* Mikkels eget tilfælde: et baglokale, der ER lejet ud. Så er
+     "Åbn dagen i kalenderen" skridtet frem, og Afvis ligger bag "···". */
+  test('et udlejet baglokale kan afvises gennem "···"', async ({ page }) => {
+    const d = arbejdsdag();
+    d.udlejninger = [{ id: 7, reference: 'UD260926-AAA11', lokation_id: 'mosede',
+      navn: 'Mikkel Sten Gersel', telefon: '53636327', dato: '2026-09-30',
+      antal_personer: 50, status: 'bekraeftet', besked: 'prøve',
+      intern_note: 'Aftalt i telefonen' }];
+    await H.åbnAdmin(page, { data: d });
+    await H.visFane(page, 'p-lokale');
+    const m = await maal(page, 'p-lokale');
+    expect(m.fejl, m.fejl).toBeUndefined();
+    expect(m.afstand).toBeLessThan(60);
+    expect(m.ramt, 'Afvis kan ikke rammes').toBe(true);
+    page.once('dialog', (dlg) => dlg.dismiss());
+    await page.locator('#p-lokale .bestil-mere.aaben .knap', { hasText: 'Afvis' }).click();
+  });
+});
