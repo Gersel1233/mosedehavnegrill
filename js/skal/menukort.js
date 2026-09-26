@@ -636,12 +636,14 @@
     var visning = { tabel: d.tabel, skjulPris: skjulPris };
 
     if (d.samle && a.varer.length > 1) {
-      /* Kortets ÉN linje: "Æg, bacon, pålæg, … 10,-". */
+      /* Kortets ÉN linje: "Æg · bacon · pålæg … 10,-".
+         ⚠️ SKILT MED " · ", IKKE KOMMA: "Bacon, 2 skiver" er ÉT navn, og
+         med komma mellem varerne læses det som to (set i kontrollen 26/9). */
       var linje = lav('div', 'mk-linje mk-samlet');
       var navne = a.varer.map(function (y) { return y.v.navn; });
-      linje.setAttribute('data-vare', navne.join(', '));
+      linje.setAttribute('data-vare', navne.join(' · '));
       var txt = lav('div', 'mk-txt');
-      txt.appendChild(lav('h4', null, navne.join(', ')));
+      txt.appendChild(lav('h4', null, navne.join(' · ')));
       linje.appendChild(txt);
       var ens = ensPris(a.varer);
       var laveste = a.varer.map(function (y) { return varePrisTal(y.v); })
