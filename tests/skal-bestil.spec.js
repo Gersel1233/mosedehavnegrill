@@ -366,7 +366,11 @@ test.describe('Forsidens bestilling', () => {
        Feltet er `hidden`, indtil levering er valgt — men etiketten
        står i opmærkningen, og den her prøve læser rækkefølgen i
        DOM'en, ikke hvad der er synligt. */
-    expect(etiketter).toEqual(['Hvordan vil I spise?', 'Hvor skal det leveres?',
+    /* ⚠️ "HVOR MANGE SPISER MED?" KOM TIL 26/9 (Mikkels ja: "frivilligt
+       felt"). Det hører til "Spis her", som adressen hører til
+       levering, og folder sig ud på samme måde lige under valget. */
+    expect(etiketter).toEqual(['Hvordan vil I spise?',
+      'Hvor mange spiser med? (valgfrit)', 'Hvor skal det leveres?',
       'Dato', 'Vælg jeres retter',
       'Tidspunkt', 'Navn', 'Telefonnummer',
       'Allergi (valgfrit)', 'Ja, køkkenet må gemme det her, så de kan tage hensyn.',
