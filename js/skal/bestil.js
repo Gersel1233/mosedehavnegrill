@@ -1206,6 +1206,101 @@
     fjernetUr = setTimeout(function () { fjernetBesked = ''; visSum(); }, 8000);
   }
 
+  /* ============================================================
+     KURVEN OVERLEVER ET LINK OG ET TRYK PÅ TILBAGE  (26/9)
+     ------------------------------------------------------------
+     MÅLT: fadøl i kurven → "Se hele is-sortimentet" (sidens eget
+     link, som kunden bad om) → tilbage: kurven var tom. Det samme
+     sker, når en telefon smider fanen ud af hukommelsen, mens gæsten
+     tjekker en sms — og så bestiller hun forfra eller slet ikke.
+     bestil/ har gemt sin kurv siden foråret (js/bestilling.js).
+
+     ⚠️ sessionStorage, IKKE localStorage. Kurven hører til FANEN og
+     besøget: en forsidekurv, der dukkede op igen næste uge, ville
+     være en overraskelse, ikke en hjælp. Og der gemmes KUN valgene
+     — aldrig navn, telefon, adresse eller allergi.
+
+     ⚠️ INTET GEMMES, FØR DET GEMTE ER LÆST. Opstarten tegner summen,
+     før kurven er hentet — og en gemning af den tomme kurv dér ville
+     slette det, den skulle hente. Derfor gemKlar.
+
+     ⚠️ DET HENTEDE PRØVES SOM ET SKIFT. Spisemåde, dag og tid sættes
+     med de samme hændelser, gæstens egne tryk giver, og kurven går
+     gennem ryddedeKurven — så det, der ikke kan fås længere, bliver
+     taget ud MED en besked, i stedet for at blive sendt. */
+  var GEM_LEVETID_MS = 3 * 60 * 60 * 1000;
+  var gemKlar = false;
+  function gemNøgle() { return 'mosede_skal_kurv_v1:' + side.kanal; }
+  function gemKurv() {
+    if (!gemKlar) return;
+    try {
+      if (!antalIKurv()) { sessionStorage.removeItem(gemNøgle()); return; }
+      var t = felt('tid');
+      sessionStorage.setItem(gemNøgle(), JSON.stringify({
+        gemt: Date.now(), kurv: kurv, hvordan: hvordan(),
+        dag: valgtDag, klokken: t ? t.value : '',
+      }));
+    } catch (e) { /* privat browsing: kurven lever bare på siden */ }
+  }
+  function glemKurv() {
+    gemKlar = false;
+    try { sessionStorage.removeItem(gemNøgle()); } catch (e) { /* se ovenfor */ }
+  }
+  function genopretKurv() {
+    var g = null;
+    try { g = JSON.parse(sessionStorage.getItem(gemNøgle()) || 'null'); } catch (e) { g = null; }
+    gemKlar = true;
+    if (!g || !g.kurv || typeof g.kurv !== 'object'
+        || !(Date.now() - g.gemt < GEM_LEVETID_MS)) return;
+
+    var knapper = side.seg ? alle(side.seg + ' button', panel) : [];
+    var i = side.segSvar.indexOf(g.hvordan);
+    if (i > 0 && knapper[i] && knapper[i].style.display !== 'none'
+        && segÅben() && hvordan() !== g.hvordan) {
+      knapper[i].click();
+    }
+    var kanVælges = function (f, v) {
+      return !!(f && v) && Array.prototype.some.call(f.options, function (o) {
+        return o.value === v && !o.disabled;
+      });
+    };
+    var dato = felt('dato');
+    if (kanVælges(dato, g.dag) && dato.value !== g.dag) {
+      dato.value = g.dag;
+      dato.dispatchEvent(new Event('change'));
+    }
+    var tid = felt('tid');
+    if (kanVælges(tid, g.klokken) && tid.value !== g.klokken) {
+      tid.value = g.klokken;
+      tid.dispatchEvent(new Event('change'));
+    }
+
+    Object.keys(g.kurv).forEach(function (k) {
+      var p = g.kurv[k];
+      if (p && typeof p === 'object' && p.antal >= 1 && isFinite(p.pris)) kurv[k] = p;
+    });
+    ryddedeKurven();
+    visVarer();
+    tegnFyld();
+    tegnStoerrelser();
+    visSum();
+    visKategoriTal();
+  }
+
+  /* ⚠️ ISEN KAN TAGES UD IGEN (26/9). En is kommer i kurven fra
+     isbyggeren, der nulstiller sig selv bagefter — så den har ingen
+     tæller i listen, og en forkert is kunne kun fjernes ved at
+     genindlæse siden og miste det hele. Knappen står derfor på
+     is-linjerne i summen; de andre varer har deres tæller. */
+  function tagUd(k) {
+    var p = kurv[k];
+    if (!p) return;
+    p.antal -= 1;
+    if (p.antal < 1) delete kurv[k];
+    visSum();
+    visKategoriTal();
+  }
+
   function ryddedeKurven() {
     var ud = [];
     var u = udvalgNu();
@@ -2025,6 +2120,7 @@
     visMinStk();
     visKnap();
     visKurvbar();
+    gemKurv();
     var note = sumFelt();
     if (!note) return;
     fejlVises = false;
@@ -2078,7 +2174,16 @@
     nøgler.forEach(function (k, i) {
       var e = kurv[k];
       var t = e.antal + ' × ' + Butik.linjeNavn(e);
-      linjer.appendChild(lav('span', 'sum-vare', (i ? ' · ' : ' ') + t));
+      var linje = lav('span', 'sum-vare', (i ? ' · ' : ' ') + t);
+      // Se tagUd: isen har ingen tæller i listen.
+      if (k.indexOf('is|') === 0 || k.indexOf('is-ekstra|') === 0) {
+        var ud = lav('button', 'sum-fjern', 'fjern');
+        ud.type = 'button';
+        ud.setAttribute('aria-label', 'Tag én ' + Butik.linjeNavn(e) + ' ud af kurven');
+        ud.addEventListener('click', function () { tagUd(k); });
+        linje.appendChild(ud);
+      }
+      linjer.appendChild(linje);
     });
 
     /* ⚠️ DER ER IKKE EN "+ DET UDEN PRIS"-LINJE HER, OG DET ER
@@ -2531,6 +2636,7 @@
          bestil/ har sendt den siden 20/8. */
       fyld: valgtFyld.slice(),
     }).then(function (raekke) {
+      glemKurv();
       visTak(raekke);
     }).catch(function (fejl) {
       if (knap) knap.disabled = false;
@@ -2907,6 +3013,9 @@
          gang enheden bestiller — ikke først efter et afslag. */
       if (Butik.vilkaar) Butik.vilkaar.vis(knap);
     }
+
+    /* SIDST: alle lyttere står, så det hentede går gennem dem. */
+    genopretKurv();
   }
 
   /* Hvilken af de to formularer står vi på? Panelet hedder

@@ -1742,3 +1742,70 @@ test.describe('Hvor mange spiser med — ved Spis her på forsiden', () => {
     expect(b.antal_personer === undefined || b.antal_personer === null).toBe(true);
   });
 });
+
+/* ============================================================
+   KURVEN OVERLEVER EN GENINDLÆSNING — MEN IKKE EN AFSENDELSE  (26/9)
+   ------------------------------------------------------------
+   En telefon smider fanen ud af hukommelsen, mens gæsten tjekker en
+   sms, og så genindlæses siden. Før var kurven væk. Nu hentes valgene
+   igen for fanen (sessionStorage) — men aldrig navn og telefon, og
+   aldrig efter, at bestillingen er sendt. Reglen bor i
+   js/skal/bestil.js (genopretKurv).
+   ============================================================ */
+test.describe('Kurven overlever en genindlæsning', () => {
+  const medSpisHer = () => {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    return d;
+  };
+  const lægØl = async (page) => {
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('.item', { hasText: 'Fadøl, lille' }).first()
+      .locator('button', { hasText: '+' }).click();
+  };
+
+  test('spisemåde, dag, tid og kurv kommer med tilbage', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await page.locator('[data-seg="how"] button').nth(1).click();
+    await page.locator('#dato').selectOption('2026-08-08');
+    await page.locator('#tid').selectOption({ index: 2 });
+    const klokken = await page.locator('#tid').inputValue();
+    await lægØl(page);
+    await expect(page.locator('#sumline')).toContainText('1 × Fadøl, lille');
+
+    await page.reload();
+    await expect(page.locator('#sumline'), 'kurven var tom efter genindlæsningen')
+      .toContainText('1 × Fadøl, lille');
+    await expect(page.locator('[data-seg="how"] button').nth(1)).toHaveClass(/\bon\b/);
+    await expect(page.locator('#dato')).toHaveValue('2026-08-08');
+    await expect(page.locator('#tid')).toHaveValue(klokken);
+    await expect(page.locator('#sumline .sum-total')).toContainText('i morgen');
+  });
+
+  test('navn og telefon gemmes ikke med kurven', async ({ page }) => {
+    await åbn(page);
+    await lægØl(page);
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('[data-kategori="Øl"]').click();
+    const gemt = await page.evaluate(() => JSON.stringify(sessionStorage));
+    expect(gemt, 'kurven blev ikke gemt — så måler prøven ingenting').toContain('Fadøl');
+    expect(gemt).not.toContain('Sara');
+    expect(gemt).not.toContain('28871343');
+  });
+
+  test('en sendt bestilling kommer ikke igen efter en genindlæsning', async ({ page }) => {
+    await åbn(page);
+    await lægØl(page);
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+    await page.reload();
+    await expect(page.locator('#dato option').first()).toBeAttached();
+    await page.waitForTimeout(300);
+    await expect(page.locator('#sumline'), 'den sendte bestilling lå i kurven igen')
+      .not.toContainText('Fadøl');
+  });
+});

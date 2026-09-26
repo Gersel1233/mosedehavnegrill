@@ -122,3 +122,32 @@ test.describe('Kurven kan ses, mens man vælger', () => {
     await expect.poll(() => synlig(bar), { message: 'bjælken stod over tastaturet' }).toBe(false);
   });
 });
+
+/* ISEN KAN TAGES UD IGEN, OG KURVEN OVERLEVER ET LINK  (26/9)
+   ------------------------------------------------------------
+   Isbyggeren nulstiller sig selv, så en is har ingen tæller i
+   listen — før i dag kunne en forkert is kun fjernes ved at
+   genindlæse siden. Og sidens eget link "Se hele is-sortimentet"
+   tømte kurven: MÅLT, fadøl i kurven → menukortet → tilbage → tom. */
+test.describe('Isen kan tages ud, og kurven overlever et link', () => {
+
+  test('"fjern" på is-linjen tager isen ud af kurven', async ({ page }) => {
+    await lægEnIs(page);
+    const sum = page.locator('#sumline');
+    await expect(sum).toContainText('1 × 1 kugle');
+    await sum.locator('.sum-fjern').first().click();
+    await expect(sum, 'isen blev liggende i kurven').not.toContainText('1 kugle');
+    await expect(page.locator('.kurvbar.vis'), 'bjælken står stadig med en tom kurv').toHaveCount(0);
+  });
+
+  test('kurven er der stadig efter "Se hele is-sortimentet" og tilbage', async ({ page }) => {
+    await lægEnIs(page);
+    await expect(page.locator('#sumline')).toContainText('1 × 1 kugle');
+    await page.locator('.isbyg-blok-link').click();
+    await page.waitForURL(/m-menukort/);
+    await page.goBack();
+    await expect(page.locator('#sumline'), 'kurven blev tømt af sidens eget link')
+      .toContainText('1 × 1 kugle');
+    await expect(page.locator('#sumline')).toContainText('Jordbær');
+  });
+});

@@ -2162,6 +2162,14 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .hint.sidste-kald.gul{background:rgba(240,160,60,.18);color:#7a4a10}
 .hint.sidste-kald.roed{background:rgba(214,42,58,.13);color:var(--red-d)}
 .note.sumbar .sum-emb{color:rgba(255,255,255,.68)}
+/* "fjern" på en is-linje (26/9, js/skal/bestil.js tagUd). Isen har
+   ingen tæller i listen, så knappen er den eneste vej ud af kurven.
+   24 px høj — mindstemålet for et tryk — på summens mørke bund. */
+.note.sumbar .sum-fjern{margin-left:6px;padding:3px 10px;min-height:24px;
+  border:1px solid rgba(255,255,255,.45);border-radius:999px;background:none;
+  color:#fff;font:inherit;font-size:13px;cursor:pointer}
+.note.sumbar .sum-fjern:hover{background:rgba(255,255,255,.1)}
+.note.sumbar .sum-fjern:focus-visible{outline:2px solid #f0a58c;outline-offset:2px}
 
 /* ---- MINDSTEANTALLET OG LEVERINGSOMRAADET  (4/9) ----
    To linjer, der svarer paa noget, gaesten er ved at goere:
