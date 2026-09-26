@@ -516,7 +516,8 @@ test.describe('Billederne af fadet skifter', () => {
     await åbn(page, data());
     const fotos = page.locator('.tshot .foto-skift img');
     await expect(fotos).toHaveCount(3);
-    await expect(fotos.first()).toHaveAttribute('src', /billeder\/tapas-1\.jpg/);
+    /* 26/9: billede 1 er tapasfilmens eget slutbillede (tapas-film.spec.js). */
+    await expect(fotos.first()).toHaveAttribute('src', /film\/tapas-(4x3|16x9)-slut\.jpg/);
     await expect(page.locator('.tshot .foto-skift')).toHaveAttribute('data-reserve', '1');
     /* Og de er FILER, der findes: et billede, der aldrig kom, har
        bredden nul — `complete` alene er sandt for et opgivet. */

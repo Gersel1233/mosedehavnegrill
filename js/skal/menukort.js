@@ -227,6 +227,17 @@
      håndmadder er EJERENS egne fotos; resten er GENERERET (Sjinn),
      på kundens beslutning — samme kategori som tapasbillederne
      11/9. Skiftes de til rigtige fotos, er det én linje her.
+     Andre retter, Sandwich, Snacks og Reception (25/9) er ligeledes
+     GENEREREDE (fal.ai) — se nederst i listen.
+     ⚠️ 26/9: de tolv Sjinn-billeder (solnedgang og sejlbåde) er
+     skiftet ud med havn-*.jpg — OGSÅ GENEREREDE (fal.ai), i samme
+     stil som de fire: dagslys, molen, dugen, kun varer fra kortet.
+     "Retter" viser nu fish'n'chips (kortets vare) — stegt flæsk er
+     ikke længere på kortet. De gamle menu-*.jpg ligger stadig i
+     billeder/. Forsidens isafsnit bruger havn-softice.jpg og den
+     GAMLE menu-kugleis.jpg (bubblewafflen) — Mikkels valg 26/9:
+     "den var real nok". Slet den ikke.
+     Tapas, smørrebrød og håndmadder er med vilje ikke rørt.
 
      ⚠️ KENDINGEN ER NAVNET, og rækkefølgen betyder noget:
      "Sandwich og retter fra pladen" indeholder "retter", og
@@ -241,22 +252,32 @@
     [/fyld/, null],
     [/smørrebrød/, 'billeder/selskab-fade.webp'],
     [/fra pladen/, 'billeder/menu-pladen.jpg'],
-    [/burger/, 'billeder/menu-burgere.jpg'],
-    [/pølse/, 'billeder/menu-poelser.jpg'],
-    [/^retter$/, 'billeder/menu-retter.jpg'],
+    [/burger/, 'billeder/havn-burgere.jpg'],
+    [/pølse/, 'billeder/havn-poelser.jpg'],
+    [/^retter$/, 'billeder/havn-retter.jpg'],
     [/tapas/, 'billeder/tapas-1.jpg'],
-    [/platte/, 'billeder/menu-platter.jpg'],
-    [/slider/, 'billeder/menu-sliders.jpg'],
-    [/kugle|ishorn/, 'billeder/menu-kugleis.jpg'],
-    [/softice/, 'billeder/menu-softice.jpg'],
+    [/platte/, 'billeder/havn-platter.jpg'],
+    [/slider/, 'billeder/havn-sliders.jpg'],
+    [/kugle|ishorn/, 'billeder/havn-kugleis.jpg'],
+    [/softice/, 'billeder/havn-softice.jpg'],
     /* Morgenmad, kaffe og drikkevarerne (13/9, samme beslutning).
        ⚠️ PRÆCIS "Morgenmad": "Tilkøb morgenmad" skal ikke have et
        foto, og det indeholder ordet. */
-    [/^morgenmad$/, 'billeder/menu-morgenmad.jpg'],
-    [/kaffe/, 'billeder/menu-kaffe.jpg'],
-    [/^øl$/, 'billeder/menu-oel.jpg'],
-    [/^vin\b|cava|champagne/, 'billeder/menu-vin.jpg'],
-    [/sodavand/, 'billeder/menu-sodavand.jpg'],
+    [/^morgenmad$/, 'billeder/havn-morgenmad.jpg'],
+    [/kaffe/, 'billeder/havn-kaffe.jpg'],
+    [/^øl$/, 'billeder/havn-oel.jpg'],
+    [/^vin\b|cava|champagne/, 'billeder/havn-vin.jpg'],
+    [/sodavand/, 'billeder/havn-sodavand.jpg'],
+    /* De fire, der stod uden foto (25/9). Også GENEREREDE — fal.ai,
+       nano-banana/edit — men med stedets egne fotos som reference:
+       kagebordet på molen for dugen og udsigten, og deres egen
+       sandwich for brødet og fyldet. Retterne er kortets egne.
+       ⚠️ PRÆCISE NAVNE: "Retter" (stegt flæsk) står ovenfor med sit
+       eget foto, og "andre retter" må ikke tage det. */
+    [/^andre retter$/, 'billeder/menu-andre-retter.jpg'],
+    [/^sandwich$/, 'billeder/menu-sandwich.jpg'],
+    [/snacks/, 'billeder/menu-snacks.jpg'],
+    [/pindemad/, 'billeder/menu-pindemad.jpg'],
   ];
   function fotoFor(k) {
     var n = String((k && k.navn) || '').toLowerCase().trim();

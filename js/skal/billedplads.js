@@ -187,7 +187,9 @@
     var reserve = !fraAdmin.length;
     var liste = reserve ? filer(orig) : fraAdmin;
     if (liste.length > 1) {
-      var g = galleri(liste, orig);
+      /* Filmen hører til SIDENS billeder — ejerens egne fra admin
+         får ingen film foran sig (samme regel som ovenfor). */
+      var g = galleri(liste, orig, reserve ? orig.getAttribute('data-film') : '');
       if (reserve) g.setAttribute('data-reserve', '1');
       return { el: g, spor: 'g:' + liste.join(' '), img: g.querySelector('img') };
     }
@@ -285,13 +287,50 @@
      tredjedel af takten hver. */
   var galleriNr = 0;
 
-  function galleri(liste, plads) {
+  /* ============================================================
+     FILMEN ER GALLERIETS FØRSTE BILLEDE  (26/9)
+     ------------------------------------------------------------
+     Mikkels ord: *"erstat billede 1 derinde med videoen og efter
+     slutframen clean som nu skift imellem billederne, og når runden
+     når tilbage til video/slutframe 1, så lad det bare være
+     billedet"*.
+
+     Billede 1 er filmens EGET sidste billede (-slut.jpg, trukket ud
+     af filen). Filmen ligger oven på det og spiller én gang, når
+     galleriet kommer til syne; når den er slut, tages den væk, og
+     det samme billede står tilbage — først da begynder galleriet at
+     skifte. Anden gang runden når billede 1, er det kun billedet.
+
+     ⚠️ ALT, DER IKKE ER EN FILM, DER SPILLER, ER BARE GALLERIET.
+     Reduceret bevægelse, en browser uden H.264 (sky-containerens
+     Chromium), en afvist play() (iPhone på strømbesparelse), en
+     fejl eller en film, der ikke er i gang efter FILM_VENT_MS: så
+     tages filmen væk, og galleriet kører, som det altid har gjort.
+     En film, der hænger, må aldrig holde billederne fast.
+
+     ⚠️ FORMATET FØLGER RAMMEN: 16:9 fra 821 px (.tshot i
+     havnegrillen.css), ellers 4:3. Samme grænse, to steder — en
+     film i det forkerte format bliver beskåret forkert. */
+  var FILM_VENT_MS = 8000;
+  var filmBred = '(min-width: 821px)';
+
+  function filmKanSpille() {
+    var v = document.createElement('video');
+    return typeof v.canPlayType === 'function'
+      && /probably|maybe/.test(v.canPlayType('video/mp4; codecs="avc1.640028"'));
+  }
+
+  function galleri(liste, plads, film) {
     var forskudt = (galleriNr++ % 3) * Math.round(SKIFT_MS / 3);
     var rod = document.createElement('div');
     rod.className = 'foto-skift ' + (plads.className || '');
     rod.setAttribute('role', 'group');
     rod.setAttribute('aria-roledescription', 'billedskifter');
     rod.setAttribute('aria-label', plads.getAttribute('data-galleri-navn') || 'Billeder');
+
+    /* Med en film er billede 1 filmens eget sidste billede (se ovenfor). */
+    var fmt = window.matchMedia && window.matchMedia(filmBred).matches ? '16x9' : '4x3';
+    if (film) liste = [film + '-' + fmt + '-slut.jpg'].concat(liste.slice(1));
 
     var fotos = liste.map(function (url, nr) {
       var f = document.createElement('img');
@@ -324,10 +363,12 @@
 
     var ro = window.matchMedia
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var stoppet = false;
     function start() {
       if (ur) clearInterval(ur);
-      if (ro) return;
+      if (ro || stoppet) return;
       setTimeout(function () {
+        if (stoppet) return;
         ur = setInterval(function () {
           /* En skjult fane skifter ikke — gæsten kommer tilbage til
              det billede, hun forlod, ikke til det femte. */
@@ -336,10 +377,68 @@
         }, SKIFT_MS);
       }, forskudt);
     }
-    start();
+
+    var video = null;
+    if (film && !ro && filmKanSpille()) video = filmen(film + '-' + fmt);
+    if (!video) start();
+
+    function filmen(navn) {
+      var v = document.createElement('video');
+      v.className = 'foto-film';
+      v.muted = true;
+      v.defaultMuted = true;
+      v.playsInline = true;
+      v.setAttribute('muted', '');
+      v.setAttribute('playsinline', '');
+      v.setAttribute('aria-hidden', 'true');
+      v.disablePictureInPicture = true;
+      v.preload = 'metadata';
+      v.poster = navn + '-start.jpg';
+      v.src = navn + '.mp4';
+      rod.appendChild(v);
+
+      var færdig = false, vagt = null;
+      /* Filmen tages væk, og billedet under den (dens eget sidste
+         billede) står tilbage. Galleriet begynder først nu. */
+      function slut() {
+        if (færdig) return;
+        færdig = true;
+        if (vagt) clearTimeout(vagt);
+        if (v.parentNode) v.parentNode.removeChild(v);
+        start();
+      }
+      v.addEventListener('ended', slut, { once: true });
+      v.addEventListener('error', slut, { once: true });
+
+      function spil() {
+        if (færdig) return;
+        vagt = setTimeout(function () { if (v.paused || v.currentTime === 0) slut(); }, FILM_VENT_MS);
+        var p = v.play();
+        if (p && typeof p.catch === 'function') p.catch(slut);
+      }
+      /* Filmen spiller, når gæsten kan SE den — ikke mens galleriet
+         ligger under folden og spiller for ingen. */
+      if ('IntersectionObserver' in window) {
+        var øje = new IntersectionObserver(function (ind) {
+          if (ind.some(function (e) { return e.isIntersecting; })) { øje.disconnect(); spil(); }
+        }, { threshold: 0.4 });
+        øje.observe(rod);
+      } else {
+        spil();
+      }
+      v._slut = slut;
+      return v;
+    }
+
     /* Skiftes galleriet ud (ejerens fotos kom efter repoets), skal
-       dets ur stoppe — ellers skifter et galleri, ingen kan se. */
-    rod._stop = function () { if (ur) clearInterval(ur); ur = null; };
+       dets ur stoppe — ellers skifter et galleri, ingen kan se. Og en
+       film, der spiller, stoppes med det. */
+    rod._stop = function () {
+      stoppet = true;
+      if (ur) clearInterval(ur);
+      ur = null;
+      if (video && video.parentNode) { video.pause(); video.parentNode.removeChild(video); }
+    };
     return rod;
   }
 

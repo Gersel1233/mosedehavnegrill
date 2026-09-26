@@ -7,8 +7,10 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-**BORDENE TÆLLER IKKE MED I BREMSEN** (26/9, formiddag, IKKE KØRT I
-PRODUKTIONEN). Mikkels ord: *"lad bordene ikke tælle med i bremsen"*.
+**BORDENE TÆLLER IKKE MED I BREMSEN** (26/9, formiddag — KØRT af Mikkel
+samme formiddag, sammen med glutenfrit-broed-5-kr.sql og
+gaestens-vaern-26-9.sql; glutenfrit brød er set i produktionen med en
+GET). Mikkels ord: *"lad bordene ikke tælle med i bremsen"*.
 `bremse.sql` (august) talte ALLE bestillinger sammen — forsiden med isen,
 tapas, bestil/ og bordene (QR). En travl dag ved bordene kunne ramme 40 i
 timen, og så afviste databasen al online-bestilling i op til en time, også
@@ -36,6 +38,19 @@ ved sjette runde.
   lugen"*. Gæsten sidder ved bordet. Prøve i `robusthed.spec.js`, set fejle
 - **Køres `bremse.sql` igen, skal den nye fil køres bagefter** (tabellen i
   `docs/SQL-RAEKKEFOELGE.md`)
+- ⚠️ **SELVTILMELDING ER SLÅET FRA** (Supabase Auth, Mikkel 26/9; set med
+  GET på `/auth/v1/settings`: `disable_signup: true`). Det var mere end
+  pynt: `bord-noegle.sql` giver rollen `authenticated` hele `borde`-tabellen
+  med `kode` — så med åben tilmelding kunne enhver oprette en konto og
+  læse de 55 QR-nøgler. Nu har kun personalet konti. Åbnes tilmeldingen
+  igen, er nøglerne åbne igen
+
+**HAVNEFOTOENE UDGIVET — OG FORSIDENS IS SKIFTET** (26/9). Mikkels ord:
+*"udgiv og skift forsiden too"*. Forsidens isafsnit viser nu
+`havn-softice.jpg` og `havn-kugleis.jpg` (nye alt-tekster); intet peger
+længere på de gamle `menu-*.jpg` for de tolv. `tests/is-afsnit.spec.js`
+måler filnavnet og at fotoet kommer — set fejle med det gamle foto.
+Flettet med de 18 commits, der var udgivet i mellemtiden (ingen konflikt).
 
 **NATTEN MELLEM 25. OG 26. SEPTEMBER: RULNING, TILBAGE, MENUKORTET PÅ COMPUTER,
 FOTOERNE OG ADMIN**. Det startede med Mikkels besked (stavningen rettet):
@@ -180,8 +195,54 @@ samme form, men blev IKKE vist og står (spørg, før det røres). Prisen står
 lige under smiley-kortet med smiley-kortets klasse (samme glas) og samme
 ordlyd og link som linjen i bunden, der bliver stående. Udgivet (#500).
 
-**BILLEDPLANEN — DE FIRE KATEGORIER UDEN FOTO** (25/9, nat, IKKE LAVET
-ENDNU). Mikkel vil have dem lavet med fal.ai (10 dollars på kontoen) og
+**TOLV NYE HAVNEFOTOS I STEDET FOR SOLNEDGANGEN** (26/9, nat, IKKE
+UDGIVET). Mikkels ord: *"nu fylder vi også resten ud … med de sidste ting
+ift deres sortiment"* — og *"tapas skal ikke og håndmader og smørrebrød
+skal heller ikke"*.
+
+- **`billeder/havn-*.jpg`** (retter, burgere, poelser, platter, kugleis,
+  sliders, softice, morgenmad, kaffe, oel, vin, sodavand), 720×1080 JPEG.
+  **ALLE ER GENEREREDE** (fal.ai, `nano-banana/edit`) med kagebordet på
+  molen som reference — dug, trædæk, havn — i samme stil som de fire fra
+  25/9, men hvert sit sted: bordet, en pæl ved vandet, rækværket, et rundt
+  træbord, tidlig morgen. Kun varer fra kortet: fish'n'chips, cheese-
+  burger, ristet pølse, brunchplatte, 3 kugler (jordbær/vanilje/chokolade),
+  fire sliders, softice med drys, morgenkomplet, cappuccino og gammeldags
+  æblekage, to fadøl, hvidvin og cava, iste/milkshake/slush
+- **Nye navne, ikke overskrevet:** de gamle `menu-*.jpg` ligger der stadig
+  (forsidens isafsnit bruger `menu-softice.jpg` — ikke skiftet). `FOTOS`
+  peger på de nye. "Retter" viser nu fish'n'chips: stegt flæsk står ikke
+  på kortet (`menukort.json`, 25/9)
+- **Forbrug:** 12 forsøg, alle brugt i første hug. I alt $0.702 af 2
+  dollars for begge runder
+- `tests/menukort-foto.spec.js` peger på de nye navne og er set fejle med
+  det gamle softice-foto sat ind igen
+
+**DE FIRE FOTOS ER LAVET — GENEREREDE MED fal.ai** (25/9, nat, IKKE
+UDGIVET — venter på Mikkels ja til billederne). Planen nedenfor er fulgt.
+
+- **Filerne:** `billeder/menu-andre-retter.jpg` (biksemad med spejlæg),
+  `menu-sandwich.jpg` (frikadelle, rødkål, agurk i det grillede brød,
+  skåret over), `menu-snacks.jpg` (2 slags chips på fad + popcorn, set
+  oppefra), `menu-pindemad.jpg` (fad med pindemad på rugbrød). 720×1080
+  JPEG som de 13 andre. **ALLE FIRE ER GENEREREDE** — samme kategori som
+  tapas 11/9 og menu-billederne 13/9. Noten står også ved `FOTOS`
+- **Hvordan:** `fal-ai/nano-banana/edit`, $0.039 pr. billede, via
+  `queue.fal.run` (proxyen sætter nøglen på — `FAL_KEY` var IKKE sat, og
+  `fal.run` svarer 401 uden den). Referencer: kagebordet på molen (dug,
+  trædæk, havn — ikke kagerne) og deres egen sandwich (brød og fyld).
+  Google-biksemaden blev IKKE sendt med
+- **Forbrug:** 6 forsøg = $0.234 af budgettets 2 dollars. Sandwich og
+  pindemad fik andet forsøg: sandwich nr. 1 var deres eget foto klistret
+  ind med det trykte papir; pindemad nr. 1 havne-kompositionen fra
+  biksemaden igen og meterlange pinde. Plus ét tomt kald, der døde på 404
+  efter 0,03 sek. (en fejl i mit tjek, ingen billede)
+- **Regler:** `/^andre retter$/` og `/^sandwich$/` med ankre — "Retter"
+  (stegt flæsk) beholder sit foto. `tests/menukort-foto.spec.js` prøver
+  alle fem og er set fejle med `/retter/` uden anker
+
+**BILLEDPLANEN — DE FIRE KATEGORIER UDEN FOTO** (25/9, nat — LAVET, se
+posten ovenfor). Mikkel vil have dem lavet med fal.ai (10 dollars på kontoen) og
 *"ikke for fake … op til standarderne"*. Denne session kunne ikke: `FAL_KEY`
 læses kun, når en session starter, og `queue.fal.run`, `fal.media` og
 `api.fal.ai` var spærret (kun `fal.run` svarede).

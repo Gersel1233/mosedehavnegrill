@@ -1813,6 +1813,10 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .foto-skift img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease}
 .foto-skift img.vis{opacity:1}
 @media (prefers-reduced-motion:reduce){.foto-skift img{transition:none}}
+/* Tapasfilmen (26/9) ligger OVEN PÅ galleriets første billede, som er
+   filmens eget sidste billede — når den tages væk, står det samme
+   billede tilbage, og intet blinker. Se galleri() i js/skal/billedplads.js. */
+.foto-skift .foto-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;pointer-events:none}
 .tshot .foto-fyldt{display:block;object-fit:cover}
 /* Galleriet flyttede til smørrebrødssiden (29/8), og dér er der
    ingen sektion med sidepolstring omkring det. Målet er .tshot's

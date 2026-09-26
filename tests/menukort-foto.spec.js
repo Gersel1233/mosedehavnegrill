@@ -18,12 +18,37 @@ test.describe('Menukortets kategorier står på et foto', () => {
     await expect(smoer.locator('.mk-bg img')).toHaveAttribute('src', /selskab-fade\.webp/);
     await expect(smoer.locator('.mk-bg img')).toHaveAttribute('loading', 'lazy');
     await expect(page.locator('#mk-kat .panel[data-kategori="Softice og vafler"] .mk-bg img'))
-      .toHaveAttribute('src', /menu-softice\.jpg/);
+      .toHaveAttribute('src', /havn-softice\.jpg/);
     // Øl har sit eget foto fra 13/9; "Vælg fyld" har med vilje ingen.
     const fyld = page.locator('#mk-kat .panel[data-kategori="Vælg fyld til smørrebrødet"]');
     await expect(fyld, 'vagt: fyld-kortet skal findes').toHaveCount(1);
     await expect(fyld).not.toHaveClass(/mk-foto-kort/);
     await expect(fyld.locator('.mk-bg')).toHaveCount(0);
+  });
+
+  /* DE FIRE, DER STOD UDEN FOTO (25/9). Navnene er produktionens.
+     ⚠️ "Andre retter" indeholder "retter" — den må ikke tage stegt
+     flæsks foto, og "Retter" må ikke miste det. */
+  test('Andre retter, Sandwich, Snacks og Reception får hver sit foto', async ({ page }) => {
+    const d = grunddata();
+    const nye = [
+      [40, 'Retter', /havn-retter\.jpg/],
+      [41, 'Andre retter', /menu-andre-retter\.jpg/],
+      [42, 'Sandwich', /menu-sandwich\.jpg/],
+      [43, 'Snacks og slik', /menu-snacks\.jpg/],
+      [44, 'Reception og pindemad', /menu-pindemad\.jpg/],
+    ];
+    for (const [id, navn] of nye) {
+      d.menu_kategorier.push({ id, afdeling: 'mad', navn, sortering: id, aktiv: true });
+      d.menu_varer.push({ id: id * 10, kategori_id: id, navn: navn + ' vare', beskrivelse: null, pris: 50,
+        fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true });
+    }
+    await åbnSkal(page, '/m-menukort.html', { data: d });
+    for (const [, navn, fil] of nye) {
+      const img = page.locator(`#mk-kat .panel[data-kategori="${navn}"] .mk-bg img`);
+      await expect(img, navn).toHaveCount(1);
+      await expect(img, navn).toHaveAttribute('src', fil);
+    }
   });
 
   /* ⚠️ BUNDEN UNDER FOTOET SKAL VÆRE MØRK OG TÆT. Fotoet er højst
