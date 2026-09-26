@@ -7,6 +7,36 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**BORDENE TÆLLER IKKE MED I BREMSEN** (26/9, formiddag, IKKE KØRT I
+PRODUKTIONEN). Mikkels ord: *"lad bordene ikke tælle med i bremsen"*.
+`bremse.sql` (august) talte ALLE bestillinger sammen — forsiden med isen,
+tapas, bestil/ og bordene (QR). En travl dag ved bordene kunne ramme 40 i
+timen, og så afviste databasen al online-bestilling i op til en time, også
+smørrebrødet til i morgen. En familie ved et bord ramte "5 fra samme nummer"
+ved sjette runde.
+
+- Ny fil: `supabase/bremse-uden-borde-26-9.sql`. En bestilling med
+  `bord_nummer` tæller ikke i de 40 i timen og de 5 pr. nummer og bremses
+  ikke af dem. Mad ud af huset har præcis de samme grænser som før
+- **Hvert bord har sit eget loft: 20 i timen.** Ellers var et bordnummer en
+  dør uden om bremsen. Det er IKKE køkkenets loft pr. kvarter
+  (`bord-loft.sql`, ejerens tal i admin)
+- `bord_nummer` og ikke `kanal`: kanalen er et ord, siden selv sender.
+  Bordnummeret er prøvet af `bestilling_bord_findes` og
+  `bestilling_bord_noegle`, som kører før bremsen (alfabetisk)
+- ⚠️ **Skraldespanden er skrevet med.** `skraldespand.sql` retter bremsen,
+  så slettede rækker ikke tæller; en funktion, der skrives forfra, taber
+  det. Første udgave gjorde netop det. Prøve 13-14 fangede det
+- Prøve: `proev-bremse-uden-borde.sql`. Mod den gamle bremse FEJLEDE 6 af 14
+  (bordprøverne; de gamle grænser og modstykkerne bestod), mod første udgave
+  2 af 14, med filen 14 af 14. `sql-runde.sh`: 60 filer 1682/0, og hver
+  gammel fil har samme tal som før (diffet linje for linje).
+  `er-vi-klar.sql` tjek 151
+- `js/store.js`: `bestilling_bremse_bord` siger *"Sig det til os ved
+  lugen"*. Gæsten sidder ved bordet. Prøve i `robusthed.spec.js`, set fejle
+- **Køres `bremse.sql` igen, skal den nye fil køres bagefter** (tabellen i
+  `docs/SQL-RAEKKEFOELGE.md`)
+
 **NATTEN MELLEM 25. OG 26. SEPTEMBER: RULNING, TILBAGE, MENUKORTET PÅ COMPUTER,
 FOTOERNE OG ADMIN**. Det startede med Mikkels besked (stavningen rettet):
 *"siden er virkelig langsom, sløv og ikke 120fps … animationerne på billederne
