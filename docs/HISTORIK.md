@@ -7,6 +7,59 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**BESTILLINGEN OG KØKKENET GJORT PROFESSIONELT** (26/9, eftermiddag og
+aften). Mikkels ord: *"læg i kurven virker ikke på is siden og hele
+bestillingstinget er stadig ikke 250.000 kroner værd … personalet skal være i
+overblik og kunne følge med og se ALT, og cheferne i køkkenet skal have styr
+på alt, der skal laves"*. Hans svar på tre spørgsmål: Køkkenet skal vise ALT,
+"Spis her" får et frivilligt felt for antal personer, og flowet: *"ret de
+klare fejl nu, vis resten"*.
+
+Gæsten (forsiden og smørrebrødssiden, `js/skal/bestil.js`):
+- **Isen VIRKEDE** — målt med produktionens data. Men gæsten så intet:
+  knappen sprang tilbage, summen stod under skærmkanten. Nu siger knappen
+  selv "✓ Lagt i kurven" (`js/isbygger.js`), og en **kurvbjælke** i bunden
+  viser antal og beløb og ruller ned til Send. Den skjules, mens gæsten
+  skriver (tastaturet), og når Send er i syne. Bjælken er helt dækkende —
+  varelisten skinnede igennem ved beløbet på et skud
+- **En is kan tages ud igen**: "fjern" på is-linjen i summen. Isen har
+  ingen tæller i listen
+- **Kurven følger med ved skift** af dag og spisemåde og siger, hvad der
+  blev taget ud, og hvorfor
+- **Kurven overlever "Se hele is-sortimentet" og tilbage** — og en
+  genindlæsning. Målt: den var tom. Gemmes pr. fane (sessionStorage), aldrig
+  navn, telefon, adresse eller allergi, og glemmes, når der er sendt
+- **"Hvor mange spiser med? (valgfrit)"** ved Spis her. Admin viser
+  "👥 4 pers." — og "⚠️ 4 pers. · mad til 2", når der er flere mennesker end
+  mad (`Admin.gaesteMaerke`). Ti ting til én person er normalt og giver
+  intet mærke
+- **Dagen står ved Send** ("i dag", "i morgen", "mandag d. 10. august")
+- **Afsendelsen har et loft på 12 sek.** Svarer nettet ikke, siger siden
+  ærligt, at vi ikke ved, om den nåede frem — og beder gæsten ringe i
+  stedet for at sende igen (ingen sms-knap, den kunne give en dobbelt)
+- Kvitteringen er hele sætninger, og følg-siden lover ikke bilen, før en
+  levering er bekræftet
+
+Personalet (admin):
+- **Køkkenet viser ALT i dag**: bordene øverst, og nedenunder "Til lugen i
+  dag" — to-go, levering, spis her og is, efter tid. Rækken er Overbliks
+  egen (`Admin.lugeRaekke`), så de to skærme siger det samme. Allergi står
+  med ord
+- Køkkenkortets ur tikker på kortet, der står, og bliver rødt
+- **Rødt bånd "Ingen forbindelse"**, når databasen ikke har svaret i 45 sek.
+  Før kunne en skærm stå med gamle tal og ligne en rolig dag
+- **Lyden forsvinder ikke tavst**: et rødt bånd med 🔇, når browseren har
+  slået den fra. Skærmen går ikke i dvale på Køkkenet (wake lock)
+- Bestillinger tegner listen igen, når nettet er tilbage
+- `VEJLEDNING.md` er rettet: fanen hedder Køkkenet, og båndene er forklaret
+
+Alle nye prøver er set fejle med rettelsen fjernet (står i hver commit).
+
+**Vises for Mikkel på skærmbilleder, før det bygges** (hans ord: "vis
+resten"): tidspunktet op ved datoen, og spisemåden/levering øverst som ét
+valg; to smørrebrødssider; halve timer i tidsvælgeren; "Vi kommer med det"
+ved bordet (mod ejerens ord 15/9 om at gå ned selv?); Køkken-fanens tal.
+
 **BORDENE TÆLLER IKKE MED I BREMSEN** (26/9, formiddag — KØRT af Mikkel
 samme formiddag, sammen med glutenfrit-broed-5-kr.sql og
 gaestens-vaern-26-9.sql; glutenfrit brød er set i produktionen med en
