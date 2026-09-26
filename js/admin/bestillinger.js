@@ -138,14 +138,30 @@
      Null = spørg ikke. Et spørgsmål på hver bestilling er et
      spørgsmål, man klikker væk uden at læse. */
   Admin.spoergFoerst = function (b) {
-    if (!b || b.hvordan !== 'levering') return null;
-    var nr = String(b.telefon || '').trim();
-    return '\ud83d\ude97 ' + String(b.navn || 'Gæsten')
-      + ' skal have maden LEVERET.\n\n'
-      + (nr ? 'Har I ringet til ' + nr + ' og aftalt adresse og tid? '
-            : 'Har I aftalt adresse og tid med gæsten? ')
-      + 'Kvitteringen lover hende et opkald — en levering bekræftes '
-      + 'aldrig af sig selv.';
+    if (!b) return null;
+    var spg = [];
+    /* ⚠️ EN BESTILLING TIL EN SENERE DAG (26/9). "✓ Færdig" er den
+       eneste knap, og trykkede nogen onsdag på lørdagens bestilling,
+       blev den "afhentet" — og forsvandt fra lørdagens Overblik, så
+       køkkenet aldrig lavede den. Kun FREMTIDIGE dage: en bestilling
+       fra i går, der ikke er lukket, er netop den, man skal lukke. */
+    var iDag = Butik.nu && Butik.nu().dato;
+    if (iDag && b.hent_dato && b.hent_dato > iDag) {
+      spg.push('\ud83d\udcc5 ' + String(b.navn || 'Gæsten') + 's bestilling er til '
+        + Admin.pænDato(b.hent_dato) + ' — ikke i dag.\n\nEr den virkelig hentet? '
+        + 'Sætter du den færdig nu, forsvinder den fra den dags overblik, '
+        + 'og køkkenet laver den ikke.');
+    }
+    if (b.hvordan === 'levering') {
+      var nr = String(b.telefon || '').trim();
+      spg.push('\ud83d\ude97 ' + String(b.navn || 'Gæsten')
+        + ' skal have maden LEVERET.\n\n'
+        + (nr ? 'Har I ringet til ' + nr + ' og aftalt adresse og tid? '
+              : 'Har I aftalt adresse og tid med gæsten? ')
+        + 'Kvitteringen lover hende et opkald — en levering bekræftes '
+        + 'aldrig af sig selv.');
+    }
+    return spg.length ? spg.join('\n\n') : null;
   };
 
   /* Mellemtrinnet — det, der ligger bag "···". Null, når der ikke
@@ -1080,7 +1096,7 @@
     felt.placeholder = 'Fx: ringet, hun kommer 12.30';
     felt.addEventListener('change', function () {
       if (felt.value === (b.intern_note || '')) return;
-      gemBestilling(Butik.skrive.bestillingStatus(b.id, b.status, felt.value),
+      gemBestilling(Butik.skrive.bestillingStatus(b.id, undefined, felt.value),
         'Noten er gemt.');
     });
     /* ⚠️ DEN TOMME NOTE FOLDES VÆK.
@@ -1140,7 +1156,7 @@
       frem.addEventListener('click', function () {
         var spg = Admin.spoergFoerst(b);
         if (spg && !confirm(spg)) return;
-        gemBestilling(Butik.skrive.bestillingStatus(b.id, n.status, felt.value),
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, n.status, Admin.nyNote(felt, b.intern_note)),
           'Bestillingen er sat til "' + n.efter + '".');
       });
       raekke.appendChild(frem);
@@ -1154,7 +1170,7 @@
       var mk = lav('button', 'knap sekundaer', mel.navn);
       mk.type = 'button';
       mk.addEventListener('click', function () {
-        gemBestilling(Butik.skrive.bestillingStatus(b.id, mel.status, felt.value),
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, mel.status, Admin.nyNote(felt, b.intern_note)),
           'Bestillingen er sat til "' + mel.efter + '".');
       });
       mere.appendChild(mk);
@@ -1172,7 +1188,7 @@
           + 'Brug den, når maden var klar, men ingen kom. Den tæller '
           + 'ikke som salg.')) return;
         gemBestilling(
-          Butik.skrive.bestillingStatus(b.id, 'udeblevet', felt.value)
+          Butik.skrive.bestillingStatus(b.id, 'udeblevet', Admin.nyNote(felt, b.intern_note))
             .catch(function (e) {
               /* Indtil supabase/udeblivelser.sql er kørt, kender
                  databasen ikke ordet — og så skal der stå HVAD man
@@ -1194,10 +1210,17 @@
         /* Opringningen står i spørgsmålet. En afvisning uden en
            opringning er en kunde der møder op til en pose der ikke
            findes – og gæsten har fået at vide at vi ringer. */
-        if (!confirm('Afvis bestillingen fra ' + b.navn + '?\n\n'
-          + 'Husk at ringe til ' + b.telefon + ' – gæsten har fået at vide '
-          + 'at vi ringer og bekræfter.')) return;
-        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'afvist', felt.value),
+        /* ⚠️ UDEN ET NUMMER (26/9) stod der "Husk at ringe til null" —
+           ved bordet må gæsten sende uden nummer. Så siger den, hvad man
+           gør i stedet. */
+        var nr = String(b.telefon || '').trim();
+        var hvordan = nr
+          ? 'Husk at ringe til ' + nr + ' – gæsten har fået at vide at vi ringer og bekræfter.'
+          : (b.bord_nummer
+            ? 'Gæsten har ikke givet et nummer — gå hen til bord ' + b.bord_nummer + ' og sig det.'
+            : 'Gæsten har ikke givet et nummer — sig det ved lugen, når hun kommer.');
+        if (!confirm('Afvis bestillingen fra ' + b.navn + '?\n\n' + hvordan)) return;
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'afvist', Admin.nyNote(felt, b.intern_note)),
           'Bestillingen er afvist.');
       });
       mere.appendChild(afvis);
@@ -1215,7 +1238,7 @@
       var gendan = lav('button', 'knap sekundaer', '↩ Gendan');
       gendan.type = 'button';
       gendan.addEventListener('click', function () {
-        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'bekraeftet', felt.value),
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'bekraeftet', Admin.nyNote(felt, b.intern_note)),
           'Bestillingen er tilbage som bekræftet.');
       });
       /* ⚠️ PÅ ET FÆRDIGT KORT ER GENDAN DEN ENE HANDLING FREM.
@@ -1368,7 +1391,7 @@
       var boks = $('bestillinger-liste');
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
-        'Bestillingerne kunne ikke hentes: ' + (e.message || e)
+        'Bestillingerne kunne ikke hentes. ' + Admin.forklarFejl(e)
         + ' Skærmen prøver igen af sig selv om et øjeblik — bliver den'
         + ' ved, så log ud og ind igen.'));
       if (window.console) console.warn('bestillinger:', e);

@@ -197,7 +197,7 @@
       if (!boks) return;
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
-        'Logbogen kunne ikke hentes: ' + (e.message || e)
+        'Logbogen kunne ikke hentes. ' + Admin.forklarFejl(e)
         + ' Skift fane og tilbage — så hentes den igen. Bliver den ved,'
         + ' så log ud og ind igen.'));
       if (window.console) console.warn('logbog:', e);

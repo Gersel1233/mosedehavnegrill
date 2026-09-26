@@ -1075,8 +1075,15 @@
        en bestilling personalet kan skrive om, er ikke længere et
        bevis på hvad gæsten bad om. Skal noget ændres, ringer man
        og laver en ny. */
+    /* ⚠️ STATUS SENDES KUN, NÅR DEN SKIFTER (26/9). Noten blev gemt med
+       den status, SKÆRMEN havde, da kortet blev tegnet — så trykkede
+       køkkenet "Færdig" på én telefon, og nogen skrev en note på en
+       anden, stod bestillingen åben igen og faldt ud af Salg. Husets
+       regel: kolonner sendes aldrig ubetinget. Samme greb i de fire
+       andre statusfunktioner herunder. */
     bestillingStatus: function (id, status, note) {
-      var ren = { status: status, aendret: new Date().toISOString() };
+      var ren = { aendret: new Date().toISOString() };
+      if (status !== undefined) ren.status = status;
       if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
 
       if (!SKY) return lokalt(function (d) {
@@ -1106,7 +1113,8 @@
        af, hvad der blev spurgt om, og et referat man kan skrive om,
        er ikke længere et bevis. */
     forespoergselStatus: function (id, status, note) {
-      var ren = { status: status, aendret: new Date().toISOString() };
+      var ren = { aendret: new Date().toISOString() };
+      if (status !== undefined) ren.status = status;
       if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
 
       if (!SKY) return lokalt(function (d) {
@@ -1156,7 +1164,8 @@
     },
 
     bordStatus: function (id, status, note) {
-      var ren = { status: status, aendret: new Date().toISOString() };
+      var ren = { aendret: new Date().toISOString() };
+      if (status !== undefined) ren.status = status;
       if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
 
       if (!SKY) return lokalt(function (d) {
@@ -1194,7 +1203,8 @@
        IKKE må blive til en sletning — en slettet række kan ingen
        fortryde, og pladsen ville alligevel blive fri. */
     reservationStatus: function (id, status, note) {
-      var ren = { status: status, aendret: new Date().toISOString() };
+      var ren = { aendret: new Date().toISOString() };
+      if (status !== undefined) ren.status = status;
       if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
 
       if (!SKY) {
@@ -1208,7 +1218,8 @@
     },
 
     udlejningStatus: function (id, status, note) {
-      var ren = { status: status, aendret: new Date().toISOString() };
+      var ren = { aendret: new Date().toISOString() };
+      if (status !== undefined) ren.status = status;
       if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
 
       if (!SKY) {

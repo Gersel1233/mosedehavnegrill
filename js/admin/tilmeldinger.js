@@ -338,7 +338,7 @@
   }
 
   function saet(r, status) {
-    Butik.skrive.reservationStatus(r.id, status, r.intern_note)
+    Butik.skrive.reservationStatus(r.id, status)
       .then(hent)
       .then(function () {
         Admin.kvitter(r.navn + ': ' + (STATUS_NAVNE[status] || status) + '.');

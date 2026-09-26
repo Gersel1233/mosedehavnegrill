@@ -1244,6 +1244,12 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    er "alt" tre fotos paa flere hundrede kilobyte. Man ser ikke
    den ene procent; man ser hakket. Loeftet bliver. */
 .rev{opacity:0;transform:translate3d(0,26px,0);will-change:opacity,transform}
+/* ⚠️ UDEN JAVASCRIPT ER .rev SYNLIG (26/9). Det er havnegrillen.js, der
+   sætter .in; uden den stod 38 blokke usynlige på forsiden for en læser
+   uden JavaScript (en link-forhåndsvisning, en søgemaskine, en browser
+   med scripts slået fra). Ren CSS: `scripting: none` er browserens egen
+   besked om, at scripts ikke kører. */
+@media (scripting:none){.rev{opacity:1;transform:none}}
 .rev.in{opacity:1;transform:none;transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .78s var(--spring);will-change:auto}
 .rev.in.d1{transition-delay:.07s}.rev.in.d2{transition-delay:.14s}.rev.in.d3{transition-delay:.21s}
 
@@ -1795,6 +1801,14 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    står uændret, også når skærmen er smallere end loftet. */
 @media (min-width:821px){.tshot{aspect-ratio:16 / 9;width:min(1100px,calc(100% - 2 * var(--pad)));margin-left:auto;margin-right:auto}}
 /* Galleriet — se js/skal/billedplads.js. Kun opacity skifter. */
+/* ⚠️ FOTOET TONER IND, NÅR DET ER HENTET (26/9). js/skal/billedplads.js
+   sætter .foto-venter, til billedet er her. Kun opacity — en zoom eller
+   et sløret billede tvinger browseren til at rastere hele fotoet om ved
+   hvert billede (kundens ord 30/8: "hakkende og ik clean"). Bunden er
+   pladsens egen creme, så der aldrig er et hul at se ned i. */
+.foto-fyldt,.foto-skift{transition:opacity .7s cubic-bezier(.4,0,.2,1)}
+.foto-venter{opacity:0}
+@media (prefers-reduced-motion:reduce){.foto-fyldt,.foto-skift{transition:none}}
 .foto-skift{position:relative;width:100%;height:100%}
 .foto-skift img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease}
 .foto-skift img.vis{opacity:1}

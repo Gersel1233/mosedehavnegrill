@@ -348,7 +348,8 @@
         /* Ejeren har TRYKKET, at der ingen er (31/8). "Følger
            snart" ville love en ret, køkkenet har sagt nej til. */
         kort.className = 'day closed';
-        kort.appendChild(lav('h4', null, 'Ingen dagens ret i dag'));
+        /* "i dag" kun på i dag (26/9) — der stod det ud for hver dag. */
+        kort.appendChild(lav('h4', null, 'Ingen dagens ret' + (i === 0 ? ' i dag' : '')));
         kort.appendChild(lav('p', null, 'Vælg frit fra menukortet.'));
       } else if (!retter.length) {
         /* ⚠️ KUN I DAG STÅR SOM "FØLGER SNART" (13/9). Kundens ord: "noget

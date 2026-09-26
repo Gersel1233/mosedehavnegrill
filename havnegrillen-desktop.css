@@ -41,9 +41,32 @@
    .device midtstillet i fit-content-bredde — 1100 px med luft til
    begge sider. Målt, ikke gættet. width:100% er selen til livremmen. */
 body{display:block;min-height:auto;padding:0;place-items:normal;background:var(--cream,var(--sand))}
-.device{width:100%;height:100svh;border-radius:0;padding:0;background:transparent;box-shadow:none}
+.device{width:100%;height:auto;min-height:100svh;border-radius:0;padding:0;background:transparent;box-shadow:none}
 .screen,.sheet,.cart{border-radius:0}
 .screen{--g:max(var(--pad),calc((100% - 700px)/2))}
+
+/* ---- DOKUMENTET RULLER OGSAA PAA EN COMPUTER (26/9) -------
+   Her rullede siden inde i .screen#sc — telefon-artboardets egen
+   boks, der blev staaende, da attrappen forsvandt (se noten i
+   havnegrillen.css ved "RULLEROD'EN ER DOKUMENTET"). Mikkels ord:
+   *"scrollingen ude i venstre paa menukort skal fixes"* og *"hvad
+   med naar man trykker tilbage … skal man saa bare ryge til
+   toppen"*. Begge dele er boksens skyld:
+
+   · browserens tilbage-knap gendanner DOKUMENTETS rulning, aldrig
+     en boks' — man landede altid i toppen
+   · rullebjaelken, Mellemrum/Page Down og Cmd+pil hoerer til
+     dokumentet; i en boks virker de kun, naar den har fokus
+   · menukortets venstre liste klaebede inde i boksen
+
+   Telefonen har rullet i dokumentet siden 5/9, og havnegrillen.js
+   SPOERGER, hvem der ruller (den beregnede overflow), saa al
+   rullelogik foelger med uden en linje JavaScript. Pillen og
+   skuffen laa absolut i .device og skal foelge skaermen nu —
+   samme to linjer som telefonens. */
+.screen{height:auto;overflow:visible;overscroll-behavior:auto}
+.bestil{position:fixed}
+.sheet{position:fixed}
 
 /* ---- topbjælken ------------------------------------------- */
 .topbar{padding:16px max(28px,calc((100% - 1140px)/2)) 12px}

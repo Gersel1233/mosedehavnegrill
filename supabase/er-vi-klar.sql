@@ -1283,7 +1283,24 @@ with tjek(nr, del, hvad, ok, retning) as (values
       where table_schema = 'public' and table_name = 'kalender'
         and column_name = 'slut_kl'$$) = 1),
    'En koncert, der sluttede kl. 22, tager stadig imod tilmeldinger kl. 23.30. '
-   || 'Kør supabase/arrangement-sluttid.sql.')
+   || 'Kør supabase/arrangement-sluttid.sql.'),
+
+  /* ⚠️ GÆSTEN VAR "KUN ROLLEN anon" (26/9). Fire værn sprang over for
+     alle andre, og indsættelsen er åben for authenticated — en bruger,
+     der har oprettet sig selv, slap uden om pris, varsel, kategori,
+     levering og bordet. Og `oprettet` var klientens, så bremserne
+     kunne snydes med en dato. Linjen siger ❌ igen, hvis en af de
+     fire ældre filer køres EFTER gaestens-vaern-26-9.sql. */
+  (150, 'Bestillinger', 'Gæstens regler gælder alle uden for personalet — og oprettet er serverens',
+   (select count(*) = 5 from pg_trigger
+     where tgname = 'aa_oprettet_er_serverens' and not tgisinternal)
+   and (select count(*) = 4 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public'
+           and p.proname in ('mosede_gaestens_regler', 'mosede_kanal_vaern',
+                             'mosede_levering_valideret', 'mosede_bord_plads_vaern')
+           and p.prosrc like '%mosede_er_gaest(new.lokation_id)%'),
+   'En bruger, der har oprettet sig selv, kan bestille uden om gæstens regler, '
+   || 'og bremserne kan snydes med en dato. Kør supabase/gaestens-vaern-26-9.sql.')
 ),
 
 samlet as (

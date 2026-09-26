@@ -158,6 +158,24 @@
       return 'Den dag er allerede lovet væk i baglokalet — der kan kun være ét ja pr. dag. '
         + 'Se Baglokale-fanen for, hvem der har den.';
     }
+    /* ⚠️ BROWSERENS EGEN NETFEJL (26/9). Safari siger "Load failed",
+       Chrome "Failed to fetch", Firefox "NetworkError when attempting
+       to fetch resource" — og det stod ordret i beskeden. En travl
+       medarbejder skal vide, hvad der skete, og hvad hun skal gøre. */
+    if (/^(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?)$/i.test(raa.trim())) {
+      return 'Ingen forbindelse til nettet. Tjek wifi eller mobildata, og prøv igen.';
+    }
+    /* ⚠️ HENTNINGENS RÅ KODE (26/9). hentTabel() kaster "bestillinger:
+       401", og den stod ordret på skærmen: "Bestillingerne kunne ikke
+       hentes: bestillinger: 401". Koden ved forskel på et udløbet login
+       og en database, der ikke svarer — så skal beskeden også. */
+    var hent = /^[a-z_]+: (\d{3})$/.exec(raa.trim());
+    if (hent) {
+      var kode = Number(hent[1]);
+      if (kode === 401 || kode === 403) return 'Du er blevet logget ud. Log ind igen, så henter skærmen det hele.';
+      if (kode >= 500) return 'Databasen svarer ikke lige nu. Skærmen prøver selv igen om lidt.';
+      if (kode === 404) return 'En tabel mangler i databasen — sig det til Lesreg.';
+    }
     /* Databasens egen ordlyd: Could not find the 'X' column of
        'Y' in the schema cache. Den kommer fra PostgREST og er
        stabil på tværs af versioner. */
@@ -1487,7 +1505,17 @@
     });
   }
 
+  /* ⚠️ NOTEN SENDES KUN, NÅR DEN ER SKREVET OM (26/9). En statusknap
+     sendte notefeltets tekst med — også når ingen havde rørt den. Så
+     overskrev "Bekræft" på én telefon en note, der lige var skrevet på
+     en anden. undefined = rør ikke kolonnen (store-skriv.js). */
+  function nyNote(felt, gammel) {
+    if (!felt) return undefined;
+    return felt.value !== (gammel || '') ? felt.value : undefined;
+  }
+
   window.Admin = {
+    nyNote: nyNote,
     $: $,
     tøm: tøm,
     lav: lav,

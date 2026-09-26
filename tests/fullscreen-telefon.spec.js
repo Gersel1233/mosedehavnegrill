@@ -182,16 +182,34 @@ test.describe('Så meget fullscreen som muligt', () => {
       expect(m.skuffe, 'skuffemenuen er ikke fixed').toBe('fixed');
     });
 
-  test('artboardet bliver på en computer — rullelogikken hænger på det',
+  /* ⚠️ VENDT 26/9: DOKUMENTET RULLER OGSÅ PÅ EN COMPUTER. Her stod
+     "artboardet bliver på en computer — rullelogikken hænger på det"
+     og krævede, at .screen#sc rullede over 820 px. Mikkels ord:
+     *"scrollingen ude i venstre på menukort skal fixes"* og *"hvad med
+     når man trykker tilbage … skal man så bare ryge til toppen"*.
+     Browserens tilbage-knap gendanner kun DOKUMENTETS rulning, og
+     menukortets venstre liste klæbede inde i boksen. Rullelogikken
+     spørger, hvem der ruller (havnegrillen.js), så den fulgte med.
+     Prøven holder nu det modsatte fast — og at pillen og skuffen
+     følger skærmen, ellers lander de i dokumentets bund. */
+  test('dokumentet ruller også på en computer — og pillen følger skærmen',
     async ({ page }, testInfo) => {
       test.skip(testInfo.project.name !== 'computer', 'reglen gælder den brede skærm');
       await åbnSkal(page, '/index.html', { data: grunddata() });
       await springIntroOver(page);
 
-      const scRuller = await page.evaluate(() =>
-        getComputedStyle(document.getElementById('sc')).overflowY !== 'visible');
-      expect(scRuller, 'artboardets ramme holdt op med at rulle på en bred skærm')
-        .toBe(true);
+      const m = await page.evaluate(() => ({
+        scRuller: getComputedStyle(document.getElementById('sc')).overflowY !== 'visible',
+        dokHoejde: document.scrollingElement.scrollHeight,
+        vindue: innerHeight,
+        pille: getComputedStyle(document.getElementById('bestil-pill')).position,
+        skuffe: getComputedStyle(document.getElementById('sheet')).position,
+      }));
+      expect(m.scRuller, 'artboardets boks ruller stadig på en bred skærm').toBe(false);
+      expect(m.dokHoejde, 'dokumentet er ikke højere end skærmen — det ruller ikke')
+        .toBeGreaterThan(m.vindue * 2);
+      expect(m.pille, 'pillen er ikke fixed — den lander i dokumentets bund').toBe('fixed');
+      expect(m.skuffe, 'skuffemenuen er ikke fixed').toBe('fixed');
     });
 
   /* ⚠️ FLERE SIDER, FORDI ÉN SIDE IKKE KUNNE FÆLDE FEJLEN (5/9).

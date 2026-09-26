@@ -654,9 +654,19 @@ test.describe('Personalet ser bestillingerne', () => {
        linjen nedenunder holder fast i, at databasen stadig gemmer
        `afhentet`. Skiftede VÆRDIEN, ville salgstallene holde op med
        at tælle uden en eneste fejl. */
+    /* ⚠️ "✓ FÆRDIG" PÅ EN SENERE DAG SPØRGER FØRST (26/9). Uret står
+       6/8, og bestillingen er til 7/8. Trykkede nogen Færdig dagen
+       før, forsvandt den fra den dags Overblik, og køkkenet lavede den
+       aldrig (Admin.spoergFoerst). Prøven svarer ja, som personalet
+       gør, når gæsten faktisk står der, og kræver, at spørgsmålet blev
+       stillet. Uden et svar lukker Playwright dialogen med "nej", og
+       så sker der netop ingenting — sådan fejlede prøven den nat. */
+    let spurgt = '';
+    page.once('dialog', (dl) => { spurgt = dl.message(); dl.accept(); });
     await page.locator('.bestil-kort button', { hasText: 'Færdig' }).click();
     await expect(page.locator('.maerke.m-afhentet')).toBeVisible();
     await expect(page.locator('.maerke.m-afhentet')).toHaveText('Færdig');
+    expect(spurgt, 'Færdig på en senere dag skal spørge først').toContain('ikke i dag');
 
     expect((await gemteData(page)).bestillinger[0].status).toBe('afhentet');
   });

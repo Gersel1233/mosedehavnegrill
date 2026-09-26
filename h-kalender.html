@@ -36,11 +36,11 @@
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"></head><body class="hav">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
-<div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage" data-tilbage><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 <div class="phead"><div class="eyebrow">Hvad sker der</div><h1>Kalender og<br>arrangementer</h1><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="sub">Det, der sker på havnen. Reservér en plads, eller kig bare forbi.</p></div>
 <section style="padding-top:20px">
 <div class="chipset rev" data-chips="single" style="justify-content:center"><button class="on">Alt</button><button>Musik</button><button>Spisning</button><button>Fest</button><button>Andet</button></div>
@@ -74,7 +74,7 @@
     <select class="inp" id="karr" aria-hidden="true" tabindex="-1" style="display:none"></select></div>
   <div class="field two-col"><div><label for="kantal">Antal personer</label><input class="inp" id="kantal" type="number" min="1" value="2" inputmode="numeric"></div>
     <div><label for="kbord">Hvor vil I sidde?</label><select class="inp" id="kbord"><option>Langbord ude</option><option>Indenfor</option><option>Er lige meget</option></select></div></div>
-  <div class="field two-col"><div><label for="knavn">Navn</label><input class="inp" id="knavn" placeholder="Dit fulde navn"></div><div><label for="ktlf">Telefonnummer</label><input class="inp" id="ktlf" placeholder="12 34 56 78"></div></div>
+  <div class="field two-col"><div><label for="knavn">Navn</label><input class="inp" id="knavn" autocomplete="name" placeholder="Dit fulde navn"></div><div><label for="ktlf">Telefonnummer</label><input class="inp" id="ktlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
   <div class="field">
       <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9).
 
@@ -98,7 +98,7 @@
   <div class="field"><label for="kbesked">Besked (valgfrit)</label><textarea class="inp" id="kbesked" placeholder="Fx barnestol eller kørestol"></textarea></div>
   <div class="note">Bliver I forsinket, så ring til os.</div>
   <div class="field"><button class="g solid blk">Reservér plads<span class="sheen"></span></button>
-      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at lave og udlevere bestillingen — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
+      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at holde jeres pladser — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
     <!-- ⚠️ DEN FØRSTE .fine I PANELET ER FEJLLINJEN (fineFelt() i
          js/skal/kalender.js). Linjen her blev fjernet 12/9 for at
          spare tekst — og så havde "der er ikke flere pladser" intet

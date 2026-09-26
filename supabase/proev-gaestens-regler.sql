@@ -15,6 +15,11 @@
 --     dét, Supabase sætter for hvert kald med anon-nøglen, og det er
 --     det, reglerne ser på. Prøve 18 og 19 er modstykket: personalet
 --     og en SQL-fil dømmes ikke af et varsel.
+--     ⚠️ PERSONALET ER EN RIGTIG MEDARBEJDER NU (26/9). Prøve 18 sendte
+--     bare rollen authenticated — og det var præcis hullet, som
+--     gaestens-vaern-26-9.sql lukkede: en bruger, der har oprettet sig
+--     selv, er også authenticated. Personalet er den, der står AKTIV i
+--     admin_adgang for forretningen, og prøven bruger nu sådan én.
 --
 --  ⚠️ proev-gr ER DØGNÅBEN ALLE SYV DAGE, så prøverne, der regner fra
 --     "nu", ikke falder på åbningstiden, uanset hvornår filen køres.
@@ -130,6 +135,10 @@ on conflict (lokation_id, noegle) do update set vaerdi = excluded.vaerdi;
 
 insert into public.borde (lokation_id, nummer, aktiv) values ('proev-gr', 'PRØVE-GR', true);
 
+-- Personalet for proev-gr — se hovedet (26/9).
+insert into public.admin_adgang (email, lokation_id, rolle, aktiv)
+values ('personale@proev-gr.dk', 'proev-gr', 'medarbejder', true);
+
 insert into public.dagens_retter (lokation_id, dato, navn, pris, aktiv, sortering, antal_tilbage, udsolgt) values
   ('proev-gr', current_date + 3, 'PRØVE-DAGENS',   99, true, 1, null, true),
   ('proev-gr', current_date + 3, 'PRØVE-DAGENS-2', 99, true, 2, null, false);
@@ -141,10 +150,12 @@ $$;
 
 /* Én bestilling med sit eget nummer (bremsen holder fem pr. nummer, og
    dubletvagten er unik på telefon + dag + tid). rolle = null er en
-   SQL-fil uden claims. */
+   SQL-fil uden claims. email er den, der står i JWT'et — personalet
+   kendes på den (is_admin_for), ikke på rollen. */
 create or replace function pg_temp.best(
   lok text, ref text, dag date, tid time, linjer jsonb, nr int,
-  hvordan text default 'afhentning', rolle text default 'anon', bord text default null)
+  hvordan text default 'afhentning', rolle text default 'anon', bord text default null,
+  email text default null)
 returns text language plpgsql as $$
 declare v_token text;
 begin
@@ -167,7 +178,8 @@ begin
   end if;
 
   perform set_config('request.jwt.claims',
-    case when rolle is null then '' else json_build_object('role', rolle)::text end, true);
+    case when rolle is null then ''
+         else jsonb_strip_nulls(jsonb_build_object('role', rolle, 'email', email))::text end, true);
   insert into public.bestillinger
     (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
      antal, linjer, status, hvordan, bord_nummer, leverings_adresse, leverings_token)
@@ -295,7 +307,8 @@ select pg_temp.ja(17, 'Modstykke: kl. 18.30 går igennem',
 -- ------------------------------------------------------------
 select pg_temp.ja(18, 'Personalet må tage en bestilling til om ti minutter',
   pg_temp.best('proev-gr', 'PR-GR-18', pg_temp.om(10)::date, pg_temp.om(10)::time,
-    '[{"navn":"PRØVE-BURGER","antal":1,"pris":89}]', 18, 'afhentning', 'authenticated'));
+    '[{"navn":"PRØVE-BURGER","antal":1,"pris":89}]', 18, 'afhentning', 'authenticated',
+    email => 'personale@proev-gr.dk'));
 
 select pg_temp.ja(19, 'En SQL-fil uden claims dømmes ikke af varslet',
   pg_temp.best('proev-gr', 'PR-GR-19', pg_temp.om(10)::date, pg_temp.om(10)::time,

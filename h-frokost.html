@@ -36,11 +36,11 @@
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"></head><body class="hav">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
-<div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage" data-tilbage><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 <div class="phead"><div class="eyebrow">Erhverv</div><h1>Frokost til<br>arbejdspladsen</h1><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="sub">En fast frokostordning, skræddersyet til jeres arbejdsplads.</p></div>
 <!-- ⚠️ FROKOSTSIDEN HAVDE INTET BILLEDE (14/9). Kundens ord: siden er
      "forældet og ikke up to date eller god og sælgende nok" — og den
@@ -111,7 +111,7 @@
 
 <div class="panel rev d1" id="tilbud">
   <h3>Få et tilbud</h3>
-  <div class="field two-col"><div><label for="ffirma">Firma</label><input class="inp" id="ffirma" placeholder="Firmanavn"></div>
+  <div class="field two-col"><div><label for="ffirma">Firma</label><input class="inp" id="ffirma" autocomplete="organization" placeholder="Firmanavn"></div>
     <div><label for="fcvr">CVR-nummer</label><input class="inp" id="fcvr" placeholder="12345678" inputmode="numeric"></div></div>
   <div class="field two-col"><div><label for="fantal">Antal medarbejdere</label><input class="inp" id="fantal" type="number" min="1" value="14" inputmode="numeric"></div>
     <div><label for="fstart">Ønsket start</label><input class="inp" id="fstart" type="date"></div></div>
@@ -151,8 +151,8 @@
   <div class="field"><label>Levering eller afhentning?</label>
     <div class="seg2" data-toggles="#fadrfelt"><button class="on" data-show="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Levering</button><button data-show="0">Vi henter selv</button></div></div>
   <div class="field" id="fadrfelt"><label for="fadr">Leveringsadresse</label><input class="inp" id="fadr" placeholder="Vej, nr. og postnummer"><p class="hint">Vi aftaler levering og pris, når vi ringer.</p></div>
-  <div class="field two-col"><div><label for="fnavn">Kontaktperson</label><input class="inp" id="fnavn" placeholder="Navn"></div><div><label for="ftlf">Telefonnummer</label><input class="inp" id="ftlf" placeholder="12 34 56 78"></div></div>
-  <div class="field"><label for="fmail">E-mail til fakturering</label><input class="inp" id="fmail" placeholder="bogholderi@firma.dk"></div>
+  <div class="field two-col"><div><label for="fnavn">Kontaktperson</label><input class="inp" id="fnavn" autocomplete="name" placeholder="Navn"></div><div><label for="ftlf">Telefonnummer</label><input class="inp" id="ftlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
+  <div class="field"><label for="fmail">E-mail til fakturering</label><input class="inp" id="fmail" type="email" inputmode="email" autocomplete="email" placeholder="bogholderi@firma.dk"></div>
   <div class="field">
       <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9).
 
@@ -188,7 +188,7 @@
   </div>
 
   <div class="field"><button class="g solid blk">Få et tilbud<span class="sheen"></span></button>
-      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at lave og udlevere bestillingen — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
+      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at svare på jeres forespørgsel — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
     <p class="fine"><strong>Uforpligtende</strong> — der sættes intet i gang, før I siger ja.</p></div>
 
   <!-- Ring og mail som second options, ikke i toppen — se noten

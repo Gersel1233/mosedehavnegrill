@@ -69,14 +69,18 @@
      link og reduceret bevægelse får ingen åbning: slutbilledet og
      teksten står med det samme. Og teksten kan aldrig blive hængende
      skjult — se "værn" i havnegrillen.css og js/skal/hero-film.js. -->
-<script>(function(){try{if(!location.hash&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))document.documentElement.classList.add('film-aabner')}catch(e){}})();</script>
+<!-- ⚠️ FILMEN ER ÅBNINGEN — IKKE VED TILBAGE, IKKE INDEFRA (26/9). Samme regel
+     som loaderen (js/loader.js): den vises, når gæsten KOMMER til huset. Før
+     spillede den forfra, hver gang man gik tilbage til forsiden eller trykkede
+     på "Forside" — og bjælken og pillen var skjult imens. -->
+<script>(function(){try{if(!location.hash&&!(function(){var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];return !!n&&n.type==='back_forward'})()&&!(document.referrer.indexOf(location.origin+'/')===0)&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))document.documentElement.classList.add('film-aabner')}catch(e){}})();</script>
 <!-- ⚠️ DET FØRSTE, SAFARI TEGNER, ER MØRKT UNDER ÅBNINGEN (11/9). Set
      i iOS 26-simulatoren: mellem trykket og siden stod skærmen HVID,
      fordi siden intet havde tegnet endnu. Her i head, så det gælder fra
      første billede — og kun under åbningen: bagefter maler kroppen og
      .screen deres egen farve som før. -->
 <style>html.film-aabner{background:#0b0706}</style>
-</head><body class="hav">
+<script src="js/tilbage.js?v=__V__"></script></head><body class="hav">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
@@ -234,7 +238,7 @@
   <div><h4>Henter næste arrangement …</h4><p>Kalenderen indlæses.</p><a class="cta" href="h-kalender.html">Se kalenderen →</a></div>
 </div>
 
-<div class="promo fb rev" style="margin:10px var(--pad) 0"><div class="bic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg></div><h4>Følg os på Facebook</h4><p>Dagens ret, musik og små beskeder fra lugen — hver morgen.</p><a class="cta" href="#" data-social="facebook">Følg os →</a></div>
+<div class="promo fb rev" style="margin:10px var(--pad) 0"><div class="bic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg></div><h4>Følg os på Facebook</h4><p>Dagens ret, musik og små beskeder fra lugen.</p><a class="cta" href="#" data-social="facebook">Følg os →</a></div>
 <!-- SMILEY-RAPPORTEN ØVERST (13/9). Kundens ord: "læg lige Fødevarestyrelsens
      smiley oppe i toppen under facebook tingen". Linket er ejerens eget (31/8) og
      står også i bunden. ⚠️ Et tegn og ikke Fødevarestyrelsens eget mærke: et
@@ -408,7 +412,7 @@
       <div class="item"><h4>Tilbehør</h4><span class="add">+ tilføj</span></div>
     </div>
     <div class="field"><label for="tid">Tidspunkt</label><select class="inp" id="tid"><option>kl. 11:30</option><option>kl. 12:00</option><option selected>kl. 17:30</option><option>kl. 18:00</option></select></div>
-    <div class="field two-col"><div><label for="navn">Navn</label><input class="inp" id="navn" placeholder="Dit fulde navn"></div><div><label for="tlf">Telefonnummer</label><input class="inp" id="tlf" placeholder="12 34 56 78"></div></div>
+    <div class="field two-col"><div><label for="navn">Navn</label><input class="inp" id="navn" autocomplete="name" placeholder="Dit fulde navn"></div><div><label for="tlf">Telefonnummer</label><input class="inp" id="tlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
     <div class="field">
       <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9).
 
@@ -918,7 +922,7 @@
   <h3>Vi ses ved lugen.</h3>
   <div class="fcols">
     <div><b>Kontakt</b><a href="tel:+4528871343">+45 28 87 13 43</a><a href="mailto:booking@mosedehavnecafe.dk" data-post="selskab">Selskaber &amp; catering</a><a href="mailto:booking@mosedehavnecafe.dk" data-post="booking">Om din booking</a></div>
-    <div><b>Havnen</b><a href="#bestil">Bestil mad</a><a href="m-menukort.html">Menukort</a><a href="h-baglokale.html">Selskab</a><a href="h-catering.html">Catering</a></div>
+    <div><b>Havnen</b><a href="#bestil">Bestil mad</a><a href="m-menukort.html">Menukort</a><a href="h-selskaber.html">Selskaber</a><a href="h-catering.html">Catering</a></div>
   </div>
   <!-- SMILEY-RAPPORTEN (31/8). Linket er EJERENS EGET, oplyst af
        Mikkel: seneste kontrol 26-02-2026, glad smiley. Det stod paa

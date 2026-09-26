@@ -34,3 +34,7 @@ bordsiden-*.png
 # Serveren i .mcp.json laver den, når nogen bruger browseren som
 # værktøj — den er pr. session og hører ikke i repoet.
 .playwright-mcp/
+
+# Hjælpeagenternes egne kopier af repoet (git worktree). De er
+# midlertidige og må aldrig committes eller udgives.
+.claude/worktrees/
