@@ -131,6 +131,10 @@ test.describe('Isen på forsiden', () => {
     for (const f of await fotos.all()) {
       await expect(f).toHaveAttribute('loading', 'lazy');
       expect((await f.getAttribute('alt')).length).toBeGreaterThan(10);
+      // 26/9: havnens fotos, ikke solnedgangsbillederne fra 13/9.
+      await expect(f).toHaveAttribute('src', /billeder\/havn-(softice|kugleis)\.jpg/);
+      await f.scrollIntoViewIfNeeded();
+      await expect.poll(() => f.evaluate((i) => i.naturalWidth), { message: 'fotoet kom ikke' }).toBeGreaterThan(0);
     }
   });
 });
