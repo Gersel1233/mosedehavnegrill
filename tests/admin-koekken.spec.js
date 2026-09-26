@@ -326,6 +326,30 @@ test.describe('Ventetiden tikker og bliver rød', () => {
     await expect(kort(page, '7').locator('.koek-kl')).toHaveText('bestilt ' + vent);
   });
 
+  /* ⚠️ URET TIKKER PÅ DET KORT, DER STÅR (26/9). Køkkenet tegner om
+     hvert minut, men kortet genbruges, når bestillingen ikke har
+     ændret sig — og så stod "4 min" stille, mens bordet ventede. Prøven
+     flytter uret 20 minutter frem og beder køkkenet tegne om, som
+     efter en hentning (Admin.efterHent), og kræver det SAMME kort med
+     det nye tal: et nyt kort ville tage fingerens mål med sig. */
+  test('uret tikker på kortet, der står — og det bliver rødt', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ oprettet: forSiden(4) })]);
+    await expect(kort(page, '7').locator('.koek-min')).toHaveText('4 min');
+    await expect(kort(page, '7')).not.toHaveClass(/sent/);
+    await kort(page, '7').evaluate((e) => { e.dataset.samme = 'ja'; });
+
+    await page.evaluate(() => {
+      const senere = Date.now() + 20 * 60000;
+      Date.now = () => senere;
+    });
+    await page.evaluate(() => window.Admin.efterHent.forEach((f) => f()));
+
+    await expect(kort(page, '7').locator('.koek-min'), 'uret stod stille').toHaveText('24 min');
+    await expect(kort(page, '7'), 'kortet blev ikke rødt').toHaveClass(/sent/);
+    expect(await kort(page, '7').getAttribute('data-samme'),
+      'kortet blev bygget om — fingerens mål forsvandt').toBe('ja');
+  });
+
   /* Grænsen er 15 minutter, og den er briefens. Prøven måler den
      BEREGNEDE farve: en klasse, der ikke slår igennem i CSS'en,
      er ingen alarm. */

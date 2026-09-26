@@ -782,6 +782,23 @@
       };
     }));
 
+    /* ⚠️ URET TIKKER PÅ KORTET SELV (26/9). Minutterne står IKKE i
+       aftrykket ovenfor — og det er med vilje: stod de der, blev hvert
+       kort bygget om hvert minut, og kortet under fingeren forsvandt.
+       Men så genbrugte tegnRaekker det gamle kort, og "4 min" stod
+       stille, mens bordet ventede 25 minutter — hvidt, ikke rødt. Kun
+       striben øverst blev rød. Fundet i en gennemgang af koden 26/9.
+       Nu skrives tallet og den røde farve om på det kort, der står. */
+    liste.forEach(function (b) {
+      var r = boks.querySelector('[data-raekke="' + b.id + '"]');
+      var k = r && (r.classList.contains('koek-kort') ? r : r.querySelector('.koek-kort'));
+      if (!k) return;
+      var min = Admin.minutterSiden(b.oprettet);
+      var tal = k.querySelector('.koek-min');
+      if (tal) tal.textContent = min === null ? '\u2014' : min + ' min';
+      k.classList.toggle('sent', min !== null && min >= maalTid());
+    });
+
     /* DET NYE SKAL KUNNE SES, ikke kun høres. Markeringen sættes
        EFTER optegningen: kortet skal findes i siden, før det kan
        få klassen på. */
