@@ -72,3 +72,30 @@ test.describe('Butik.sidstSvar følger databasens svar', () => {
     expect(await page.evaluate(() => Butik.sidstSvar())).toBe(0);
   });
 });
+
+/* ⚠️ FEJLTEKSTEN MÅ IKKE BLIVE STÅENDE, NÅR NETTET ER TILBAGE. Kom de
+   samme bestillinger igen, sagde aftrykket "intet nyt", og listen blev
+   ikke tegnet — fejlen stod, til nogen trykkede på noget. */
+test('Bestillinger tegner listen igen, når nettet er tilbage med de samme data', async ({ page }) => {
+  const { visFane } = require('./hjaelp');
+  const d = grunddata();
+  d.bestillinger = [{ id: 1, reference: 'SM260807-AAAAA', lokation_id: 'mosede', navn: 'Sara Poulsen',
+    telefon: '28871343', hent_dato: '2026-08-07', hent_tid: '12:00', hvordan: 'afhentning',
+    linjer: [{ navn: 'Fiskefilet', antal: 1, pris: 55 }], antal: 1, status: 'ny',
+    intern_note: null, besked: null, oprettet: '2026-08-07T08:00:00Z' }];
+  await åbnAdmin(page, { data: d });
+  await visFane(page, 'p-bestillinger');
+  await expect(page.locator('#bestillinger-liste')).toContainText('Sara');
+
+  await page.evaluate(() => {
+    window.__ægte = Butik.hentBestillinger;
+    Butik.hentBestillinger = () => Promise.reject(new Error('Load failed'));
+    return Admin.friskOp();
+  });
+  await expect(page.locator('#bestillinger-liste')).toContainText('kunne ikke hentes');
+
+  await page.evaluate(() => { Butik.hentBestillinger = window.__ægte; return Admin.friskOp(); });
+  await expect(page.locator('#bestillinger-liste'), 'fejlteksten blev stående, selv om nettet er tilbage')
+    .not.toContainText('kunne ikke hentes');
+  await expect(page.locator('#bestillinger-liste')).toContainText('Sara');
+});
