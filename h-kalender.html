@@ -74,7 +74,7 @@
     <select class="inp" id="karr" aria-hidden="true" tabindex="-1" style="display:none"></select></div>
   <div class="field two-col"><div><label for="kantal">Antal personer</label><input class="inp" id="kantal" type="number" min="1" value="2" inputmode="numeric"></div>
     <div><label for="kbord">Hvor vil I sidde?</label><select class="inp" id="kbord"><option>Langbord ude</option><option>Indenfor</option><option>Er lige meget</option></select></div></div>
-  <div class="field two-col"><div><label for="knavn">Navn</label><input class="inp" id="knavn" placeholder="Dit fulde navn"></div><div><label for="ktlf">Telefonnummer</label><input class="inp" id="ktlf" placeholder="12 34 56 78"></div></div>
+  <div class="field two-col"><div><label for="knavn">Navn</label><input class="inp" id="knavn" autocomplete="name" placeholder="Dit fulde navn"></div><div><label for="ktlf">Telefonnummer</label><input class="inp" id="ktlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
   <div class="field">
       <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9).
 
@@ -98,7 +98,7 @@
   <div class="field"><label for="kbesked">Besked (valgfrit)</label><textarea class="inp" id="kbesked" placeholder="Fx barnestol eller kørestol"></textarea></div>
   <div class="note">Bliver I forsinket, så ring til os.</div>
   <div class="field"><button class="g solid blk">Reservér plads<span class="sheen"></span></button>
-      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at lave og udlevere bestillingen — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
+      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at holde jeres pladser — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
     <!-- ⚠️ DEN FØRSTE .fine I PANELET ER FEJLLINJEN (fineFelt() i
          js/skal/kalender.js). Linjen her blev fjernet 12/9 for at
          spare tekst — og så havde "der er ikke flere pladser" intet

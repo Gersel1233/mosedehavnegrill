@@ -158,13 +158,13 @@
   <div class="field"><label for="pmad">Hvad tænker I mad-mæssigt? <span style="font-weight:400;color:var(--muted)">(vi aftaler det endelige sammen)</span></label>
     <input class="inp" id="pmad" maxlength="200" placeholder="Fx smørrebrød og lidt varmt — eller skriv “ved det ikke endnu”"></div>
   <div class="field"><label for="pbesked">Fortæl om dagen</label><textarea class="inp" id="pbesked" placeholder="Fx tidsrum, stemning, budget pr. kuvert og særlige hensyn"></textarea></div>
-  <div class="field two-col"><div><label for="pnavn">Navn</label><input class="inp" id="pnavn" placeholder="Dit fulde navn"></div><div><label for="ptlf">Telefonnummer</label><input class="inp" id="ptlf" placeholder="12 34 56 78"></div></div>
+  <div class="field two-col"><div><label for="pnavn">Navn</label><input class="inp" id="pnavn" autocomplete="name" placeholder="Dit fulde navn"></div><div><label for="ptlf">Telefonnummer</label><input class="inp" id="ptlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
     <!-- ⚠️ ALLE TRE ER PÅKRÆVEDE NU (29/8): "navn og nummer og
          mail SKAL være essentielt, og den skal tjekke om det er
          rigtigt." Vi lover et svar inden for et døgn — det løfte
          kan kun holdes, hvis der ER en vej tilbage, og en gæst,
          der ikke tager telefonen, skal kunne nås på mail. -->
-    <div class="field"><label for="pmail">E-mail</label><input class="inp" id="pmail" type="email" inputmode="email" placeholder="navn@eksempel.dk" required></div>
+    <div class="field"><label for="pmail">E-mail</label><input class="inp" id="pmail" autocomplete="email" type="email" inputmode="email" placeholder="navn@eksempel.dk" required></div>
   <!-- ⚠️ HVAD SKER DER, NÅR JEG HAR TRYKKET SEND?  (4/9)
        Kundens ord: *"forklar processen at der går under 24 timer
        så får de svar og dermed aftale yderlige og sætter et i
@@ -190,7 +190,7 @@
   </div>
 
   <div class="field"><button class="g solid blk">Send forespørgsel<span class="sheen"></span></button>
-      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at lave og udlevere bestillingen — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
+      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at svare på jeres forespørgsel — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
     <!-- ⚠️ DEN FØRSTE .fine I PANELET ER FEJLLINJEN (forespoergsel.js
          linje 276). Linjen herunder blev fjernet 12/9 for at spare
          tekst — og så havde afsendelsen intet sted at sige "skriv dit

@@ -344,7 +344,7 @@
          læse dem alle. --></div>
   <div class="field"><label for="bbesked">Andet vi skal vide?</label><textarea class="inp" id="bbesked" placeholder="Fx borde-opstilling, musik, egen kage"></textarea></div>
   <p class="bl-trin-navn"><span>4</span>Jeres kontakt</p>
-  <div class="field two-col"><div><label for="bnavn">Navn</label><input class="inp" id="bnavn" placeholder="Dit fulde navn"></div><div><label for="btlf">Telefonnummer</label><input class="inp" id="btlf" placeholder="12 34 56 78"></div></div>
+  <div class="field two-col"><div><label for="bnavn">Navn</label><input class="inp" id="bnavn" autocomplete="name" placeholder="Dit fulde navn"></div><div><label for="btlf">Telefonnummer</label><input class="inp" id="btlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
     <!-- ⚠️ MINDST ÉN VEJ TILBAGE, IKKE BEGGE (29/8, kundens ord:
          "lade email eller nummer være som en option ... aftalen
          afstemt via enten mail eller nummer"). Vi lover et svar
@@ -352,7 +352,7 @@
          ER en vej — men hvilken, bestemmer gæsten. Selskabssiden
          kræver begge, fordi et tilbud dér er tal og forbehold,
          der skal skrives ned. -->
-    <div class="field"><label for="bmail">E-mail <span style="font-weight:400;color:var(--muted)">(eller nummer ovenfor — vi skal bare kunne fange jer)</span></label><input class="inp" id="bmail" type="email" inputmode="email" placeholder="navn@eksempel.dk"></div>
+    <div class="field"><label for="bmail">E-mail <span style="font-weight:400;color:var(--muted)">(eller nummer ovenfor — vi skal bare kunne fange jer)</span></label><input class="inp" id="bmail" autocomplete="email" type="email" inputmode="email" placeholder="navn@eksempel.dk"></div>
 
   <!-- HVAD DER SKER NU (29/8, kundens ord: "så skal der stå hvad
        der sker når de booker"). Gæsten sender et spørgsmål, ikke
@@ -379,7 +379,7 @@
        når der er noget at opsummere. -->
   <div class="bl-opsum" id="bl-opsum" hidden></div>
   <div class="field"><button class="g solid blk">Spørg om datoen<span class="sheen"></span></button>
-      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at lave og udlevere bestillingen — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
+      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at svare på jeres forespørgsel — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
     <p class="fine"><strong>Det her er et spørgsmål, ikke en booking endnu</strong> — lokalet er først jeres, når vi har snakket sammen og sagt ja.</p>
   <!-- ⚠️ RING OG MAIL ER SECOND OPTIONS (30/8). Kundens ord:
        "det med ring til os eller send en mail skal være under
