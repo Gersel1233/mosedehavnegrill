@@ -89,23 +89,27 @@ test.describe('Kurven kan ses, mens man vælger', () => {
     await expect.poll(() => synlig(bar), { message: 'bjælken dækker summen, den selv peger på' }).toBe(false);
   });
 
-  /* ⚠️ RULLEMENUEN MED SMAGEN MÅ IKKE SKJULE BJÆLKEN. På en iPhone
-     flytter et tryk på en knap ikke fokus, så menuen har det stadig,
-     når isen er lagt. Prøven giver den fokus igen, som Safari lader
-     den beholde det. */
+  /* ⚠️ RULLEMENUEN MED SMAGEN MÅ IKKE SKJULE BJÆLKEN. En rullemenu giver
+     intet tastatur, og på en iPhone beholder den fokus efter et tryk på
+     en knap. Første udgave af prøven lagde isen med fokus i menuen — men
+     Chromium giver et fokus-tab, når menuen fjernes ved nulstillingen, så
+     den bestod OGSÅ med menuen talt med (set 26/9). Nu: én is ligger i
+     kurven, og gæsten vælger smag til den næste — menuen står, med fokus. */
   test('en valgt smag (rullemenu med fokus) skjuler ikke kurven', async ({ page }) => {
-    await åbnSkal(page, '/index.html', { ur: UR, data: data() });
-    await page.waitForSelector('.isbyg-blok');
-    await trin(page, 1).locator('.isbyg-knap').filter({ hasText: 'Vaffel' }).first().click();
+    await lægEnIs(page);
+    const bar = page.locator('.kurvbar');
+    await expect.poll(() => synlig(bar)).toBe(true);
+    await trin(page, 1).locator('.isbyg-knap').filter({ hasText: 'Bæger' }).first().click();
     await trin(page, 2).locator('.isbyg-knap[data-vare="1 kugle"]').click();
     const smag = trin(page, 3).locator('.isbyg-smag');
-    await smag.selectOption('Jordbær');
+    await smag.selectOption('Vanilje');
     await smag.focus();
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => document.activeElement && document.activeElement.className),
+      'prøven har ikke fokus i menuen — så måler den ingenting').toContain('isbyg-smag');
     await page.locator('.isbyg-laeg').evaluate((e) => e.scrollIntoView({ block: 'center' }));
-    /* Et klik-signal, der ikke flytter fokus — som et tryk i Safari. */
-    await page.locator('.isbyg-laeg').dispatchEvent('click');
-    const bar = page.locator('.kurvbar');
-    await expect.poll(() => synlig(bar), { message: 'rullemenuen med fokus skjulte kurven' }).toBe(true);
+    await page.waitForTimeout(300);
+    expect(await synlig(bar), 'rullemenuen med fokus skjulte kurven').toBe(true);
   });
 
   test('mens gæsten skriver sit navn, dækker bjælken ikke feltet', async ({ page }) => {
