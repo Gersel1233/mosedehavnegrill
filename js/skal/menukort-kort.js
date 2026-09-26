@@ -2,8 +2,15 @@
    MENUKORTET SOM DE TRYKTE KORT  (26/9)
    ------------------------------------------------------------
    Mikkels ord med billederne af de trykte kort: *"de skal
-   naturligvis matche 1:1 med de her"* — og ved uenighed: *"chefens
-   rettelser"*. Derfor:
+   naturligvis matche 1:1 med de her"* — og 26/9: *"Brug så vidt muligt
+   de samme kategorinavne som på de trykte kort, herunder »À la carte,
+   burgere & pølser« og »Is & sødt«. Bevar »Til selskabet«."*
+
+   ⚠️ KORTUDGAVEN ER DEN GODKENDTE FRA 25/9 — den samme, der står i
+   vaerktoej/kortene.py (PDF'erne). Billederne, Mikkel sendte 26/9, er
+   en ældre udgave (de har "Strøssel", "Kun take away" og de tre
+   slukkede sandwich); deres opbygning er brugt, men overskrifter og
+   tekster er PDF'ernes. Derfor:
 
    · OPBYGNINGEN ER KORTENES: kapitlerne, overskrifterne, de kursive
      tekster, afsnittene og boksene står her ordret af billederne.
@@ -66,9 +73,9 @@
     },
     {
       id: 'burgere',
-      titel: ['Burgere,', 'pølser & plade'],
+      titel: ['À la carte,', 'burgere & pølser'],
       slogan: 'stegt på bestilling',
-      hop: 'Burgere & pølser',
+      hop: 'À la carte & burgere',
       venstre: [
         { titel: 'Andre retter', kilder: [
           { kat: '*', navne: ['Lun delle, steg eller leverpostej med brød og surt', 'Lun delle eller steg', 'Pitabrød'] },
@@ -85,14 +92,16 @@
       id: 'smoerrebroed',
       over: 'Mosede Havnecafe',
       titel: ['Smørrebrød'],
-      under: 'Hel skive rugbrød',
-      tekst: 'Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til.',
+      tekst: 'Friskbagt rugbrød, smurt når du bestiller. Glutenfrit brød, med eller uden smør — bare sig til.',
       hop: 'Smørrebrød',
       hel: [
         { titel: 'Varianter', udenPris: true, kolonner: 2, kilder: [{ kat: 'Smørrebrød' }] },
+        /* Slukket hos ejeren i dag — men tænder han den i admin, står
+           fyldet her ved smørrebrødet og ikke i "Mere fra lugen". */
+        { titel: 'Vælg fyld', kilder: [{ kat: 'Vælg fyld til smørrebrødet' }] },
         { boks: 'raekke', felter: [
-          { over: 'Smørrebrød', titel: 'Alle varianter', pris: { ens: 'Smørrebrød' }, tekst: 'Hel skive hjemmebagt rugbrød med smør.' },
-          { over: 'Egen pris', titel: 'Rejemad', pris: { vare: 'Rejemad' }, tekst: 'Med mayo og citron — hel skive.' },
+          { over: 'Varianter', titel: 'Alle varianter', pris: { ens: 'Smørrebrød' }, tekst: 'Gælder alle almindelige smørrebrød på listen.' },
+          { over: 'Egen pris', titel: 'Rejemad', pris: { vare: 'Rejemad' }, tekst: 'Fås både på rugbrød og franskbrød.' },
           { over: 'Egen pris', titel: 'Tartar', pris: { vare: 'Tartarmad' }, tekst: 'Bestilles dagen før.' },
           { over: 'Sig til ved lugen', titel: 'Glutenfrit brød', pris: { vare: 'Glutenfrit brød (tillæg)', plus: true }, tekst: 'Med eller uden smør — bare sig til.' },
         ] },
@@ -102,14 +111,16 @@
       id: 'haandmadder',
       over: 'Mosede Havnecafe',
       titel: ['Håndmadder'],
-      tekst: 'Hel skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.',
+      tekst: 'Friskbagt rugbrød, smurt når du bestiller. Glutenfrit brød, med eller uden smør — bare sig til.',
       hop: 'Håndmadder',
       hel: [
         { titel: 'Varianter', udenPris: true, kolonner: 2, kilder: [{ kat: 'Håndmadder' }] },
         { boks: 'raekke', felter: [
-          { over: 'Håndmad', titel: 'Alle varianter', pris: { ens: 'Håndmadder' }, tekst: 'Hel skive hjemmebagt rugbrød med smør.' },
-          { over: 'Kun som smørrebrød', titel: 'Rejemad & tartar', pris: { vare: 'Rejemad' }, tekst: 'Rejemad og tartar fås kun som smørrebrød.' },
-          { over: 'Sig til ved lugen', titel: 'Glutenfrit brød', pris: { vare: 'Glutenfrit brød (tillæg)', plus: true }, tekst: 'Uden smør? Bare sig til.' },
+          { over: 'Varianter', titel: 'Alle varianter', pris: { ens: 'Håndmadder' }, tekst: 'Gælder alle almindelige håndmadder på listen.' },
+          { over: 'Egen pris', titel: 'Hjemmelavet lun delle', pris: { vare: 'Lun delle eller steg' } },
+          { over: 'Egen pris', titel: 'Hjemmelavet flæskesvær', pris: { vare: 'Hjemmelavet flæskesvær' } },
+          { over: 'Ikke som håndmad', titel: 'Rejemad & tartar', tekst: 'Rejemad fås både på rugbrød og franskbrød. Tartar fås som smørrebrød.' },
+          { over: 'Sig til ved lugen', titel: 'Glutenfrit brød', pris: { vare: 'Glutenfrit brød (tillæg)', plus: true }, tekst: 'Med eller uden smør — bare sig til.' },
         ] },
       ],
     },
@@ -119,9 +130,8 @@
          Kapitlet bærer det id; flyttes isen, skal id'et med. */
       anker: 'afsnit-is',
       over: 'Mosede Havnecafe',
-      titel: ['Is'],
-      under: '& drikkevarer',
-      tekst: 'Kugleis og softice fra lugen, bubblewaffles, churros og pandekager — og kaffen der hører til.',
+      titel: ['Is & sødt'],
+      tekst: 'Kugleis og cremet softice, sprøde bubblewaffles, churros og hjemmelavede pandekager — til en tur langs vandet.',
       hop: 'Is & sødt',
       venstre: [
         { titel: 'Is', kilder: [{ kat: 'Kugleis' }] },
@@ -150,7 +160,7 @@
       ],
       hoejre: [
         { titel: 'Kolde drikke', kilder: [{ kat: 'Sodavand, juice og kakao' }] },
-        { boks: 'pausen', over: 'Kaffe & kage', titel: 'Pausen', pris: { vare: 'Kaffe og kage' },
+        { boks: 'pausen', over: 'Kaffe & kage', titel: 'Pausen', pris: { vare: 'Kaffe og kage' }, tag: true,
           tekst: 'En kop kaffe og et stykke af dagens kage — eller en pandekage.' },
       ],
     },

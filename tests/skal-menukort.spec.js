@@ -129,23 +129,35 @@ test.describe('Menukortet', () => {
     await expect(søndag).not.toContainText('Følger snart');
   });
 
-  test('sortimentet er ét kort pr. kategori fra admin', async ({ page }) => {
-    await åbn(page);
+  /* ⚠️ VENDT 26/9 — SORTIMENTET STÅR I DE TRYKTE KORTS KAPITLER, ikke
+     som ét kort pr. kategori (Mikkels ord: "de skal naturligvis matche
+     1:1 med de her"). Reglen bag er urørt og måles her: HVER aktiv vare
+     fra admin står på kortet — tallet kommer fra fiksturet, ikke fra
+     siden. Og en variant, der koster det samme som resten, står uden
+     pris på linjen og med prisen i boksen "Alle varianter". */
+  test('sortimentet står i de trykte korts kapitler — alle ejerens varer med', async ({ page }) => {
+    const d = medRet();
+    await åbn(page, d);
 
-    const kort = page.locator('#mk-kat .panel');
-    await expect(kort).toHaveCount(4);
-    await expect(page.locator('[data-kategori="Smørrebrød"] h3')).toHaveText('Smørrebrød');
-    await expect(page.locator('[data-vare="Flæskestegssandwich"] .mk-pris')).toHaveText('89,-');
+    const aktive = new Set(d.menu_kategorier.filter((k) => k.aktiv).map((k) => k.id));
+    const forventet = d.menu_varer.filter((v) => v.aktiv && aktive.has(v.kategori_id))
+      .map((v) => v.navn).sort();
+    const vist = (await page.$$eval('#mk-kat .mk-linje[data-vare]:not(.mk-henvis)',
+      (l) => l.map((e) => e.getAttribute('data-vare')))).sort();
+    expect(vist).toEqual(forventet);
+
+    await expect(page.locator('#mk-kat .mk-kapitel')).not.toHaveCount(0);
+    await expect(page.locator('[data-kategori="Smørrebrød"] h3')).toHaveText('Varianter');
+    await expect(page.locator('#kapitel-smoerrebroed .mk-boks-pris').first()).toHaveText('89,-');
     await expect(page.locator('[data-vare="Flæskestegssandwich"] p'))
       .toHaveText('Sprød flæskesteg, rødkål og agurkesalat.');
   });
 
-  test('hver kategori har sit eget tegn og sit antal', async ({ page }) => {
-    /* Kunden bad om emojier og farver (24/8). Tegnet gættes ud
-       fra navnet, og det FØRSTE mønster, der passer, vinder —
-       derfor prøves de to, der ligger tættest på hinanden:
-       "Vælg fyld til smørrebrødet" indeholder også ordet
-       smørrebrød, og "Softice og vafler" indeholder også vafler. */
+  /* ⚠️ VENDT 26/9 — TEGNENE OG ANTALLET ER VÆK MED VILJE. De trykte
+     kort har ingen emojier og intet "2 varer"; kapitlerne bærer kortenes
+     egne navne. Det er dem, prøven nu måler — og at de gamle tegn ikke
+     sniger sig tilbage. */
+  test('kapitlerne bærer de trykte korts navne', async ({ page }) => {
     const d = medRet();
     d.menu_kategorier.push({ id: 20, afdeling: 'drikke', navn: 'Kaffe og varme drikke', sortering: 20, aktiv: true });
     d.menu_varer.push({
@@ -154,19 +166,16 @@ test.describe('Menukortet', () => {
     });
     await åbn(page, d);
 
-    await expect(page.locator('[data-kategori="Smørrebrød"] .mk-tegn')).toHaveText('🍞');
-    await expect(page.locator('[data-kategori="Vælg fyld til smørrebrødet"] .mk-tegn')).toHaveText('🥓');
-    await expect(page.locator('[data-kategori="Softice og vafler"] .mk-tegn')).toHaveText('🍦');
-    await expect(page.locator('[data-kategori="Kaffe og varme drikke"] .mk-tegn')).toHaveText('☕');
-
-    // Farven kommer fra afdelingen, som ejeren sætter i admin
-    await expect(page.locator('[data-kategori="Softice og vafler"] .mk-tegn')).toHaveClass(/mk-is/);
-    await expect(page.locator('[data-kategori="Kaffe og varme drikke"] .mk-tegn')).toHaveClass(/mk-drikke/);
-
-    // Antallet ude til højre gør en lang side overskuelig
-    await expect(page.locator('[data-kategori="Vælg fyld til smørrebrødet"] .mk-antal'))
-      .toHaveText('2 varer');
-    await expect(page.locator('[data-kategori="Smørrebrød"] .mk-antal')).toHaveText('1 vare');
+    await expect(page.locator('#kapitel-smoerrebroed .mk-kh-titel')).toHaveText('Smørrebrød');
+    await expect(page.locator('#afsnit-is .mk-kh-titel')).toHaveText('Is & sødt');
+    await expect(page.locator('#kapitel-kaffe .mk-kh-titel')).toContainText('Kaffe,');
+    await expect(page.locator('#kapitel-kaffe .mk-kh-titel')).toContainText('koldt & knas');
+    await expect(page.locator('#kapitel-bar .mk-kh-titel')).toContainText('& bar');
+    // Kaffen står under kortets afsnit "Kaffe", fyldet ved smørrebrødet
+    await expect(page.locator('#kapitel-kaffe [data-vare="Latte"]')).toHaveCount(1);
+    await expect(page.locator('#kapitel-smoerrebroed [data-vare="Dyrlægens natmad"]')).toHaveCount(1);
+    // Og ingen emojier og intet antal
+    await expect(page.locator('#mk-kat .mk-tegn, #mk-kat .mk-antal, #mk-kat .mk-vare-tegn')).toHaveCount(0);
   });
 
   /* ⚠️ TO KATEGORIER MÅ IKKE DELE ANSIGT, NÅR DE SÆLGER HVER SIT
@@ -183,7 +192,9 @@ test.describe('Menukortet', () => {
      SAMME ➕ som de andre tilkøb — ikke 🌱. Et blad på en kategori
      er et løfte om vegansk, og det er en oplysning, ikke en
      tegning. Se loven i js/menu-emoji.js. */
-  test('ispindene har deres eget tegn — ikke softicens', async ({ page }) => {
+  /* ⚠️ VENDT 26/9: tegnene er væk. Reglen, der er tilbage: ispindene
+     står under isen, ikke i "Mere fra lugen". */
+  test('ispindene står under Is & sødt', async ({ page }) => {
     const d = medRet();
     d.menu_kategorier.push({ id: 21, afdeling: 'is', navn: 'Ispinde', sortering: 12, aktiv: true });
     d.menu_varer.push({
@@ -192,11 +203,13 @@ test.describe('Menukortet', () => {
     });
     await åbn(page, d);
 
-    await expect(page.locator('[data-kategori="Softice og vafler"] .mk-tegn')).toHaveText('🍦');
-    await expect(page.locator('[data-kategori="Ispinde"] .mk-tegn')).toHaveText('🍧');
+    await expect(page.locator('#afsnit-is [data-vare="Maxibon"]')).toHaveCount(1);
+    await expect(page.locator('#afsnit-is [data-vare="Maxibon"] .mk-pris')).toHaveText('31,-');
   });
 
-  test('tillægget får de andre tilkøbs plus, ikke husets tallerken', async ({ page }) => {
+  /* ⚠️ VENDT 26/9: tegnet er væk. Reglen, der er tilbage: tillægget
+     står på kortet, med sin pris, under "Til selskabet". */
+  test('tillægget står på kortet — under Til selskabet', async ({ page }) => {
     const d = medRet();
     d.menu_kategorier.push({
       id: 22, afdeling: 'mad', navn: 'Tillæg: glutenfri, laktosefri og vegansk',
@@ -208,17 +221,19 @@ test.describe('Menukortet', () => {
     });
     await åbn(page, d);
 
-    await expect(
-      page.locator('[data-kategori="Tillæg: glutenfri, laktosefri og vegansk"] .mk-tegn'),
-    ).toHaveText('➕');
+    await expect(page.locator('#kapitel-selskab [data-vare="Glutenfri bolle"] .mk-pris')).toHaveText('10,-');
   });
 
   test('hop-båndet fører til kategorien', async ({ page }) => {
     await åbn(page);
 
+    /* ⚠️ ÉN KNAP PR. KAPITEL (26/9), ikke pr. kategori. Fiksturet har
+       smørrebrød (+ fyld), is og øl: tre kapitler. */
     const chips = page.locator('#mk-hop button');
-    await expect(chips).toHaveCount(4);
+    await expect(chips).toHaveCount(3);
     await expect(chips.first()).toContainText('Smørrebrød');
+    await chips.nth(1).click();
+    await expect(page.locator('#afsnit-is')).toBeInViewport({ ratio: 0.1 });
 
     /* ⚠️ VENDT MED KUNDENS BESLUTNING (2/9). Her stod, at en
        kategori, hvor ALT er udsolgt, forsvandt fra båndet — og
@@ -233,7 +248,7 @@ test.describe('Menukortet', () => {
     const d = medRet();
     d.menu_varer[0].udsolgt = true;
     await åbn(page, d);
-    await expect(page.locator('#mk-hop button')).toHaveCount(4);
+    await expect(page.locator('#mk-hop button')).toHaveCount(3);
     await expect(page.locator('#mk-hop [data-hop="Smørrebrød"]')).toHaveCount(1);
 
     // Men en kategori UDEN en eneste vare tegnes stadig ikke
@@ -355,17 +370,18 @@ test.describe('Menukortet', () => {
     await expect(page.locator('[data-kategori="Smørrebrød"]')).toBeVisible();
   });
 
-  test('antallet tæller det, der står på kortet — de udsolgte med', async ({ page }) => {
-    /* Et tal, der siger 1, over en liste med 2 rækker, er en
-       tæller, gæsten holder op med at stole på. Hvilke af dem der
-       ikke er der i dag, siger stregen på rækken. */
+  /* ⚠️ VENDT 26/9: antallet er væk (kortene har det ikke). Reglen, der
+     er tilbage: den udsolgte står der, streget over og uden pris. */
+  test('en udsolgt vare står på kortet — med ordet i stedet for prisen', async ({ page }) => {
     const d = medRet();
     d.menu_varer.filter((v) => v.navn === 'Leverpostej med baconsvøb')[0].udsolgt = true;
     await åbn(page, d);
 
     const kat = page.locator('[data-kategori="Vælg fyld til smørrebrødet"]');
     await expect(kat.locator('.mk-linje')).toHaveCount(2);
-    await expect(kat.locator('.mk-antal')).toHaveText('2 varer');
+    const ud = kat.locator('[data-vare="Leverpostej med baconsvøb"]');
+    await expect(ud).toHaveClass(/mk-udsolgt/);
+    await expect(ud.locator('.mk-pris')).toHaveText('Udsolgt i dag');
   });
 
   test('et tomt menukort siger hvorfor, i stedet for at være tomt', async ({ page }) => {
@@ -394,14 +410,16 @@ test.describe('Menukortet har havnens tema', () => {
     await expect(page.locator('#sc')).toHaveCSS('background-color', CREME);
   });
 
-  test('overskrifterne er husets display-serif', async ({ page }) => {
+  /* ⚠️ VENDT 26/9: kortets overskrifter er de TRYKTE KORTS — Bebas med
+     ◆ og dobbelt streg — og deres kursive tekster Fraunces. Sidens egen
+     overskrift øverst er stadig husets display-serif. */
+  test('overskrifterne er husets — og kortenes egne i kapitlerne', async ({ page }) => {
     await åbn(page);
-    for (const vælger of ['.phead h1', '#mk-kat .panel h3']) {
-      const skrift = await page.locator(vælger).first()
-        .evaluate((el) => getComputedStyle(el).fontFamily);
-      expect(skrift, vælger).toContain('Fraunces');
-      expect(skrift, vælger).not.toContain('Bebas');
-    }
+    const skrift = (v) => page.locator(v).first().evaluate((el) => getComputedStyle(el).fontFamily);
+    expect(await skrift('.phead h1')).toContain('Fraunces');
+    expect(await skrift('#mk-kat .mk-kh-titel')).toContain('Bebas');
+    expect(await skrift('#mk-kat .panel h3')).toContain('Bebas');
+    expect(await skrift('#mk-kat .mk-linje h4')).toContain('Instrument Sans');
   });
 
   /* ⚠️ PÅ PAPIRET (13/9). Kategorier med et foto bag sig har prisen
@@ -510,7 +528,8 @@ test.describe('Værn, der fulgte med fra den gamle menuside', () => {
     /* Fotoet bag en kategori er vores eget (.mk-bg, 13/9); reglen er,
        at et VARENAVN aldrig bliver til et billede. */
     expect(await page.locator('.mk-sortiment .mk-linje img').count()).toBe(0);
-    expect(await page.$$eval('.mk-sortiment img', (l) => l.filter((i) => !i.closest('.mk-bg')).length)).toBe(0);
+    /* Kapitlernes fotos (.mk-foto) er husets pynt, ikke et varenavn. */
+    expect(await page.$$eval('.mk-sortiment img', (l) => l.filter((i) => !i.closest('.mk-bg, .mk-foto')).length)).toBe(0);
   });
 
   /* En tom database må aldrig blive en hvid skærm. Gæsten står
@@ -549,173 +568,97 @@ test.describe('Værn, der fulgte med fra den gamle menuside', () => {
   });
 });
 
-/* ⚠️ SAMME ANSIGT SOM PÅ BESTILLINGSSIDEN  (1/9).
-   Kortet og bestillingen er det SAMME sortiment set fra to
-   skærme. Ser den samme burger forskellig ud de to steder, tror
-   gæsten, det er to burgere — og det er nøjagtig den slags
-   skred, huset har ar efter (to lister over det samme, der
-   langsomt driver fra hinanden).
-
-   Tegnet er MINDRE her: kortet har i forvejen kategoriens store
-   flise øverst. Men det er det SAMME tegn, fra den ene liste. */
-test.describe('Et ansigt pr. ret på kortet', () => {
-
-  test('varelinjerne har det samme tegn som bestillingssiden',
-    async ({ page }) => {
+/* ============================================================
+   VARELINJEN ER NAVNET — OG KUN NAVNET  (26/9)
+   ------------------------------------------------------------
+   Her stod "Et ansigt pr. ret" (1/9): kortet viste bestillingssidens
+   emoji ved hver vare. De trykte kort har ingen, og Mikkel bad om, at
+   siden matcher dem 1:1 — så tegnene er væk med vilje. Det, der står
+   tilbage af reglen: <h4> og data-vare er varens navn, ordret, for de
+   læses af søgning, af lagene og af prøverne.
+   ============================================================ */
+test.describe('Varelinjen er navnet', () => {
+  test('h4 og data-vare er det samme navn — uden tegn', async ({ page }) => {
     await åbn(page);
-    const linjer = page.locator('.mk-kat .mk-linje');
+    const linjer = page.locator('#mk-kat .mk-linje[data-vare]:not(.mk-samlet)');
     const n = await linjer.count();
     expect(n, 'der er ingen varelinjer at måle på').toBeGreaterThan(0);
-
     for (let i = 0; i < n; i++) {
       const l = linjer.nth(i);
-      await expect(l.locator('.mk-vare-tegn')).toHaveCount(1);
-      /* Navnet må ikke bære tegnet: `data-vare` og h4 er begge
-         varens navn, og de læses af søgning og prøver. */
-      expect(await l.locator('h4').textContent())
-        .toBe(await l.getAttribute('data-vare'));
+      expect(await l.locator('h4').textContent()).toBe(await l.getAttribute('data-vare'));
     }
-
-    /* ⚠️ OG DET ER DEN SAMME KILDE. Prøven spørger MosedeEmoji i
-       SIDEN og sammenligner — et hårdkodet tegn her ville bestå,
-       også hvis kortet fik sin egen liste tilbage. */
-    const første = linjer.first();
-    const navn = await første.getAttribute('data-vare');
-    const forventet = await page.evaluate(
-      (n) => window.MosedeEmoji.forVare({ navn: n }, null), navn);
-    await expect(første.locator('.mk-vare-tegn')).toHaveText(forventet);
-  });
-
-  test('tegnet er skjult for en skærmlæser', async ({ page }) => {
-    await åbn(page);
-    await expect(page.locator('.mk-kat .mk-vare-tegn').first())
-      .toHaveAttribute('aria-hidden', 'true');
+    await expect(page.locator('#mk-kat .mk-vare-tegn')).toHaveCount(0);
   });
 });
 
 /* ============================================================
-   MENUKORTET LÆSES I AFSNIT  (9/9)
+   KAPITLERNE STÅR I KORTENES RÆKKEFØLGE  (26/9)
    ------------------------------------------------------------
-   Kundens ord: *"på menukort delen ift telefonen kan vi ik få
-   rækkefølgen lidt anderledes så det er de mest attraktive og
-   velkendte ting i toppen som selvfølgelig dagens ret hvis den
-   er der, også derefter retter — og du ved blive mindre
-   attraktiv jo længere ned man ryger."*
+   Her stod "Menukortet læses i afsnit" (9/9): Mad, Is og dessert,
+   Drikke, efter ejerens afdeling. Nu er rækkefølgen DE TRYKTE KORTS
+   (Mikkels ord: "de skal naturligvis matche 1:1 med de her") —
+   grillen, à la carte, smørrebrød, håndmadder, is, kaffe, øl, og
+   "Til selskabet" til sidst.
 
-   MÅLT PÅ HANS EGET KORT (menukort/menukort.json, hentet fra
-   produktionen 3/9) på en iPhone 13: siden er 19.760 px = 29,8
-   skærme, og **maden stod i TO blokke** — sortering 1-9 øverst
-   og 30-34 nederst, med isen (10-11) og de fem drikke-kort
-   (20-24) imellem. Tapasfadet lå 15.355 px nede, UNDER "Snacks
-   og slik". Efter afsnittene: 10.262 px, altså 7,7 skærme op.
+   Det, der står tilbage af reglerne herfra, og som måles:
+   · maden står samlet, isen og øllet deler den ikke
+   · EJERENS PILE bestemmer rækkefølgen INDE i et afsnit (pilene i
+     admin skal blive ved med at gøre, hvad de siger)
+   · en kategori, kortene ikke kender, TABES IKKE — den får sin egen
+     plads i "Mere fra lugen"
+   · ét kapitel er ingen opdeling: ingen glasbjælke
    ============================================================ */
-test.describe('Menukortet læses i afsnit', () => {
-
-  /* ⚠️ TALLET KOMMER UDEFRA: FIKSTURETS EGEN SORTERING.
-     Kategorierne herunder er skrevet med præcis det problem,
-     målingen fandt hos ejeren — en mad-kategori med sortering
-     30, altså EFTER isen og drikkevarerne. Fjernes
-     grupperingen, står de to mad-kort med is og øl imellem, og
-     prøven falder. Et spørgsmål til koden om dens egen
-     `menuAfsnit` ville bestå, også hvis siden aldrig brugte
-     den. */
+test.describe('Kapitlerne står i kortenes rækkefølge', () => {
   function medBlandetKort() {
     const d = medRet();
     d.menu_kategorier = [
       { id: 1, afdeling: 'mad', navn: 'Retter', sortering: 2, aktiv: true },
       { id: 2, afdeling: 'is', navn: 'Softice og vafler', sortering: 11, aktiv: true },
       { id: 3, afdeling: 'drikke', navn: 'Øl', sortering: 21, aktiv: true },
-      { id: 4, afdeling: 'mad', navn: 'Tapasfad', sortering: 30, aktiv: true },
+      { id: 4, afdeling: 'mad', navn: 'Burgere', sortering: 30, aktiv: true },
     ];
     d.menu_varer = [
-      { id: 11, kategori_id: 1, navn: 'Fiskefilet', pris: 95, sortering: 1, aktiv: true },
+      { id: 11, kategori_id: 1, navn: 'Pariserbøf', pris: 105, sortering: 1, aktiv: true },
+      { id: 15, kategori_id: 1, navn: 'Clubsandwich', pris: 105, sortering: 2, aktiv: true },
       { id: 12, kategori_id: 2, navn: 'Softice', pris: 30, sortering: 1, aktiv: true },
       { id: 13, kategori_id: 3, navn: 'Fadøl', pris: 45, sortering: 1, aktiv: true },
-      { id: 14, kategori_id: 4, navn: 'Tapasfad', pris: 179, sortering: 1, aktiv: true },
+      { id: 14, kategori_id: 4, navn: 'Cheeseburger', pris: 85, sortering: 1, aktiv: true },
     ];
     return d;
   }
-
-  async function raekken(page) {
-    return page.locator('#mk-kat [data-kategori]').evaluateAll((els) => els.map((e) => ({
-      navn: e.getAttribute('data-kategori'),
-      afd: ((e.querySelector('.mk-tegn') || {}).className || '')
-        .replace(/.*mk-(mad|is|drikke).*/, '$1'),
-    })));
-  }
+  const kapitler = (page) => page.$$eval('#mk-kat .mk-kapitel', (l) => l.map((k) => k.getAttribute('data-kapitel')));
 
   test('maden står samlet — isen og øllet deler den ikke', async ({ page }) => {
+    /* Burgerne har sortering 30, altså EFTER isen og øllet hos
+       ejeren. Kortene sætter dem ved maden alligevel. */
     await åbn(page, medBlandetKort());
-    const r = await raekken(page);
-    expect(r.length, 'der ER kategorier at måle').toBe(4);
-
-    /* Ingen afdeling må optræde i to blokke: læser man
-       afdelingerne ned ad siden, skal hver af dem stå ÉN gang. */
-    const blokke = r.map((k) => k.afd).filter((a, i, l) => a !== l[i - 1]);
-    expect(blokke, 'en afdeling står i to blokke — maden er delt af isen')
-      .toEqual(['mad', 'is', 'drikke']);
-    expect(r[0].navn).toBe('Retter');
-    expect(r[1].navn).toBe('Tapasfad');
+    expect(await kapitler(page)).toEqual(['grillen', 'burgere', 'is', 'bar']);
   });
 
-  test('afsnittene har en overskrift hver, i gæstens rækkefølge', async ({ page }) => {
-    await åbn(page, medBlandetKort());
-    const h = page.locator('#mk-kat .mk-afsnit');
-    await expect(h).toHaveCount(3);
-    await expect(h.nth(0)).toHaveText('Mad');
-    await expect(h.nth(1)).toHaveText('Is og dessert');
-    await expect(h.nth(2)).toHaveText('Drikke');
-  });
-
-  /* ⚠️ EJERENS `sortering` ER URØRT INDE I AFSNITTET, og det er
-     hele grunden til, at det er en GRUPPERING og ikke en
-     rangliste i koden: pilene i admin → Menukort bytter
-     sorteringstal, og de skal blive ved med at slå igennem på
-     gæstesiden. Et kodet "attraktivitets-tal" ville betyde, at
-     hans pil ikke gjorde noget — præcis den fejl, admins egne
-     afsnit blev bygget for at undgå (7/9).
-
-     Tallet kommer udefra: prøven bytter de to mad-kategoriers
-     sortering og kræver, at siden bytter med. */
   test('ejerens egen sortering bestemmer inde i afsnittet', async ({ page }) => {
     const d = medBlandetKort();
-    d.menu_kategorier[0].sortering = 30;   // Retter sidst
-    d.menu_kategorier[3].sortering = 2;    // Tapasfad foerst
+    d.menu_varer[0].sortering = 5;   // Pariserbøf efter Clubsandwich
     await åbn(page, d);
-    const r = await raekken(page);
-    expect(r.map((k) => k.navn).slice(0, 2),
-      'ejerens pile slår ikke igennem på gæstesiden')
-      .toEqual(['Tapasfad', 'Retter']);
+    const r = await page.$$eval('#kapitel-grillen .mk-linje[data-vare]', (l) => l.map((e) => e.getAttribute('data-vare')));
+    expect(r, 'ejerens pile slår ikke igennem på gæstesiden').toEqual(['Clubsandwich', 'Pariserbøf']);
   });
 
-  /* ⚠️ EN UKENDT AFDELING MÅ IKKE TABE EN KATEGORI. Kategorierne
-     har haft andre navne før ("grill"), og en kategori, der
-     falder ud af kortet, fordi dens afdeling ikke findes mere, er
-     varer, ingen kan finde — uden en fejl nogen steder. Prøven
-     ovenfor ("står stadig på kortet") måler kortet; den her
-     måler, at den også får et AFSNIT og ikke bare hænger under
-     det forrige. */
-  test('en ukendt afdeling får sit eget afsnit', async ({ page }) => {
+  test('en kategori, kortene ikke kender, får sin egen plads', async ({ page }) => {
     const d = medBlandetKort();
-    d.menu_kategorier[3].afdeling = 'grill';
+    d.menu_kategorier.push({ id: 5, afdeling: 'grill', navn: 'Sæsonens fisk', sortering: 40, aktiv: true });
+    d.menu_varer.push({ id: 16, kategori_id: 5, navn: 'Røget ørred', pris: 75, sortering: 1, aktiv: true });
     await åbn(page, d);
-
-    await expect(page.locator('#mk-kat .mk-afsnit')).toHaveCount(4);
-    await expect(page.locator('#mk-kat .mk-afsnit').nth(3)).toHaveText('Mere på kortet');
-    await expect(page.locator('[data-kategori="Tapasfad"]')).toHaveCount(1);
+    expect((await kapitler(page)).slice(-1)).toEqual(['mere']);
+    await expect(page.locator('#kapitel-mere [data-kategori="Sæsonens fisk"] h3')).toHaveText('Sæsonens fisk');
+    await expect(page.locator('#kapitel-mere [data-vare="Røget ørred"] .mk-pris')).toHaveText('75,-');
   });
 
-  /* ⚠️ ÉT ENKELT AFSNIT ER INGEN OPDELING. Har forretningen kun
-     mad, ville en overskrift "Mad" over hele kortet være støj —
-     og uden den her halvdel ville en regel, der ALTID skriver
-     overskrifter, bestå de tre prøver ovenfor. */
-  test('kun mad på kortet giver ingen overskrifter', async ({ page }) => {
+  test('ét kapitel er ingen opdeling — ingen glasbjælke', async ({ page }) => {
     const d = medBlandetKort();
-    d.menu_kategorier = d.menu_kategorier.filter((k) => k.afdeling === 'mad');
+    d.menu_kategorier = d.menu_kategorier.filter((k) => k.navn === 'Retter');
     await åbn(page, d);
-
-    await expect(page.locator('#mk-kat [data-kategori]')).toHaveCount(2);
-    await expect(page.locator('#mk-kat .mk-afsnit')).toHaveCount(0);
+    await expect(page.locator('#mk-kat .mk-kapitel')).toHaveCount(1);
+    await expect(page.locator('#mk-hop')).toBeHidden();
   });
 });
 

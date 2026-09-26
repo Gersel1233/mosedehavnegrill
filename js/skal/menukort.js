@@ -473,7 +473,10 @@
     // 2) Boksenes egne varer (fx "Kaffe og kage" er Pausen-boksen)
     hvert(function (a) {
       [a.def].concat(a.def.felter || []).forEach(function (f) {
-        if (f.pris && f.pris.vare) {
+        /* ⚠️ KUN EN BOKS, DER SIGER DET (tag: true), TAGER SIN VARE UD AF
+           LISTEN. Ellers forsvandt fx "Glutenfrit brød" helt fra kortet,
+           fordi smørrebrødets boks nævner prisen (set i prøven 26/9). */
+        if (f.pris && f.pris.vare && f.tag) {
           var x = fri(function (y) { return norm(y.v.navn) === norm(f.pris.vare); });
           if (x) tag(x);
         }
@@ -600,7 +603,10 @@
   function tegnAfsnit(a, grupper) {
     var d = a.def;
     var henvis = (d.henvis || []);
-    if (!a.varer.length && !henvis.length) return null;
+    /* ⚠️ HENVISNINGER ALENE ER INTET AFSNIT. Et kapitel med kun "Se
+       smørrebrødskortet" og en boks er et tomt kapitel med pynt (set i
+       prøven 26/9: "Grillen" uden en eneste vare). */
+    if (!a.varer.length) return null;
     var sek = lav('section', 'panel mk-sek');
     var førsteKat = a.varer[0] ? a.varer[0].k : null;
     sek.setAttribute('data-kategori', førsteKat ? førsteKat.navn : d.titel);
@@ -827,6 +833,14 @@
     kapitler.forEach(function (c) {
       var el = tegnKapitel(c, grupper);
       if (el) boks.appendChild(el);
+    });
+
+    /* En henvisning ("Se smørrebrødskortet") til et kapitel, der ikke
+       blev tegnet, er et link til ingenting — den tages væk. */
+    Array.prototype.forEach.call(boks.querySelectorAll('a.mk-henvis'), function (l) {
+      if (!document.getElementById(String(l.getAttribute('href')).replace('#', ''))) {
+        l.parentNode.removeChild(l);
+      }
     });
 
     visHop();
