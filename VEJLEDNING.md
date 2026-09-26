@@ -9,12 +9,12 @@ Skrevet 31. august 2026
 
 | Du er… | Du står i | Hvorfor |
 |---|---|---|
-| **I køkkenet** | **Køkken-kø** | Den viser KUN bestillinger fra bordene. De skal laves NU og bæres ud |
+| **I køkkenet** | **Køkkenet** | Øverst bordene (skal laves NU og bæres ud), nedenunder alt til lugen i dag efter tid |
 | **Ved lugen** | **Overblik** | Dagen i tidsrækkefølge: hvad skal være klar hvornår |
 | **På kontoret** | **Forespørgsler** og **Kalender** | Selskaber, catering, baglokalet og hvad der sker hvornår |
 | **Chefen, om morgenen** | **Dagens ret** | Skrives hver morgen, står på hjemmesiden med det samme |
 
-Har I én iPad i køkkenet: lad den stå på **Køkken-kø**.
+Har I én iPad i køkkenet: lad den stå på **Køkkenet**.
 Har I én skærm ved lugen: lad den stå på **Overblik**.
 
 De opdaterer sig selv. **I skal ikke trykke "hent" nogen steder** —
@@ -79,7 +79,7 @@ Det første, I ser om morgenen, og det, skærmen ved lugen står på.
   bestillingerne, delt i 🥡 ud af huset og 🍽️ spist her. Det er
   tallet, køkkenet laver mad efter
 - **Fra bordene** står som en linje med et tal og en knap til
-  Køkken-kø. Bordene er IKKE i forløbet — de har ingen hentetid og
+  Køkkenet. Bordene er IKKE i forløbet — de har ingen hentetid og
   skal laves nu
 
 Trykker nogen forkert, ligger bestillingen under **Færdige (N)**
@@ -252,10 +252,17 @@ er tomme, indtil I skriver dem, og så står de på hjemmesiden.
 
 ## Restaurant
 
-### 👨‍🍳 Køkken-kø — den skærm, køkkenet står ved
+### 👨‍🍳 Køkkenet — den skærm, køkkenet står ved
 
-**KUN bestillinger fra bordene.** De har ingen hentetid: de skal
-laves nu og bæres ud.
+**Øverst: bordene.** De har ingen hentetid: de skal laves nu og
+bæres ud.
+
+**Nedenunder: "Til lugen i dag"** (fra 26/9). Alt det andet, der
+skal laves i dag — to-go, levering, spis her og is fra hjemmesiden —
+i den rækkefølge, det skal være klar. Det er den samme liste som
+**Overblik**, så de to skærme siger det samme. Allergi står med ord
+på kortet, og har gæsten skrevet, hvor mange de er, står det der
+også (⚠️ hvis de er flere, end der er bestilt mad til).
 
 - **Ét tryk: ✓ Færdig**, når maden er båret ud. Det er den ENE
   knap på kortet, uanset hvor bestillingen står
@@ -270,8 +277,12 @@ laves nu og bæres ud.
   kan ikke tale med bordet. Der er ingen skærm hos gæsten og ingen
   betaling — det eneste, der virker, er et menneske, der går derud
 - **Slå lyden til med knappen.** Browseren spiller ikke lyd, før
-  nogen har rørt skærmen. Nye kort markerer sig også synligt, og
-  markeringen bliver stående, til kortet trykkes videre
+  nogen har rørt skærmen. Står der et **rødt bånd med 🔇** øverst,
+  plinger nye bestillinger ikke (fx efter en genstart) — tryk på båndet.
+  Nye kort markerer sig også synligt, og markeringen bliver stående,
+  til kortet trykkes videre
+- **Skærmen går ikke i dvale**, mens Køkkenet står åben (på de
+  iPads og telefoner, der tillader det). Lås den selv, når I lukker
 - Er der run på, kan I sætte et **loft pr. kvarter** eller lukke
   for bordene helt
 
@@ -443,7 +454,7 @@ kun hvis der ikke er en eneste bestilling tilbage i systemet.
 ## QR-koderne på bordene
 
 Gæsten scanner mærkatet på bord 7, får menuen på sin egen telefon,
-og bestillingen lander i **Køkken-kø** med **Bord 7** på.
+og bestillingen lander i **Køkkenet** med **Bord 7** på.
 
 **Der betales ikke.** Gæsten betaler ved lugen som altid.
 
@@ -517,7 +528,7 @@ Her er hele billedet, så I ved, hvad der kommer:
 | 🥪 Bestillinger | **✓ Færdig** på en 🚗 **levering** | **Ring først.** Kvitteringen lover hende et opkald: en levering bekræftes aldrig af sig selv, fordi vi ikke lover en adresse, vi ikke har aftalt. Systemet spørger |
 | 🥪 Bestillinger | **Afvis** | **Ring.** Hun har fået at vide, at vi ringer. En afvisning uden et opkald er en gæst, der møder op til en pose, der ikke findes |
 | 🥪 Bestillinger | **Udeblev** | Ingenting — det er jeres eget hak |
-| 👨‍🍳 Køkken-kø | **Kan ikke laves** | **Gå ud og sig det.** Gæsten sidder ved bordet, og systemet kan ikke tale med hende — der er ingen skærm og ingen besked |
+| 👨‍🍳 Køkkenet | **Kan ikke laves** | **Gå ud og sig det.** Gæsten sidder ved bordet, og systemet kan ikke tale med hende — der er ingen skærm og ingen besked |
 | 🍽️ Borde | **Bekræft** | Ingenting. Gæsten har fået bordet i kvitteringen; hakket er jeres eget |
 | 🍽️ Borde | **Afvis** | **RING.** Hun regner med bordet. Et afslag, hun ikke har hørt, er en familie, der møder op |
 | 🍽️ Borde | **Udeblev** | Ingenting — *der skal ikke ringes* |
@@ -534,6 +545,14 @@ ende. Er I i tvivl, så ring: et opkald koster et minut, en
 misforståelse koster en middag.
 
 ---
+
+## Hvis der står et rødt bånd øverst: "Ingen forbindelse"
+
+Så har skærmen ikke fået svar fra databasen i et stykke tid (fra
+26/9). **Det, der står på skærmen, kan være gammelt** — nye
+bestillinger kommer ikke frem, før båndet er væk. Tjek nettet
+(wifi), og ring til gæster, der venter. Båndet forsvinder af sig
+selv, når forbindelsen er tilbage, og listerne tegnes forfra.
 
 ## Hvis der står "der kan ikke gemmes"
 
