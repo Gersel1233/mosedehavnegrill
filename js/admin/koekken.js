@@ -707,6 +707,56 @@
     }));
   }
 
+  /* ============================================================
+     TIL LUGEN I DAG  (26/9)
+     ------------------------------------------------------------
+     Mikkels ord: *"cheferne i køkken tingen og have styr på alt der
+     skal laves der og se alt"*. Køen er bordene; alt det andet, der
+     skal laves i dag — to-go, levering, spis her uden bord,
+     smørrebrød, is — stod kun på Overblik og Bestillinger, og
+     køkkenet så det ikke. Nu står det her, sorteret efter tid.
+
+     ⚠️ RÆKKEN ER OVERBLIKS EGEN (Admin.lugeRaekke, Admin.lugensArbejde):
+     samme tid, samme type, samme allergi i ord, samme grønne knap med
+     samme næste trin som Bestillinger. En kopi her ville en dag sige
+     noget andet end Overblik om den samme bestilling.
+
+     ⚠️ OG DEN SIGER TIL. Kun bordene plingede; en to-go til om et
+     kvarter kom ind i stilhed. Nu plinger en NY bestilling til lugen
+     i dag også — men ikke dem, der stod der ved indlæsningen.
+     ============================================================ */
+  var kendteLuge = null;
+  function tegnLugen() {
+    var boks = $('koekken-luge');
+    if (!boks || !Admin.lugensArbejde || !Admin.lugeRaekke) return;
+    var nu = Butik.nu();
+    var r = Admin.lugensArbejde();
+    var tal = $('koekken-luge-antal');
+    if (tal) {
+      tal.textContent = r.length || '';
+      tal.classList.toggle('skjult', !r.length);
+    }
+    if (!r.length) {
+      Admin.tøm(boks);
+      boks.appendChild(lav('p', 'vare-tekst',
+        'Intet til lugen resten af dagen. Skærmen siger selv til.'));
+      if (Admin.lister.bestillinger !== undefined) kendteLuge = [];
+      return;
+    }
+    Admin.tegnRaekker(boks, r.map(function (x) { return Admin.lugeRaekke(x, nu); }));
+
+    var ids = r.map(function (x) { return String(x.b.id); });
+    if (kendteLuge) {
+      var nye = ids.filter(function (id) { return kendteLuge.indexOf(id) === -1; });
+      nye.forEach(function (id) {
+        var e = boks.querySelector('[data-raekke="b' + id + '"]');
+        if (e) e.classList.add('linje-ny');
+      });
+      if (nye.length) pling();
+    }
+    if (Admin.lister.bestillinger !== undefined) kendteLuge = ids;
+  }
+
   function tegnKoekken() {
     var boks = $('koekken-liste');
     if (!boks) return;
@@ -728,6 +778,7 @@
     tegnZoner();
     tegnBorde();
     tegnFaerdige();
+    tegnLugen();
 
     var liste = vistKoe();
 
@@ -856,6 +907,12 @@
     var top = lav('div', 'koek-top');
     var hvem = lav('div', 'koek-hvem');
     hvem.appendChild(lav('div', 'koek-bord', 'Bord ' + b.bord_nummer));
+    /* HVOR MANGE SIDDER DER (26/9). Gæstens eget tal ved bordet stod
+       kun på Bestillinger-kortet — ikke her, hvor maden laves og
+       bæres ud. Samme mærke (Admin.gaesteMaerke): "👥 4 pers.", og
+       rødt, hvis der er flere personer end retter. */
+    var pers = Admin.gaesteMaerke && Admin.gaesteMaerke(b);
+    if (pers) hvem.appendChild(pers);
 
     /* ⚠️ BESTILLINGSNUMMERET STOD IKKE PÅ KØKKENETS KORT  (10/9).
        Kundens ord: *"og korrekt ordrenummer osv"*. Målt:

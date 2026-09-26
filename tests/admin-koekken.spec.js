@@ -1054,3 +1054,64 @@ test('et gammelt link til p-koekken åbner Køkkenet', async ({ page }) => {
   // Og køen står der — det er dén, den gamle vej pegede på.
   await expect(page.locator('#koekken-liste')).toContainText('Bord');
 });
+
+// ============================================================
+//  TIL LUGEN I DAG  (26/9)
+//  ------------------------------------------------------------
+//  Mikkels ord: *"cheferne i køkken tingen og have styr på alt der
+//  skal laves der og se alt"*. Køen er bordene; alt det andet, der
+//  skal laves i dag, stod kun på Overblik og Bestillinger. Rækken er
+//  Overbliks egen (Admin.lugeRaekke) — prøverne måler, at køkkenet
+//  viser den, og at den siger det, der skal til for at lave maden.
+// ============================================================
+test.describe('Køkkenet ser også lugens bestillinger i dag', () => {
+  const luge = (ekstra) => ordre(Object.assign({
+    id: 21, reference: 'SM260806-LUGE1', navn: 'Sara Poulsen', telefon: '28871343',
+    bord_nummer: null, hvordan: 'afhentning', hent_tid: '13:30',
+    linjer: [{ navn: 'Fiskefilet med remoulade', antal: 4, pris: 55 }], antal: 4,
+  }, ekstra));
+  const rækker = (page) => page.locator('#koekken-luge .vagt-raekke');
+
+  test('en to-go til i dag står i køkkenet — med tid og varer', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre(), luge()]);
+    await expect(rækker(page), 'lugens bestilling står ikke i køkkenet').toHaveCount(1);
+    await expect(rækker(page)).toContainText('Sara');
+    await expect(rækker(page)).toContainText('4 ×');
+    await expect(rækker(page)).toContainText('13.30');
+    /* Modstykket: bordet står i køen, ikke to gange. */
+    await expect(kort(page, '7')).toHaveCount(1);
+    await expect(page.locator('#koekken-luge')).not.toContainText('Bord 7');
+  });
+
+  test('i morgen og det færdige står ikke i dagens liste', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      luge({ id: 22, navn: 'I Morgen', hent_dato: '2026-08-07' }),
+      luge({ id: 23, navn: 'Allerede Hentet', status: 'afhentet' }),
+      luge({ id: 24, navn: 'Sara Poulsen' }),
+    ]);
+    await expect(rækker(page)).toHaveCount(1);
+    await expect(rækker(page)).toContainText('Sara');
+  });
+
+  /* ⚠️ ALLERGIEN I ORD. Et mærke, der siger "Allergi" uden at sige
+     HVILKEN, sender kokken over på en anden fane midt i en frokost. */
+  test('gæstens besked og allergi står i ord', async ({ page }) => {
+    await åbnKoekkenet(page, [luge({ besked: 'Nøddeallergi — ingen nødder på noget' })]);
+    await expect(rækker(page)).toContainText('Nøddeallergi — ingen nødder på noget');
+  });
+
+  test('én tryk på Færdig tager den af listen', async ({ page }) => {
+    await åbnKoekkenet(page, [luge()]);
+    await rækker(page).locator('button', { hasText: 'Færdig' }).click();
+    await expect.poll(async () => (await gemteData(page)).bestillinger[0].status)
+      .toBe('afhentet');
+    await expect(rækker(page)).toHaveCount(0);
+  });
+
+  /* Mikkels spørgsmål: "hvad hvis man bestiller 10 ting men kun er 1
+     person". Svaret skal stå på køkkenets kort, hvor maden laves. */
+  test('antal personer ved bordet står på køkkenets kort', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ antal_personer: 4 })]);
+    await expect(kort(page, '7')).toContainText('4 pers.');
+  });
+});

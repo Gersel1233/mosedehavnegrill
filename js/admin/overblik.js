@@ -323,6 +323,12 @@
       if (type) linje.appendChild(type);
     }
     if (r.allergi) linje.appendChild(lav('span', 'maerke m-allergi', '⚠️ Allergi'));
+    /* HVOR MANGE SPISER MED (26/9) — samme mærke som Bestillinger-kortet
+       (Admin.gaesteMaerke). Mikkels spørgsmål: *"hvad hvis man bestiller
+       10 ting men kun er 1 person … hvad siger admin"*. Svaret skal stå
+       dér, hvor maden laves, ikke kun på en anden fane. */
+    var pers = r.b && Admin.gaesteMaerke && Admin.gaesteMaerke(r.b);
+    if (pers) linje.appendChild(pers);
     if (r.ny) linje.appendChild(Admin.statusMaerke('ny', 'Ny'));
     /* ⚠️ KLASSEN KOMMER FRA REGLEN, IKKE FRA DEN HER FIL. Se
        noten ved maerke: ovenfor — en hårdkodet klasse her gav
@@ -341,6 +347,15 @@
       midt.appendChild(varelinjer(r.b));
       var emb = emballageKasse(r.b);
       if (emb) midt.appendChild(emb);
+      /* ⚠️ ALLERGIEN I ORD, IKKE KUN ET MÆRKE (26/9). Rækken sagde
+         "⚠️ Allergi" — men ikke HVILKEN, og "uden løg" stod der slet
+         ikke. Personalet ved lugen skulle skifte fane for at læse det.
+         Fundet i en gennemgang af koden 26/9. Reglen er
+         Admin.gaestebesked, den samme som på Bestillinger-kortet. */
+      if (Admin.gaestebesked && Admin.gaestebesked(midt, r.b)) {
+        midt.classList.remove('har-allergi');
+        if (r.allergi) k.classList.add('har-allergi');
+      }
     } else {
       midt.appendChild(lav('div', 'vare-tekst', r.hvad));
     }
@@ -590,7 +605,8 @@
          for HVER række, så to forskellige mærker ville se ens ud —
          og et kort, der HAVDE ændret sig, blev ikke tegnet om. */
       aftryk: [r.tid, r.navn, r.hvad, r.maerke && r.maerke.tekst, r.ny, r.allergi,
-        r.b ? r.b.status : '', r.min !== null && r.min < nu.minutter].join('|'),
+        r.b ? r.b.status : '', r.min !== null && r.min < nu.minutter,
+        r.b ? (r.b.besked || '') + '/' + (r.b.antal_personer || '') : ''].join('|'),
       byg: function () { return vagtRaekke(r, nu); },
     };
   }
@@ -1405,6 +1421,16 @@
      én gang ved login, hvis der slet ikke kom noget (fx fordi
      begge kald fejlede). Ellers stod siden tom uden at sige
      hvorfor. */
+  /* ⚠️ KØKKENET VISER LUGENS ARBEJDE MED OVERBLIKS EGEN RÆKKE (26/9).
+     Mikkels ord: *"cheferne i køkken tingen … have styr på alt der skal
+     laves der og se alt"*. En kopi af rækken i koekken.js ville en dag
+     sige noget andet end Overblik om den samme bestilling — så de to
+     skærme deler den her. */
+  Admin.lugensArbejde = function () {
+    return dagensArbejde().filter(function (r) { return r.kilde === 'lugen'; });
+  };
+  Admin.lugeRaekke = forloebRaekke;
+
   Admin.efterHent.push(tegnOverblik);
   /* ============================================================
      DAGENS RET OG BOOKINGER SOM EGNE KORT  (1/9)
