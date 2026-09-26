@@ -7,6 +7,16 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**GALLERIETS SKIFT: HURTIGERE EFTER TAPASFILMEN OG UDEN BLINK** (26/9, aften).
+Mikkels ord: *"switchene imellem billederne efter tapasvideoen … er ikke hurtig
+nok og smooth nok"*. Tre ting i `js/skal/billedplads.js` og `havnegrillen.css`:
+første skift kommer 1,2 s efter filmen (før en hel takt, 4,6 s). Det næste
+billede hentes i forvejen, også mens filmen spiller. Og det nye billede toner
+ind (0,9 s) oven på det gamle, som står fuldt fremme under det (`.forrige`).
+Før tonede de hver sin vej, og baggrunden skinnede igennem midt i skiftet.
+Gælder alle gallerier. Prøve i `tests/tapas-film.spec.js`, set fejle på den
+gamle kode.
+
 **"···" VIRKEDE IKKE PÅ BAGLOKALET, FORESPØRGSLER OG TILMELDINGER** (26/9,
 sent — udgivet straks, 9f02aeb). Mikkels skærmbillede af et udlejet
 baglokale: *"de tre prikker virker ikke"*. MÅLT: panelet
