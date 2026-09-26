@@ -6,7 +6,7 @@
 --
 --  Kør EFTER bremse.sql — og sidst, efter gaestens-vaern-26-9.sql
 --  (se docs/SQL-RAEKKEFOELGE.md). Filen kan køres igen.
---  Prøve: proev-bremse-uden-borde.sql
+--  Prøve: proev-bremse-uden-borde-26-9.sql
 --
 --  ------------------------------------------------------------
 --  HVORFOR

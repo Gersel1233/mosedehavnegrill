@@ -27,7 +27,7 @@ ved sjette runde.
 - ⚠️ **Skraldespanden er skrevet med.** `skraldespand.sql` retter bremsen,
   så slettede rækker ikke tæller; en funktion, der skrives forfra, taber
   det. Første udgave gjorde netop det. Prøve 13-14 fangede det
-- Prøve: `proev-bremse-uden-borde.sql`. Mod den gamle bremse FEJLEDE 6 af 14
+- Prøve: `proev-bremse-uden-borde-26-9.sql`. Mod den gamle bremse FEJLEDE 6 af 14
   (bordprøverne; de gamle grænser og modstykkerne bestod), mod første udgave
   2 af 14, med filen 14 af 14. `sql-runde.sh`: 60 filer 1682/0, og hver
   gammel fil har samme tal som før (diffet linje for linje).

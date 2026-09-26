@@ -59,7 +59,7 @@ Mikkels ord: *"lad bordene ikke tælle med i bremsen"*. Den skriver
 pr. nummer, og hvert bord har sit eget loft (20 i timen). Skraldespandens
 `slettet is null` er skrevet med. Køres `bremse.sql` igen, skal den her med
 bagefter — `er-vi-klar.sql` tjek 151 fanger det. Prøve:
-`proev-bremse-uden-borde.sql` (14 af 14).
+`proev-bremse-uden-borde-26-9.sql` (14 af 14).
 
 **⚠️ `gaestens-vaern-26-9.sql` SKAL STÅ SIDST (26/9) — og er IKKE kørt i
 produktionen endnu.** Den skriver de nyeste udgaver af
