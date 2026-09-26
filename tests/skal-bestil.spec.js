@@ -972,8 +972,12 @@ test.describe('Tidsmodellen', () => {
     await expect(page.locator('#sumline')).toContainText('Morgenkomplet');
 
     await page.locator('#tid').selectOption('13:00');
+    /* ⚠️ KURVLINJEN, IKKE ORDET (26/9). Sumlinjen siger nu, hvad der
+       røg ud ("Taget ud af kurven: Morgenkomplet"), så ordet står der
+       med vilje. Det, der ikke må stå, er linjen "1 × Morgenkomplet". */
     await expect(page.locator('#sumline'), 'morgenmaden blev hængende i kurven')
-      .not.toContainText('Morgenkomplet');
+      .not.toContainText('1 × Morgenkomplet');
+    await expect(page.locator('#sumline .sum-fjernet')).toContainText('Morgenkomplet');
   });
 
   /* ⚠️ SMØRREBRØDETS DØGN GATER IKKE HELE FORMULAREN LÆNGERE.
@@ -1577,3 +1581,46 @@ test.describe('Isen skiller sig ud i bestillingen', () => {
    — knappen siger hvad der mangler. Det er prøven "knappen siger,
    hvad der mangler". */
 
+
+/* ============================================================
+   KURVEN FØLGER MED, NÅR GÆSTEN SKIFTER  (26/9)
+   ------------------------------------------------------------
+   Fundet i en gennemgang af koden: en dåse, der kun sælges med ud
+   af huset, blev liggende i kurven, når gæsten skiftede til Spis
+   her — rækken forsvandt, men varen blev sendt med. Nu tages den
+   ud, og sumlinjen siger det.
+   ============================================================ */
+test.describe('Kurven følger med, når gæsten skifter', () => {
+  function medKunTogo() {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    d.indstillinger.ikke_saelges = { 3: ['spis_her'] };
+    return d;
+  }
+  const lægDåsen = async (page) => {
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('.item', { hasText: 'Fadøl, lille' }).first()
+      .locator('button', { hasText: '+' }).click();
+    await expect(page.locator('#sumline')).toContainText('1 × Fadøl, lille');
+  };
+
+  test('en vare, der kun sælges ud af huset, tages ud ved Spis her — og det siges', async ({ page }) => {
+    await åbn(page, { data: medKunTogo() });
+    await lægDåsen(page);
+    await page.locator('[data-seg="how"] button').nth(1).click();
+    await expect(page.locator('#sumline'), 'dåsen blev liggende i kurven')
+      .not.toContainText('1 × Fadøl, lille');
+    await expect(page.locator('#sumline .sum-fjernet')).toContainText('Taget ud af kurven');
+    await expect(page.locator('#sumline .sum-fjernet')).toContainText('Fadøl, lille');
+  });
+
+  test('modstykke: en vare uden mærket bliver i kurven ved Spis her', async ({ page }) => {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    await åbn(page, { data: d });
+    await lægDåsen(page);
+    await page.locator('[data-seg="how"] button').nth(1).click();
+    await expect(page.locator('#sumline')).toContainText('1 × Fadøl, lille');
+    await expect(page.locator('#sumline .sum-fjernet')).toHaveCount(0);
+  });
+});

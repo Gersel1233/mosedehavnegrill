@@ -1170,6 +1170,10 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .kurvbar-sum{opacity:.86}
 .kurvbar-pil{margin-left:auto}
 .kurvbar-pil::after{content:" ↓"}
+/* Det, der røg ud af kurven ved et skift (26/9) — se sigFjernet() i
+   js/skal/bestil.js. Blæk på sumlinjens bund, ikke rødt: det er en
+   oplysning, ikke en fejl. */
+.sum-fjernet{margin:6px 0 0;font-weight:600}
 /* Pillen er en genvej TIL bestillingen. Er gæsten i gang, er det kurven,
    hun skal se — to røde bjælker i bunden ville være én for meget. */
 body.har-kurv #bestil-pill{visibility:hidden;opacity:0;pointer-events:none}

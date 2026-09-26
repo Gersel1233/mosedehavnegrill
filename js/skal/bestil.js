@@ -1187,7 +1187,25 @@
   /* Det, der ikke længere kan bestilles, ryger ud af kurven — og
      sumlinjen siger det ved næste optegning. En vare, der bliver
      liggende usynligt, er mad, gæsten betaler for og ikke får. */
+  /* ⚠️ DET, DER TAGES UD, SIGES (26/9). Fundet i en gennemgang af
+     koden: kaldet her var tavst, og det blev kun kaldt, når gæsten
+     skiftede KLOKKESLÆT. Skiftede hun dag eller spisemåde, blev en
+     dåse, der kun sælges med ud af huset, liggende usynligt i kurven
+     og sendt med — eller databasen sagde "tag den af" om en række,
+     hun ikke kunne se. Nu kaldes den ved alle tre skift, og
+     sumlinjen siger i otte sekunder, hvad der røg ud. */
+  var fjernetBesked = '';
+  var fjernetUr = null;
+  function sigFjernet(navne) {
+    if (!navne.length) return;
+    fjernetBesked = 'Taget ud af kurven: ' + navne.join(', ')
+      + ' \u2014 kan ikke fås til det, I har valgt nu.';
+    clearTimeout(fjernetUr);
+    fjernetUr = setTimeout(function () { fjernetBesked = ''; visSum(); }, 8000);
+  }
+
   function ryddedeKurven() {
+    var ud = [];
     var u = udvalgNu();
     var lovlige = {};
     (u.varer || []).forEach(function (v) { lovlige[v.kategori_id + '|' + v.navn] = true; });
@@ -1220,8 +1238,13 @@
           /* Et valg (15/9) hænger på varens nøgle: "12|Pitabrød|valg|Kebab". */
           ? lovlige['variant|' + k.slice(k.lastIndexOf('|') + 1)]
           : lovlige[k.split('|valg|')[0]];
-      if (!ok) delete kurv[k];
+      if (!ok) {
+        ud.push(Butik.linjeNavn ? Butik.linjeNavn(post) : post.navn);
+        delete kurv[k];
+      }
     });
+    sigFjernet(ud);
+    return ud;
   }
 
   /* ⚠️ EN LUKKET KATEGORI SKAL SIGE HVORFOR. En kategori, der
@@ -2041,10 +2064,12 @@
       note.textContent = min > 1
         ? 'Vælg mindst ' + min + ' stykker smørrebrød — så regner vi prisen ud.'
         : 'Vælg det, I skal have — så regner vi prisen ud.';
+      if (fjernetBesked) note.appendChild(lav('p', 'sum-fjernet', fjernetBesked));
       return;
     }
 
     note.classList.add('sumbar');
+    if (fjernetBesked) note.appendChild(lav('p', 'sum-fjernet', fjernetBesked));
 
     var linjer = lav('div', 'sum-linjer');
     linjer.appendChild(lav('b', 'sum-hoved', 'Jeres bestilling:'));
@@ -2691,9 +2716,11 @@
         Object.keys(kurv).forEach(function (k) {
           if (k.indexOf('dagens|') === 0) delete kurv[k];
         });
+        ryddedeKurven();
         visVarer();
         tegnFyld();
         tegnStoerrelser();
+        visSum();
       });
     }
 
@@ -2762,7 +2789,9 @@
              på en dag, vælgeren sagde var ledig. */
           visDage();
           visTider();
+          ryddedeKurven();
           visVarer();
+          visSum();
         });
       }
     }
