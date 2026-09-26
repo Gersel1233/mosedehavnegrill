@@ -1999,6 +1999,7 @@
        Den skal sige "I mangler to", MENS hun tæller op. */
     visMinStk();
     visKnap();
+    visKurvbar();
     var note = sumFelt();
     if (!note) return;
     fejlVises = false;
@@ -2083,6 +2084,97 @@
       n + ' stk.'
       + (sum ? ' · i alt ' + kroner(sum) : '')
       + ' · ' + hvordanTekst() + (klokken ? ' · ' + klokken : '')));
+  }
+
+  /* ============================================================
+     KURVEN KAN SES, MENS MAN VÆLGER  (26/9)
+     ------------------------------------------------------------
+     Mikkels ord: *"læg i kurven virker ikke på is siden"*. MÅLT med
+     produktionens data på en telefon og en computer: den VIRKEDE —
+     isen lå i kurven, og summen nede ved Send sagde det. Men gæsten
+     så intet. Byggerens knap sprang straks tilbage til "Vælg hvor
+     mange kugler", kvitteringen var en lille linje, der forsvandt
+     efter fire sekunder, summen stod under skærmkanten, og pillen i
+     bunden folder sig væk inde i formularen. En kurv, man ikke kan
+     se, er en kurv, der ikke virker.
+
+     Nu står der en bjælke i bunden, så snart der ligger noget i
+     kurven, og Send ikke er i syne: antal, beløb og "Se og send".
+     Et tryk ruller ned til summen. Den tager pillens plads — pillen
+     er en genvej TIL bestillingen, og gæsten er allerede i gang.
+
+     ⚠️ TALLENE ER SUMMENS EGNE (antalIKurv, sumIKurv), ikke en
+     optælling for sig. To tællinger af den samme kurv ville en dag
+     sige hver sit, og så er det bjælken, gæsten tror på.
+     ============================================================ */
+  var kurvbar = null;
+  var iSyne = { knap: false, sum: false };
+  /* ⚠️ MENS GÆSTEN SKRIVER, GÅR DEN VÆK. På en telefon står en fast
+     bjælke lige over tastaturet — oven i det felt, hun skriver navn
+     eller nummer i.
+
+     ⚠️ MEN IKKE VED EN RULLEMENU. Smagen vælges i en <select>, og på en
+     iPhone flytter et tryk på en knap ikke fokus: menuen beholder det,
+     efter isen er lagt i kurven. Talte den med, stod bjælken skjult i
+     netop det øjeblik, den skulle vise isen. Set som en ustabil prøve
+     på computeren 26/9. En rullemenu giver intet tastatur. */
+  var skriver = false;
+  function erSkrivefelt(el) {
+    return !!(el && el.matches && el.matches(
+      'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]), textarea'));
+  }
+
+  function visKurvbar() {
+    var n = antalIKurv();
+    if (!kurvbar && !n) return;
+    if (!kurvbar) {
+      kurvbar = document.createElement('a');
+      kurvbar.className = 'kurvbar';
+      kurvbar.href = '#';
+      kurvbar.addEventListener('click', function (e) {
+        e.preventDefault();
+        var mål = sumFelt() || find('#ssend', panel);
+        if (mål && mål.scrollIntoView) mål.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      document.body.appendChild(kurvbar);
+      document.addEventListener('focusin', function (e) {
+        if (erSkrivefelt(e.target)) { skriver = true; visKurvbar(); }
+      });
+      document.addEventListener('focusout', function () {
+        skriver = false;
+        /* Næste tik: hopper fokus fra ét felt til det næste, kommer
+           focusin bagefter, og bjælken skal ikke blinke imellem. */
+        setTimeout(visKurvbar, 0);
+      });
+      /* Står Send eller summen på skærmen, er bjælken en gentagelse
+         af det, gæsten allerede ser — så går den væk. */
+      var knap = find('#ssend', panel) || find('button.g.solid.blk', panel);
+      var note = sumFelt();
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (poster) {
+          poster.forEach(function (p) {
+            iSyne[p.target === knap ? 'knap' : 'sum'] = p.isIntersecting;
+          });
+          visKurvbar();
+        });
+        if (knap) io.observe(knap);
+        if (note) io.observe(note);
+      }
+    }
+    var sum = sumIKurv();
+    tøm(kurvbar);
+    /* Pillens egen pose — samme tegn for "bestilling" hele vejen. */
+    kurvbar.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'
+      + '<path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>');
+    kurvbar.appendChild(lav('b', 'kurvbar-antal', n + ' i kurven'));
+    if (sum) kurvbar.appendChild(lav('span', 'kurvbar-sum', '· ' + kroner(sum)));
+    kurvbar.appendChild(lav('span', 'kurvbar-pil', 'Se og send'));
+    kurvbar.setAttribute('aria-label', n + ' i kurven' + (sum ? ', ' + kroner(sum) : '')
+      + '. Gå til bestillingen.');
+    var vis = n > 0 && !iSyne.knap && !iSyne.sum && !skriver;
+    kurvbar.classList.toggle('vis', vis);
+    document.body.classList.toggle('har-kurv', n > 0);
   }
 
   /* ---- KNAPPEN SIGER, HVAD DER MANGLER  (4/9) ----

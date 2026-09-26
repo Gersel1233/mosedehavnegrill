@@ -167,6 +167,8 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 
 /* ---- pillen: midt for, ikke fra kant til kant ------------- */
 .bestil{left:50%;right:auto;translate:-50% 0;min-width:360px;justify-content:center;bottom:28px}
+/* Kurvbjælken står samme sted som pillen (26/9). */
+.kurvbar{left:50%;right:auto;translate:-50% 0;min-width:360px;bottom:28px}
 
 /* ---- skuffen bliver et vindue midt på skærmen ------------- */
 .sheet{justify-content:center;padding:24px}

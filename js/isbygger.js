@@ -335,11 +335,32 @@ window.MosedeIsbygger = (function () {
 
     /* Én vej ud for alle fire forløb, så kvitteringen og kurven
        aldrig kan komme til at sige hver sit. */
-    function læg(is) {
+    function læg(is, kilde) {
       valg.laeg(is);
       kvitter(Butik.linjeNavn
         ? Butik.linjeNavn({ navn: is.vare.navn, variant: is.variant, smage: is.smage })
         : is.vare.navn);
+      /* Efter kaldet her nulstiller forløbet sig selv og skriver knappen
+         om — derfor bekræftelsen i næste tik, OVEN I den nye tekst. */
+      if (kilde) setTimeout(function () { bekræft(kilde); }, 0);
+    }
+
+    /* ⚠️ KNAPPEN SIGER DET SELV (26/9). Mikkels ord: *"læg i kurven
+       virker ikke"*. Den virkede — men knappen sprang i samme øjeblik
+       tilbage til "Vælg hvor mange kugler", og det eneste tegn var en
+       lille linje under den. Man trykker på knappen, så det er dér,
+       svaret skal stå: "✓ Lagt i kurven" i et øjeblik, så den næste is.
+       Har gæsten valgt noget nyt imens, har forløbet skrevet knappen
+       om, og så rører vi den ikke. */
+    function bekræft(k) {
+      var tekst = k.textContent;
+      k.textContent = '\u2713 Lagt i kurven';
+      k.classList.add('lagt');
+      clearTimeout(k._lagt);
+      k._lagt = setTimeout(function () {
+        k.classList.remove('lagt');
+        if (k.textContent === '\u2713 Lagt i kurven') k.textContent = tekst;
+      }, 1400);
     }
 
     /* Den billigste pris i slagsen, som undertekst på flisen: gæsten
@@ -547,7 +568,7 @@ window.MosedeIsbygger = (function () {
           kugler: rolle(valgtVare, data).kugler,
           smage: smagene,
           ekstra: ekstra.slice(),
-        });
+        }, b.knap);
         /* Klar til den næste is — man bestiller sjældent kun én.
            Ønsket ryddes MED: to is i træk med den samme tekst ville
            være et ønske, gæsten kun har skrevet én gang. */
@@ -730,7 +751,7 @@ window.MosedeIsbygger = (function () {
 
       b.knap.addEventListener('click', function () {
         if (!klar()) return;
-        læg({ vare: vare, variant: null, kugler: r().kugler, smage: smagene(), ekstra: [] });
+        læg({ vare: vare, variant: null, kugler: r().kugler, smage: smagene(), ekstra: [] }, b.knap);
         form = null; tal = {}; tilstand.ønske = '';
         if (bokse.length > 1) { vare = null; marker(tVare.krop.firstChild, null); }
         tegnOm();
@@ -876,7 +897,7 @@ window.MosedeIsbygger = (function () {
 
         if (!spørg) {
           tag.addEventListener('click', function () {
-            læg({ vare: v, variant: null, kugler: 0, smage: [], ekstra: [] });
+            læg({ vare: v, variant: null, kugler: 0, smage: [], ekstra: [] }, tag);
           });
         } else {
           tag.addEventListener('click', function () {
@@ -940,7 +961,7 @@ window.MosedeIsbygger = (function () {
             if (!klar()) return;
             var smagene = form === 'softice' ? ['Softice']
               : (smageListe.length ? smage.slice(0, r.kugler) : ønsket(tilstand));
-            læg({ vare: v, variant: null, kugler: r.kugler, smage: smagene, ekstra: [] });
+            læg({ vare: v, variant: null, kugler: r.kugler, smage: smagene, ekstra: [] }, b.knap);
             smage = []; tilstand.ønske = ''; form = r.softice ? null : 'kugler';
             detaljer.hidden = true; tag.hidden = false; kort.classList.remove('aaben');
             åben = null;
@@ -970,7 +991,7 @@ window.MosedeIsbygger = (function () {
         var tag = lav('button', 'isbyg-tag', 'Læg i kurven');
         tag.type = 'button';
         tag.addEventListener('click', function () {
-          læg({ vare: v, variant: null, kugler: 0, smage: [], ekstra: [] });
+          læg({ vare: v, variant: null, kugler: 0, smage: [], ekstra: [] }, tag);
         });
         kort.appendChild(tag);
         liste.appendChild(kort);
