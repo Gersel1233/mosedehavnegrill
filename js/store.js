@@ -3105,6 +3105,9 @@
       if (/bestilling_email_ok/.test(t)) return new Error('E-mailen ser ikke rigtig ud.');
       if (/bestilling_linjer_ok/.test(t)) return new Error('Vælg mindst én ting, før du sender.');
       if (/bestilling_antal_ok/.test(t)) return new Error('Antallet ser forkert ud. Ring til os for meget store ordrer.');
+      /* supabase/gaestens-vaern-26-9.sql: en bordordre gælder I DAG. Det
+         sker i praksis kun, når siden har stået åben hen over midnat. */
+      if (/bestilling_bord_ikke_i_dag/.test(t)) return new Error('Siden har stået åben siden i går. Genindlæs den, og send bestillingen igen.');
       if (status === 401 || status === 403) {
         return new Error('Bestillingen kunne ikke sendes. Ring til os i stedet.');
       }
