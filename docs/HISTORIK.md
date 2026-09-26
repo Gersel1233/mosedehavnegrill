@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**HÅNDMADDERNE: HEL SKIVE, FRISKBAGT — DE SLUKKEDE OGSÅ TIL 27** (26/9).
+Mikkels ord: *"ja 27 tak og det er hel skive og friskbagt rugbrød tak"*.
+`supabase/haandmadder-hel-skive.sql` sætter de 6 slukkede håndmadder fra 24
+til 27 og skriver kategoriens note om fra "Halv skive hjemmebagt rugbrød … den
+lille sultne udgave" til "Hel skive friskbagt rugbrød med smør …". Prøvet lokalt
+på produktionens menu: 0 håndmadder til 24, anden kørsel rører intet, lun delle
+og flæskesvær uændret. SQL-runden: 1667 bestod, 0 fejlede. **Skal køres af
+Mikkel.**
+
 **MENUKORTET SOM DE TRYKTE KORT — UDGIVET** (26/9, efter Mikkels "ja udgiv"). Mikkels ord:
 *"de skal naturligvis matche 1:1 med de her"* og *"Brug så vidt muligt de
 samme kategorinavne som på de trykte kort"*. `m-menukort.html` er bygget om
