@@ -234,8 +234,9 @@
      stil som de fire: dagslys, molen, dugen, kun varer fra kortet.
      "Retter" viser nu fish'n'chips (kortets vare) — stegt flæsk er
      ikke længere på kortet. De gamle menu-*.jpg ligger stadig i
-     billeder/, men intet peger på dem — også forsidens isafsnit
-     bruger havn-softice.jpg og havn-kugleis.jpg (26/9).
+     billeder/. Forsidens isafsnit bruger havn-softice.jpg og den
+     GAMLE menu-kugleis.jpg (bubblewafflen) — Mikkels valg 26/9:
+     "den var real nok". Slet den ikke.
      Tapas, smørrebrød og håndmadder er med vilje ikke rørt.
 
      ⚠️ KENDINGEN ER NAVNET, og rækkefølgen betyder noget:
