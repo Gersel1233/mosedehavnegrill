@@ -158,6 +158,13 @@
       return 'Den dag er allerede lovet væk i baglokalet — der kan kun være ét ja pr. dag. '
         + 'Se Baglokale-fanen for, hvem der har den.';
     }
+    /* ⚠️ BROWSERENS EGEN NETFEJL (26/9). Safari siger "Load failed",
+       Chrome "Failed to fetch", Firefox "NetworkError when attempting
+       to fetch resource" — og det stod ordret i beskeden. En travl
+       medarbejder skal vide, hvad der skete, og hvad hun skal gøre. */
+    if (/^(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?)$/i.test(raa.trim())) {
+      return 'Ingen forbindelse — ændringen blev ikke gemt. Tjek nettet, og prøv igen.';
+    }
     /* Databasens egen ordlyd: Could not find the 'X' column of
        'Y' in the schema cache. Den kommer fra PostgREST og er
        stabil på tværs af versioner. */

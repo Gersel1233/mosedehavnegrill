@@ -138,14 +138,30 @@
      Null = spørg ikke. Et spørgsmål på hver bestilling er et
      spørgsmål, man klikker væk uden at læse. */
   Admin.spoergFoerst = function (b) {
-    if (!b || b.hvordan !== 'levering') return null;
-    var nr = String(b.telefon || '').trim();
-    return '\ud83d\ude97 ' + String(b.navn || 'Gæsten')
-      + ' skal have maden LEVERET.\n\n'
-      + (nr ? 'Har I ringet til ' + nr + ' og aftalt adresse og tid? '
-            : 'Har I aftalt adresse og tid med gæsten? ')
-      + 'Kvitteringen lover hende et opkald — en levering bekræftes '
-      + 'aldrig af sig selv.';
+    if (!b) return null;
+    var spg = [];
+    /* ⚠️ EN BESTILLING TIL EN SENERE DAG (26/9). "✓ Færdig" er den
+       eneste knap, og trykkede nogen onsdag på lørdagens bestilling,
+       blev den "afhentet" — og forsvandt fra lørdagens Overblik, så
+       køkkenet aldrig lavede den. Kun FREMTIDIGE dage: en bestilling
+       fra i går, der ikke er lukket, er netop den, man skal lukke. */
+    var iDag = Butik.nu && Butik.nu().dato;
+    if (iDag && b.hent_dato && b.hent_dato > iDag) {
+      spg.push('\ud83d\udcc5 ' + String(b.navn || 'Gæsten') + 's bestilling er til '
+        + Admin.pænDato(b.hent_dato) + ' — ikke i dag.\n\nEr den virkelig hentet? '
+        + 'Sætter du den færdig nu, forsvinder den fra den dags overblik, '
+        + 'og køkkenet laver den ikke.');
+    }
+    if (b.hvordan === 'levering') {
+      var nr = String(b.telefon || '').trim();
+      spg.push('\ud83d\ude97 ' + String(b.navn || 'Gæsten')
+        + ' skal have maden LEVERET.\n\n'
+        + (nr ? 'Har I ringet til ' + nr + ' og aftalt adresse og tid? '
+              : 'Har I aftalt adresse og tid med gæsten? ')
+        + 'Kvitteringen lover hende et opkald — en levering bekræftes '
+        + 'aldrig af sig selv.');
+    }
+    return spg.length ? spg.join('\n\n') : null;
   };
 
   /* Mellemtrinnet — det, der ligger bag "···". Null, når der ikke
@@ -1194,9 +1210,16 @@
         /* Opringningen står i spørgsmålet. En afvisning uden en
            opringning er en kunde der møder op til en pose der ikke
            findes – og gæsten har fået at vide at vi ringer. */
-        if (!confirm('Afvis bestillingen fra ' + b.navn + '?\n\n'
-          + 'Husk at ringe til ' + b.telefon + ' – gæsten har fået at vide '
-          + 'at vi ringer og bekræfter.')) return;
+        /* ⚠️ UDEN ET NUMMER (26/9) stod der "Husk at ringe til null" —
+           ved bordet må gæsten sende uden nummer. Så siger den, hvad man
+           gør i stedet. */
+        var nr = String(b.telefon || '').trim();
+        var hvordan = nr
+          ? 'Husk at ringe til ' + nr + ' – gæsten har fået at vide at vi ringer og bekræfter.'
+          : (b.bord_nummer
+            ? 'Gæsten har ikke givet et nummer — gå hen til bord ' + b.bord_nummer + ' og sig det.'
+            : 'Gæsten har ikke givet et nummer — sig det ved lugen, når hun kommer.');
+        if (!confirm('Afvis bestillingen fra ' + b.navn + '?\n\n' + hvordan)) return;
         gemBestilling(Butik.skrive.bestillingStatus(b.id, 'afvist', Admin.nyNote(felt, b.intern_note)),
           'Bestillingen er afvist.');
       });

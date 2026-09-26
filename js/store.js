@@ -2274,11 +2274,21 @@
     var url = cfg.url + '/rest/v1/' + tabel + (forespørgsel ? '?' + forespørgsel : '');
     var ekstra = { Prefer: flet ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal' };
 
+    /* ⚠️ EN GEMNING HAR ET LOFT (26/9). Læsningen gav op efter 12
+       sekunder (HENT_LOFT_MS), skrivningen aldrig: på dårligt net ved
+       havnen stod knappen på "Gemmer…" for evigt, og personalet vidste
+       ikke, om de skulle trykke igen. 20 sekunder og så et ærligt svar —
+       vi VED ikke, om det nåede frem, for en gemning, der ikke svarede,
+       kan godt være landet. */
+    var styr = window.AbortController ? new AbortController() : null;
+    var ur = styr ? setTimeout(function () { styr.abort(); }, 20000) : null;
     return fetch(url, {
       method: metode,
       headers: hoveder(ekstra),
       body: krop ? JSON.stringify(krop) : undefined,
+      signal: styr ? styr.signal : undefined,
     }).then(function (r) {
+      clearTimeout(ur);
       if (r.ok) return true;
 
       if (r.status === 401 && !harFornyet) {
@@ -2288,6 +2298,12 @@
         });
       }
       return r.text().then(function (t) { throw skrivefejl(r, t); });
+    }, function (fejl) {
+      clearTimeout(ur);
+      if (fejl && fejl.name === 'AbortError') {
+        throw new Error('Nettet svarede ikke i tide. Genindlæs og se, om ændringen står der, før du prøver igen.');
+      }
+      throw fejl;
     });
   }
 
