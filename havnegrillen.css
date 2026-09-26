@@ -1832,14 +1832,19 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .foto-fyldt,.foto-skift{transition:opacity .7s cubic-bezier(.4,0,.2,1)}
 .foto-venter{opacity:0}
 @media (prefers-reduced-motion:reduce){.foto-fyldt,.foto-skift{transition:none}}
-.foto-skift{position:relative;width:100%;height:100%}
-.foto-skift img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease}
-.foto-skift img.vis{opacity:1}
+.foto-skift{position:relative;width:100%;height:100%;isolation:isolate}
+/* Det nye billede toner ind OVEN PÅ det gamle, som står fuldt fremme
+   under det (.forrige), til skiftet er færdigt — ingen halvgennemsigtig
+   midte, hvor baggrunden skinner igennem. 0,9 s = TONE_MS i
+   js/skal/billedplads.js. */
+.foto-skift img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s cubic-bezier(.4,0,.2,1)}
+.foto-skift img.vis{opacity:1;z-index:1}
+.foto-skift img.forrige{opacity:1;transition:none}
 @media (prefers-reduced-motion:reduce){.foto-skift img{transition:none}}
 /* Tapasfilmen (26/9) ligger OVEN PÅ galleriets første billede, som er
    filmens eget sidste billede — når den tages væk, står det samme
    billede tilbage, og intet blinker. Se galleri() i js/skal/billedplads.js. */
-.foto-skift .foto-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;pointer-events:none}
+.foto-skift .foto-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;pointer-events:none}
 .tshot .foto-fyldt{display:block;object-fit:cover}
 /* Galleriet flyttede til smørrebrødssiden (29/8), og dér er der
    ingen sektion med sidepolstring omkring det. Målet er .tshot's

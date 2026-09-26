@@ -312,6 +312,9 @@
      havnegrillen.css), ellers 4:3. Samme grænse, to steder — en
      film i det forkerte format bliver beskåret forkert. */
   var FILM_VENT_MS = 8000;
+  var EFTER_FILM_MS = 1200;
+  /* Samme tal som overgangen på .foto-skift img i havnegrillen.css. */
+  var TONE_MS = 900;
   var filmBred = '(min-width: 821px)';
 
   function filmKanSpille() {
@@ -352,9 +355,18 @@
       venter = nr;
       function skift() {
         if (venter !== nr) return;
-        fotos[nu].classList.remove('vis');
+        /* ⚠️ DET GAMLE BILLEDE BLIVER FULDT FREMME UNDER DET NYE, til
+           det nye er tonet helt ind (26/9, Mikkels ord: *"ikke hurtig
+           nok og smooth nok"*). Tonede de to hver sin vej samtidig,
+           stod begge halvt gennemsigtige midt i skiftet, og rammens
+           baggrund skinnede igennem — et gråt blink i hvert skift. */
+        var gammel = fotos[nu];
+        gammel.classList.add('forrige');
+        gammel.classList.remove('vis');
         ny.classList.add('vis');
         nu = nr;
+        setTimeout(function () { if (gammel !== fotos[nu]) gammel.classList.remove('forrige'); }, TONE_MS);
+        hentNæste();
       }
       if (ny.complete && ny.naturalWidth > 0) { skift(); return; }
       ny.loading = 'eager';
@@ -364,18 +376,30 @@
     var ro = window.matchMedia
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var stoppet = false;
-    function start() {
+    /* Det NÆSTE billede hentes i forvejen. Ellers er billede 2 "lazy",
+       og skiftet venter på nettet, når det skulle være sket. */
+    function hentNæste() {
+      var n = fotos[(nu + 1) % fotos.length];
+      if (n.loading === 'lazy') n.loading = 'eager';
+    }
+
+    /* Efter filmen skiftes der EFTER_FILM_MS efter, at den er slut —
+       ikke en hel takt senere. Gæsten har lige set filmen ende på
+       billedet; fire sekunder til mens det står stille føltes som en
+       side, der var gået i stå (Mikkel 26/9: *"ikke hurtig nok"*). */
+    function start(efterFilm) {
       if (ur) clearInterval(ur);
       if (ro || stoppet) return;
       setTimeout(function () {
         if (stoppet) return;
+        if (efterFilm) vis((nu + 1) % fotos.length);
         ur = setInterval(function () {
           /* En skjult fane skifter ikke — gæsten kommer tilbage til
              det billede, hun forlod, ikke til det femte. */
           if (document.hidden) return;
           vis((nu + 1) % fotos.length);
         }, SKIFT_MS);
-      }, forskudt);
+      }, efterFilm ? EFTER_FILM_MS : forskudt);
     }
 
     var video = null;
@@ -405,7 +429,7 @@
         færdig = true;
         if (vagt) clearTimeout(vagt);
         if (v.parentNode) v.parentNode.removeChild(v);
-        start();
+        start(true);
       }
       v.addEventListener('ended', slut, { once: true });
       v.addEventListener('error', slut, { once: true });
@@ -413,6 +437,7 @@
       function spil() {
         if (færdig) return;
         vagt = setTimeout(function () { if (v.paused || v.currentTime === 0) slut(); }, FILM_VENT_MS);
+        hentNæste();
         var p = v.play();
         if (p && typeof p.catch === 'function') p.catch(slut);
       }
