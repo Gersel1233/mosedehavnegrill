@@ -8,7 +8,28 @@
      kan ikke følge ejerens kontakt i admin. Løftet står på siden,
      hvor det kan skifte med indstillingen. -->
 <meta name="description" content="Bestil hjemmelavet smørrebrød ud af huset fra Mosede Havnecafe. Vælg stykkerne, dag og tid — og hent ved lugen på Mosede Havn i Greve.">
-<link rel="canonical" href="https://mosedehavnecafe.dk/bestil/">
+<!-- ============================================================
+     GÆSTEN SENDES VIDERE TIL SMØRREBRØDSSIDEN  (26/9)
+     ------------------------------------------------------------
+     Mikkels ja på et skærmbillede: to sider solgte smørrebrød ud af
+     huset. Ingen side linkede hertil, men adressen stod i sitemap, så
+     Google kunne sende en gæst ind i den gamle udgave — med en anden
+     formular, en anden kurv og et andet udseende end den, menuen
+     fører til (h-smorrebrod.html).
+
+     ⚠️ SIDEN SLETTES IKKE. Den er prøvebænken for motoren
+     (js/bestilling.js), som bordenes QR-side (ved-bordet/) kører på —
+     ~150 prøver måler leveringen, fyldet, dagsreglerne og nettets
+     nedbrud her. Derfor ingen meta-refresh (den flytter også
+     prøvebrowseren): en rigtig browser sendes videre af scriptet, en
+     automatiseret (navigator.webdriver — Playwright) bliver.
+     tests/bestil-videre.spec.js måler begge dele.
+
+     canonical → fortæller Google, at smørrebrødssiden er den rigtige.
+     Adressen er taget ud af sitemap.xml.
+     ============================================================ -->
+<link rel="canonical" href="https://mosedehavnecafe.dk/h-smorrebrod.html">
+<script>if (!navigator.webdriver) location.replace('../h-smorrebrod.html');</script>
 
 <meta property="og:title" content="Bestil smørrebrød ud af huset – Mosede Havnecafe">
 <meta property="og:description" content="Hjemmelavet smørrebrød ud af huset. Vælg stykkerne, dag og tid — og hent ved lugen på Mosede Havn.">
