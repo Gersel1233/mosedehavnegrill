@@ -350,7 +350,9 @@ test.describe('Ejeren sætter tallet', () => {
     await åbnAdmin(page, { ur: FREDAG, data: data(8, []) });
     await visFane(page, 'p-bestillinger');
     await aabnFold(page, 'bestil-regler-fold');
-    await expect(page.locator('#bestil-regler-note')).toContainText('8 pr. tidsrum');
+    /* "pr. kvarter" siden 26/9: gæsternes tider går i kvarterer, og loftet
+       tæller pr. tidspunkt (luge-loft.sql). Ordet er vendt, tallet er det samme. */
+    await expect(page.locator('#bestil-regler-note')).toContainText('8 pr. kvarter');
   });
 
   test('og siger ingenting om det, når det ikke er sat', async ({ page }) => {

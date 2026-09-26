@@ -402,3 +402,19 @@ test.describe('En fejl i én sektion stopper ikke de andre', () => {
     await expect(page.locator('#dagsbesked')).toBeHidden();
   });
 });
+
+/* KLOKKESLÆTTENE GÅR I KVARTERER  (26/9, Mikkels ja på et skærmbillede)
+   Med halve timer rundede varslet op til næste halve time: kl. 13.01
+   med 30 min varsel gav 14.00 som første tid — næsten en time. Tallene
+   her kommer fra uret og varslet, ikke fra siden. */
+test.describe('Klokkeslættene går i kvarterer', () => {
+  test('kl. 13.01 med 30 min varsel giver 13.45 som første tid', async ({ page }) => {
+    const d = data();
+    d.indstillinger.varsel_min_togo = 30;
+    await åbn(page, '/bestil/', { ur: '2026-08-06T11:01:00Z', data: d });
+    const tider = await spørg(page,
+      `MosedeRegler.tiderFor(d, '${I_DAG}', 0, 'afhentning')`);
+    expect(tider[0], 'første tid er rundet op til en halv time').toBe('13:45');
+    expect(tider.slice(0, 4)).toEqual(['13:45', '14:00', '14:15', '14:30']);
+  });
+});

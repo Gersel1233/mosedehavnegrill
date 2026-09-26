@@ -578,12 +578,24 @@
       tidligstDato = Butik.isoPlus(tidligstDato, 1);
     }
     if (iso < tidligstDato) return [];
+    /* ⚠️ KVARTERER, IKKE HALVE TIMER  (26/9, Mikkels ja på et
+       skærmbillede). Med halve timer rundede varslet op til næste halve
+       time: en gæst, der bestilte to-go kl. 13.01 med 30 min varsel,
+       kunne tidligst få maden kl. 14.00 — næsten en time. Med kvarterer
+       er det 13.45. Alle tre veje (forsiden, smørrebrødet, bestil/ og
+       tapas) spørger her, så de kan ikke blive uenige.
+
+       ⚠️ LUGENS LOFT TÆLLER PR. TIDSPUNKT (luge-loft.sql: hent_tid =
+       hent_tid). Med kvarterer er et tidspunkt et kvarter. Loftet er
+       ikke sat i produktionen 26/9; sættes det, er tallet pr. kvarter.
+       Bordbookingen (js/bord.js) er noget andet og står i halve timer. */
+    var TRIN = 15;
     if (iso === tidligstDato) {
-      fra = Math.max(fra, Math.ceil(tidligstMin / 30) * 30);
+      fra = Math.max(fra, Math.ceil(tidligstMin / TRIN) * TRIN);
     }
 
     var ud = [];
-    for (var m = fra; m <= til; m += 30) {
+    for (var m = fra; m <= til; m += TRIN) {
       ud.push(('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2));
     }
     return ud;

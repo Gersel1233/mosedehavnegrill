@@ -1464,7 +1464,7 @@
        eneste korthoved er støj — og så læses noten heller ikke den
        dag, den siger noget. Samme regel som baglokalets ⚠️-kort. */
     var l = Number(i.luge_loft_pr_tid);
-    if (isFinite(l) && l > 0) dele.push('højst ' + l + ' pr. tidsrum');
+    if (isFinite(l) && l > 0) dele.push('højst ' + l + ' pr. kvarter');
     if (i.levering) dele.push('leverer');
 
     note.textContent = dele.join(' · ');
@@ -1490,7 +1490,7 @@
       return 'Mindste antal skal være mellem 1 og 500.';
     }
     if (loftTekst !== '' && (!isFinite(loft) || loft < 0 || loft > 500)) {
-      return 'Antallet pr. tidsrum skal være mellem 0 og 500 — eller tomt.';
+      return 'Antallet pr. kvarter skal være mellem 0 og 500 — eller tomt.';
     }
 
     return Butik.skrive.indstilling('bestilling_aaben', $('bestil-aaben').checked)
