@@ -366,7 +366,11 @@ test.describe('Forsidens bestilling', () => {
        Feltet er `hidden`, indtil levering er valgt — men etiketten
        står i opmærkningen, og den her prøve læser rækkefølgen i
        DOM'en, ikke hvad der er synligt. */
-    expect(etiketter).toEqual(['Hvordan vil I spise?', 'Hvor skal det leveres?',
+    /* ⚠️ "HVOR MANGE SPISER MED?" KOM TIL 26/9 (Mikkels ja: "frivilligt
+       felt"). Det hører til "Spis her", som adressen hører til
+       levering, og folder sig ud på samme måde lige under valget. */
+    expect(etiketter).toEqual(['Hvordan vil I spise?',
+      'Hvor mange spiser med? (valgfrit)', 'Hvor skal det leveres?',
       'Dato', 'Vælg jeres retter',
       'Tidspunkt', 'Navn', 'Telefonnummer',
       'Allergi (valgfrit)', 'Ja, køkkenet må gemme det her, så de kan tage hensyn.',
@@ -972,8 +976,12 @@ test.describe('Tidsmodellen', () => {
     await expect(page.locator('#sumline')).toContainText('Morgenkomplet');
 
     await page.locator('#tid').selectOption('13:00');
+    /* ⚠️ KURVLINJEN, IKKE ORDET (26/9). Sumlinjen siger nu, hvad der
+       røg ud ("Taget ud af kurven: Morgenkomplet"), så ordet står der
+       med vilje. Det, der ikke må stå, er linjen "1 × Morgenkomplet". */
     await expect(page.locator('#sumline'), 'morgenmaden blev hængende i kurven')
-      .not.toContainText('Morgenkomplet');
+      .not.toContainText('1 × Morgenkomplet');
+    await expect(page.locator('#sumline .sum-fjernet')).toContainText('Morgenkomplet');
   });
 
   /* ⚠️ SMØRREBRØDETS DØGN GATER IKKE HELE FORMULAREN LÆNGERE.
@@ -1577,3 +1585,231 @@ test.describe('Isen skiller sig ud i bestillingen', () => {
    — knappen siger hvad der mangler. Det er prøven "knappen siger,
    hvad der mangler". */
 
+
+/* ============================================================
+   KURVEN FØLGER MED, NÅR GÆSTEN SKIFTER  (26/9)
+   ------------------------------------------------------------
+   Fundet i en gennemgang af koden: en dåse, der kun sælges med ud
+   af huset, blev liggende i kurven, når gæsten skiftede til Spis
+   her — rækken forsvandt, men varen blev sendt med. Nu tages den
+   ud, og sumlinjen siger det.
+   ============================================================ */
+test.describe('Kurven følger med, når gæsten skifter', () => {
+  function medKunTogo() {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    d.indstillinger.ikke_saelges = { 3: ['spis_her'] };
+    return d;
+  }
+  const lægDåsen = async (page) => {
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('.item', { hasText: 'Fadøl, lille' }).first()
+      .locator('button', { hasText: '+' }).click();
+    await expect(page.locator('#sumline')).toContainText('1 × Fadøl, lille');
+  };
+
+  test('en vare, der kun sælges ud af huset, tages ud ved Spis her — og det siges', async ({ page }) => {
+    await åbn(page, { data: medKunTogo() });
+    await lægDåsen(page);
+    await page.locator('[data-seg="how"] button').nth(1).click();
+    await expect(page.locator('#sumline'), 'dåsen blev liggende i kurven')
+      .not.toContainText('1 × Fadøl, lille');
+    await expect(page.locator('#sumline .sum-fjernet')).toContainText('Taget ud af kurven');
+    await expect(page.locator('#sumline .sum-fjernet')).toContainText('Fadøl, lille');
+  });
+
+  test('modstykke: en vare uden mærket bliver i kurven ved Spis her', async ({ page }) => {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    await åbn(page, { data: d });
+    await lægDåsen(page);
+    await page.locator('[data-seg="how"] button').nth(1).click();
+    await expect(page.locator('#sumline')).toContainText('1 × Fadøl, lille');
+    await expect(page.locator('#sumline .sum-fjernet')).toHaveCount(0);
+  });
+});
+
+/* ============================================================
+   DAGEN VED SEND, OG KVITTERINGEN I HELE SÆTNINGER  (26/9)
+   ------------------------------------------------------------
+   Fundet i en gennemgang af koden: sumlinjen sagde "To-go · kl.
+   12.00" uden dag (og dagen kan hoppe, når spisemåden skifter), og
+   kvitteringen sagde "Vi ringer og bekræfter. lørdag d. 27.
+   september kl. 12.00." — et punktum og et lille bogstav.
+   ============================================================ */
+test.describe('Dagen ved Send og kvitteringens sætning', () => {
+  const lægNoget = async (page) => {
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('.item', { hasText: 'Fadøl, lille' }).first()
+      .locator('button', { hasText: '+' }).click();
+  };
+
+  /* Uret står fredag 7/8 kl. 13 — datoerne kommer fra uret, ikke fra
+     siden. En fadøl kan fås begge dage, så kurven bliver stående, når
+     dagen skiftes; det er DAGEN i linjen, prøven måler. */
+  test('sumlinjen siger, hvilken dag der sendes til', async ({ page }) => {
+    await åbn(page);
+    await page.locator('#dato').selectOption('2026-08-07');
+    await lægNoget(page);
+    const total = page.locator('#sumline .sum-total');
+    await expect(total).toContainText('i dag kl.');
+    await page.locator('#dato').selectOption('2026-08-08');
+    await expect(total).toContainText('1 stk.');
+    await expect(total).toContainText('i morgen');
+    await page.locator('#dato').selectOption('2026-08-10');
+    await expect(total, 'en dag længere ude skal stå med navn og dato')
+      .toContainText('10. august');
+  });
+
+  test('kvitteringen er hele sætninger, når vi skal ringe', async ({ page }) => {
+    const d = data();
+    d.indstillinger.auto_bekraeft = false;
+    await åbn(page, { data: d });
+    await lægNoget(page);
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+    const tekst = await page.locator('#bestil').innerText();
+    expect(tekst).toContain('Vi ringer og bekræfter bestillingen til');
+    expect(tekst, 'et punktum og så et lille bogstav').not.toMatch(/bekræfter\. [a-zæøå]/);
+  });
+});
+
+/* ============================================================
+   HVOR MANGE SPISER MED  (26/9)
+   ------------------------------------------------------------
+   Mikkels spørgsmål: "hvad hvis man bestiller 10 ting men kun er 1
+   person der sidder og spiser". Svaret er et frivilligt felt ved
+   "Spis her" — så køkkenet ser "4 pers. · mad til 2"
+   (Admin.gaesteMaerke). Tallene i prøverne er prøvens egne (4 og 3),
+   ikke sidens.
+   ============================================================ */
+test.describe('Hvor mange spiser med — ved Spis her på forsiden', () => {
+  const medSpisHer = () => {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    return d;
+  };
+  const spisHer = (page) => page.locator('[data-seg="how"] button').nth(1);
+  const toGo = (page) => page.locator('[data-seg="how"] button').nth(0);
+  const felt = (page) => page.locator('#fpers');
+
+  async function send(page) {
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('.item', { hasText: 'Fadøl, lille' }).first()
+      .locator('button', { hasText: '+' }).click();
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+    return (await gemteData(page)).bestillinger[0];
+  }
+
+  test('feltet står kun, når gæsten har valgt Spis her', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await expect(felt(page), 'feltet står ved to-go').toBeHidden();
+    await spisHer(page).click();
+    await expect(felt(page), 'feltet kom ikke frem ved Spis her').toBeVisible();
+    await toGo(page).click();
+    await expect(felt(page), 'feltet blev stående, da gæsten skiftede tilbage').toBeHidden();
+  });
+
+  test('tallet når hele vejen til den gemte bestilling', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await spisHer(page).click();
+    await felt(page).fill('4');
+    const b = await send(page);
+    expect(b.hvordan).toBe('spis_her');
+    expect(b.antal_personer, 'køkkenet fik ikke at vide, hvor mange der spiser').toBe(4);
+    expect(b.antal, '`antal` er retterne, ikke personerne').toBe(1);
+  });
+
+  test('et tal fra Spis her følger ikke med, når gæsten skifter til to-go', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await spisHer(page).click();
+    await felt(page).fill('3');
+    await toGo(page).click();
+    const b = await send(page);
+    expect(b.hvordan).toBe('afhentning');
+    expect(b.antal_personer === undefined || b.antal_personer === null,
+      'en to-go fik et antal personer med').toBe(true);
+  });
+
+  test('feltet er frivilligt — tomt sender ingen kolonne', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await spisHer(page).click();
+    const b = await send(page);
+    expect(b.hvordan).toBe('spis_her');
+    expect(b.antal_personer === undefined || b.antal_personer === null).toBe(true);
+  });
+});
+
+/* ============================================================
+   KURVEN OVERLEVER EN GENINDLÆSNING — MEN IKKE EN AFSENDELSE  (26/9)
+   ------------------------------------------------------------
+   En telefon smider fanen ud af hukommelsen, mens gæsten tjekker en
+   sms, og så genindlæses siden. Før var kurven væk. Nu hentes valgene
+   igen for fanen (sessionStorage) — men aldrig navn og telefon, og
+   aldrig efter, at bestillingen er sendt. Reglen bor i
+   js/skal/bestil.js (genopretKurv).
+   ============================================================ */
+test.describe('Kurven overlever en genindlæsning', () => {
+  const medSpisHer = () => {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    return d;
+  };
+  const lægØl = async (page) => {
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('.item', { hasText: 'Fadøl, lille' }).first()
+      .locator('button', { hasText: '+' }).click();
+  };
+
+  test('spisemåde, dag, tid og kurv kommer med tilbage', async ({ page }) => {
+    await åbn(page, { data: medSpisHer() });
+    await page.locator('[data-seg="how"] button').nth(1).click();
+    await page.locator('#dato').selectOption('2026-08-08');
+    await page.locator('#tid').selectOption({ index: 2 });
+    const klokken = await page.locator('#tid').inputValue();
+    await lægØl(page);
+    await expect(page.locator('#sumline')).toContainText('1 × Fadøl, lille');
+
+    await page.reload();
+    await expect(page.locator('#sumline'), 'kurven var tom efter genindlæsningen')
+      .toContainText('1 × Fadøl, lille');
+    await expect(page.locator('[data-seg="how"] button').nth(1)).toHaveClass(/\bon\b/);
+    await expect(page.locator('#dato')).toHaveValue('2026-08-08');
+    await expect(page.locator('#tid')).toHaveValue(klokken);
+    await expect(page.locator('#sumline .sum-total')).toContainText('i morgen');
+  });
+
+  test('navn og telefon gemmes ikke med kurven', async ({ page }) => {
+    await åbn(page);
+    await lægØl(page);
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('[data-kategori="Øl"]').click();
+    const gemt = await page.evaluate(() => JSON.stringify(sessionStorage));
+    expect(gemt, 'kurven blev ikke gemt — så måler prøven ingenting').toContain('Fadøl');
+    expect(gemt).not.toContain('Sara');
+    expect(gemt).not.toContain('28871343');
+  });
+
+  test('en sendt bestilling kommer ikke igen efter en genindlæsning', async ({ page }) => {
+    await åbn(page);
+    await lægØl(page);
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+    await page.reload();
+    await expect(page.locator('#dato option').first()).toBeAttached();
+    await page.waitForTimeout(300);
+    await expect(page.locator('#sumline'), 'den sendte bestilling lå i kurven igen')
+      .not.toContainText('Fadøl');
+  });
+});

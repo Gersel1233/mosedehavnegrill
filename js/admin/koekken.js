@@ -595,7 +595,63 @@
     } catch (e) { /* ingen lyd: markeringen på skærmen står stadig */ }
   }
 
+  /* ============================================================
+     LYDEN FORSVINDER IKKE TAVST  (26/9)
+     ------------------------------------------------------------
+     Fundet i en gennemgang af koden: lydTil blev ikke husket, og
+     "Opdater"-båndet genindlæser siden — så var lyden slået fra,
+     uden at nogen så det. Knappen stod nederst i et kort under køen.
+
+     · Valget huskes i browseren (samme greb som Bestillinger-fanens
+       valg). En browser spiller ikke lyd, før nogen har rørt skærmen
+       — så det FØRSTE tryk hvor som helst på skærmen låser den op.
+     · Så længe lyden ikke virker, står et rødt bånd øverst på
+       Køkkenet. Båndet ER trykket, der slår den til.
+     ============================================================ */
+  var LYD_NOEGLE = 'mosede_koekken_lyd';
+  try { lydTil = localStorage.getItem(LYD_NOEGLE) === 'til'; } catch (e) { /* privat vindue */ }
+
+  function låsOp() {
+    if (!lydTil) return;
+    try {
+      if (!lyd) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        lyd = new AC();
+      }
+      if (lyd.state === 'suspended') lyd.resume();
+    } catch (e) { /* ingen lyd: båndet bliver stående */ }
+    setTimeout(sigLyd, 50);
+  }
+  document.addEventListener('pointerdown', låsOp, true);
+
+  function lydVirker() { return lydTil && lyd && lyd.state === 'running'; }
+
+  function sigLydBaand() {
+    var panel = $('p-borde');
+    if (!panel) return;
+    var b = $('koekken-lyd-baand');
+    if (lydVirker()) { if (b) b.parentNode.removeChild(b); return; }
+    if (!b) {
+      b = document.createElement('button');
+      b.type = 'button';
+      b.id = 'koekken-lyd-baand';
+      b.className = 'lyd-baand';
+      b.addEventListener('click', function () {
+        lydTil = true;
+        try { localStorage.setItem(LYD_NOEGLE, 'til'); } catch (e) { /* privat vindue */ }
+        låsOp();
+        pling();
+      });
+      panel.insertBefore(b, panel.firstChild);
+    }
+    b.textContent = lydTil
+      ? '\ud83d\udd07 Tryk her, så lyden virker — nye bestillinger plinger ikke endnu'
+      : '\ud83d\udd07 Lyden er slået fra — tryk her for at slå den til';
+  }
+
   function sigLyd() {
+    sigLydBaand();
     var knap = $('koekken-lyd');
     var note = $('koekken-lyd-note');
     if (knap) knap.textContent = lydTil ? '🔔 Lyden er slået til' : '🔔 Slå lyd til';
@@ -610,6 +666,8 @@
   if ($('koekken-lyd')) {
     $('koekken-lyd').addEventListener('click', function () {
       lydTil = !lydTil;
+      try { localStorage.setItem(LYD_NOEGLE, lydTil ? 'til' : 'fra'); } catch (e) { /* privat vindue */ }
+      if (lydTil) låsOp();
       sigLyd();
       // Trykket ER tilladelsen. Derfor prøver vi tonen med det
       // samme: hører man ingenting nu, virker den heller ikke kl. 19.
@@ -707,7 +765,84 @@
     }));
   }
 
+  /* ============================================================
+     TIL LUGEN I DAG  (26/9)
+     ------------------------------------------------------------
+     Mikkels ord: *"cheferne i køkken tingen og have styr på alt der
+     skal laves der og se alt"*. Køen er bordene; alt det andet, der
+     skal laves i dag — to-go, levering, spis her uden bord,
+     smørrebrød, is — stod kun på Overblik og Bestillinger, og
+     køkkenet så det ikke. Nu står det her, sorteret efter tid.
+
+     ⚠️ RÆKKEN ER OVERBLIKS EGEN (Admin.lugeRaekke, Admin.lugensArbejde):
+     samme tid, samme type, samme allergi i ord, samme grønne knap med
+     samme næste trin som Bestillinger. En kopi her ville en dag sige
+     noget andet end Overblik om den samme bestilling.
+
+     ⚠️ OG DEN SIGER TIL. Kun bordene plingede; en to-go til om et
+     kvarter kom ind i stilhed. Nu plinger en NY bestilling til lugen
+     i dag også — men ikke dem, der stod der ved indlæsningen.
+     ============================================================ */
+  var kendteLuge = null;
+  function tegnLugen() {
+    var boks = $('koekken-luge');
+    if (!boks || !Admin.lugensArbejde || !Admin.lugeRaekke) return;
+    var nu = Butik.nu();
+    var r = Admin.lugensArbejde();
+    var tal = $('koekken-luge-antal');
+    if (tal) {
+      tal.textContent = r.length || '';
+      tal.classList.toggle('skjult', !r.length);
+    }
+    if (!r.length) {
+      Admin.tøm(boks);
+      boks.appendChild(lav('p', 'vare-tekst',
+        'Intet til lugen resten af dagen. Skærmen siger selv til.'));
+      if (Admin.lister.bestillinger !== undefined) kendteLuge = [];
+      return;
+    }
+    Admin.tegnRaekker(boks, r.map(function (x) { return Admin.lugeRaekke(x, nu); }));
+
+    var ids = r.map(function (x) { return String(x.b.id); });
+    if (kendteLuge) {
+      var nye = ids.filter(function (id) { return kendteLuge.indexOf(id) === -1; });
+      nye.forEach(function (id) {
+        var e = boks.querySelector('[data-raekke="b' + id + '"]');
+        if (e) e.classList.add('linje-ny');
+      });
+      if (nye.length) pling();
+    }
+    if (Admin.lister.bestillinger !== undefined) kendteLuge = ids;
+  }
+
+  /* ⚠️ SKÆRMEN MÅ IKKE GÅ I DVALE, MENS KØKKENET ER ÅBENT (26/9). En
+     iPad med autolås slukker skærmen efter et par minutter, og så står
+     uret, pushen og hentningen stille — køkkenet ser en sort skærm og
+     tror, der er roligt. Browseren kan holde skærmen tændt (Wake Lock),
+     så længe fanen er synlig; den slipper selv, når man går væk, og
+     tages igen, når man kommer tilbage. Hvor browseren ikke kan, siger
+     VEJLEDNING.md: Autolås → Aldrig. */
+  var vaagen = null;
+  function holdVaagen() {
+    var synlig = document.visibilityState === 'visible'
+      && $('p-borde') && !$('p-borde').classList.contains('skjult');
+    if (synlig && !vaagen && navigator.wakeLock && navigator.wakeLock.request) {
+      vaagen = 'venter';
+      navigator.wakeLock.request('screen').then(function (l) {
+        vaagen = l;
+        l.addEventListener('release', function () { vaagen = null; });
+      }).catch(function () { vaagen = null; });
+    } else if (!synlig && vaagen && vaagen.release) {
+      vaagen.release().catch(function () {});
+      vaagen = null;
+    }
+  }
+  document.addEventListener('visibilitychange', holdVaagen);
+  Admin.efterFane.push(holdVaagen);
+
   function tegnKoekken() {
+    holdVaagen();
+    sigLydBaand();
     var boks = $('koekken-liste');
     if (!boks) return;
 
@@ -728,6 +863,7 @@
     tegnZoner();
     tegnBorde();
     tegnFaerdige();
+    tegnLugen();
 
     var liste = vistKoe();
 
@@ -781,6 +917,23 @@
         byg: function () { return kort(b); },
       };
     }));
+
+    /* ⚠️ URET TIKKER PÅ KORTET SELV (26/9). Minutterne står IKKE i
+       aftrykket ovenfor — og det er med vilje: stod de der, blev hvert
+       kort bygget om hvert minut, og kortet under fingeren forsvandt.
+       Men så genbrugte tegnRaekker det gamle kort, og "4 min" stod
+       stille, mens bordet ventede 25 minutter — hvidt, ikke rødt. Kun
+       striben øverst blev rød. Fundet i en gennemgang af koden 26/9.
+       Nu skrives tallet og den røde farve om på det kort, der står. */
+    liste.forEach(function (b) {
+      var r = boks.querySelector('[data-raekke="' + b.id + '"]');
+      var k = r && (r.classList.contains('koek-kort') ? r : r.querySelector('.koek-kort'));
+      if (!k) return;
+      var min = Admin.minutterSiden(b.oprettet);
+      var tal = k.querySelector('.koek-min');
+      if (tal) tal.textContent = min === null ? '\u2014' : min + ' min';
+      k.classList.toggle('sent', min !== null && min >= maalTid());
+    });
 
     /* DET NYE SKAL KUNNE SES, ikke kun høres. Markeringen sættes
        EFTER optegningen: kortet skal findes i siden, før det kan
@@ -839,6 +992,12 @@
     var top = lav('div', 'koek-top');
     var hvem = lav('div', 'koek-hvem');
     hvem.appendChild(lav('div', 'koek-bord', 'Bord ' + b.bord_nummer));
+    /* HVOR MANGE SIDDER DER (26/9). Gæstens eget tal ved bordet stod
+       kun på Bestillinger-kortet — ikke her, hvor maden laves og
+       bæres ud. Samme mærke (Admin.gaesteMaerke): "👥 4 pers.", og
+       rødt, hvis der er flere personer end retter. */
+    var pers = Admin.gaesteMaerke && Admin.gaesteMaerke(b);
+    if (pers) hvem.appendChild(pers);
 
     /* ⚠️ BESTILLINGSNUMMERET STOD IKKE PÅ KØKKENETS KORT  (10/9).
        Kundens ord: *"og korrekt ordrenummer osv"*. Målt:

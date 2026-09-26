@@ -16,6 +16,97 @@ på produktionens menu: 0 håndmadder til 24, anden kørsel rører intet, lun de
 og flæskesvær uændret. SQL-runden: 1667 bestod, 0 fejlede. **Skal køres af
 Mikkel.**
 
+**BESTILLINGEN OG KØKKENET GJORT PROFESSIONELT** (26/9, eftermiddag og
+aften). Mikkels ord: *"læg i kurven virker ikke på is siden og hele
+bestillingstinget er stadig ikke 250.000 kroner værd … personalet skal være i
+overblik og kunne følge med og se ALT, og cheferne i køkkenet skal have styr
+på alt, der skal laves"*. Hans svar på tre spørgsmål: Køkkenet skal vise ALT,
+"Spis her" får et frivilligt felt for antal personer, og flowet: *"ret de
+klare fejl nu, vis resten"*.
+
+Gæsten (forsiden og smørrebrødssiden, `js/skal/bestil.js`):
+- **Isen VIRKEDE** — målt med produktionens data. Men gæsten så intet:
+  knappen sprang tilbage, summen stod under skærmkanten. Nu siger knappen
+  selv "✓ Lagt i kurven" (`js/isbygger.js`), og en **kurvbjælke** i bunden
+  viser antal og beløb og ruller ned til Send. Den skjules, mens gæsten
+  skriver (tastaturet), og når Send er i syne. Bjælken er helt dækkende —
+  varelisten skinnede igennem ved beløbet på et skud
+- **En is kan tages ud igen**: "fjern" på is-linjen i summen. Isen har
+  ingen tæller i listen
+- **Kurven følger med ved skift** af dag og spisemåde og siger, hvad der
+  blev taget ud, og hvorfor
+- **Kurven overlever "Se hele is-sortimentet" og tilbage** — og en
+  genindlæsning. Målt: den var tom. Gemmes pr. fane (sessionStorage), aldrig
+  navn, telefon, adresse eller allergi, og glemmes, når der er sendt
+- **"Hvor mange spiser med? (valgfrit)"** ved Spis her. Admin viser
+  "👥 4 pers." — og "⚠️ 4 pers. · mad til 2", når der er flere mennesker end
+  mad (`Admin.gaesteMaerke`). Ti ting til én person er normalt og giver
+  intet mærke
+- **Dagen står ved Send** ("i dag", "i morgen", "mandag d. 10. august")
+- **Afsendelsen har et loft på 12 sek.** Svarer nettet ikke, siger siden
+  ærligt, at vi ikke ved, om den nåede frem — og beder gæsten ringe i
+  stedet for at sende igen (ingen sms-knap, den kunne give en dobbelt)
+- Kvitteringen er hele sætninger, og følg-siden lover ikke bilen, før en
+  levering er bekræftet
+
+Personalet (admin):
+- **Køkkenet viser ALT i dag**: bordene øverst, og nedenunder "Til lugen i
+  dag" — to-go, levering, spis her og is, efter tid. Rækken er Overbliks
+  egen (`Admin.lugeRaekke`), så de to skærme siger det samme. Allergi står
+  med ord
+- Køkkenkortets ur tikker på kortet, der står, og bliver rødt
+- **Rødt bånd "Ingen forbindelse"**, når databasen ikke har svaret i 45 sek.
+  Før kunne en skærm stå med gamle tal og ligne en rolig dag
+- **Lyden forsvinder ikke tavst**: et rødt bånd med 🔇, når browseren har
+  slået den fra. Skærmen går ikke i dvale på Køkkenet (wake lock)
+- Bestillinger tegner listen igen, når nettet er tilbage
+- `VEJLEDNING.md` er rettet: fanen hedder Køkkenet, og båndene er forklaret
+
+Alle nye prøver er set fejle med rettelsen fjernet (står i hver commit).
+
+**Vises for Mikkel på skærmbilleder, før det bygges** (hans ord: "vis
+resten"): tidspunktet op ved datoen, og spisemåden/levering øverst som ét
+valg; to smørrebrødssider; halve timer i tidsvælgeren; "Vi kommer med det"
+ved bordet (mod ejerens ord 15/9 om at gå ned selv?); Køkken-fanens tal.
+
+**BORDENE TÆLLER IKKE MED I BREMSEN** (26/9, formiddag — KØRT af Mikkel
+samme formiddag, sammen med glutenfrit-broed-5-kr.sql og
+gaestens-vaern-26-9.sql; glutenfrit brød er set i produktionen med en
+GET). Mikkels ord: *"lad bordene ikke tælle med i bremsen"*.
+`bremse.sql` (august) talte ALLE bestillinger sammen — forsiden med isen,
+tapas, bestil/ og bordene (QR). En travl dag ved bordene kunne ramme 40 i
+timen, og så afviste databasen al online-bestilling i op til en time, også
+smørrebrødet til i morgen. En familie ved et bord ramte "5 fra samme nummer"
+ved sjette runde.
+
+- Ny fil: `supabase/bremse-uden-borde-26-9.sql`. En bestilling med
+  `bord_nummer` tæller ikke i de 40 i timen og de 5 pr. nummer og bremses
+  ikke af dem. Mad ud af huset har præcis de samme grænser som før
+- **Hvert bord har sit eget loft: 20 i timen.** Ellers var et bordnummer en
+  dør uden om bremsen. Det er IKKE køkkenets loft pr. kvarter
+  (`bord-loft.sql`, ejerens tal i admin)
+- `bord_nummer` og ikke `kanal`: kanalen er et ord, siden selv sender.
+  Bordnummeret er prøvet af `bestilling_bord_findes` og
+  `bestilling_bord_noegle`, som kører før bremsen (alfabetisk)
+- ⚠️ **Skraldespanden er skrevet med.** `skraldespand.sql` retter bremsen,
+  så slettede rækker ikke tæller; en funktion, der skrives forfra, taber
+  det. Første udgave gjorde netop det. Prøve 13-14 fangede det
+- Prøve: `proev-bremse-uden-borde-26-9.sql`. Mod den gamle bremse FEJLEDE 6 af 14
+  (bordprøverne; de gamle grænser og modstykkerne bestod), mod første udgave
+  2 af 14, med filen 14 af 14. `sql-runde.sh`: 60 filer 1682/0, og hver
+  gammel fil har samme tal som før (diffet linje for linje).
+  `er-vi-klar.sql` tjek 151
+- `js/store.js`: `bestilling_bremse_bord` siger *"Sig det til os ved
+  lugen"*. Gæsten sidder ved bordet. Prøve i `robusthed.spec.js`, set fejle
+- **Køres `bremse.sql` igen, skal den nye fil køres bagefter** (tabellen i
+  `docs/SQL-RAEKKEFOELGE.md`)
+- ⚠️ **SELVTILMELDING ER SLÅET FRA** (Supabase Auth, Mikkel 26/9; set med
+  GET på `/auth/v1/settings`: `disable_signup: true`). Det var mere end
+  pynt: `bord-noegle.sql` giver rollen `authenticated` hele `borde`-tabellen
+  med `kode` — så med åben tilmelding kunne enhver oprette en konto og
+  læse de 55 QR-nøgler. Nu har kun personalet konti. Åbnes tilmeldingen
+  igen, er nøglerne åbne igen
+
 **MENUKORTET SOM DE TRYKTE KORT — UDGIVET** (26/9, efter Mikkels "ja udgiv"). Mikkels ord:
 *"de skal naturligvis matche 1:1 med de her"* og *"Brug så vidt muligt de
 samme kategorinavne som på de trykte kort"*. `m-menukort.html` er bygget om

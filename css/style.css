@@ -10279,6 +10279,46 @@ body.personale .vare-raekke {
 body.personale .vare-raekke:last-of-type { border-bottom: 0; }
 
 
+/* LYDEN ER SLÅET FRA (26/9) — se sigLydBaand() i js/admin/koekken.js.
+   Et bånd, der ER knappen: øverst på Køkkenet, rødt, i fuld bredde. */
+body.personale .lyd-baand {
+  display: block;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: var(--r-lille, 12px);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+  color: #fff;
+  background: var(--red);
+  cursor: pointer;
+}
+
+/* ============================================================
+   INGEN FORBINDELSE  (26/9) — se tjekNettet() i js/admin/frisk.js.
+   ------------------------------------------------------------
+   Fast øverst og RØDT, i modsætning til udgave-båndet nedenfor: det
+   her er en fejl, der koster bestillinger, og den skal ses, også når
+   køkkenet har rullet ned i køen. Scopet til body.personale.
+   ============================================================ */
+body.personale .net-nede {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 12px 18px;
+  color: #fff;
+  background: var(--red);
+}
+body.personale .net-nede b { font-size: 16px; }
+body.personale .net-nede span { font-size: 14px; }
+
 /* ============================================================
    "DER ER KOMMET EN NY UDGAVE"  (30/8)
    ------------------------------------------------------------

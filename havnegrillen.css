@@ -1158,6 +1158,29 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
    når den er foldet væk (.tuck), og mens man ruller ned (.ned, sat af
    havnegrillen.js) — og visibility skifter først, når glidningen er færdig. */
 .bestil.tuck,.bestil.ned{transform:translateY(150%);opacity:0;pointer-events:none;visibility:hidden;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s linear .45s}
+/* ⚠️ KURVBJÆLKEN (26/9) — se noten ved visKurvbar() i js/skal/bestil.js.
+   Mikkels ord: "læg i kurven virker ikke". Den virkede; gæsten kunne bare
+   ikke SE kurven. Bjælken er pillens form med pillens egne tal (farve,
+   glas, skygge, højde), så den ikke bliver en ny slags knap — og så
+   stilvagtens loft over skygger og størrelser står, hvor det står. Den
+   tager pillens plads, mens der ligger noget i kurven. */
+.kurvbar{position:fixed;bottom:var(--pille-bund);left:16px;right:16px;z-index:58;height:var(--pille-h);padding:0 24px;border-radius:29px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;background:linear-gradient(180deg,#e64250,#b81a28);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:flex;align-items:center;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums;transform:translateY(150%);opacity:0;pointer-events:none;visibility:hidden;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s linear .45s}
+.kurvbar.vis{transform:none;opacity:1;pointer-events:auto;visibility:visible;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s}
+.kurvbar svg{width:19px;height:19px;flex:none}
+.kurvbar-sum{opacity:.86}
+.kurvbar-pil{margin-left:auto}
+.kurvbar-pil::after{content:" ↓"}
+/* ⚠️ BJÆLKEN ER HELT DÆKKENDE, ikke 94 % som pillen: den bærer beløbet,
+   og på et skud (26/9) skinnede varelisten bag den igennem omkring
+   "35,-". Glas er pynt; et beløb, der skal læses, er det ikke. */
+/* Det, der røg ud af kurven ved et skift (26/9) — se sigFjernet() i
+   js/skal/bestil.js. Blæk på sumlinjens bund, ikke rødt: det er en
+   oplysning, ikke en fejl. */
+.sum-fjernet{margin:6px 0 0;font-weight:600}
+/* Pillen er en genvej TIL bestillingen. Er gæsten i gang, er det kurven,
+   hun skal se — to røde bjælker i bunden ville være én for meget. */
+body.har-kurv #bestil-pill{visibility:hidden;opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.kurvbar,.kurvbar.vis{transition:none}}
 /* ⚠️ OG UNDER FILMENS ÅBNING ER DEN VÆK FRA FØRSTE BILLEDE (11/9). Set
    i iOS 26-simulatoren: pillen "Bestil mad" blinkede frem i bunden et
    splitsekund, før scriptet nåede at folde den væk. Stilarket er
@@ -2142,6 +2165,14 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .hint.sidste-kald.gul{background:rgba(240,160,60,.18);color:#7a4a10}
 .hint.sidste-kald.roed{background:rgba(214,42,58,.13);color:var(--red-d)}
 .note.sumbar .sum-emb{color:rgba(255,255,255,.68)}
+/* "fjern" på en is-linje (26/9, js/skal/bestil.js tagUd). Isen har
+   ingen tæller i listen, så knappen er den eneste vej ud af kurven.
+   24 px høj — mindstemålet for et tryk — på summens mørke bund. */
+.note.sumbar .sum-fjern{margin-left:6px;padding:3px 10px;min-height:24px;
+  border:1px solid rgba(255,255,255,.45);border-radius:999px;background:none;
+  color:#fff;font:inherit;font-size:13px;cursor:pointer}
+.note.sumbar .sum-fjern:hover{background:rgba(255,255,255,.1)}
+.note.sumbar .sum-fjern:focus-visible{outline:2px solid #f0a58c;outline-offset:2px}
 
 /* ---- MINDSTEANTALLET OG LEVERINGSOMRAADET  (4/9) ----
    To linjer, der svarer paa noget, gaesten er ved at goere:
@@ -3080,6 +3111,11 @@ input.isbyg-oenske-felt { height: 44px; font-size: 14px; }
   cursor: pointer;
 }
 .isbyg-laeg:disabled { opacity: .5; cursor: default; }
+/* ⚠️ "✓ LAGT I KURVEN" (26/9) — se bekræft() i js/isbygger.js. Knappen
+   er slået fra i det øjeblik (forløbet er nulstillet), men svaret skal
+   stå i fuld farve. Husets grønne betyder "det her er på plads"; rød
+   betyder "tryk her". */
+.isbyg-laeg.lagt, .isbyg-tag.lagt { opacity: 1; color: #fff; background: #1f7a4a; }
 .isbyg-kvit {
   margin-top: 9px;
   font-size: 13px;

@@ -60,7 +60,7 @@
       kanal: 'forside',
       udvalg: 'uden-fyld',
       felter: { dato: 'dato', tid: 'tid', navn: 'navn', tlf: 'tlf',
-        besked: 'besked', allergi: 'allergi', adresse: 'fadr' },
+        besked: 'besked', allergi: 'allergi', adresse: 'fadr', personer: 'fpers' },
       seg: '[data-seg="how"]',
       /* ⚠️ LEVERING KOM TIL 20/9. Ejernes punkt nummer ét: "Leverings
          muligheden mangler." Den fandtes kun på smørrebrødssiden og i
@@ -75,6 +75,8 @@
       segSvar: ['afhentning', 'spis_her', 'levering'],
       segKraever: ['spis_her', 'levering'],
       adresseFelt: '#flevfelt',
+      /* "Hvor mange spiser med?" — kun ved Spis her (26/9). */
+      personerFelt: '#fpersfelt',
       dagensRet: true,
       folder: true,
       dagensHint: true,
@@ -1187,7 +1189,120 @@
   /* Det, der ikke længere kan bestilles, ryger ud af kurven — og
      sumlinjen siger det ved næste optegning. En vare, der bliver
      liggende usynligt, er mad, gæsten betaler for og ikke får. */
+  /* ⚠️ DET, DER TAGES UD, SIGES (26/9). Fundet i en gennemgang af
+     koden: kaldet her var tavst, og det blev kun kaldt, når gæsten
+     skiftede KLOKKESLÆT. Skiftede hun dag eller spisemåde, blev en
+     dåse, der kun sælges med ud af huset, liggende usynligt i kurven
+     og sendt med — eller databasen sagde "tag den af" om en række,
+     hun ikke kunne se. Nu kaldes den ved alle tre skift, og
+     sumlinjen siger i otte sekunder, hvad der røg ud. */
+  var fjernetBesked = '';
+  var fjernetUr = null;
+  function sigFjernet(navne) {
+    if (!navne.length) return;
+    fjernetBesked = 'Taget ud af kurven: ' + navne.join(', ')
+      + ' \u2014 kan ikke fås til det, I har valgt nu.';
+    clearTimeout(fjernetUr);
+    fjernetUr = setTimeout(function () { fjernetBesked = ''; visSum(); }, 8000);
+  }
+
+  /* ============================================================
+     KURVEN OVERLEVER ET LINK OG ET TRYK PÅ TILBAGE  (26/9)
+     ------------------------------------------------------------
+     MÅLT: fadøl i kurven → "Se hele is-sortimentet" (sidens eget
+     link, som kunden bad om) → tilbage: kurven var tom. Det samme
+     sker, når en telefon smider fanen ud af hukommelsen, mens gæsten
+     tjekker en sms — og så bestiller hun forfra eller slet ikke.
+     bestil/ har gemt sin kurv siden foråret (js/bestilling.js).
+
+     ⚠️ sessionStorage, IKKE localStorage. Kurven hører til FANEN og
+     besøget: en forsidekurv, der dukkede op igen næste uge, ville
+     være en overraskelse, ikke en hjælp. Og der gemmes KUN valgene
+     — aldrig navn, telefon, adresse eller allergi.
+
+     ⚠️ INTET GEMMES, FØR DET GEMTE ER LÆST. Opstarten tegner summen,
+     før kurven er hentet — og en gemning af den tomme kurv dér ville
+     slette det, den skulle hente. Derfor gemKlar.
+
+     ⚠️ DET HENTEDE PRØVES SOM ET SKIFT. Spisemåde, dag og tid sættes
+     med de samme hændelser, gæstens egne tryk giver, og kurven går
+     gennem ryddedeKurven — så det, der ikke kan fås længere, bliver
+     taget ud MED en besked, i stedet for at blive sendt. */
+  var GEM_LEVETID_MS = 3 * 60 * 60 * 1000;
+  var gemKlar = false;
+  function gemNøgle() { return 'mosede_skal_kurv_v1:' + side.kanal; }
+  function gemKurv() {
+    if (!gemKlar) return;
+    try {
+      if (!antalIKurv()) { sessionStorage.removeItem(gemNøgle()); return; }
+      var t = felt('tid');
+      sessionStorage.setItem(gemNøgle(), JSON.stringify({
+        gemt: Date.now(), kurv: kurv, hvordan: hvordan(),
+        dag: valgtDag, klokken: t ? t.value : '',
+      }));
+    } catch (e) { /* privat browsing: kurven lever bare på siden */ }
+  }
+  function glemKurv() {
+    gemKlar = false;
+    try { sessionStorage.removeItem(gemNøgle()); } catch (e) { /* se ovenfor */ }
+  }
+  function genopretKurv() {
+    var g = null;
+    try { g = JSON.parse(sessionStorage.getItem(gemNøgle()) || 'null'); } catch (e) { g = null; }
+    gemKlar = true;
+    if (!g || !g.kurv || typeof g.kurv !== 'object'
+        || !(Date.now() - g.gemt < GEM_LEVETID_MS)) return;
+
+    var knapper = side.seg ? alle(side.seg + ' button', panel) : [];
+    var i = side.segSvar.indexOf(g.hvordan);
+    if (i > 0 && knapper[i] && knapper[i].style.display !== 'none'
+        && segÅben() && hvordan() !== g.hvordan) {
+      knapper[i].click();
+    }
+    var kanVælges = function (f, v) {
+      return !!(f && v) && Array.prototype.some.call(f.options, function (o) {
+        return o.value === v && !o.disabled;
+      });
+    };
+    var dato = felt('dato');
+    if (kanVælges(dato, g.dag) && dato.value !== g.dag) {
+      dato.value = g.dag;
+      dato.dispatchEvent(new Event('change'));
+    }
+    var tid = felt('tid');
+    if (kanVælges(tid, g.klokken) && tid.value !== g.klokken) {
+      tid.value = g.klokken;
+      tid.dispatchEvent(new Event('change'));
+    }
+
+    Object.keys(g.kurv).forEach(function (k) {
+      var p = g.kurv[k];
+      if (p && typeof p === 'object' && p.antal >= 1 && isFinite(p.pris)) kurv[k] = p;
+    });
+    ryddedeKurven();
+    visVarer();
+    tegnFyld();
+    tegnStoerrelser();
+    visSum();
+    visKategoriTal();
+  }
+
+  /* ⚠️ ISEN KAN TAGES UD IGEN (26/9). En is kommer i kurven fra
+     isbyggeren, der nulstiller sig selv bagefter — så den har ingen
+     tæller i listen, og en forkert is kunne kun fjernes ved at
+     genindlæse siden og miste det hele. Knappen står derfor på
+     is-linjerne i summen; de andre varer har deres tæller. */
+  function tagUd(k) {
+    var p = kurv[k];
+    if (!p) return;
+    p.antal -= 1;
+    if (p.antal < 1) delete kurv[k];
+    visSum();
+    visKategoriTal();
+  }
+
   function ryddedeKurven() {
+    var ud = [];
     var u = udvalgNu();
     var lovlige = {};
     (u.varer || []).forEach(function (v) { lovlige[v.kategori_id + '|' + v.navn] = true; });
@@ -1220,8 +1335,13 @@
           /* Et valg (15/9) hænger på varens nøgle: "12|Pitabrød|valg|Kebab". */
           ? lovlige['variant|' + k.slice(k.lastIndexOf('|') + 1)]
           : lovlige[k.split('|valg|')[0]];
-      if (!ok) delete kurv[k];
+      if (!ok) {
+        ud.push(Butik.linjeNavn ? Butik.linjeNavn(post) : post.navn);
+        delete kurv[k];
+      }
     });
+    sigFjernet(ud);
+    return ud;
   }
 
   /* ⚠️ EN LUKKET KATEGORI SKAL SIGE HVORFOR. En kategori, der
@@ -1999,6 +2119,8 @@
        Den skal sige "I mangler to", MENS hun tæller op. */
     visMinStk();
     visKnap();
+    visKurvbar();
+    gemKurv();
     var note = sumFelt();
     if (!note) return;
     fejlVises = false;
@@ -2040,17 +2162,28 @@
       note.textContent = min > 1
         ? 'Vælg mindst ' + min + ' stykker smørrebrød — så regner vi prisen ud.'
         : 'Vælg det, I skal have — så regner vi prisen ud.';
+      if (fjernetBesked) note.appendChild(lav('p', 'sum-fjernet', fjernetBesked));
       return;
     }
 
     note.classList.add('sumbar');
+    if (fjernetBesked) note.appendChild(lav('p', 'sum-fjernet', fjernetBesked));
 
     var linjer = lav('div', 'sum-linjer');
     linjer.appendChild(lav('b', 'sum-hoved', 'Jeres bestilling:'));
     nøgler.forEach(function (k, i) {
       var e = kurv[k];
       var t = e.antal + ' × ' + Butik.linjeNavn(e);
-      linjer.appendChild(lav('span', 'sum-vare', (i ? ' · ' : ' ') + t));
+      var linje = lav('span', 'sum-vare', (i ? ' · ' : ' ') + t);
+      // Se tagUd: isen har ingen tæller i listen.
+      if (k.indexOf('is|') === 0 || k.indexOf('is-ekstra|') === 0) {
+        var ud = lav('button', 'sum-fjern', 'fjern');
+        ud.type = 'button';
+        ud.setAttribute('aria-label', 'Tag én ' + Butik.linjeNavn(e) + ' ud af kurven');
+        ud.addEventListener('click', function () { tagUd(k); });
+        linje.appendChild(ud);
+      }
+      linjer.appendChild(linje);
     });
 
     /* ⚠️ DER ER IKKE EN "+ DET UDEN PRIS"-LINJE HER, OG DET ER
@@ -2079,10 +2212,112 @@
     note.appendChild(linjer);
 
     var sum = sumIKurv();
+    /* ⚠️ DAGEN STÅR VED SEND (26/9). Fundet i en gennemgang af koden:
+       linjen sagde "To-go · kl. 12.00" uden dag — og dagen kan hoppe
+       til i morgen, når gæsten skifter spisemåde (en dag kan være lukket
+       for to-go og åben for spis her). Hun skal se, HVILKEN dag hun
+       sender til, lige over knappen. */
+    var iDag = Butik.nu().dato;
+    var dagen = !valgtDag ? ''
+      : valgtDag === iDag ? 'i dag'
+      : valgtDag === R.isoPlus(iDag, 1) ? 'i morgen'
+      : langDato(valgtDag);
+    var hvornår = [dagen, klokken].filter(Boolean).join(' ');
     note.appendChild(lav('div', 'sum-total',
       n + ' stk.'
       + (sum ? ' · i alt ' + kroner(sum) : '')
-      + ' · ' + hvordanTekst() + (klokken ? ' · ' + klokken : '')));
+      + ' · ' + hvordanTekst() + (hvornår ? ' · ' + hvornår : '')));
+  }
+
+  /* ============================================================
+     KURVEN KAN SES, MENS MAN VÆLGER  (26/9)
+     ------------------------------------------------------------
+     Mikkels ord: *"læg i kurven virker ikke på is siden"*. MÅLT med
+     produktionens data på en telefon og en computer: den VIRKEDE —
+     isen lå i kurven, og summen nede ved Send sagde det. Men gæsten
+     så intet. Byggerens knap sprang straks tilbage til "Vælg hvor
+     mange kugler", kvitteringen var en lille linje, der forsvandt
+     efter fire sekunder, summen stod under skærmkanten, og pillen i
+     bunden folder sig væk inde i formularen. En kurv, man ikke kan
+     se, er en kurv, der ikke virker.
+
+     Nu står der en bjælke i bunden, så snart der ligger noget i
+     kurven, og Send ikke er i syne: antal, beløb og "Se og send".
+     Et tryk ruller ned til summen. Den tager pillens plads — pillen
+     er en genvej TIL bestillingen, og gæsten er allerede i gang.
+
+     ⚠️ TALLENE ER SUMMENS EGNE (antalIKurv, sumIKurv), ikke en
+     optælling for sig. To tællinger af den samme kurv ville en dag
+     sige hver sit, og så er det bjælken, gæsten tror på.
+     ============================================================ */
+  var kurvbar = null;
+  var iSyne = { knap: false, sum: false };
+  /* ⚠️ MENS GÆSTEN SKRIVER, GÅR DEN VÆK. På en telefon står en fast
+     bjælke lige over tastaturet — oven i det felt, hun skriver navn
+     eller nummer i.
+
+     ⚠️ MEN IKKE VED EN RULLEMENU. Smagen vælges i en <select>, og på en
+     iPhone flytter et tryk på en knap ikke fokus: menuen beholder det,
+     efter isen er lagt i kurven. Talte den med, stod bjælken skjult i
+     netop det øjeblik, den skulle vise isen. Set som en ustabil prøve
+     på computeren 26/9. En rullemenu giver intet tastatur. */
+  var skriver = false;
+  function erSkrivefelt(el) {
+    return !!(el && el.matches && el.matches(
+      'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]), textarea'));
+  }
+
+  function visKurvbar() {
+    var n = antalIKurv();
+    if (!kurvbar && !n) return;
+    if (!kurvbar) {
+      kurvbar = document.createElement('a');
+      kurvbar.className = 'kurvbar';
+      kurvbar.href = '#';
+      kurvbar.addEventListener('click', function (e) {
+        e.preventDefault();
+        var mål = sumFelt() || find('#ssend', panel);
+        if (mål && mål.scrollIntoView) mål.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      document.body.appendChild(kurvbar);
+      document.addEventListener('focusin', function (e) {
+        if (erSkrivefelt(e.target)) { skriver = true; visKurvbar(); }
+      });
+      document.addEventListener('focusout', function () {
+        skriver = false;
+        /* Næste tik: hopper fokus fra ét felt til det næste, kommer
+           focusin bagefter, og bjælken skal ikke blinke imellem. */
+        setTimeout(visKurvbar, 0);
+      });
+      /* Står Send eller summen på skærmen, er bjælken en gentagelse
+         af det, gæsten allerede ser — så går den væk. */
+      var knap = find('#ssend', panel) || find('button.g.solid.blk', panel);
+      var note = sumFelt();
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (poster) {
+          poster.forEach(function (p) {
+            iSyne[p.target === knap ? 'knap' : 'sum'] = p.isIntersecting;
+          });
+          visKurvbar();
+        });
+        if (knap) io.observe(knap);
+        if (note) io.observe(note);
+      }
+    }
+    var sum = sumIKurv();
+    tøm(kurvbar);
+    /* Pillens egen pose — samme tegn for "bestilling" hele vejen. */
+    kurvbar.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'
+      + '<path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>');
+    kurvbar.appendChild(lav('b', 'kurvbar-antal', n + ' i kurven'));
+    if (sum) kurvbar.appendChild(lav('span', 'kurvbar-sum', '· ' + kroner(sum)));
+    kurvbar.appendChild(lav('span', 'kurvbar-pil', 'Se og send'));
+    kurvbar.setAttribute('aria-label', n + ' i kurven' + (sum ? ', ' + kroner(sum) : '')
+      + '. Gå til bestillingen.');
+    var vis = n > 0 && !iSyne.knap && !iSyne.sum && !skriver;
+    kurvbar.classList.toggle('vis', vis);
+    document.body.classList.toggle('har-kurv', n > 0);
   }
 
   /* ---- KNAPPEN SIGER, HVAD DER MANGLER  (4/9) ----
@@ -2367,6 +2602,12 @@
          levering og OVERSKRIVER adressen med den validerede —
          teksten ovenfor er kun det, gæsten så. */
       leverings_token: leveringsSvar.token,
+      /* ⚠️ KUN VED SPIS HER, OG KUN NÅR DER ER SKREVET NOGET (26/9).
+         Et tal, der blev stående fra et forsøg med "Spis her", må ikke
+         følge med en to-go. Butik.bestil kaster et tal uden for
+         databasens skive (1-60) væk og sender ellers ikke kolonnen. */
+      antal_personer: svar === 'spis_her' && felt('personer')
+        ? felt('personer').value : undefined,
       besked: besked,
       /* ⚠️ ÉN LINJE PR. PORTION, IKKE ÉN MED ANTAL 2  (25/9).
          To vafler med hver sin smag er to forskellige ting;
@@ -2395,6 +2636,7 @@
          bestil/ har sendt den siden 20/8. */
       fyld: valgtFyld.slice(),
     }).then(function (raekke) {
+      glemKurv();
       visTak(raekke);
     }).catch(function (fejl) {
       if (knap) knap.disabled = false;
@@ -2416,7 +2658,7 @@
          og intet at trykke på — en blindgyde, præcis når gæsten har
          brug for en vej. Sms'en bærer hele bestillingen og referencen
          (Butik.noedudgangSms), så personalet kan genkende den. */
-      if (fejl && fejl.netfejl && fejl.raekke && tekst && Butik.noedudgangSms) {
+      if (fejl && fejl.netfejl && !fejl.usikker && fejl.raekke && tekst && Butik.noedudgangSms) {
         var n = Butik.noedudgangSms(fejl.raekke);
         var veje = lav('div', 'noedudgang');
         var sms = lav('a', 'g', 'Send som sms');
@@ -2467,10 +2709,13 @@
     var besked = auto
       ? 'Bestilt. ' + (b.hvordan === 'spis_her' ? 'Spis her ' : 'Hentes ') + hvornår + '. '
         + 'Der er ikke betalt noget – du betaler ved lugen.'
+      /* ⚠️ HELE SÆTNINGER (26/9). Her stod "Vi ringer og bekræfter.
+         lørdag d. 27. september kl. 12.00." — et punktum, et lille
+         bogstav og intet udsagnsord. Fundet i en gennemgang af koden. */
       : leveres
         ? 'Vi ringer og bekræfter leveringen — vi skal lige se på adressen først. '
-          + hvornår + '. Der er ikke betalt noget.'
-        : 'Vi ringer og bekræfter. ' + hvornår + '. '
+          + 'Du har ønsket den ' + hvornår + '. Der er ikke betalt noget.'
+        : 'Vi ringer og bekræfter bestillingen til ' + hvornår + '. '
           + 'Der er ikke betalt noget – du betaler ved lugen.';
 
     if (!K) {
@@ -2599,9 +2844,11 @@
         Object.keys(kurv).forEach(function (k) {
           if (k.indexOf('dagens|') === 0) delete kurv[k];
         });
+        ryddedeKurven();
         visVarer();
         tegnFyld();
         tegnStoerrelser();
+        visSum();
       });
     }
 
@@ -2633,6 +2880,8 @@
         (felten || seg).style.display = 'none';
         var ekstra = side.adresseFelt ? find(side.adresseFelt, panel) : null;
         if (ekstra) ekstra.style.display = 'none';
+        var pers = side.personerFelt ? find(side.personerFelt, panel) : null;
+        if (pers) pers.style.display = 'none';
       } else {
         /* ⚠️ EN MÅDE, FORRETNINGEN HAR SLÅET FRA, SKAL VÆK  (20/9).
            Feltet vises nu, hvis bare én ekstra måde er slået til —
@@ -2656,10 +2905,21 @@
         };
         visAdresse();
 
+        /* Antallet hører til "Spis her" — samme greb som adressen. */
+        var visPersoner = function () {
+          var f = side.personerFelt ? find(side.personerFelt, panel) : null;
+          if (!f) return;
+          var paa = hvordan() === 'spis_her';
+          f.hidden = !paa;
+          f.style.display = paa ? '' : 'none';
+        };
+        visPersoner();
+
         // EFTER havnegrillen.js' egen lytter, så vores sumlinje
         // står sidst — ellers skriver designets sum() hen over.
         seg.addEventListener('click', function () {
           visAdresse();
+          visPersoner();
           visSum();
           visLeveringsSvar();
           visTidLabel();
@@ -2670,7 +2930,9 @@
              på en dag, vælgeren sagde var ledig. */
           visDage();
           visTider();
+          ryddedeKurven();
           visVarer();
+          visSum();
         });
       }
     }
@@ -2751,6 +3013,9 @@
          gang enheden bestiller — ikke først efter et afslag. */
       if (Butik.vilkaar) Butik.vilkaar.vis(knap);
     }
+
+    /* SIDST: alle lyttere står, så det hentede går gennem dem. */
+    genopretKurv();
   }
 
   /* Hvilken af de to formularer står vi på? Panelet hedder

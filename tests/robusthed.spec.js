@@ -191,6 +191,28 @@ test.describe('Afsendelsen prøver igen', () => {
     expect(kald, 'en afvisning skal ikke gentages').toBe(1);
   });
 
+  /* ⚠️ ET SVAR, DER ALDRIG KOMMER (26/9). Afsendelsen havde ingen
+     tidsgrænse, så på dårligt net stod knappen på "Sender …" for evigt.
+     Nu har hvert forsøg et loft (Butik.SEND_LOFT_MS, sat ned her, så
+     prøven ikke venter 38 sekunder), og beskeden må IKKE sige "IKKE
+     sendt": et forsøg, der løb tør for tid, kan godt være landet. */
+  test('et svar, der aldrig kommer, stopper — og siger ærligt, at vi ikke ved det', async ({ page }) => {
+    let kald = 0;
+    await åbnMedSky(page, '/bestil/', {
+      data: medRet(),
+      plan: () => { kald += 1; /* svarer aldrig */ },
+    });
+    await page.evaluate(() => { Butik.SEND_LOFT_MS = 300; });
+    await sendFraSiden(page);
+
+    const fejl = page.locator('#kig-fejl');
+    await expect(fejl, 'knappen hang på "Sender …"')
+      .toContainText('ved ikke, om bestillingen nåede frem', { timeout: 10000 });
+    await expect(fejl, 'den lovede "IKKE sendt" om noget, der kan være landet')
+      .not.toContainText('IKKE sendt');
+    expect(kald, 'tre forsøg, så stop').toBe(3);
+  });
+
   test('en afvisning under 500 prøves ikke igen', async ({ page }) => {
     /* Bremsen svarer 409. At sende igen ville bare banke på den
        samme lukkede dør — og med tre forsøg ville gæsten vente
@@ -244,6 +266,24 @@ test.describe('Databasens afslag siger navnet', () => {
         .not.toMatch(/[{}]|bestilling_|P0001/);
     });
   }
+
+  test('bordets eget loft sender gæsten hen til lugen — ikke et kodenavn', async ({ page }) => {
+    /* supabase/bremse-uden-borde-26-9.sql (26/9): bordene tæller ikke
+       med i de 40 i timen, men ét bord kan højst sende 20. Gæsten
+       sidder ved bordet, så beskeden peger på lugen, ikke telefonen.
+       Uden linjen i js/store.js fik hun den generelle "ring til os". */
+    await åbnMedSky(page, '/bestil/', {
+      data: medRet(),
+      plan: (route) => route.fulfill({
+        status: 400, contentType: 'application/json',
+        body: afslag('bestilling_bremse_bord'),
+      }),
+    });
+    await sendFraSiden(page);
+    const fejl = page.locator('#kig-fejl');
+    await expect(fejl).toContainText('ved lugen');
+    expect(await fejl.textContent()).not.toMatch(/[{}]|bestilling_|P0001/);
+  });
 
   test('lugens loft siger klokkeslættet, som gæsten skriver det', async ({ page }) => {
     await åbnMedSky(page, '/bestil/', {

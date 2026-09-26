@@ -1300,7 +1300,19 @@ with tjek(nr, del, hvad, ok, retning) as (values
                              'mosede_levering_valideret', 'mosede_bord_plads_vaern')
            and p.prosrc like '%mosede_er_gaest(new.lokation_id)%'),
    'En bruger, der har oprettet sig selv, kan bestille uden om gæstens regler, '
-   || 'og bremserne kan snydes med en dato. Kør supabase/gaestens-vaern-26-9.sql.')
+   || 'og bremserne kan snydes med en dato. Kør supabase/gaestens-vaern-26-9.sql.'),
+
+  /* 26/9: bordene tæller ikke med i de 40 i timen og de 5 pr. nummer —
+     hvert bord har sit eget loft (20 i timen). Linjen siger ❌ igen,
+     hvis bremse.sql køres EFTER bremse-uden-borde-26-9.sql. Den kræver
+     også skraldespandens "slettet is null", som filen skriver med. */
+  (151, 'Bestillinger', 'Bordene tæller ikke med i bremsen — hvert bord har sit eget loft',
+   (select count(*) = 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.proname = 'bestilling_bremse'
+       and p.prosrc like '%bestilling_bremse_bord%'
+       and p.prosrc like '%slettet is null%'),
+   'En travl dag ved bordene kan lukke for al online-bestilling. '
+   || 'Kør supabase/bremse-uden-borde-26-9.sql.')
 ),
 
 samlet as (

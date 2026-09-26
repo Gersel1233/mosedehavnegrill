@@ -380,6 +380,23 @@
       </div>
     </div>
 
+    <!-- ⚠️ HVOR MANGE SPISER MED  (26/9). Mikkels spørgsmål: "hvad hvis
+         man bestiller 10 ting men kun er 1 person der sidder og spiser".
+         Ti ting til én er helt normalt (en familie bestiller til hele
+         bordet) — det, køkkenet skal kunne se, er det modsatte: fire
+         personer og mad til to. Admin.gaesteMaerke viser det.
+
+         ⚠️ FRIVILLIGT, som ved bordet (ved-bordet/index.html). Et
+         påkrævet felt koster et tryk på hver bestilling for en
+         oplysning, der er rar at have. Feltet står kun ved "Spis
+         her" — js/skal/bestil.js viser og skjuler det. -->
+    <div class="field" id="fpersfelt" hidden>
+      <label for="fpers">Hvor mange spiser med? (valgfrit)</label>
+      <input class="inp" id="fpers" type="number" inputmode="numeric"
+             min="1" max="60" step="1"
+             placeholder="Så ved køkkenet, hvor mange der skal dækkes op til">
+    </div>
+
     <!-- ⚠️ ADRESSEN ER OFFICIEL, IKKE FRI TEKST  (20/9).
          Feltet foreslår adresser fra Dataforsyningen, og gæsten skal
          VÆLGE en. Valget sendes til serveren, som slår adressen op

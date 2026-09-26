@@ -107,8 +107,12 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   kanal-vaern bord-plads gaester-ved-bordet
   levering-zone levering-valideret kortene-25-9 kortenes-huller-25-9
   glutenfri-vaffel-samme-pris chefens-rettelser-25-9 isens-opsaetning
-  glutenfrit-broed-5-kr haandmadder-27-kr haandmadder-hel-skive gaestens-vaern-26-9"
-# ⚠️ gaestens-vaern-26-9 SKAL STÅ SIDST (26/9): den skriver de nyeste
+  glutenfrit-broed-5-kr haandmadder-27-kr haandmadder-hel-skive gaestens-vaern-26-9 bremse-uden-borde-26-9"
+# ⚠️ bremse-uden-borde-26-9 skriver bestilling_bremse forfra (26/9) og
+#    skal stå efter bremse.sql og skraldespand.sql; den har
+#    skraldespandens "slettet is null" med. Rækkefølgen mod
+#    gaestens-vaern-26-9 er ligegyldig — de rører hver sin funktion.
+# ⚠️ gaestens-vaern-26-9 SKAL STÅ EFTER DE FIRE (26/9): den skriver de nyeste
 #    udgaver af mosede_gaestens_regler, mosede_kanal_vaern,
 #    mosede_levering_valideret og mosede_bord_plads_vaern om. Stod en
 #    af de fire filer efter den, ville den gamle dør ("kun rollen

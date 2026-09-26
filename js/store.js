@@ -562,6 +562,13 @@
      spærres og siger telefonen, og genopret() prøver igen. */
   var HENT_LOFT_MS = 12000;
 
+  /* ⚠️ HVORNÅR SVAREDE DATABASEN SIDST? (26/9) Admin viser et rødt bånd,
+     når svaret er gammelt (js/admin/frisk.js). Fanerne fanger selv deres
+     fejl, så en hentning, der fejlede, og én, der lykkedes, så ens ud
+     udefra — tidspunktet her er det eneste sted, de to kan skelnes.
+     0 = aldrig; i øvetilstand er der intet net at miste (null). */
+  var sidstSvar = 0;
+
   function hentTabel(navn, forespørgsel, harFornyet) {
     var url = cfg.url + '/rest/v1/' + navn + '?' + (forespørgsel || 'select=*');
     var styr = typeof AbortController === 'function' ? new AbortController() : null;
@@ -576,7 +583,7 @@
       : { headers: hoveder() });
     return Promise.race([kald, loft]).then(function (r) {
       clearTimeout(ur);
-      if (r.ok) return r.json();
+      if (r.ok) { sidstSvar = Date.now(); return r.json(); }
 
       if (r.status === 401 && !harFornyet) {
         return auth.forny().then(function (gik) {
@@ -2862,6 +2869,14 @@
         return new Error('Der er meget travlt lige nu. Prøv igen om et par '
           + 'minutter, eller ring til os.');
       }
+      /* BORDETS EGET LOFT (supabase/bremse-uden-borde-26-9.sql, 26/9):
+         bordene tæller ikke med i de 40 i timen, men ét bord kan højst
+         sende 20. Gæsten SIDDER her — "ring til os" ville være en
+         omvej; lugen er ti meter væk. */
+      if (/bestilling_bremse_bord/.test(t)) {
+        return new Error('Der er sendt mange bestillinger fra bordet på kort '
+          + 'tid. Sig det til os ved lugen, så tager vi den derfra.');
+      }
       if (/bestilling_hvordan_ok/.test(t)) {
         return new Error('Vælg om maden skal spises her, tages med eller leveres.');
       }
@@ -3133,10 +3148,27 @@
       return new Error('Bestillingen kunne ikke sendes lige nu. Ring til os, så tager vi den over telefonen.');
     }
 
+    /* ⚠️ ET FORSØG HAR ET LOFT (26/9). Fundet i en gennemgang af koden:
+       afsendelsen havde ingen tidsgrænse, så på dårligt net ved havnen
+       stod knappen på "Sender …" uden ende. Hentningen giver op efter
+       12 sek. og admin efter 20 — nu gør afsendelsen det også, pr.
+       forsøg, og prøver igen med SAMME reference (en dublet genkendes
+       nedenfor, så det kan ikke blive til to bestillinger).
+
+       ⚠️ OG SÅ VED VI IKKE, OM DEN NÅEDE FREM. Et forsøg, der løb tør
+       for tid, kan godt være landet — svaret er bare væk. Så må
+       beskeden ikke sige "IKKE sendt"; den siger, at vi ikke ved det,
+       og at gæsten skal ringe, før hun sender igen. */
+    var usikker = false;
+
     function netfejl() {
-      var e = new Error('Der er ingen forbindelse lige nu, og bestillingen '
-        + 'er IKKE sendt endnu.');
+      var e = new Error(usikker
+        ? 'Nettet svarer ikke, og vi ved ikke, om bestillingen nåede frem. '
+          + 'Ring til os, før du sender den igen.'
+        : 'Der er ingen forbindelse lige nu, og bestillingen '
+          + 'er IKKE sendt endnu.');
       e.netfejl = true;
+      e.usikker = usikker;
       e.raekke = raekke;
       return e;
     }
@@ -3149,11 +3181,16 @@
 
     function sendes() {
       forsøg += 1;
+      var styr = typeof AbortController === 'function' ? new AbortController() : null;
+      var loft = styr ? setTimeout(function () { usikker = true; styr.abort(); },
+        window.Butik && Butik.SEND_LOFT_MS || 12000) : null;
       return fetch(cfg.url + '/rest/v1/bestillinger', {
         method: 'POST',
         headers: hoveder({ Prefer: 'return=minimal' }),
         body: JSON.stringify(raekke),
+        signal: styr ? styr.signal : undefined,
       }).then(function (r) {
+        clearTimeout(loft);
         if (r.ok) return raekke;
         return r.text().then(function (t) {
           if (/bestillinger_reference_key/.test(t)) {
@@ -3193,7 +3230,8 @@
           throw oversætAfvisning(t, r.status);
         });
       }, function () {
-        // Ingen forbindelse. Ikke en fejl gæsten har lavet.
+        // Ingen forbindelse — eller loftet ovenfor. Ikke en fejl gæsten har lavet.
+        clearTimeout(loft);
         if (forsøg < 3) return ventOgIgen();
         throw netfejl();
       });
@@ -4885,6 +4923,7 @@
   }
 
   window.Butik = {
+    sidstSvar: function () { return SKY ? sidstSvar : null; },
     tjek: tjek,
     bestil: bestil,
     noedudgangSms: noedudgangSms,

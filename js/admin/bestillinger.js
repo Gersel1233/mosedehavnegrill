@@ -1389,6 +1389,12 @@
          at der ikke er nogen bestillinger – og så møder en kunde op
          til en pose der ikke findes. */
       var boks = $('bestillinger-liste');
+      /* ⚠️ AFTRYKKET NULSTILLES (26/9). Listen er revet ned her. Kom
+         nettet tilbage med de SAMME bestillinger, sagde aftrykket
+         "intet nyt", og fejlteksten blev stående, til nogen trykkede
+         på et filter eller en ny bestilling kom. Fundet i en
+         gennemgang af koden 26/9. */
+      sidsteListeAftryk = '';
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
         'Bestillingerne kunne ikke hentes. ' + Admin.forklarFejl(e)

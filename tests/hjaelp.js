@@ -291,11 +291,24 @@ async function åbn(page, sti, {
       forespørgslen ikke kan komme ud og først giver op til sidst.
       Skrifterne bliver på siden — det er kun prøverne, der
       springer dem over, og ingen prøve måler bogstavernes bredde.
+
+   3) Ejerens fotos kan hentes (26/9). Prøverne sætter foto_* til en
+      adresse på eksempel.dk, som ikke findes. js/skal/billedplads.js
+      gør et foto, der ikke kan hentes, til havnens flade — rigtigt
+      for en gæst, men så afhang prøverne af, om netfejlen kom før
+      eller efter målingen. Set fejle på telefonen 26/9 (forsidens
+      tapasfoto), bestået på computeren samme dag. I produktionen
+      ligger fotoet i Supabase og KAN hentes; her svarer eksempel.dk
+      med et af husets egne billeder, så prøverne måler det samme.
 */
 async function åbnSkal(page, sti, { ur = '2026-08-07T11:00:00Z', data = grunddata() } = {}) {
   await lokalTilstand(page);
   await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
   await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+  await page.route('https://eksempel.dk/**', (r) => r.fulfill({
+    status: 200, contentType: 'image/jpeg',
+    path: require('path').join(__dirname, '..', 'billeder', 'tapas-1.jpg'),
+  }));
   await sætUr(page, ur);
   await sætData(page, data);
   await page.goto(sti, { waitUntil: 'domcontentloaded' });
