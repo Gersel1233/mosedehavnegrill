@@ -403,6 +403,12 @@ test.describe('Fyldlinjen', () => {
    igennem, er ingen regel.
    ============================================================ */
 test.describe('Allergien kan ikke skimmes forbi', () => {
+  /* ⚠️ BESKEDEN STÅR TRE STEDER SIDEN 26/9: Overblik, Bestillinger og
+     Køkkenets "Til lugen i dag" (Mikkels ord: køkkenet skal "se ALT").
+     Prøven her gælder Bestillinger, så den leder DÉR — en løs
+     `.bestil-gaestebesked` ramte tre elementer. Prøven er afgrænset,
+     ikke lempet: reglen er den samme. */
+  const besked = (page) => page.locator('#bestillinger-liste .bestil-gaestebesked');
 
   function medBesked(tekst) {
     const d = dage();
@@ -418,9 +424,9 @@ test.describe('Allergien kan ikke skimmes forbi', () => {
     await åbnFanen(page, medBesked('ALLERGI: nødder\nGerne uden remoulade'));
     await expect(page.locator('#bestillinger-liste .bestil-kort'))
       .toHaveClass(/har-allergi/);
-    await expect(page.locator('.bestil-gaestebesked')).toHaveClass(/allergi/);
+    await expect(besked(page)).toHaveClass(/allergi/);
 
-    const ramme = await page.locator('.bestil-gaestebesked')
+    const ramme = await besked(page)
       .evaluate((el) => getComputedStyle(el).borderTopWidth);
     expect(parseFloat(ramme)).toBeGreaterThan(0);
   });
@@ -431,7 +437,7 @@ test.describe('Allergien kan ikke skimmes forbi', () => {
     await åbnFanen(page, medBesked('Vi sidder ude bagved'));
     await expect(page.locator('#bestillinger-liste .bestil-kort'))
       .not.toHaveClass(/har-allergi/);
-    const ingen = await page.locator('.bestil-gaestebesked')
+    const ingen = await besked(page)
       .evaluate((el) => getComputedStyle(el).borderTopWidth);
     expect(parseFloat(ingen)).toBe(0);
   });
@@ -441,7 +447,7 @@ test.describe('Allergien kan ikke skimmes forbi', () => {
      allergien endte midt inde i noget andet. Målt 26/8. */
   test('gæstens linjeskift overlever', async ({ page }) => {
     await åbnFanen(page, medBesked('ALLERGI: nødder\nGerne uden remoulade'));
-    await expect(page.locator('.bestil-gaestebesked'))
+    await expect(besked(page))
       .toHaveCSS('white-space', 'pre-line');
 
     /* Og reglen skal SLÅ IGENNEM, ikke bare være erklæret.
@@ -455,7 +461,7 @@ test.describe('Allergien kan ikke skimmes forbi', () => {
 
        "a\nb" kan ikke ombryde af sig selv på nogen bredde: er
        den to linjer, er det linjeskiftet, der gjorde det. */
-    const boks = page.locator('.bestil-gaestebesked');
+    const boks = besked(page);
     const to = await boks.evaluate((el) => {
       el.textContent = 'a\nb';
       return el.getBoundingClientRect().height;
