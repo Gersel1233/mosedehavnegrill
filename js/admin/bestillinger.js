@@ -1080,7 +1080,7 @@
     felt.placeholder = 'Fx: ringet, hun kommer 12.30';
     felt.addEventListener('change', function () {
       if (felt.value === (b.intern_note || '')) return;
-      gemBestilling(Butik.skrive.bestillingStatus(b.id, b.status, felt.value),
+      gemBestilling(Butik.skrive.bestillingStatus(b.id, undefined, felt.value),
         'Noten er gemt.');
     });
     /* ⚠️ DEN TOMME NOTE FOLDES VÆK.
@@ -1140,7 +1140,7 @@
       frem.addEventListener('click', function () {
         var spg = Admin.spoergFoerst(b);
         if (spg && !confirm(spg)) return;
-        gemBestilling(Butik.skrive.bestillingStatus(b.id, n.status, felt.value),
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, n.status, Admin.nyNote(felt, b.intern_note)),
           'Bestillingen er sat til "' + n.efter + '".');
       });
       raekke.appendChild(frem);
@@ -1154,7 +1154,7 @@
       var mk = lav('button', 'knap sekundaer', mel.navn);
       mk.type = 'button';
       mk.addEventListener('click', function () {
-        gemBestilling(Butik.skrive.bestillingStatus(b.id, mel.status, felt.value),
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, mel.status, Admin.nyNote(felt, b.intern_note)),
           'Bestillingen er sat til "' + mel.efter + '".');
       });
       mere.appendChild(mk);
@@ -1172,7 +1172,7 @@
           + 'Brug den, når maden var klar, men ingen kom. Den tæller '
           + 'ikke som salg.')) return;
         gemBestilling(
-          Butik.skrive.bestillingStatus(b.id, 'udeblevet', felt.value)
+          Butik.skrive.bestillingStatus(b.id, 'udeblevet', Admin.nyNote(felt, b.intern_note))
             .catch(function (e) {
               /* Indtil supabase/udeblivelser.sql er kørt, kender
                  databasen ikke ordet — og så skal der stå HVAD man
@@ -1197,7 +1197,7 @@
         if (!confirm('Afvis bestillingen fra ' + b.navn + '?\n\n'
           + 'Husk at ringe til ' + b.telefon + ' – gæsten har fået at vide '
           + 'at vi ringer og bekræfter.')) return;
-        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'afvist', felt.value),
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'afvist', Admin.nyNote(felt, b.intern_note)),
           'Bestillingen er afvist.');
       });
       mere.appendChild(afvis);
@@ -1215,7 +1215,7 @@
       var gendan = lav('button', 'knap sekundaer', '↩ Gendan');
       gendan.type = 'button';
       gendan.addEventListener('click', function () {
-        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'bekraeftet', felt.value),
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'bekraeftet', Admin.nyNote(felt, b.intern_note)),
           'Bestillingen er tilbage som bekræftet.');
       });
       /* ⚠️ PÅ ET FÆRDIGT KORT ER GENDAN DEN ENE HANDLING FREM.

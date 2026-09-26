@@ -997,7 +997,7 @@
     felt.placeholder = 'Fx: sendt tilbud, venter på svar';
     felt.addEventListener('change', function () {
       if (felt.value === (f.intern_note || '')) return;
-      gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, f.status, felt.value),
+      gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, undefined, felt.value),
         'Noten er gemt.');
     });
     note.appendChild(etiket);
@@ -1126,7 +1126,7 @@
           && !confirm('Sæt forespørgslen fra ' + f.navn + ' til aftalt?\n\n'
           + 'Dagen bliver IKKE låst — en anden kan stadig tage den.\n'
           + 'Skal lokalet være deres, så brug "Book lokalet til dem".')) return;
-        gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, n[0], felt.value),
+        gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, n[0], Admin.nyNote(felt, f.intern_note)),
           'Forespørgslen er sat til "' + STATUS_NAVNE[n[0]] + '".');
       });
       (stille ? mere : raekke).appendChild(frem);
@@ -1144,7 +1144,7 @@
         if (!confirm('Afvis forespørgslen fra ' + f.navn + '?\n\n'
           + 'Husk at skrive til dem først: '
           + (f.email || f.telefon) + '.')) return;
-        gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, 'afvist', felt.value),
+        gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, 'afvist', Admin.nyNote(felt, f.intern_note)),
           'Forespørgslen er afvist.');
       });
       mere.appendChild(afvis);
@@ -1179,7 +1179,7 @@
 
         gemForespoergsel(
           vej.then(function () {
-            return Butik.skrive.forespoergselStatus(f.id, til, felt.value);
+            return Butik.skrive.forespoergselStatus(f.id, til, Admin.nyNote(felt, f.intern_note));
           }),
           'Forespørgslen er tilbage som "' + STATUS_NAVNE[til] + '".');
       });

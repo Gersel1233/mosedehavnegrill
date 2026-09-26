@@ -348,7 +348,7 @@
     felt.placeholder = 'Fx: barnestol, kørestol, fejrer fødselsdag';
     felt.addEventListener('change', function () {
       if (felt.value === (b.intern_note || '')) return;
-      gemBord(Butik.skrive.bordStatus(b.id, b.status, felt.value), 'Noten er gemt.');
+      gemBord(Butik.skrive.bordStatus(b.id, undefined, felt.value), 'Noten er gemt.');
     });
     note.appendChild(etiket);
     note.appendChild(felt);
@@ -468,7 +468,7 @@
           + ' kl. ' + String(b.tid || '').slice(0, 5).replace(':', '.') + '\n\n'
           + 'Bookingen flyttes til Færdige. Kom de ikke, så tryk '
           + 'Udeblev i stedet.')) return;
-        gemBord(Butik.skrive.bordStatus(b.id, 'bekraeftet', felt.value),
+        gemBord(Butik.skrive.bordStatus(b.id, 'bekraeftet', Admin.nyNote(felt, b.intern_note)),
           b.navn + ' er ankommet.');
       });
       raekke.appendChild(frem);
@@ -496,7 +496,7 @@
         if (!confirm('Kom ' + b.navn + ' ikke?\n\n'
           + 'Bookingen flyttes til Færdige og tælles som en '
           + 'udeblivelse. Der skal ikke ringes.')) return;
-        gemBord(Butik.skrive.bordStatus(b.id, 'udeblevet', felt.value),
+        gemBord(Butik.skrive.bordStatus(b.id, 'udeblevet', Admin.nyNote(felt, b.intern_note)),
           b.navn + ' er noteret som udeblevet.');
       });
       mere.appendChild(udeblev);
@@ -519,7 +519,7 @@
         if (!confirm('Afvis bookingen fra ' + b.navn + '?\n\n'
           + 'RING TIL ' + b.telefon + ' — gæsten har fået bordet i sin '
           + 'kvittering og regner med det.')) return;
-        gemBord(Butik.skrive.bordStatus(b.id, 'afvist', felt.value),
+        gemBord(Butik.skrive.bordStatus(b.id, 'afvist', Admin.nyNote(felt, b.intern_note)),
           'Bookingen er afvist. Ring til ' + b.telefon + '.');
       });
       mere.appendChild(afvis);
@@ -541,7 +541,7 @@
         || b.status === 'bekraeftet') {
       var gendan = lav('button', 'knap', 'Gendan');
       gendan.addEventListener('click', function () {
-        gemBord(Butik.skrive.bordStatus(b.id, 'ny', felt.value),
+        gemBord(Butik.skrive.bordStatus(b.id, 'ny', Admin.nyNote(felt, b.intern_note)),
           'Bookingen står som ny igen.');
       });
       raekke.appendChild(gendan);

@@ -1185,7 +1185,7 @@
     felt.placeholder = 'Fx: depositum aftalt, de kommer kl. 12';
     felt.addEventListener('change', function () {
       if (felt.value === (u.intern_note || '')) return;
-      gemUdlejning(Butik.skrive.udlejningStatus(u.id, u.status, felt.value),
+      gemUdlejning(Butik.skrive.udlejningStatus(u.id, undefined, felt.value),
         'Noten er gemt.');
     });
 
@@ -1233,7 +1233,7 @@
           + Admin.pænDato(u.dato) + '?\n\n'
           + 'Der kan kun være ét ja pr. dag. Husk at ringe til '
           + u.telefon + ' — gæsten venter på opkaldet.')) return;
-        gemUdlejning(Butik.skrive.udlejningStatus(u.id, 'bekraeftet', felt.value),
+        gemUdlejning(Butik.skrive.udlejningStatus(u.id, 'bekraeftet', Admin.nyNote(felt, u.intern_note)),
           'Lokalet er lejet ud ' + Admin.pænDato(u.dato) + '. Ring til ' + u.telefon + '.');
       });
       raekke.appendChild(frem);
@@ -1269,7 +1269,7 @@
 
         gemUdlejning(
           vej.then(function () {
-            return Butik.skrive.udlejningStatus(u.id, 'afvist', felt.value);
+            return Butik.skrive.udlejningStatus(u.id, 'afvist', Admin.nyNote(felt, u.intern_note));
           }),
           'Ønsket er afvist.');
       });
@@ -1286,7 +1286,7 @@
     if (u.status === 'afvist') {
       var gendan = lav('button', 'knap', 'Gendan');
       gendan.addEventListener('click', function () {
-        gemUdlejning(Butik.skrive.udlejningStatus(u.id, 'ny', felt.value),
+        gemUdlejning(Butik.skrive.udlejningStatus(u.id, 'ny', Admin.nyNote(felt, u.intern_note)),
           'Ønsket er tilbage i køen.');
       });
       raekke.appendChild(gendan);

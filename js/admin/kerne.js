@@ -1487,7 +1487,17 @@
     });
   }
 
+  /* ⚠️ NOTEN SENDES KUN, NÅR DEN ER SKREVET OM (26/9). En statusknap
+     sendte notefeltets tekst med — også når ingen havde rørt den. Så
+     overskrev "Bekræft" på én telefon en note, der lige var skrevet på
+     en anden. undefined = rør ikke kolonnen (store-skriv.js). */
+  function nyNote(felt, gammel) {
+    if (!felt) return undefined;
+    return felt.value !== (gammel || '') ? felt.value : undefined;
+  }
+
   window.Admin = {
+    nyNote: nyNote,
     $: $,
     tøm: tøm,
     lav: lav,
