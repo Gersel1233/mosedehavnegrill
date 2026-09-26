@@ -1,0 +1,474 @@
+/* ============================================================
+   MENUKORTET SOM DE TRYKTE KORT  (26/9)
+   ------------------------------------------------------------
+   Mikkels ord: *"det hele ser meget kedeligt ud og er ikke iOS 18
+   liquid glass-inspireret … de skal naturligvis matche 1:1 med de
+   her"* — billederne af de trykte kort.
+
+   Kortenes egne greb, ét for ét: det røde hoved med den spærrede
+   linje og roundellen, Bebas-overskrifterne, Fraunces i kursiv, den
+   ternede kant med bølger, ◆ + overskrift + dobbelt rød streg,
+   prikkede linjer, røde priser i Bebas, boksene med den ternede top
+   og den blå bølgelinje i bunden. Glasset er bjælken med kortenes
+   navne og fotoernes kant — ikke papiret selv: et menukort, man ikke
+   kan læse gennem sløret glas, er ikke et menukort.
+
+   ⚠️ LÆGGER SIG OVEN PÅ menukort.css, som stadig bærer dagens ret,
+   ugen og varens lag. Reglerne her er skrevet ud fra #mk-kat, så de
+   ikke rører noget andet på siden.
+
+   ⚠️ KUN transform OG opacity ANIMERES (kundens ord 30/8 om en
+   langsom zoom: *"hakkende og ik clean"*). Ved reduceret bevægelse
+   står alt stille.
+   ============================================================ */
+:root {
+  --mk-rod: #d8293b;
+  --mk-rod-d: #b8202f;
+  --mk-creme: #fbf6ec;
+  --mk-pink: #f5c7cb;
+  --mk-blaa: #2a5f8f;
+  --mk-blaa-let: #9fb5cb;
+  --mk-prik: rgba(36, 26, 23, .26);
+}
+
+/* ---- Kapitlerne ---- */
+#mk-kat { display: block; margin-top: 18px; }
+.mk-kapitel {
+  position: relative;
+  margin: 0 0 30px;
+  border-radius: 30px;
+  overflow: hidden;
+  background: var(--mk-creme);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .8) inset, 0 24px 60px rgba(36, 26, 23, .16), 0 4px 14px rgba(36, 26, 23, .08);
+  scroll-margin-top: calc(max(calc(env(safe-area-inset-top) + 6px), 12px) + 48px + 70px);
+  isolation: isolate;
+}
+.mk-anker { position: absolute; top: 0; }
+
+/* ---- Det røde hoved ---- */
+.mk-kh {
+  position: relative;
+  padding: 26px 22px 22px;
+  padding-right: 118px;
+  background: var(--mk-rod);
+  color: var(--mk-creme);
+  overflow: hidden;
+}
+/* Kortets to tynde cirkelbuer i hjørnet */
+.mk-kh::before, .mk-kh::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .16);
+  pointer-events: none;
+}
+.mk-kh::before { width: 420px; height: 420px; right: -210px; top: -150px; }
+.mk-kh::after { width: 360px; height: 360px; right: -90px; bottom: -300px; }
+.mk-kh-over {
+  display: flex; align-items: center; gap: 14px;
+  font: 400 13px/1 "Bebas Neue", sans-serif;
+  letter-spacing: .34em;
+  text-transform: uppercase;
+  color: var(--mk-creme);
+}
+.mk-kh-over i { flex: 1; height: 1px; background: rgba(255, 255, 255, .45); max-width: 240px; }
+.mk-kh-titel {
+  margin: 12px 0 0;
+  font: 400 clamp(44px, 13vw, 96px)/.86 "Bebas Neue", sans-serif;
+  /* Bebas er ~0,42 em bred pr. tegn; pladsen er skærmen minus sidens
+     og hovedets luft og logoet (≈ 200 px). */
+  font-size: min(clamp(44px, 13vw, 96px), calc((100vw - 200px) / (var(--tegn, 8) * .42)));
+  letter-spacing: .005em;
+  text-transform: uppercase;
+  color: var(--mk-creme);
+}
+.mk-kh-kort .mk-kh-titel { font-size: min(clamp(40px, 11.5vw, 84px), calc((100vw - 200px) / (var(--tegn, 8) * .42))); margin-top: 4px; }
+.mk-kh-slogan {
+  display: block;
+  margin-top: 10px;
+  font: italic 400 17px/1.25 "Fraunces", Georgia, serif;
+  letter-spacing: -.01em;
+  text-transform: none;
+  color: var(--mk-creme);
+  opacity: .95;
+}
+.mk-kh-under {
+  margin: 4px 0 0;
+  font: 400 clamp(26px, 8vw, 44px)/.95 "Bebas Neue", sans-serif;
+  text-transform: uppercase;
+  color: var(--mk-pink);
+}
+.mk-kh-tekst {
+  margin: 14px 0 0;
+  max-width: 36ch;
+  font: italic 400 16px/1.4 "Fraunces", Georgia, serif;
+  letter-spacing: -.01em;
+  color: var(--mk-creme);
+}
+.mk-kh-logo {
+  position: absolute;
+  top: 20px;
+  right: 18px;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  box-shadow: 0 10px 26px rgba(80, 8, 16, .35);
+}
+.mk-kh-logo svg { display: block; width: 100%; height: 100%; }
+
+/* ---- Den ternede kant med bølger ----
+   Tern: hvid bund, to lag halvgennemsigtig rød (lodret og vandret),
+   hvor de mødes bliver det mørkere — som på kortet. Bølgerne er
+   cremefarvede halvcirkler, der skyder op i ternene. */
+.mk-kant {
+  height: 44px;
+  margin-top: -1px;
+  background:
+    radial-gradient(circle at 50% 100%, var(--mk-creme) 12.5px, transparent 13px) 0 100% / 26px 20px repeat-x,
+    linear-gradient(90deg, rgba(216, 41, 59, .5) 50%, transparent 0) 0 0 / 26px 100%,
+    linear-gradient(0deg, transparent 50%, rgba(216, 41, 59, .5) 0) 0 0 / 100% 26px,
+    #fff;
+  background-color: #fff;
+}
+
+/* ---- Fotoerne ----
+   Skarpe, i glaskant, beskåret på MIDTEN AF RETTEN: de genererede
+   fotos har maden i den nederste halvdel (himmel og havn foroven),
+   derfor 50% 64% og ikke midten. */
+.mk-fotos {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(62%, 1fr);
+  gap: 12px;
+  padding: 18px 20px 4px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.mk-fotos::-webkit-scrollbar { height: 0; }
+.mk-fotos-1 { grid-auto-columns: 100%; }
+.mk-foto {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 24px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: var(--cream2, #f7ede1);
+  box-shadow: 0 16px 34px rgba(36, 26, 23, .18), 0 2px 6px rgba(36, 26, 23, .1);
+  transform: translateZ(0);
+}
+.mk-fotos-1 .mk-foto { aspect-ratio: 16 / 10; }
+.mk-foto img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: 50% 64%;
+  opacity: 0;
+  transform: scale(1.06);
+  transition: opacity .8s ease, transform 1.6s cubic-bezier(.2, .7, .2, 1);
+}
+.mk-foto.klar img { opacity: 1; transform: scale(1); }
+/* Glaskanten: et lys langs toppen og en tynd indre rand */
+.mk-foto::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .7), inset 0 0 0 1px rgba(255, 255, 255, .28);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 34%);
+}
+/* Fotoet glider en smule, mens man ruller forbi (kun hvor browseren
+   selv kan binde det til rullet — ellers står det stille). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .mk-foto.klar img {
+      animation: mk-glid linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+    @keyframes mk-glid { from { transform: scale(1.12) translateY(-4%); } to { transform: scale(1.12) translateY(4%); } }
+  }
+}
+
+/* ---- Papiret ---- */
+.mk-kb { padding: 6px 22px 28px; }
+.mk-spalte { min-width: 0; }
+
+/* Afsnittene er ikke glasplader længere — de står på papiret. */
+#mk-kat .mk-sek.panel {
+  margin: 26px 0 0;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  scroll-margin-top: calc(max(calc(env(safe-area-inset-top) + 6px), 12px) + 48px + 70px);
+}
+.mk-sek-titel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 6px;
+  font: 400 30px/1 "Bebas Neue", sans-serif;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.mk-ruder {
+  flex: none;
+  width: 11px; height: 11px;
+  margin: 0 3px;
+  background: var(--mk-blaa);
+  transform: rotate(45deg) translateY(-2px);
+}
+.mk-sek-navn { flex: none; max-width: 78%; }
+.mk-streger {
+  flex: 1;
+  min-width: 24px;
+  height: 5px;
+  border-top: 1.5px solid var(--mk-rod);
+  border-bottom: 1.5px solid var(--mk-rod);
+  transform: translateY(-2px);
+}
+#mk-kat .mk-note {
+  margin: 2px 0 4px;
+  font: italic 400 14.5px/1.35 "Fraunces", Georgia, serif;
+  color: var(--ink2);
+}
+
+/* ---- Linjerne ---- */
+#mk-kat .mk-liste { margin: 0; }
+#mk-kat .mk-linje {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 0 10px;
+  border: 0;
+  border-bottom: 1px dotted var(--mk-prik);
+  color: inherit;
+  text-decoration: none;
+  background: none;
+  border-radius: 0;
+}
+#mk-kat .mk-linje .mk-txt { flex: 1; min-width: 0; }
+#mk-kat .mk-linje h4 {
+  margin: 0;
+  font: 400 17px/1.25 "Instrument Sans", system-ui, sans-serif;
+  letter-spacing: -.005em;
+  color: var(--ink);
+}
+#mk-kat .mk-linje p {
+  margin: 3px 0 0;
+  font: italic 400 14px/1.35 "Fraunces", Georgia, serif;
+  color: var(--ink2);
+}
+#mk-kat .mk-pris {
+  flex: none;
+  min-width: 52px;
+  text-align: right;
+  font: 400 25px/1 "Bebas Neue", sans-serif;
+  letter-spacing: .02em;
+  color: var(--mk-rod);
+  font-variant-numeric: tabular-nums;
+}
+#mk-kat .mk-pris.mk-spoerg { font: 400 22px/1 "Bebas Neue", sans-serif; color: var(--mk-rod); letter-spacing: .04em; text-transform: uppercase; }
+#mk-kat .mk-pris.mk-streg { color: var(--ink2); }
+#mk-kat .mk-pris.mk-udsolgt-maerke { font: 600 12.5px/1.2 "Instrument Sans", system-ui, sans-serif; color: var(--ink2); min-width: 0; padding-top: 4px; }
+#mk-kat .mk-mere { flex: none; align-self: center; margin-left: -4px; font-size: 20px; line-height: 1; color: rgba(36, 26, 23, .3); }
+#mk-kat .mk-kan-aabnes { cursor: pointer; }
+#mk-kat .mk-kan-aabnes:active .mk-txt { opacity: .6; }
+#mk-kat .mk-henvis h4 { text-decoration: underline; text-decoration-color: rgba(216, 41, 59, .4); text-underline-offset: 3px; }
+
+/* Kaffens LILLE / STOR */
+.mk-tabel-hoved {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 10px 0 8px;
+  border-bottom: 2px solid var(--mk-rod);
+  font: 400 15px/1 "Bebas Neue", sans-serif;
+  letter-spacing: .26em;
+  color: var(--ink2);
+}
+.mk-tabel-hoved span { width: 64px; text-align: right; }
+#mk-kat .mk-tabel .mk-pris { width: 64px; min-width: 64px; }
+
+/* Varianterne i to spalter på en bred skærm (kortets 3 og 4) */
+@media (min-width: 821px) {
+  #mk-kat .mk-to { columns: 2; column-gap: 64px; }
+  #mk-kat .mk-to .mk-linje { break-inside: avoid; }
+}
+
+/* ---- Boksene ---- */
+.mk-boks {
+  position: relative;
+  margin-top: 28px;
+  border: 2px solid var(--mk-rod);
+  background: #fffdf8;
+  padding: 36px 0 22px;
+}
+.mk-boks::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 0;
+  height: 22px;
+  background:
+    linear-gradient(90deg, rgba(216, 41, 59, .5) 50%, transparent 0) 0 0 / 22px 100%,
+    linear-gradient(0deg, transparent 50%, rgba(216, 41, 59, .5) 0) 0 0 / 100% 22px,
+    #fff;
+}
+.mk-boks-felt { padding: 8px 22px 0; }
+.mk-boks-raekke { display: grid; gap: 14px; }
+.mk-boks-over {
+  display: block;
+  font: 400 15px/1 "Bebas Neue", sans-serif;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: var(--mk-blaa);
+}
+.mk-boks-titel {
+  margin: 8px 0 0;
+  font: 400 36px/.95 "Bebas Neue", sans-serif;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.mk-boks-pris {
+  display: block;
+  margin-top: 6px;
+  font: 400 40px/1 "Bebas Neue", sans-serif;
+  color: var(--mk-rod);
+}
+.mk-boks-tekst {
+  margin: 10px 0 0;
+  max-width: 34ch;
+  font: italic 400 16px/1.4 "Fraunces", Georgia, serif;
+  color: var(--ink2);
+}
+.mk-boks-bund {
+  display: block;
+  margin-top: 14px;
+  font: 400 34px/1 "Bebas Neue", sans-serif;
+  text-transform: uppercase;
+  color: var(--mk-rod);
+}
+
+/* ---- Den blå bølgelinje i bunden ---- */
+.mk-bund {
+  height: 18px;
+  background: radial-gradient(circle at 50% 100%, transparent 9px, var(--mk-blaa-let) 9.5px, var(--mk-blaa-let) 11.5px, transparent 12px) 0 0 / 26px 18px repeat-x;
+  opacity: .9;
+}
+
+/* ---- Glasbjælken med kortenes navne ----
+   iOS' flydende glas: bjælken er klar nok til, at papiret skinner
+   igennem, og markeringen er en linse, der GLIDER hen under det
+   kort, man er ved. */
+.mk-hop {
+  position: sticky;
+  isolation: isolate;
+  gap: 4px;
+  padding: 6px;
+  margin: 12px 0 0;
+  border-radius: 999px;
+  background: rgba(255, 252, 247, .58);
+  -webkit-backdrop-filter: blur(22px) saturate(190%);
+  backdrop-filter: blur(22px) saturate(190%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .95),
+    inset 0 -1px 1px rgba(255, 255, 255, .4),
+    inset 0 0 0 1px rgba(36, 26, 23, .08),
+    0 14px 34px rgba(36, 26, 23, .16);
+}
+.mk-hop button {
+  position: relative;
+  z-index: 1;
+  height: 38px;
+  padding: 0 15px;
+  background: transparent;
+  box-shadow: none;
+  font: 600 13.5px/1 "Instrument Sans", system-ui, sans-serif;
+  color: var(--ink);
+  transition: color .35s ease, transform .3s var(--spring);
+}
+.mk-hop button.on { background: transparent; box-shadow: none; color: #fff; }
+.mk-linse {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #e6404f, #c11f2f);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .5), inset 0 -2px 4px rgba(90, 0, 12, .25), 0 8px 18px rgba(214, 42, 58, .32);
+  opacity: 0;
+  transition: transform .55s var(--spring), width .55s var(--spring), height .55s var(--spring), opacity .3s ease;
+  pointer-events: none;
+}
+.mk-linse.vis { opacity: 1; }
+
+@media (max-width: 820px) {
+  .mk-hop { margin-left: 0; margin-right: 0; }
+}
+
+/* ---- Bred skærm ---- */
+@media (min-width: 821px) {
+  .mk-kapitel { scroll-margin-top: 124px; border-radius: 34px; }
+  #mk-kat .mk-sek.panel { scroll-margin-top: 124px; }
+  .mk-kh { padding: 44px 56px 38px; padding-right: 250px; }
+  .mk-kh-logo { top: 34px; right: 46px; width: 150px; height: 150px; }
+  .mk-kh-titel, .mk-kh-kort .mk-kh-titel { font-size: min(96px, calc((min(100vw, 1160px) - 560px) / (var(--tegn, 8) * .42))); }
+  .mk-kh-tekst { font-size: 20px; max-width: 42ch; }
+  .mk-kh-slogan { display: inline-block; margin: 0 0 6px 22px; font-size: 22px; vertical-align: bottom; }
+  .mk-kant { height: 52px; }
+  .mk-fotos { padding: 26px 56px 6px; grid-auto-columns: 1fr; overflow: visible; }
+  .mk-fotos-1 .mk-foto { aspect-ratio: 21 / 9; }
+  .mk-fotos-2 .mk-foto, .mk-fotos-3 .mk-foto { aspect-ratio: 4 / 3; }
+  .mk-kb { display: grid; grid-template-columns: 1fr 1fr; column-gap: 64px; padding: 8px 56px 44px; }
+  .mk-kb-hel { grid-template-columns: 1fr; }
+  .mk-sek-titel { font-size: 34px; }
+  .mk-boks-raekke { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+  /* Listen ude i siden er glas, og linsen glider lodret */
+  .mk-hop {
+    padding: 8px;
+    border-radius: 26px;
+    background: rgba(255, 252, 247, .62);
+    -webkit-backdrop-filter: blur(22px) saturate(190%);
+    backdrop-filter: blur(22px) saturate(190%);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, .95),
+      inset 0 0 0 1px rgba(36, 26, 23, .08),
+      0 14px 34px rgba(36, 26, 23, .14);
+  }
+  .mk-hop button { border-radius: 18px; height: 42px; }
+  .mk-hop button:hover { background: rgba(36, 26, 23, .05); }
+  .mk-hop button.on:hover { background: transparent; }
+  .mk-linse { border-radius: 18px; }
+  .mk-sortiment .mk-kat { display: block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-foto img { transition: none; transform: none; opacity: 1; }
+  .mk-linse { transition: none; }
+}
+
+/* ⚠️ DE GAMLE REGLER MÅ IKKE NÅ IND I KAPITLERNE (26/9, set på skud).
+   menukort.css giver #afsnit-is en lyserød flade med et 🍦 (fra dengang
+   isen var en overskrift) og deler hver liste i to spalter på en
+   computer. Her er #afsnit-is et kapitel som de andre, og en liste er
+   én spalte — undtagen varianterne (.mk-to). */
+#afsnit-is.mk-kapitel {
+  margin: 0 0 30px;
+  padding: 0;
+  border-radius: 30px;
+  background: var(--mk-creme);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .8) inset, 0 24px 60px rgba(36, 26, 23, .16), 0 4px 14px rgba(36, 26, 23, .08);
+}
+#afsnit-is.mk-kapitel::before { content: none; }
+@media (min-width: 821px) {
+  #afsnit-is.mk-kapitel { border-radius: 34px; scroll-margin-top: 124px; }
+  #mk-kat .mk-kapitel .mk-liste { columns: auto; }
+  #mk-kat .mk-kapitel .mk-liste.mk-to { columns: 2; column-gap: 64px; }
+  #mk-kat .mk-kapitel .mk-linje { align-items: flex-start; padding: 11px 0 10px; border-bottom: 1px dotted var(--mk-prik); }
+  #mk-kat .mk-kapitel .mk-linje:last-child { border-bottom: 1px dotted var(--mk-prik); }
+  #mk-kat .mk-kapitel .mk-linje h4 { font-size: 17px; }
+  #mk-kat .mk-kapitel .mk-linje p { font-size: 14.5px; }
+  #mk-kat .mk-kapitel .mk-linje .mk-pris { font-size: 26px; }
+  #mk-kat .mk-kapitel .mk-sek.panel { margin: 30px 0 0; }
+}

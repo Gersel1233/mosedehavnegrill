@@ -408,6 +408,389 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lukVare(); });
   })();
 
+  /* ============================================================
+     SORTIMENTET SOM DE TRYKTE KORT  (26/9)
+     ------------------------------------------------------------
+     Mikkels ord: *"det hele ser meget kedeligt ud … de skal
+     naturligvis matche 1:1 med de her"* (billederne af kortene).
+     Opbygningen står i js/skal/menukort-kort.js; her fordeles
+     databasens varer på den og tegnes.
+
+     ⚠️ KLASSERNE FRA FØR ER BEVARET, hvor de stadig betyder det
+     samme: hvert afsnit er en .panel med data-kategori (ejerens
+     kategori), hver vare en .mk-linje med data-vare, <h4> og
+     .mk-pris. Resten af huset og prøverne slår op i dem.
+     ============================================================ */
+  function norm(s) {
+    return String(s || '').toLowerCase().replace(/[’`´]/g, "'").replace(/\s+/g, ' ').trim();
+  }
+
+  /* Fordelingen: først de varer, kortene flytter ved navn, så boksenes
+     egne varer, så hver kategoris rest — og til sidst det, ingen har
+     taget, i "Mere fra lugen". En vare står ét sted. */
+  function fordel(grupper) {
+    var kap = (window.MosedeMenukort && window.MosedeMenukort.KAPITLER) || [];
+    var taget = [];
+    var alle = [];
+    grupper.forEach(function (g) {
+      g.varer.forEach(function (v) {
+        if (Butik.erDagensRetVare && Butik.erDagensRetVare(v)) return;
+        alle.push({ v: v, k: g.kategori });
+      });
+    });
+    function fri(pred) {
+      for (var i = 0; i < alle.length; i++) {
+        if (taget.indexOf(alle[i]) === -1 && pred(alle[i])) return alle[i];
+      }
+      return null;
+    }
+    function tag(x) { taget.push(x); return x; }
+
+    var ud = kap.map(function (c) {
+      var kopi = { def: c, spalter: {} };
+      ['venstre', 'hoejre', 'hel'].forEach(function (s) {
+        if (!c[s]) return;
+        kopi.spalter[s] = c[s].map(function (a) { return { def: a, varer: [] }; });
+      });
+      return kopi;
+    });
+    function hvert(fn) {
+      ud.forEach(function (c) {
+        Object.keys(c.spalter).forEach(function (s) { c.spalter[s].forEach(function (a) { fn(a, c); }); });
+      });
+    }
+    // 1) Ved navn
+    hvert(function (a) {
+      (a.def.kilder || []).forEach(function (kl) {
+        (kl.navne || []).forEach(function (n) {
+          var x = fri(function (y) {
+            return norm(y.v.navn) === norm(n) && (kl.kat === '*' || norm(y.k.navn) === norm(kl.kat));
+          });
+          if (x) a.varer.push(tag(x));
+        });
+      });
+    });
+    // 2) Boksenes egne varer (fx "Kaffe og kage" er Pausen-boksen)
+    hvert(function (a) {
+      [a.def].concat(a.def.felter || []).forEach(function (f) {
+        if (f.pris && f.pris.vare) {
+          var x = fri(function (y) { return norm(y.v.navn) === norm(f.pris.vare); });
+          if (x) tag(x);
+        }
+      });
+    });
+    // 3) Kategoriernes rest
+    hvert(function (a) {
+      (a.def.kilder || []).forEach(function (kl) {
+        if (kl.navne || kl.kat === '*') return;
+        alle.forEach(function (y) {
+          if (taget.indexOf(y) !== -1 || norm(y.k.navn) !== norm(kl.kat)) return;
+          if (kl.medValg && !harValg(y.v, kl.medValg)) return;
+          a.varer.push(tag(y));
+        });
+      });
+    });
+    // 4) Det, ingen har taget
+    var rest = alle.filter(function (y) { return taget.indexOf(y) === -1; });
+    if (rest.length) {
+      var afsnit = [];
+      rest.forEach(function (y) {
+        var a = afsnit.filter(function (x) { return x.def.titel === y.k.navn; })[0];
+        if (!a) { a = { def: { titel: y.k.navn }, varer: [] }; afsnit.push(a); }
+        a.varer.push(y);
+      });
+      ud.push({ def: { id: 'mere', over: 'Mosede Havnecafe', titel: ['Mere fra lugen'], hop: 'Mere' },
+        spalter: { hel: afsnit } });
+    }
+    return ud;
+  }
+
+  function harValg(v, navn) {
+    return Array.isArray(v.valg) && v.valg.some(function (x) {
+      return norm(x && typeof x === 'object' ? x.navn : x) === norm(navn);
+    });
+  }
+  function varePrisTal(v) { var n = Number(v && v.pris); return isFinite(n) && n > 0 ? n : null; }
+
+  /* Samme pris på alle varerne → den pris, ellers null. */
+  function ensPris(varer) {
+    var p = null;
+    for (var i = 0; i < varer.length; i++) {
+      var n = varePrisTal(varer[i].v || varer[i]);
+      if (n === null) return null;
+      if (p === null) p = n; else if (p !== n) return null;
+    }
+    return p;
+  }
+
+  function findVare(grupper, navn) {
+    for (var i = 0; i < grupper.length; i++) {
+      for (var j = 0; j < grupper[i].varer.length; j++) {
+        if (norm(grupper[i].varer[j].navn) === norm(navn)) return grupper[i].varer[j];
+      }
+    }
+    return null;
+  }
+  /* ⚠️ "ALLE VARIANTER 55,-" ER VARIANTERNES PRIS, IKKE KATEGORIENS.
+     Rejemad og tartar ligger i ejerens smørrebrødskategori til 95 —
+     regnet over hele kategorien var der ingen fælles pris, og boksen
+     stod uden. Tallet regnes derfor over det, der FAKTISK står i
+     kategoriens afsnit (placeret af fordel()). */
+  var placeret = {};
+  function katVarer(grupper, kat) {
+    var her = placeret[norm(kat)];
+    if (her) return her.filter(function (v) { return !v.udsolgt; });
+    var g = grupper.filter(function (x) { return norm(x.kategori.navn) === norm(kat); })[0];
+    return g ? g.varer.filter(function (v) { return !v.udsolgt; }) : [];
+  }
+
+  /* Logoet (roundellen) står ÉN gang i HTML'en som <template>; hvert
+     kapitel får en kopi med egne id'er — to ens id'er på én side får
+     <use href="#…"> til at pege på den forkerte. */
+  var logoNr = 0;
+  function logo() {
+    var t = document.getElementById('mk-logo');
+    if (!t) return null;
+    var nr = ++logoNr;
+    var html = t.innerHTML.replace(/id="([a-z0-9-]+)"/gi, 'id="$1-' + nr + '"')
+      .replace(/href="#([a-z0-9-]+)"/gi, 'href="#$1-' + nr + '"');
+    var el = lav('div', 'mk-kh-logo');
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = html; // ⚠️ vores egen skabelon, ikke ejerens tekst
+    return el;
+  }
+
+  function linjeFor(y, a) {
+    var v = y.v;
+    var linje = lav('div', 'mk-linje');
+    linje.setAttribute('data-vare', v.navn);
+    var txt = lav('div', 'mk-txt');
+    txt.appendChild(lav('h4', null, v.navn));
+    if (v.beskrivelse) txt.appendChild(lav('p', null, v.beskrivelse));
+    linje.appendChild(txt);
+    if (v.udsolgt) {
+      linje.classList.add('mk-udsolgt');
+      linje.appendChild(lav('span', 'mk-pris mk-udsolgt-maerke', 'Udsolgt i dag'));
+    } else if (a.tabel === 'stor') {
+      var grund = varePrisTal(v);
+      linje.appendChild(prisMærke(v.pris));
+      var stor = harValg(v, 'Stor') && grund !== null ? grund + Butik.valgTillaeg(v, 'Stor') : null;
+      linje.appendChild(stor !== null ? prisMærke(stor) : lav('span', 'mk-pris mk-streg', '–'));
+    } else if (!a.skjulPris) {
+      linje.appendChild(prisMærke(v.pris));
+    }
+    if (String(v.beskrivelse || '').trim()) {
+      linje.classList.add('mk-kan-aabnes');
+      linje.setAttribute('role', 'button');
+      linje.tabIndex = 0;
+      linje.setAttribute('aria-haspopup', 'dialog');
+      var mere = lav('span', 'mk-mere', '›');
+      mere.setAttribute('aria-hidden', 'true');
+      linje.appendChild(mere);
+      var foto = fotoFor(y.k);
+      linje.addEventListener('click', function () { visVare(v, y.k, foto); });
+      linje.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); visVare(v, y.k, foto); }
+      });
+    }
+    return linje;
+  }
+
+  var brugteKatId = {};
+  function tegnAfsnit(a, grupper) {
+    var d = a.def;
+    var henvis = (d.henvis || []);
+    if (!a.varer.length && !henvis.length) return null;
+    var sek = lav('section', 'panel mk-sek');
+    var førsteKat = a.varer[0] ? a.varer[0].k : null;
+    sek.setAttribute('data-kategori', førsteKat ? førsteKat.navn : d.titel);
+    if (førsteKat && !brugteKatId[førsteKat.id]) {
+      brugteKatId[førsteKat.id] = true;
+      sek.id = 'kat-' + førsteKat.id;
+    }
+    var h = lav('h3', 'mk-sek-titel');
+    h.appendChild(lav('span', 'mk-ruder'));
+    h.appendChild(lav('span', 'mk-sek-navn', d.titel));
+    h.appendChild(lav('span', 'mk-streger'));
+    sek.appendChild(h);
+    if (førsteKat && førsteKat.note && a.varer.every(function (y) { return y.k === førsteKat; })) {
+      sek.appendChild(lav('p', 'mk-note', førsteKat.note));
+    }
+
+    var liste = lav('div', 'mk-liste' + (d.kolonner === 2 ? ' mk-to' : ''));
+    if (d.tabel === 'stor') {
+      var hoved = lav('div', 'mk-tabel-hoved');
+      hoved.setAttribute('aria-hidden', 'true');
+      hoved.appendChild(lav('span', null, 'Lille'));
+      hoved.appendChild(lav('span', null, 'Stor'));
+      sek.appendChild(hoved);
+      sek.classList.add('mk-tabel');
+    }
+    var skjulPris = d.udenPris && ensPris(a.varer) !== null;
+    var visning = { tabel: d.tabel, skjulPris: skjulPris };
+
+    if (d.samle && a.varer.length > 1) {
+      /* Kortets ÉN linje: "Æg, bacon, pålæg, … 10,-". */
+      var linje = lav('div', 'mk-linje mk-samlet');
+      var navne = a.varer.map(function (y) { return y.v.navn; });
+      linje.setAttribute('data-vare', navne.join(', '));
+      var txt = lav('div', 'mk-txt');
+      txt.appendChild(lav('h4', null, navne.join(', ')));
+      linje.appendChild(txt);
+      var ens = ensPris(a.varer);
+      var laveste = a.varer.map(function (y) { return varePrisTal(y.v); })
+        .filter(function (n) { return n !== null; }).sort(function (x, z) { return x - z; })[0];
+      linje.appendChild(ens !== null ? prisMærke(ens)
+        : (laveste ? lav('span', 'mk-pris', 'fra ' + Butik.varePris(laveste)) : prisMærke(null)));
+      liste.appendChild(linje);
+    } else {
+      a.varer.forEach(function (y) { liste.appendChild(linjeFor(y, visning)); });
+    }
+    henvis.forEach(function (hv) {
+      var p = ensPris(katVarer(grupper, hv.navn));
+      var l = lav('a', 'mk-linje mk-henvis');
+      l.href = '#kapitel-' + hv.til;
+      var t = lav('div', 'mk-txt');
+      t.appendChild(lav('h4', null, hv.navn));
+      t.appendChild(lav('p', null, hv.note));
+      l.appendChild(t);
+      if (p !== null) l.appendChild(prisMærke(p));
+      l.addEventListener('click', function (e) {
+        var mål = $('kapitel-' + hv.til);
+        if (!mål) return;
+        e.preventDefault();
+        mål.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      liste.appendChild(l);
+    });
+    sek.appendChild(liste);
+    return sek;
+  }
+
+  /* Boksene med den ternede kant. Prisen er ALTID regnet ud af
+     databasen — findes varen ikke, står boksen uden pris. */
+  function boksPris(p, grupper) {
+    if (!p) return null;
+    if (p.ens) return ensPris(katVarer(grupper, p.ens));
+    var v = findVare(grupper, p.vare);
+    return v && !v.udsolgt ? varePrisTal(v) : null;
+  }
+  function boksFelt(f, grupper) {
+    var felt = lav('div', 'mk-boks-felt');
+    if (f.over) felt.appendChild(lav('span', 'mk-boks-over', f.over));
+    felt.appendChild(lav('h4', 'mk-boks-titel', f.titel));
+    var p = boksPris(f.pris, grupper);
+    if (p !== null) felt.appendChild(lav('span', 'mk-boks-pris', (f.pris.plus ? '+' : '') + Butik.varePris(p)));
+    if (f.tekst) felt.appendChild(lav('p', 'mk-boks-tekst', f.tekst));
+    if (f.bund) felt.appendChild(lav('span', 'mk-boks-bund', f.bund));
+    return felt;
+  }
+  function tegnBoks(d, grupper) {
+    if (d.vaffel) {
+      /* "Alle kugler og al softice kan fås i glutenfri vaffel — samme
+         pris som almindelig vaffel." Kun hvis valget findes, og
+         prisen er valgets eget tillæg. */
+      var med = [];
+      grupper.forEach(function (g) { g.varer.forEach(function (v) { if (harValg(v, 'Glutenfri vaffel')) med.push(v); }); });
+      if (!med.length) return null;
+      var t = med.map(function (v) { return Butik.valgTillaeg(v, 'Glutenfri vaffel'); })
+        .sort(function (x, z) { return z - x; })[0];
+      d = { over: d.over, titel: d.titel, tekst: 'Alle kugler og al softice kan fås i glutenfri vaffel — '
+        + (t > 0 ? '+' + Butik.varePris(t) + ' pr. vaffel.' : 'samme pris som almindelig vaffel.') };
+    }
+    var boks = lav('div', 'mk-boks' + (d.boks === 'raekke' ? ' mk-boks-raekke' : ''));
+    (d.felter || [d]).forEach(function (f) { boks.appendChild(boksFelt(f, grupper)); });
+    return boks;
+  }
+
+  function tegnKapitel(c, grupper) {
+    var d = c.def;
+    var krop = lav('div', 'mk-kb' + (c.spalter.hel ? ' mk-kb-hel' : ''));
+    var noget = false;
+    ['venstre', 'hoejre', 'hel'].forEach(function (s) {
+      if (!c.spalter[s]) return;
+      var spalte = lav('div', 'mk-spalte mk-' + s);
+      c.spalter[s].forEach(function (a) {
+        var el = a.def.boks || a.def.vaffel ? tegnBoks(a.def, grupper) : tegnAfsnit(a, grupper);
+        if (el) { spalte.appendChild(el); if (!a.def.boks) noget = true; }
+      });
+      if (spalte.firstChild) krop.appendChild(spalte);
+    });
+    if (!noget) return null;
+
+    var art = lav('article', 'mk-kapitel');
+    art.id = d.anker || ('kapitel-' + d.id);
+    art.setAttribute('data-kapitel', d.id);
+    art.setAttribute('data-hop-navn', d.hop || d.titel.join(' '));
+    if (d.anker) {
+      /* Kapitlet har både sit eget navn og forsidens (#afsnit-is). */
+      var mærke = lav('span', 'mk-anker');
+      mærke.id = 'kapitel-' + d.id;
+      art.appendChild(mærke);
+    }
+
+    var kh = lav('header', 'mk-kh' + (d.slogan ? ' mk-kh-kort' : ''));
+    if (d.over) {
+      var o = lav('div', 'mk-kh-over');
+      o.appendChild(lav('span', null, d.over));
+      o.appendChild(lav('i'));
+      kh.appendChild(o);
+    }
+    var h2 = lav('h2', 'mk-kh-titel');
+    /* Den længste linjes tegn: overskriften skaleres, så ordet står
+       på én linje ved siden af logoet — "SMØRREBRØD" må aldrig
+       knække midt i ordet (menukort-kort.css). */
+    h2.style.setProperty('--tegn', Math.max.apply(null, d.titel.map(function (t) { return t.length; })));
+    d.titel.forEach(function (t, i) {
+      if (i) h2.appendChild(document.createElement('br'));
+      h2.appendChild(document.createTextNode(t));
+    });
+    if (d.slogan) h2.appendChild(lav('em', 'mk-kh-slogan', d.slogan));
+    kh.appendChild(h2);
+    if (d.under) kh.appendChild(lav('p', 'mk-kh-under', d.under));
+    if (d.tekst) kh.appendChild(lav('p', 'mk-kh-tekst', d.tekst));
+    var lg = logo();
+    if (lg) kh.appendChild(lg);
+    art.appendChild(kh);
+    var kant = lav('div', 'mk-kant');
+    kant.setAttribute('aria-hidden', 'true');
+    art.appendChild(kant);
+
+    /* Fotoerne står SKARPT og for sig selv — ikke sløret bag teksten.
+       De er kategoriernes egne (FOTOS ovenfor), så et kapitel med
+       burgere viser burgeren. Pynt: alt="" og aria-hidden. */
+    var fotos = [];
+    Object.keys(c.spalter).forEach(function (s) {
+      c.spalter[s].forEach(function (a) {
+        a.varer.forEach(function (y) {
+          var f = fotoFor(y.k);
+          if (f && fotos.indexOf(f) === -1) fotos.push(f);
+        });
+      });
+    });
+    if (fotos.length) {
+      var rk = lav('div', 'mk-fotos mk-fotos-' + Math.min(fotos.length, 3));
+      rk.setAttribute('aria-hidden', 'true');
+      fotos.slice(0, 3).forEach(function (f) {
+        var fig = lav('div', 'mk-foto');
+        var img = document.createElement('img');
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.src = f;
+        img.addEventListener('load', function () { fig.classList.add('klar'); }, { once: true });
+        fig.appendChild(img);
+        rk.appendChild(fig);
+      });
+      art.appendChild(rk);
+    }
+    art.appendChild(krop);
+    var bund = lav('div', 'mk-bund');
+    bund.setAttribute('aria-hidden', 'true');
+    art.appendChild(bund);
+    return art;
+  }
+
   function visSortiment(d) {
     dataNu = d;
     var boks = $('mk-kat');
@@ -416,178 +799,37 @@
     if (!boks) return;
 
     var grupper = Butik.menu(d);
-    /* ⚠️ AFSNITTENE ER EN GRUPPERING, IKKE EN NY SORTERING (9/9).
-       `Butik.menuAfsnit` deler ejerens egne kategorier op på hans
-       eget `afdeling`-felt og lader `sortering` stå urørt inde i
-       hvert afsnit — pilene i admin bliver ved med at gøre det,
-       de siger. Noten ved reglen i store.js bærer målingen. */
-    var afsnitliste = Butik.menuAfsnit ? Butik.menuAfsnit(d) : null;
     tøm(boks);
+    brugteKatId = {};
+    logoNr = 0;
 
     if (!grupper.length) {
-      /* Ikke en tom side: en linje, der siger hvorfor, og et
-         nummer, der virker. */
       if (tom) tom.style.display = '';
       return;
     }
     if (tom) skjul(tom);
     if (afsnit) afsnit.style.display = '';
 
-    /* ⚠️ ÉT AFSNIT ER INGEN OPDELING.
-       Har forretningen kun mad, ville en overskrift "Mad" over
-       hele kortet være støj — og på en telefon er den plads, ingen
-       bruger til noget. Med grunddata er der tre afsnit; med
-       ejerens eget kort også tre. */
-    var visAfsnit = !!afsnitliste && afsnitliste.length > 1;
-
-    function tegnKategori(g) {
-      /* ⚠️ DE UDSOLGTE STÅR PÅ KORTET NU  (2/9, kundens ja).
-
-         Her stod det modsatte, og grunden var god: *"et kort, der
-         tilbyder noget, køkkenet ikke har, er værre end et kort
-         med én ret mindre."* Men argumentet trækker begge veje,
-         og tre-veje-prøven gjorde det synligt: bestillingssiderne
-         viser den udsolgte gennemstreget, kortet sorterede den
-         helt fra — altså to lister over det SAMME sortiment, hvor
-         den ene sagde, at retten ikke fandtes. En gæst, der har
-         hørt om burgeren og ikke finder den på kortet, tror, den
-         er taget af menuen.
-
-         Kortet lover stadig ingenting: rækken er streget over og
-         bærer ordet i stedet for prisen. Og noten om, at "der er
-         ingen udsolgt-tilstand i designet", var forældet — dagens
-         ret har haft .mk-udsolgt siden 24/8.
-
-         ⚠️ EN KATEGORI, HVOR ALT ER UDSOLGT, FORSVINDER DERFOR
-         IKKE LÆNGERE. Det er den samme regel én gang til: en
-         kategori, der forsvinder, ligner en kategori, der er
-         nedlagt. */
-      /* ⚠️ Kortets række "Dagens ret" står ikke her (13/9) — retten
-         står på "I dag" og i ugen med sit eget navn og sin egen
-         pris. Reglen bor i Butik.erDagensRetVare; bestillingen
-         spørger den samme. */
-      var varer = g.varer.filter(function (v) {
-        return !(Butik.erDagensRetVare && Butik.erDagensRetVare(v));
-      });
-      if (!varer.length) return;
-
-      var kort = lav('div', 'panel');
-      kort.setAttribute('data-kategori', g.kategori.navn);
-
-      /* Fotoet er PYNT (alt="" og aria-hidden): varerne står i
-         teksten ovenpå. loading="lazy", så siden ikke henter ti
-         billeder, før gæsten ruller derned. */
-      var foto = fotoFor(g.kategori);
-      if (foto) {
-        kort.classList.add('mk-foto-kort');
-        var bg = lav('div', 'mk-bg');
-        bg.setAttribute('aria-hidden', 'true');
-        var img = document.createElement('img');
-        img.alt = '';
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        img.src = foto;
-        bg.appendChild(img);
-        kort.appendChild(bg);
-        var slør = lav('div', 'mk-slor');
-        slør.setAttribute('aria-hidden', 'true');
-        kort.appendChild(slør);
-      }
-
-      kort.id = 'kat-' + g.kategori.id;
-
-      var hoved = lav('div', 'mk-hoved');
-      var tegn = lav('div', 'mk-tegn mk-' + (g.kategori.afdeling || 'mad'),
-        emojiFor(g.kategori));
-      tegn.setAttribute('aria-hidden', 'true');
-      hoved.appendChild(tegn);
-      hoved.appendChild(lav('h3', null, g.kategori.navn));
-      /* Antallet ude til højre: en lang side bliver til en liste,
-         man kan overskue, når man kan se hvor meget der er i hver
-         kasse, før man ruller ned i den.
-
-         ⚠️ DET TÆLLER DET, DER STÅR PÅ KORTET — de udsolgte med.
-         Et tal, der siger 14, over en liste med 16 rækker, er en
-         tæller, gæsten holder op med at stole på. Hvilke af dem
-         der ikke er der i dag, siger stregen på rækken. */
-      hoved.appendChild(lav('span', 'mk-antal',
-        varer.length + (varer.length === 1 ? ' vare' : ' varer')));
-      kort.appendChild(hoved);
-
-      /* Noten hører til HELE kategorien — "På toastbrød eller
-         rugbrød" gælder alle tolv slags pindemad. Skrevet på hver
-         linje ville den fylde tolv gange og sige det samme. */
-      if (g.kategori.note) kort.appendChild(lav('p', 'mk-note', g.kategori.note));
-
-      var liste = lav('div', 'mk-liste');
-      varer.forEach(function (v) {
-        var linje = lav('div', 'mk-linje');
-        linje.setAttribute('data-vare', v.navn);
-        /* ⚠️ SAMME ANSIGT SOM PÅ BESTILLINGSSIDEN (1/9). Kortet
-           og bestillingen er det SAMME sortiment set fra to
-           skærme; ser den samme burger forskellig ud, tror
-           gæsten, det er to burgere. Tegnet kommer fra den ene
-           liste i MosedeEmoji — og det står i sit eget element,
-           ikke inde i <h4>, så `data-vare` og overskriftens
-           tekst bliver ved med at være varens navn. */
-        if (window.MosedeEmoji && window.MosedeEmoji.forVare) {
-          var vTegn = lav('span', 'mk-vare-tegn',
-            window.MosedeEmoji.forVare(v, g.kategori));
-          vTegn.setAttribute('aria-hidden', 'true');
-          linje.appendChild(vTegn);
-        }
-        var txt = lav('div', 'mk-txt');
-        txt.appendChild(lav('h4', null, v.navn));
-        if (v.beskrivelse) txt.appendChild(lav('p', null, v.beskrivelse));
-        linje.appendChild(txt);
-        /* ⚠️ MÆRKATET I STEDET FOR PRISEN, IKKE VED SIDEN AF.
-           En pris på en ret, køkkenet ikke har, er et tal, gæsten
-           regner med. Ordet er det SAMME som på de tre
-           bestillingsveje — "Udsolgt i dag" to steder og
-           "Udsolgt" et tredje ville være tre udgaver af den samme
-           oplysning. */
-        if (v.udsolgt) {
-          linje.classList.add('mk-udsolgt');
-          linje.appendChild(lav('span', 'mk-pris mk-udsolgt-maerke',
-            'Udsolgt i dag'));
-        } else {
-          linje.appendChild(prisMærke(v.pris));
-        }
-        if (String(v.beskrivelse || '').trim()) {
-          linje.classList.add('mk-kan-aabnes');
-          linje.setAttribute('role', 'button');
-          linje.tabIndex = 0;
-          linje.setAttribute('aria-haspopup', 'dialog');
-          var mere = lav('span', 'mk-mere', '›');
-          mere.setAttribute('aria-hidden', 'true');
-          linje.appendChild(mere);
-          linje.addEventListener('click', function () { visVare(v, g.kategori, foto); });
-          linje.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); visVare(v, g.kategori, foto); }
+    var kapitler = fordel(grupper);
+    placeret = {};
+    kapitler.forEach(function (c) {
+      Object.keys(c.spalter).forEach(function (sp) {
+        c.spalter[sp].forEach(function (a) {
+          a.varer.forEach(function (y) {
+            if (norm(y.k.navn) !== norm(a.def.titel) && !(a.def.kilder || []).some(function (kl) {
+              return !kl.navne && norm(kl.kat) === norm(y.k.navn);
+            })) return;
+            (placeret[norm(y.k.navn)] = placeret[norm(y.k.navn)] || []).push(y.v);
           });
-        }
-        liste.appendChild(linje);
+        });
       });
-      kort.appendChild(liste);
-      boks.appendChild(kort);
-    }
+    });
+    kapitler.forEach(function (c) {
+      var el = tegnKapitel(c, grupper);
+      if (el) boks.appendChild(el);
+    });
 
-    if (visAfsnit) {
-      afsnitliste.forEach(function (a) {
-        var h = lav('h2', 'mk-afsnit', a.navn);
-        h.id = 'afsnit-' + a.afdeling;
-        boks.appendChild(h);
-        a.grupper.forEach(tegnKategori);
-      });
-    } else {
-      grupper.forEach(tegnKategori);
-    }
-
-    /* ⚠️ BÅNDET LÆSER SKÆRMEN, IKKE LISTEN. Derfor får det den
-       samme rækkefølge som kortene af sig selv — og en chip kan
-       ikke komme til at pege på et kort, der ikke blev tegnet. */
-    visHop(grupper);
-
+    visHop();
     hopTilHash();
   }
 
@@ -639,86 +881,66 @@
     }
   }
 
-  /* ---- HOP TIL ----
-     Båndet bygges af de kategorier, der FAKTISK står på siden —
-     ikke af listen fra databasen. En chip, der peger på et kort,
-     der ikke blev tegnet, er en genvej til ingenting.
+  /* ---- HOP TIL (26/9: ét punkt pr. KORT) ----
+     Glasbjælken med de trykte korts navne — "Grillen", "Is & sødt"
+     … Den bygges af de kapitler, der FAKTISK står på siden; en knap
+     til et kapitel, der ikke blev tegnet, er en genvej til ingenting.
 
-     ⚠️ "Alt udsolgt" er ikke længere en af de grunde (2/9) —
-     kortet bliver stående med sine rækker streget over. Men en
-     kategori uden ÉN eneste vare tegnes stadig ikke, og båndet
-     skal blive ved med at læse skærmen og ikke databasen. */
-  function visHop(grupper) {
+     ⚠️ LINSEN GLIDER. Markeringen er ét element (.mk-linse), der
+     flytter sig hen under den knap, man er ved — ikke en farve, der
+     blinker fra knap til knap. Kun transform og bredde animeres. */
+  function visHop() {
     var bånd = $('mk-hop');
     if (!bånd) return;
     tøm(bånd);
 
-    var kort = Array.prototype.slice.call(document.querySelectorAll('#mk-kat .panel'));
-    if (kort.length < 2) return skjul(bånd);
+    var kap = Array.prototype.slice.call(document.querySelectorAll('#mk-kat .mk-kapitel'));
+    if (kap.length < 2) return skjul(bånd);
+    bånd.style.display = '';
 
-    var chips = {};
-    kort.forEach(function (k) {
-      var g = grupper.filter(function (x) { return 'kat-' + x.kategori.id === k.id; })[0];
-      if (!g) return;
-      /* ⚠️ AFSNITTET STÅR OGSÅ I LISTEN (26/9). Kortet har
-         overskrifterne Mad, Is og dessert og Drikke; listen ude i
-         siden havde dem ikke, og tyve navne i én søjle er ikke til
-         at finde rundt i. Etiketten er tekst, ikke en knap — og
-         telefonens bånd skjuler den (menukort.css). */
-      var før = k.previousElementSibling;
-      if (før && før.classList.contains('mk-afsnit')) {
-        var etiket = lav('span', 'mk-hop-afsnit', før.textContent);
-        etiket.setAttribute('aria-hidden', 'true');
-        bånd.appendChild(etiket);
-      }
-      /* Tegnet i sit eget element (26/9): på en computer er listen
-         en ren tekstliste (menukort.css), på telefonen står det. */
-      var chip = lav('button', null);
-      var chipTegn = lav('span', 'mk-hop-tegn', emojiFor(g.kategori) + '  ');
-      chipTegn.setAttribute('aria-hidden', 'true');
-      chip.appendChild(chipTegn);
-      chip.appendChild(document.createTextNode(g.kategori.navn));
-      chip.type = 'button';
-      chip.setAttribute('data-hop', g.kategori.navn);
-      chip.addEventListener('click', function () {
+    var linse = lav('span', 'mk-linse');
+    linse.setAttribute('aria-hidden', 'true');
+    bånd.appendChild(linse);
+
+    var knapper = {};
+    kap.forEach(function (k) {
+      var knap = lav('button', null, k.getAttribute('data-hop-navn'));
+      knap.type = 'button';
+      knap.setAttribute('data-hop', k.getAttribute('data-hop-navn'));
+      knap.addEventListener('click', function () {
         k.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
-      chips[k.id] = chip;
-      bånd.appendChild(chip);
+      knapper[k.id] = knap;
+      bånd.appendChild(knap);
     });
 
-    /* Den kategori, man kigger på, markerer sig selv — og ruller
-       sig selv frem i båndet. Ellers kan man stå i "Øl" og se en
-       stribe, hvor "Morgenmad" er markeret ude til venstre. */
+    function marker(id) {
+      Object.keys(knapper).forEach(function (kid) {
+        var på = kid === id;
+        knapper[kid].classList.toggle('on', på);
+        if (!på) return;
+        var b = knapper[kid];
+        linse.style.width = b.offsetWidth + 'px';
+        linse.style.height = b.offsetHeight + 'px';
+        linse.style.transform = 'translate(' + b.offsetLeft + 'px,' + b.offsetTop + 'px)';
+        linse.classList.add('vis');
+        if (bånd.scrollWidth > bånd.clientWidth) {
+          bånd.scrollTo({ left: Math.max(0, b.offsetLeft - 60), behavior: 'smooth' });
+        } else if (bånd.scrollHeight > bånd.clientHeight) {
+          bånd.scrollTo({ top: Math.max(0, b.offsetTop - bånd.clientHeight / 2), behavior: 'smooth' });
+        }
+      });
+    }
+    marker(kap[0].id);
+
     if (!window.IntersectionObserver) return;
     var spejder = new IntersectionObserver(function (poster) {
-      poster.forEach(function (p) {
-        if (!p.isIntersecting) return;
-        Object.keys(chips).forEach(function (id) {
-          var på = id === p.target.id;
-          chips[id].classList.toggle('on', på);
-          if (på && chips[id].scrollIntoView) {
-            /* ⚠️ TO RETNINGER (26/9). På telefonen ruller båndet
-               sidelæns; på en computer er det en lodret liste, der
-               ruller for sig selv — og markeringen skal kunne ses dér
-               også, ellers står "Øl" markeret under skærmens kant. */
-            if (bånd.scrollWidth > bånd.clientWidth) {
-              bånd.scrollTo({ left: Math.max(0, chips[id].offsetLeft - 70), behavior: 'smooth' });
-            } else if (bånd.scrollHeight > bånd.clientHeight) {
-              bånd.scrollTo({ top: Math.max(0, chips[id].offsetTop - bånd.clientHeight / 2 + chips[id].offsetHeight / 2), behavior: 'smooth' });
-            }
-          }
-        });
-      });
+      poster.forEach(function (p) { if (p.isIntersecting) marker(p.target.id); });
       /* ⚠️ RULLEROD'EN SKIFTER PAA EN TELEFON (5/9). Under 820 px
-         er #sc ikke laengere en rullebeholder — det er dokumentet
-         der ruller, saa Safari folder sin bundbjaelke sammen. Blev
-         #sc staaende som root her, ville iagttageren maale mod en
-         kasse paa 7500 px, og MAALT paa et skud: baandet markerede
-         "Vaelg fyld til smoerrebroedet", mens gaesten stod i "Oel".
-         havnegrillen.js har svaret; det slaas op, ikke gaettet. */
-    }, { root: (typeof ioRod !== 'undefined' ? ioRod : $('sc')), rootMargin: '-124px 0px -70% 0px' });
-    kort.forEach(function (k) { spejder.observe(k); });
+         er #sc ikke en rullebeholder — dokumentet ruller. Svaret
+         står i havnegrillen.js (ioRod); det slås op, ikke gættes. */
+    }, { root: (typeof ioRod !== 'undefined' ? ioRod : $('sc')), rootMargin: '-124px 0px -65% 0px' });
+    kap.forEach(function (k) { spejder.observe(k); });
   }
 
   /* ⚠️ SVARER DATABASEN IKKE, VISES INGEN PRISER  (25/9, aften).
