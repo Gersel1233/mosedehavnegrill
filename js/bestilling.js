@@ -2972,7 +2972,7 @@
     }).catch(function (e) {
       knap.disabled = false;
       knap.textContent = foer || 'Send bestilling';
-      if (e && e.netfejl && e.raekke) return visNoedudgang(e.raekke, kigFejl);
+      if (e && e.netfejl && e.raekke) return visNoedudgang(e.raekke, kigFejl, e.usikker);
       /* Tiderne kan være fyldt op, mens formularen stod åben —
          hent listen igen, ellers vælger gæsten det samme fyldte
          klokkeslæt en gang til. */
@@ -2996,8 +2996,27 @@
      som før hjemmesiden fandtes: sms eller telefon. Teksten SIGER
      at bestillingen ikke er sendt; se noten ved noedudgangSms i
      js/store.js om hvorfor det ikke må pyntes. */
-  function visNoedudgang(raekke, maalBoks) {
+  function visNoedudgang(raekke, maalBoks, usikker) {
     var boks = maalBoks || $('bestil-fejl');
+
+    /* ⚠️ SVARET UDEBLEV — SÅ VED VI DET IKKE (26/9). Løb et forsøg tør for
+       tid (se loftet i Butik.bestil), kan bestillingen godt være landet.
+       Så må der ikke stå "IKKE sendt": en gæst, der tror det og sender
+       igen som sms, får maden to gange. */
+    if (usikker) {
+      boks.textContent = 'Nettet svarer ikke, og vi ved ikke, om bestillingen '
+        + 'nåede frem. Ring til os, før du sender den igen'
+        + (raekke && raekke.bord_nummer ? ' — eller gå op til lugen og spørg.' : '.');
+      if (!(raekke && raekke.bord_nummer)) {
+        var u = noedudgang(raekke);
+        var r = lav('div', 'noedudgang');
+        r.appendChild(u.ring);
+        boks.appendChild(r);
+      }
+      boks.classList.remove('skjult');
+      boks.scrollIntoView({ block: 'center' });
+      return;
+    }
 
     /* VED BORDET ER DER INGEN NØDUDGANG AT TILBYDE: en sms for
        at få en is, mens personalet står tyve meter væk, er en

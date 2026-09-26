@@ -2533,7 +2533,7 @@
          og intet at trykke på — en blindgyde, præcis når gæsten har
          brug for en vej. Sms'en bærer hele bestillingen og referencen
          (Butik.noedudgangSms), så personalet kan genkende den. */
-      if (fejl && fejl.netfejl && fejl.raekke && tekst && Butik.noedudgangSms) {
+      if (fejl && fejl.netfejl && !fejl.usikker && fejl.raekke && tekst && Butik.noedudgangSms) {
         var n = Butik.noedudgangSms(fejl.raekke);
         var veje = lav('div', 'noedudgang');
         var sms = lav('a', 'g', 'Send som sms');

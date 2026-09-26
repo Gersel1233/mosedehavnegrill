@@ -191,6 +191,28 @@ test.describe('Afsendelsen prøver igen', () => {
     expect(kald, 'en afvisning skal ikke gentages').toBe(1);
   });
 
+  /* ⚠️ ET SVAR, DER ALDRIG KOMMER (26/9). Afsendelsen havde ingen
+     tidsgrænse, så på dårligt net stod knappen på "Sender …" for evigt.
+     Nu har hvert forsøg et loft (Butik.SEND_LOFT_MS, sat ned her, så
+     prøven ikke venter 38 sekunder), og beskeden må IKKE sige "IKKE
+     sendt": et forsøg, der løb tør for tid, kan godt være landet. */
+  test('et svar, der aldrig kommer, stopper — og siger ærligt, at vi ikke ved det', async ({ page }) => {
+    let kald = 0;
+    await åbnMedSky(page, '/bestil/', {
+      data: medRet(),
+      plan: () => { kald += 1; /* svarer aldrig */ },
+    });
+    await page.evaluate(() => { Butik.SEND_LOFT_MS = 300; });
+    await sendFraSiden(page);
+
+    const fejl = page.locator('#kig-fejl');
+    await expect(fejl, 'knappen hang på "Sender …"')
+      .toContainText('ved ikke, om bestillingen nåede frem', { timeout: 10000 });
+    await expect(fejl, 'den lovede "IKKE sendt" om noget, der kan være landet')
+      .not.toContainText('IKKE sendt');
+    expect(kald, 'tre forsøg, så stop').toBe(3);
+  });
+
   test('en afvisning under 500 prøves ikke igen', async ({ page }) => {
     /* Bremsen svarer 409. At sende igen ville bare banke på den
        samme lukkede dør — og med tre forsøg ville gæsten vente
