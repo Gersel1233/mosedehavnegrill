@@ -595,7 +595,63 @@
     } catch (e) { /* ingen lyd: markeringen på skærmen står stadig */ }
   }
 
+  /* ============================================================
+     LYDEN FORSVINDER IKKE TAVST  (26/9)
+     ------------------------------------------------------------
+     Fundet i en gennemgang af koden: lydTil blev ikke husket, og
+     "Opdater"-båndet genindlæser siden — så var lyden slået fra,
+     uden at nogen så det. Knappen stod nederst i et kort under køen.
+
+     · Valget huskes i browseren (samme greb som Bestillinger-fanens
+       valg). En browser spiller ikke lyd, før nogen har rørt skærmen
+       — så det FØRSTE tryk hvor som helst på skærmen låser den op.
+     · Så længe lyden ikke virker, står et rødt bånd øverst på
+       Køkkenet. Båndet ER trykket, der slår den til.
+     ============================================================ */
+  var LYD_NOEGLE = 'mosede_koekken_lyd';
+  try { lydTil = localStorage.getItem(LYD_NOEGLE) === 'til'; } catch (e) { /* privat vindue */ }
+
+  function låsOp() {
+    if (!lydTil) return;
+    try {
+      if (!lyd) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        lyd = new AC();
+      }
+      if (lyd.state === 'suspended') lyd.resume();
+    } catch (e) { /* ingen lyd: båndet bliver stående */ }
+    setTimeout(sigLyd, 50);
+  }
+  document.addEventListener('pointerdown', låsOp, true);
+
+  function lydVirker() { return lydTil && lyd && lyd.state === 'running'; }
+
+  function sigLydBaand() {
+    var panel = $('p-borde');
+    if (!panel) return;
+    var b = $('koekken-lyd-baand');
+    if (lydVirker()) { if (b) b.parentNode.removeChild(b); return; }
+    if (!b) {
+      b = document.createElement('button');
+      b.type = 'button';
+      b.id = 'koekken-lyd-baand';
+      b.className = 'lyd-baand';
+      b.addEventListener('click', function () {
+        lydTil = true;
+        try { localStorage.setItem(LYD_NOEGLE, 'til'); } catch (e) { /* privat vindue */ }
+        låsOp();
+        pling();
+      });
+      panel.insertBefore(b, panel.firstChild);
+    }
+    b.textContent = lydTil
+      ? '\ud83d\udd07 Tryk her, så lyden virker — nye bestillinger plinger ikke endnu'
+      : '\ud83d\udd07 Lyden er slået fra — tryk her for at slå den til';
+  }
+
   function sigLyd() {
+    sigLydBaand();
     var knap = $('koekken-lyd');
     var note = $('koekken-lyd-note');
     if (knap) knap.textContent = lydTil ? '🔔 Lyden er slået til' : '🔔 Slå lyd til';
@@ -610,6 +666,8 @@
   if ($('koekken-lyd')) {
     $('koekken-lyd').addEventListener('click', function () {
       lydTil = !lydTil;
+      try { localStorage.setItem(LYD_NOEGLE, lydTil ? 'til' : 'fra'); } catch (e) { /* privat vindue */ }
+      if (lydTil) låsOp();
       sigLyd();
       // Trykket ER tilladelsen. Derfor prøver vi tonen med det
       // samme: hører man ingenting nu, virker den heller ikke kl. 19.
@@ -757,7 +815,34 @@
     if (Admin.lister.bestillinger !== undefined) kendteLuge = ids;
   }
 
+  /* ⚠️ SKÆRMEN MÅ IKKE GÅ I DVALE, MENS KØKKENET ER ÅBENT (26/9). En
+     iPad med autolås slukker skærmen efter et par minutter, og så står
+     uret, pushen og hentningen stille — køkkenet ser en sort skærm og
+     tror, der er roligt. Browseren kan holde skærmen tændt (Wake Lock),
+     så længe fanen er synlig; den slipper selv, når man går væk, og
+     tages igen, når man kommer tilbage. Hvor browseren ikke kan, siger
+     VEJLEDNING.md: Autolås → Aldrig. */
+  var vaagen = null;
+  function holdVaagen() {
+    var synlig = document.visibilityState === 'visible'
+      && $('p-borde') && !$('p-borde').classList.contains('skjult');
+    if (synlig && !vaagen && navigator.wakeLock && navigator.wakeLock.request) {
+      vaagen = 'venter';
+      navigator.wakeLock.request('screen').then(function (l) {
+        vaagen = l;
+        l.addEventListener('release', function () { vaagen = null; });
+      }).catch(function () { vaagen = null; });
+    } else if (!synlig && vaagen && vaagen.release) {
+      vaagen.release().catch(function () {});
+      vaagen = null;
+    }
+  }
+  document.addEventListener('visibilitychange', holdVaagen);
+  Admin.efterFane.push(holdVaagen);
+
   function tegnKoekken() {
+    holdVaagen();
+    sigLydBaand();
     var boks = $('koekken-liste');
     if (!boks) return;
 

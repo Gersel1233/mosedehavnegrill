@@ -1115,3 +1115,47 @@ test.describe('Køkkenet ser også lugens bestillinger i dag', () => {
     await expect(kort(page, '7')).toContainText('4 pers.');
   });
 });
+
+// ============================================================
+//  LYDEN OG SKÆRMEN  (26/9)
+//  ------------------------------------------------------------
+//  Fundet i en gennemgang af koden: lyden blev ikke husket, så en
+//  genindlæsning slog den tavst fra, og knappen stod nederst under
+//  køen. Og en iPad med autolås slukker skærmen midt i en frokost.
+// ============================================================
+test.describe('Lyden forsvinder ikke tavst, og skærmen sover ikke', () => {
+  test('lyd slået fra står som et rødt bånd øverst på køkkenet', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre()]);
+    const b = page.locator('#koekken-lyd-baand');
+    await expect(b, 'ingen siger til, at lyden er slået fra').toBeVisible();
+    await expect(b).toContainText('Lyden er slået fra');
+    /* Øverst: før køen, ikke nederst under den. */
+    const førKøen = await page.evaluate(() => {
+      const bånd = document.getElementById('koekken-lyd-baand');
+      const kø = document.getElementById('koekken-liste');
+      return !!(bånd.compareDocumentPosition(kø) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    expect(førKøen, 'båndet står under køen').toBe(true);
+  });
+
+  test('et tryk på båndet slår lyden til — og det huskes', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre()]);
+    await page.locator('#koekken-lyd-baand').click();
+    await expect(page.locator('#koekken-lyd-baand'), 'båndet blev stående, da lyden virkede')
+      .toHaveCount(0);
+    expect(await page.evaluate(() => localStorage.getItem('mosede_koekken_lyd'))).toBe('til');
+    await expect(page.locator('#koekken-lyd')).toContainText('slået til');
+  });
+
+  test('skærmen bedes holde sig vågen, mens køkkenet er åbent', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__vaagen = 0;
+      const falsk = { request: () => { window.__vaagen += 1;
+        return Promise.resolve({ release: () => Promise.resolve(), addEventListener() {} }); } };
+      Object.defineProperty(Navigator.prototype, 'wakeLock', { get: () => falsk, configurable: true });
+    });
+    await åbnKoekkenet(page, [ordre()]);
+    await expect.poll(() => page.evaluate(() => window.__vaagen),
+      { message: 'skærmen kan gå i dvale midt i en frokost' }).toBeGreaterThan(0);
+  });
+});
