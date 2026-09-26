@@ -1391,7 +1391,7 @@
       var boks = $('bestillinger-liste');
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
-        'Bestillingerne kunne ikke hentes: ' + (e.message || e)
+        'Bestillingerne kunne ikke hentes. ' + Admin.forklarFejl(e)
         + ' Skærmen prøver igen af sig selv om et øjeblik — bliver den'
         + ' ved, så log ud og ind igen.'));
       if (window.console) console.warn('bestillinger:', e);

@@ -163,7 +163,18 @@
        to fetch resource" — og det stod ordret i beskeden. En travl
        medarbejder skal vide, hvad der skete, og hvad hun skal gøre. */
     if (/^(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?)$/i.test(raa.trim())) {
-      return 'Ingen forbindelse — ændringen blev ikke gemt. Tjek nettet, og prøv igen.';
+      return 'Ingen forbindelse til nettet. Tjek wifi eller mobildata, og prøv igen.';
+    }
+    /* ⚠️ HENTNINGENS RÅ KODE (26/9). hentTabel() kaster "bestillinger:
+       401", og den stod ordret på skærmen: "Bestillingerne kunne ikke
+       hentes: bestillinger: 401". Koden ved forskel på et udløbet login
+       og en database, der ikke svarer — så skal beskeden også. */
+    var hent = /^[a-z_]+: (\d{3})$/.exec(raa.trim());
+    if (hent) {
+      var kode = Number(hent[1]);
+      if (kode === 401 || kode === 403) return 'Du er blevet logget ud. Log ind igen, så henter skærmen det hele.';
+      if (kode >= 500) return 'Databasen svarer ikke lige nu. Skærmen prøver selv igen om lidt.';
+      if (kode === 404) return 'En tabel mangler i databasen — sig det til Lesreg.';
     }
     /* Databasens egen ordlyd: Could not find the 'X' column of
        'Y' in the schema cache. Den kommer fra PostgREST og er

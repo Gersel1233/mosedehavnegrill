@@ -312,7 +312,7 @@
       tegnBordkort();
       tegnNøglekort();
     }).catch(function (e) {
-      Admin.brøl('Bordene kunne ikke hentes: ' + (e.message || e));
+      Admin.brøl('Bordene kunne ikke hentes. ' + Admin.forklarFejl(e));
     });
   }
 

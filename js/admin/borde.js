@@ -762,7 +762,7 @@
       if (!boks) return;
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
-        'Bookingerne kunne ikke hentes: ' + (e.message || e)
+        'Bookingerne kunne ikke hentes. ' + Admin.forklarFejl(e)
         + ' Skærmen prøver igen af sig selv om et øjeblik — bliver den'
         + ' ved, så log ud og ind igen.'));
       if (window.console) console.warn('borde:', e);
