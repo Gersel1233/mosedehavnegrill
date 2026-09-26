@@ -77,6 +77,29 @@ test.describe('Tapasfilmen i galleriet', () => {
     await expect(page.locator('.tshot video')).toHaveCount(0);
   });
 
+  test('efter filmen skiftes der hurtigt — og det gamle billede står fremme under det nye', async ({ page }) => {
+    /* Mikkel 26/9: *"switchene imellem billederne efter tapasvideoen …
+       er ikke hurtig nok og smooth nok"*. Før gik der en hel takt
+       (4,6 s) fra filmens slut til første skift, og de to billeder
+       tonede hver sin vej, så baggrunden skinnede igennem midt i. */
+    await kanSpille(page);
+    await åbnSkal(page, '/m-tapas.html', { ur: FREDAG, data: grunddata() });
+    const video = page.locator('.tshot .foto-skift video.foto-film');
+    await expect.poll(() => video.evaluate((v) => !!v.__spiller)).toBe(true);
+    // Billede 2 er hentet, mens filmen spiller — ikke først, når det skal vises.
+    await expect.poll(() => page.locator('.tshot .foto-skift img').nth(1)
+      .evaluate((f) => f.complete && f.naturalWidth > 0)).toBe(true);
+
+    await video.evaluate((v) => v.dispatchEvent(new Event('ended')));
+    const t0 = Date.now();
+    await expect.poll(() => fremme(page), { timeout: 2500, intervals: [50] }).toBe(1);
+    expect(Date.now() - t0, 'første skift efter filmen').toBeLessThan(2500);
+    // Midt i overgangen: det gamle billede er stadig helt fremme under det nye.
+    const gammel = await page.locator('.tshot .foto-skift img').first()
+      .evaluate((f) => Number(getComputedStyle(f).opacity));
+    expect(gammel).toBe(1);
+  });
+
   test('en film, der aldrig kommer i gang, holder ikke billederne fast', async ({ page }) => {
     await kanSpille(page);
     await page.addInitScript(() => { HTMLMediaElement.prototype.play = () => Promise.reject(new Error('strømbesparelse')); });
