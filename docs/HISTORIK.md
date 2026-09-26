@@ -7,6 +7,20 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**"···" VIRKEDE IKKE PÅ BAGLOKALET, FORESPØRGSLER OG TILMELDINGER** (26/9,
+sent — udgivet straks, 9f02aeb). Mikkels skærmbillede af et udlejet
+baglokale: *"de tre prikker virker ikke"*. MÅLT: panelet
+(`.bestil-mere`, position:absolute) hang på KORTET, som ikke er placeret,
+så "Afvis" stod 800 px over skærmens top (1.800 på telefonen). Nu hænger
+det i knaprækken (`.bestil-handling`, placeret) som på Bestillinger,
+Køkkenet og Overblik. Den gamle prøve bestod, fordi `toBeVisible` kun
+spørger om en kasse; den nye (`admin-ens-kort.spec.js`, "··· folder ud,
+hvor fingeren er") måler afstanden til "···" og `elementFromPoint` på alle
+seks faner — set fejle med den gamle kode. Udgivet før den brede
+admin-runde (18 filer, 888/0), fordi knappen var i stykker i luften.
+Mikkels prøve (L-0002 og FO260926-PQ7P8) fjernes via ··· → Afvis (den
+spørger selv om at åbne 30/9 igen) → Slet.
+
 **TIDEN UNDER DATOEN, KVARTERER, OG BESTIL/ SENDER VIDERE** (26/9, aften).
 Mikkel fik fire skærmbilleder og svarede på hvert:
 - **Tidspunktet står lige under datoen** — forsiden og smørrebrødssiden.
