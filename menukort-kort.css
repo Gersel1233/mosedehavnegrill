@@ -274,9 +274,9 @@
   color: var(--mk-rod);
   font-variant-numeric: tabular-nums;
 }
-#mk-kat .mk-pris.mk-spoerg { font: 400 22px/1 "Bebas Neue", sans-serif; color: var(--mk-rod); letter-spacing: .04em; text-transform: uppercase; }
+#mk-kat .mk-pris.mk-spoerg { font: 400 22px/1 "Bebas Neue", sans-serif; font-variant-numeric: tabular-nums; color: var(--mk-rod); letter-spacing: .04em; text-transform: uppercase; }
 #mk-kat .mk-pris.mk-streg { color: var(--ink2); }
-#mk-kat .mk-pris.mk-udsolgt-maerke { font: 600 12.5px/1.2 "Instrument Sans", system-ui, sans-serif; color: var(--ink2); min-width: 0; padding-top: 4px; }
+#mk-kat .mk-pris.mk-udsolgt-maerke { font: 600 12.5px/1.2 "Instrument Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ink2); min-width: 0; padding-top: 4px; }
 #mk-kat .mk-mere { flex: none; align-self: center; margin-left: -4px; font-size: 20px; line-height: 1; color: rgba(36, 26, 23, .3); }
 #mk-kat .mk-kan-aabnes { cursor: pointer; }
 #mk-kat .mk-kan-aabnes:active .mk-txt { opacity: .6; }

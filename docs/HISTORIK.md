@@ -7,6 +7,33 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**MENUKORTET SOM DE TRYKTE KORT — IKKE UDGIVET ENDNU** (26/9). Mikkels ord:
+*"de skal naturligvis matche 1:1 med de her"* og *"Brug så vidt muligt de
+samme kategorinavne som på de trykte kort"*. `m-menukort.html` er bygget om
+til kapitler (`js/skal/menukort-kort.js` = kortenes opbygning,
+`menukort-kort.css` = udseendet, `fordel()` i `js/skal/menukort.js` = hvor
+hver vare står). Priserne kommer stadig kun fra databasen; en boks' pris er
+regnet ud (`ens` kræver mindst tre varer med samme pris). Ingen vare
+forsvinder: har en kategori intet afsnit, står den under "Mere fra lugen".
+Kontrol med produktionens menu (håndmad 27 simuleret): 239 aktive varer står
+alle på kortet, og de 171 bestillingsvarer har samme pris på kortet, forsiden,
+bestil/ og ved bordet. Bevidst ændrede prøver: menukortets priser står nu i
+Bebas (ikke "én talstemme"), overskrifterne er kortenes, og fotoprøverne måler
+kapitlernes fotos.
+
+**HÅNDMADDERNE TIL 27 KR. — SQL SKAL KØRES AF MIKKEL** (26/9).
+`supabase/haandmadder-27-kr.sql` sætter de 19 aktive håndmadder fra 24 til 27.
+Den tager afgørelsen fra 25/9 ("24 gælder") tilbage. De 6 slukkede til 24 røres
+ikke; det kræver Mikkels ja. Supabase-MCP'en var nede (ERR_PROXY_TUNNEL), og
+derfor er filen ikke kørt herfra. Bagefter: `vaerktoej/hent-menukort.sh`, så
+`vaerktoej/sammenlign-kort.py`.
+
+**TAPASFILMEN UDGIVET** (26/9). På tapassiden er galleriets første billede
+erstattet af en film (`film/tapas-4x3.mp4` / `-16x9.mp4`). Filmen ender på
+slutbilledet, og derefter skifter galleriet som før. Når runden kommer tilbage
+til plads 1, står kun stillbilledet (`js/skal/billedplads.js`,
+`tests/tapas-film.spec.js`).
+
 **HAVNEFOTOENE UDGIVET — OG FORSIDENS IS SKIFTET** (26/9). Mikkels ord:
 *"udgiv og skift forsiden too"*. Forsidens isafsnit viser nu
 `havn-softice.jpg` og `havn-kugleis.jpg` (nye alt-tekster); intet peger

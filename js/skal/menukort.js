@@ -515,8 +515,13 @@
   }
   function varePrisTal(v) { var n = Number(v && v.pris); return isFinite(n) && n > 0 ? n : null; }
 
-  /* Samme pris på alle varerne → den pris, ellers null. */
+  /* Samme pris på alle varerne → den pris, ellers null.
+     ⚠️ MINDST TRE (26/9). "Alle varianter 55,-" er et fællestal for en
+     LISTE; med én eller to varer står prisen på linjen som alle andre
+     steder. Set i prøven: ét smørrebrød til 47,25 stod uden pris på
+     linjen og med sin pris i en boks, der hed "alle varianter". */
   function ensPris(varer) {
+    if (!varer || varer.length < 3) return null;
     var p = null;
     for (var i = 0; i < varer.length; i++) {
       var n = varePrisTal(varer[i].v || varer[i]);
@@ -688,6 +693,9 @@
     if (f.over) felt.appendChild(lav('span', 'mk-boks-over', f.over));
     felt.appendChild(lav('h4', 'mk-boks-titel', f.titel));
     var p = boksPris(f.pris, grupper);
+    /* Et fællestal, der ikke findes, er ingen boks — "Alle varianter"
+       uden en pris lover noget, siden ikke kan holde. */
+    if (f.pris && f.pris.ens && p === null) return null;
     if (p !== null) felt.appendChild(lav('span', 'mk-boks-pris', (f.pris.plus ? '+' : '') + Butik.varePris(p)));
     if (f.tekst) felt.appendChild(lav('p', 'mk-boks-tekst', f.tekst));
     if (f.bund) felt.appendChild(lav('span', 'mk-boks-bund', f.bund));
@@ -707,8 +715,8 @@
         + (t > 0 ? '+' + Butik.varePris(t) + ' pr. vaffel.' : 'samme pris som almindelig vaffel.') };
     }
     var boks = lav('div', 'mk-boks' + (d.boks === 'raekke' ? ' mk-boks-raekke' : ''));
-    (d.felter || [d]).forEach(function (f) { boks.appendChild(boksFelt(f, grupper)); });
-    return boks;
+    (d.felter || [d]).forEach(function (f) { var el = boksFelt(f, grupper); if (el) boks.appendChild(el); });
+    return boks.firstChild ? boks : null;
   }
 
   function tegnKapitel(c, grupper) {

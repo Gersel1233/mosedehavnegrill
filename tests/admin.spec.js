@@ -487,10 +487,7 @@ test.describe('Menukort', () => {
       'varen stod ikke på kortet i forvejen — så måler prøven ingenting')
       .toHaveCount(1);
     await expect(linje).not.toHaveClass(/mk-udsolgt/);
-    /* 26/9: smørrebrødets varianter koster det samme og står som på det
-       trykte kort — uden pris på linjen, med prisen i boksen "Alle
-       varianter". Prisen skal stadig stå der, før varen slås fra. */
-    await expect(page.locator('#kapitel-smoerrebroed .mk-boks-pris').first()).toHaveText('89,-');
+    await expect(linje.locator('.mk-pris')).toHaveText('89,-');
 
     await page.goto('/admin.html');
     await visFane(page, 'p-menu');

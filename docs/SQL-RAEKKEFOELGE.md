@@ -49,7 +49,8 @@ og derfra:
   → kortene-25-9.sql → kortenes-huller-25-9.sql
   → glutenfri-vaffel-samme-pris.sql → sluk-det-kortene-ikke-viser.sql
   → chefens-rettelser-25-9.sql → isens-opsaetning.sql
-  → glutenfrit-broed-5-kr.sql → gaestens-vaern-26-9.sql
+  → glutenfrit-broed-5-kr.sql → haandmadder-27-kr.sql
+  → gaestens-vaern-26-9.sql
 ```
 
 **⚠️ `gaestens-vaern-26-9.sql` SKAL STÅ SIDST (26/9) — og er IKKE kørt i
@@ -129,7 +130,7 @@ Datafilerne (`kortets-priser*.sql`, `borde-55.sql`, `ejerens-oplysninger.sql`,
 `kortene-25-9.sql`, `kortenes-huller-25-9.sql`,
 `glutenfri-vaffel-samme-pris.sql`, `sluk-det-kortene-ikke-viser.sql`,
 `chefens-rettelser-25-9.sql`, `isens-opsaetning.sql`,
-`glutenfrit-broed-5-kr.sql`)
+`glutenfrit-broed-5-kr.sql`, `haandmadder-27-kr.sql`)
 har med vilje INTET tjek: de skriver ejerens tal, og et tjek ville sige ❌ den dag,
 han retter sit eget tal i admin.
 

@@ -203,9 +203,9 @@ test.describe('Samme menukort, samme priser — de tre veje', () => {
     });
     expect(uenige).toEqual([]);
     /* Og en linjepris er faktisk målt — ellers kunne en side uden
-       priser bestå. Håndmaddens står i boksen (én pris for alle). */
+       priser bestå. */
     expect(kort['Flæskesteg med surt']).toBe('55');
-    await expect(page.locator('#kapitel-haandmadder .mk-boks-pris').first()).toHaveText('27,-');
+    expect(kort['Flæskesteg med surt, håndmad']).toBe('27');
   });
 
   test('bestil/ er en delmængde af forsiden — ikke en anden liste', async ({ page }) => {

@@ -133,8 +133,8 @@ test.describe('Menukortet', () => {
      som ét kort pr. kategori (Mikkels ord: "de skal naturligvis matche
      1:1 med de her"). Reglen bag er urørt og måles her: HVER aktiv vare
      fra admin står på kortet — tallet kommer fra fiksturet, ikke fra
-     siden. Og en variant, der koster det samme som resten, står uden
-     pris på linjen og med prisen i boksen "Alle varianter". */
+     siden. (Varianter, der koster det samme — mindst tre — står uden
+     pris på linjen og med prisen i boksen; se tre-veje.spec.js.) */
   test('sortimentet står i de trykte korts kapitler — alle ejerens varer med', async ({ page }) => {
     const d = medRet();
     await åbn(page, d);
@@ -148,7 +148,7 @@ test.describe('Menukortet', () => {
 
     await expect(page.locator('#mk-kat .mk-kapitel')).not.toHaveCount(0);
     await expect(page.locator('[data-kategori="Smørrebrød"] h3')).toHaveText('Varianter');
-    await expect(page.locator('#kapitel-smoerrebroed .mk-boks-pris').first()).toHaveText('89,-');
+    await expect(page.locator('[data-vare="Flæskestegssandwich"] .mk-pris')).toHaveText('89,-');
     await expect(page.locator('[data-vare="Flæskestegssandwich"] p'))
       .toHaveText('Sprød flæskesteg, rødkål og agurkesalat.');
   });
