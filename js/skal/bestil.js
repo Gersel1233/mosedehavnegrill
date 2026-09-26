@@ -2105,10 +2105,21 @@
     note.appendChild(linjer);
 
     var sum = sumIKurv();
+    /* ⚠️ DAGEN STÅR VED SEND (26/9). Fundet i en gennemgang af koden:
+       linjen sagde "To-go · kl. 12.00" uden dag — og dagen kan hoppe
+       til i morgen, når gæsten skifter spisemåde (en dag kan være lukket
+       for to-go og åben for spis her). Hun skal se, HVILKEN dag hun
+       sender til, lige over knappen. */
+    var iDag = Butik.nu().dato;
+    var dagen = !valgtDag ? ''
+      : valgtDag === iDag ? 'i dag'
+      : valgtDag === R.isoPlus(iDag, 1) ? 'i morgen'
+      : langDato(valgtDag);
+    var hvornår = [dagen, klokken].filter(Boolean).join(' ');
     note.appendChild(lav('div', 'sum-total',
       n + ' stk.'
       + (sum ? ' · i alt ' + kroner(sum) : '')
-      + ' · ' + hvordanTekst() + (klokken ? ' · ' + klokken : '')));
+      + ' · ' + hvordanTekst() + (hvornår ? ' · ' + hvornår : '')));
   }
 
   /* ============================================================
@@ -2584,10 +2595,13 @@
     var besked = auto
       ? 'Bestilt. ' + (b.hvordan === 'spis_her' ? 'Spis her ' : 'Hentes ') + hvornår + '. '
         + 'Der er ikke betalt noget – du betaler ved lugen.'
+      /* ⚠️ HELE SÆTNINGER (26/9). Her stod "Vi ringer og bekræfter.
+         lørdag d. 27. september kl. 12.00." — et punktum, et lille
+         bogstav og intet udsagnsord. Fundet i en gennemgang af koden. */
       : leveres
         ? 'Vi ringer og bekræfter leveringen — vi skal lige se på adressen først. '
-          + hvornår + '. Der er ikke betalt noget.'
-        : 'Vi ringer og bekræfter. ' + hvornår + '. '
+          + 'Du har ønsket den ' + hvornår + '. Der er ikke betalt noget.'
+        : 'Vi ringer og bekræfter bestillingen til ' + hvornår + '. '
           + 'Der er ikke betalt noget – du betaler ved lugen.';
 
     if (!K) {

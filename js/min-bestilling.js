@@ -153,10 +153,17 @@
       slags: 'modtaget',
       tegn: '✓',
       titel: 'Vi har din bestilling',
+      /* ⚠️ EN NY LEVERING ER IKKE LOVET ENDNU (26/9). Her stod "Vi kører
+         den ud til dig" fra første sekund — mens kvitteringen lige havde
+         sagt "vi ringer og bekræfter", og en levering ALDRIG bekræftes
+         af sig selv (vi skal se på adressen). Fundet i en gennemgang af
+         koden. Først når personalet har bekræftet, lover siden bilen. */
       tekst: bord
         ? 'Vi laver den nu og kommer ud til bord ' + bord + '.'
         : leveres
-          ? 'Den ligger i køkkenet. Vi kører den ud til dig.'
+          ? (st === 'ny'
+            ? 'Vi ringer til dig og bekræfter adressen og tiden, før vi kører.'
+            : 'Leveringen er bekræftet. Vi kører den ud til dig.')
           : 'Den ligger i køkkenet. Du kan følge med her.',
     };
   }

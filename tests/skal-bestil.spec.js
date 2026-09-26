@@ -1624,3 +1624,51 @@ test.describe('Kurven følger med, når gæsten skifter', () => {
     await expect(page.locator('#sumline .sum-fjernet')).toHaveCount(0);
   });
 });
+
+/* ============================================================
+   DAGEN VED SEND, OG KVITTERINGEN I HELE SÆTNINGER  (26/9)
+   ------------------------------------------------------------
+   Fundet i en gennemgang af koden: sumlinjen sagde "To-go · kl.
+   12.00" uden dag (og dagen kan hoppe, når spisemåden skifter), og
+   kvitteringen sagde "Vi ringer og bekræfter. lørdag d. 27.
+   september kl. 12.00." — et punktum og et lille bogstav.
+   ============================================================ */
+test.describe('Dagen ved Send og kvitteringens sætning', () => {
+  const lægNoget = async (page) => {
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('.item', { hasText: 'Fadøl, lille' }).first()
+      .locator('button', { hasText: '+' }).click();
+  };
+
+  /* Uret står fredag 7/8 kl. 13 — datoerne kommer fra uret, ikke fra
+     siden. En fadøl kan fås begge dage, så kurven bliver stående, når
+     dagen skiftes; det er DAGEN i linjen, prøven måler. */
+  test('sumlinjen siger, hvilken dag der sendes til', async ({ page }) => {
+    await åbn(page);
+    await page.locator('#dato').selectOption('2026-08-07');
+    await lægNoget(page);
+    const total = page.locator('#sumline .sum-total');
+    await expect(total).toContainText('i dag kl.');
+    await page.locator('#dato').selectOption('2026-08-08');
+    await expect(total).toContainText('1 stk.');
+    await expect(total).toContainText('i morgen');
+    await page.locator('#dato').selectOption('2026-08-10');
+    await expect(total, 'en dag længere ude skal stå med navn og dato')
+      .toContainText('10. august');
+  });
+
+  test('kvitteringen er hele sætninger, når vi skal ringe', async ({ page }) => {
+    const d = data();
+    d.indstillinger.auto_bekraeft = false;
+    await åbn(page, { data: d });
+    await lægNoget(page);
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+    const tekst = await page.locator('#bestil').innerText();
+    expect(tekst).toContain('Vi ringer og bekræfter bestillingen til');
+    expect(tekst, 'et punktum og så et lille bogstav').not.toMatch(/bekræfter\. [a-zæøå]/);
+  });
+});

@@ -255,6 +255,19 @@ test.describe('En levering får leveringens ord', () => {
     });
   });
 
+  /* ⚠️ EN NY LEVERING ER IKKE LOVET (26/9). Kvitteringen siger "vi
+     ringer og bekræfter" — følg-siden må ikke love bilen, før
+     personalet har gjort det. Modstykket: den bekræftede lover den. */
+  test('en ny levering lover opkaldet, ikke bilen — den bekræftede lover bilen', async ({ page }) => {
+    await åbnStatus(page, levering({ status: 'ny' }));
+    await expect(page.locator('.mb-tekst')).toContainText('ringer');
+    await expect(page.locator('.mb-tekst'), 'bilen blev lovet før opkaldet')
+      .not.toContainText('kører den ud');
+
+    await åbnStatus(page, levering({ status: 'bekraeftet' }));
+    await expect(page.locator('.mb-tekst')).toContainText('kører den ud');
+  });
+
   test('en levering betales ikke ved lugen', async ({ page }) => {
     await åbnStatus(page, levering({ status: 'klar' }));
     const linje = page.locator('.mb-fine');
