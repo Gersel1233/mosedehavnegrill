@@ -179,6 +179,14 @@
       <select class="inp" id="sdato"></select>
       <p class="hint">Bestil senest dagen før.</p>
     </div>
+    <!-- ⚠️ TIDEN STÅR LIGE UNDER DATOEN  (26/9) — samme regel som på
+         forsiden (Mikkels ja på et skærmbillede): dag og tid først, så
+         viser listen kun det, der kan fås. -->
+    <div class="field">
+      <label for="stid" id="stid-label">Hvornår henter I?</label>
+      <select class="inp" id="stid"></select>
+      <p class="hint" id="sidste-kald" hidden></p>
+    </div>
 
     <div class="field">
       <label>Hvad skal I have?</label>
@@ -192,11 +200,6 @@
       <p class="hint" id="lukkede" hidden></p>
     </div>
 
-    <div class="field">
-      <label for="stid" id="stid-label">Hvornår henter I?</label>
-      <select class="inp" id="stid"></select>
-      <p class="hint" id="sidste-kald" hidden></p>
-    </div>
 
     <!-- ⚠️ HENTES ELLER LEVERES — IKKE "SPIS HER".
          Smørrebrød ud af huset er pr. definition ud af huset (23/8).

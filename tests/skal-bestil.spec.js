@@ -369,10 +369,14 @@ test.describe('Forsidens bestilling', () => {
     /* ⚠️ "HVOR MANGE SPISER MED?" KOM TIL 26/9 (Mikkels ja: "frivilligt
        felt"). Det hører til "Spis her", som adressen hører til
        levering, og folder sig ud på samme måde lige under valget. */
+    /* ⚠️ "TIDSPUNKT" STÅR LIGE UNDER DATOEN SIDEN 26/9 (Mikkels ja på et
+       skærmbillede). Det stod efter hele listen, men klokkeslættet
+       bestemmer listen — morgenmaden forsvandt, når gæsten valgte tid
+       til sidst. Prøven er vendt med grunden, ikke lempet. */
     expect(etiketter).toEqual(['Hvordan vil I spise?',
       'Hvor mange spiser med? (valgfrit)', 'Hvor skal det leveres?',
-      'Dato', 'Vælg jeres retter',
-      'Tidspunkt', 'Navn', 'Telefonnummer',
+      'Dato', 'Tidspunkt', 'Vælg jeres retter',
+      'Navn', 'Telefonnummer',
       'Allergi (valgfrit)', 'Ja, køkkenet må gemme det her, så de kan tage hensyn.',
       'Besked (valgfrit)']);
   });
