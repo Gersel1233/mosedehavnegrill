@@ -1164,12 +1164,15 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
    glas, skygge, højde), så den ikke bliver en ny slags knap — og så
    stilvagtens loft over skygger og størrelser står, hvor det står. Den
    tager pillens plads, mens der ligger noget i kurven. */
-.kurvbar{position:fixed;bottom:var(--pille-bund);left:16px;right:16px;z-index:58;height:var(--pille-h);padding:0 24px;border-radius:29px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;background:linear-gradient(180deg,rgba(230,66,80,.94),rgba(184,26,40,.95));-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:flex;align-items:center;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums;transform:translateY(150%);opacity:0;pointer-events:none;visibility:hidden;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s linear .45s}
+.kurvbar{position:fixed;bottom:var(--pille-bund);left:16px;right:16px;z-index:58;height:var(--pille-h);padding:0 24px;border-radius:29px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;background:linear-gradient(180deg,#e64250,#b81a28);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:flex;align-items:center;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums;transform:translateY(150%);opacity:0;pointer-events:none;visibility:hidden;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s linear .45s}
 .kurvbar.vis{transform:none;opacity:1;pointer-events:auto;visibility:visible;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s}
 .kurvbar svg{width:19px;height:19px;flex:none}
 .kurvbar-sum{opacity:.86}
 .kurvbar-pil{margin-left:auto}
 .kurvbar-pil::after{content:" ↓"}
+/* ⚠️ BJÆLKEN ER HELT DÆKKENDE, ikke 94 % som pillen: den bærer beløbet,
+   og på et skud (26/9) skinnede varelisten bag den igennem omkring
+   "35,-". Glas er pynt; et beløb, der skal læses, er det ikke. */
 /* Det, der røg ud af kurven ved et skift (26/9) — se sigFjernet() i
    js/skal/bestil.js. Blæk på sumlinjens bund, ikke rødt: det er en
    oplysning, ikke en fejl. */
