@@ -171,6 +171,43 @@ test.describe('Samme menukort, samme priser — de tre veje', () => {
     expect(b['Havnens burger']).toBe('95');
   });
 
+  /* ⚠️ OG MENUKORTET ER DEN FJERDE FLADE (26/9). Mikkels ord før
+     udgivelsen af det nye kort: *"Kontrollér, at menukortet og
+     onlinebestillingen viser nøjagtig de samme produkter og priser."*
+     Menukortet bygges af en FJERDE funktion (kapitlerne i
+     js/skal/menukort.js), så det kan skride fra de tre andre på præcis
+     samme måde. Alt, der kan bestilles, skal stå på kortet — og hvor
+     kortet viser en pris på linjen, er den bestillingens. (Varianter,
+     der koster det samme, står uden pris på linjen og med prisen i
+     boksen "Alle varianter", som på det trykte kort.) */
+  test('menukortet viser de samme varer og priser som bestillingen', async ({ page }) => {
+    const f = await forsiden(page);
+    const s = await bestilSiden(page);
+    await åbnSkal(page, '/m-menukort.html', { ur: UR, data: menu() });
+    await page.waitForSelector('#mk-kat .mk-linje[data-vare]');
+    const k = await page.$$eval('#mk-kat .mk-linje[data-vare]', (r) => r.map((e) => ({
+      navn: e.getAttribute('data-vare'),
+      pris: (e.querySelector('.mk-pris') || {}).textContent || '',
+    })));
+    const kort = priser(k);
+    const mangler = navne(f.concat(s)).filter((n, i, a) => a.indexOf(n) === i)
+      .filter((n) => !(n in kort));
+    expect(mangler, 'kan bestilles, men står ikke på menukortet').toEqual([]);
+    const uenige = [];
+    [['forsiden', priser(f)], ['bestil/', priser(s)]].forEach(([hvor, a]) => {
+      Object.keys(a).forEach((n) => {
+        if (kort[n] !== null && kort[n] !== undefined && kort[n] !== a[n]) {
+          uenige.push(`${n}: menukortet ${kort[n]} mod ${hvor} ${a[n]}`);
+        }
+      });
+    });
+    expect(uenige).toEqual([]);
+    /* Og en linjepris er faktisk målt — ellers kunne en side uden
+       priser bestå. */
+    expect(kort['Flæskesteg med surt']).toBe('55');
+    expect(kort['Flæskesteg med surt, håndmad']).toBe('27');
+  });
+
   test('bestil/ er en delmængde af forsiden — ikke en anden liste', async ({ page }) => {
     const f = await forsiden(page);
     const s = await bestilSiden(page);

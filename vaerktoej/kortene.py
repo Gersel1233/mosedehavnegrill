@@ -411,8 +411,14 @@ for _navn in [
     # siden med en anden pris end resten.
     "Dagens hjemmelavede pålægssalater",
 ]:
-    AFGJORT[("04 HÅNDMADDER", _navn)] = (24, "Mikkel 25/9: \"24 gælder — kortbilledet er forkert\"")
+    pass
 del _navn
+# ⚠️ AFGØRELSEN ER TAGET TILBAGE 26/9. Mikkels ord: *"I den oprindelige
+#    oversigt over chefens rettelser står der, at almindelige håndmadder
+#    skal koste 27 kr. – ikke 24 kr. Undtagelserne er lun delle til 25 kr.
+#    og flæskesvær til 35 kr."* Kortets 27 gælder; databasen rettes af
+#    supabase/haandmadder-27-kr.sql. Listen ovenfor står, så ingen tror,
+#    afgørelsen aldrig fandtes — men den lægger ikke længere noget i AFGJORT.
 
 PAASTANDE = [
   ("01 MENUKORT FRA GRILLEN", "\"Morgenbrød – spørg ved bestilling.\" — ingen bestillingsliste til morgenbrød"),

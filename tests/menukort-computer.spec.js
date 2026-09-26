@@ -41,9 +41,11 @@ test.describe('Menukortet på en computer', () => {
 
   test('kategorierne er ikke kasser — og står i hele spaltens bredde', async ({ page }) => {
     const m = await page.evaluate(() => {
-      const kat = document.getElementById('mk-kat').getBoundingClientRect();
+      /* 26/9: kortet står i to spalter som det trykte kort — hvert
+         afsnit skal fylde SIN spalte (.mk-spalte), ikke hele siden. */
       return [...document.querySelectorAll('#mk-kat .panel')].map((p) => {
         const cs = getComputedStyle(p);
+        const kat = p.closest('.mk-spalte').getBoundingClientRect();
         return { navn: p.dataset.kategori, skygge: cs.boxShadow, grund: cs.backgroundColor,
           bredde: Math.round(p.getBoundingClientRect().width), spalte: Math.round(kat.width) };
       });

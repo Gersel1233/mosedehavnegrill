@@ -107,7 +107,7 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   kanal-vaern bord-plads gaester-ved-bordet
   levering-zone levering-valideret kortene-25-9 kortenes-huller-25-9
   glutenfri-vaffel-samme-pris chefens-rettelser-25-9 isens-opsaetning
-  glutenfrit-broed-5-kr gaestens-vaern-26-9 bremse-uden-borde-26-9"
+  glutenfrit-broed-5-kr haandmadder-27-kr gaestens-vaern-26-9 bremse-uden-borde-26-9"
 # ⚠️ bremse-uden-borde-26-9 skriver bestilling_bremse forfra (26/9) og
 #    skal stå efter bremse.sql og skraldespand.sql; den har
 #    skraldespandens "slettet is null" med. Rækkefølgen mod

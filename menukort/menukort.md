@@ -1,6 +1,6 @@
 # Menukortet hos Mosede Havnecafe
 
-Hentet direkte ud af databasen **2026-09-25**. Databasen er sandheden —
+Hentet direkte ud af databasen **2026-09-26**. Databasen er sandheden —
 retter ejeren en pris i admin, er filen her forældet samme sekund.
 Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
@@ -149,25 +149,25 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 > Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.
 
-- **Flæskesteg med surt, håndmad** — 24 kr.
-- **Fiskefilet med remoulade, håndmad** — 24 kr.
-- **Frikadelle med surt, håndmad** — 24 kr.
-- **Leverpostej med surt, håndmad** — 24 kr.
-- **Dyrlægens natmad, håndmad** — 24 kr.
-- **Kartoffelmad med mayo, løg og bacon, håndmad** — 24 kr.
-- **Rullepølse med sky og løg, håndmad** — 24 kr.
-- **Hjemmelavet Roastbeef med remoulade og løg, håndmad** — 24 kr.
-- **Skinke med italiensk salat, håndmad** — 24 kr.
-- **Skinke med spejlæg, håndmad** — 24 kr.
-- **Kylling med bacon og karry, håndmad** — 24 kr.
-- **Spegepølse med sky og løg, håndmad** — 24 kr.
-- **Spegepølse med remoulade og ristet løg, håndmad** — 24 kr.
-- **Hvide sild, håndmad** — 24 kr.
-- **Hvide sild med karry, håndmad** — 24 kr.
-- **Æggemad med mayo og løg, håndmad** — 24 kr.
-- **Hakkebøf med bløde løg og spejlæg, håndmad** — 24 kr.
-- **Ostemad, mellem lageret  håndmad** — 24 kr.
-- **Dagens hjemmelavede pålægssalater, håndmad** — 24 kr.
+- **Flæskesteg med surt, håndmad** — 27 kr.
+- **Fiskefilet med remoulade, håndmad** — 27 kr.
+- **Frikadelle med surt, håndmad** — 27 kr.
+- **Leverpostej med surt, håndmad** — 27 kr.
+- **Dyrlægens natmad, håndmad** — 27 kr.
+- **Kartoffelmad med mayo, løg og bacon, håndmad** — 27 kr.
+- **Rullepølse med sky og løg, håndmad** — 27 kr.
+- **Hjemmelavet Roastbeef med remoulade og løg, håndmad** — 27 kr.
+- **Skinke med italiensk salat, håndmad** — 27 kr.
+- **Skinke med spejlæg, håndmad** — 27 kr.
+- **Kylling med bacon og karry, håndmad** — 27 kr.
+- **Spegepølse med sky og løg, håndmad** — 27 kr.
+- **Spegepølse med remoulade og ristet løg, håndmad** — 27 kr.
+- **Hvide sild, håndmad** — 27 kr.
+- **Hvide sild med karry, håndmad** — 27 kr.
+- **Æggemad med mayo og løg, håndmad** — 27 kr.
+- **Hakkebøf med bløde løg og spejlæg, håndmad** — 27 kr.
+- **Ostemad, mellem lageret  håndmad** — 27 kr.
+- **Dagens hjemmelavede pålægssalater, håndmad** — 27 kr.
   <br>Spørg ved bestilling
 
 ## Tapasfad
@@ -328,10 +328,10 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 *Mad · kan bestilles*
 
-> Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.
+> Ejerens tillæg: 5 kr. pr. stk. Sig til, når I bestiller.
 
 - **Glutenfrit brød (tillæg)** — 5 kr.
-  <br>Til smørrebrød og burgere — 10 kr. pr. stk.
+  <br>Til smørrebrød og burgere — 5 kr. pr. stk.
 
 ## Tilkøb ud af huset
 

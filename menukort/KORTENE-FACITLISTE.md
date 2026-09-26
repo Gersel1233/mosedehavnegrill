@@ -1,6 +1,6 @@
 # De syv menukort — facitliste
 
-Skrevet af fra Mikkels færdige kort **2026-09-25** og holdt op mod
+Skrevet af fra Mikkels færdige kort **2026-09-26** og holdt op mod
 databasen post for post med `vaerktoej/sammenlign-kort.py`.
 
 **Kortene er facitlisten. Databasen er systemet. De to skal sige

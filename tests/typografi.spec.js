@@ -181,9 +181,12 @@ test.describe('Ét klokkeslæt til øjnene', () => {
 });
 
 test.describe('Én talstemme', () => {
-  test('prisen ved bordet og prisen på menukortet har SAMME skrift og vægt', async ({ page }) => {
-    /* ⚠️ TO SIDER MOD HINANDEN. Et spørgsmål til den ene om dens
-       egen skrift ville bestå, også hvis den anden var serif. */
+  /* ⚠️ VENDT 26/9 — MENUKORTET TALER DE TRYKTE KORTS SPROG. Mikkels ord:
+     *"de skal naturligvis matche 1:1 med de her"*: kortenes priser står
+     i røde Bebas-tal, og det gør menukortets nu også. Bestillingssiderne
+     (her: ved bordet) har stadig husets talstemme. Begge er målt — og
+     begge skal have tal i faste bredder, så en spalte priser flugter. */
+  test('prisen ved bordet har husets talstemme — menukortet kortenes', async ({ page }) => {
     await åbnSkal(page, '/m-menukort.html', { data: grunddata() });
     await page.waitForTimeout(500);
     const kort = await page.locator('.mk-pris').first().evaluate((e) => {
@@ -195,12 +198,9 @@ test.describe('Én talstemme', () => {
       const c = getComputedStyle(e);
       return { f: c.fontFamily.split(',')[0].replace(/"/g, ''), w: c.fontWeight, n: c.fontVariantNumeric };
     });
-    expect(bord.f, 'to skrifter for det samme "89,-"').toBe(kort.f);
-    expect(bord.w, 'to vægte for det samme "89,-"').toBe(kort.w);
-    /* Og det skal være designets egen talstemme — ikke bare ens.
-       To serif'er ville også være ens. */
-    expect(kort.f).toBe('Instrument Sans');
-    expect(kort.w).toBe('600');
+    expect(bord.f).toBe('Instrument Sans');
+    expect(bord.w).toBe('600');
+    expect(kort.f, 'menukortets pris står ikke i kortenes Bebas').toBe('Bebas Neue');
     expect(kort.n).toContain('tabular-nums');
     expect(bord.n).toContain('tabular-nums');
   });

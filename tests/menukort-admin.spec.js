@@ -233,17 +233,14 @@ test.describe('Kategorier kan oprettes og rettes', () => {
     expect(k.navn).toBe('Fadøl og vand');
     expect(k.afdeling).toBe('drikke');
 
-    /* ⚠️ m-menukort.html, ikke menu.html (30/8), og der er ingen
-       afdelingsknapper på den: afdelingen viser sig som FARVEN på
-       kategoriens tegn (.mk-drikke). Det er en bedre måling af
-       det samme — navnet OG afdelingen skal begge være fulgt med
-       fra admin. */
+    /* ⚠️ 26/9: menukortet står i DE TRYKTE KORTS kapitler, og tegnet med
+       afdelingens farve er væk (kortene har ingen emojier). Afdelingen er
+       målt i det gemte ovenfor; på siden måles, at det NYE navn står der —
+       en omdøbt kategori, kortene ikke kender, må ikke tabes. */
     await åbn(page, '/m-menukort.html', { data: gemt });
     const kort = page.locator('#mk-kat .panel[data-kategori="Fadøl og vand"]');
     await expect(kort).toHaveCount(1);
-    await expect(kort.locator('.mk-tegn'),
-      'afdelingen fulgte ikke med — tegnet har stadig den gamle farve')
-      .toHaveClass(/mk-drikke/);
+    await expect(kort.locator('h3')).toHaveText('Fadøl og vand');
   });
 
   /* SLET STÅR KUN PÅ EN TOM KATEGORI. Databasen sletter varerne med

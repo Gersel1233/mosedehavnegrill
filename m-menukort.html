@@ -36,7 +36,7 @@
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="menukort.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="menukort.css?v=__V__"><link rel="stylesheet" href="menukort-kort.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
@@ -60,8 +60,6 @@
 <!-- FAST SORTIMENT. Ét kort pr. kategori, som ejeren har sat dem
      op i admin — ikke en liste, koden finder på. -->
 <section id="mk-kat-afsnit">
-  <div class="mid rev"><div class="eyebrow red">Fra lugen</div><h2>Fast sortiment</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
-  <p class="sub" style="max-width:34ch">Grillen, smørrebrødet, isen og drikkevarerne.</p></div>
   <!-- Hop til + kortene hører sammen og deler den samme brede
        spalte. Ligger båndet for sig selv, ender det med at klæbe
        midt hen over kortene på en bred skærm. -->
@@ -115,6 +113,9 @@
      ⚠️ MAN BESTILLER STADIG IKKE HERINDE (24/8). Laget kan pege VIDERE
      til bestillingen; det har ingen tæller og ingen kurv.
      ============================================================ -->
+<!-- Kortenes roundel (26/9). Én skabelon; js/skal/menukort.js giver hver
+     kopi egne id'er, så <use href> ikke peger på et andet kapitels. -->
+<template id="mk-logo"><svg class="crest" aria-hidden="true" focusable="false" viewBox="0 0 300 300"><defs><path id="mkl" d="M38.65 109.5A118.5 118.5 0 0 1 261.35 109.5"/><g id="mklj" fill="none" stroke="#d62a3a" stroke-width="5.4" stroke-linecap="butt"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/><path d="M39 3h-18M30 3v17a10 10 0 0 0 10 10"/></g></defs><circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="8"/><circle cx="150" cy="150" r="113" fill="none" stroke="#2a5f8f" stroke-width="3.4"/><text class="ct" text-anchor="middle"><textPath href="#mkl" startOffset="50%">MOSEDE HAVNECAFE</textPath></text><g fill="#fff" stroke="#d62a3a" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="150" cy="96" r="19"/><circle cx="133" cy="124" r="19"/><circle cx="167" cy="124" r="19"/><path d="M124 139h52l-26 66z"/></g><g fill="none" stroke="#d62a3a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><path d="M131 155h38M138 172h24M144 188h12"/></g><use href="#mklj" transform="translate(51 152)"/><use href="#mklj" transform="translate(207 152)"/><text class="est" x="150" y="236" text-anchor="middle">EST. 2025</text></svg></template>
 <div class="sheet" id="vare-lag" role="dialog" aria-modal="true" aria-labelledby="vare-titel">
   <div class="sheet-in">
     <div class="ev-lag-top"><span class="kind" id="vare-kat"></span><button class="g sm" id="vare-luk" type="button">Luk</button></div>
@@ -155,5 +156,6 @@
 <script src="js/skal/seo.js?v=__V__"></script>
 <script src="js/skal/kontakt.js?v=__V__"></script>
 <script src="js/menu-emoji.js?v=__V__"></script>
+<script src="js/skal/menukort-kort.js?v=__V__"></script>
 <script src="js/skal/menukort.js?v=__V__"></script>
 </body></html>
