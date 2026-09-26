@@ -1,5 +1,5 @@
 {
-  "hentet": "2026-09-25",
+  "hentet": "2026-09-26",
   "kilde": "menu_kategorier + menu_varer + indstillinger (Mosede)",
   "kategorier": [
     {
@@ -123,16 +123,6 @@
       "dage": "alle"
     },
     {
-      "id": 16,
-      "lokation_id": "mosede",
-      "afdeling": "is",
-      "navn": "Softice og vafler",
-      "sortering": 11,
-      "aktiv": true,
-      "note": null,
-      "dage": "alle"
-    },
-    {
       "id": 29,
       "lokation_id": "mosede",
       "afdeling": "mad",
@@ -143,11 +133,11 @@
       "dage": "alle"
     },
     {
-      "id": 64,
+      "id": 16,
       "lokation_id": "mosede",
       "afdeling": "is",
-      "navn": "Ispinde",
-      "sortering": 12,
+      "navn": "Softice og vafler",
+      "sortering": 11,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -157,6 +147,16 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Morgenmad",
+      "sortering": 12,
+      "aktiv": true,
+      "note": null,
+      "dage": "alle"
+    },
+    {
+      "id": 64,
+      "lokation_id": "mosede",
+      "afdeling": "is",
+      "navn": "Ispinde",
       "sortering": 12,
       "aktiv": true,
       "note": null,
@@ -179,7 +179,7 @@
       "navn": "Tillæg: glutenfri, laktosefri og vegansk",
       "sortering": 14,
       "aktiv": true,
-      "note": "Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.",
+      "note": "Ejerens tillæg: 5 kr. pr. stk. Sig til, når I bestiller.",
       "dage": "alle"
     },
     {
@@ -4751,7 +4751,7 @@
       "id": 243,
       "kategori_id": 32,
       "navn": "Glutenfrit brød (tillæg)",
-      "beskrivelse": "Til smørrebrød og burgere — 10 kr. pr. stk.",
+      "beskrivelse": "Til smørrebrød og burgere — 5 kr. pr. stk.",
       "pris": 5.0,
       "fremhaevet": false,
       "udsolgt": false,

@@ -1,6 +1,6 @@
 # De syv menukort — facitliste
 
-Skrevet af fra Mikkels færdige kort **2026-09-25** og holdt op mod
+Skrevet af fra Mikkels færdige kort **2026-09-26** og holdt op mod
 databasen post for post med `vaerktoej/sammenlign-kort.py`.
 
 **Kortene er facitlisten. Databasen er systemet. De to skal sige
@@ -423,6 +423,30 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 ---
 
 ## Hvad kortene og databasen er uenige om
+
+### Priser, der ikke passer
+
+| Vare | Kortet | Databasen | Kort |
+|---|---:|---:|---|
+| Flæskesteg med surt | **27,-** | 24,- | 04 HÅNDMADDER |
+| Fiskefilet med remoulade | **27,-** | 24,- | 04 HÅNDMADDER |
+| Frikadelle med surt | **27,-** | 24,- | 04 HÅNDMADDER |
+| Dagens hjemmelavede pålægssalater | **27,-** | 24,- | 04 HÅNDMADDER |
+| Leverpostej med surt | **27,-** | 24,- | 04 HÅNDMADDER |
+| Dyrlægens natmad | **27,-** | 24,- | 04 HÅNDMADDER |
+| Kartoffelmad med mayo, løg & bacon | **27,-** | 24,- | 04 HÅNDMADDER |
+| Rullepølse med sky & løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Roastbeef med remoulade & løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Skinke med italiensk salat | **27,-** | 24,- | 04 HÅNDMADDER |
+| Skinke med spejlæg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Kylling med bacon & karry | **27,-** | 24,- | 04 HÅNDMADDER |
+| Spegepølse med sky & løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Spegepølse med remoulade & ristet løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Hvide sild | **27,-** | 24,- | 04 HÅNDMADDER |
+| Hvide sild med karry | **27,-** | 24,- | 04 HÅNDMADDER |
+| Æggemad med mayo & løg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Hakkebøf med bløde løg & spejlæg | **27,-** | 24,- | 04 HÅNDMADDER |
+| Ostemad | **27,-** | 24,- | 04 HÅNDMADDER |
 
 ### Påstande på kortene, der ikke er varer
 

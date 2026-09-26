@@ -1,6 +1,6 @@
 # Menukortet hos Mosede Havnecafe
 
-Hentet direkte ud af databasen **2026-09-25**. Databasen er sandheden —
+Hentet direkte ud af databasen **2026-09-26**. Databasen er sandheden —
 retter ejeren en pris i admin, er filen her forældet samme sekund.
 Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
@@ -328,10 +328,10 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 *Mad · kan bestilles*
 
-> Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.
+> Ejerens tillæg: 5 kr. pr. stk. Sig til, når I bestiller.
 
 - **Glutenfrit brød (tillæg)** — 5 kr.
-  <br>Til smørrebrød og burgere — 10 kr. pr. stk.
+  <br>Til smørrebrød og burgere — 5 kr. pr. stk.
 
 ## Tilkøb ud af huset
 
