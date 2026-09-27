@@ -59,8 +59,10 @@
     var tekst = $('bestil-status-tekst');
     if (!pille || !tekst) return;
     tekst.textContent = Butik.pilleTekst(s);
-    var prik = pille.querySelector('.dot');
-    if (prik) prik.classList.toggle('lukket', !s.aaben);
+    /* Lanternen og ikke en rød prik (27/9): tegnet står i Butik.lanterne. */
+    var brug = pille && pille.querySelector('.lanterne use');
+    if (brug) brug.setAttribute('href', '../ikoner.svg#' + Butik.lanterne(s));
+    if (pille) pille.classList.toggle('aaben', !!s.aaben);
   }
 
   function visOplysninger() {

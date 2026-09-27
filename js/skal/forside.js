@@ -147,8 +147,7 @@
   function sætLanterne(boks, s) {
     var brug = boks && boks.querySelector('.lanterne use');
     if (!brug) return;
-    var tegn = s.ukendt ? 'telefon' : (s.aaben ? 'lanterne-taendt' : 'lanterne-slukket');
-    brug.setAttribute('href', 'ikoner.svg#' + tegn);
+    brug.setAttribute('href', 'ikoner.svg#' + Butik.lanterne(s));
     boks.classList.toggle('aaben', !!s.aaben);
   }
 

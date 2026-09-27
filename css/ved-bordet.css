@@ -129,16 +129,28 @@ body.ved-bordet #bestil > .head p { color: rgba(255, 255, 255, .86); }
 
    Hvid flade og ikke en gennemsigtig: pillen skal kunne læses
    uanset hvad fotoet bag den viser. */
+/* ⚠️ GLAS OG ALMINDELIG SKRIFT (27/9). Den stod hvid med rød kant og
+   spærrede versaler ("BORD 7") og lignede en knap, der ikke kunne
+   trykkes på — Mikkels ord om de små flader: "ikke lesreg agtige".
+   Nu husets glas: næsten hvid (.9), så den stadig kan læses over et
+   hvilket som helst foto, slør, lys overkant og en tynd ring, og
+   "Bord 7" i almindelig skrift. Ingen skygge under: løftet er
+   knappernes. */
 body.ved-bordet #bord-eyebrow {
-  display: inline-block;
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
   padding: 7px 16px;
   border-radius: 999px;
-  background: #fff;
-  border: 1px solid var(--bord-tern);
+  background: rgba(255, 255, 255, .9);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: inset 0 1px .5px rgba(255, 255, 255, .95), inset 0 0 0 .5px rgba(36, 26, 23, .12);
   color: var(--bord-blaek);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: .14em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
 }
 body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
 

@@ -721,6 +721,17 @@
     return kort ? s.overskrift + ' ' + kort : s.overskrift;
   }
 
+  /* LANTERNEN VED PILLEN (27/9). Navnet på tegnet i ikoner.svg, der
+     står foran pilleTekst: tændt ved åbent, slukket ved lukket og
+     telefonen, når vi ikke ved det ("Ring og hør"). Forsiden,
+     bestil/ og ved-bordet/ spørger her — den røde prik, der stod på
+     de to sidste, var det generiske tegn, Mikkel pegede på. Formen
+     står aldrig alene: teksten siger altid "Åbent" eller "Lukket". */
+  function lanterne(s) {
+    if (!s || s.ukendt) return 'telefon';
+    return s.aaben ? 'lanterne-taendt' : 'lanterne-slukket';
+  }
+
   /* ÉT sted der svarer på "er der lukket den dag".
 
      Det er ikke pedanteri: en lukkedag var før én dato, og tre
@@ -4973,6 +4984,7 @@
     pris: pris,
     status: status,
     pilleTekst: pilleTekst,
+    lanterne: lanterne,
     kroner: kroner,
     varePris: varePris,
     vareValg: vareValg,

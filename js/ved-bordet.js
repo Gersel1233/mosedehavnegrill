@@ -90,8 +90,11 @@
     var s = Butik.status(d);
     var tekst = $('bestil-status-tekst');
     if (tekst) tekst.textContent = Butik.pilleTekst(s);
-    var prik = document.querySelector('#bestil-status .dot');
-    if (prik) prik.classList.toggle('lukket', !s.aaben);
+    var pille = $('bestil-status');
+    /* Lanternen og ikke en rød prik (27/9): tegnet står i Butik.lanterne. */
+    var brug = pille && pille.querySelector('.lanterne use');
+    if (brug) brug.setAttribute('href', '../ikoner.svg#' + Butik.lanterne(s));
+    if (pille) pille.classList.toggle('aaben', !!s.aaben);
     return s;
   }
 

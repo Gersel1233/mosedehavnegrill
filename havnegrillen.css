@@ -1648,7 +1648,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .teaser h4{font-family:"Host Grotesk",system-ui,sans-serif;font-size:15px;font-weight:600;color:var(--ink)}
 .teaser p{margin:4px 0 0;font-size:13px;line-height:1.4;color:var(--ink2)}
 .teaser .go{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--red)}
-.teaser .nyt{display:inline-block;margin-bottom:6px;padding:3px 9px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
+.teaser .nyt{margin-bottom:6px}
 
 /* hvem er vi */
 .about{background:#1f1310;color:rgba(255,255,255,.74);padding:36px var(--pad) 40px;position:relative;overflow:hidden}
@@ -1707,8 +1707,9 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    andre mærker og eyebrows i huset er 11. MÅLT i 320 og 390: ved 12
    px brækker et arrangementsmærke med pris ("Spisning · 295,- inkl.
    buffet") i to linjer på en 390-skærm, og kortet bliver 14 px
-   højere. 11 står på én linje dér. Ingen ny størrelse i skalaen. */
-.tapasec .nyt{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
+   højere. 11 står på én linje dér. Ingen ny størrelse i skalaen.
+   Samme aften blev "Nyhed" (.nyt) en .glaspille i almindelig skrift;
+   reglen gælder nu .evcard .kind. */
 .tapasec h3{font-size:29px;margin-top:10px}
 .tapasec p{margin:9px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
 .tapasec .bits{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
@@ -2943,8 +2944,28 @@ footer .smiley-linje{
    er de lyse kort med en blød kant. */
 #alt{background:var(--cream2)}
 #alt>.rev:first-child{position:relative;isolation:isolate;background-color:rgba(255,255,255,.8);background-image:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 55%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-radius:26px;padding:18px 18px 16px;box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
-#alt .row-card{isolation:isolate;border-radius:24px;background-color:rgba(255,255,255,.62);background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.08) 60%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
-#alt>.rev:first-child::before,#alt .row-card::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1.2px;pointer-events:none;background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(255,255,255,.15) 35%,rgba(255,255,255,.1) 65%,rgba(255,255,255,.85));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+#alt .row-card,.glaspille{isolation:isolate;border-radius:24px;background-color:rgba(255,255,255,.62);background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.08) 60%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
+#alt>.rev:first-child::before,#alt .row-card::before,.glaspille::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1.2px;pointer-events:none;background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(255,255,255,.15) 35%,rgba(255,255,255,.1) 65%,rgba(255,255,255,.85));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+/* ⚠️ GLASPILLEN (27/9). Mikkels ord: *"lav allergi tingen en liquid glass
+   pille lesreg style"*. Allergilinjen var en stiplet, lyserød kasse og
+   "Nyhed" en rød mærkat i spærrede versaler: de to mest skabelonagtige
+   små flader på siden. Nu er de husets glas i lille format: samme flade,
+   glans og lyse kant som #alt-kortene ovenfor (selektoren står på de to
+   regler dér, så glasset bor ét sted) og den lille glasskygge fra
+   bestillingens piller. Almindelig skrift, ingen versaler (LESREG: label-
+   stil kun til data). Kundens 🥜 og ordene står (31/8). */
+/* ⚠️ INGEN SKYGGE UNDER (27/9): hvidt glas, der løfter sig, er husets
+   KNAP (.g). Første udgave havde den lille glasskygge, og allergilinjen
+   stod som en stor knap uden noget at trykke på. Pillen ligger i fladen:
+   glas, lys kant og en tynd ring — ingen løft. Nødden står i teksten og
+   ikke som en flex-celle, ellers hang den ude i kanten, når linjen brød. */
+.glaspille{position:relative;display:inline-block;max-width:min(100%,36ch);padding:9px 18px;border-radius:999px;font-size:13px;font-weight:500;line-height:1.45;text-align:center;color:var(--ink2);text-wrap:balance;box-shadow:var(--kant-inde)}
+.glaspille>[aria-hidden]{margin-right:6px}
+.menucard .glaspille{margin-top:16px}
+.glaspille.nyt{padding:5px 12px;font-weight:600;color:var(--red-tekst)}
+.menucard .glaspille,.phead .glaspille{justify-self:center}
+/* Telefonen i en knap er husets tegn, ikke 📞 (27/9, persondatasiden). */
+.g>svg{width:18px;height:18px;flex:none}
 #alt .row-card .ic{background:rgba(255,255,255,.6);box-shadow:var(--kant-inde)}
 #alt .row-card .go{right:12px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.72);box-shadow:var(--skygge-let)}
 

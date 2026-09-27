@@ -577,20 +577,19 @@ main [id], main[id] { scroll-margin-top: 96px; }
    tests/bestil-doeren.spec.js slår ned, hvis .glass.stor dukker
    op på forsiden igen. */
 
-/* Den grønne prik i "Åbent nu"-pillen */
-.glass .dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #7fd6a1;
-  box-shadow: 0 0 0 4px rgba(127, 214, 161, .22);
-  flex: 0 0 auto;
-}
-/* Er der lukket, skal prikken ikke være grøn – og der står
-   også "Lukket" i teksten, så farven aldrig står alene */
-.glass .dot.lukket {
-  background: var(--red);
-  box-shadow: 0 0 0 4px rgba(214, 42, 58, .22);
-}
+/* LANTERNEN I "ÅBENT NU"-PILLEN (27/9). Her stod en prik, der
+   åndede grønt eller stod rød: det generiske statustegn, Mikkel
+   pegede på ("ikke lesreg agtige … claude genkendelige"). Nu er
+   det husets lanterne fra ikoner.svg, samme som forsiden: tændt
+   ved åbent, slukket ved lukket. Tegnet vælges i Butik.lanterne,
+   og der står ALTID også "Åbent" eller "Lukket" i teksten, så
+   formen aldrig står alene. Tændt er husets lanterne-rav; på den
+   lyse pille ved bordet en tone mørkere, ellers forsvinder den i
+   det hvide. */
+.glass .lanterne { width: 16px; height: 16px; flex: 0 0 auto; display: block; color: var(--muted); }
+.glass.aaben .lanterne { color: #c97a14; }
+.glass.on-dark .lanterne { color: rgba(255, 255, 255, .7); }
+.glass.on-dark.aaben .lanterne { color: #f0a03c; }
 
 /* Kan browseren ikke sløre baggrunden, bliver de tre slørede flader
    almindelige flader. Uden dette ville teksten stå på noget nær
@@ -2178,13 +2177,6 @@ footer a:hover { color: #fff; }
 }
 .status-skift { animation: status-skift .6s var(--lempning); }
 
-/* Prikken ånder. Meget svagt – det er en prik på fem pixel, og
-   den skal antyde at siden er i live, ikke tage opmærksomhed. */
-@keyframes prik-aande {
-  0%, 100% { box-shadow: 0 0 0 4px rgba(127, 214, 161, .22); }
-  50%      { box-shadow: 0 0 0 7px rgba(127, 214, 161, .10); }
-}
-.glass .dot:not(.lukket) { animation: prik-aande 3.2s ease-in-out infinite; }
 
 /* ------------------------------------------------------------
    MENUKORTET SKIFTER AFDELING
@@ -2202,7 +2194,6 @@ footer a:hover { color: #fff; }
   .rev > *, .rev.in > * { opacity: 1; transform: none; transition: none; }
   .hero .bg { transform: none; }
   .status-skift { animation: none; }
-  .glass .dot:not(.lukket) { animation: none; }
   .kat-skift .kat { animation: none; }
 }
 

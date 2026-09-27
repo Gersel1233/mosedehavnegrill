@@ -36,18 +36,10 @@
    gratis. */
 .mk-pris.mk-spoerg { font-size: 12.5px; font-weight: 500; color: var(--muted); }
 
-/* ---- Allergi-pillen under manchetten ---- */
-.mk-allergi {
-  display: inline-block;
-  margin-top: 16px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px dashed rgba(214, 42, 58, .4);
-  background: rgba(214, 42, 58, .06);
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--ink2);
-}
+/* ---- Allergi-pillen under manchetten ----
+   Glasset er .glaspille i havnegrillen.css (27/9) — den stiplede,
+   lyserøde kasse er væk. Her står kun pladsen. */
+.mk-allergi { margin-top: 16px; }
 
 /* ---- Kortet "I dag" ----
    Den ternede strimmel i venstre kant er den samme, som dagens

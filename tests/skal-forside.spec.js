@@ -130,6 +130,70 @@ test.describe('Forsidens kobling', () => {
       .toHaveAttribute('href', 'ikoner.svg#lanterne-slukket');
   });
 
+  /* ⚠️ OG PÅ BESTIL/ OG VED BORDET (27/9). De to havde deres egen
+     statuspille med en prik, der åndede grønt eller stod rød — det
+     samme generiske tegn, som forsiden slap af med. Nu spørger alle
+     tre Butik.lanterne. Tallet udefra er klokken: 13 er åbent (ugeplanen
+     siger 11–21), 6 om morgenen er lukket. */
+  for (const sti of ['/bestil/', '/ved-bordet/?bord=7']) {
+    test('lanternen er tændt i statuspillen på ' + sti + ', når der er åbent', async ({ page }) => {
+      await åbn(page, sti, { ur: FREDAG_MIDT_PÅ_DAGEN });
+      await expect(page.locator('#bestil-status-tekst')).toContainText('Åbent');
+      await expect(page.locator('#bestil-status .lanterne use'))
+        .toHaveAttribute('href', '../ikoner.svg#lanterne-taendt');
+      await expect(page.locator('#bestil-status .dot'), 'prikken er tilbage').toHaveCount(0);
+    });
+    test('lanternen er slukket i statuspillen på ' + sti + ', når der er lukket', async ({ page }) => {
+      await åbn(page, sti, { ur: '2026-08-07T04:00:00Z' });
+      await expect(page.locator('#bestil-status-tekst')).toContainText('Lukket');
+      await expect(page.locator('#bestil-status .lanterne use'))
+        .toHaveAttribute('href', '../ikoner.svg#lanterne-slukket');
+    });
+  }
+
+  /* ⚠️ ALLERGILINJEN ER EN GLASPILLE (27/9). Mikkels ord: "lav allergi
+     tingen en liquid glass pille lesreg style". Den var en stiplet,
+     lyserød kasse på menukortet og en løs linje på forsiden. Nu husets
+     glas — og UDEN løft: en hvid glaspille med skygge under er husets
+     knap (.g), og der er intet at trykke på. Kundens nød står (31/8). */
+  test('allergilinjen er en glaspille begge steder: glas, ingen kant, intet løft', async ({ page }) => {
+    for (const [sti, sel] of [['/index.html', '.menucard .glaspille'], ['/m-menukort.html', '.mk-allergi']]) {
+      await åbn(page, sti);
+      const pille = page.locator(sel);
+      await expect(pille).toContainText('🥜');
+      await expect(pille).toContainText('Allergi?');
+      const m = await pille.evaluate((e) => {
+        const c = getComputedStyle(e);
+        return {
+          kant: c.borderTopStyle,
+          slør: c.backdropFilter || c.webkitBackdropFilter || '',
+          lys: getComputedStyle(e, '::before').content,
+          skygge: c.boxShadow,
+          rund: parseFloat(c.borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1,
+        };
+      });
+      expect(m.kant, sti + ': den stiplede kant er tilbage').toBe('none');
+      expect(m.slør, sti + ': intet glas bag pillen').toContain('blur');
+      expect(m.lys, sti + ': glassets lyse kant mangler').not.toBe('none');
+      expect(m.rund, sti + ': ikke en pille').toBe(true);
+      const skygger = m.skygge === 'none' ? [] : m.skygge.split(/,(?![^(]*\))/);
+      expect(skygger.every((d) => /inset/.test(d)), sti + ': pillen løfter sig som en knap (' + m.skygge + ')').toBe(true);
+    }
+  });
+
+  /* "Nyhed" var en rød mærkat i spærrede versaler — det tegn, bid 1
+     tog af mærkaterne over overskrifterne. Nu glas og almindelig skrift. */
+  test('"Nyhed" på tapaskortet står i almindelig skrift på glas', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const m = await page.locator('.tapasec .nyt').evaluate((e) => {
+      const c = getComputedStyle(e);
+      return { store: c.textTransform, luft: c.letterSpacing, slør: c.backdropFilter || c.webkitBackdropFilter || '' };
+    });
+    expect(m.store, 'versalerne er tilbage').toBe('none');
+    expect(['normal', '0px']).toContain(m.luft);
+    expect(m.slør).toContain('blur');
+  });
+
   test('dagens ret kommer fra admin — og afsnittet forsvinder, når der ikke er en', async ({ page }) => {
     const data = grunddata();
     data.indstillinger.dagens_ret = {
@@ -2063,7 +2127,7 @@ test.describe('Menukort-kortet og Facebook-kortet', () => {
     await expect(tiles.locator('.tile-kat-tegn').first()).toHaveAttribute('aria-hidden', 'true');
     await expect(tiles.locator('.tile-emoji')).toHaveCount(0);
     // Nødden på allergilinjen
-    await expect(page.locator('.menucard .fine')).toContainText('🥜');
+    await expect(page.locator('.menucard .glaspille')).toContainText('🥜');
   });
 
   /* ⚠️ FACEBOOK-KORTET FANDTES ALLEREDE — og det var dagens
