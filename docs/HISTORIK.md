@@ -7,6 +7,24 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**FACEBOOK, SMILEYEN OG PRISEN ER FIGMAS GLAS — PRÆCIST** (28/9, nat). Mikkels ord:
+*"de er slet ikke taget fra figma, du skal lige lock in og tage præcise glass
+pillars derfra, ændre farven og selvfølgelig gøre så knapperne er korrekte"*.
+Pladen fra i går var bygget efter specifikationens tekst; nu er værdierne **læst
+ud af Figma-filen** gennem Plugin API'et (`use_figma`, read-only) — www.figma.com
+er blokeret i sky-miljøet, så SVG'erne kunne ikke hentes, men
+`exportAsync({format:'SVG_STRING'})` og nodernes fills/strokes/effects kan.
+- **Glasset** er LA32 Button Kind=Glass (116:886): slør 12, radius 24, ingen skygge,
+  1 px kant hvid 85 → 12 → 40 % fra −45°. Tonen skifter: Figmas obsidian (72 % på
+  lys bund, LESREG §1.8 — Figmas 42 % er over et foto), Facebooks blå, guld
+- **Knapperne** er Figmas linse (116:888/116:890, 40 px, hvid 10 %, kant 90 → 5 →
+  30 %) med pilen LA2.1 (44:189) — stien er Figmas egen — og "Følg os" er Primary
+  on dark (116:877): porcelæn, 48 høj, luft 22/4, 14 til linsen
+- Allergien og "Nyhed" er stadig pladen (Plate 104:556) — de er ikke knapper
+- Prøven i skal-forside måler Figmas tal (slør, radius, ingen skygge, lyskant,
+  linsen 40×40 og pilens sti); set fejle med en anden pil. 416 grønne i
+  skal-forside, typografi, computer-spalte og kontakt-post; 33 i kontrasten
+
 **FACEBOOK, SMILEYEN OG PRISEN ER PLADEN OGSÅ** (27/9, nat). Mikkels ord: *"glass
 pillerne med de tre ting facebook, fødevarestyrelsen og guld award skal lige have
 en kopi inde fra figma ligesom allergien"*. Pladen (Figma Plate, node 104:556)
