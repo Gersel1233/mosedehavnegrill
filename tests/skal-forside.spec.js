@@ -2800,7 +2800,7 @@ test.describe('Isen er premium som dagens ret', () => {
    slags, ingen opdager, før nogen spørger til pokalen.
    ============================================================ */
 test.describe('Greve-prisen øverst', () => {
-  test('står lige under smileyen, i samme glas, med linket og "indstillet til"', async ({ page }) => {
+  test('står lige under smileyen, på sin egen guldplade, med linket og "indstillet til"', async ({ page }) => {
     await åbn(page, '/index.html');
     await springIntroOver(page);
 

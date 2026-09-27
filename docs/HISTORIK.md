@@ -7,6 +7,35 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**PLADEN FRA FIGMA, PRISEN I GULD OG KORTENE PÅ DUGEN** (27/9, sent). Mikkels ord
+om glaspillens første udgave: *"for gennemsigtig og dårlig og ikke nok lesreg
+agtig, tag fra figma sheetsne"*, og så: *"delen på forsiden med se hele
+menukortet … er lidt kedelig, kan du ikke bruge higgsfield"* og *"lad awarden
+være gul, du ved, for prisen agtig"*.
+
+- **Glaspillen er LESREG's Plate** (Figma `mHsQole7sVJnwARmizRQaK`, LA31 Content
+  / Quote, Style=Plate, node 104:556). Første udgave satte tekst på klart glas,
+  som Liquid Atelier 3.2 §1.2 forbyder (*"Text never sits on clear glass. Use
+  Smoke or a solid core inside a 6 px Rim"*). Nu: Rim (6 % hvidt, 1 px lyskant i
+  −45°, skygge 9 · 18 · 44 i 24 % nede til højre), porcelænskerne 5 px inde,
+  Host Grotesk Medium på kernen. Allergilinjen begge steder og "Nyhed" (uden
+  Rim-skyggen). Skyggeloftet 37 → 38, grunden står i prøven
+- **Prisen er en guldplade:** samme plade, kernen er messing i −45° med glans
+  øverst, blæk på kernen. Prøven fra 25/9 ("i smileyens glas") er vendt med note
+- **Menukort-kortet på forsiden** har et billede øverst: Higgsfield (GPT Image
+  2.5) med husets egne trykte kort 01, 03 og 05 som reference, på den samme røde
+  tern som på tapasfotoet. Bud B med en marina og et hus i baggrunden blev valgt
+  fra — det ville ligne Mosede Havn uden at være det. ⚠️ **Modellen har tegnet
+  teksten om** (fx "Havneens"): i 350 px kan den ikke læses, og priserne står i
+  menukortet bag knappen. Skal billedet ud, er det `billeder/menukort-bord-*.jpg`
+  og `<img class="menucard-foto">` i index.html
+- ⚠️ **`naturalWidth` er densitetsrettet med `srcset`:** 1400-filen på en iPhone
+  13 melder 390. En prøve, der kræver "> 500", fejler på telefonen, selv om
+  billedet er der
+- Prøver set fejle: kernen gjort gennemsigtig, guldet gjort gråt, billedet
+  peget på en fil, der ikke findes, `loading="lazy"` taget af, og prisen sat
+  tilbage i smileyens glas
+
 **GLASPILLEN: ALLERGILINJEN OG DE ANDRE SMÅ FLADER** (27/9, sent). Mikkels ord:
 *"lav allergi tingen en liquid glass pille lesreg style og gerne se om der andre
 ting der halter som det"*. Fundet med en skanning af alle gæstesider (stiplede
