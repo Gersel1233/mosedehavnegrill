@@ -2973,9 +2973,9 @@ footer .smiley-linje{
    allergien, "Nyhed", smileyen, prisen og Facebook-kortet; kun kernens farve
    skifter (porcelæn, guld, Facebooks blå — den blå er kundens valg 13/9).
    --plade-r er pladens hjørne; kernen følger 5 px inde (koncentrisk). */
-.glaspille,.smiley-kort,.promo.fb{position:relative;isolation:isolate;border-radius:var(--plade-r,26px);background:rgba(255,255,255,.06);box-shadow:9px 18px 44px rgba(13,13,15,.24)}
-.glaspille::before,.smiley-kort::before,.promo.fb::before{content:"";position:absolute;inset:5px;z-index:-1;border-radius:calc(var(--plade-r,26px) - 5px);background:#f6f4ef}
-.glaspille::after,.smiley-kort::after,.promo.fb::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(135deg,#fff,rgba(0,0,0,.04) 55%,rgba(0,0,0,.22));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.glaspille{position:relative;isolation:isolate;border-radius:var(--plade-r,26px);background:rgba(255,255,255,.06);box-shadow:9px 18px 44px rgba(13,13,15,.24)}
+.glaspille::before{content:"";position:absolute;inset:5px;z-index:-1;border-radius:calc(var(--plade-r,26px) - 5px);background:#f6f4ef}
+.glaspille::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(135deg,#fff,rgba(0,0,0,.04) 55%,rgba(0,0,0,.22));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
 .glaspille{display:inline-block;max-width:min(100%,38ch);padding:15px 24px;--plade-r:999px;font-size:14px;font-weight:500;line-height:1.4;text-align:center;color:var(--ink);text-wrap:balance}
 .glaspille>[aria-hidden]{margin-right:6px}
 .menucard .glaspille{margin-top:18px}
@@ -2991,13 +2991,40 @@ footer .smiley-linje{
    andet glas. Teksten er blæk på kernen (10:1 på det lyse guld, over 6:1
    på det mørkeste), aldrig den dæmpede brune, der faldt under 4,5. Kun
    prisen: smileyen lige over er Fødevarestyrelsens og bliver hvid. */
-.smiley-kort{padding:18px 20px}
-.smiley-kort.pris-kort::before{background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 48%),linear-gradient(135deg,#f8e7ad,#ebc862 48%,#d6a53e)}
-/* Facebook-kortet: kernen er kortets egen blå (kundens valg 13/9), med samme
-   glans øverst som guldet. Luften vokser med pladens 5 px. */
-.promo.fb{padding:21px}
-.promo.fb::before{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 48%),linear-gradient(140deg,#2b7bf5,#1557c4)}
-.pris-kort .smiley-kort-tekst,.pris-kort .smiley-kort-pil{color:var(--ink)}
+/* ⚠️ FACEBOOK, SMILEYEN OG PRISEN ER FIGMAS GLAS — PRÆCIST (27/9, nat).
+   Mikkels ord: *"de er slet ikke taget fra figma, du skal lige lock in og
+   tage præcise glass pillars derfra, ændre farven og selvfølgelig gøre så
+   knapperne er korrekte"*. Værdierne er LÆST UD AF FIGMA-FILEN (Plugin API
+   på LA32 Button, mHsQole7sVJnwARmizRQaK), ikke skrevet af en beskrivelse:
+   · GLASSET (Kind=Glass, 116:886): tone #0E0F10, slør 12 px (GLASS radius
+     12), radius 24, INGEN skygge, 1 px kant indvendigt med lys fra −45°:
+     hvid 85 % → 12 % ved 45 % → 40 %. Tonen er Figmas 42 % over et foto;
+     på husets lyse bund siger LESREG §1.8 den tætte (72 %), ellers holder
+     porcelæn ikke 4,5:1. Farven er det, der skifter: Figmas obsidian på
+     smileyen, Facebooks blå (kundens valg 13/9) og prisens guld.
+   · LINSEN (116:888/116:890): 40 px cirkel, hvid 10 %, kant hvid 90 % →
+     5 % → 30 %; pilen er LA2.1 Arrow right (44:189), 16 px, streg 1,5,
+     runde ender — stien er Figmas egen. På lys bund (Primary on dark,
+     116:881): travertin 75 % og kanten fra lyset (hvid → sort 4 % → 22 %).
+   · KNAPPEN (Primary on dark, 116:877): porcelæn, højde 48, radius 24,
+     luft 22 til venstre og 4 til højre, 14 mellem tekst og linse, Host
+     Grotesk Medium 15/16 i obsidian. */
+.la-glas{position:relative;isolation:isolate;border-radius:24px;background:var(--la-tone,rgba(14,15,16,.72));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:none;color:#f6f4ef}
+.la-glas::after,.la-lens::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(to bottom right,rgba(255,255,255,.85),rgba(255,255,255,.12) 45%,rgba(255,255,255,.4));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.la-lens{position:relative;flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);color:#f6f4ef}
+.la-lens::after{background:linear-gradient(to bottom right,rgba(255,255,255,.9),rgba(255,255,255,.05) 50%,rgba(255,255,255,.3))}
+.la-lens svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.la-lens.lys{background:rgba(216,209,197,.75);color:#0e0f10}
+.la-lens.lys::after{background:linear-gradient(to bottom right,#fff,rgba(0,0,0,.04) 55%,rgba(0,0,0,.22))}
+.la-knap{display:inline-flex;align-items:center;gap:14px;height:48px;padding:0 4px 0 22px;border-radius:24px;background:#f6f4ef;color:#0e0f10;font-family:"Host Grotesk",system-ui,sans-serif;font-size:15px;font-weight:500;line-height:16px}
+/* Smileyen og prisen: tekst til venstre, linsen til højre som i knappen. */
+.smiley-kort.la-glas{gap:14px;padding:12px 12px 12px 20px}
+.la-glas .smiley-kort-tekst{color:rgba(246,244,239,.8)}
+.la-glas .smiley-kort-tekst b{color:#f6f4ef;font-weight:500}
+.smiley-kort.pris-kort.la-glas{--la-tone:rgba(222,176,72,.86);color:#0e0f10}
+.pris-kort.la-glas .smiley-kort-tekst,.pris-kort.la-glas .smiley-kort-tekst b{color:#0e0f10}
+.promo.fb.la-glas{--la-tone:rgba(21,87,196,.9);background:var(--la-tone);padding:20px}
+.promo.fb .cta.la-knap{margin-top:14px;height:48px;padding:0 4px 0 22px;border-radius:24px;background:#f6f4ef;color:#0e0f10;font-size:15px;font-weight:500}
 /* Telefonen i en knap er husets tegn, ikke 📞 (27/9, persondatasiden). */
 .g>svg{width:18px;height:18px;flex:none}
 #alt .row-card .ic{background:rgba(255,255,255,.6);box-shadow:var(--kant-inde)}
