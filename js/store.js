@@ -1217,7 +1217,11 @@
   function vareValg(v) {
     if (!v || !Array.isArray(v.valg)) return null;
     var ud = v.valg.map(valgNavnet).filter(Boolean);
-    return ud.length >= 2 ? ud.slice(0, 12) : null;
+    /* ⚠️ 16, IKKE 12 (27/9): sandwichen har 14 varianter på
+       bestillingssedlerne, og loftet på 12 skar de sidste to væk
+       tavst. Samme tal som vare_valg_ok (kortenes-rettelser-27-9.sql)
+       og ejerens gem i store-skriv.js. */
+    return ud.length >= 2 ? ud.slice(0, 16) : null;
   }
 
   /* Tillægget for ét valg. Samme sammenligning som databasen

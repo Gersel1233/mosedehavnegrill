@@ -57,7 +57,9 @@
         { titel: 'Morgenmad', kilder: [{ kat: 'Morgenmad' }] },
         { titel: 'Tilkøb til morgenmaden', samle: true, kilder: [{ kat: 'Tilkøb morgenmad' }] },
         { boks: 'flokken', over: 'Til flokken', titel: 'Morgenbrød',
-          tekst: 'Rundstykker og morgenbrød til flokken — få en bestillingsliste.', bund: 'Spørg ved lugen' },
+          /* Kort 01, ordret (27/9): ingen henvisning til en bestillingsliste
+             til morgenbrød — der findes ingen. */
+          tekst: 'Morgenbrød – spørg ved bestilling.', bund: 'Spørg ved lugen' },
       ],
       hoejre: [
         { titel: 'Fisk & klassikere', kilder: [
@@ -159,7 +161,10 @@
         ] },
       ],
       hoejre: [
-        { titel: 'Kolde drikke', kilder: [{ kat: 'Sodavand, juice og kakao' }] },
+        /* Milkshake står i "Tilkøb ud af huset" (én vare, én pris) — kort 06
+           har den lige under Dagens smoothie (27/9). */
+        { titel: 'Kolde drikke', kilder: [{ kat: 'Sodavand, juice og kakao' },
+          { kat: '*', navne: ['Milkshake'], efter: 'Dagens smoothie' }] },
         { boks: 'pausen', over: 'Kaffe & kage', titel: 'Pausen', pris: { vare: 'Kaffe og kage' }, tag: true,
           tekst: 'En kop kaffe og et stykke af dagens kage — eller en pandekage.' },
       ],
@@ -171,8 +176,11 @@
       hop: 'Øl, vin & bar',
       venstre: [
         { titel: 'Øl', kilder: [{ kat: 'Øl' }] },
-        { titel: 'Bar', kilder: [{ kat: '*', navne: ['Drinks', 'Cocktail', 'Snaps, sambuca og shots'] }] },
-        { titel: 'Slik & snacks', kilder: [{ kat: 'Snacks og slik' }] },
+        { titel: 'Bar', kilder: [{ kat: '*', navne: ['Drinks', 'Cocktail', 'Snaps, spiritus og shots', 'Snaps, sambuca og shots'] }] },
+        /* Hjemmelavet flæskesvær står i "Tilkøb ud af huset" — kort 07 har
+           den sidst under Slik & snacks, til 35 (Mikkels ønske 27/9). */
+        { titel: 'Slik & snacks', kilder: [{ kat: 'Snacks og slik' },
+          { kat: '*', navne: ['Hjemmelavet flæskesvær'], efter: true }] },
       ],
       hoejre: [
         { titel: 'Vin, cava & champagne', kilder: [{ kat: 'Vin, cava og champagne' }] },

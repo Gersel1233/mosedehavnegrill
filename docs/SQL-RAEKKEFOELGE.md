@@ -52,7 +52,15 @@ og derfra:
   → glutenfrit-broed-5-kr.sql → haandmadder-27-kr.sql
   → haandmadder-hel-skive.sql
   → gaestens-vaern-26-9.sql → bremse-uden-borde-26-9.sql
+  → kortenes-rettelser-27-9.sql
 ```
+
+**⚠️ `kortenes-rettelser-27-9.sql` (27/9) — IKKE kørt i produktionen endnu.**
+Afvigelsesrapporten 27/9: navne, beskrivelser og varianter som de trykte kort
+(ingen eksisterende pris ændres). Sandwichen får 14 varianter, rejemaden
+rugbrød/franskbrød, flæskesvær tændes under barens snacks, og "Smoothie eller
+milkshake" deles i to. Kør den og hent derefter menukort-kopien igen
+(`vaerktoej/hent-menukort.sh`).
 
 **⚠️ `bremse-uden-borde-26-9.sql` (26/9) — kørt i produktionen af Mikkel 26/9.**
 Mikkels ord: *"lad bordene ikke tælle med i bremsen"*. Den skriver
@@ -140,7 +148,8 @@ Datafilerne (`kortets-priser*.sql`, `borde-55.sql`, `ejerens-oplysninger.sql`,
 `kortene-25-9.sql`, `kortenes-huller-25-9.sql`,
 `glutenfri-vaffel-samme-pris.sql`, `sluk-det-kortene-ikke-viser.sql`,
 `chefens-rettelser-25-9.sql`, `isens-opsaetning.sql`,
-`glutenfrit-broed-5-kr.sql`, `haandmadder-27-kr.sql`, `haandmadder-hel-skive.sql`)
+`glutenfrit-broed-5-kr.sql`, `haandmadder-27-kr.sql`, `haandmadder-hel-skive.sql`,
+`kortenes-rettelser-27-9.sql`)
 har med vilje INTET tjek: de skriver ejerens tal, og et tjek ville sige ❌ den dag,
 han retter sit eget tal i admin.
 

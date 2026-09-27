@@ -466,7 +466,13 @@
           var x = fri(function (y) {
             return norm(y.v.navn) === norm(n) && (kl.kat === '*' || norm(y.k.navn) === norm(kl.kat));
           });
-          if (x) a.varer.push(tag(x));
+          if (!x) return;
+          /* ⚠️ `efter` (27/9): en vare, der hentes fra en ANDEN kategori,
+             skal stå dér, hvor kortet har den — ikke øverst. `efter: true`
+             lægger den sidst i afsnittet, `efter: 'Navn'` lige efter den
+             vare. Placeres i trin 3½, når kategoriens egne er lagt ud. */
+          if (kl.efter) (a.senere = a.senere || []).push({ x: tag(x), efter: kl.efter });
+          else a.varer.push(tag(x));
         });
       });
     });
@@ -491,6 +497,13 @@
           if (kl.medValg && !harValg(y.v, kl.medValg)) return;
           a.varer.push(tag(y));
         });
+      });
+    });
+    // 3½) Ved navn, men placeret efter kategoriens egne (se `efter`)
+    hvert(function (a) {
+      (a.senere || []).forEach(function (s) {
+        var i = s.efter === true ? -1 : a.varer.findIndex(function (y) { return norm(y.v.navn) === norm(s.efter); });
+        if (i === -1) a.varer.push(s.x); else a.varer.splice(i + 1, 0, s.x);
       });
     });
     // 4) Det, ingen har taget
@@ -573,7 +586,12 @@
     var linje = lav('div', 'mk-linje');
     linje.setAttribute('data-vare', v.navn);
     var txt = lav('div', 'mk-txt');
-    txt.appendChild(lav('h4', null, v.navn));
+    /* ⚠️ ", HÅNDMAD" VISES IKKE PÅ KORTET (27/9). Endelsen står i
+       databasen med vilje — køkkenets bon skal kunne skelne håndmadden
+       fra smørrebrødet med samme navn — men kort 04 skriver bare
+       "Flæskesteg med surt" under overskriften HÅNDMADDER. Navnet i
+       data-vare og i bestillingen er det fulde. */
+    txt.appendChild(lav('h4', null, String(v.navn).replace(/,?\s+håndmad$/i, '')));
     if (v.beskrivelse) txt.appendChild(lav('p', null, v.beskrivelse));
     linje.appendChild(txt);
     if (v.udsolgt) {

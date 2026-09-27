@@ -804,7 +804,8 @@
         ren.beskrivelse = felter.beskrivelse ? String(felter.beskrivelse).trim() : null;
       }
       if (felter.antal_tilbage !== undefined) ren.antal_tilbage = talEllerNull(felter.antal_tilbage);
-      /* VALGENE (supabase/vare-valg.sql): en liste med 2-12, ellers
+      /* VALGENE (supabase/vare-valg.sql): en liste med 2-16 (loftet
+         hævet fra 12 27/9, kortenes-rettelser-27-9.sql), ellers
          ingen — samme regel som Butik.vareValg og vare_valg_ok.
 
          ⚠️ ET VALG KAN KOSTE EKSTRA (20/9): et element er enten en
@@ -827,7 +828,7 @@
             t = isFinite(t) && t > 0 ? Math.round(t * 100) / 100 : 0;
             return t ? { navn: navn, tillaeg: t } : navn;
           })
-          .filter(Boolean).slice(0, 12);
+          .filter(Boolean).slice(0, 16);
         ren.valg = liste.length >= 2 ? liste : null;
       }
 

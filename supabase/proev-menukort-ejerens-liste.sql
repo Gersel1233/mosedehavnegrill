@@ -107,8 +107,9 @@ select pg_temp.svar('8. Tapasfadet siger, hvad der er på det',
 select pg_temp.svar('9. Brunchtallerkenen og den engelske morgenmad er skrevet ud',
   (select beskrivelse like '%skyr med knas%' from public.menu_varer
     where navn = 'Brunchtallerken' limit 1)
+  /* ⚠️ "English Breakfast" med stort B fra 27/9 (kortenes-rettelser-27-9.sql). */
   and (select beskrivelse like '%stegte champignon%' from public.menu_varer
-        where navn = 'English breakfast' limit 1));
+        where navn in ('English breakfast', 'English Breakfast') limit 1));
 
 select pg_temp.svar('10. Sandwichens fyld står på begge størrelser',
   (select count(*) = 2 from public.menu_varer
@@ -181,7 +182,9 @@ select pg_temp.svar('15. Ingen forretning har to kategorier med samme navn',
 select pg_temp.svar('17. De varer, der var der i forvejen, står der endnu',
   pg_temp.har('Pølser', 'Hansen fransk vaffel, stor')
   and pg_temp.har('Vælg fyld til smørrebrødet', 'Fiskedelle med surt')
-  and pg_temp.har('Sandwich og retter fra pladen', 'Indbagte rejer med pommes'));
+  /* ⚠️ Hedder "8 indbagte rejer med pommes" fra 27/9, som kort 02. */
+  and (pg_temp.har('Sandwich og retter fra pladen', 'Indbagte rejer med pommes')
+       or pg_temp.har('Sandwich og retter fra pladen', '8 indbagte rejer med pommes')));
 
 select pg_temp.svar('18. Kortet er vokset, ikke skrumpet',
   (select count(*) >= 242 from public.menu_varer m
