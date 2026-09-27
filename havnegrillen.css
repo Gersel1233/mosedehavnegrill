@@ -2967,9 +2967,16 @@ footer .smiley-linje{
    · KERNE: massiv porcelæn (#F6F4EF), 5 px inde, samme hjørne.
    · TEKST: Host Grotesk Medium på kernen, aldrig på glasset.
    Kundens 🥜 og ord står (31/8, "vi nøjes med emojisne"). */
-.glaspille{position:relative;isolation:isolate;display:inline-block;max-width:min(100%,38ch);padding:15px 24px;border-radius:999px;background:rgba(255,255,255,.06);box-shadow:9px 18px 44px rgba(13,13,15,.24);font-size:14px;font-weight:500;line-height:1.4;text-align:center;color:var(--ink);text-wrap:balance}
-.glaspille::before{content:"";position:absolute;inset:5px;z-index:-1;border-radius:inherit;background:#f6f4ef}
-.glaspille::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(135deg,#fff,rgba(0,0,0,.04) 55%,rgba(0,0,0,.22));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+/* ⚠️ ÉN PLADE, FEM STEDER (27/9, sent). Mikkels ord: *"glass pillerne med de
+   tre ting facebook, fødevarestyrelsen og guld award skal lige have en kopi
+   inde fra figma ligesom allergien"*. Opskriften står HER én gang og bæres af
+   allergien, "Nyhed", smileyen, prisen og Facebook-kortet; kun kernens farve
+   skifter (porcelæn, guld, Facebooks blå — den blå er kundens valg 13/9).
+   --plade-r er pladens hjørne; kernen følger 5 px inde (koncentrisk). */
+.glaspille,.smiley-kort,.promo.fb{position:relative;isolation:isolate;border-radius:var(--plade-r,26px);background:rgba(255,255,255,.06);box-shadow:9px 18px 44px rgba(13,13,15,.24)}
+.glaspille::before,.smiley-kort::before,.promo.fb::before{content:"";position:absolute;inset:5px;z-index:-1;border-radius:calc(var(--plade-r,26px) - 5px);background:#f6f4ef}
+.glaspille::after,.smiley-kort::after,.promo.fb::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(135deg,#fff,rgba(0,0,0,.04) 55%,rgba(0,0,0,.22));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.glaspille{display:inline-block;max-width:min(100%,38ch);padding:15px 24px;--plade-r:999px;font-size:14px;font-weight:500;line-height:1.4;text-align:center;color:var(--ink);text-wrap:balance}
 .glaspille>[aria-hidden]{margin-right:6px}
 .menucard .glaspille{margin-top:18px}
 /* "Nyhed" er et mærke på et kort, ikke en plade over det: kant og kerne,
@@ -2984,9 +2991,12 @@ footer .smiley-linje{
    andet glas. Teksten er blæk på kernen (10:1 på det lyse guld, over 6:1
    på det mørkeste), aldrig den dæmpede brune, der faldt under 4,5. Kun
    prisen: smileyen lige over er Fødevarestyrelsens og bliver hvid. */
-.smiley-kort.pris-kort{position:relative;isolation:isolate;padding:18px 20px;border-radius:26px;background:rgba(255,255,255,.06);box-shadow:9px 18px 44px rgba(13,13,15,.24)}
-.smiley-kort.pris-kort::before{content:"";position:absolute;inset:5px;z-index:-1;border-radius:21px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 48%),linear-gradient(135deg,#f8e7ad,#ebc862 48%,#d6a53e)}
-.smiley-kort.pris-kort::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(135deg,#fff,rgba(0,0,0,.04) 55%,rgba(0,0,0,.22));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.smiley-kort{padding:18px 20px}
+.smiley-kort.pris-kort::before{background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 48%),linear-gradient(135deg,#f8e7ad,#ebc862 48%,#d6a53e)}
+/* Facebook-kortet: kernen er kortets egen blå (kundens valg 13/9), med samme
+   glans øverst som guldet. Luften vokser med pladens 5 px. */
+.promo.fb{padding:21px}
+.promo.fb::before{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 48%),linear-gradient(140deg,#2b7bf5,#1557c4)}
 .pris-kort .smiley-kort-tekst,.pris-kort .smiley-kort-pil{color:var(--ink)}
 /* Telefonen i en knap er husets tegn, ikke 📞 (27/9, persondatasiden). */
 .g>svg{width:18px;height:18px;flex:none}
