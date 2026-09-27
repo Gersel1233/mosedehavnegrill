@@ -187,6 +187,46 @@ test.describe('Forsidens kobling', () => {
     }
   });
 
+  /* ⚠️ PRISEN ER GUL (27/9). Mikkels ord: "måske lad awarden være gul du
+     ved for prisen agtig". Samme LESREG-plade, men kernen er guld. Tallet
+     udefra er ordet "gul": kernens midterste farve skal ligge i det gule
+     (nuance 38–58°) og være mættet — og teksten er blæk, ikke den dæmpede
+     brune, der ikke holder 4,5:1 på guld. */
+  test('prisen står på en guldplade, og teksten er blæk', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const m = await page.locator('.pris-kort').evaluate((e) => {
+      const f = getComputedStyle(e, '::before').backgroundImage;
+      const faste = [...f.matchAll(/rgba?\(([^)]+)\)/g)]
+        .map((x) => x[1].split(',').map(parseFloat))
+        .filter((d) => d.length < 4 || d[3] === 1);
+      const [r, g, b] = (faste[Math.floor(faste.length / 2)] || [0, 0, 0]).map((v) => v / 255);
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+      const l = (max + min) / 2;
+      const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+      let h = 0;
+      if (d) h = max === r ? 60 * (((g - b) / d) % 6) : max === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4);
+      return { nuance: (h + 360) % 360, mætning: s, tekst: getComputedStyle(e.querySelector('.smiley-kort-tekst')).color };
+    });
+    expect(m.nuance, 'kernen er ikke gul').toBeGreaterThanOrEqual(38);
+    expect(m.nuance, 'kernen er ikke gul').toBeLessThanOrEqual(58);
+    expect(m.mætning, 'kernen er grå, ikke guld').toBeGreaterThan(0.5);
+    expect(m.tekst).toBe('rgb(36, 26, 23)');
+  });
+
+  /* ⚠️ KORTENE PÅ DUGEN (27/9). Mikkels ord: menukort-delen på forsiden
+     "er lidt kedelig". Billedet er Higgsfield, men kortene er husets egne
+     trykte. Prøven vil se billedet KOMME FREM (naturalWidth, ikke
+     `complete`) og have plads reserveret, så intet hopper. */
+  test('menukort-kortet viser husets trykte kort på dugen, og billedet kommer frem', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const foto = page.locator('.menucard .menucard-foto');
+    await expect(foto).toHaveAttribute('alt', /menukort/i);
+    await expect(foto).toHaveAttribute('width', '800');
+    await expect(foto).toHaveAttribute('height', '597');
+    await foto.scrollIntoViewIfNeeded();
+    await expect.poll(() => foto.evaluate((e) => e.naturalWidth), 'billedet af kortene kom ikke frem').toBeGreaterThan(500);
+  });
+
   /* "Nyhed" var en rød mærkat i spærrede versaler — det tegn, bid 1
      tog af mærkaterne over overskrifterne. Nu samme plade, almindelig skrift. */
   test('"Nyhed" på tapaskortet står i almindelig skrift på LESREG-pladen', async ({ page }) => {
