@@ -103,6 +103,17 @@
 @font-face{font-family:"Host Grotesk";src:url("fonts/host-grotesk-700.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:"Host Grotesk";src:url("fonts/host-grotesk-400-italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
 @font-face{font-family:"Host Grotesk";src:url("fonts/host-grotesk-500-italic.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap}
+/* ⚠️ "&" LÅNES FRA INSTRUMENT SANS (27/9). Host Grotesks & er tegnet
+   som en løkke, der stak ud på knapperne ("Selskab & catering") —
+   Mikkels ord: "det der & skal fixes". Kun tegnet U+0026 lånes, fra
+   husets tidligere skrift, som ligger i fonts/ i forvejen.
+   ⚠️ ÉN FLADE PR. VÆGT, IKKE ET SPÆND. Chrome vælger fladen på vægten,
+   FØR den ser på unicode-range; en flade med 400 700 vandt over den
+   faste 600 og tog HELE teksten med sig (målt: alt stod i serif). */
+@font-face{font-family:"Host Grotesk";src:url("fonts/instrument-sans.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0026}
+@font-face{font-family:"Host Grotesk";src:url("fonts/instrument-sans.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap;unicode-range:U+0026}
+@font-face{font-family:"Host Grotesk";src:url("fonts/instrument-sans.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap;unicode-range:U+0026}
+@font-face{font-family:"Host Grotesk";src:url("fonts/instrument-sans.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;unicode-range:U+0026}
 @font-face{font-family:"Bebas Neue";src:url("fonts/bebas-neue.woff2") format("woff2");font-weight:400;font-display:block}
 
 :root{--skygge-kort:0 18px 46px rgba(36,26,23,.1);--skygge-let:0 12px 30px rgba(36,26,23,.09);--kant-inde:inset 0 0 0 1px rgba(36,26,23,.07);--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1);--top-luft:58px;--pille-h:58px;--pille-bund:24px;--pille-plads:calc(var(--pille-bund) + var(--pille-h) + 16px)}

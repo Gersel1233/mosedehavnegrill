@@ -312,7 +312,9 @@ test.describe('Én display-serif i hele huset', () => {
        samme fire oprejste og to kursive. Mangler 500 i det ene ark,
        står dets overskrifter i en falsk fed eller en tynd 400. */
     const sæt = (f) => {
-      const faces = [...ark(f).matchAll(/@font-face\s*\{[^}]*Host Grotesk[^}]*\}/gi)].map(([b]) => b);
+      const faces = [...ark(f).matchAll(/@font-face\s*\{[^}]*Host Grotesk[^}]*\}/gi)].map(([b]) => b)
+        /* & lånt fra Instrument Sans (27/9) — kun ét tegn, ikke en vægt */
+        .filter((b) => !/unicode-range/.test(b));
       return faces.map((b) => {
         const w = (b.match(/font-weight:\s*([^;]+)/) || [])[1].trim();
         const st = ((b.match(/font-style:\s*([^;]+)/) || [])[1] || 'normal').trim();

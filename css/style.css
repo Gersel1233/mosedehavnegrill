@@ -93,6 +93,39 @@
   font-style: italic;
   font-display: swap;
 }
+/* & lånes fra Instrument Sans — se noten i havnegrillen.css (27/9). */
+@font-face {
+  font-family: "Host Grotesk";
+  src: url("../fonts/instrument-sans.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0026;
+}
+@font-face {
+  font-family: "Host Grotesk";
+  src: url("../fonts/instrument-sans.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0026;
+}
+@font-face {
+  font-family: "Host Grotesk";
+  src: url("../fonts/instrument-sans.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0026;
+}
+@font-face {
+  font-family: "Host Grotesk";
+  src: url("../fonts/instrument-sans.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0026;
+}
 
 :root {
   --sand:  #fdf7ef;
