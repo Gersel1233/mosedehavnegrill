@@ -7,6 +7,33 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**HUSETS NYE IKONER: TEGNET I HIGGSFIELD, SAMLET I `ikoner.svg`** (27/9, aften).
+Mikkels ord: *"alle de der små ikoner på siden … det der gør det ser lidt claude
+genkendeligt ud"* og siden *"brug higgsfield til at lave alle de ikoner … mere
+lesreg agtige altså fremragende"*.
+
+- **Tegnet:** 33 motiver i Higgsfield (GPT Image 2.5, 8 ark à 2,75 credits) efter
+  LESREG Liquid Atelier: tynd lige streg, ét fyldt punkt pr. motiv. Bedste udgave
+  pr. ikon valgt på tværs af arkene, klippet ud, sporet til vektor (potrace) og
+  givet samme streg: 1,6 på 24-gitteret, samme størrelse som de gamle
+- **Ét sted:** alle 96 streg-ikoner på gæstesiderne henter nu fra `ikoner.svg`
+  med `<svg viewBox="0 0 24 24"><use href="ikoner.svg#kurv"/></svg>` (undersider
+  `../ikoner.svg`). Kurvbjælkens pose og forsidens kalender i JS gør det samme.
+  Fyld og streg står på stien i filen: `<use>` arver fra siden, og `.damp svg`
+  sætter `stroke-width` — uden `stroke="none"` fik hvert ikon en kant
+- **Gnisterne ✦ ved "Vi dækker op"** (baglokalet) er en opdækket kuvert
+- **Ikke rørt:** kundens damp ved "I dag" (13/9, tre striber med egen
+  animation), logoerne (Facebook, Instagram, TikTok), admin og menukortets emojier
+- **Prøven på tapaslistens bølger** læser nu tegnet i `ikoner.svg`: to delstier,
+  hver mere end 2,5 gange bredere end høj, på hver sin højde. Set fejle med
+  hjertet sat ind (`ikoner.svg#hjerte`)
+- ⚠️ **`<use>` med en ekstern fil virker ikke over `file://`** — kun over http.
+  Et skud af en side åbnet som fil viser tomme ikoner; det er ikke en fejl på siden
+- Første udgave var 12 % mindre og lysere end de gamle (set på skud før/efter
+  på iPhone 13) og blev gjort større, før den gik videre
+- **Fuld runde grøn** i halvdele med to arbejdere: 4.832 bestået, 0 fejlet,
+  194 sprunget over (computer 2.407/106, telefon 825/13 + 785/53 + 815/22)
+
 **LESREG-DAGEN: FORFINING, HOST GROTESK OG KORTENES RETTELSER** (27/9).
 Alt udgivet og tjekket på mosedehavnecafe.dk samme dag.
 
