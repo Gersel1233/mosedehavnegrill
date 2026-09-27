@@ -1752,8 +1752,10 @@
       omraade: omr,
       pris: pris,
       faktaFed: omr ? 'Vi leverer i ' + omr : 'Levering',
-      faktaResten: (pris ? ' for ' + pris : '')
-        + (ogsaaAfhentning ? ' — eller hent selv ved lugen.' : ' — hent selv ved lugen.'),
+      /* Det fede står nu på sin egen linje over resten (27/9), så
+         resten er hele sætninger — ikke " for 79 kr. — eller …". */
+      faktaResten: (pris ? ' Koster ' + pris + '.' : '')
+        + (ogsaaAfhentning ? ' Du kan også hente selv ved lugen.' : ' Eller hent selv ved lugen.'),
       hint: (omr ? 'Vi leverer i ' + omr + '. ' : '')
         + (pris ? 'Levering koster ' + pris + '.'
           : 'Vi ringer og aftaler prisen med jer.'),

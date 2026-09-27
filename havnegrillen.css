@@ -3429,3 +3429,9 @@ button.g:disabled:active{transform:none}
 .status .lanterne,.fk-status .lanterne{width:16px;height:16px;flex:none;display:block}
 .hero .status .lanterne{color:rgba(255,255,255,.7)}
 .hero .status.aaben .lanterne{color:#f0a03c}
+
+/* ⚠️ FED START + TANKESTREG ER VÆK (27/9). "<b>Vi dækker op</b> — og
+   rydder op" er skriftens mest genkendelige AI-træk. Nu står det fede
+   som punktets overskrift på sin egen linje, og forklaringen er en
+   almindelig sætning under den. Kundens egne ord er de samme. */
+.fact>span>b:first-child{display:block;margin-bottom:2px}
