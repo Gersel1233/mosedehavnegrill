@@ -106,7 +106,13 @@ var luft=hoejde(true)+14;if(el.offsetTop-luft<=FAST_FRA)luft=hoejde(false)+14;
      .rev — og en transform flytter rektanglet, mens offsetTop
      ikke ved af den. Et afsnit, der ikke er afsløret endnu, er
      præcis det, man hopper til. */
-rulRod.scrollTo({top:Math.max(0,el.offsetTop-luft),behavior:'smooth'})}}));
+/* ⚠️ BLØD KUN FOR DEM, DER VIL HAVE BEVÆGELSE (27/9). En scrollTo med
+   behavior:'smooth' glider, uanset hvad stilarkets scroll-behavior
+   siger — og den, der har bedt om reduceret bevægelse, fik stadig
+   hele siden trukket forbi sig. Nu hopper den direkte; målet er det
+   samme tal. */
+var roligt=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+rulRod.scrollTo({top:Math.max(0,el.offsetTop-luft),behavior:roligt?'auto':'smooth'})}}));
 
 /* Skjul bestil-pillen, når det, den er en genvej TIL, er i syne.
 

@@ -147,7 +147,15 @@
    regel. Prøven står i tests/gennemgang.spec.js. */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:#1a1210;font-family:"Instrument Sans",system-ui,sans-serif;color:var(--ink);display:grid;place-items:center;min-height:100vh;padding:28px 0}
-h1,h2,h3,h4{font-family:"Fraunces",Georgia,serif;font-weight:400;margin:0;letter-spacing:-.008em;line-height:1.04}
+/* ⚠️ text-wrap:balance PÅ ALLE OVERSKRIFTER  (27/9, Lesreg-forfiningen).
+   Heroens h1 havde den allerede (se .hero h1). MÅLT på de tolv
+   gæstesider i fem bredder (320-1920): 48 af 620 overskrifter får
+   andre linjeskift, og hver eneste af dem mister et enligt ord eller
+   holder et navn samlet — "Live musik med Jens / Rasmussen" blev
+   "Live musik med / Jens Rasmussen", "Smørrebrød ud af / huset" blev
+   "Smørrebrød / ud af huset". INGEN fik flere linjer, så ingen højde
+   flytter sig. En browser uden balance brækker, som den gjorde før. */
+h1,h2,h3,h4{font-family:"Fraunces",Georgia,serif;font-weight:400;margin:0;letter-spacing:-.008em;line-height:1.04;text-wrap:balance}
 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 img{display:block;max-width:100%}
 a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
@@ -662,7 +670,15 @@ h2{font-size:35px;margin-top:9px}
 #reserver.foldet{display:none}
 .panel h3{font-size:26px}
 .field{margin-top:16px}
-.field>label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
+/* ⚠️ .two-col>div>label  (27/9). `.field>label` rammer kun et label,
+   der er DIREKTE barn af .field — og i de to-spaltede felter (Navn ·
+   Telefonnummer, Dato · Antal gæster) står der en <div> imellem. De
+   tolv labels på syv sider arvede derfor brødteksten: 16 px, tynd,
+   inline og uden luften ned til feltet — midt i en formular, hvor
+   alle andre labels er 13 px fede. Arvet 1:1 fra handoffets
+   mosede-m.css, hvor selektoren har samme hul. Reglen er den samme;
+   den når nu bare alle labels. */
+.field>label,.two-col>div>label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
 .field .hint{margin:7px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
 .inp,select.inp,textarea.inp{width:100%;min-width:0;height:48px;border:0;border-radius:16px;background:var(--cream2);box-shadow:var(--kant-inde);padding:0 15px;font-family:inherit;font-size:15px;color:var(--ink);appearance:none;transition:box-shadow .25s ease}
 select.inp{background-image:linear-gradient(45deg,transparent 50%,var(--ink2) 50%),linear-gradient(135deg,var(--ink2) 50%,transparent 50%);background-position:calc(100% - 19px) 21px,calc(100% - 14px) 21px;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
@@ -1609,7 +1625,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .teaser h4{font-family:"Instrument Sans",sans-serif;font-size:15px;font-weight:600;color:var(--ink)}
 .teaser p{margin:4px 0 0;font-size:13px;line-height:1.4;color:var(--ink2)}
 .teaser .go{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--red)}
-.teaser .nyt{display:inline-block;margin-bottom:6px;padding:3px 9px;border-radius:999px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
+.teaser .nyt{display:inline-block;margin-bottom:6px;padding:3px 9px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
 
 /* hvem er vi */
 .about{background:#1f1310;color:rgba(255,255,255,.74);padding:36px var(--pad) 40px;position:relative;overflow:hidden}
@@ -1664,7 +1680,13 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .tapasec{margin-top:20px;border-radius:28px;overflow:hidden;background:var(--paper);box-shadow:var(--skygge-kort)}
 .tapasec image-slot,.tapasec>img{display:block;width:100%;height:190px;object-fit:cover;background:var(--cream2)}
 .tapasec .body{padding:18px}
-.tapasec .nyt{display:inline-block;padding:3px 10px;border-radius:999px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
+/* ⚠️ 11 PX, IKKE 10 OG IKKE 12  (27/9). De tre små mærker (.tapasec
+   .nyt, .teaser .nyt, .evcard .kind) var de eneste på 10 px — alle
+   andre mærker og eyebrows i huset er 11. MÅLT i 320 og 390: ved 12
+   px brækker et arrangementsmærke med pris ("Spisning · 295,- inkl.
+   buffet") i to linjer på en 390-skærm, og kortet bliver 14 px
+   højere. 11 står på én linje dér. Ingen ny størrelse i skalaen. */
+.tapasec .nyt{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
 .tapasec h3{font-size:29px;margin-top:10px}
 .tapasec p{margin:9px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
 .tapasec .bits{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
@@ -1989,7 +2011,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .evcard .date span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .evcard .line{width:1px;background:rgba(36,26,23,.1)}
 .evcard h3{font-size:22px;line-height:1.1;color:var(--ink)}
-.evcard .kind{display:inline-block;margin-bottom:7px;padding:3px 9px;border-radius:999px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
+.evcard .kind{display:inline-block;margin-bottom:7px;padding:3px 9px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
 .evcard p{margin:7px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
 .evcard .g{margin-top:12px}
 /* ⚠️ RESERVATIONEN VÆLGER MED KORT (13/9) — kundens ord: "man kan vælge
@@ -2210,7 +2232,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    ============================================================ */
 .panel .field{margin-top:24px}
 .panel .field:first-child{margin-top:0}
-.panel .field>label{margin-bottom:10px}
+.panel .field>label,.panel .two-col>div>label{margin-bottom:10px}
 /* Kalendernettet og pillerne er GRUPPER, ikke felter. De faar
    luft over sig, saa de laeses som et nyt spoergsmaal. */
 .panel .lk{margin-top:8px;margin-bottom:8px}
@@ -3287,4 +3309,93 @@ input.isbyg-oenske-felt { height: 44px; font-size: 14px; }
 
 @media (prefers-reduced-motion: reduce) {
   .isbyg-knap, .isbyg-kvit, .isbyg-slag { transition: none; }
+}
+
+/* ============================================================
+   LESREG-FORFININGEN  (27/9) — tastatur, hover, spærrede knapper
+   og reduceret bevægelse
+   ------------------------------------------------------------
+   Lesregs principper (Liquid Atelier 3.2-specifikationen, §1 og §5),
+   lagt på husets EGNE værdier: husets rød, husets -2 px fra
+   .evcard.evklik, husets --spring. Ingen ny farve, skrift, skygge
+   eller kurve. Skyggeloftet (37) er fuldt — derfor outline overalt.
+   ============================================================ */
+
+/* ---- 1) FOKUS, SOM TASTATURET KAN SE ---------------------------
+   Knapperne (.g, .bestil, chips, segmenter, skuffens links) havde
+   ingen :focus-visible — kun browserens egen ring, som i Safari er
+   en tynd blå glød, der forsvinder på glas og foto. Formen er husets
+   (.evcard.evklik, .ev-valg button): 2 px rød outline med luft.
+   Outline og ikke box-shadow: en box-shadow ville ERSTATTE glassets
+   egne inset-stakke, mens knappen har fokus, og tælle mod loftet.
+
+   ⚠️ :where() VEJER NUL. De steder, der allerede har deres egen
+   fokusregel (.tidl-klik med offset -2, .evcard, .ev-valg), vinder
+   stadig — og felternes indre røde ring (.inp:focus) er ikke rørt.
+
+   ⚠️ FARVEN FØLGER GRUNDEN — MÅLT, IKKE GÆTTET. Hver ring på de tolv
+   sider (390 og 1440) er målt som WCAG 2.4.13 gør: de samme pixels
+   med og uden fokus. Rød holder på creme og hvidt. På mørke fotos og
+   mørk grund drukner den, så dér er ringen hvid. Og topbjælken på
+   undersiderne står på den ternede dug, hvor HVERKEN hvid (de hvide
+   felter) eller rød (de røde) kan ses: dér er ringen blæk — 16:1 mod
+   hvidt og 3,1:1 mod ternets rød. Forsiden og historien er
+   undtagelserne: deres bjælke ligger på et mørkt foto og en grå film,
+   og dér er den hvid (blæk forsvandt i filmens mørke partier). */
+:where(a,button,summary,[role="button"],[tabindex]):focus-visible{outline:2px solid var(--red);outline-offset:3px}
+:where(.hero,.glasafsnit,.about,.find-foto,footer,.h-hero,.h-slut) :where(a,button,summary,[role="button"],[tabindex]):focus-visible{outline-color:#fff}
+:where(.topbar:not(.stuck):not(.solid)) :where(a,button):focus-visible{outline-color:var(--ink)}
+:where(body:has(.hero,.h-hero) .topbar:not(.stuck):not(.solid)) :where(a,button):focus-visible{outline-color:#fff}
+/* ⚠️ INDENFOR, HVOR FORÆLDEREN KLIPPER. .tidligere har overflow:hidden
+   for sine runde hjørner, og en ring UDEN for summary blev skåret helt
+   væk (målt: 1,0:1 — usynlig). Samme greb som .tidl-klik. Kalenderens
+   dage står 3 px fra hinanden; en ring 3 px ude lå oven på nabodagene,
+   så dér sidder den tæt på dagen, inde i mellemrummet. */
+.tidligere summary:focus-visible{outline-offset:-3px;border-radius:24px}
+.lk-dag:focus-visible{outline-offset:0}
+
+/* ---- 2) HOVER PÅ EN COMPUTER -----------------------------------
+   Kun med mus (hover + fin markør), og kun når bevægelse er i orden.
+   -2 px er .evcard.evklik's løft; .g har allerede transform på sin
+   --spring-overgang, så intet nyt skal tones.
+   ⚠️ :not(:active) — ellers vinder løftet over trykket (.g:active
+   scale(.955)), og knappen holder op med at give efter under musen.
+   ⚠️ IKKE .bestil: pillen gemmer sig med transform (.tuck/.ned), og
+   et løft ville overskrive det. */
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .g:hover:not(:active):not(:disabled){transform:translateY(-2px)}
+}
+
+/* ---- 3) EN SPÆRRET KNAP GIVER IKKE EFTER ------------------------
+   button.g.solid:disabled er grå og siger "not-allowed" — men
+   .g:active skalerede den stadig, som om trykket gik igennem. Samme
+   regel som .step button:disabled:active har haft længe. */
+button.g:disabled:active{transform:none}
+
+/* ---- 4) REDUCERET BEVÆGELSE: DET, DER MANGLEDE -----------------
+   Afsløringerne, filmen, isen og dampen stod allerede stille. Det,
+   der stadig GLED, var dét, gæsten selv sætter i gang: menuskuffen
+   (24 px op og skalering over et halvt sekund), bestil-pillen (glider
+   ned under kanten), arrangementskortets løft og kalenderens filter.
+   Lesregs regel (§5): vejen bliver et øjebliksskift, og en toning
+   højst 150 ms. Trykket (.g:active m.fl.) er beholdt — det er svar
+   på fingeren, ikke en rejse.
+
+   ⚠️ SYNLIGHEDENS FORSINKELSE FØLGER TONINGEN. .sheet og .bestil
+   skifter visibility EFTER udtoningen (se noten ved .sheet 14/9);
+   står toningen på .15s, skal forsinkelsen også, ellers står en
+   usynlig skuffe og fanger klik i en kvart sekund.
+
+   ⚠️ !important KUN PÅ .evcard[style]: kalenderens filter (scriptet
+   nederst i h-kalender.html) skriver transition og transform direkte
+   i style-attributten, og den slår et stylesheet uden !important. */
+@media (prefers-reduced-motion:reduce){
+  .screen{scroll-behavior:auto}
+  .sheet{transition:opacity .15s ease,visibility 0s linear .15s}
+  .sheet.open{transition:opacity .15s ease,visibility 0s}
+  .sheet-in{transform:none;transition:opacity .15s ease}
+  .bestil{transition:opacity .15s ease,visibility 0s}
+  .bestil.tuck,.bestil.ned{transform:none;transition:opacity .15s ease,visibility 0s linear .15s}
+  .evcard.evklik:hover{transform:none}
+  .evcard[style]{transform:none !important;transition:opacity .15s ease !important}
 }
