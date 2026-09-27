@@ -151,47 +151,49 @@ test.describe('Forsidens kobling', () => {
     });
   }
 
-  /* ⚠️ ALLERGILINJEN ER EN GLASPILLE (27/9). Mikkels ord: "lav allergi
-     tingen en liquid glass pille lesreg style". Den var en stiplet,
-     lyserød kasse på menukortet og en løs linje på forsiden. Nu husets
-     glas — og UDEN løft: en hvid glaspille med skygge under er husets
-     knap (.g), og der er intet at trykke på. Kundens nød står (31/8). */
-  test('allergilinjen er en glaspille begge steder: glas, ingen kant, intet løft', async ({ page }) => {
+  /* ⚠️ ALLERGILINJEN ER LESREG'S PLATE (27/9). Mikkels ord: "lav allergi
+     tingen en liquid glass pille lesreg style" — og om første udgave: "for
+     gennemsigtig … tag fra figma sheetsne". Den satte tekst på klart glas;
+     Liquid Atelier 3.2 §1.2 siger: "Text never sits on clear glass. Use
+     Smoke or a solid core inside a 6 px Rim". Tallene her er Figmas
+     (LA31 Content / Quote, Plate, node 104:556), ikke sidens egne: en
+     MASSIV kerne 5 px inde, en lyskant om den og ingen stiplet kant.
+     Kundens nød står (31/8). */
+  const pladen = (e) => {
+    const c = getComputedStyle(e);
+    const k = getComputedStyle(e, '::before');
+    const alfa = (f) => { const m = f.match(/rgba?\(([^)]+)\)/); if (!m) return 0; const d = m[1].split(',').map(parseFloat); return d.length > 3 ? d[3] : 1; };
+    return {
+      kant: c.borderTopStyle,
+      kerne: alfa(k.backgroundColor),
+      ind: parseFloat(k.top),
+      lys: getComputedStyle(e, '::after').content,
+      store: c.textTransform,
+      rund: parseFloat(c.borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1,
+    };
+  };
+  test('allergilinjen er LESREG-pladen begge steder: massiv kerne i en glaskant', async ({ page }) => {
     for (const [sti, sel] of [['/index.html', '.menucard .glaspille'], ['/m-menukort.html', '.mk-allergi']]) {
       await åbn(page, sti);
       const pille = page.locator(sel);
       await expect(pille).toContainText('🥜');
       await expect(pille).toContainText('Allergi?');
-      const m = await pille.evaluate((e) => {
-        const c = getComputedStyle(e);
-        return {
-          kant: c.borderTopStyle,
-          slør: c.backdropFilter || c.webkitBackdropFilter || '',
-          lys: getComputedStyle(e, '::before').content,
-          skygge: c.boxShadow,
-          rund: parseFloat(c.borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1,
-        };
-      });
+      const m = await pille.evaluate(pladen);
       expect(m.kant, sti + ': den stiplede kant er tilbage').toBe('none');
-      expect(m.slør, sti + ': intet glas bag pillen').toContain('blur');
-      expect(m.lys, sti + ': glassets lyse kant mangler').not.toBe('none');
+      expect(m.kerne, sti + ': teksten står på klart glas, ikke på en massiv kerne').toBe(1);
+      expect(m.ind, sti + ': kernen skal ligge 5 px inde i glaskanten (Figma 104:556)').toBe(5);
+      expect(m.lys, sti + ': glaskantens lys mangler').not.toBe('none');
       expect(m.rund, sti + ': ikke en pille').toBe(true);
-      const skygger = m.skygge === 'none' ? [] : m.skygge.split(/,(?![^(]*\))/);
-      expect(skygger.every((d) => /inset/.test(d)), sti + ': pillen løfter sig som en knap (' + m.skygge + ')').toBe(true);
     }
   });
 
   /* "Nyhed" var en rød mærkat i spærrede versaler — det tegn, bid 1
-     tog af mærkaterne over overskrifterne. Nu glas og almindelig skrift. */
-  test('"Nyhed" på tapaskortet står i almindelig skrift på glas', async ({ page }) => {
+     tog af mærkaterne over overskrifterne. Nu samme plade, almindelig skrift. */
+  test('"Nyhed" på tapaskortet står i almindelig skrift på LESREG-pladen', async ({ page }) => {
     await åbn(page, '/index.html');
-    const m = await page.locator('.tapasec .nyt').evaluate((e) => {
-      const c = getComputedStyle(e);
-      return { store: c.textTransform, luft: c.letterSpacing, slør: c.backdropFilter || c.webkitBackdropFilter || '' };
-    });
+    const m = await page.locator('.tapasec .nyt').evaluate(pladen);
     expect(m.store, 'versalerne er tilbage').toBe('none');
-    expect(['normal', '0px']).toContain(m.luft);
-    expect(m.slør).toContain('blur');
+    expect(m.kerne, 'teksten står på klart glas').toBe(1);
   });
 
   test('dagens ret kommer fra admin — og afsnittet forsvinder, når der ikke er en', async ({ page }) => {

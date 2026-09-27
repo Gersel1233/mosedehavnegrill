@@ -239,12 +239,15 @@ test.describe('Skalaen kan ikke skride tilbage', () => {
     /* ⚠️ EN SKRALDE, IKKE ET MÅL. Målt 5/9: 38 → 30 og 45 → 37.
        Tallene her er de målte; kommer der en ny værdi, skal den
        enten være en af de eksisterende, eller loftet skal hæves
-       MED en grund. */
+       MED en grund.
+       38 (27/9): LESREG's Rim-skygge, 9 · 18 · 44 px i 24 %, fra Figmas
+       Plate (LA31 Content / Quote, node 104:556). Glaspillen er bygget
+       efter den, og skyggen er dens — ét lys, nede til højre. */
     const c = css();
     const sizes = new Set([...c.matchAll(/font-size:\s*([^;}]+)/g)].map((m) => m[1].trim()));
     const shadows = new Set([...c.matchAll(/box-shadow:\s*([^;}]+)/g)].map((m) => m[1].trim()));
     expect(sizes.size, 'flere skriftstørrelser end 30: ' + [...sizes].join(', ')).toBeLessThanOrEqual(30);
-    expect(shadows.size, 'flere skygger end 37').toBeLessThanOrEqual(37);
+    expect(shadows.size, 'flere skygger end 38').toBeLessThanOrEqual(38);
   });
 
   test('overskriften flyttede sig ikke — h1 står, hvor designet satte den', async ({ page }, info) => {
