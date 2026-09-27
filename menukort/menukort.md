@@ -1,6 +1,6 @@
 # Menukortet hos Mosede Havnecafe
 
-Hentet direkte ud af databasen **2026-09-26**. Databasen er sandheden —
+Hentet direkte ud af databasen **2026-09-27**. Databasen er sandheden —
 retter ejeren en pris i admin, er filen her forældet samme sekund.
 Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
@@ -15,7 +15,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Lun delle eller steg** — 25 kr.
   <br>En lun, saftig frikadelle eller en skive varm steg — klassisk og mættende.
 - **Lun delle, steg eller leverpostej med brød og surt** — 65 kr.
-  <br>Med brød og smør
+  <br>Med brød og surt
 - **Stjerneskud** — 105 kr.
   <br>Sprød stegt og mild dampet fiskefilet på franskbrød med rejer, asparges, dressing og citron.
 - **Fish’n’chips** — 105 kr.
@@ -45,9 +45,9 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
   <br>Med brød og smør
 - **Hjemmelavet hvidløgsbrød med tomat & ost** — 45 kr.
   <br>Med ost og tomat
-- **Indbagte rejer med pommes** — 95 kr.
+- **8 indbagte rejer med pommes** — 95 kr.
   <br>Sprøde indbagte rejer med gyldne pommes frites og dip.
-- **Nuggets med pommes** — 85 kr.
+- **10 nuggets med pommes** — 85 kr.
   <br>Sprøde kyllingenuggets med pommes frites og dip.
 - **Hjemmelavet toast, ost og skinke** — 35 kr.
   <br>Med ost og skinke
@@ -96,12 +96,12 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
   <br>Ristet pølse svøbt i sprød bacon, med brød og dressing.
 - **Frankfurter med bacon** — 45 kr.
   <br>Frankfurter svøbt i sprød bacon, med brød og dressing.
-- **Pølsebrød** — 10 kr.
+- **Brød** — 10 kr.
 - **Kradser med det hele** — 15 kr.
   <br>Pølse med det hele: sennep, ketchup, remoulade, rå og ristede løg og agurkesalat.
-- **Hotdog, lille** — 40 kr.
+- **Ristet hotdog, lille** — 40 kr.
   <br>Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.
-- **Hotdog, stor** — 50 kr.
+- **Ristet hotdog, stor** — 50 kr.
   <br>Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.
 - **Fransk hotdog, lille** — 40 kr.
   <br>Pølse i en sprød, udhulet flute med dressing.
@@ -125,7 +125,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Dyrlægens natmad** — 55 kr.
 - **Kartoffelmad med mayo, løg og bacon** — 55 kr.
 - **Rullepølse med sky og løg** — 55 kr.
-- **Hjemmelavet Roastbeef med remoulade og løg** — 55 kr.
+- **Roastbeef med remoulade og løg** — 55 kr.
 - **Skinke med italiensk salat** — 55 kr.
 - **Skinke med spejlæg** — 55 kr.
 - **Kylling med bacon og karry** — 55 kr.
@@ -135,10 +135,11 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Hvide sild med karry** — 55 kr.
 - **Æggemad med mayo og løg** — 55 kr.
 - **Hakkebøf med bløde løg og spejlæg** — 55 kr.
-- **Ostemad Mellem lageret** — 55 kr.
+- **Ostemad** — 55 kr.
 - **Rejemad** — 95 kr.
   <br>Med mayo og citron — hel skive
 - **Tartarmad** — 95 kr.
+  <br>Bestilles dagen før
 - **Dagens hjemmelavede pålægssalater** — 55 kr.
   <br>Spørg ved bestilling
 - **Æggemad med mayo og rejer** — 55 kr.
@@ -156,7 +157,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Dyrlægens natmad, håndmad** — 27 kr.
 - **Kartoffelmad med mayo, løg og bacon, håndmad** — 27 kr.
 - **Rullepølse med sky og løg, håndmad** — 27 kr.
-- **Hjemmelavet Roastbeef med remoulade og løg, håndmad** — 27 kr.
+- **Roastbeef med remoulade og løg, håndmad** — 27 kr.
 - **Skinke med italiensk salat, håndmad** — 27 kr.
 - **Skinke med spejlæg, håndmad** — 27 kr.
 - **Kylling med bacon og karry, håndmad** — 27 kr.
@@ -166,7 +167,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Hvide sild med karry, håndmad** — 27 kr.
 - **Æggemad med mayo og løg, håndmad** — 27 kr.
 - **Hakkebøf med bløde løg og spejlæg, håndmad** — 27 kr.
-- **Ostemad, mellem lageret  håndmad** — 27 kr.
+- **Ostemad, håndmad** — 27 kr.
 - **Dagens hjemmelavede pålægssalater, håndmad** — 27 kr.
   <br>Spørg ved bestilling
 
@@ -199,7 +200,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Softice-top** — 15 kr.
 - **Løs vaffel** — 7 kr.
 - **Løs vaffel, glutenfri** — 7 kr.
-- **Bøtte med topping** — 20 kr.
+- **Toppingbøtte** — 20 kr.
 - **Isboks, ca. 6 kugler eller softice** — 90 kr.
   <br>6 kugler efter eget valg — eller fyldt med softice
 - **Havnens café-is** — 79 kr.
@@ -251,8 +252,8 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
   <br>Frisk frugt efter dagen, sauce & topping
 - **Churros med is og sauce** — 67 kr.
   <br>Lune, sprøde churros med is og sauce.
-- **2 hjemmelavede pandekager med sukker** — 45 kr.
-- **2 hjemmelavede pandekager med is** — 65 kr.
+- **2 hjemmelavede pandekager** — 45 kr.
+- **2 hjemmelavede pandekager med 1 kugle is** — 65 kr.
 - **Bakke med vaffelknas, softice, sauce og topping** — 55 kr.
 - **2 hjemmelavede pandekager med 2 kugler is** — 77 kr.
 - **Affogato** — 65 kr.
@@ -293,20 +294,20 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 *Mad · kan bestilles*
 
-- **Morgenkomplet** — 99 kr.
-  <br>Kaffe eller juice, rundstykke med pålæg, æg og bacon samt frugt
-- **English breakfast** — 99 kr.
-  <br>Spejlæg · 2 skiver bacon · bønner i tomat · pølse · stegte champignon · pandestegt tomat · ristet toastbrød · smør
+- **Morgen komplet** — 99 kr.
+  <br>Kaffe eller juice, rundstykke med pålæg, æg eller bacon & grønt
+- **English Breakfast** — 99 kr.
+  <br>Ristet toastbrød, spejlæg, bacon, bønner, grønt, ost, ½ pølse, stegte champignoner og ½ stegt tomat
 - **Rundstykke med pålæg** — 35 kr.
   <br>Friskt rundstykke med smør og pålæg.
-- **Havnens all in one** — 40 kr.
-  <br>Toastbrød eller rugbrød · ost · skinke · spejlæg
+- **Havnens All in One** — 40 kr.
+  <br>Brød, skinke & spejlæg · + ost 10,-
 - **Franskbrød med pålæg** — 35 kr.
   <br>Franskbrød med smør og pålæg.
 - **Wienerbrød** — 30 kr.
   <br>Sælges kun helt.
 - **Morgenbrød** — _spørg_
-  <br>Rundstykker og morgenbrød kan bestilles — sig til dagen før
+  <br>Spørg ved bestilling
 
 ## Tilkøb morgenmad
 
@@ -352,6 +353,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Vanilje- og jordbærsoftice** — 35 kr.
 - **Chips** — 20 kr.
 - **Milkshake** — 59 kr.
+  <br>Valgfri smag, mix 2 kugler
 - **Smoothie** — 59 kr.
 - **Slikposer** — 20 kr.
 - **Slushice, lille** — 20 kr.
@@ -419,7 +421,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
 - **Sodavand, juice, iste eller kakao – lille** — 30 kr.
 - **Sodavand, juice, iste eller kakao – stor** — 40 kr.
-- **Smoothie eller milkshake** — 59 kr.
+- **Dagens smoothie** — 59 kr.
 - **Mælk** — 20 kr.
 - **Cocio** — 35 kr.
 - **Kildevand** — 20 kr.
@@ -428,7 +430,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **RTD** — 40 kr.
 - **Drinks** — 75 kr.
 - **Cocktail** — 85 kr.
-- **Snaps, sambuca og shots** — 30 kr.
+- **Snaps, spiritus og shots** — 30 kr.
 - **Brik juice eller cacao** — 15 kr.
 - **Slush Ice, lille** — 25 kr.
 - **Slush Ice, stor** — 35 kr.
@@ -454,5 +456,5 @@ Kategorier, ejeren har slået fra. De er ikke slettet, og kan tændes igen i adm
 
 ## De varer, der med vilje står uden pris
 
-- **Morgenbrød** (Morgenmad) — Rundstykker og morgenbrød kan bestilles — sig til dagen før
+- **Morgenbrød** (Morgenmad) — Spørg ved bestilling
 

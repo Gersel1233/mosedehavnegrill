@@ -7,6 +7,31 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LESREG-DAGEN: FORFINING, HOST GROTESK OG KORTENES RETTELSER** (27/9).
+Alt udgivet og tjekket på mosedehavnecafe.dk samme dag.
+
+- **Forfiningen** (`9943218`): overskrifter med `text-wrap:balance`, de tre
+  10 px-mærker på 11, labels i to-spaltede felter som alle andre, synlig
+  tastaturfokus (rød/hvid/blæk efter grunden — målt som WCAG 2.4.13),
+  hover -2 px kun med mus, spærrede knapper giver ikke efter, reduceret
+  bevægelse på skuffen, pillen og kalenderkortene
+- **Host Grotesk i hele huset** (`94d8125`, Mikkels valg — LESREG's skrift):
+  seks faste filer i `fonts/`, overskrifter i 500, LESREG-sporing. Bebas bliver.
+  `&` lånes fra Instrument Sans (`3bfda25`) — Host Grotesks & stak ud på
+  knapperne. ⚠️ Én &-flade pr. vægt: Chrome vælger på vægten før unicode-range
+- **Drinksfotoet ude af forsidens galleri** (`f22b5e7`, Mikkels ønske)
+- **Kortenes rettelser** (`93f1d9e` + `kortenes-rettelser-27-9.sql`, KØRT 27/9):
+  afvigelsesrapporten mod de 7 trykte kort og 2 sedler — alle priser stemte;
+  21 navne/beskrivelser rettet, sandwich 14 varianter, rejemad rugbrød/franskbrød,
+  dagens smoothie og milkshake som to linjer, flæskesvær under barens snacks.
+  Ingen pris ændret, ingen række oprettet. ⚠️ Loftet på varianter er 16 (var
+  12): `Butik.vareValg` skar TAVST ved 12 — `tests/sandwich-varianter.spec.js`
+  set fejle. Menukortsiden kan placere en vare hentet ved navn med `efter`.
+  Beholdt efter Mikkels ord: Sliders, "Lun delle eller steg", "Ekstra tilbehør",
+  Brunchplatte, Slushice-priserne
+- **Gamle fejl, ikke rørt:** `tapas-film` (begge profiler) og `tilbage` →
+  menukortet fejler også uden dagens ændringer; SQL-runden har 24 gamle fald
+
 **GALLERIETS SKIFT: HURTIGERE EFTER TAPASFILMEN OG UDEN BLINK** (26/9, aften).
 Mikkels ord: *"switchene imellem billederne efter tapasvideoen … er ikke hurtig
 nok og smooth nok"*. Tre ting i `js/skal/billedplads.js` og `havnegrillen.css`:

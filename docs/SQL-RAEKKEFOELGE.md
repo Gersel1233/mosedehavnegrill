@@ -55,7 +55,7 @@ og derfra:
   → kortenes-rettelser-27-9.sql
 ```
 
-**⚠️ `kortenes-rettelser-27-9.sql` (27/9) — IKKE kørt i produktionen endnu.**
+**⚠️ `kortenes-rettelser-27-9.sql` (27/9) — kørt i produktionen af Mikkel 27/9.**
 Afvigelsesrapporten 27/9: navne, beskrivelser og varianter som de trykte kort
 (ingen eksisterende pris ændres). Sandwichen får 14 varianter, rejemaden
 rugbrød/franskbrød, flæskesvær tændes under barens snacks, og "Smoothie eller
