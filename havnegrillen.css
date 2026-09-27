@@ -3435,3 +3435,16 @@ button.g:disabled:active{transform:none}
    som punktets overskrift på sin egen linje, og forklaringen er en
    almindelig sætning under den. Kundens egne ord er de samme. */
 .fact>span>b:first-child{display:block;margin-bottom:2px}
+
+/* ⚠️ TEKST GLIDER IKKE IND (27/9). Mikkels ord om det generiske:
+   "alt glider op, når man ruller". Overskrifter, underrubrikker og
+   linjer står der bare — det er skabelonens tegn, at HVER blok
+   stiger 26 px op og toner ind. Kort, billeder, gallerier og
+   paneler beholder deres bevægelse, og dermed kundens egen
+   "rigtig variation af animationerne" (9/9, prøven i gennemgang
+   vogter den). !important, fordi varianterne .rev.r-ind/.r-blaend
+   og de forsinkede .rev.in.d1-3 vejer 0,2,0-0,3,0 og ellers ville
+   vinde over en tekstblok, der har fået en af dem. */
+.rev:is(.mid,.sub,.tcap,.findhoved),
+.rev:has(> h2:first-child),.rev:has(> h3:first-child),.rev:has(> .eyebrow:first-child){
+  opacity:1!important;transform:none!important;transition:none!important}
