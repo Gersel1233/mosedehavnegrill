@@ -1047,7 +1047,7 @@ test.describe('Tidsmodellen', () => {
        "I kan bestille til i morgen", og vælgeren tilbyder
        FJORTEN dage — en gæst, der skal bruge mad til på lørdag,
        skal ikke læse, at i morgen er det eneste tilbage. */
-    await expect(efter).toContainText('vælg en anden dag');
+    await expect(efter).toContainText(/vælg en anden dag/i);
     await expect(efter, 'linjen lover kun i morgen')
       .not.toContainText('til i morgen');
   });

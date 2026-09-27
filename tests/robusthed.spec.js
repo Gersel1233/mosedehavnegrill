@@ -600,14 +600,14 @@ test.describe('Uden forbindelse kan der ikke sendes', () => {
   test('smørrebrødssiden spærrer knappen og siger telefonen', async ({ page }) => {
     await nede(page, '/h-smorrebrod.html');
     const knap = page.locator('#ssend');
-    await expect(knap).toContainText('ring 28 87 13 43');
+    await expect(knap).toContainText(/ring 28 87 13 43/i);
     await expect(knap).toBeDisabled();
   });
 
   test('bestil/ spærrer knappen og siger telefonen', async ({ page }) => {
     await nede(page, '/bestil/');
     const knap = page.locator('#bestil-send');
-    await expect(knap).toContainText('ring 28 87 13 43');
+    await expect(knap).toContainText(/ring 28 87 13 43/i);
     await expect(knap).toBeDisabled();
   });
 
@@ -654,7 +654,7 @@ test.describe('Uden forbindelse kan der ikke sendes', () => {
        tidsgrænsen. genopret() genindlæser ikke undervejs: dens egen
        prøvehentning hænger også. */
     await page.clock.runFor(15500);
-    await expect(page.locator('#ssend')).toContainText('ring 28 87 13 43');
+    await expect(page.locator('#ssend')).toContainText(/ring 28 87 13 43/i);
     await expect(page.locator('#ssend')).toBeDisabled();
   });
 

@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**BID 4: TANKESTREGERNE UD AF TEKSTERNE FRA JAVASCRIPT** (27/9, sent). Mikkels
+ord: *"ja gør det også"*. 106 sætninger i 21 filer (fejlbeskeder, kvitteringen,
+kalenderen, isbyggeren, bordsiden, min-bestilling, bestillingen): punktum, komma
+eller kolon, og "— fyldt op" er "(fyldt op)". **Ikke rørt:** menukortets tekster
+(`menukort-kort.js` og glutenfri-vaflen i `menukort.js`) står ordret som de trykte
+kort, der selv har tankestregerne (Mikkel 26/9: "1:1"). Admin og konsollen heller
+ikke. Fire prøver ledte efter "ring 28 87 13 43" og "vælg en anden dag" med lille
+forbogstav — efter et punktum er det stort; de måler nu uden hensyn til det.
+
 **PLADEN FRA FIGMA, PRISEN I GULD OG KORTENE PÅ DUGEN** (27/9, sent). Mikkels ord
 om glaspillens første udgave: *"for gennemsigtig og dårlig og ikke nok lesreg
 agtig, tag fra figma sheetsne"*, og så: *"delen på forsiden med se hele
