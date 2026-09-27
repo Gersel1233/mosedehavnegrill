@@ -7,6 +7,16 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**FACEBOOK, SMILEYEN OG PRISEN ER PLADEN OGSÅ** (27/9, nat). Mikkels ord: *"glass
+pillerne med de tre ting facebook, fødevarestyrelsen og guld award skal lige have
+en kopi inde fra figma ligesom allergien"*. Pladen (Figma Plate, node 104:556)
+står nu i ÉN regel i havnegrillen.css, som allergien, "Nyhed", smileyen, prisen og
+Facebook-kortet deler; kun kernen skifter (porcelæn, guld, Facebooks blå — den blå
+er kundens valg 13/9 og bor nu i kernen). `--plade-r` er pladens hjørne, og kernen
+følger 5 px inde. Prøven "Facebooks blå" måler kernen; ny prøve holder alle tre på
+pladen, set fejle med en gennemsigtig kerne. 284 grønne i skal-forside,
+computer-spalte og typografi, 33 i gennemgangens kontrast.
+
 **BID 4: TANKESTREGERNE UD AF TEKSTERNE FRA JAVASCRIPT** (27/9, sent). Mikkels
 ord: *"ja gør det også"*. 106 sætninger i 21 filer (fejlbeskeder, kvitteringen,
 kalenderen, isbyggeren, bordsiden, min-bestilling, bestillingen): punktum, komma
