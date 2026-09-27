@@ -21,6 +21,15 @@ for udseende).
   under Find os: almindelig skrift og en **lanterne tegnet i Higgsfield**
   (`ikoner.svg#lanterne-taendt/-slukket`) — tændt ved åbent, telefonen ved "Ring
   og hør". Prøven set fejle med lanternen låst til slukket
+- **Bid 2 — teksten:** gæstesidernes synlige tekst har ingen tankestreger
+  (var ~160) og ingen fed midt i sætninger. Punkternes fede start (`.fact`)
+  står som overskrift på egen linje med forklaringen under. Fyld ud ("nemt at
+  bladre i", "Vi glæder os til at høre fra jer", "Alt er muligt;", "eller bare
+  fordi I fortjener det"). **Kundens egne ord står** ("Vi elsker at…",
+  "dygtige", "maden er god", "holder det hele", "skræddersyr" — prøven i
+  skal-forespoergsel vogter dem). Historiesiden fik kun tegnsætning: den bygger
+  på kundens faktadokument. `Butik.leveringsTekst` er hele sætninger; "150 kr."
+  + "." gav "150 kr.." — vagt i skal-bestil, set fejle. Juraen og admin ikke rørt
 
 **HUSETS NYE IKONER: TEGNET I HIGGSFIELD, SAMLET I `ikoner.svg`** (27/9, aften).
 Mikkels ord: *"alle de der små ikoner på siden … det der gør det ser lidt claude
