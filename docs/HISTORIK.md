@@ -7,6 +7,21 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**DET GENERISKE UD, I TRE BIDDER** (27/9, aften). Mikkels ord: *"de her ting er
+ikke lesreg agtige og genriske og claude genkendelige"* — og *"del det op i 3
+bider … ik lad det tage for lang tid"*. Kun udseende: hver bid prøves med de
+filer, der rører den, ikke den fulde runde (Mikkels ord, og CLAUDE.md's regel
+for udseende).
+
+- **Bid 1 — mærkater, prikker, statuslinjen:** mærkaterne over overskrifterne
+  er en stille linje i blæk (14 px), ikke røde spærrede versaler. 11 slogans ud
+  (Altid noget godt ×2, Havnens stolthed, Nyt fra havnen, Alt vi kan, Skal det
+  være større?, Jura ×2, Ud af huset, Hvad sker der, Book spisning). 16
+  prikrækker og 17 streger væk med deres animationer. Statuslinjen i heroen og
+  under Find os: almindelig skrift og en **lanterne tegnet i Higgsfield**
+  (`ikoner.svg#lanterne-taendt/-slukket`) — tændt ved åbent, telefonen ved "Ring
+  og hør". Prøven set fejle med lanternen låst til slukket
+
 **HUSETS NYE IKONER: TEGNET I HIGGSFIELD, SAMLET I `ikoner.svg`** (27/9, aften).
 Mikkels ord: *"alle de der små ikoner på siden … det der gør det ser lidt claude
 genkendeligt ud"* og siden *"brug higgsfield til at lave alle de ikoner … mere
