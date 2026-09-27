@@ -425,7 +425,7 @@
          ikke læses ud af en sætning. Se .rest nedenfor. */
       retter.slice(1).forEach(function (r) {
         linjer.push('Eller: ' + r.navn
-          + (r.udsolgt ? ' (udsolgt)' : (r.pris ? ' — ' + kroner(r.pris) : '')));
+          + (r.udsolgt ? ' (udsolgt)' : (r.pris ? ' · ' + kroner(r.pris) : '')));
       });
       if (linjer.length) p.textContent = linjer.join(' ');
       else skjul(p);

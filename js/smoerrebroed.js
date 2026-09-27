@@ -117,7 +117,7 @@
       /* Kan kortet ikke hentes, siges det højt. En tom liste
          ligner et sted, hvor der plejede at stå noget. */
       boks.appendChild(lav('li', 'desc',
-        'Vi kan ikke vise kortet lige nu — ring, så fortæller vi, hvad vi har.'));
+        'Vi kan ikke vise kortet lige nu. Ring, så fortæller vi, hvad vi har.'));
       return;
     }
 
@@ -212,7 +212,7 @@
     var liste = $('smoer-stykker-liste');
     if (liste && !liste.firstChild) {
       liste.appendChild(lav('li', 'desc',
-        'Vi kan ikke vise kortet lige nu — ring, så fortæller vi, hvad vi har.'));
+        'Vi kan ikke vise kortet lige nu. Ring, så fortæller vi, hvad vi har.'));
     }
 
     var pille = $('smoer-status-tekst');

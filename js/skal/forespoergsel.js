@@ -414,7 +414,7 @@
     var medMad = segSvar() === 'med-mad';
     if (medMad && gratisFra && isFinite(antal) && antal >= gratisFra) {
       linje.className = 'hint tid-gratis';
-      linje.textContent = dele[0] + ' — og med ' + antal
+      linje.textContent = dele[0] + '. Med ' + antal
         + ' kuverter mad er lokalelejen gratis.';
       return;
     }
@@ -596,11 +596,11 @@
     if (!d) { rydFejl(); return true; }
     if (varselDage() && d < iso(varselDage())) {
       sigFejl('Vi skal bruge mindst ' + varselDage() + ' dage til at planlægge '
-        + 'et selskab. Skal det være før, så ring til os — så finder vi ud af det.', 'dato');
+        + 'et selskab. Skal det være før, så ring til os, så finder vi ud af det.', 'dato');
       return false;
     }
     if (erOptaget(d)) {
-      sigFejl('Den dato er desværre optaget. Vælg en anden — '
+      sigFejl('Den dato er desværre optaget. Vælg en anden, '
         + 'eller ring til os, så finder vi ud af det.');
       return false;
     }
@@ -803,7 +803,7 @@
       } else if (taget) {
         celle.className += ' taget';
         celle.disabled = true;
-        celle.setAttribute('aria-label', d + '. ' + KAL_MDR[kalMd] + ' — optaget');
+        celle.setAttribute('aria-label', d + '. ' + KAL_MDR[kalMd] + ', optaget');
       } else {
         celle.addEventListener('click', kalVaelg);
       }
@@ -849,7 +849,7 @@
           + 'så vi kan vende tilbage til jer.', 'tlf');
       }
       if (tlf && tlf.replace(/[^0-9]/g, '').length < 8) {
-        return sigFejl('Telefonnummeret ser for kort ud — eller lad det stå tomt '
+        return sigFejl('Telefonnummeret ser for kort ud. Eller lad det stå tomt, '
           + 'og skriv en e-mail i stedet.', 'tlf');
       }
     } else if (tlf.replace(/[^0-9]/g, '').length < 8) {
@@ -879,7 +879,7 @@
     if (antal !== '' && antal !== null && antal !== undefined) {
       var n = Number(antal);
       if (!isFinite(n) || n < 1 || n > 500) {
-        return sigFejl('Skriv et antal mellem 1 og 500 — eller lad feltet '
+        return sigFejl('Skriv et antal mellem 1 og 500, eller lad feltet '
           + 'stå tomt, hvis I ikke ved det endnu.', 'antal');
       }
     }
@@ -893,7 +893,7 @@
     if (side.tidsrum) {
       var spaend = tidsSpaend();
       if (!spaend) {
-        return sigFejl('Skriv, hvornår I skal bruge lokalet — fra og til.');
+        return sigFejl('Skriv, hvornår I skal bruge lokalet: fra og til.');
       }
       if (spaend.minutter < 30) {
         return sigFejl('Tidsrummet skal være mindst en halv time. '

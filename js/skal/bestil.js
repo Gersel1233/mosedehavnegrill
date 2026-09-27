@@ -782,7 +782,7 @@
     var t = find('#stoerrelsetal', panel);
     if (!t) return;
     t.textContent = valgtStoerrelse
-      ? 'Vælg nu fyldet — hvert stykke koster ' + kroner(valgtStoerrelse.pris) + '.'
+      ? 'Vælg nu fyldet. Hvert stykke koster ' + kroner(valgtStoerrelse.pris) + '.'
       : 'Vælg først, hvad brødet skal være. Så kommer fyldet frem.';
   }
 
@@ -1429,8 +1429,8 @@
          en gæst, der skal bruge smørrebrød til på lørdag, skal ikke
          læse, at i morgen er det eneste, der er tilbage. */
       ? '⏰ Sidste bestilling i dag var kl. ' + kl
-        + ' — vælg en anden dag herunder.'
-      : (igen <= 30 ? '⏰ Skynd jer — ' : '⏳ ')
+        + '. Vælg en anden dag herunder.'
+      : (igen <= 30 ? '⏰ Skynd jer, ' : '⏳ ')
         + 'sidste bestilling i dag er kl. ' + kl
         + ' · ' + igen + ' min. tilbage.';
   }
@@ -1710,7 +1710,7 @@
          over. En spærring her ville være kode, der aldrig kører.
          Svaret er beskeden i visHint() i stedet. */
       var mulighed = lav('option', null,
-        dagTekst(iso) + (fuld ? ' — fyldt op' : ''));
+        dagTekst(iso) + (fuld ? ' (fyldt op)' : ''));
       mulighed.value = iso;
       mulighed.disabled = fuld;
       vælger.appendChild(mulighed);
@@ -1747,7 +1747,7 @@
          regel som dagen ovenfor og som bordstribens FULDT. */
       var fuld = R.tidFuld ? R.tidFuld(data, fyldteTider, valgtDag, t) : false;
       var mulighed = lav('option', null,
-        'kl. ' + Butik.klokken(t) + (fuld ? ' — fyldt op' : ''));
+        'kl. ' + Butik.klokken(t) + (fuld ? ' (fyldt op)' : ''));
       mulighed.value = t;
       mulighed.disabled = fuld;
       if (!fuld) ledige.push(t);
@@ -1851,7 +1851,7 @@
     var mangler = R.minStkMangler(data, har);
     el.classList.toggle('min-mangler', !!mangler);
     el.textContent = mangler
-      ? 'I mangler ' + (min - har) + ' — vi laver mindst ' + min
+      ? 'I mangler ' + (min - har) + '. Vi laver mindst ' + min
         + ' stykker ad gangen.'
       : 'Vi laver mindst ' + min + ' stykker ad gangen.';
   }
@@ -1889,11 +1889,11 @@
       var timer = R.varselTimer(data);
       var dage = Math.floor(timer / 24);
       linje.textContent = timer <= 0
-        ? 'Bestil gerne i god tid — ring hvis det haster.'
+        ? 'Bestil gerne i god tid, og ring, hvis det haster.'
         : 'Bestilles mindst ' + (dage >= 1
           ? dage + (dage === 1 ? ' dag' : ' dage')
           : timer + (timer === 1 ? ' time' : ' timer'))
-          + ' i forvejen — ring hvis det haster.';
+          + ' i forvejen. Ring, hvis det haster.';
       return;
     }
 
@@ -2160,8 +2160,8 @@
          der krævede fire, ville afvise noget, siden tager imod. */
       var min = side.udvalg === 'kun-smoer' && R.minStk ? R.minStk(data) : 1;
       note.textContent = min > 1
-        ? 'Vælg mindst ' + min + ' stykker smørrebrød — så regner vi prisen ud.'
-        : 'Vælg det, I skal have — så regner vi prisen ud.';
+        ? 'Vælg mindst ' + min + ' stykker smørrebrød, så regner vi prisen ud.'
+        : 'Vælg det, I skal have, så regner vi prisen ud.';
       if (fjernetBesked) note.appendChild(lav('p', 'sum-fjernet', fjernetBesked));
       return;
     }
@@ -2359,7 +2359,7 @@
     }
     if (!note) return;
     note.textContent = 'Vi kan ikke hente menukortet lige nu, så der kan ikke '
-      + 'bestilles her. Ring ' + nummeret() + ' — så tager vi den i telefonen.';
+      + 'bestilles her. Ring ' + nummeret() + ', så tager vi den i telefonen.';
     note.style.display = nede ? '' : 'none';
   }
 
@@ -2374,7 +2374,7 @@
        (nummeret()), som kontakt.js allerede har byttet. */
     if (Butik.bestillingNede && Butik.bestillingNede(data)) {
       knap.disabled = true;
-      knapTekst(knap, 'Nede lige nu — ring ' + nummeret());
+      knapTekst(knap, 'Nede lige nu. Ring ' + nummeret());
       return;
     }
     var n = antalIKurv();
@@ -2570,7 +2570,7 @@
         && R.leveringSvar(data, adresse) === 'spoerg') {
       return brøl('Vi kører ikke fast til den adresse. Ring til os på '
         + nummeret()
-        + ', så aftaler vi det — eller vælg "Vi henter".', 'adresse');
+        + ', så aftaler vi det. Eller vælg "Vi henter".', 'adresse');
     }
     if (!valgtDag || !tid || !tid.value) return brøl('Vælg en dag og et tidspunkt.');
 
@@ -2714,7 +2714,7 @@
          lørdag d. 27. september kl. 12.00." — et punktum, et lille
          bogstav og intet udsagnsord. Fundet i en gennemgang af koden. */
       : leveres
-        ? 'Vi ringer og bekræfter leveringen — vi skal lige se på adressen først. '
+        ? 'Vi ringer og bekræfter leveringen. Vi skal lige se på adressen først. '
           + 'Du har ønsket den ' + hvornår + '. Der er ikke betalt noget.'
         : 'Vi ringer og bekræfter bestillingen til ' + hvornår + '. '
           + 'Der er ikke betalt noget – du betaler ved lugen.';
@@ -2772,7 +2772,7 @@
         return a;
       }())],
       fine: 'Gem linket, eller tag et billede af nummeret. Har du glemt '
-        + 'noget, så ring — vi kan nå det, indtil maden er lavet.',
+        + 'noget, så ring. Vi kan nå det, indtil maden er lavet.',
     });
     /* ⚠️ 'start' OG IKKE 'center'. MÅLT på et skud: med center
        lå hakket — det første, gæsten skal se — halvt bag den

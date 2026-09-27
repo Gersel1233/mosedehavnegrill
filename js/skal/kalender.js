@@ -158,8 +158,8 @@
       var tom = lav('div', 'evtom');
       tom.appendChild(lav('b', null, 'Der er ikke planlagt noget lige nu'));
       tom.appendChild(lav('p', null,
-        'Vi sætter arrangementerne op her, så snart de er på plads — '
-        + 'kig forbi igen, eller spørg ved lugen.'));
+        'Vi sætter arrangementerne op her, så snart de er på plads. '
+        + 'Kig forbi igen, eller spørg ved lugen.'));
       liste.appendChild(tom);
       if (panel) panel.style.display = 'none';
       return;
@@ -200,9 +200,9 @@
         knap.addEventListener('click', function () { vælg(k.id); });
         krop.appendChild(knap);
       } else if (k.tilmelding && udsolgt(k)) {
-        krop.appendChild(lav('span', 'evudsolgt', 'Udsolgt — ring, hvis I er i tvivl'));
+        krop.appendChild(lav('span', 'evudsolgt', 'Udsolgt. Ring, hvis I er i tvivl'));
       } else {
-        krop.appendChild(lav('span', 'evfri', 'Kig bare forbi — ingen tilmelding'));
+        krop.appendChild(lav('span', 'evfri', 'Kig bare forbi, ingen tilmelding'));
       }
 
       /* ⚠️ HELE KORTET KAN TRYKKES (30/8). Kundens ord: "man skal
@@ -307,7 +307,7 @@
          person" stod over, og "40 pladser tilbage · 145,- pr.
          person" stod under. To gange det samme tal er ikke to
          oplysninger. */
-      if (!k.tilmelding) linjer.push('Kig bare forbi — ingen tilmelding');
+      if (!k.tilmelding) linjer.push('Kig bare forbi, ingen tilmelding');
       plads.textContent = linjer.join(' · ');
       plads.style.display = linjer.length ? '' : 'none';
     }
@@ -327,7 +327,7 @@
         });
         cta.appendChild(knap);
       } else if (k.tilmelding) {
-        cta.appendChild(lav('p', 'hint', 'Udsolgt — ring, hvis I er i tvivl.'));
+        cta.appendChild(lav('p', 'hint', 'Udsolgt. Ring, hvis I er i tvivl.'));
       }
       var luk2 = lav('button', 'g', 'Tilbage');
       luk2.type = 'button';
@@ -516,7 +516,7 @@
     if (!vælger || !vælger.value) {
       var boks = id('kvalg');
       if (boks && boks.scrollIntoView) boks.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      return sigFejl('Vælg hvilket arrangement du vil med til — tryk på et af dem øverst.');
+      return sigFejl('Vælg hvilket arrangement du vil med til. Tryk på et af dem øverst.');
     }
     if (String(navn).trim().length < 2) return sigFejl('Skriv dit navn.');
     if (String(tlf).replace(/[^0-9]/g, '').length < 8) {
@@ -621,7 +621,7 @@
        får gæsten til at vente på et opkald, der aldrig kommer.
        Samme lære som bordbookingen: bestilt er bestilt. */
     var besked = hvad + ' Vi siger til, hvis noget ændrer sig. '
-      + 'Bliver I forhindret, så ring — så kan pladsen gå videre til en anden.';
+      + 'Bliver I forhindret, så ring, så kan pladsen gå videre til en anden.';
     var fornavn = String(svar.navn || '').trim().split(/\s+/)[0] || '';
     /* ⚠️ MED STORT FORBOGSTAV — se noten i js/bord.js. */
     fornavn = fornavn

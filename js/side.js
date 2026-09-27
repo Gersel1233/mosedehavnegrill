@@ -1150,7 +1150,7 @@
           + '<path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1'
           + '-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg>',
         titel: 'Følg os på Facebook',
-        tekst: 'Dagens ret, musik og små beskeder fra lugen — vi lægger det op hver morgen.',
+        tekst: 'Dagens ret, musik og små beskeder fra lugen. Vi lægger det op hver morgen.',
         knap: 'Følg os →',
         href: fb,
       });
@@ -1202,8 +1202,8 @@
     var hint = $('dagens-hint');
     if (!hint) return;
     if ((d.indstillinger || {}).auto_bekraeft === true) {
-      hint.textContent = 'Ét sted til det hele — vælg dag, antal og tid. '
-        + 'Bestilt er bestilt — skal noget laves om, ringer du bare.';
+      hint.textContent = 'Ét sted til det hele: vælg dag, antal og tid. '
+        + 'Bestilt er bestilt. Skal noget laves om, ringer du bare.';
     }
   }
 

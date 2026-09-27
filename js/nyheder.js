@@ -60,7 +60,7 @@
       /* Tomt er et svar, ikke en fejl. En tom side uden ord ligner
          noget, der er gået i stykker — og så er gæsten videre. */
       besked('Der er ikke noget nyt lige nu',
-        'Når der sker noget — ændrede tider, nyt i disken — står det her. '
+        'Når der sker noget, som ændrede tider eller nyt i disken, står det her. '
         + 'Kig forbi igen, eller kom bare ned til havnen.');
       return;
     }

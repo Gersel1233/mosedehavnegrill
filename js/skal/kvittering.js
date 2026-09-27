@@ -181,7 +181,7 @@
     if (o.kode && o.skaermbillede) {
       k.appendChild(trin(lav('p', 'fine kvit-skud',
         'Du kan tage et skærmbillede af koden her, hvis du vil have '
-        + 'den ved hånden — vi har den også selv.'), 3));
+        + 'den ved hånden. Vi har den også selv.'), 3));
     }
     if (o.linjer && o.linjer.length) k.appendChild(trin(listen(o.linjer), 4));
     (o.ekstra || []).forEach(function (e) { if (e) k.appendChild(trin(e, 4)); });

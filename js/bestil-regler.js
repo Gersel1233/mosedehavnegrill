@@ -251,7 +251,7 @@
             aaben: false,
             grund: 'klokken er over '
               + String(e.til).slice(0, 5).replace(':', '.')
-              + ' — sælges ikke mere i dag',
+              + ', så den sælges ikke mere i dag',
           };
         }
         return { aaben: false, grund: 'kun til kl. ' + String(e.til).slice(0, 5) };

@@ -95,7 +95,7 @@
            dér ville de skride fra hinanden den dag, ejeren
            skifter det. Prøven fælder et telefonnummer i teksten. */
         tekst: 'Køkkenet har måttet sige nej til den her bestilling. '
-          + 'Vi ringer til dig — men har du ikke hørt fra os, så ring '
+          + 'Vi ringer til dig. Har du ikke hørt fra os, så ring '
           + 'til os på nummeret herunder.',
       };
     }
@@ -117,8 +117,8 @@
            været her. Til den, maden blev kørt ud til, er det en
            påstand om et besøg, hun ikke har aflagt. */
         tekst: leveres
-          ? 'Tak — og velbekomme.'
-          : 'Tak — og velbekomme. Vi ses igen på havnen.',
+          ? 'Tak, og velbekomme.'
+          : 'Tak, og velbekomme. Vi ses igen på havnen.',
       };
     }
     if (st === 'klar') {
@@ -359,7 +359,7 @@
          Ordlyden følger den, bestillingskvitteringen gav hende,
          da hun trykkede send: der er ikke betalt noget. */
       kort.appendChild(lav('p', 'mb-fine', b.hvordan === 'levering'
-        ? 'Der er ikke betalt noget — du betaler, når maden kommer.'
+        ? 'Der er ikke betalt noget. Du betaler, når maden kommer.'
         : 'Betales ved lugen som altid.'));
     }
 
@@ -437,8 +437,8 @@
            for gammel. Siden må ikke kunne bruges til at afgøre,
            OM en reference findes. */
         fejl('Vi kan ikke finde en bestilling med den reference. '
-          + 'Er den fra i går eller før, er den lukket her — '
-          + 'ring til os, hvis der er noget galt.', true);
+          + 'Er den fra i går eller før, er den lukket her. '
+          + 'Ring til os, hvis der er noget galt.', true);
         stop();
         return;
       }
@@ -470,7 +470,7 @@
       if (!(e && e.ikkeSvar)) { if (window.console) console.warn(e); return; }
       fejl('Vi kan ikke få fat i systemet lige nu, så vi kan ikke vise, '
         + 'hvor langt bestillingen er. Har du fået en kvittering, er den '
-        + 'sendt — den forsvinder ikke, fordi siden her ikke kan svare. '
+        + 'sendt. Den forsvinder ikke, fordi siden her ikke kan svare. '
         + 'Vi prøver igen af os selv.', false, 'Ingen forbindelse lige nu');
       sidsteStatus = null;
     });

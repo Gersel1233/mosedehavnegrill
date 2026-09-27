@@ -213,8 +213,8 @@
        ser i stykker ud. */
     if (dage.every(erFuld)) {
       boks.appendChild(lav('p', 'desc',
-        'Alle borde er booket de næste par uger. Ring til os — '
-        + 'vi kan nogle gange finde plads alligevel.'));
+        'Alle borde er booket de næste par uger. Ring til os, '
+        + 'så kan vi nogle gange finde plads alligevel.'));
     }
   }
 
@@ -285,7 +285,7 @@
     } else if (n > 100) {
       /* Ikke bare "for stort": hundrede mennesker ER et selskab,
          og selskaber har deres egen indgang med sin egen samtale. */
-      fejl.antal = 'Over 100 er et selskab — skriv til os om det i stedet.';
+      fejl.antal = 'Over 100 er et selskab. Skriv til os om det i stedet.';
     }
 
     visFejl('bord-navn', fejl.navn);
@@ -374,7 +374,7 @@
       + dagNavn(data, b.dato).toLowerCase()
       + ' ' + dagDato(b.dato) + ' kl. ' + Butik.klokken(b.tid) + '. '
       + 'Kan vi mod forventning ikke skaffe bordet, ringer vi til dig på '
-      + b.telefon + '. Bliver I forhindret, så ring — så giver vi bordet videre.';
+      + b.telefon + '. Bliver I forhindret, så ring, så giver vi bordet videre.';
 
     /* ⚠️ DEN GAMLE FORM STÅR KUN, NÅR BYGGEREN MANGLER  (4/9).
        Den blev bygget ubetinget en dag, og K.byg tømmer boksen

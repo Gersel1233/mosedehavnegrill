@@ -420,7 +420,7 @@
        En pladsholder, der er hugget over midt i et ord, ligner en
        side, der er gået i stykker — og eksemplerne er der netop
        for at vise, at man kan søge på hvad som helst. */
-    soeg.placeholder = 'Søg — burger, softice, øl…';
+    soeg.placeholder = 'Søg: burger, softice, øl…';
     soeg.setAttribute('aria-label', 'Søg i menuen');
     soeg.value = kortSoegetekst;
     bar.appendChild(soeg);
@@ -506,7 +506,7 @@
           boks.appendChild(tom);
         }
         tom.textContent = q
-          ? 'Vi fandt ikke "' + soeg.value.trim() + '". Prøv et andet ord — '
+          ? 'Vi fandt ikke "' + soeg.value.trim() + '". Prøv et andet ord, '
             + 'eller sig det til os ved lugen.'
           : 'Der er ikke noget i den del af menuen lige nu.';
         tom.hidden = false;
@@ -889,8 +889,8 @@
       visLukkede(u);
       boks.appendChild(lav('p', 'desc',
         (u.lukkede || []).length
-          ? 'Der er ikke mere at bestille lige nu — se hvorfor ovenfor.'
-          : 'Vi kan ikke hente udvalget lige nu. Ring til os – vi tager den over telefonen.'));
+          ? 'Der er ikke mere at bestille lige nu. Se hvorfor ovenfor.'
+          : 'Vi kan ikke hente udvalget lige nu. Ring til os, så tager vi den over telefonen.'));
       return;
     }
 
@@ -1806,7 +1806,7 @@
     var iDagNote = null;
     if (tidligst(data).dato === iDag && dage.indexOf(iDag) === -1) {
       iDagNote = planFor(data, iDag)
-        ? 'Ikke flere afhentningstider i dag — sidste afhentning ligger en '
+        ? 'Ikke flere afhentningstider i dag. Sidste afhentning ligger en '
           + 'halv time før lukketid. Vælg en af de næste dage, eller ring.'
         : 'Vi holder lukket i dag. Vælg en af de næste dage.';
     }
@@ -2117,8 +2117,8 @@
     linje.textContent = svar === 'ja'
       ? '✓ Vi kører derud.'
       : svar === 'spoerg'
-        ? 'Vi kører ikke fast derud. Ring til os, så aftaler vi det '
-          + '— eller vælg "Vi henter".'
+        ? 'Vi kører ikke fast derud. Ring til os, så aftaler vi det. '
+          + 'Eller vælg "Vi henter".'
         : 'Skriv postnummeret med, så kan vi sige med det samme, om vi kører derud.';
   }
 
@@ -2138,7 +2138,7 @@
       var fuldTid = R.tidFuld ? R.tidFuld(data, fyldteTider, valgtDag, t) : false;
       var o = document.createElement('option');
       o.value = t;
-      o.textContent = 'kl. ' + Butik.klokken(t) + (fuldTid ? ' — fyldt op' : '');
+      o.textContent = 'kl. ' + Butik.klokken(t) + (fuldTid ? ' (fyldt op)' : '');
       o.disabled = fuldTid;
       if (!fuldTid) ledige.push(t);
       vaelg.appendChild(o);
@@ -2549,14 +2549,14 @@
         ? 'Vi kan ikke hente kortet lige nu, så der kan ikke bestilles herfra. Bestil ved lugen.'
         : 'Vi kan ikke hente menukortet lige nu, så der kan ikke bestilles her. Ring '
           + ((window.MOSEDE && window.MOSEDE.telefonPent) || '28 87 13 43')
-          + ' — så tager vi den i telefonen.';
+          + ', så tager vi den i telefonen.';
       nNote.style.display = nede ? '' : 'none';
     }
     sendKnap.disabled = n < 1 || !!mangler || nede;
     if (nede) {
       sendKnap.setAttribute('data-nede', '1');
-      sendKnap.textContent = vedBordet() ? 'Nede lige nu — bestil ved lugen'
-        : 'Nede lige nu — ring ' + ((window.MOSEDE && window.MOSEDE.telefonPent) || '28 87 13 43');
+      sendKnap.textContent = vedBordet() ? 'Nede lige nu. Bestil ved lugen'
+        : 'Nede lige nu. Ring ' + ((window.MOSEDE && window.MOSEDE.telefonPent) || '28 87 13 43');
     } else if (sendKnap.hasAttribute('data-nede')) {
       sendKnap.removeAttribute('data-nede');
       sendKnap.textContent = 'Send bestilling';
@@ -2714,7 +2714,7 @@
             && R.leveringSvar(data, adresse) === 'spoerg')
           ? 'Vi kører ikke fast til den adresse. Ring til os på '
             + ((window.MOSEDE && window.MOSEDE.telefonPent) || '28 87 13 43')
-            + ', så aftaler vi det — eller vælg "Vi henter".'
+            + ', så aftaler vi det. Eller vælg "Vi henter".'
           : '',
     };
 
@@ -2854,7 +2854,7 @@
       // Ingen hentetid at bekræfte — der er et BORD, og det er
       // den ene oplysning, der afgør, hvor maden havner.
       linje('Bord', b.bord_nummer);
-      linje('Serveres', 'Nu — vi kommer med det');
+      linje('Serveres', 'Nu, vi kommer med det');
     } else {
       linje(leveres ? 'Leveres' : 'Hentes',
         dagNavn(data, b.hent_dato) + ' d. ' + dagDato(b.hent_dato)
@@ -3006,7 +3006,7 @@
     if (usikker) {
       boks.textContent = 'Nettet svarer ikke, og vi ved ikke, om bestillingen '
         + 'nåede frem. Ring til os, før du sender den igen'
-        + (raekke && raekke.bord_nummer ? ' — eller gå op til lugen og spørg.' : '.');
+        + (raekke && raekke.bord_nummer ? ', eller gå op til lugen og spørg.' : '.');
       if (!(raekke && raekke.bord_nummer)) {
         var u = noedudgang(raekke);
         var r = lav('div', 'noedudgang');
@@ -3030,7 +3030,7 @@
     }
 
     boks.textContent = 'Der er ingen forbindelse lige nu, og bestillingen er '
-      + 'IKKE sendt endnu. Send den som sms med ét tryk — eller ring, så '
+      + 'IKKE sendt endnu. Send den som sms med ét tryk, eller ring, så '
       + 'tager vi den over telefonen.';
 
     var udveje = noedudgang(raekke);
@@ -3379,7 +3379,7 @@
          her handler om aftalen, ikke om bordet. */
       manchet.textContent = (d.indstillinger || {}).auto_bekraeft === false
         ? 'Vi ringer og bekræfter, og du betaler ved lugen, når du henter.'
-        : 'Bestilt er bestilt — du betaler ved lugen, når du henter. '
+        : 'Bestilt er bestilt. Du betaler ved lugen, når du henter. '
           + 'Skal noget laves om, ringer du bare.';
     }
 

@@ -597,7 +597,7 @@
     }
     if (!note) return;
     note.textContent = 'Vi kan ikke hente priserne lige nu, så tapas kan ikke bestilles her. '
-      + (nr ? 'Ring ' + nr + ' — så tager vi den i telefonen.' : 'Ring til os — så tager vi den i telefonen.');
+      + (nr ? 'Ring ' + nr + ', så tager vi den i telefonen.' : 'Ring til os, så tager vi den i telefonen.');
     note.style.display = '';
   }
 

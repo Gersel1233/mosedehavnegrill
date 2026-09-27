@@ -327,7 +327,7 @@ window.MosedeIsbygger = (function () {
     ud.appendChild(kvit);
     var kvitUr = null;
     function kvitter(hvad) {
-      kvit.textContent = '✓ Lagt i kurven: ' + hvad + ' — vælg mere, eller rul ned og send';
+      kvit.textContent = '✓ Lagt i kurven: ' + hvad + '. Vælg mere, eller rul ned og send';
       kvit.classList.add('vis');
       clearTimeout(kvitUr);
       kvitUr = setTimeout(function () { kvit.classList.remove('vis'); }, 4000);
@@ -431,7 +431,7 @@ window.MosedeIsbygger = (function () {
       var vælg = document.createElement('select');
       vælg.className = 'inp isbyg-smag';
       vælg.setAttribute('data-kugle', String(plads));
-      vælg.setAttribute('aria-label', 'Smag — ' + etiket.toLowerCase());
+      vælg.setAttribute('aria-label', 'Smag til ' + etiket.toLowerCase());
       var tom = lav('option', null, 'Vælg smag');
       tom.value = '';
       vælg.appendChild(tom);
@@ -460,7 +460,7 @@ window.MosedeIsbygger = (function () {
       var r = lav('div', 'isbyg-oenske');
       var id = 'isbyg-oenske-felt' + (ønskeNr++ ? '-' + ønskeNr : '');
       var m = lav('label', 'isbyg-oenske-tekst',
-        'Har I en yndlingssmag? Skriv den — ellers vælger vi noget godt.');
+        'Har I en yndlingssmag? Skriv den, ellers vælger vi noget godt.');
       m.setAttribute('for', id);
       var felt = document.createElement('input');
       felt.type = 'text';
@@ -636,7 +636,7 @@ window.MosedeIsbygger = (function () {
           t3.krop.appendChild(lav('p', 'isbyg-hint', 'Vælg først en størrelse.'));
         } else if (!n) {
           t3.krop.appendChild(lav('p', 'isbyg-hint',
-            'Softice kommer, som den er — der er ingen smag at vælge.'));
+            'Softice kommer, som den er. Der er ingen smag at vælge.'));
         } else if (!smageListe.length) {
           t3.krop.appendChild(ønskeFelt(tilstand));
         } else {

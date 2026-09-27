@@ -62,7 +62,7 @@
       tom.appendChild(lav('h2', null, 'Der er ikke lagt noget op lige nu'));
       tom.appendChild(lav('p', null,
         'Når der er et arrangement på vej, står det her. '
-        + 'Kig forbi igen — eller kom bare ned til havnen.'));
+        + 'Kig forbi igen, eller kom bare ned til havnen.'));
       liste.appendChild(tom);
       return;
     }

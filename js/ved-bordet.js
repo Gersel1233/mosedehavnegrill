@@ -147,7 +147,7 @@
     if (note) {
       note.textContent = oensket
         ? 'Vi kender ikke et bord, der hedder "' + oensket + '". '
-          + 'Vælg det, I sidder ved — eller sig det til os ved lugen.'
+          + 'Vælg det, I sidder ved, eller sig det til os ved lugen.'
         : '';
     }
     boks.classList.remove('skjult');
@@ -245,7 +245,7 @@
        så det er den SAMME sandhed — ikke en kopi, der kan skride. */
     if (bord.har_kode && !nøglen()) {
       sigLukket('Scan QR-koden på bordet',
-        'Adressen alene er ikke nok — mærkatet på bordet har en kode i sig, '
+        'Adressen alene er ikke nok. Mærkatet på bordet har en kode i sig, '
         + 'så en bestilling til bord ' + bord.nummer + ' kommer fra bord '
         + bord.nummer + '. Scan koden igen, eller sig det til os ved lugen.');
       return;
@@ -321,7 +321,7 @@
        forkert. */
     if (Butik.qrAaben && !Butik.qrAaben(d)) {
       sigLukket('Vi tager ikke bordbestillinger lige nu',
-        'Kom op til lugen, så tager vi den der — vi står lige derovre.');
+        'Kom op til lugen, så tager vi den der. Vi står lige derovre.');
       return;
     }
 
@@ -354,8 +354,8 @@
     var pille = $('bestil-status-tekst');
     if (pille) pille.textContent = 'Sig det til os ved lugen';
     sigLukket('Vi kan ikke hente kortet lige nu',
-      'Der er noget, der driller. Sig det til os ved lugen — '
-      + 'vi står lige derovre.');
+      'Der er noget, der driller. Sig det til os ved lugen. '
+      + 'Vi står lige derovre.');
     if (window.console) console.warn('bordsiden kunne ikke hentes:', fejl);
   });
 

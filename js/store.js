@@ -74,8 +74,8 @@
      øvetilstandens efterligning og af oversættelsen af
      databasens fejl. To udgaver ville langsomt komme til at
      sige hver sit — og den ene ville være den, gæsten møder. */
-  var FEJL_KODE_MANGLER = 'Scan QR-koden på jeres bord igen — '
-    + 'adressen alene er ikke nok. Sidder I ved bordet, og virker '
+  var FEJL_KODE_MANGLER = 'Scan QR-koden på jeres bord igen. '
+    + 'Adressen alene er ikke nok. Sidder I ved bordet, og virker '
     + 'koden ikke, så sig det til os ved lugen.';
   var FEJL_KODE_FORKERT = 'Koden passer ikke til det bord. '
     + 'Scan mærkatet på bordet igen, eller sig det til os ved lugen.';
@@ -1170,7 +1170,7 @@
     if (!boks) return null;
     if (boks.checked) { vilkaarHusk(); return null; }
     if (boks.focus) boks.focus();
-    return 'Sæt fluebenet ved handelsbetingelserne — det skal kun gøres '
+    return 'Sæt fluebenet ved handelsbetingelserne. Det skal kun gøres '
       + 'første gang, du bestiller.';
   }
 
@@ -2290,7 +2290,7 @@
          der kun nævnte nettet, ville sende den, der er logget
          ud, ud at kigge på sin wifi. */
       return Promise.reject(new Error('Vi kan ikke få fat i databasen '
-        + 'lige nu — enten er forbindelsen væk, eller også er du blevet '
+        + 'lige nu. Enten er forbindelsen væk, eller også er du blevet '
         + 'logget ud. Derfor kan der ikke gemmes: felterne viser IKKE '
         + 'jeres egne indstillinger, de står som reserve. Skærmen prøver '
         + 'selv igen; hjælper det ikke, så log ud og ind.'));
@@ -2754,8 +2754,8 @@
         if (iKvarteret >= loft) {
           return Promise.reject(new Error(
             'Der er run på lige nu, og køkkenet kan ikke tage flere '
-            + 'bestillinger fra bordene i øjeblikket. Prøv igen om lidt '
-            + '— eller kom op til lugen, hvis det haster.'));
+            + 'bestillinger fra bordene i øjeblikket. Prøv igen om lidt, '
+            + 'eller kom op til lugen, hvis det haster.'));
         }
       }
 
@@ -2776,8 +2776,8 @@
         if (iTiden >= lugeLoft) {
           var fejlFuld = new Error('Kl. '
             + String(raekke.hent_tid || '').slice(0, 5).replace(':', '.')
-            + ' er lige blevet fyldt op. Vælg et andet tidspunkt — '
-            + 'listen er opdateret nu.');
+            + ' er lige blevet fyldt op. Vælg et andet tidspunkt. '
+            + 'Listen er opdateret nu.');
           fejlFuld.tidFuld = true;
           return Promise.reject(fejlFuld);
         }
@@ -2901,8 +2901,8 @@
          er formularen og databasen kommet ud af trit — men gæsten
          skal have en vej videre, ikke et kodenavn. */
       if (/bestilling_levering_adresse_ok/.test(t)) {
-        return new Error('Skriv adressen, maden skal leveres til '
-          + '— eller vælg, at I henter den selv.');
+        return new Error('Skriv adressen, maden skal leveres til, '
+          + 'eller vælg, at I henter den selv.');
       }
       /* Lukkedags-værnet i databasen (supabase/lukkedag-vaern.sql).
          Rammer man det fra siden, er tidsvælgeren og databasen
@@ -2937,11 +2937,11 @@
          kan. En gæst, der får "det går ikke", går et andet sted
          hen; en, der får "du kan hente den", henter den. */
       if (/bestilling_spis_her_lukket/.test(t)) {
-        return new Error('Vi har desværre ikke plads til at spise her den dag — '
+        return new Error('Vi har desværre ikke plads til at spise her den dag, '
           + 'men du kan bestille den med hjem.');
       }
       if (/bestilling_takeaway_lukket/.test(t)) {
-        return new Error('Vi laver ikke mad ud af huset den dag — '
+        return new Error('Vi laver ikke mad ud af huset den dag, '
           + 'men du er velkommen til at spise her.');
       }
       if (/bestilling_for_tidligt/.test(t)) {
@@ -3020,8 +3020,8 @@
          meter væk. */
       if (/bestilling_bord_loft/.test(t)) {
         return new Error('Der er run på lige nu, og køkkenet kan ikke tage '
-          + 'flere bestillinger fra bordene i øjeblikket. Prøv igen om lidt '
-          + '— eller kom op til lugen, hvis det haster.');
+          + 'flere bestillinger fra bordene i øjeblikket. Prøv igen om lidt, '
+          + 'eller kom op til lugen, hvis det haster.');
       }
       /* LOFTET PR. TIDSRUM (supabase/luge-loft.sql).
 
@@ -3035,7 +3035,7 @@
         /* Databasen siger "12:00:00"; gæsten skal læse "12.00". */
         var kl = efterKoden('bestilling_luge_fuldt').slice(0, 5).replace(':', '.');
         var e = new Error((kl ? 'Kl. ' + kl + ' er' : 'Det tidspunkt er')
-          + ' lige blevet fyldt op. Vælg et andet tidspunkt — listen er '
+          + ' lige blevet fyldt op. Vælg et andet tidspunkt. Listen er '
           + 'opdateret nu.');
         e.tidFuld = true;
         return e;
@@ -3047,7 +3047,7 @@
          formularen henter tiderne igen (samme vej som lugens loft). */
       function klokkeslaet(s) { return String(s || '').slice(0, 5).replace(':', '.'); }
       if (/bestilling_tid_gaaet/.test(t)) {
-        var eg = new Error('Det tidspunkt er gået. Vælg et senere — listen er opdateret nu.');
+        var eg = new Error('Det tidspunkt er gået. Vælg et senere. Listen er opdateret nu.');
         eg.tidFuld = true;
         return eg;
       }
@@ -3087,13 +3087,13 @@
       if (/bestilling_pris_aendret/.test(t)) {
         var pv = efterKoden('bestilling_pris_aendret');
         return new Error((pv ? '"' + pv + '"' : 'En af varerne') + ' har fået en ny pris, '
-          + 'efter siden blev hentet. Genindlæs siden, så står den rigtige pris — og send igen.');
+          + 'efter siden blev hentet. Genindlæs siden, så står den rigtige pris, og send igen.');
       }
       /* VALGET (supabase/vare-valg.sql). Har varen valg, skal linjen
          bære et — en fane fra før ejeren satte dem, sender uden. */
       if (/bestilling_mangler_valg/.test(t)) {
         var mv = efterKoden('bestilling_mangler_valg');
-        return new Error((mv ? '"' + mv + '"' : 'En af varerne') + ' skal have et valg — '
+        return new Error((mv ? '"' + mv + '"' : 'En af varerne') + ' skal have et valg, '
           + 'fx hvilket fyld. Genindlæs siden, og vælg igen.');
       }
       /* LEVERINGSADRESSEN (supabase/levering-valideret.sql, 20/9).
@@ -3107,7 +3107,7 @@
          bestillingen allerede er sendt. */
       if (/levering_uden_for_omraadet/.test(t)) {
         return new Error('Vi leverer desværre ikke til den adresse. '
-          + 'Ring til os, så aftaler vi det — eller vælg, at I henter selv.');
+          + 'Ring til os, så aftaler vi det. Eller vælg, at I henter selv.');
       }
       if (/levering_validering_udloebet/.test(t)) {
         return new Error('Adressen blev kontrolleret for længe siden. '
@@ -3128,7 +3128,7 @@
         var kl = efterKoden('bestilling_kategori_lukket');
         return new Error((kl ? '"' + kl + '"' : 'En af varerne')
           + ' kan ikke bestilles her lige nu. Genindlæs siden, så står '
-          + 'det, vi sælger i dag — eller ring til os.');
+          + 'det, vi sælger i dag. Eller ring til os.');
       }
       if (/bestilling_ukendt_vare/.test(t)) {
         var uv = efterKoden('bestilling_ukendt_vare');
@@ -3140,7 +3140,7 @@
           + 'Genindlæs siden, og send igen.');
       }
       if (/bestilling_fyld_ok/.test(t)) return new Error('Der er for mange ønsker til fyld. Skriv resten i beskeden.');
-      if (/bestilling_besked_ok/.test(t)) return new Error('Beskeden er for lang — højst 1000 tegn.');
+      if (/bestilling_besked_ok/.test(t)) return new Error('Beskeden er for lang. Højst 1000 tegn.');
       /* NØGLEN (supabase/bord-noegle.sql). Beskeden skal sige, hvad
          man GØR: scan koden på bordet igen. Den må ikke lyde som en
          fejl i systemet — så går gæsten op til lugen og brokker sig
@@ -3323,7 +3323,7 @@
     return hvor !== 'ud-af-huset';
   }
 
-  var DAGEN_ER_TAGET = 'Den dato er desværre optaget. Vælg en anden — '
+  var DAGEN_ER_TAGET = 'Den dato er desværre optaget. Vælg en anden, '
     + 'eller ring til os, så finder vi ud af det.';
 
   function optagneDageLokalt(d) {
@@ -3509,7 +3509,7 @@
            tilbage. Rammer vi DET, har hun hverken skrevet nummer
            eller mail, og beskeden er en anden. */
         if (/forespoergsel_telefon_ok/.test(t)) {
-          throw new Error('Vi mangler et telefonnummer — skriv det, '
+          throw new Error('Vi mangler et telefonnummer. Skriv det, '
             + 'så vender vi tilbage til jer.');
         }
         if (/forespoergsel_telefon_form_ok/.test(t)) {
@@ -3531,7 +3531,7 @@
            Og der er ingen vej for hende til at se, om den kom ind. */
         if (/duplicate key/.test(t)) {
           throw new Error('Vi kan ikke se, om forespørgslen kom igennem. Ring til os, '
-            + 'så tjekker vi — send den ikke igen, så risikerer I at stå to gange.');
+            + 'så tjekker vi. Send den ikke igen, så risikerer I at stå to gange.');
         }
         if (r.status === 401 || r.status === 403) {
           throw new Error('Forespørgslen kunne ikke sendes. Ring til os i stedet.');
@@ -3698,7 +3698,7 @@
       if (loft !== null && loft !== undefined && isFinite(loft) && taget >= loft) {
         return Promise.reject(new Error(
           'Der er ikke flere borde den dag. Prøv en anden dag, '
-          + 'eller ring til os — vi kan nogle gange finde plads alligevel.'));
+          + 'eller ring til os. Vi kan nogle gange finde plads alligevel.'));
       }
 
       var gemt = { id: næsteId(d.bordbestillinger), status: 'ny', intern_note: null,
@@ -3770,7 +3770,7 @@
         if (/bord_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
         if (/bord_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/bord_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
-        if (/bord_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Er I over 100, er det et selskab — skriv til os om det i stedet.');
+        if (/bord_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Er I over 100, er det et selskab. Skriv til os om det i stedet.');
         /* ⚠️ HER STOD 'Prøv at sende igen.' — og det er husets egen
            opskrift på en dublet, skrevet ned ved bestillingen
            (se noten ved sendes()). Et unik-indeks, vi ikke kender
@@ -3780,7 +3780,7 @@
            Og to bookinger tager to af dagens borde. */
         if (/duplicate key/.test(t)) {
           throw new Error('Vi kan ikke se, om bookingen kom igennem. Ring til os, '
-            + 'så tjekker vi — send den ikke igen, så risikerer I to borde.');
+            + 'så tjekker vi. Send den ikke igen, så risikerer I to borde.');
         }
         if (r.status === 401 || r.status === 403) {
           throw new Error('Bookingen kunne ikke sendes. Ring til os i stedet.');
@@ -3899,7 +3899,7 @@
            Og to forespørgsler på det samme lokale er to sager, personalet skal ringe om. */
         if (/duplicate key/.test(t)) {
           throw new Error('Vi kan ikke se, om forespørgslen kom igennem. Ring til os, '
-            + 'så tjekker vi — send den ikke igen.');
+            + 'så tjekker vi. Send den ikke igen.');
         }
         if (r.status === 401 || r.status === 403) {
           throw new Error('Ønsket kunne ikke sendes. Ring til os i stedet.');
@@ -3961,7 +3961,7 @@
         return Promise.reject(new Error('Arrangementet findes ikke længere.'));
       }
       if (!arr.tilmelding) {
-        return Promise.reject(new Error('Der er ikke tilmelding til det arrangement — kig bare forbi.'));
+        return Promise.reject(new Error('Der er ikke tilmelding til det arrangement. Kig bare forbi.'));
       }
       if ((arr.slut_dato || arr.dato) < nu().dato) {
         return Promise.reject(new Error('Det arrangement er overstået.'));
@@ -4008,7 +4008,7 @@
         }, 0);
         if (optaget + raekke.antal_personer > arr.pladser) {
           return Promise.reject(new Error(
-            'Der er ikke flere pladser. Ring til os — nogle gange kan vi finde en stol.'));
+            'Der er ikke flere pladser. Ring til os. Nogle gange kan vi finde en stol.'));
         }
       }
 
@@ -4037,11 +4037,11 @@
       if (r2.ok) return raekke;
       return r2.text().then(function (t) {
         if (/reservation_udsolgt/.test(t)) {
-          throw new Error('Der er ikke flere pladser. Ring til os — nogle '
+          throw new Error('Der er ikke flere pladser. Ring til os. Nogle '
             + 'gange kan vi finde en stol.');
         }
         if (/reservation_lukket/.test(t)) {
-          throw new Error('Der er ikke tilmelding til det arrangement — kig bare forbi.');
+          throw new Error('Der er ikke tilmelding til det arrangement. Kig bare forbi.');
         }
         if (/reservation_overstaaet/.test(t)) throw new Error('Det arrangement er overstået.');
         if (/reservation_findes_ikke/.test(t)) throw new Error('Arrangementet findes ikke længere.');
@@ -4058,7 +4058,7 @@
             + 'minutter, eller ring til os.');
         }
         if (/reservation_antal_ok/.test(t)) {
-          throw new Error('Er I flere end tyve, så ring — så finder vi ud af det sammen.');
+          throw new Error('Er I flere end tyve, så ring, så finder vi ud af det sammen.');
         }
         if (/reservation_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/reservation_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
@@ -4072,7 +4072,7 @@
            Og to reservationer tager to af arrangementets pladser. */
         if (/duplicate key/.test(t)) {
           throw new Error('Vi kan ikke se, om reservationen kom igennem. Ring til os, '
-            + 'så tjekker vi — send den ikke igen, så risikerer I to pladser.');
+            + 'så tjekker vi. Send den ikke igen, så risikerer I to pladser.');
         }
         if (r2.status === 401 || r2.status === 403) {
           throw new Error('Reservationen kunne ikke sendes. Ring til os i stedet.');
@@ -4240,7 +4240,7 @@
         /* ⚠️ UDEN NET SAGDE SKÆRMEN "Failed to fetch" (15/9) — browserens
            engelske ord for et kald, der aldrig nåede frem. Personalet
            læste det som en forkert kode. */
-        throw new Error('Ingen forbindelse lige nu — tjek nettet, og prøv igen.');
+        throw new Error('Ingen forbindelse lige nu. Tjek nettet, og prøv igen.');
       }).then(function (r) {
         return r.json().then(function (j) {
           if (!r.ok || !j.access_token) {
@@ -4769,12 +4769,12 @@
     if (!spiserHer && r.luk_takeaway) {
       return r.luk_spis_her
         ? 'Køkkenet er lukket den dag.'
-        : 'Vi laver ikke mad ud af huset den dag — men I er velkomne til at spise her.';
+        : 'Vi laver ikke mad ud af huset den dag, men I er velkomne til at spise her.';
     }
     if (spiserHer && r.luk_spis_her) {
       return r.luk_takeaway
         ? 'Køkkenet er lukket den dag.'
-        : 'Der er ikke plads til gæster den dag — men maden kan bestilles med hjem.';
+        : 'Der er ikke plads til gæster den dag, men maden kan bestilles med hjem.';
     }
     return null;
   }

@@ -164,7 +164,7 @@
     p.appendChild(document.createTextNode('Vi ringer til dig på '));
     p.appendChild(lav('strong', null, u.telefon));
     p.appendChild(document.createTextNode(
-      ' og aftaler nærmere. Lokalet er IKKE lejet endnu — vent på '
+      ' og aftaler nærmere. Lokalet er IKKE lejet endnu. Vent på '
       + 'opkaldet, før I regner med det.'));
     tak.appendChild(p);
 

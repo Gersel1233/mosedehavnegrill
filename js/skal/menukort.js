@@ -202,7 +202,7 @@
         /* ⚠️ "I DAG" KUN PÅ I DAG (26/9). Der stod "Ingen dagens ret i
            dag" ud for en torsdag, når det var mandag. */
         højre.appendChild(lav('span', 'mk-tom',
-          'Ingen dagens ret' + (i === 0 ? ' i dag' : '') + ' — menukortet gælder'));
+          'Ingen dagens ret' + (i === 0 ? ' i dag' : '') + '. Menukortet gælder'));
       } else {
         if (i > 0) { skjulte++; continue; }
         højre.appendChild(lav('span', 'mk-tom', 'Følger snart…'));
@@ -373,7 +373,7 @@
     var punkter = tapas ? beskr.split('·').map(function (s) { return s.trim(); })
       .filter(Boolean) : [];
     if (punkter.length > 1 && bits) {
-      tekst.textContent = 'Havnens tapasfad — et fad til at dele. Det ligger der på det:';
+      tekst.textContent = 'Havnens tapasfad, et fad til at dele. Det ligger der på det:';
       punkter.forEach(function (p) { bits.appendChild(lav('span', null, p)); });
     } else {
       tekst.textContent = beskr;

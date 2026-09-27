@@ -46,7 +46,7 @@
   var PLAKATER = [
     { fil: 'jens-rasmussen', titel: 'Live musik med Jens Rasmussen',
       naar: 'Lørdag 5. september · kl. 13',
-      tekst: 'Live musik på havnen — og happy hour på fadøl og drinks.' },
+      tekst: 'Live musik på havnen og happy hour på fadøl og drinks.' },
     { fil: 'soeren-borre', titel: 'Søren Borre',
       naar: 'Lørdag d. 29. · kl. 13–16',
       tekst: 'Søren Spillemands kærlighedsshow med de store hits og de største klassikere.' },
@@ -55,7 +55,7 @@
       tekst: 'God og hyggelig musik på havnen.' },
     { fil: 'fredagsbar', titel: 'Fredagsbar med DJ Sten Ibka',
       naar: 'Fredag · fra kl. 17',
-      tekst: 'Live DJ og happy hour på fadøl — så længe der var gang i festen.' },
+      tekst: 'Live DJ og happy hour på fadøl, så længe der var gang i festen.' },
     { fil: 'afterbeat', titel: 'Hyggelig dag på havnen med AfterBeat',
       naar: 'Jazz på havnen',
       tekst: 'Jazz, smørrebrød og kolde øl.' },

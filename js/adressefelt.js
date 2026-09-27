@@ -53,8 +53,8 @@
     vaelg: 'Vælg din adresse fra forslagene.',
     leverer: '✓ Vi leverer til denne adresse.',
     udenfor: 'Vi leverer desværre ikke til denne adresse endnu.',
-    ring: 'Vi kører ikke fast derud. Ring til os, så aftaler vi det '
-      + '— eller vælg "Vi henter".',
+    ring: 'Vi kører ikke fast derud. Ring til os, så aftaler vi det. '
+      + 'Eller vælg "Vi henter".',
     ikkeFundet: 'Vi kunne ikke finde adressen. Vælg en adresse fra forslagene.',
     ikkeBekraeftet: 'Vi kunne ikke bekræfte adressen. Prøv at vælge den igen.',
     nede: 'Vi kunne ikke kontrollere leveringsadressen lige nu. Prøv igen.',
