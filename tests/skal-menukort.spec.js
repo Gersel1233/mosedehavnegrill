@@ -411,15 +411,16 @@ test.describe('Menukortet har havnens tema', () => {
   });
 
   /* ⚠️ VENDT 26/9: kortets overskrifter er de TRYKTE KORTS — Bebas med
-     ◆ og dobbelt streg — og deres kursive tekster Fraunces. Sidens egen
-     overskrift øverst er stadig husets display-serif. */
+     ◆ og dobbelt streg. Sidens egen overskrift øverst er husets skrift.
+     ⚠️ HOST GROTESK SIDEN 27/9 (Mikkels valg: LESREG's skrift i hele huset). Bebas bliver:
+     den er de trykte korts, tegnet og ikke sat. */
   test('overskrifterne er husets — og kortenes egne i kapitlerne', async ({ page }) => {
     await åbn(page);
     const skrift = (v) => page.locator(v).first().evaluate((el) => getComputedStyle(el).fontFamily);
-    expect(await skrift('.phead h1')).toContain('Fraunces');
+    expect(await skrift('.phead h1')).toContain('Host Grotesk');
     expect(await skrift('#mk-kat .mk-kh-titel')).toContain('Bebas');
     expect(await skrift('#mk-kat .panel h3')).toContain('Bebas');
-    expect(await skrift('#mk-kat .mk-linje h4')).toContain('Instrument Sans');
+    expect(await skrift('#mk-kat .mk-linje h4')).toContain('Host Grotesk');
   });
 
   /* ⚠️ PÅ PAPIRET (13/9). Kategorier med et foto bag sig har prisen

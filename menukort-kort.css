@@ -87,7 +87,7 @@
 .mk-kh-slogan {
   display: block;
   margin-top: 10px;
-  font: italic 400 17px/1.25 "Fraunces", Georgia, serif;
+  font: italic 400 17px/1.25 "Host Grotesk", system-ui, sans-serif;
   letter-spacing: -.01em;
   text-transform: none;
   color: var(--mk-creme);
@@ -102,7 +102,7 @@
 .mk-kh-tekst {
   margin: 14px 0 0;
   max-width: 36ch;
-  font: italic 400 16px/1.4 "Fraunces", Georgia, serif;
+  font: italic 400 16px/1.4 "Host Grotesk", system-ui, sans-serif;
   letter-spacing: -.01em;
   color: var(--mk-creme);
 }
@@ -235,7 +235,7 @@
 }
 #mk-kat .mk-note {
   margin: 2px 0 4px;
-  font: italic 400 14.5px/1.35 "Fraunces", Georgia, serif;
+  font: italic 400 14.5px/1.35 "Host Grotesk", system-ui, sans-serif;
   color: var(--ink2);
 }
 
@@ -256,13 +256,13 @@
 #mk-kat .mk-linje .mk-txt { flex: 1; min-width: 0; }
 #mk-kat .mk-linje h4 {
   margin: 0;
-  font: 400 17px/1.25 "Instrument Sans", system-ui, sans-serif;
+  font: 400 17px/1.25 "Host Grotesk", system-ui, sans-serif;
   letter-spacing: -.005em;
   color: var(--ink);
 }
 #mk-kat .mk-linje p {
   margin: 3px 0 0;
-  font: italic 400 14px/1.35 "Fraunces", Georgia, serif;
+  font: italic 400 14px/1.35 "Host Grotesk", system-ui, sans-serif;
   color: var(--ink2);
 }
 #mk-kat .mk-pris {
@@ -276,7 +276,7 @@
 }
 #mk-kat .mk-pris.mk-spoerg { font: 400 22px/1 "Bebas Neue", sans-serif; font-variant-numeric: tabular-nums; color: var(--mk-rod); letter-spacing: .04em; text-transform: uppercase; }
 #mk-kat .mk-pris.mk-streg { color: var(--ink2); }
-#mk-kat .mk-pris.mk-udsolgt-maerke { font: 600 12.5px/1.2 "Instrument Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ink2); min-width: 0; padding-top: 4px; }
+#mk-kat .mk-pris.mk-udsolgt-maerke { font: 600 12.5px/1.2 "Host Grotesk", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ink2); min-width: 0; padding-top: 4px; }
 #mk-kat .mk-mere { flex: none; align-self: center; margin-left: -4px; font-size: 20px; line-height: 1; color: rgba(36, 26, 23, .3); }
 #mk-kat .mk-kan-aabnes { cursor: pointer; }
 #mk-kat .mk-kan-aabnes:active .mk-txt { opacity: .6; }
@@ -343,7 +343,7 @@
 .mk-boks-tekst {
   margin: 10px 0 0;
   max-width: 34ch;
-  font: italic 400 16px/1.4 "Fraunces", Georgia, serif;
+  font: italic 400 16px/1.4 "Host Grotesk", system-ui, sans-serif;
   color: var(--ink2);
 }
 .mk-boks-bund {
@@ -388,7 +388,7 @@
   padding: 0 15px;
   background: transparent;
   box-shadow: none;
-  font: 600 13.5px/1 "Instrument Sans", system-ui, sans-serif;
+  font: 600 13.5px/1 "Host Grotesk", system-ui, sans-serif;
   color: var(--ink);
   transition: color .35s ease, transform .3s var(--spring);
 }

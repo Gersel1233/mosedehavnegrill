@@ -23,7 +23,7 @@
    står 35 eller 149. */
 .mk-pris {
   flex: none;
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "Host Grotesk", system-ui, sans-serif;
   font-size: 16px;
   font-weight: 600;
   letter-spacing: -.01em;
@@ -79,7 +79,7 @@
 .mk-ret { display: flex; align-items: flex-start; gap: 12px; margin-top: 14px; }
 .mk-ret .mk-txt { flex: 1; min-width: 0; }
 .mk-ret h4 {
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "Host Grotesk", system-ui, sans-serif;
   font-size: 15.5px;
   font-weight: 600;
   line-height: 1.3;
@@ -93,7 +93,7 @@
   margin-left: 8px;
   padding: 3px 9px;
   border-radius: 999px;
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "Host Grotesk", system-ui, sans-serif;
   font-size: 10.5px;
   font-weight: 500;
   letter-spacing: .08em;
@@ -127,14 +127,14 @@
 }
 .mk-uge .mk-dag.mk-nu .mk-navn { color: var(--red); }
 .mk-uge .mk-navn {
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "Host Grotesk", system-ui, sans-serif;
   font-size: 14.5px;
   font-weight: 600;
   line-height: 1.25;
 }
 .mk-uge .mk-dato { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 400; color: var(--muted); }
 .mk-uge h4 {
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "Host Grotesk", system-ui, sans-serif;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.3;
@@ -302,7 +302,7 @@
 .mk-kat .mk-linje:last-child { border-bottom: 0; }
 .mk-kat .mk-linje .mk-txt { flex: 1; min-width: 0; }
 .mk-kat .mk-linje h4 {
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "Host Grotesk", system-ui, sans-serif;
   font-size: 14.5px;
   font-weight: 600;
   line-height: 1.3;
@@ -512,7 +512,7 @@
 .vare-lag-hoved::after { content: ""; position: absolute; inset: 0; background: rgba(26, 18, 16, .16); }
 .vare-lag-tegn { position: relative; z-index: 1; font-size: 44px; line-height: 1; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .25)); }
 #vare-lag h3 { font-size: 23px; line-height: 1.15; }
-#vare-lag .vare-lag-pris { margin: 6px 0 0; font-family: "Instrument Sans", sans-serif; font-size: 16px; font-weight: 600; color: var(--red-tekst, #b41f2e); }
+#vare-lag .vare-lag-pris { margin: 6px 0 0; font-family: "Host Grotesk", system-ui, sans-serif; font-size: 16px; font-weight: 600; color: var(--red-tekst, #b41f2e); }
 #vare-lag #vare-tekst { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: var(--ink2, #5c4a45); }
 #vare-lag .sheet-cta { margin-top: 16px; }
 #vare-lag .sheet-cta:empty { display: none; }

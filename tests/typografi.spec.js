@@ -70,8 +70,12 @@ test.describe('Skrifterne er vores egne', () => {
        Mikkels valg efter fire skud af heroen. De to gamle filer
        bliver liggende i fonts/ til den trykte vejledning, men
        designarket må ikke pege på dem mere. */
-    for (const fil of ['instrument-sans.woff2', 'fraunces.woff2',
-      'fraunces-italic.woff2', 'bebas-neue.woff2']) {
+    /* ⚠️ HOST GROTESK AFLØSTE FRAUNCES OG INSTRUMENT SANS (27/9) —
+       Mikkels valg: LESREG's skrift i hele huset. Fire faste vægte
+       og to kursiver; Bebas bliver (kransen og de trykte korts tal). */
+    for (const fil of ['host-grotesk-400.woff2', 'host-grotesk-500.woff2',
+      'host-grotesk-600.woff2', 'host-grotesk-700.woff2',
+      'host-grotesk-400-italic.woff2', 'host-grotesk-500-italic.woff2', 'bebas-neue.woff2']) {
       expect(css, `havnegrillen.css peger ikke på fonts/${fil}`).toContain('fonts/' + fil);
       expect(fs.existsSync(path.join(ROD, 'fonts', fil)), `fonts/${fil} findes ikke`).toBe(true);
     }
@@ -89,7 +93,7 @@ test.describe('Skrifterne er vores egne', () => {
     await page.evaluate(() => document.fonts.ready);
     const indlaest = await page.evaluate(() =>
       [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replace(/"/g, '')));
-    for (const navn of ['Instrument Sans', 'Fraunces', 'Bebas Neue']) {
+    for (const navn of ['Host Grotesk', 'Bebas Neue']) {
       expect(indlaest, `${navn} blev ikke indlæst lokalt`).toContain(navn);
     }
   });
@@ -198,7 +202,7 @@ test.describe('Én talstemme', () => {
       const c = getComputedStyle(e);
       return { f: c.fontFamily.split(',')[0].replace(/"/g, ''), w: c.fontWeight, n: c.fontVariantNumeric };
     });
-    expect(bord.f).toBe('Instrument Sans');
+    expect(bord.f).toBe('Host Grotesk');
     expect(bord.w).toBe('600');
     expect(kort.f, 'menukortets pris står ikke i kortenes Bebas').toBe('Bebas Neue');
     expect(kort.n).toContain('tabular-nums');
@@ -211,7 +215,7 @@ test.describe('Én talstemme', () => {
       const c = getComputedStyle(e);
       return { f: c.fontFamily.split(',')[0].replace(/"/g, ''), w: c.fontWeight };
     });
-    expect(t.f, 'tælleren står i serif mellem to sans-tal').toBe('Instrument Sans');
+    expect(t.f, 'tælleren står i en anden skrift end tallene ved siden af').toBe('Host Grotesk');
     expect(t.w).toBe('600');
   });
 });
@@ -294,22 +298,32 @@ test.describe('Én display-serif i hele huset', () => {
        navn — og den slags ses først på den side, man ikke åbnede. */
     for (const [f, sti] of [['havnegrillen.css', 'fonts/'], ['css/style.css', '../fonts/']]) {
       const css = ark(f);
-      expect(css, f).toContain(sti + 'fraunces.woff2');
-      expect(css, f + ' mangler den kursive').toContain(sti + 'fraunces-italic.woff2');
+      expect(css, f).toContain(sti + 'host-grotesk-400.woff2');
+      expect(css, f + ' mangler den kursive').toContain(sti + 'host-grotesk-400-italic.woff2');
     }
   });
 
-  test('vægten står som et SPÆND, ikke som et fast 400', () => {
-    /* ⚠️ FRAUNCES ER VARIABEL. Med `font-weight:400` i @font-face
-       ville browseren syntetisere en fed til h4-vægte i stedet for
-       at bruge aksen — og en syntetisk fed ses på en overskrift. */
+  test('hver vægt har sin egen fil — og begge ark har de samme', () => {
+    /* ⚠️ VENDT 27/9. Fraunces var VARIABEL, og prøven sikrede, at
+       vægten stod som et spænd, så browseren brugte aksen i stedet
+       for at syntetisere en fed. Host Grotesk kommer som FASTE filer:
+       reglen er den samme — ingen syntetisk vægt — men målet er nu,
+       at hver @font-face har én vægt, og at de to ark har præcis de
+       samme fire oprejste og to kursive. Mangler 500 i det ene ark,
+       står dets overskrifter i en falsk fed eller en tynd 400. */
+    const sæt = (f) => {
+      const faces = [...ark(f).matchAll(/@font-face\s*\{[^}]*Host Grotesk[^}]*\}/gi)].map(([b]) => b);
+      return faces.map((b) => {
+        const w = (b.match(/font-weight:\s*([^;]+)/) || [])[1].trim();
+        const st = ((b.match(/font-style:\s*([^;]+)/) || [])[1] || 'normal').trim();
+        return st + ' ' + w;
+      }).sort();
+    };
+    const forventet = ['italic 400', 'italic 500', 'normal 400', 'normal 500', 'normal 600', 'normal 700'];
     for (const f of ['havnegrillen.css', 'css/style.css']) {
-      const css = ark(f);
-      const faces = [...css.matchAll(/@font-face\s*\{[^}]*fraunces[^}]*\}/gi)];
-      expect(faces.length, f + ' har ikke to Fraunces-faces').toBe(2);
-      for (const [blok] of faces) {
-        expect(blok, f + ': vægten er ikke et spænd').toMatch(/font-weight:\s*100 900/);
-      }
+      const s = sæt(f);
+      expect(s, f + ' har ikke de seks Host Grotesk-faces').toEqual(forventet);
+      for (const v of s) expect(v, f + ': en vægt er et spænd').toMatch(/^(normal|italic) \d00$/);
     }
   });
 
@@ -356,7 +370,7 @@ test.describe('Én display-serif i hele huset', () => {
 
     expect(gammel, 'bestil/ bruger en anden skrift end designsiderne').toBe(design);
     expect(personale, 'admin bruger en anden skrift end gæstesiden').toBe(design);
-    expect(design, 'skriften er ikke husets').toBe('Fraunces');
+    expect(design, 'skriften er ikke husets').toBe('Host Grotesk');
   });
 
   test('mærket i søjlen står på ÉN linje', async ({ page }, info) => {

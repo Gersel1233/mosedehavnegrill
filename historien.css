@@ -257,14 +257,14 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
 }
 
 .hist .h-mrk {
-  font: 500 11.5px/1 "Instrument Sans", system-ui, sans-serif;
+  font: 500 11.5px/1 "Host Grotesk", system-ui, sans-serif;
   letter-spacing: .22em;
   text-transform: uppercase;
   color: var(--messing);
 }
 .hist h1 {
-  font-family: "Fraunces", Georgia, serif;
-  font-weight: 400;
+  font-family: "Host Grotesk", system-ui, sans-serif;
+  font-weight: 500;
   font-size: clamp(46px, 13.5vw, 104px);
   line-height: 1.0;
   letter-spacing: -.015em;
@@ -290,7 +290,7 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
   display: flex;
   align-items: center;
   gap: 10px;
-  font: 500 11.5px/1 "Instrument Sans", system-ui, sans-serif;
+  font: 500 11.5px/1 "Host Grotesk", system-ui, sans-serif;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: rgba(239, 231, 221, .5);
@@ -314,7 +314,7 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
   position: relative;
 }
 .hist .kap-aar {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: "Host Grotesk", system-ui, sans-serif;
   font-size: clamp(40px, 11vw, 74px);
   line-height: .96;
   color: var(--messing);
@@ -322,15 +322,15 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
   letter-spacing: -.02em;
 }
 .hist .kap-navn {
-  font: 500 11.5px/1 "Instrument Sans", system-ui, sans-serif;
+  font: 500 11.5px/1 "Host Grotesk", system-ui, sans-serif;
   letter-spacing: .2em;
   text-transform: uppercase;
   color: rgba(239, 231, 221, .55);
   margin-top: 12px;
 }
 .hist .kap h2 {
-  font-family: "Fraunces", Georgia, serif;
-  font-weight: 400;
+  font-family: "Host Grotesk", system-ui, sans-serif;
+  font-weight: 500;
   font-size: clamp(28px, 7.6vw, 46px);
   line-height: 1.1;
   margin: 14px 0 0;
@@ -352,7 +352,7 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
   margin: 30px 0 0;
   padding-left: 18px;
   border-left: 2px solid var(--messing);
-  font-family: "Fraunces", Georgia, serif;
+  font-family: "Host Grotesk", system-ui, sans-serif;
   font-style: italic;
   font-size: clamp(21px, 5.4vw, 28px);
   line-height: 1.32;
@@ -403,8 +403,8 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
   text-align: center;
 }
 .hist .h-slut h2 {
-  font-family: "Fraunces", Georgia, serif;
-  font-weight: 400;
+  font-family: "Host Grotesk", system-ui, sans-serif;
+  font-weight: 500;
   font-size: clamp(30px, 8.4vw, 52px);
   line-height: 1.08;
   margin: 0;
@@ -431,7 +431,7 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
   border-radius: 999px;
   color: var(--messing);
   text-decoration: none;
-  font: 600 14px/1 "Instrument Sans", system-ui, sans-serif;
+  font: 600 14px/1 "Host Grotesk", system-ui, sans-serif;
   letter-spacing: .01em;
   transition: background .25s ease, border-color .25s ease, transform .25s ease;
 }

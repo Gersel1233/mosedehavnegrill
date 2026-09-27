@@ -68,10 +68,10 @@ test.describe('Én talstemme i admin', () => {
        to sans'er ville også være ens. Serif'en er den, dagens seks
        tal og produktionens antal allerede står i.
 
-       ⚠️ SKRIFTEN ER FRAUNCES SIDEN 6/9 (Mikkels valg). Prøven
-       nævner den ved NAVN med vilje: reglen er ikke "en serif" —
-       den er, at admin og gæstesiden bruger DEN SAMME. */
-    expect(kortet.f).toBe('Fraunces');
+       ⚠️ SKRIFTEN ER HOST GROTESK SIDEN 27/9 (før: Fraunces fra 6/9,
+       begge Mikkels valg). Prøven nævner den ved NAVN med vilje:
+       reglen er, at admin og gæstesiden bruger DEN SAMME. */
+    expect(kortet.f).toBe('Host Grotesk');
   });
 
   test('alle tal, der står i en kolonne, har lige brede cifre', async ({ page }) => {

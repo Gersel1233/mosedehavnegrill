@@ -22,12 +22,6 @@
   font-weight: 400;
   font-display: block;
 }
-@font-face {
-  font-family: "Instrument Sans";
-  src: url("../fonts/instrument-sans.woff2") format("woff2");
-  font-weight: 400 700;
-  font-display: swap;
-}
 /* Overskriftsskriften — for BÅDE personalesiden (body.personale)
    og de gamle gæstesider: --display peger på den siden 29/8, hvor
    Bebas gik af som gæstesidernes overskrift.
@@ -51,17 +45,51 @@
    ved-bordet/ og min-bestilling/ — og gæsten går imellem dem i ét
    klik. To forskellige overskriftsskrifter i ét hus er dét,
    "ÉT HUS, ÉN SKRIFT" (29/8) blev lavet for at fjerne. */
+/* ⚠️ HOST GROTESK AFLØSTE FRAUNCES OG INSTRUMENT SANS (27/9) —
+   Mikkels valg, i HELE huset, så "ÉT HUS, ÉN SKRIFT" holder: det
+   her ark og havnegrillen.css peger på de SAMME filer i fonts/.
+   Skriften kommer som faste vægte (400/500/600/700 + kursiv 400/500),
+   ikke som en variabel akse, så hver vægt har sin egen @font-face —
+   se noten i havnegrillen.css og fonts/LICENS.md. */
 @font-face {
-  font-family: "Fraunces";
-  src: url("../fonts/fraunces.woff2") format("woff2");
-  font-weight: 100 900;
+  font-family: "Host Grotesk";
+  src: url("../fonts/host-grotesk-400.woff2") format("woff2");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "Fraunces";
-  src: url("../fonts/fraunces-italic.woff2") format("woff2");
-  font-weight: 100 900;
+  font-family: "Host Grotesk";
+  src: url("../fonts/host-grotesk-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Host Grotesk";
+  src: url("../fonts/host-grotesk-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Host Grotesk";
+  src: url("../fonts/host-grotesk-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Host Grotesk";
+  src: url("../fonts/host-grotesk-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Host Grotesk";
+  src: url("../fonts/host-grotesk-500-italic.woff2") format("woff2");
+  font-weight: 500;
   font-style: italic;
   font-display: swap;
 }
@@ -123,8 +151,8 @@
      samme hus læses som to huse. Serif-filen ligger allerede
      lokalt i fonts/. HTML'en står i blandede bogstaver — Bebas
      TEGNEDE dem bare som versaler, så intet indhold er rørt. */
-  --display: "Fraunces", Georgia, serif;
-  --brod: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --display: "Host Grotesk", system-ui, sans-serif;
+  --brod: "Host Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
   /* Hårstreger */
   --streg: rgba(36, 26, 23, .14);
@@ -204,7 +232,7 @@ body {
    det er præcis fælden, CLAUDE.md advarer om ved body.personale. */
 h1, h2, h3, .bebas {
   font-family: var(--display);
-  font-weight: 400;
+  font-weight: 500;
   margin: 0;
   letter-spacing: -.008em;
   line-height: 1.04;
@@ -636,7 +664,10 @@ main [id], main[id] { scroll-margin-top: 96px; }
   /* Sperringen var .15em — det tal er Bebas'. En serif med den
      luft falder fra hinanden i enkeltbogstaver (samme fælde som
      .top-navn i admin). */
-  letter-spacing: .04em;
+  /* ⚠️ -.015em FRA 27/9: .04em var valgt til Fraunces. Host Grotesk
+     er en grotesk og strammes; tallet er LESREG's for 24 px (h3),
+     det samme som ordmærket i havnegrillen.css. */
+  letter-spacing: -.015em;
   color: #fff;
   line-height: 1.1;
   transition: color .4s;
@@ -883,7 +914,7 @@ body.ark-aaben::after {
 .ark-liste a {
   font-family: var(--display);
   font-size: clamp(30px, 8vw, 40px);
-  letter-spacing: .03em;
+  letter-spacing: -.025em; /* 30-40 px: LESREG h2-sporing (27/9) */
   line-height: 1.1;
   color: var(--sea);
   /* 56 px høj: rigeligt over de 44, og en menu man kan ramme med
@@ -1381,7 +1412,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   background: transparent;
   font-family: var(--display);
   font-size: clamp(19px, 1.9vw, 25px);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.1;
   letter-spacing: .012em;
 }
@@ -2358,7 +2389,7 @@ footer a:hover { color: #fff; }
 .top-navn {
   font-family: var(--display);
   font-size: 17px;
-  letter-spacing: .15em;
+  letter-spacing: -.015em; /* Bebas-luften (.15em) passer ikke en grotesk — se .logo */
   color: #fff;
 }
 .top-navn:hover { color: var(--scoop); }
@@ -2460,7 +2491,7 @@ body.personale {
   --streg:     rgba(36, 26, 23, .14);
   --streg-lys: rgba(255, 255, 255, .16);
 
-  --display: "Fraunces", Georgia, "Times New Roman", serif;
+  --display: "Host Grotesk", system-ui, sans-serif;
 
   /* Fladere end gæstesiden. Se noten ovenfor. */
   --r-lille: 12px;
@@ -2830,8 +2861,8 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
      er en størrelse, arket har i forvejen — og fire px slack er
      ikke nok den dag, en anden forretning hedder noget længere. */
   .adm-maerke-navn {
-    font: 400 20px/1.05 var(--display);
-    letter-spacing: .02em;
+    font: 500 20px/1.05 var(--display);
+    letter-spacing: -.015em; /* se .logo (27/9) */
     color: #fff;
   }
   /* "Personale" står PÅ SIN EGEN LINJE under navnet. Forlægget har
@@ -5425,7 +5456,7 @@ body.personale .menu-afsnit {
 }
 body.personale .menu-afsnit:first-child { margin-top: 8px; }
 body.personale .menu-afsnit-navn {
-  font: 600 15px/1.2 "Instrument Sans", system-ui, sans-serif;
+  font: 600 15px/1.2 "Host Grotesk", system-ui, sans-serif;
   letter-spacing: -.01em;
   /* ⚠️ --sea ER ADMINS BLÆK. Der findes ingen --blaek — se noten
      ved .note-fold. En variabel, der ikke findes, arver bare og
@@ -5433,7 +5464,7 @@ body.personale .menu-afsnit-navn {
   color: var(--sea);
 }
 body.personale .menu-afsnit-note {
-  font: 400 13px/1.3 "Instrument Sans", system-ui, sans-serif;
+  font: 400 13px/1.3 "Host Grotesk", system-ui, sans-serif;
   color: var(--muted);
 }
 /* Fra 900 px er .top skjult, mens man arbejder (se
@@ -5870,7 +5901,7 @@ body:not(.personale) .dagens-blok-tegn {
   flex: none;
 }
 body:not(.personale) .dagens-blok-titel {
-  font: 600 20px/1.15 var(--display), Georgia, serif;
+  font: 600 20px/1.15 var(--display), system-ui, sans-serif;
   margin: 0;
   color: var(--sea);
 }
@@ -8947,7 +8978,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    kort, der læses på afstand i et køkken. Tabular-nums, så
    #0044 og #0102 står under hinanden i en kø. */
 .koek-nr {
-  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-family: "Host Grotesk", system-ui, sans-serif;
   font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
   color: var(--muted); margin-top: 2px;
 }
@@ -12863,7 +12894,7 @@ body:not(.personale) select.is-smag.mangler {
 }
 :is(body:not(.personale), .is-forhaand) .isbyg-blok-tegn { font-size: 18px; line-height: 1; flex: none; }
 :is(body:not(.personale), .is-forhaand) .isbyg-blok-titel {
-  font: 600 18px/1.15 var(--display), Georgia, serif;
+  font: 600 18px/1.15 var(--display), system-ui, sans-serif;
   margin: 0;
 }
 :is(body:not(.personale), .is-forhaand) .isbyg-blok-krop { padding: 4px 14px 14px; }

@@ -8,6 +8,8 @@
 | `instrument-serif.woff2` | Instrument Serif Regular | SIL Open Font License 1.1 |
 | `instrument-serif-italic.woff2` | Instrument Serif Italic | SIL Open Font License 1.1 |
 | `bebas-neue.woff2` | Bebas Neue | SIL Open Font License 1.1 |
+| `host-grotesk-400.woff2` … `host-grotesk-700.woff2` | Host Grotesk 400, 500, 600, 700 (latin) | SIL Open Font License 1.1 |
+| `host-grotesk-400-italic.woff2`, `host-grotesk-500-italic.woff2` | Host Grotesk Italic 400, 500 (latin) | SIL Open Font License 1.1 |
 
 Alle må frit indlejres på en hjemmeside; OFL kræver kun, at
 de ikke sælges alene, og at et ændret navn ikke bruger det
@@ -43,3 +45,31 @@ ikke en flade, gæsten ser.
 **Fraunces er variabel.** Vægten står som `100 900` i begge
 `@font-face`, ikke som et fast 400: ellers syntetiserer browseren
 en fed i stedet for at bruge aksen.
+
+## ⚠️ HOST GROTESK AFLØSTE FRAUNCES OG INSTRUMENT SANS (27/9)
+
+Mikkels valg: husets skrift er LESREG's — Liquid Atelier 3.2's
+Host Grotesk — i hele huset (gæstesiderne, bestil/, bord/,
+ved-bordet/, min-bestilling/ og admin), så "ÉT HUS, ÉN SKRIFT"
+(29/8) stadig holder. Filerne er @fontsource/host-grotesk 5.3.0
+(Copyright 2023 The Host Grotesk Project Authors,
+github.com/Element-Type/HostGrotesk), latin-udsnittet: MÅLT mod
+al tekst på siderne og i js/ mangler der ingen tegn, æ ø å og
+tankestreger er med.
+
+⚠️ FIRE FASTE VÆGTE, IKKE EN VARIABEL. Pakken har kun statiske
+filer. 400 er brødteksten, 500 overskrifterne (LESREG: "Medium,
+aldrig Bold"), 600 knapperne og de fede ord, 700 den håndfuld
+steder i admin, der stod i 700. En vægt uden fil ville browseren
+syntetisere.
+
+⚠️ CIFRENE ER ALLEREDE LIGE BREDE. Skriften har ingen `tnum`, men
+alle ti cifre er 650 enheder i alle vægte (målt), så priser og
+klokkeslæt flugter uden. `font-variant-numeric: tabular-nums` står
+stadig i arket og gør ingen skade.
+
+Bebas Neue bliver: den er logoets (kransen) og de trykte menukorts
+priser — tegnet, ikke sat. Fraunces- og Instrument Sans-filerne
+bliver liggende: `assets/scoop-film.html` (isfilmens værksted)
+peger stadig på instrument-sans.woff2, og en ældre side i en
+browsers cache kan pege på dem, til den er hentet igen.

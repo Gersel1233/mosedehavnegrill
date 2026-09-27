@@ -78,8 +78,9 @@ test.describe('Mærket i toppen', () => {
       return { skrift: s.fontFamily, ombryder: s.whiteSpace,
         linjer: t.height / parseFloat(s.lineHeight || s.fontSize) };
     });
-    expect(m.skrift, 'ordmærket står ikke i husets display-serif')
-      .toMatch(/Fraunces/);
+    /* ⚠️ HOST GROTESK SIDEN 27/9 (Mikkels valg: LESREG's skrift i hele huset). */
+    expect(m.skrift, 'ordmærket står ikke i husets skrift')
+      .toMatch(/Host Grotesk/);
     expect(m.ombryder, 'ordmærket må ikke kunne ombryde').toBe('nowrap');
     expect(m.linjer, 'ordmærket står på to linjer').toBeLessThan(1.6);
 
