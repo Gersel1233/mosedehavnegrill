@@ -560,7 +560,12 @@ test.describe('Leveringsområdet', () => {
   test('prisen fra admin står på siden', async ({ page }) => {
     await åbnSkal(page, '/h-smorrebrod.html',
       { data: medLevering('Karslunde, Greve, Tune og Solrød', '150 kr.') });
-    await expect(page.locator('#lev-fakta')).toContainText('for 150 kr.');
+    /* Sætningen er ny 27/9: det fede ("Vi leverer i …") står på sin egen
+       linje, og resten er hele sætninger — "Koster 150 kr." og ikke
+       "for 150 kr. — eller hent selv". Ejerens pris skal stadig stå der,
+       og den må ikke få et punktum for meget, når den selv ender på "kr.". */
+    await expect(page.locator('#lev-fakta')).toContainText('Koster 150 kr.');
+    await expect(page.locator('#lev-fakta')).not.toContainText('kr..');
     await expect(page.locator('#lev-hint')).toContainText('Levering koster 150 kr.');
   });
 

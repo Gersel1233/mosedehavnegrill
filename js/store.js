@@ -1754,7 +1754,7 @@
       faktaFed: omr ? 'Vi leverer i ' + omr : 'Levering',
       /* Det fede står nu på sin egen linje over resten (27/9), så
          resten er hele sætninger — ikke " for 79 kr. — eller …". */
-      faktaResten: (pris ? ' Koster ' + pris + '.' : '')
+      faktaResten: (pris ? ' Koster ' + pris.replace(/\.?$/, '.') : '')   // "150 kr." må ikke blive "150 kr.."
         + (ogsaaAfhentning ? ' Du kan også hente selv ved lugen.' : ' Eller hent selv ved lugen.'),
       hint: (omr ? 'Vi leverer i ' + omr + '. ' : '')
         + (pris ? 'Levering koster ' + pris + '.'
