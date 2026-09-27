@@ -40,7 +40,7 @@
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
-<div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage" data-tilbage><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage" data-tilbage><svg viewBox="0 0 24 24"><use href="ikoner.svg#tilbage"/></svg></a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><use href="ikoner.svg#menu"/></svg></button></div>
 <div class="phead"><div class="eyebrow">Erhverv</div><h1>Frokost til<br>arbejdspladsen</h1><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="sub">En fast frokostordning, skræddersyet til jeres arbejdsplads.</p></div>
 <!-- ⚠️ FROKOSTSIDEN HAVDE INTET BILLEDE (14/9). Kundens ord: siden er
      "forældet og ikke up to date eller god og sælgende nok" — og den
@@ -70,9 +70,9 @@
 </div>
 <section style="padding-top:22px">
 <div class="facts rev">
-  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span><b>Vi kører den ud</b> — eller I henter selv ved lugen.</span></div>
-  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>Prisen afhænger af antal og indhold</b> — I får et tilbud, før noget sættes i gang.</span></div>
-  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg><span><b>Sig til <span data-varsel>mindst tre dage</span> før start</b> — så når vi at planlægge.</span></div>
+  <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg><span><b>Vi kører den ud</b> — eller I henter selv ved lugen.</span></div>
+  <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#hjerte"/></svg><span><b>Prisen afhænger af antal og indhold</b> — I får et tilbud, før noget sættes i gang.</span></div>
+  <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kalender"/></svg><span><b>Sig til <span data-varsel>mindst tre dage</span> før start</b> — så når vi at planlægge.</span></div>
 </div>
 
 <!-- ============================================================
@@ -149,7 +149,7 @@
     <input class="inp" id="fandet" maxlength="200" style="margin-top:10px"
            placeholder="… eller skriv selv, fx “to vegetarer og én glutenfri”"></div>
   <div class="field"><label>Levering eller afhentning?</label>
-    <div class="seg2" data-toggles="#fadrfelt"><button class="on" data-show="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Levering</button><button data-show="0">Vi henter selv</button></div></div>
+    <div class="seg2" data-toggles="#fadrfelt"><button class="on" data-show="1"><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg>Levering</button><button data-show="0">Vi henter selv</button></div></div>
   <div class="field" id="fadrfelt"><label for="fadr">Leveringsadresse</label><input class="inp" id="fadr" placeholder="Vej, nr. og postnummer"><p class="hint">Vi aftaler levering og pris, når vi ringer.</p></div>
   <div class="field two-col"><div><label for="fnavn">Kontaktperson</label><input class="inp" id="fnavn" autocomplete="name" placeholder="Navn"></div><div><label for="ftlf">Telefonnummer</label><input class="inp" id="ftlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
   <div class="field"><label for="fmail">E-mail til fakturering</label><input class="inp" id="fmail" type="email" inputmode="email" autocomplete="email" placeholder="bogholderi@firma.dk"></div>
@@ -213,7 +213,7 @@
   <div class="legal">© 2026 Mosede Havnecafe<br>Havnevej 20I · 2670 Greve<br><a class="jura-link" href="persondatapolitik.html">Persondata og cookies</a><span class="jura-skel" aria-hidden="true"> · </span><a class="jura-link" href="handelsbetingelser.html">Handelsbetingelser</a><br><a class="personale-link" href="admin.html" rel="nofollow">Personale</a><br>Lavet af <a class="lavet-af" href="https://lesreg.dk" target="_blank" rel="noopener">Lesreg</a></div>
 </footer>
 </div>
-<a class="bestil" id="bestil-pill" href="#tilbud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>Få et tilbud<span class="sheen"></span></a>
+<a class="bestil" id="bestil-pill" href="#tilbud"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kurv"/></svg>Få et tilbud<span class="sheen"></span></a>
 <div class="sheet" id="sheet"><div class="sheet-in">
   <div class="grab"></div>
   <nav><a href="index.html">Forside</a><a href="m-menukort.html">Menukort<span>hele kortet</span></a><a href="index.html#isen">Is ved vandet<span>havnens stolthed</span></a><a href="m-tapas.html">Tapas<span>hele fadet</span></a><a href="bord/">Book et bord<span>dag og tid</span></a><a href="h-smorrebrod.html">Smørrebrød ud af huset<span>bestil hjem</span></a><a href="h-selskaber.html">Selskaber</a><a href="h-baglokale.html">Udleje af baglokalet<span>40 pers.</span></a><a href="h-catering.html">Catering</a><a class="on" href="h-frokost.html">Frokostordning<span>erhverv</span></a><a href="h-kalender.html">Kalender og arrangementer</a><a href="historien.html">Historien om havnen<span>havnen siden 1929</span></a><div class="sep"></div><a href="tel:+4528871343">Ring til os<span>28 87 13 43</span></a></nav>

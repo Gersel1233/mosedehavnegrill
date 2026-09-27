@@ -242,15 +242,15 @@
      ⚠️ OG DET ER ET STREG-IKON, IKKE ET EMOJI. Ejeren vendte
      emoji-fliserne 13/9 ("noget er forældet … kedelige"): fire
      tilfældige emojier sagde ingenting. Tegnet her er husets eget
-     kalender-ikon fra m-tapas.html, samme stroke-width 1.8 som de
-     23 andre streg-ikoner på forsiden.
+     kalender-ikon fra ikoner.svg, det samme som på de andre sider
+     (før 27/9 var det en kopi fra m-tapas.html).
 
      Strengene er kodens egne konstanter — ingen gæstedata går
      gennem innerHTML. */
   var EQ_HTML = '<div class="eq"><i></i><i></i><i></i><i></i></div>';
-  var KALENDER_HTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"'
-    + ' stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'
-    + '<path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg>';
+  /* Kalenderen bor i ikoner.svg (27/9) sammen med husets andre tegn. */
+  var KALENDER_HTML = '<svg viewBox="0 0 24 24" aria-hidden="true">'
+    + '<use href="ikoner.svg#kalender"/></svg>';
 
   function visBannerTegn(boks, k) {
     var boble = find('.bic', boks);

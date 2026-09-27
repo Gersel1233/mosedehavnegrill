@@ -1017,11 +1017,17 @@ test.describe('Lister med forskellige slags har forskellige tegn', () => {
 
     await åbnSkal(page, '/' + fil, { data: grunddata() });
 
+    /* ⚠️ TEGNET BOR I ikoner.svg (27/9). Ikonerne blev tegnet om
+       i Higgsfield og samlet i én fil; punktet på siden er nu
+       <svg><use href="ikoner.svg#boelger"/></svg>. Prøven læser
+       derfor HVILKET tegn punkterne peger på, og måler formen i
+       FILEN — tallene kommer udefra, ikke fra siden. Før 27/9 var
+       tegnet to åbne streger; nu er det to fyldte omrids, så
+       "ingen z" er skiftet ud med "bredere end høj". */
     const m = await page.locator('.getlist > span').evaluateAll((els) => {
       const tegn = els.map((e) => {
-        const svg = e.querySelector('svg');
-        if (!svg) return null;
-        return [...svg.querySelectorAll('path')].map((p) => p.getAttribute('d')).join('|');
+        const brug = e.querySelector('svg use');
+        return brug ? brug.getAttribute('href') : null;
       });
       return { punkter: els.length, tegn: tegn,
         unikke: [...new Set(tegn)].length };
@@ -1032,19 +1038,32 @@ test.describe('Lister med forskellige slags har forskellige tegn', () => {
        stadig gælde. Kom der et emoji pr. punkt her, ville
        reglen fra 6/9 være brudt i den anden retning. */
     expect(m.unikke, fil + ': punkterne deler ikke ét tegn').toBe(1);
+    expect(m.tegn[0], fil + ': punktet henter ikke sit tegn fra ikoner.svg')
+      .toMatch(/^ikoner\.svg#[\w-]+$/);
 
-    /* ⚠️ OG DET SKAL VÆRE VAND: to bølgestreger, der begynder i
-       den SAMME x og ligger på hver sin højde — et hjerte er ÉN
-       lukket kurve. Formen læses af `d`, ikke af en klasse. */
-    const d = m.tegn[0].split('|');
-    expect(d.length, fil + ': tegnet er ikke to streger').toBe(2);
-    const y = d.map((s) => parseFloat(s.match(/^M[\d.]+\s+([\d.]+)/)[1]));
-    expect(Math.abs(y[1] - y[0]),
-      fil + ': de to streger ligger oven i hinanden').toBeGreaterThan(3);
-    for (const s of d) {
-      expect(s, fil + ': stregen er ikke en bølge (ingen kurve)').toMatch(/c/);
-      expect(s, fil + ': stregen er lukket som et hjerte').not.toMatch(/z$/i);
+    const id = m.tegn[0].split('#')[1];
+    const sprite = fs.readFileSync('ikoner.svg', 'utf8');
+    const sym = new RegExp('<symbol id="' + id + '"[^>]*>\\s*<path[^>]* d="([^"]+)"').exec(sprite);
+    expect(sym, 'ikoner.svg har intet tegn ved navn ' + id).not.toBeNull();
+
+    /* ⚠️ OG DET SKAL VÆRE VAND: to bølger på hver sin højde, hver
+       langt bredere end høj. Et hjerte er ét omrids omtrent lige
+       så højt som bredt (med hul og prik: tre delstier). */
+    const dele = sym[1].match(/M[^M]*/g);
+    expect(dele.length, fil + ': tegnet er ikke to bølger').toBe(2);
+    const kasser = dele.map((del) => {
+      const t = del.match(/-?\d+(?:\.\d+)?/g).map(Number);
+      const xs = t.filter((_, i) => i % 2 === 0), ys = t.filter((_, i) => i % 2 === 1);
+      return { b: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys),
+        midt: (Math.max(...ys) + Math.min(...ys)) / 2, kurve: /C/.test(del) };
+    });
+    for (const k of kasser) {
+      expect(k.b / k.h, fil + ': en del af tegnet er ikke en vandret bølge')
+        .toBeGreaterThan(2.5);
+      expect(k.kurve, fil + ': bølgen har ingen kurve').toBe(true);
     }
+    expect(Math.abs(kasser[1].midt - kasser[0].midt),
+      fil + ': de to bølger ligger oven i hinanden').toBeGreaterThan(3);
   });
 
   /* ⚠️ OG TEGNET MÅ IKKE LÆSES OP. Samme lov som forsidens

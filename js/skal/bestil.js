@@ -2306,10 +2306,11 @@
     }
     var sum = sumIKurv();
     tøm(kurvbar);
-    /* Pillens egen pose — samme tegn for "bestilling" hele vejen. */
-    kurvbar.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" fill="none" '
-      + 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'
-      + '<path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>');
+    /* Pillens egen pose — samme tegn for "bestilling" hele vejen.
+       Tegnet bor i ikoner.svg (27/9), som på siderne. Skallen kører
+       kun på sider i roden, så stien er relativ uden ../ */
+    kurvbar.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true">'
+      + '<use href="ikoner.svg#kurv"/></svg>');
     kurvbar.appendChild(lav('b', 'kurvbar-antal', n + ' i kurven'));
     if (sum) kurvbar.appendChild(lav('span', 'kurvbar-sum', '· ' + kroner(sum)));
     kurvbar.appendChild(lav('span', 'kurvbar-pil', 'Se og send'));
