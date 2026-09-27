@@ -814,7 +814,9 @@ select.is-smag{flex:1 1 92px;min-width:0;height:38px;padding:0 20px 0 9px;font-s
    37 skygger (tests/typografi.spec.js). background-color alene lader
    rullelistens egen pil blive stående. */
 select.is-smag.mangler{background-color:rgba(214,42,58,.1)}
-.item .add{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:var(--red)}
+/* --red-tekst og ikke --red (27/9): "+ tilføj" målte 4,27:1 på varekortets bund. Prøven så det
+   først, da panelet stod fremme under målingen — gæsten har altid set det. */
+.item .add{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:var(--red-tekst)}
 /* ⚠️ ET ANSIGT PR. KATEGORI I BESTILLINGEN (29/8). Fem rækker ren
    tekst — Grill fra pladen, Smørrebrød, Is og desserter … — hvor
    menukortet og bordsiden for længst havde tegn på de SAMME
@@ -1025,7 +1027,7 @@ html{touch-action:manipulation}
 .glasafsnit .item .spoerg-chip,.glasafsnit .item .spoerg-chip:hover{color:#ffccd1;background:rgba(214,42,58,.28)}
 .glasafsnit .item.hi,.glasafsnit .item.valgt,.glasafsnit .dagens-blok,.glasafsnit .step{color:var(--ink)}
 .glasafsnit .dagens-blok .item{color:var(--ink);background:none;box-shadow:none}
-.glasafsnit .dagens-blok .item .add{color:var(--red)}
+.glasafsnit .dagens-blok .item .add{color:var(--red-tekst)}
 .glasafsnit .dagens-blok .item .tag{color:var(--red);background:rgba(214,42,58,.12)}
 .glasafsnit .dagens-blok .item .vare-desc{color:var(--muted)}
 .glasafsnit .panel:has(.kvit-tak){color:var(--ink);background:var(--paper);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:var(--skygge-kort)}
@@ -1914,7 +1916,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .talk .g{margin-top:18px}
 .talk .ring{margin-top:14px;font-size:13px;color:var(--muted)}
 /* Understregningen er tekstens egen (13/9): som kant sad den under trykfladens luft, et stykke under tallet. */
-.talk .ring a{font-weight:600;font-variant-numeric:tabular-nums;border-bottom:0;text-decoration:underline;text-decoration-color:rgba(214,42,58,.35);text-decoration-thickness:1.5px;text-underline-offset:3px}
+.talk .ring a{color:var(--red-tekst);font-weight:600;font-variant-numeric:tabular-nums;border-bottom:0;text-decoration:underline;text-decoration-color:rgba(214,42,58,.35);text-decoration-thickness:1.5px;text-underline-offset:3px}
 
 /* nyheder */
 .nyheder{padding:34px var(--pad) 36px}
@@ -3444,7 +3446,8 @@ button.g:disabled:active{transform:none}
    "rigtig variation af animationerne" (9/9, prøven i gennemgang
    vogter den). !important, fordi varianterne .rev.r-ind/.r-blaend
    og de forsinkede .rev.in.d1-3 vejer 0,2,0-0,3,0 og ellers ville
-   vinde over en tekstblok, der har fået en af dem. */
+   vinde over en tekstblok, der har fået en af dem. Paneler er kort
+   og beholder bevægelsen, selv om de begynder med en overskrift. */
 .rev:is(.mid,.sub,.tcap,.findhoved),
-.rev:has(> h2:first-child),.rev:has(> h3:first-child),.rev:has(> .eyebrow:first-child){
+.rev:not(.panel):has(> h2:first-child),.rev:not(.panel):has(> h3:first-child),.rev:not(.panel):has(> .eyebrow:first-child){
   opacity:1!important;transform:none!important;transition:none!important}

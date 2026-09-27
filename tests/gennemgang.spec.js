@@ -1083,3 +1083,24 @@ test.describe('Lister med forskellige slags har forskellige tegn', () => {
     expect(set, 'der ER tegn at måle').toBeGreaterThan(0);
   });
 });
+
+/* ⚠️ OVERSKRIFTER OG TEKST GLIDER IKKE IND  (27/9)
+   Mikkels ord om det generiske: "alt glider op, når man ruller".
+   Afsnitsoverskrifter (.mid), underrubrikker (.sub) og Find os'
+   hoved står stille; kort og billeder beholder bevægelsen (prøven
+   ovenfor vogter kundens variation fra 9/9). Målt FØR rul, på det,
+   der endnu IKKE er afsløret — ellers redder .in dem, og prøven
+   måler ingenting. */
+test('overskrifter og underrubrikker står stille, før man ruller', async ({ page }) => {
+  await åbnSkal(page, '/index.html', { data: grunddata() });
+  await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
+  const m = await page.evaluate(() => {
+    const tekst = [...document.querySelectorAll('.rev.mid, .rev.sub, .rev.findhoved')]
+      .filter((e) => !e.classList.contains('in'));
+    return { n: tekst.length,
+      glider: tekst.filter((e) => getComputedStyle(e).opacity !== '1'
+        || getComputedStyle(e).transform !== 'none').length };
+  });
+  expect(m.n, 'der ER uafslørede tekstblokke at måle').toBeGreaterThan(2);
+  expect(m.glider, 'en overskrift eller linje glider stadig ind').toBe(0);
+});
