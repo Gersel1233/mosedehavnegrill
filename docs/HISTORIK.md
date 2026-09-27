@@ -7,6 +7,38 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**GLASPILLEN: ALLERGILINJEN OG DE ANDRE SMÅ FLADER** (27/9, sent). Mikkels ord:
+*"lav allergi tingen en liquid glass pille lesreg style og gerne se om der andre
+ting der halter som det"*. Fundet med en skanning af alle gæstesider (stiplede
+kanter, flade farvede piller, tekst der starter med et tegn) og set på skud.
+
+- **`.glaspille`** i havnegrillen.css: husets glas fra `#alt`-kortene (samme
+  flade, glans og lyse kant — selektoren står på de to regler dér, så glasset
+  bor ét sted), almindelig skrift og **ingen skygge under**. ⚠️ Første udgave
+  havde den lille glasskygge, og allergilinjen stod som en stor hvid knap uden
+  noget at trykke på: løftet er husets knap (`.g`)
+- **Allergilinjen** på menukortet (stiplet, lyserød kasse) og på forsidens
+  menukort-kort (løs linje) er begge glaspillen. **Kundens 🥜 og ord står**
+  (31/8, "vi nøjes med emojisne")
+- **"Nyhed"** på tapaskortet var en rød mærkat i spærrede versaler — det tegn,
+  bid 1 tog af mærkaterne. Nu glas og almindelig skrift
+- **Bordpillen ved bordet** ("BORD 7", hvid med rød kant og versaler, fuld
+  bredde) lignede en knap. Nu glas (.9 hvid, stadig læselig over fotoet),
+  "Bord 7" og så bred som teksten
+- **Prikken i statuspillen på bestil/ og ved bordet** (åndede grønt, stod rød)
+  er lanternen som på forsiden. Reglen står i `Butik.lanterne`, og forsiden
+  spørger også dér
+- **Persondatasidens 📞** er husets telefontegn fra `ikoner.svg`
+- Prøver i skal-forside, alle set fejle: lanternen låst til slukket, den lille
+  glasskygge sat tilbage, versalerne sat tilbage og den stiplede kant sat
+  tilbage på menukortet
+- **Ikke rørt:** kategori-fliserne på forsidens menukort-kort og tapaskortets
+  fire småmærker (flade, beige) — de er kundens emoji-fliser og indhold, ikke
+  status, og som glas ville de ligne knapper
+- **Og et ar fra bid 2**, fundet af gennemgangen: "Skriv til os med jeres
+  ønsker" under isen brød over to linjer, indtil "Alt er muligt;" røg ud. På
+  én linje målte trykfladen 20 px. `padding-block` som juraens links
+
 **DET GENERISKE UD, I TRE BIDDER** (27/9, aften). Mikkels ord: *"de her ting er
 ikke lesreg agtige og genriske og claude genkendelige"* — og *"del det op i 3
 bider … ik lad det tage for lang tid"*. Kun udseende: hver bid prøves med de
