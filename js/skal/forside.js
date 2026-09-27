@@ -1046,6 +1046,9 @@
        alt-teksten ikke også skulle findes frem. Filen ligger
        stadig i billeder/. */
     'stemning-fiskefilet.jpg': 'Stor paneret fiskefilet med brasede kartofler og ærter',
+    /* Drinksene er ude af puljen (Mikkels ønske 27/9) — samme greb som
+       fiskefileten: filen ligger stadig i billeder/, og teksten bliver,
+       så den ikke skal findes frem, hvis fotoet kommer ind igen. */
     'stemning-drinks.jpg': 'To drinks med mynte og udsigt over bådene',
     'stemning-baglokale.jpg': 'Baglokalet pyntet til julefest med skind på stolene',
     /* Kom i puljen 7/9. Fotoet har ligget ubrugt i repoet, og
