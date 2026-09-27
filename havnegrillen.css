@@ -1169,6 +1169,10 @@ html{touch-action:manipulation}
    skubbe linjerne fra hinanden — det er hele forskellen på den
    her rettelse og fejlen fra 31/8. */
 .jura a{padding-block:10px;margin-block:-10px}
+/* Og linket i en underrubrik (27/9): "Skriv til os med jeres ønsker"
+   under isen brød over to linjer, indtil bid 2 tog "Alt er muligt;"
+   ud — på én linje målte det 20 px. Samme greb som juraen. */
+.mid .sub a{padding-block:10px;margin-block:-10px}
 /* Kontaktblokken i find-afsnittet (31/8): linkene skal kunne
    RAMMES — footerens 15 px-links kostede en runde samme dag,
    reglen kom til. Lodret padding i stedet for display-skift
