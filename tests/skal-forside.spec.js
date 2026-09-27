@@ -1990,8 +1990,14 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     await expect(is).toHaveCount(2);
     for (const i of await is.all()) await expect(i).toHaveAttribute('loading', 'lazy');
     const isSrc = await is.evaluateAll((l) => l.map((i) => i.src));
+    /* Og kortene på dugen i menukort-kortet (27/9) — samme sag som
+       tapasfotoet: lazy, og Chromes afstand henter det før rul. Kun det
+       billede, browseren valgte (800 eller 1400), og det SKAL være lazy. */
+    const menu = page.locator('.menucard .menucard-foto');
+    await expect(menu).toHaveAttribute('loading', 'lazy');
+    const menuSrc = await menu.evaluate((i) => i.currentSrc || '');
     expect(hentet.filter((u) => u !== tapasSrc && u !== histSrc && u !== bestSrc
-      && isSrc.indexOf(u) === -1),
+      && u !== menuSrc && isSrc.indexOf(u) === -1),
     'forsiden henter et foto, før gæsten har rullet').toEqual([]);
 
     // Rul HELE vejen ned — så må galleriets egne komme, og KUN dem.
@@ -2025,9 +2031,13 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
       .evaluate((i) => i.currentSrc).catch(() => '');
     const bestFoto = await page.locator('#bestil .best-bg img')
       .evaluate((i) => i.currentSrc).catch(() => '');
+    /* Kortene på dugen læses igen EFTER rullet: før var de ikke hentet,
+       og currentSrc var tom. Kun det billede, browseren valgte. */
+    const menuFoto = await page.locator('.menucard .menucard-foto')
+      .evaluate((i) => i.currentSrc).catch(() => '');
     const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u)
       && u !== tapasFoto && u !== findFoto && u !== histFoto && u !== bestFoto
-      && isSrc.indexOf(u) === -1);
+      && u !== menuFoto && isSrc.indexOf(u) === -1);
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
 
     /* Loftet gælder stemningsgalleriets PULJE — tapasfotoet er ikke
@@ -2813,8 +2823,15 @@ test.describe('Greve-prisen øverst', () => {
     });
     expect(m.lige_under, 'prisen står ikke lige under smileyen').toBe(true);
     expect(m.afstand, 'prisen hænger ikke sammen med smileyen').toBeLessThanOrEqual(16);
-    expect(m.pris, 'prisens kort er ikke i smileyens glas').toEqual(m.smil);
-    expect(m.pris.skygge, 'kortet har ingen linsekant').toContain('inset');
+    /* ⚠️ VENDT 27/9 — MIKKELS ORD: "måske lad awarden være gul du ved
+       for prisen agtig". Her stod, at prisens kort skulle være i
+       smileyens glas (25/9). Nu er det LESREG-pladen med en kerne i guld,
+       og den skal netop IKKE ligne smileyen. Guldet måles i prøven
+       "prisen står på en guldplade"; her står det, at de to er forskellige,
+       og at pladen har sin lyskant. */
+    expect(m.pris.grund, 'prisen står stadig i smileyens hvide glas').not.toEqual(m.smil.grund);
+    expect(await pris.evaluate((e) => getComputedStyle(e, '::after').content),
+      'pladen har ingen lyskant').not.toBe('none');
 
     /* Og bunden beholder sin linje — ligesom smileyen står begge steder. */
     await expect(page.locator('footer a[href="https://erhvervscentret.greve.dk/gba"]')).toHaveCount(1);
