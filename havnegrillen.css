@@ -581,7 +581,7 @@ html.film-styret.film-aabner .hero.film .hero-badge,html.film-styret.film-aabner
 .hero-in{display:grid;justify-items:center;text-align:center;gap:12px;margin-top:16px}
 .hero h1{font-size:47px;color:#fff;text-wrap:balance;text-shadow:0 2px 20px rgba(26,18,16,.4)}
 .hero h1 em{font-style:normal;color:#ffe3cf}
-.hero .status{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.72);background:rgba(26,18,16,.28);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:6px 13px;border-radius:999px;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.2)}
+.hero .status{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;letter-spacing:0;color:rgba(255,255,255,.9);background:rgba(26,18,16,.28);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:6px 13px;border-radius:999px;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.2)}
 .dot{width:6px;height:6px;border-radius:50%;background:#f0a03c;flex:none}
 .hero-cta{display:grid;gap:10px;width:100%;margin-top:10px}
 .hero-cta .g{width:100%;height:54px;font-size:16px;font-weight:600}
@@ -615,8 +615,16 @@ html.film-styret.film-aabner .hero.film .hero-badge,html.film-styret.film-aabner
 @keyframes eq{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
 /* sections */
 section{padding:32px var(--pad)}
-.eyebrow{font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
-.eyebrow.red{color:var(--red)}
+/* ⚠️ MÆRKATEN ER EN STILLE LINJE, IKKE RØDE VERSALER (27/9).
+   Mikkels ord: "de her ting er ikke lesreg agtige og generiske og
+   claude genkendelige". Røde, spærrede versaler over hver overskrift
+   er skabelonens tegn. LESREG bruger kun versaler til felter og data;
+   det, der står over en overskrift, er en almindelig linje i blæk.
+   Sloganerne ("Altid noget godt", "Havnens stolthed") er taget ud af
+   siderne; tilbage står kun mærkater, der siger noget, overskriften
+   ikke gør (datoen, "Ugen der kommer", emnet på jurasiderne). */
+.eyebrow{font-size:14px;font-weight:500;letter-spacing:0;color:var(--ink2)}
+.eyebrow.red{color:var(--ink2)}
 h2{font-size:35px;margin-top:9px}
 /* ⚠️ text-wrap: pretty — MOD DET ENLIGE ORD  (21/9)
    MÅLT paa forsiden: "… nemt at bladre i." braekkede, saa "i."
@@ -626,13 +634,12 @@ h2{font-size:35px;margin-top:9px}
    naeste skriftstoerrelse eller skaermbredde. */
 .sub{margin:12px 0 0;font-size:15px;line-height:1.5;color:var(--ink2);text-wrap:pretty}
 .mid{text-align:center;display:grid;justify-items:center}
-.dots{display:flex;gap:7px;margin:14px 0 2px}
-.dots i{width:5px;height:5px;border-radius:50%;background:var(--red);opacity:.6}
-.rule{width:56px;height:2px;background:rgba(36,26,23,.16);margin:16px 0 0}
+/* Prikrækken og den lille streg under overskrifterne er væk (27/9):
+   pynt, der kun sagde "her starter et afsnit". Luften gør det. */
 /* dagens ret i dag */
 .today{margin-top:18px;position:relative;border-radius:26px;background:var(--paper);box-shadow:var(--skygge-kort);overflow:hidden}
 .today .in{padding:16px 18px 18px}
-.today .lbl{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--red)}
+.today .lbl{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--red-tekst)}
 .today h3{font-size:29px;margin-top:9px}
 .today p{margin:8px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
 /* ⚠️ PRISEN OG PORTIONERNE ER PILLER (7/9, kundens skærmbillede).
@@ -923,7 +930,6 @@ html{touch-action:manipulation}
    ind.
    ============================================================ */
 .findhoved{text-align:center}
-.findhoved .rule{margin-left:auto;margin-right:auto}
 /* ⚠️ FIND OS STÅR PÅ HAVNEN (11/9) — kundens billede, gjort mørkere.
    Tre lag i sektionen: den mørke grund (står, til fotoet er hentet,
    og er den, gennemgangens kontrastmåler læser), fotoet og sløret.
@@ -980,7 +986,6 @@ html{touch-action:manipulation}
 .best-bg img{position:sticky;top:0;display:block;width:100%;height:100vh;height:100lvh;object-fit:cover;object-position:50% 38%}
 .glasafsnit .eyebrow{color:rgba(255,255,255,.88)}
 .glasafsnit h2{color:#fff}
-.glasafsnit .rule{background:rgba(255,255,255,.42)}
 .glasafsnit .sub{color:rgba(255,255,255,.86)}
 .glasafsnit .panel{color:#fff;background:rgba(20,14,12,.3);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.4),0 10px 26px rgba(0,0,0,.32)}
 .glasafsnit .hint,.glasafsnit .fine,.glasafsnit .jura-ved-send,.glasafsnit .allergi-ja{color:rgba(255,255,255,.76)}
@@ -1033,7 +1038,6 @@ html{touch-action:manipulation}
 .find-slor,.hist-slor,.best-slor{background-color:rgba(26,18,16,.66);background-image:linear-gradient(180deg,rgba(26,18,16,.4),transparent 32%,transparent 72%,rgba(31,19,16,.55))}
 #find .findhoved .eyebrow{color:rgba(255,255,255,.88)}
 #find .findhoved h2{color:#fff}
-#find .findhoved .rule{background:rgba(255,255,255,.42)}
 /* ⚠️ KORTENE ER GLAS (11/9). Kundens ord: "find os og åbningstider
    liquid glass og sådan see-through agtig, iOS 18". Fotoet skinner
    igennem, sløret af glasset.
@@ -1068,7 +1072,7 @@ html{touch-action:manipulation}
 /* ⚠️ `--red-tekst` OG IKKE `--red`. Den lille skrift falder under
    4,5:1 med mærkefarven selv — samme regel som prisen på
    menukortet og "kun 3 tilbage" (5/9). */
-.fk-status{display:inline-flex;align-items:center;gap:8px;margin:15px 0 0;padding:7px 14px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--red-tekst);background:rgba(214,42,58,.09)}
+.fk-status{display:inline-flex;align-items:center;gap:8px;margin:15px 0 0;padding:7px 14px;border-radius:999px;font-size:14px;font-weight:500;letter-spacing:0;color:var(--red-tekst);background:rgba(214,42,58,.09)}
 .fk-adresse{margin:16px 0 0;font-size:17px;line-height:1.45;color:var(--ink)}
 /* Rækkerne er `.hours`, men inde i et kort: luften er kortets, og
    den SIDSTE hårstreg ryger — en linje langs kortets egen kant
@@ -1472,25 +1476,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .facts.rev.in>*:nth-child(n+5),.rev.in .facts>*:nth-child(n+5),
 .tiles.rev.in>*:nth-child(n+5),.rev.in .tiles>*:nth-child(n+5){transition-delay:.26s}
 
-/* --- 5) STREGEN TEGNER SIG SELV ---
-   `.rule` er den dekorative streg under hvert afsnits
-   overskrift. Den voksede ikke; nu gør den, med `scaleX` og ikke
-   `width` — husets regel fra 31/8 om aldrig at animere noget,
-   der udløser layout. Den er 2 px høj og har intet indhold, så
-   30/8-reglen om `scale` på noget med fotos i gælder den ikke. */
-.rev .rule{transform:scaleX(0);transform-origin:left center}
-.rev.in .rule{transform:none;transition:transform .6s var(--spring) .12s}
-.findhoved .rule,.mid .rule{transform-origin:center}
 
-/* --- 6) PRIKKERNE KOMMER EN AD GANGEN ---
-   De fem prikker over en overskrift er designets egen rytme; de
-   stod stille som fem ens punktummer. */
-.rev .dots i{opacity:0;transform:translate3d(0,4px,0)}
-.rev.in .dots i{opacity:1;transform:none;transition:opacity .3s ease,transform .34s var(--spring)}
-.rev.in .dots i:nth-child(2){transition-delay:.05s}
-.rev.in .dots i:nth-child(3){transition-delay:.10s}
-.rev.in .dots i:nth-child(4){transition-delay:.15s}
-.rev.in .dots i:nth-child(5){transition-delay:.20s}
 
 @media(prefers-reduced-motion:reduce){
   /* ⚠️ 0,2,0 SLÅR `.rev` PÅ 0,1,0 — uden de her linjer står
@@ -1501,9 +1487,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
   .gal.rev,.tshot.rev,.hist-teaser.rev,.jura-blok.rev,.about .sub.rev{
     opacity:1;transform:none;transition:none}
   .week.rev>*,.rev .week>*,.facts.rev>*,.rev .facts>*,
-  .tiles.rev>*,.rev .tiles>*,
-  .rev .dots i{opacity:1;transform:none;transition:none}
-  .rev .rule{transform:none;transition:none}
+  .tiles.rev>*,.rev .tiles>*{opacity:1;transform:none;transition:none}
 }
 .side{position:fixed;left:32px;top:28px;color:rgba(255,255,255,.45);font:11px/1.7 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}
 @media(max-width:1100px){.side{display:none}}
@@ -1584,7 +1568,6 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .thead .eyebrow{color:var(--red)}
 .thead h1{font-size:48px;color:var(--ink);margin-top:12px}
 .thead .sub{color:var(--ink2);max-width:30ch}
-.thead .dots{margin:14px 0 4px}
 .tshot{margin:18px var(--pad) 0;border-radius:24px;overflow:hidden;box-shadow:0 18px 44px rgba(36,26,23,.22);background:var(--cream2);aspect-ratio:4 / 3}
 .tshot image-slot,.tshot img{width:100%;height:100%;object-fit:cover;display:block}
 .tcap{margin:10px var(--pad) 0;font-size:13px;line-height:1.5;color:var(--muted);text-align:center}
@@ -1678,7 +1661,6 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 #omos::after{display:none}
 .about .eyebrow{color:rgba(255,255,255,.88)}
 .about h2{color:#fdf7ef;font-size:38px;margin-top:10px}
-.about .dots{margin:16px 0 4px}
 .about p{margin:16px 0 0;font-size:15px;line-height:1.62;color:rgba(255,255,255,.86)}
 .about p.lead{color:rgba(255,255,255,.86)}
 .about .sign{margin-top:18px;font-family:"Host Grotesk",system-ui,sans-serif;font-style:italic;font-size:19px;color:#ff8b76}
@@ -2031,7 +2013,6 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .phead .eyebrow{color:var(--red)}
 .phead h1{font-size:44px;color:var(--ink);margin-top:12px}
 .phead .sub{max-width:32ch}
-.phead .dots{margin:14px 0 4px}
 .facts{display:grid;gap:8px;margin-top:18px}
 .fact{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border-radius:18px;background:var(--paper);box-shadow:var(--skygge-let);font-size:13px;line-height:1.45;color:var(--ink2)}
 .fact b{color:var(--ink);font-weight:600}
@@ -3437,3 +3418,14 @@ button.g:disabled:active{transform:none}
   .evcard.evklik:hover{transform:none}
   .evcard[style]{transform:none !important;transition:opacity .15s ease !important}
 }
+
+/* ⚠️ STATUSLINJEN HAR EN LANTERNE, IKKE EN PRIK (27/9). Den farvede
+   prik med versaler er skabelonens "live"-mærke. Lanternen er
+   tegnet i Higgsfield som husets andre ikoner (ikoner.svg) og er
+   tændt, når lugen er åben; forside.js skifter tegnet. LESREG's
+   status er form + tekst — her er formen en tændt eller slukket
+   lanterne. "Ring og hør" (databasen svarer ikke) får telefonen:
+   den siger hverken åbent eller lukket. */
+.status .lanterne,.fk-status .lanterne{width:16px;height:16px;flex:none;display:block}
+.hero .status .lanterne{color:rgba(255,255,255,.7)}
+.hero .status.aaben .lanterne{color:#f0a03c}

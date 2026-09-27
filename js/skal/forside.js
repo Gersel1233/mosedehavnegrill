@@ -139,10 +139,19 @@
   // ----------------------------------------------------------
   //  HEROENS STATUSPILLE
   //  ----------------------------------------------------------
-  //  Prikken bliver stående, som den er tegnet. Designet har KUN
-  //  én prikfarve (#f0a03c), og en grøn "åben"-prik ville være
-  //  en tilføjelse til designet, ikke en kobling.
+  //  ⚠️ PRIKKEN ER EN LANTERNE (27/9) — tændt, når lugen er åben,
+  //  slukket ellers, og telefonen, når vi ikke VED det (databasen
+  //  svarer ikke: "Ring og hør"). Tegnene bor i ikoner.svg. Den
+  //  tændte lanterne får designets ene varme farve (#f0a03c).
   // ----------------------------------------------------------
+  function sætLanterne(boks, s) {
+    var brug = boks && boks.querySelector('.lanterne use');
+    if (!brug) return;
+    var tegn = s.ukendt ? 'telefon' : (s.aaben ? 'lanterne-taendt' : 'lanterne-slukket');
+    brug.setAttribute('href', 'ikoner.svg#' + tegn);
+    boks.classList.toggle('aaben', !!s.aaben);
+  }
+
   function visStatus(d) {
     var pille = find('.hero .status');
     if (!pille) return;
@@ -157,10 +166,11 @@
        aldrig den fjerde. Fundet på et skærmbillede 1/9. */
     var tekst = Butik.pilleTekst ? Butik.pilleTekst(s)
       : s.overskrift + (s.detalje ? ' · ' + s.detalje : '');
-    // Prikken er et element inde i pillen og skal overleve.
-    var prik = find('.dot', pille);
+    // Lanternen er et element inde i pillen og skal overleve.
+    var tegn = find('.lanterne', pille);
     pille.textContent = tekst;
-    if (prik) pille.insertBefore(prik, pille.firstChild);
+    if (tegn) pille.insertBefore(tegn, pille.firstChild);
+    sætLanterne(pille, s);
   }
 
   // ----------------------------------------------------------
@@ -588,8 +598,6 @@
          hvad der er i den. */
       var h2 = afsnit.querySelector('.mid h2');
       if (h2) h2.textContent = 'Tidligere på havnen';
-      var øjen = afsnit.querySelector('.mid .eyebrow');
-      if (øjen) øjen.textContent = 'Fra havnen';
       var sum = afsnit.querySelector('.tidligere summary');
       if (sum && sum.firstChild && sum.firstChild.nodeType === 3) {
         sum.firstChild.nodeValue = 'Se det, der har været ';
@@ -809,9 +817,9 @@
   function visFindKort(d) {
     var pille = find('[data-find-status]');
     if (pille && Butik.status) {
-      var tekst = Butik.pilleTekst
-        ? Butik.pilleTekst(Butik.status(d))
-        : '';
+      var st = Butik.status(d);
+      var tekst = Butik.pilleTekst ? Butik.pilleTekst(st) : '';
+      sætLanterne(pille, st);
       var felt = find('[data-find-status-tekst]', pille);
       if (tekst && felt) {
         felt.textContent = tekst;

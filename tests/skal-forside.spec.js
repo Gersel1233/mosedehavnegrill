@@ -112,8 +112,12 @@ test.describe('Forsidens kobling', () => {
     // tests/typografi.spec.js vogter modstykket (intet kolon i pillen).
     await expect(page.locator('.hero .status')).toContainText('21.00');
 
-    // Prikken er designets egen og skal overleve, at teksten skiftes.
-    await expect(page.locator('.hero .status .dot')).toHaveCount(1);
+    // ⚠️ PRIKKEN BLEV EN LANTERNE (27/9, ikoner.svg). Den skal
+    // overleve, at teksten skiftes — og nu også SIGE det: tændt,
+    // når der er åbent. Modstykket står i prøven herunder.
+    await expect(page.locator('.hero .status .lanterne')).toHaveCount(1);
+    await expect(page.locator('.hero .status .lanterne use'))
+      .toHaveAttribute('href', 'ikoner.svg#lanterne-taendt');
   });
 
   test('lukket forretning står som lukket', async ({ page }) => {
@@ -122,6 +126,8 @@ test.describe('Forsidens kobling', () => {
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data });
 
     await expect(page.locator('.hero .status')).toContainText('Lukket for sæsonen');
+    await expect(page.locator('.hero .status .lanterne use'))
+      .toHaveAttribute('href', 'ikoner.svg#lanterne-slukket');
   });
 
   test('dagens ret kommer fra admin — og afsnittet forsvinder, når der ikke er en', async ({ page }) => {
