@@ -196,8 +196,8 @@ test.describe('Forsidens kobling', () => {
     await åbn(page, '/index.html');
     const m = await page.locator('.pris-kort').evaluate((e) => {
       /* Guldet er glassets tone nu (27/9, nat) — Figmas glas i prisens farve. */
-      const d = getComputedStyle(e).backgroundColor.match(/[\d.]+/g).map(Number);
-      const [r, g, b] = d.slice(0, 3).map((v) => v / 255);
+      const bg = getComputedStyle(e).backgroundColor.match(/[\d.]+/g).map(Number);
+      const [r, g, b] = bg.slice(0, 3).map((v) => v / 255);
       const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
       const l = (max + min) / 2;
       const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
