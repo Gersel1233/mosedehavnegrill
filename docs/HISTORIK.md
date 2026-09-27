@@ -30,6 +30,15 @@ for udseende).
   skal-forespoergsel vogter dem). Historiesiden fik kun tegnsætning: den bygger
   på kundens faktadokument. `Butik.leveringsTekst` er hele sætninger; "150 kr."
   + "." gav "150 kr.." — vagt i skal-bestil, set fejle. Juraen og admin ikke rørt
+- **Bid 3 — bevægelsen:** hver blok steg 26 px op og tonede ind, når man
+  rullede. Nu står overskrifter, underrubrikker og mærkater stille
+  (`.rev:is(.mid,.sub,.tcap,.findhoved)` og blokke, der begynder med en
+  overskrift). **Kort, billeder, gallerier og paneler beholder deres
+  bevægelse** — kundens *"rigtig variation af animationerne"* (9/9) står.
+  Da panelerne stod fremme under målingen, så kontrastprøven to gamle fejl,
+  gæsten altid har set: "+ tilføj" og telefonnummeret i "Skriv til os" målte
+  4,27:1 i `--red` → `--red-tekst`. Ny prøve i gennemgang ("overskrifter og
+  underrubrikker står stille, før man ruller"), set fejle med reglen slået fra
 
 **HUSETS NYE IKONER: TEGNET I HIGGSFIELD, SAMLET I `ikoner.svg`** (27/9, aften).
 Mikkels ord: *"alle de der små ikoner på siden … det der gør det ser lidt claude
