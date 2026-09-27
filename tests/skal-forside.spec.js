@@ -224,7 +224,10 @@ test.describe('Forsidens kobling', () => {
     await expect(foto).toHaveAttribute('width', '800');
     await expect(foto).toHaveAttribute('height', '597');
     await foto.scrollIntoViewIfNeeded();
-    await expect.poll(() => foto.evaluate((e) => e.naturalWidth), 'billedet af kortene kom ikke frem').toBeGreaterThan(500);
+    /* > 0 og ikke > 500: med srcset er naturalWidth densitetsrettet —
+       1400-filen på en iPhone 13 (3x, 390 px) melder 390. */
+    await expect.poll(() => foto.evaluate((e) => e.complete && e.naturalWidth), { message: 'billedet af kortene kom ikke frem', timeout: 10000 }).toBeGreaterThan(0);
+    expect(await foto.evaluate((e) => e.currentSrc)).toMatch(/billeder\/menukort-bord-(800|1400)\.jpg$/);
   });
 
   /* "Nyhed" var en rød mærkat i spærrede versaler — det tegn, bid 1
