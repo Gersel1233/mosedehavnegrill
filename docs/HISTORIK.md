@@ -7,6 +7,51 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**NATTENS RUNDE: FROKOST, TILBUD, TELEFONEN, OVERBLIK OG ADMINS ORD** (28/9, nat).
+Mikkels besked: frokostordningen er ikke på højde med bestillingsflowet; "hver uge"
+med fire dage er fire leveringer om ugen; tilbuddet *"går bare op og siger, jeg skal
+vælge en dato, jeg allerede har gjort"*; datofeltet og kalenderen taler ikke sammen;
+et ugyldigt nummer skal være tydeligt alle steder; beskederne i admin er forældede;
+bordbookinger skal være pænere, og *"i overblik kan jeg ikke trykke ankommet"*.
+- **Frokostsiden i fire trin** (som baglokalet): hvor tit og dage med summen i ord
+  ("4 leveringer om ugen: mandag, tirsdag, onsdag og torsdag", sendt som
+  `detaljer.rytme`), første levering i nettet, hvad og hvor mange, jer — og en
+  opsummering over knappen. "Hvor tit" er UGERNE (hver uge / hver anden uge / én
+  uge om måneden / kun én gang / ved ikke). Nettet kan kun vælge hverdage og de
+  valgte dage; en dag, der ikke passer længere, tages af og siges. Intet forvalgt
+  antal (14 blev sendt, hvis ingen rørte det). Adresse påkrævet ved levering
+- **"Vælg en dato" — årsagen:** varselsfejlen stod i den grå linje UNDER knappen,
+  talte om "et selskab" på frokostsiden, og fokus sprang op til datofeltet med en
+  dato i. Nu peger fejlen på nettet med sidens egne ord og den første mulige dag
+- **Datoen står én gang** (frokost og selskaber). ⚠️ Browserens skjulte felt foldede
+  sig UD ved fokus — og klappede sammen ved næste tryk, så Send og "Ud af huset"
+  flyttede sig under fingeren og ikke blev ramt. Målt, rettet i havnegrillen.css
+- **Fejlen ved feltet** (`js/skal/feltfejl.js`, ét sted): rød kant, sætningen under,
+  væk når man retter. Forespørgslerne viser alt, der mangler, på én gang i sidens
+  rækkefølge; forsiden, smørrebrød, tapas og kalenderen får feltet rødt; bestil/ og
+  bord/ fik rød kant (aria-invalid blev sat, men ingen regel læste det)
+- **Telefonen:** `Butik.tjek.telefon` siger for kort / for langt / ord i nummeret
+  hver for sig, og alle gæstesider spørger den (kopierne så kun "under 8").
+  Databasens nej hedder ét sted (`TLF_AFVIST`). Øvetilstanden afviser numre som
+  databasen. Admin: baglokalet i telefonen og husets eget nummer tjekkes
+- **Overblik:** dagens bordbookinger har ✓ Ankommet på rækken, Udeblev/Afvis bag
+  ···, telefon, besked og bordnummer. Handlingerne bor ét sted (`Admin.bordHandling`
+  i borde.js); bookingen ligger i `r.booking`, ALDRIG `r.b` (samme id i to tabeller).
+  Ankommet → Færdige med Gendan. Alarmen skrev "skulle have hentet" om et bord — nu
+  bordets egen linje med et kvarters respit. Bookingkortet: "ring og få dem på
+  plads" er væk (booket er booket); dagens borde og de næste dage
+- **Bordkortet i Køkkenet:** tiden stor, dagen som mærke, "1 person", grøn når de
+  er ankommet, bordvælgeren kun på en åben booking, ··· åbner på kortet
+- **Admins ord** rettet mod koden: priser gemmes med knappen, Færdig/Udeblev på
+  Salg, lugens loft, fluebenets rigtige navn, tre forespørgselssider, levering uden
+  for området afvises, tom mail tager linket af, TikTok, m.fl.
+- **Referencerne** (SM/BO/FO/UD/RE + dato + kode) er systemets nøgler: unikke i
+  databasen, dobbelt-spærren, gæstens opslag på min-bestilling/, Find sag, logbogen
+  og sms-nødudgangen. **Numrene** (M-/B-/F-/L-/T-0012) er det, man siger højt. Find
+  sag finder nu også "B-0012" — og bogstavet skal passe
+- Alle nye prøver set fejle mod den gamle kode (frokost-flow 17/17, telefon-alle-
+  steder 6/6 + 2, overblik 8, bordkort 4, find-sag 1)
+
 **FACEBOOK, SMILEYEN OG PRISEN ER FIGMAS GLAS — PRÆCIST** (28/9, nat). Mikkels ord:
 *"de er slet ikke taget fra figma, du skal lige lock in og tage præcise glass
 pillars derfra, ændre farven og selvfølgelig gøre så knapperne er korrekte"*.
