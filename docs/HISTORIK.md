@@ -7,6 +7,21 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**GLASPILLERNE ØVERST OG ADMINS SPROG** (28/9, formiddag). Mikkels ord: *"lav
+facebook, award og fødevarestyrelsen iOS 18 glass pillars helt forfra — de ligner
+intet af figma-siderne, ligesom med allergien — skift farven på facebook til blå og
+den anden til guld"* og *"ret også udviklersproget, knapper osv. ting i admin"*.
+- **De tre er allergiens pille nu** (`.glaspille.pille-kort`): Figmas Rim (Glass
+  material library 52:273) rundet helt af — glaskant med lys fra −45°, massiv kerne
+  og Rim-skyggen — og HELE pillen er linket. Kernen: Facebooks blå #0866FF (samme som
+  logoet i striben), guld til prisen, porcelæn til smileyen. De to forsøg før var
+  kort (pladen, så Figmas Glass-knap strakt ud), og glas over flad creme er Figmas
+  eget nej ("glass over nothing", 53:299). `.la-glas`/`.la-knap` er væk
+- **Admin:** `Admin.sigTilLesreg` er den ene sætning, når noget kræver en opdatering;
+  ingen "Kør supabase/….sql", VAPID, README eller "Supabase → Authentication" på
+  skærmen. Vagten `tests/admin-sprog.spec.js` læser filerne
+- Udgivet: pillerne som 454d885; admin-sproget efter
+
 **NATTENS RUNDE: FROKOST, TILBUD, TELEFONEN, OVERBLIK OG ADMINS ORD** (28/9, nat).
 Mikkels besked: frokostordningen er ikke på højde med bestillingsflowet; "hver uge"
 med fire dage er fire leveringer om ugen; tilbuddet *"går bare op og siger, jeg skal
