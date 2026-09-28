@@ -132,6 +132,26 @@ test.describe('Tapasfilmen i galleriet', () => {
     await expect(video).toHaveCount(1);
   });
 
+  /* 'playing' og 'canplaythrough' kom i samme millisekund i Chromium, og
+     'playing' først: filmen stoppede, spolede og startede igen, selv om
+     den var klar. readyState 4 ER "kan spille til ende". Svaret holdes
+     tilbage, så canplaythrough og buffered ikke kan redde den — kun
+     readyState. */
+  test('melder browseren "klar til ende", når den begynder, stopper den ikke og starter forfra', async ({ page }) => {
+    let slip;
+    await kanSpille(page, { hold: new Promise((r) => { slip = r; }) });
+    await page.addInitScript(() => {
+      Object.defineProperty(HTMLMediaElement.prototype, 'readyState', { configurable: true, get: () => 4 });
+    });
+    await åbnSkal(page, '/m-tapas.html', { ur: FREDAG, data: grunddata() });
+    const video = page.locator('.tshot .foto-skift video.foto-film');
+    await expect.poll(() => video.evaluate((v) => v.__spil || 0)).toBeGreaterThan(0);
+    await page.waitForTimeout(800);
+    expect(await video.evaluate((v) => v.__spiller), 'filmen blev stillet på pause').toBe(true);
+    expect(await video.evaluate((v) => v.__spil), 'filmen blev startet igen').toBe(1);
+    slip();
+  });
+
   test('går filmen i stå midt i, står slutbilledet i stedet — et kort hik gør ingenting', async ({ page }, info) => {
     await kanSpille(page);
     await åbnSkal(page, '/m-tapas.html', { ur: FREDAG, data: grunddata() });

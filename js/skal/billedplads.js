@@ -466,11 +466,13 @@
         var p = v.play();
         if (p && typeof p.catch === 'function') p.catch(slut);
       }
-      /* Resten er kommet: spil forfra, fra plakaten. */
+      /* Resten er kommet: spil videre fra plakaten. Kun spolet tilbage,
+         hvis den nåede at løbe et stykke — et spring til 0, den allerede
+         står på, er et spring, man kan se på en iPhone. */
       function klar() {
         if (!kanTilEnde && hentetHelt()) kanTilEnde = true;
         if (kanTilEnde && ønsket && !vist && !færdig && v.paused) {
-          try { v.currentTime = 0; } catch (e) { /* intet at spole */ }
+          try { if (v.currentTime > 0.2) v.currentTime = 0; } catch (e) { /* intet at spole */ }
           afspil();
         }
       }
@@ -479,6 +481,11 @@
       v.addEventListener('playing', function () {
         if (stop) { clearTimeout(stop); stop = null; }
         if (vist || færdig) return;
+        /* readyState 4 (HAVE_ENOUGH_DATA) er det, canplaythrough melder
+           — men 'playing' kan komme først i samme øjeblik. Uden den her
+           linje stoppede filmen og startede forfra, selv om den var klar
+           (målt i Chromium: playing, pause, play inden for 2 ms). */
+        if (v.readyState >= 4) kanTilEnde = true;
         if (!kanTilEnde && !hentetHelt()) {
           /* Den spiller, men kan ikke nå til ende: stands den på første
              billede, og vent på resten (klar). */
