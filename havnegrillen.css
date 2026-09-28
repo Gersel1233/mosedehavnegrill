@@ -2628,17 +2628,25 @@ footer .smiley-linje{
    dæmpet — så man kan se forskel på "intet valgt" og "valgt". */
 .bl-valgt{margin:10px 2px 0;font-size:14px;color:var(--muted)}
 .bl-valgt.har{color:var(--ink);font-weight:600}
+/* Frokostens dage uden et svar (28/9): summen siger, hvad der mangler. */
+.bl-valgt.mangler{color:var(--red-tekst);font-weight:600}
 /* ⚠️ BROWSERENS DATOFELT SKJULES KUN, NÅR NETTET STÅR DER. Motoren
    læser feltet, nettet skriver i det — og tegnes nettet ikke (fejl i
    hentningen, gammelt script), er feltet den eneste vej til en dato.
    Skjult som "kun for skærmlæsere" og ikke med display:none: feltet
    skal kunne fokuseres og udfyldes, og det kommer frem, når det får
    fokus (fx når afsendelsen peger på det). */
-.bl-panel:has(#ledigkal:not([hidden])) .bl-dato:not(:focus-within){position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* ⚠️ OG DET FOLDER SIG IKKE UD VED FOKUS MERE (28/9). Det gjorde det
+   ("det kommer frem, når afsendelsen peger på det") — og så var siden
+   70 px højere, mens feltet havde fokus, og faldt sammen igen i det
+   øjeblik, man trykkede på noget andet. MÅLT: trykket på "Send" og på
+   "Ud af huset" ramte ikke, fordi knappen flyttede sig mellem ned og
+   op. Afsendelsen peger på NETTET nu (js/skal/forespoergsel.js). */
+.bl-panel:has(#ledigkal:not([hidden])) .bl-dato{position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 /* ⚠️ OG FELTET SELV ER 1 PX. Kun rammen var det, og feltet indeni stak
    30 px ud over den — gennemgangen fandt det på en telefon (14/9). Står
    nettet ikke der, gælder reglen ikke, og feltet har sin fulde bredde. */
-.bl-panel:has(#ledigkal:not([hidden])) .bl-dato:not(:focus-within) .inp{width:1px;min-width:0;padding:0;border:0}
+.bl-panel:has(#ledigkal:not([hidden])) .bl-dato .inp{width:1px;min-width:0;padding:0;border:0}
 /* Tidsrummet og antallet på én række: tre felter, der hører sammen. */
 .bl-tid{display:grid;grid-template-columns:1fr 1fr .8fr;gap:10px}
 .bl-tid .inp{text-align:center;padding:0 8px;font-variant-numeric:tabular-nums}
@@ -2891,10 +2899,23 @@ footer .smiley-linje{
    Samme form som bestil/ og ved bordet (css/style.css).
    ⚠️ :not(.sumbar): kortet og summen er det SAMME element (#sumline), og
    summen skal have sin mørke flade tilbage, så snart fejlen er rettet. */
-.note.fejlkort:not(.sumbar),.sumbox.fejlkort{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:16px;background:#fff5f3;border:1px solid rgba(214,42,58,.24);color:var(--ink);font-size:13px;line-height:1.45;font-weight:500}
+.note.fejlkort:not(.sumbar),.sumbox.fejlkort,.fine.fejlkort{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:16px;background:#fff5f3;border:1px solid rgba(214,42,58,.24);color:var(--ink);font-size:13px;line-height:1.45;font-weight:500}
 .glasafsnit .note.fejlkort:not(.sumbar){background:#fff5f3;color:var(--ink)}
 .fejl-ikon{flex:none;display:grid;place-items:center;width:20px;height:20px;margin-top:1px;border-radius:50%;background:var(--red);color:#fff;font-size:13px;font-weight:700;line-height:1}
 .fejl-tekst{min-width:0}
+/* ⚠️ LINJEN UNDER KNAPPEN ER .fine: centreret, lille og grå (28/9).
+   Som fejlkort står den til venstre som de andre kort. */
+.fine.fejlkort{text-align:left;margin-top:12px}
+/* FEJLEN VED FELTET (28/9, js/skal/feltfejl.js). Mikkels ord: et
+   ugyldigt telefonnummer skal være TYDELIGT. Intet felt på
+   designsiderne blev rødt; fejlen stod i en linje et andet sted.
+   ⚠️ OUTLINE OG IKKE BOX-SHADOW: feltets egen kant og fokusringen
+   er box-shadow, og en rød kant der ville forsvinde, så snart
+   feltet får fokus — præcis når gæsten retter i det. */
+.inp[aria-invalid="true"],.ledigkal[aria-invalid="true"]{outline:2px solid var(--red);outline-offset:-2px}
+.felt-fejl{display:flex;align-items:flex-start;gap:8px;margin:8px 2px 0;font-size:13px;line-height:1.45;font-weight:500;color:var(--red-tekst)}
+.felt-fejl::before{content:"!";flex:none;display:grid;place-items:center;width:18px;height:18px;margin-top:1px;border-radius:50%;background:var(--red);color:#fff;font-size:11px;font-weight:700;line-height:1}
+.glasafsnit .felt-fejl{color:#ffccd1}
 /* De to veje står side om side og lige brede — set på et skud stod de
    som to store knapper under hinanden, og kortet blev en halv skærm. */
 .fejlkort .noedudgang{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}

@@ -2185,6 +2185,18 @@
   //  Reglerne her SKAL svare til dem i setup.sql. Er de mildere,
   //  får personalet en uforståelig fejl fra databasen i stedet.
   // ----------------------------------------------------------
+  /* ⚠️ DATABASENS NEJ TIL ET NUMMER STÅR ÉT STED  (28/9). Seks steder
+     sagde "Telefonnummeret blev afvist. Otte cifre." — også til et
+     nummer med seksten cifre, hvor otte netop ikke var svaret. */
+  var TLF_AFVIST = 'Telefonnummeret blev afvist. Det skal have 8 cifre, fx 12 34 56 78.';
+
+  /* Samme grænse som databasens *_telefon_ok: 8-15 cifre. Bruges af
+     øvetilstanden, så den fejler som skyen (CLAUDE.md). */
+  function tlfUgyldig(t) {
+    var c = String(t || '').replace(/[^0-9]/g, '').length;
+    return c < 8 || c > 15;
+  }
+
   var tjek = {
     tid: function (t) { return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(t || '').slice(0, 5)); },
 
@@ -2224,11 +2236,28 @@
        Grænserne er de SAMME som bestilling_telefon_ok i setup.sql.
        Var de mildere her, ville gæsten trykke Send og få en rå
        SQL-fejl i stedet for at få det at vide i feltet. */
+    /* ⚠️ ORDENE SIGER, HVAD GÆSTEN SKAL GØRE  (28/9). Mikkels ord:
+       et ugyldigt nummer skal være TYDELIGT "den ene eller anden
+       måde". "Otte cifre." sagde ikke, at et nummer med to cifre for
+       meget også var forkert, og et nummer med bogstaver i
+       ("ring efter 16 12345678") gik igennem, fordi bogstaverne
+       bare blev skåret fra og der stadig var 10 cifre tilbage.
+
+       Designsiderne havde hver deres kopi med kun "under 8" og én
+       sætning for både tomt og for kort — de spørger alle her nu. */
     telefon: function (t) {
-      var cifre = String(t || '').replace(/[^0-9]/g, '');
+      var s = String(t || '').trim();
+      var cifre = s.replace(/[^0-9]/g, '');
       if (!cifre) return 'Skriv dit telefonnummer, så vi kan få fat i dig.';
-      if (cifre.length < 8) return 'Telefonnummeret er for kort. Otte cifre.';
-      if (cifre.length > 15) return 'Telefonnummeret er for langt.';
+      if (/[a-zæøå]/i.test(s)) {
+        return 'Skriv kun telefonnummeret, uden ord — fx 12 34 56 78.';
+      }
+      if (cifre.length < 8) {
+        return 'Telefonnummeret er for kort. Det skal have 8 cifre, fx 12 34 56 78.';
+      }
+      if (cifre.length > 15) {
+        return 'Telefonnummeret er for langt. Tjek, at der kun står ét nummer.';
+      }
       return null;
     },
 
@@ -2626,6 +2655,11 @@
     // Øvetilstand: der er ingen database, så bestillingen lægges
     // lokalt. Så kan flowet prøves igennem uden nøgle.
     if (!SKY) {
+      /* ⚠️ ØVETILSTANDEN FEJLER SOM SKYEN (28/9): bestilling_telefon_ok
+         (bord-uden-telefon.sql) tager et tomt nummer KUN ved et bord. */
+      if (raekke.telefon ? tlfUgyldig(raekke.telefon) : !raekke.bord_nummer) {
+        return Promise.reject(new Error(TLF_AFVIST));
+      }
       var d = læsLokalt();
       d.bestillinger = d.bestillinger || [];
 
@@ -3148,7 +3182,7 @@
       if (/bord_kode_mangler/.test(t)) return new Error(FEJL_KODE_MANGLER);
       if (/bord_kode_forkert/.test(t)) return new Error(FEJL_KODE_FORKERT);
       if (/bestilling_dato_ok/.test(t)) return new Error('Vælg en dag der ikke er gået endnu.');
-      if (/bestilling_telefon_ok/.test(t)) return new Error('Telefonnummeret blev afvist. Otte cifre.');
+      if (/bestilling_telefon_ok/.test(t)) return new Error(TLF_AFVIST);
       if (/bestilling_navn_ok/.test(t)) return new Error('Skriv dit navn.');
       if (/bestilling_email_ok/.test(t)) return new Error('E-mailen ser ikke rigtig ud.');
       if (/bestilling_linjer_ok/.test(t)) return new Error('Vælg mindst én ting, før du sender.');
@@ -3402,7 +3436,7 @@
           + 'så vi kan vende tilbage til jer.'));
       }
       if (cifre && (cifre < 8 || cifre > 15)) {
-        return Promise.reject(new Error('Telefonnummeret blev afvist. Otte cifre.'));
+        return Promise.reject(new Error(TLF_AFVIST));
       }
 
       /* Samme regel som forespoergsel_antal_ok (1-500). Uden den
@@ -3513,7 +3547,7 @@
             + 'så vender vi tilbage til jer.');
         }
         if (/forespoergsel_telefon_form_ok/.test(t)) {
-          throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+          throw new Error(TLF_AFVIST);
         }
         if (/forespoergsel_kontakt_ok/.test(t)) {
           throw new Error('Skriv et telefonnummer eller en e-mail, '
@@ -3654,6 +3688,8 @@
     // Øvetilstand: samme regler efterlignet, ellers er det ikke
     // en øvelse. Se den samme blok i bestil().
     if (!SKY) {
+      /* Samme værn som databasens *_telefon_ok (28/9). */
+      if (tlfUgyldig(raekke.telefon)) return Promise.reject(new Error(TLF_AFVIST));
       var d = læsLokalt();
       d.bordbestillinger = d.bordbestillinger || [];
 
@@ -3767,7 +3803,7 @@
           throw new Error('Vi åbner senere den dag. Vælg en senere tid, eller ring til os.');
         }
         if (/bord_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
-        if (/bord_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        if (/bord_telefon_ok/.test(t)) throw new Error(TLF_AFVIST);
         if (/bord_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/bord_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
         if (/bord_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Er I over 100, er det et selskab. Skriv til os om det i stedet.');
@@ -3823,6 +3859,8 @@
     // Øvetilstand: samme regler efterlignet, ellers er det ikke
     // en øvelse. Se den samme blok i bestil().
     if (!SKY) {
+      /* Samme værn som databasens *_telefon_ok (28/9). */
+      if (tlfUgyldig(raekke.telefon)) return Promise.reject(new Error(TLF_AFVIST));
       var d = læsLokalt();
       d.udlejninger = d.udlejninger || [];
 
@@ -3886,7 +3924,7 @@
             + 'minutter, eller ring til os.');
         }
         if (/udlejning_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
-        if (/udlejning_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        if (/udlejning_telefon_ok/.test(t)) throw new Error(TLF_AFVIST);
         if (/udlejning_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/udlejning_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
         if (/udlejning_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud – eller lad feltet stå tomt.');
@@ -3947,6 +3985,8 @@
     }
 
     if (!SKY) {
+      /* Samme værn som databasens *_telefon_ok (28/9). */
+      if (tlfUgyldig(raekke.telefon)) return Promise.reject(new Error(TLF_AFVIST));
       var d = læsLokalt();
       d.reservationer = d.reservationer || [];
       var arr = (d.kalender || []).filter(function (k) {
@@ -4061,7 +4101,7 @@
           throw new Error('Er I flere end tyve, så ring, så finder vi ud af det sammen.');
         }
         if (/reservation_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
-        if (/reservation_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        if (/reservation_telefon_ok/.test(t)) throw new Error(TLF_AFVIST);
         if (/reservation_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
         /* ⚠️ HER STOD 'Prøv at sende igen.' — og det er husets egen
            opskrift på en dublet, skrevet ned ved bestillingen

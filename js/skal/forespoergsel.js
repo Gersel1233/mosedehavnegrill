@@ -69,6 +69,8 @@
       /* Mailen er påkrævet her: vi lover svar inden for et døgn,
          og et løfte kræver en vej tilbage. */
       krav: { mail: true },
+      varselTil: 'til at planlægge et selskab',
+      valgtOrd: 'Valgt',
       /* Fire dages varsel — ejerens eget tal: et selskab kan
          ikke skaffes på 1-3 dage. Bordbooking (to timer) og mad
          (et døgn) er noget andet; det her er en KØKKENPLAN. */
@@ -104,6 +106,7 @@
          "lade email eller nummer være som en option"). Vi lover
          svar inden for et døgn; hvilken vej, bestemmer gæsten. */
       krav: { mailEllerTlf: true },
+      varselTil: 'til at gøre lokalet klar',
       /* Fire dage, som selskaber: et lokale skal gøres klar, og
          køkkenet skal kunne nå maden. */
       varselDage: 4,
@@ -209,6 +212,7 @@
       chips: ['hvor_ofte', 'dage', 'indhold'],
       seg: { vælger: '[data-toggles="#fadrfelt"]', navn: 'levering', svar: ['levering', 'afhentning'] },
       ekstra: { adresse: 'fadr', firma: 'ffirma', cvr: 'fcvr' },
+      krav: { adresseVedLevering: true },
       chipsTillæg: { indhold: 'fandet' },
       /* Tre dage (30/8, kundens ord: "minimum 2-3 dage"). En
          frokostordning er ikke ét måltid — der skal regnes en
@@ -217,6 +221,13 @@
          klar, ikke hvor længe et firma skal vente på et svar:
          svaret kommer inden for et døgn. */
       varselDage: 3,
+      varselTil: 'til at gøre en frokostordning klar',
+      /* DAGE OG HVOR TIT HÆNGER SAMMEN (28/9) — se rytme(). */
+      rytme: true,
+      kunHverdage: true,
+      valgtOrd: 'Første levering',
+      valgtTom: 'Tryk på den første leveringsdag i kalenderen.',
+      opsumNavn: 'Jeres frokostordning',
       /* ⚠️ FROKOSTEN OPTAGER INGEN DAGE. Maden kører ud af huset,
          og optog den dagen, kunne ét firma med en fast onsdag
          lukke hver eneste onsdag for selskaber og udlejning. */
@@ -271,17 +282,65 @@
     return f;
   }
 
+  /* ============================================================
+     FEJLEN STÅR TO STEDER: VED FELTET OG VED KNAPPEN  (28/9)
+     ------------------------------------------------------------
+     Mikkels ord: *"jeg kan ikke få et tilbud, den går bare op og
+     siger, jeg skal vælge en dato, jeg allerede har gjort"*.
+
+     MÅLT: sigFejl skrev sætningen i den grå 12 px-linje UNDER
+     knappen og flyttede fokus op til feltet. Siden sprang altså op
+     til datofeltet — med en dato i — mens forklaringen ("vi skal
+     bruge mindst tre dage til at planlægge et SELSKAB") stod
+     nede ved knappen, uden for skærmen, og talte om en anden side.
+
+     Nu: feltet bliver rødt med sætningen lige under sig
+     (js/skal/feltfejl.js), og linjen ved knappen bliver et
+     fejlkort med den samme sætning — den, der kigger på knappen,
+     skal også kunne se, hvad der mangler. Datoen peger på NETTET,
+     ikke på browserens skjulte felt: det er dét, gæsten har trykket
+     i. */
   function sigFejl(besked, feltNavn) {
     var f = fineFelt();
-    if (f) f.textContent = '⚠ ' + besked;
-    var el = feltNavn ? felt(feltNavn) : null;
-    if (el) el.focus();
+    if (f) {
+      f.classList.add('fejlkort');
+      f.setAttribute('role', 'alert');
+      tøm(f);
+      f.appendChild(lav('span', 'fejl-ikon', '!')).setAttribute('aria-hidden', 'true');
+      f.appendChild(lav('span', 'fejl-tekst', besked));
+    }
+    var FF = window.MosedeFeltfejl;
+    var el = !feltNavn ? null : typeof feltNavn === 'string' ? felt(feltNavn) : feltNavn;
+    if (feltNavn === 'dato') {
+      var kal = document.getElementById('ledigkal');
+      if (kal && !kal.hidden) el = kal;
+    }
+    if (el && FF) {
+      FF.vis(el, besked);
+      FF.frem(el);
+      /* Fokus kun på et rigtigt felt. Nettet er en gruppe knapper,
+         og fokus på browserens skjulte datofelt var dét, der
+         foldede det ud ved siden af nettet — to datovælgere. */
+      if (el.tagName !== 'DIV' && el.focus) {
+        try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+      }
+    } else if (el && el.focus) {
+      el.focus();
+    }
     return false;
   }
 
   function rydFejl() {
     var f = fineFelt();
-    if (f && oprindeligFine) f.textContent = oprindeligFine;
+    if (f && f.classList.contains('fejlkort')) {
+      f.classList.remove('fejlkort');
+      f.removeAttribute('role');
+      f.textContent = oprindeligFine;
+    } else if (f && oprindeligFine) {
+      f.textContent = oprindeligFine;
+    }
+    var kal = document.getElementById('ledigkal');
+    if (kal && window.MosedeFeltfejl) window.MosedeFeltfejl.ryd(kal);
   }
 
   // ----------------------------------------------------------
@@ -462,24 +521,43 @@
     var d = værdi('dato');
     var dag = d ? dagIOrd(d) : '';
     if (valgt) {
-      valgt.textContent = dag ? 'Valgt: ' + dag : 'Tryk på en ledig dag i kalenderen.';
+      var foran = side.valgtOrd || 'Valgt';
+      valgt.textContent = dag ? foran + ': ' + dag
+        : datoFlyttet
+          ? dagIOrd(datoFlyttet) + ' passer ikke med de valgte dage. Tryk på en ny dag.'
+          : (side.valgtTom || 'Tryk på en ledig dag i kalenderen.');
       valgt.classList.toggle('har', !!dag);
     }
     if (!opsum) return;
     var dele = [];
-    if (dag) dele.push(dag);
-    var t = tidsSpaend();
-    if (t) dele.push('kl. ' + t.tekst);
     var n = Number(værdi('antal'));
-    if (isFinite(n) && n > 0) dele.push(n + (n === 1 ? ' gæst' : ' gæster'));
-    if (side.seg && dele.length) dele.push(segSvar() === 'kun-lokalet' ? 'kun lokalet' : 'med mad');
-    /* Først når der ER en dag: felterne har forvalg (17-21, 30 kuverter),
-       og målt på et skud stod der ellers "kl. 17.00–21.00 · 30 gæster"
-       over knappen, før gæsten havde rørt noget — en forespørgsel uden dag. */
-    opsum.hidden = !dag;
+    if (side.rytme) {
+      /* FROKOSTEN (28/9): antal, rytmen, første dag og hvordan maden
+         kommer frem — det, personalet skal regne en pris på. */
+      if (isFinite(n) && n > 0) dele.push(n + (n === 1 ? ' medarbejder' : ' medarbejdere'));
+      var r = rytme();
+      if (r && r.ok) dele.push(r.tekst.replace(/\.$/, '').split('. ')[0]);
+      if (dag) dele.push('første levering ' + dag.charAt(0).toLowerCase() + dag.slice(1));
+      if (side.seg) {
+        var adr = værdi('adresse');
+        dele.push(segSvar() === 'afhentning' ? 'I henter selv'
+          : (adr ? 'levering til ' + adr : 'levering'));
+      }
+      opsum.hidden = !dele.length;
+    } else {
+      if (dag) dele.push(dag);
+      var t = tidsSpaend();
+      if (t) dele.push('kl. ' + t.tekst);
+      if (isFinite(n) && n > 0) dele.push(n + (n === 1 ? ' gæst' : ' gæster'));
+      if (side.seg && dele.length) dele.push(segSvar() === 'kun-lokalet' ? 'kun lokalet' : 'med mad');
+      /* Først når der ER en dag: felterne har forvalg (17-21, 30 kuverter),
+         og målt på et skud stod der ellers "kl. 17.00–21.00 · 30 gæster"
+         over knappen, før gæsten havde rørt noget — en forespørgsel uden dag. */
+      opsum.hidden = !dag;
+    }
     opsum.textContent = '';
     var over = document.createElement('b');
-    over.textContent = 'Jeres forespørgsel';
+    over.textContent = side.opsumNavn || 'Jeres forespørgsel';
     opsum.appendChild(over);
     opsum.appendChild(document.createTextNode(dele.join(' · ')));
   }
@@ -544,6 +622,15 @@
        efter gæsten skiftede til afhentning, ville personalet
        ringe om en levering, ingen har bedt om. */
     if (ud.levering === 'afhentning') delete ud.adresse;
+    /* RYTMEN I ORD (28/9) — den samme sætning, gæsten så under
+       dagene, så admin ikke skal lægge "Hver uge" og fire ugedage
+       sammen selv. Ved "Kun én gang" er ugedagene ikke et svar:
+       dagen er datoen. */
+    if (side.rytme) {
+      var r = rytme();
+      if (r && r.ok) ud.rytme = r.tekst.replace(/\.$/, '');
+      if (kunEnGang(rytmeValg().hvor)) delete ud.dage;
+    }
     return ud;
   }
 
@@ -576,37 +663,164 @@
     return Number(side.varselDage) || 0;
   }
 
-  function tjekDato() {
+  /* VARSLET I ORD — og PÅ SIDENS EGET SPROG (28/9). Beskeden sagde
+     "til at planlægge et selskab" på frokostsiden og i baglokalet. */
+  function varselOrd(n) {
+    return n === 1 ? 'mindst én dag'
+      : (n === 2 ? 'mindst to dage'
+        : (n === 3 ? 'mindst tre dage' : 'mindst ' + n + ' dage'));
+  }
+
+  /* Hvad er der galt med datoen? null = intet. Afsendelsen og
+     datofeltets egen lytter spørger begge her, så de siger det samme. */
+  function datoFejl() {
     var d = værdi('dato');
-    /* ⚠️ EN TOM DATO ER ET JA, IKKE ET NEJ (30/8).
-
-       Her stod "return rydFejl()", og rydFejl() returnerer
-       ingenting. send() gør "if (!tjekDato()) return false", så en
-       gæst UDEN dato trykkede Send og fik... intet. Ingen
-       kvittering, ingen fejl, ingen linje i konsollen — knappen
-       så bare ud, som om den ikke virkede.
-
-       Og det ramte netop den gæst, fase 2 blev bygget for:
-       "sølvbryllup engang til foråret, hvad koster det?" er den
-       forespørgsel, der er mest værd. Dato og antal er frivillige
-       med vilje — også i databasen, hvor kolonnen er nullable.
-
-       Fundet af et værn, der fulgte med fra den gamle
-       selskabsside, da den blev en vejviser. */
-    if (!d) { rydFejl(); return true; }
+    /* ⚠️ EN TOM DATO ER ET JA, IKKE ET NEJ (30/8). "Sølvbryllup
+       engang til foråret, hvad koster det?" er den forespørgsel, der
+       er mest værd. Dato og antal er frivillige med vilje — også i
+       databasen, hvor kolonnen er nullable. */
+    if (!d) return null;
     if (varselDage() && d < iso(varselDage())) {
-      sigFejl('Vi skal bruge mindst ' + varselDage() + ' dage til at planlægge '
-        + 'et selskab. Skal det være før, så ring til os, så finder vi ud af det.', 'dato');
-      return false;
+      return 'Vi skal bruge ' + varselOrd(varselDage()) + ' '
+        + (side.varselTil || 'til at planlægge') + ', så den første dag, vi kan, er '
+        + dagIOrd(iso(varselDage())).toLowerCase() + '. Skal det være før, så ring til os.';
     }
+    var passer = datoPasser(d);
+    if (passer !== true) return passer;
     if (erOptaget(d)) {
-      sigFejl('Den dato er desværre optaget. Vælg en anden, '
-        + 'eller ring til os, så finder vi ud af det.');
-      return false;
+      return 'Den dato er desværre optaget. Vælg en anden, '
+        + 'eller ring til os, så finder vi ud af det.';
     }
+    return null;
+  }
+
+  function tjekDato() {
+    var f = datoFejl();
+    if (f) return sigFejl(f, 'dato');
     rydFejl();
     return true;
   }
+
+  /* ============================================================
+     DAGE OG HVOR TIT HÆNGER SAMMEN  (28/9, frokostsiden)
+     ------------------------------------------------------------
+     Mikkels ord: *"hvis jeg skal have det hver uge, men kan vælge
+     mandag, tirsdag, onsdag, torsdag, så er det jo ikke 1 gang om
+     ugen, så er det jo 4 gange om ugen"*.
+
+     "Hvor tit?" og "Hvilke dage?" var to løse spørgsmål uden en
+     regel imellem — "Hver uge" kunne læses som én levering om
+     ugen, og intet sted stod der, hvad de to svar gav tilsammen.
+     Nu er "hvor tit" HVILKE UGER, dagene er dagene i de uger, og en
+     linje lige under siger summen i ord: "4 leveringer om ugen:
+     mandag, tirsdag, onsdag og torsdag". Den samme sætning sendes
+     med (detaljer.rytme), så personalet læser præcis det, gæsten
+     så.
+
+     ⚠️ OG KALENDEREN TALER MED DAGENE. Første levering kan kun
+     være en af de valgte dage; de andre er slukket i nettet, og
+     weekenden er det altid — dagene er mandag til fredag.
+
+     ⚠️ STADIG INGEN ABONNEMENTSMOTOR (20/8). Det her er ord på en
+     forespørgsel; et menneske ringer og aftaler resten.
+     ============================================================ */
+  var DAG_NAVNE = { man: 'mandag', tirs: 'tirsdag', ons: 'onsdag', tors: 'torsdag', fre: 'fredag' };
+  var DAG_NR = { man: 1, tirs: 2, ons: 3, tors: 4, fre: 5 };
+
+  function chipGruppe(navn) {
+    var i = (side.chips || []).indexOf(navn);
+    return i < 0 ? null : (alle('[data-chips]')[i] || null);
+  }
+
+  function rytmeValg() {
+    var g = chipGruppe('hvor_ofte');
+    var d = chipGruppe('dage');
+    return { hvor: g ? (valgteChips(g)[0] || '') : '', dage: d ? valgteChips(d) : [] };
+  }
+
+  function ogListe(a) {
+    if (a.length <= 1) return a[0] || '';
+    return a.slice(0, -1).join(', ') + ' og ' + a[a.length - 1];
+  }
+  function kunEnGang(h) { return /én gang/i.test(h); }
+  function vedIkke(h) { return /ved i ikke/i.test(h); }
+
+  /* Summen i ord. ok=false betyder, at der mangler et svar. */
+  function rytme() {
+    if (!side.rytme) return null;
+    var r = rytmeValg();
+    if (kunEnGang(r.hvor)) {
+      return { ok: true, tekst: 'Én levering, den dag I vælger i kalenderen.' };
+    }
+    var navne = r.dage.map(function (x) { return DAG_NAVNE[x.toLowerCase()] || x.toLowerCase(); });
+    var n = navne.length;
+    if (vedIkke(r.hvor)) {
+      return { ok: true, tekst: n
+        ? 'Vi taler om, hvor tit, når vi ringer. Helst ' + ogListe(navne) + '.'
+        : 'Vi taler om dage, og hvor tit, når vi ringer.' };
+    }
+    if (!n) return { ok: false, tekst: 'Vælg mindst én dag.' };
+    var lev = n + (n === 1 ? ' levering' : ' leveringer');
+    if (/anden uge|14/i.test(r.hvor)) {
+      return { ok: true, tekst: lev + ' hver anden uge: ' + ogListe(navne) + '.' };
+    }
+    if (/måned/i.test(r.hvor)) {
+      return { ok: true, tekst: lev + ' én uge om måneden: ' + ogListe(navne)
+        + '. Hvilken uge, aftaler vi, når vi ringer.' };
+    }
+    return { ok: true, tekst: lev + ' om ugen: ' + ogListe(navne) + '.' };
+  }
+
+  /* Kan datoen være første levering? true, ellers sætningen. */
+  function datoPasser(d) {
+    if (!side.kunHverdage && !side.rytme) return true;
+    var t = new Date(d + 'T12:00:00Z');
+    var ugedag = t.getUTCDay();
+    if (side.kunHverdage && (ugedag === 0 || ugedag === 6)) {
+      return 'Vi leverer frokost på hverdage. Vælg en dag fra mandag til fredag.';
+    }
+    if (side.rytme) {
+      var r = rytmeValg();
+      if (!kunEnGang(r.hvor) && !vedIkke(r.hvor) && r.dage.length) {
+        var nr = r.dage.map(function (x) { return DAG_NR[x.toLowerCase()]; });
+        if (nr.indexOf(ugedag) === -1) {
+          var navne = r.dage.map(function (x) { return DAG_NAVNE[x.toLowerCase()] || x; });
+          return 'Første levering skal være en af de dage, I har valgt: '
+            + ogListe(navne) + '. Vælg en af dem i kalenderen, eller ret dagene.';
+        }
+      }
+    }
+    return true;
+  }
+
+  function visRytme() {
+    var linje = document.getElementById('f-rytme');
+    var r = rytme();
+    if (!r) return;
+    var valg = rytmeValg();
+    var dageFelt = document.getElementById('f-dage-felt');
+    /* "Kun én gang": dagen ER datoen i kalenderen, og ugedagene
+       ville sige noget andet end den. */
+    if (dageFelt) dageFelt.hidden = kunEnGang(valg.hvor);
+    if (r.ok && window.MosedeFeltfejl) window.MosedeFeltfejl.ryd(chipGruppe('dage'));
+    if (linje) {
+      linje.textContent = r.tekst;
+      linje.classList.toggle('har', r.ok);
+      linje.classList.toggle('mangler', !r.ok);
+    }
+    /* En valgt dato, der ikke længere passer med dagene, bliver ikke
+       stående og lyver: den tages af, og linjen under nettet siger
+       hvorfor. */
+    var d = værdi('dato');
+    var df = felt('dato');
+    if (d && df && datoPasser(d) !== true) {
+      df.value = '';
+      datoFlyttet = d;
+    }
+    /* Nettet tegnes først, når kalStart har fundet måneden. */
+    if (kalAar !== null) kalTegn();
+  }
+  var datoFlyttet = null;
 
   // ----------------------------------------------------------
   //  LEDIGHEDSKALENDEREN  (29/8)
@@ -700,7 +914,19 @@
   }());
 
   var datoFelt = felt('dato');
-      if (datoFelt) datoFelt.addEventListener('change', kalTegn);
+      /* ⚠️ NETTET FØLGER FELTET, OGSÅ TIL EN ANDEN MÅNED (28/9).
+         Mikkels ord: *"når man vælger dato og tingen på kalender-
+         tingen, snakker de overhovedet ikke sammen"*. En dato skrevet
+         i feltet blev markeret — men kun, hvis nettet tilfældigvis
+         stod på den måned. */
+      if (datoFelt) datoFelt.addEventListener('change', function () {
+        var v = datoFelt.value;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+          kalAar = Number(v.slice(0, 4));
+          kalMd = Number(v.slice(5, 7)) - 1;
+        }
+        kalTegn();
+      });
       /* Selskabssidens hos-jer/ud-af-huset-knapper: nettet skal
          følge med valget. Designets segmenter flytter ikke .on,
          så der lyttes på klikket og tegnes efter (mikro-pause,
@@ -758,6 +984,11 @@
     var tegn = rod.querySelector('.lk-tegn');
     if (tegn) tegn.hidden = !hosOs;
     rod.hidden = false;
+    /* Browserens felt er skjult bag nettet (.bl-dato) — og et felt, man
+       kan tabbe ind i uden at se det, er en usynlig markør. Nettets
+       dage er knapper; dem tabber man igennem. */
+    var skjultFelt = felt('dato');
+    if (skjultFelt && skjultFelt.closest && skjultFelt.closest('.bl-dato')) skjultFelt.tabIndex = -1;
 
     var iDag = Butik.nu().dato;
     var iAar = Number(iDag.slice(0, 4));
@@ -800,6 +1031,12 @@
       if (dato < iDag || dato < iso(varselDage())) {
         celle.className += ' fortid';
         celle.disabled = true;
+      } else if (datoPasser(dato) !== true) {
+        /* Weekenden og dage uden for de valgte ugedage (frokosten).
+           Samme regel som datoFejl(), så nettet og afsendelsen siger
+           det samme. */
+        celle.className += ' fortid ikke-dag';
+        celle.disabled = true;
       } else if (taget) {
         celle.className += ' taget';
         celle.disabled = true;
@@ -818,6 +1055,7 @@
     var datoFelt = felt('dato');
     if (!datoFelt) return;
     datoFelt.value = dato;
+    datoFlyttet = null;
     /* Samme vej som et håndskrevet valg: change-lytterne (tjekDato
        og nettets egen optegning) skal se det. */
     datoFelt.dispatchEvent(new Event('change', { bubbles: true }));
@@ -826,107 +1064,153 @@
   // ----------------------------------------------------------
   //  AFSENDELSEN
   // ----------------------------------------------------------
+  /* ============================================================
+     AFSENDELSEN SIGER ALT, DER MANGLER — PÅ ÉN GANG  (28/9)
+     ------------------------------------------------------------
+     Her stoppede afsendelsen ved den FØRSTE fejl: gæsten rettede
+     navnet, trykkede igen, fik telefonen, trykkede igen, fik
+     datoen. Tre ture op og ned ad siden for at få et tilbud. Nu
+     bliver hvert felt, der mangler noget, rødt med sin egen
+     sætning, fejlkortet ved knappen siger den første og hvor mange
+     der er, og siden ruller op til den første — i SIDENS
+     rækkefølge, ikke i den rækkefølge, reglerne står i her.
+     ============================================================ */
   function send() {
+    var fejl = [];
+    function mangler(besked, feltNavn) { fejl.push({ besked: besked, felt: feltNavn }); }
+
     var navn = værdi('navn');
     var tlf = værdi('tlf');
     var mail = værdi('mail');
 
-    if (navn.length < 2) return sigFejl('Skriv dit navn.', 'navn');
-
-    /* ⚠️ TO SLAGS KRAV, OG DE ER IKKE DET SAMME.
-
-       De fleste sider skal have et NUMMER: personalet ringer, og
-       et spørgsmål uden en vej tilbage er et menneske, der aldrig
-       hører fra os.
-
-       Baglokalet (29/8) tager mail ELLER nummer — kundens ord:
-       "lade email eller nummer være som en option ... aftalen
-       afstemt via enten mail eller nummer". Løftet er det samme:
-       svar inden for et døgn. Vejen vælger gæsten. */
-    if (side.krav && side.krav.mailEllerTlf) {
-      if (tlf.replace(/[^0-9]/g, '').length < 8 && !mail) {
-        return sigFejl('Skriv et telefonnummer eller en e-mail, '
-          + 'så vi kan vende tilbage til jer.', 'tlf');
-      }
-      if (tlf && tlf.replace(/[^0-9]/g, '').length < 8) {
-        return sigFejl('Telefonnummeret ser for kort ud. Eller lad det stå tomt, '
-          + 'og skriv en e-mail i stedet.', 'tlf');
-      }
-    } else if (tlf.replace(/[^0-9]/g, '').length < 8) {
-      return sigFejl('Skriv et telefonnummer, vi kan få fat i dig på.', 'tlf');
+    /* Frokostens dage: "Hver uge" uden en eneste dag er ikke et svar. */
+    if (side.rytme) {
+      var r = rytme();
+      if (r && !r.ok) mangler('Vælg mindst én dag, vi skal levere — eller "Ved I ikke endnu" under Hvor tit.', chipGruppe('dage'));
     }
-    if (side.krav && side.krav.mail && !mail) {
-      /* ⚠️ EN PÅKRÆVET MAIL ER ET LØFTE, IKKE ET FELT. Siden
-         siger, vi vender tilbage inden for et døgn — og en gæst,
-         der ikke tager telefonen, skal kunne nås på skrift. */
-      return sigFejl('Skriv en e-mail, så vi kan sende jer et tilbud.', 'mail');
-    }
-    if (mail && !/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(mail)) {
-      return sigFejl('E-mailen ser ikke rigtig ud.', 'mail');
-    }
+
+    var df = datoFejl();
+    if (df) mangler(df, 'dato');
 
     /* ⚠️ ET UMULIGT ANTAL SKAL SIGES HER, IKKE AF DATABASEN (30/8).
-
-       forespoergsel_antal_ok holder 1-500, og uden den her linje
-       fik gæsten databasens egen afvisning — en sætning, hun
-       hverken forstår eller kan gøre noget ved. Den gamle
-       selskabsside havde tjekket (#fejl-antal); det fulgte ikke
-       med, da siderne blev designets, og hullet stod åbent, til
-       en prøve fandt det. Tallet er databasens, ikke et nyt: to
-       udgaver af "hvor mange kan der være" ville skride fra
-       hinanden. */
+       Tallet er databasens (forespoergsel_antal_ok, 1-500). */
     var antal = værdi('antal');
-    if (antal !== '' && antal !== null && antal !== undefined) {
+    if (antal !== '') {
       var n = Number(antal);
-      if (!isFinite(n) || n < 1 || n > 500) {
-        return sigFejl('Skriv et antal mellem 1 og 500, eller lad feltet '
+      if (!isFinite(n) || n < 1 || n > 500 || Math.round(n) !== n) {
+        mangler('Skriv et antal mellem 1 og 500, eller lad feltet '
           + 'stå tomt, hvis I ikke ved det endnu.', 'antal');
       }
     }
 
-    if (!tjekDato()) return false;
-
-    /* ⚠️ OG TIDSRUMMET SKAL VÆRE ET TIDSRUM. Da det var fire
-       chips, kunne gæsten ikke vælge forkert; med to felter kan
-       hun. Beskeden siger, hvad hun skal gøre — ikke bare at
-       noget er galt. */
+    /* ⚠️ OG TIDSRUMMET SKAL VÆRE ET TIDSRUM (4/9). Beskeden siger,
+       hvad hun skal gøre — ikke bare at noget er galt. */
     if (side.tidsrum) {
       var spaend = tidsSpaend();
       if (!spaend) {
-        return sigFejl('Skriv, hvornår I skal bruge lokalet: fra og til.');
-      }
-      if (spaend.minutter < 30) {
-        return sigFejl('Tidsrummet skal være mindst en halv time. '
-          + 'Ret "Til", så det ligger efter "Fra".');
+        mangler('Skriv, hvornår I skal bruge lokalet: fra og til.', 'tidFra');
+      } else if (spaend.minutter < 30) {
+        mangler('Tidsrummet skal være mindst en halv time. '
+          + 'Ret "Til", så det ligger efter "Fra".', 'tidTil');
       }
     }
 
+    /* EN LEVERING SKAL HAVE ET STED AT KØRE HEN (28/9). Uden adresse
+       kan personalet hverken regne kørsel eller pris — og så er det
+       første opkald et spørgsmål, siden kunne have stillet. */
+    if (side.krav && side.krav.adresseVedLevering && segSvar() === 'levering'
+        && !værdi('adresse')) {
+      mangler('Skriv leveringsadressen — eller vælg "Vi henter selv".', 'adresse');
+    }
+
+    if (navn.length < 2) mangler('Skriv dit navn.', 'navn');
+
+    /* ⚠️ TO SLAGS KRAV, OG DE ER IKKE DET SAMME. De fleste sider skal
+       have et NUMMER. Baglokalet (29/8) tager mail ELLER nummer —
+       kundens ord: "lade email eller nummer være som en option".
+
+       ⚠️ NUMMERET TJEKKES AF Butik.tjek.telefon (28/9) og ikke af en
+       kopi her: kopien så kun "under 8 cifre", så et nummer med
+       seksten cifre gik videre og kom tilbage fra databasen som
+       "Otte cifre." — nede ved knappen, uden et felt. */
+    var tlfFejl = tlf ? Butik.tjek.telefon(tlf) : null;
+    if (side.krav && side.krav.mailEllerTlf) {
+      if (!tlf && !mail) {
+        mangler('Skriv et telefonnummer eller en e-mail, '
+          + 'så vi kan vende tilbage til jer.', 'tlf');
+      } else if (tlfFejl) {
+        mangler(tlfFejl + ' Eller lad det stå tomt, og skriv en e-mail i stedet.', 'tlf');
+      }
+    } else if (!tlf || tlfFejl) {
+      mangler(Butik.tjek.telefon(tlf), 'tlf');
+    }
+    if (side.krav && side.krav.mail && !mail) {
+      /* ⚠️ EN PÅKRÆVET MAIL ER ET LØFTE, IKKE ET FELT. */
+      mangler('Skriv en e-mail, så vi kan sende jer et tilbud.', 'mail');
+    } else if (mail && !/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(mail)) {
+      mangler('E-mailen ser ikke rigtig ud. Tjek, at der står et @ og et domæne, fx navn@firma.dk.', 'mail');
+    }
+
     /* ⚠️ SAMTYKKET TIL HELBREDSOPLYSNINGEN (16/9). Reglen bor i
-       Butik.allergiMangler, og fem skærme spørger den nu. En
-       allergi er en oplysning efter artikel 9, og dér er "vi har
-       en aftale" ikke hjemmel nok: stk. 2, litra a kræver et
-       UDTRYKKELIGT samtykke.
-
-       ⚠️ OG DET MÅ ALDRIG SPÆRRE FOR EN FORESPØRGSEL UDEN ALLERGI.
-       Kan man ikke sende uden at sige ja til at få gemt en
-       helbredsoplysning, er samtykket ikke frivilligt — og så er
-       det ikke gyldigt. allergiMangler svarer derfor kun, når der
-       FAKTISK står noget i feltet.
-
-       Fluebenets id udledes af feltets, ikke af `felter`: det ER
-       ikke et felt, vi sender — det er en betingelse for at måtte
-       sende. Samme note som i js/skal/bestil.js. */
+       Butik.allergiMangler, og den svarer KUN, når der faktisk står en
+       allergi — ellers er samtykket ikke frivilligt og ikke gyldigt.
+       Fluebenets id udledes af feltets. */
     var allergi = værdi('allergi');
     var aId = side.felter.allergi;
     var aFlueben = aId ? document.getElementById(aId + '-samtykke') : null;
     var savn = Butik.allergiMangler(allergi, aFlueben && aFlueben.checked);
     if (savn) {
-      if (aFlueben && aFlueben.focus) aFlueben.focus();
-      return sigFejl(savn);
+      mangler(savn, (aId && document.getElementById(aId + '-samtykke-linje')) || aFlueben);
+    }
+
+    if (fejl.length) {
+      var FF = window.MosedeFeltfejl;
+      var el = function (f) {
+        if (!f.felt) return null;
+        if (typeof f.felt !== 'string') return f.felt;
+        if (f.felt === 'dato') {
+          var kal = document.getElementById('ledigkal');
+          if (kal && !kal.hidden) return kal;
+        }
+        if (f.felt === 'tidFra' || f.felt === 'tidTil') {
+          return document.getElementById(side.tidsrum[f.felt === 'tidFra' ? 'fra' : 'til']);
+        }
+        return felt(f.felt);
+      };
+      /* Sidens rækkefølge: den, der står øverst, siges først. */
+      fejl.sort(function (a, b) {
+        var ea = el(a), eb = el(b);
+        if (!ea || !eb || ea === eb) return 0;
+        return ea.compareDocumentPosition(eb) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+      });
+      if (FF) fejl.slice(1).forEach(function (f) { var e = el(f); if (e) FF.vis(e, f.besked); });
+      var foerste = fejl[0];
+      var ekstra = fejl.length > 1
+        ? ' (Og ' + (fejl.length - 1) + (fejl.length === 2 ? ' ting mere' : ' ting mere')
+          + ' — se de røde felter.)' : '';
+      sigFejl(foerste.besked, el(foerste));
+      var kortTekst = find('[data-fejllinje] .fejl-tekst');
+      if (kortTekst && ekstra) kortTekst.textContent = foerste.besked + ekstra;
+      return false;
     }
 
     var knap = find('button.g.solid.blk');
-    if (knap) knap.disabled = true;
+    var knapTekst = knap && knap.firstChild && knap.firstChild.nodeType === 3
+      ? knap.firstChild : null;
+    var før = knapTekst ? knapTekst.nodeValue : '';
+    if (knap) {
+      knap.disabled = true;
+      knap.setAttribute('aria-busy', 'true');
+      /* "SENDER …" (28/9): en knap, der bare bliver grå, ligner en
+         knap, der ikke virker — og så trykker man igen. */
+      if (knapTekst) knapTekst.nodeValue = 'Sender …';
+    }
+    function knapTilbage() {
+      if (!knap) return;
+      knap.disabled = false;
+      knap.removeAttribute('aria-busy');
+      if (knapTekst) knapTekst.nodeValue = før;
+    }
 
     return Butik.forespoerg({
       type: side.type,
@@ -935,18 +1219,18 @@
       email: mail,
       dato: værdi('dato') || null,
       antal_personer: værdi('antal') || null,
-      /* Allergien lægges FORREST i beskeden med ordet ALLERGI:.
-         Det er den samme ene regel, de fire andre veje bruger
-         (Butik.medAllergi) — og den er grunden til, at admin og
-         køkkenet kan kende en allergi fra en almindelig note. */
+      /* Allergien FORREST i beskeden med ordet ALLERGI: — den samme
+         regel som de fire andre veje (Butik.medAllergi). */
       besked: Butik.medAllergi(værdi('besked'), allergi),
       detaljer: detaljer(),
     }).then(function (raekke) {
       visTak(raekke);
     }).catch(function (fejl) {
-      if (knap) knap.disabled = false;
-      sigFejl(fejl && fejl.message ? fejl.message
-        : 'Forespørgslen kunne ikke sendes. Ring til os i stedet.');
+      knapTilbage();
+      var tekst = fejl && fejl.message ? fejl.message
+        : 'Forespørgslen kunne ikke sendes. Ring til os i stedet.';
+      /* Databasens nej til et nummer hører ved nummeret. */
+      sigFejl(tekst, /telefon/i.test(tekst) ? 'tlf' : null);
     });
   }
 
@@ -1121,9 +1405,7 @@
   (function skrivVarsel() {
     var n = varselDage();
     if (!n) return;
-    var ord = n === 1 ? 'mindst én dag'
-      : (n === 2 ? 'mindst to dage'
-        : (n === 3 ? 'mindst tre dage' : 'mindst ' + n + ' dage'));
+    var ord = varselOrd(n);
     alle('[data-varsel]', document).forEach(function (el) {
       el.textContent = ord;
     });
@@ -1208,13 +1490,27 @@
      datoen, som nettet sætter med et change-event, og segmentet, der
      først har foldet madfeltet efter klikket (derfor setTimeout). */
   (function () {
-    var p = document.getElementById('bl-opsum') && document.getElementById('forespoerg');
+    var p = (document.getElementById('bl-opsum') || document.getElementById('bl-valgt'))
+      ? panel : null;
     if (!p) return;
     p.addEventListener('input', visOpsum);
     p.addEventListener('change', visOpsum);
     p.addEventListener('click', function () { setTimeout(visOpsum, 0); });
     visOpsum();
   }());
+
+  /* Dagene og hvor tit: summen i ord følger hvert tryk på en chip.
+     setTimeout(0), fordi det er havnegrillen.js, der flytter .on —
+     vi læser, EFTER den har gjort det. */
+  if (side.rytme) {
+    panel.addEventListener('click', function (h) {
+      if (h.target.closest && h.target.closest('[data-chips]')) setTimeout(function () {
+        visRytme();
+        visOpsum();
+      }, 0);
+    });
+    visRytme();
+  }
 
   /* ============================================================
      BAGLOKALETS VILKÅR — EJERENS TAL, IKKE DESIGNETS  (28/8)

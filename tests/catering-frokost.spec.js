@@ -107,6 +107,8 @@ test.describe('Frokostsiden', () => {
        dages varsel — datoen skal være langt nok ude, ellers
        spærrer et HELT andet værn, og prøven måler ikke sit eget. */
     await page.locator('#fstart').fill('2026-08-20');
+    // Adressen er påkrævet ved levering (28/9).
+    await page.locator('#fadr').fill('Havnevej 20I, 2670 Greve');
     if (allergi) {
       await page.locator('#fallergi').fill(allergi);
       if (sigJa) await page.locator('#fallergi-samtykke').check();

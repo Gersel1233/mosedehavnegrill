@@ -83,7 +83,7 @@
     <a href="m-menukort.html">menukortet</a>.</p>
 </div>
 
-<div class="panel rev d1" id="forespoerg">
+<div class="panel rev d1 bl-panel" id="forespoerg">
   <h3>Hvad handler det om?</h3>
   <!-- ⚠️ SIDEN SIGER, HVAD DEN ER TIL  (4/9). Kundens ord:
        *"men hvad den side der er til."* Panelet begyndte med et
@@ -123,10 +123,15 @@
     <div class="lk-net" id="lk-net"></div>
     <p class="lk-tegn"><span class="lk-prik"></span>Ledig<span class="lk-prik taget"></span>Optaget</p>
   </div>
-  <div class="field two-col">
-    <div><label for="pdato">Dato</label><input class="inp" id="pdato" type="date" value="2026-09-19"></div>
-    <div><label for="pantal">Antal gæster</label><input class="inp" id="pantal" type="number" min="1" value="24" inputmode="numeric"></div>
-  </div>
+  <!-- ⚠️ DATOEN STÅR ÉN GANG (28/9). Browserens felt stod ved siden
+       af nettet — to datovælgere, der ikke fulgtes ad. Mikkels ord:
+       *"når man vælger dato og tingen på kalender-tingen, snakker de
+       overhovedet ikke sammen"*. Feltet er stadig dét, motoren læser,
+       og det kommer frem, hvis nettet ikke kan tegnes (.bl-dato). -->
+  <p class="bl-valgt" id="bl-valgt" aria-live="polite"></p>
+  <div class="field bl-dato"><label for="pdato">Dato</label><input class="inp" id="pdato" type="date"></div>
+  <!-- ⚠️ INTET FORVALGT ANTAL (28/9): 24 blev sendt, hvis ingen rørte det. -->
+  <div class="field"><label for="pantal">Antal gæster</label><input class="inp" id="pantal" type="number" min="1" max="500" placeholder="Fx 24" inputmode="numeric"></div>
   <div class="field"><label>Hvor skal det være?</label>
     <div class="seg2" data-seg="hvor"><button class="on">Hos jer på havnen</button><button>Ud af huset</button></div></div>
   <!-- ⚠️ HVOR PÅ HAVNEN? (29/8, kundens ord: "valg af hvor skal
@@ -264,5 +269,6 @@
 <script src="js/skal/seo.js?v=__V__"></script>
 <script src="js/skal/kvittering.js?v=__V__"></script>
 <script src="js/skal/kontakt.js?v=__V__"></script>
+<script src="js/skal/feltfejl.js?v=__V__"></script>
 <script src="js/skal/forespoergsel.js?v=__V__"></script>
 </body></html>

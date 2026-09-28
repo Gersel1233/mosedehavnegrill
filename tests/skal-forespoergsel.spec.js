@@ -39,12 +39,12 @@ function data(ændringer) {
 /* En dag, personalet HAR sagt ja til. Kun aftalte dage er
    optagne — en forespørgsel, der lige er kommet ind, er et
    spørgsmål, ikke en booking. */
-function medAftaltSelskab() {
+function medAftaltSelskab(dato) {
   return data({
     forespoergsler: [{
       id: 1, lokation_id: 'mosede', reference: 'FO-1', type: 'selskab',
       navn: 'Anden gæst', telefon: '20304050', email: null,
-      dato: OPTAGET, antal_personer: 30, besked: null,
+      dato: dato || OPTAGET, antal_personer: 30, besked: null,
       detaljer: { hvor: 'hos-jer' }, status: 'aftalt', intern_note: null,
       slettet: null, oprettet: '2026-08-01T10:00:00.000Z',
     }],
@@ -312,11 +312,18 @@ test.describe('Forespørgselssiderne', () => {
    20/8, og prøverne herunder må ikke komme til at forudsætte det.
    ============================================================ */
 test.describe('Frokostordningens runde', () => {
+  /* ⚠️ 14/9 OG IKKE 12/9 (28/9). Den 12. september 2026 er en LØRDAG,
+     og frokosten leveres på hverdage nu — første levering skal være
+     en af de valgte ugedage. Prøverne sendte en lørdag, fordi intet
+     sagde nej. */
 
   test('hvor tit følger med som et ønske, ikke som et abonnement', async ({ page }) => {
     await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
-    await page.fill('#fstart', '2026-09-12');
-    await page.locator('.chipset').first().locator('button', { hasText: 'Hver måned' }).click();
+    await page.fill('#fstart', '2026-09-14');
+    /* "Hver måned" hedder "Én uge om måneden" (28/9): hvor tit er
+       UGERNE, og dagene er dagene i dem — ellers kunne "hver måned"
+       med fem ugedage læses som én levering. */
+    await page.locator('.chipset').first().locator('button', { hasText: 'Én uge om måneden' }).click();
     await page.fill('#ffirma', 'Bech A/S');
     await page.fill('#fnavn', 'Anna Vind');
     await page.fill('#ftlf', '20304050');
@@ -324,7 +331,7 @@ test.describe('Frokostordningens runde', () => {
     await page.locator('#tilbud button.g.solid.blk').click();
 
     const d = await gemteData(page);
-    expect(d.forespoergsler[0].detaljer.hvor_ofte).toBe('Hver måned');
+    expect(d.forespoergsler[0].detaljer.hvor_ofte).toBe('Én uge om måneden');
     /* ⚠️ OG DER ER KUN ÉN RÆKKE. Ville nogen bygge en motor, ville
        "hver måned" begynde at oprette flere — det er præcis det,
        der er afvist. Én forespørgsel, ét menneske, én samtale. */
@@ -334,7 +341,7 @@ test.describe('Frokostordningens runde', () => {
 
   test('fritekst om indholdet lægges til det valgte', async ({ page }) => {
     await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
-    await page.fill('#fstart', '2026-09-12');
+    await page.fill('#fstart', '2026-09-14');
     await page.fill('#fandet', 'to vegetarer og en glutenfri');
     await page.fill('#ffirma', 'Bech A/S');
     await page.fill('#fnavn', 'Anna Vind');
@@ -353,7 +360,7 @@ test.describe('Frokostordningens runde', () => {
      ofte" — tavst, og admin viser det pænt formateret. */
   test('ugedagene lander som ugedage, ikke under hvor tit', async ({ page }) => {
     await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
-    await page.fill('#fstart', '2026-09-12');
+    await page.fill('#fstart', '2026-09-14');
     await page.fill('#ffirma', 'Bech A/S');
     await page.fill('#fnavn', 'Anna Vind');
     await page.fill('#ftlf', '20304050');
@@ -424,6 +431,9 @@ test.describe('Frokostordningen', () => {
     await page.locator('#fnavn').fill('Jens Kok');
     await page.locator('#ftlf').fill('28871343');
     await page.locator('#fmail').fill('bogholderi@firma.dk');
+    /* Adressen er påkrævet ved levering (28/9) — uden den kan
+       personalet hverken regne kørsel eller pris. */
+    await page.locator('#fadr').fill('Havnevej 20I, 2670 Greve');
   }
 
   test('tilbuddet lander som en forespørgsel, ikke som en bestilling', async ({ page }) => {
@@ -496,16 +506,19 @@ test.describe('Frokostordningen', () => {
      lokalet står frit. Optog den dagen, kunne ét firma med en
      fast onsdag lukke hver eneste onsdag for selskaber. */
   test('den kan sendes på en dag, hvor havnen er optaget', async ({ page }) => {
-    await åbn(page, '/h-frokost.html', medAftaltSelskab());
+    /* En HVERDAG, der er optaget (28/9): OPTAGET er en lørdag, og
+       frokosten leveres kun på hverdage. */
+    const optagetHverdag = '2026-09-14';
+    await åbn(page, '/h-frokost.html', medAftaltSelskab(optagetHverdag));
     await udfyld(page);
-    await page.locator('#fstart').fill(OPTAGET);
+    await page.locator('#fstart').fill(optagetHverdag);
     await page.locator('#tilbud button.g.solid.blk').click();
 
     const f = (await gemteData(page)).forespoergsler
       .filter((x) => x.type === 'frokost')[0];
     expect(f, 'frokosten blev spærret af en dag, den ikke lægger beslag på')
       .toBeTruthy();
-    expect(f.dato).toBe(OPTAGET);
+    expect(f.dato).toBe(optagetHverdag);
   });
 
   test('uden navn og telefon sendes der ingenting', async ({ page }) => {
