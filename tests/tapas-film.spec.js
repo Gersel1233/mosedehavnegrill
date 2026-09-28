@@ -194,4 +194,67 @@ test.describe('Tapasfilmen i galleriet', () => {
     expect(fs.statSync(path.join(__dirname, '..', 'film', 'tapas-4x3.mp4')).size).toBeLessThan(1600000);
     expect(fs.statSync(path.join(__dirname, '..', 'film', 'tapas-16x9.mp4')).size).toBeLessThan(3200000);
   });
+
+  /* ⚠️ MIKKEL 28/9: *"laggy … og i dårlig kvalitet"*. Filmene var 24
+     billeder i sekundet — ost og pølse flyver ind og sprang i hak — og
+     uden farvemærke, så browseren gættede og slutbilledet (trukket ud
+     som BT.601) skiftede farve, når filmen blev taget væk. Tallene her
+     læses af mp4-filen selv, ikke af et værktøj: mdhd (tidsskala og
+     længde), stts (antal billeder), avc1 (størrelse) og colr (farve).
+     Filerne laves med vaerktoej/lav-tapasfilm.sh. */
+  test('filmene er 60 billeder i sekundet i fuld størrelse og mærket BT.709', async () => {
+    const forventet = { '4x3': [1200, 900], '16x9': [1920, 1080] };
+    for (const [f, [b, h]] of Object.entries(forventet)) {
+      const info = filmInfo(path.join(__dirname, '..', 'film', `tapas-${f}.mp4`));
+      expect(info.fps, `${f}: billeder i sekundet`).toBeGreaterThanOrEqual(59);
+      expect([info.bredde, info.hoejde], `${f}: størrelse`).toEqual([b, h]);
+      expect(info.farve, `${f}: farvemærke (primærfarver, overføring, matrix)`).toEqual([1, 1, 1]);
+    }
+  });
 });
+
+/* En mp4 er kasser i kasser: 4 bytes længde, 4 bytes navn, indhold. */
+function kasser(buf, start, slut) {
+  const ud = [];
+  for (let i = start; i + 8 <= slut;) {
+    let str = buf.readUInt32BE(i);
+    let hoved = 8;
+    if (str === 1) { str = Number(buf.readBigUInt64BE(i + 8)); hoved = 16; }
+    if (str === 0) str = slut - i;
+    ud.push({ navn: buf.toString('latin1', i + 4, i + 8), start: i + hoved, slut: i + str });
+    i += str;
+  }
+  return ud;
+}
+function kasse(buf, sti) {
+  let k = { start: 0, slut: buf.length };
+  for (const navn of sti) {
+    k = kasser(buf, k.start, k.slut).find((x) => x.navn === navn);
+    if (!k) return null;
+  }
+  return k;
+}
+function filmInfo(fil) {
+  const buf = fs.readFileSync(fil);
+  const spor = ['moov', 'trak', 'mdia'];
+  const mdhd = kasse(buf, [...spor, 'mdhd']);
+  const v1 = buf[mdhd.start] === 1;
+  const skala = buf.readUInt32BE(mdhd.start + (v1 ? 20 : 12));
+  const laengde = v1 ? Number(buf.readBigUInt64BE(mdhd.start + 24)) : buf.readUInt32BE(mdhd.start + 16);
+  const stbl = [...spor, 'minf', 'stbl'];
+  const stts = kasse(buf, [...stbl, 'stts']);
+  let billeder = 0;
+  for (let e = 0; e < buf.readUInt32BE(stts.start + 4); e++) billeder += buf.readUInt32BE(stts.start + 8 + 8 * e);
+  const stsd = kasse(buf, [...stbl, 'stsd']);
+  const avc1 = kasser(buf, stsd.start + 8, stsd.slut)[0];
+  // 78 bytes fast hoved i en visuel prøve (ISO 14496-12), så kommer avcC, colr …
+  const colr = kasser(buf, avc1.start + 78, avc1.slut).find((x) => x.navn === 'colr');
+  const farve = colr && buf.toString('latin1', colr.start, colr.start + 4) === 'nclx'
+    ? [0, 2, 4].map((o) => buf.readUInt16BE(colr.start + 4 + o)) : null;
+  return {
+    fps: billeder / (laengde / skala),
+    bredde: buf.readUInt16BE(avc1.start + 24),
+    hoejde: buf.readUInt16BE(avc1.start + 26),
+    farve,
+  };
+}
