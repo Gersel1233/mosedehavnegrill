@@ -195,9 +195,13 @@ test.describe('Forsidens kobling', () => {
   test('prisen står på en guldplade, og teksten er blæk', async ({ page }) => {
     await åbn(page, '/index.html');
     const m = await page.locator('.pris-kort').evaluate((e) => {
-      /* Guldet er glassets tone nu (27/9, nat) — Figmas glas i prisens farve. */
-      const bg = getComputedStyle(e).backgroundColor.match(/[\d.]+/g).map(Number);
-      const [r, g, b] = bg.slice(0, 3).map((v) => v / 255);
+      /* ⚠️ GULDET ER KERNEN (28/9): pillen er allergiens Rim, og det er
+         den massive kerne (::before), der er guld — en gradient, så den
+         midterste farve i den måles. */
+      const k = getComputedStyle(e, '::before');
+      const farver = (k.backgroundImage.match(/rgba?\([^)]+\)/g) || [k.backgroundColor]);
+      const midt = farver[Math.floor(farver.length / 2)].match(/[\d.]+/g).map(Number);
+      const [r, g, b] = midt.slice(0, 3).map((v) => v / 255);
       const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
       const l = (max + min) / 2;
       const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
@@ -205,8 +209,8 @@ test.describe('Forsidens kobling', () => {
       if (d) h = max === r ? 60 * (((g - b) / d) % 6) : max === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4);
       return { nuance: (h + 360) % 360, mætning: s, tekst: getComputedStyle(e.querySelector('.smiley-kort-tekst')).color };
     });
-    expect(m.nuance, 'glasset er ikke gult').toBeGreaterThanOrEqual(38);
-    expect(m.nuance, 'glasset er ikke gult').toBeLessThanOrEqual(58);
+    expect(m.nuance, 'kernen er ikke gul').toBeGreaterThanOrEqual(38);
+    expect(m.nuance, 'kernen er ikke gul').toBeLessThanOrEqual(58);
     expect(m.mætning, 'kernen er grå, ikke guld').toBeGreaterThan(0.5);
     expect(m.tekst, 'teksten på guldet er Figmas obsidian').toBe('rgb(14, 15, 16)');
   });
@@ -498,55 +502,63 @@ test.describe('Forsidens kobling', () => {
   });
 
   /* ⚠️ VENDT SAMME DAG (13/9) — kundens ord: "gør lige facebook tingen i
-     toppen blå som før". Prøven holder nu fast i den blå. */
-  test('Facebook-kortet er Facebooks blå', async ({ page }) => {
+     toppen blå som før". Og 28/9: "skift farven på facebook til blå".
+     Tallet kommer UDEFRA: Facebooks blå er den, logoet i striben lige
+     over står i — samme side, samme blå. */
+  test('Facebook-pillens kerne er Facebooks egen blå', async ({ page }) => {
     const data = grunddata();
     data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
     await åbn(page, '/index.html', { data });
-    /* ⚠️ DEN BLÅ ER GLASSETS TONE (27/9, nat): kortet er Figmas glas
-       (LA32 Kind=Glass) med Facebooks blå som tone. */
-    const s = await page.locator('.promo.fb').evaluate((e) => getComputedStyle(e).backgroundColor);
-    expect(s, 'glasset er ikke Facebooks blå').toContain('21, 87, 196');
+    const kerne = await page.locator('.promo.fb').evaluate((e) => getComputedStyle(e, '::before').backgroundColor);
+    const logo = await page.locator('.social a[data-social="facebook"] svg path').first()
+      .evaluate((e) => getComputedStyle(e).fill);
+    expect(kerne, 'kernen er ikke logoets blå').toBe(logo);
   });
 
-  /* ⚠️ FACEBOOK, SMILEYEN OG PRISEN ER FIGMAS GLAS — PRÆCIST (27/9, nat).
-     Mikkels ord: "de er slet ikke taget fra figma, du skal lige lock in og
-     tage præcise glass pillars derfra, ændre farven og selvfølgelig gøre så
-     knapperne er korrekte". Tallene er LÆST UD AF FIGMA-FILEN (LA32 Button,
-     Kind=Glass 116:886 og linsen 116:890): slør 12 px, radius 24, ingen
-     skygge, lyskant, og knappen er linsen på 40 px med pilen LA2.1
-     (stien "M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6"). */
-  test('Facebook, smileyen og prisen er Figmas glas med linsen som knap', async ({ page }) => {
+  /* ============================================================
+     FACEBOOK, SMILEYEN OG PRISEN ER GLASPILLER — SOM ALLERGIEN (28/9)
+     Mikkels ord: *"lav facebook, award og fødevarestyrelsen iOS 18
+     glass pillars helt forfra — de ligner intet af figma-siderne,
+     ligesom med allergien"*. Facit er ALLERGIPILLEN på samme side
+     (.menucard .glaspille) — tallene kommer derfra, ikke fra reglen,
+     der tegner de tre: samme kerne-indryk, samme skygge, helt rund,
+     en lyskant — og linsen er Figmas (116:890, 40 px, pilen LA2.1).
+     ⚠️ HELE PILLEN ER LINKET: en pille med en knap i er to mål. */
+  test('Facebook, smileyen og prisen er samme glaspille som allergien', async ({ page }) => {
     const data = grunddata();
     data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
     await åbn(page, '/index.html', { data });
+    const facit = await page.locator('.menucard .glaspille').evaluate((e) => ({
+      ind: getComputedStyle(e, '::before').top, skygge: getComputedStyle(e).boxShadow,
+    }));
     for (const sel of ['.promo.fb', 'a.smiley-kort[href*="findsmiley.dk"]', '.pris-kort']) {
       const m = await page.locator(sel).evaluate((e) => {
         const c = getComputedStyle(e);
+        const k = getComputedStyle(e, '::before');
         const lens = e.querySelector('.la-lens');
         const l = lens && lens.getBoundingClientRect();
         return {
-          slør: c.backdropFilter || c.webkitBackdropFilter || '',
-          hjørne: c.borderTopLeftRadius,
+          tag: e.tagName,
+          ind: k.top,
+          kerne: k.backgroundImage !== 'none' || !/rgba\(\d+, \d+, \d+, 0\)|transparent/.test(k.backgroundColor),
           skygge: c.boxShadow,
+          rund: parseFloat(c.borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1,
           lys: getComputedStyle(e, '::after').content,
           linse: l ? Math.round(l.width) + 'x' + Math.round(l.height) : 'ingen',
           pil: lens ? lens.querySelector('path').getAttribute('d') : '',
+          knapper: e.querySelectorAll('a, button').length,
         };
       });
-      expect(m.slør, sel + ': Figmas glas slører 12 px').toContain('blur(12px)');
-      expect(m.hjørne, sel + ': Figmas radius er 24').toBe('24px');
-      expect(m.skygge, sel + ': Figmas glas har ingen skygge').toBe('none');
-      expect(m.lys, sel + ': glassets lyskant mangler').not.toBe('none');
+      expect(m.tag, sel + ': pillen er ikke selv linket').toBe('A');
+      expect(m.knapper, sel + ': der er et link inde i pillen').toBe(0);
+      expect(m.ind, sel + ': kernen ligger ikke som allergiens').toBe(facit.ind);
+      expect(m.kerne, sel + ': kernen er ikke massiv').toBe(true);
+      expect(m.skygge, sel + ': skyggen er ikke allergiens').toBe(facit.skygge);
+      expect(m.rund, sel + ': ikke en pille').toBe(true);
+      expect(m.lys, sel + ': glaskantens lys mangler').not.toBe('none');
       expect(m.linse, sel + ': knappen er ikke Figmas linse på 40 px').toBe('40x40');
       expect(m.pil, sel + ': pilen er ikke Figmas LA2.1').toBe('M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6');
     }
-    /* Og "Følg os" er Figmas Primary on dark: porcelæn, 48 høj. */
-    const k = await page.locator('.promo.fb .cta').evaluate((e) => {
-      const c = getComputedStyle(e); return { h: Math.round(e.getBoundingClientRect().height), bg: c.backgroundColor };
-    });
-    expect(k.h, '"Følg os" er ikke 48 høj som Figmas knap').toBe(48);
-    expect(k.bg).toBe('rgb(246, 244, 239)');
   });
 
   test('en knap, der ikke kan trykkes, er ikke rød', async ({ page }) => {
@@ -2242,8 +2254,9 @@ test.describe('Menukort-kortet og Facebook-kortet', () => {
     await åbn(page, '/index.html', { data: d });
     const kort = page.locator('.promo.fb');
     await expect(kort).toHaveCount(1);
-    await expect(kort.locator('a[data-social="facebook"]'))
-      .toHaveAttribute('href', /facebook\.com\/mosedehavnecafe/);
+    /* Pillen ER linket nu (28/9) — ikke et kort med en knap i. */
+    await expect(kort).toHaveAttribute('data-social', 'facebook');
+    await expect(kort).toHaveAttribute('href', /facebook\.com\/mosedehavnecafe/);
   });
 });
 
@@ -2868,7 +2881,9 @@ test.describe('Greve-prisen øverst', () => {
        "prisen står på en guldplade"; her står det, at de to er forskellige,
        og at pladen har sin lyskant. */
     /* Samme glas som smileyen (27/9, nat) — det er TONEN, der er guld. */
-    const tone = (sel) => page.locator(sel).evaluate((e) => getComputedStyle(e).backgroundColor);
+    /* Kernen (28/9): pillerne har samme glaskant; det er kernen, der er guld. */
+    const tone = (sel) => page.locator(sel).evaluate((e) => {
+      const k = getComputedStyle(e, '::before'); return k.backgroundImage + '|' + k.backgroundColor; });
     expect(await tone('.pris-kort'), 'prisen har samme tone som smileyen').not.toEqual(await tone('a.smiley-kort[href*="findsmiley.dk"]'));
     expect(await pris.evaluate((e) => getComputedStyle(e, '::after').content),
       'pladen har ingen lyskant').not.toBe('none');

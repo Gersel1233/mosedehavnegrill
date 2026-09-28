@@ -3012,40 +3012,50 @@ footer .smiley-linje{
    andet glas. Teksten er blæk på kernen (10:1 på det lyse guld, over 6:1
    på det mørkeste), aldrig den dæmpede brune, der faldt under 4,5. Kun
    prisen: smileyen lige over er Fødevarestyrelsens og bliver hvid. */
-/* ⚠️ FACEBOOK, SMILEYEN OG PRISEN ER FIGMAS GLAS — PRÆCIST (27/9, nat).
-   Mikkels ord: *"de er slet ikke taget fra figma, du skal lige lock in og
-   tage præcise glass pillars derfra, ændre farven og selvfølgelig gøre så
-   knapperne er korrekte"*. Værdierne er LÆST UD AF FIGMA-FILEN (Plugin API
-   på LA32 Button, mHsQole7sVJnwARmizRQaK), ikke skrevet af en beskrivelse:
-   · GLASSET (Kind=Glass, 116:886): tone #0E0F10, slør 12 px (GLASS radius
-     12), radius 24, INGEN skygge, 1 px kant indvendigt med lys fra −45°:
-     hvid 85 % → 12 % ved 45 % → 40 %. Tonen er Figmas 42 % over et foto;
-     på husets lyse bund siger LESREG §1.8 den tætte (72 %), ellers holder
-     porcelæn ikke 4,5:1. Farven er det, der skifter: Figmas obsidian på
-     smileyen, Facebooks blå (kundens valg 13/9) og prisens guld.
-   · LINSEN (116:888/116:890): 40 px cirkel, hvid 10 %, kant hvid 90 % →
-     5 % → 30 %; pilen er LA2.1 Arrow right (44:189), 16 px, streg 1,5,
-     runde ender — stien er Figmas egen. På lys bund (Primary on dark,
-     116:881): travertin 75 % og kanten fra lyset (hvid → sort 4 % → 22 %).
-   · KNAPPEN (Primary on dark, 116:877): porcelæn, højde 48, radius 24,
-     luft 22 til venstre og 4 til højre, 14 mellem tekst og linse, Host
-     Grotesk Medium 15/16 i obsidian. */
-.la-glas{position:relative;isolation:isolate;border-radius:24px;background:var(--la-tone,rgba(14,15,16,.72));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:none;color:#f6f4ef}
-.la-glas::after,.la-lens::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(to bottom right,rgba(255,255,255,.85),rgba(255,255,255,.12) 45%,rgba(255,255,255,.4));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
-.la-lens{position:relative;flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);color:#f6f4ef}
-.la-lens::after{background:linear-gradient(to bottom right,rgba(255,255,255,.9),rgba(255,255,255,.05) 50%,rgba(255,255,255,.3))}
+/* ============================================================
+   FACEBOOK, SMILEYEN OG PRISEN ER GLASPILLER — SOM ALLERGIEN (28/9)
+   ------------------------------------------------------------
+   Mikkels ord: *"du skal lave facebook, award og fødevarestyrelsen
+   iOS 18 glass pillars helt forfra — de ligner intet af figma-siderne,
+   ligesom med allergien — og skift farven på facebook til blå og den
+   anden til guld"*.
+
+   To forsøg før var bygget som KORT: først pladen med en kvadratisk
+   kerne, så Figmas Glass-KNAP (LA32 116:886) strakt ud til et kort på
+   190 px med overskrift og knap. Ingen af dem var en pille, og glas
+   over husets flade creme er "glass over nothing" — Figmas eget nej
+   (Glass material library, D, 53:299): der er intet bag det at bryde,
+   så det stod som en farvet kasse.
+
+   Nu er de alle tre den SAMME pille som allergilinjen (.glaspille):
+   Figmas Rim (Glass material library, 52:273) — en 5-6 px glaskant med
+   lys fra −45°, en MASSIV kerne ("glass keeps the edge; solids keep the
+   words") og Rim-skyggen 9/18/44 — rundet helt af som en kapsel. Det,
+   der skifter, er kernen: Facebooks egen blå (#0866FF, samme blå som
+   logoet i striben over), prisens guld og smileyens porcelæn. Linsen
+   til højre er Figmas (116:890) med pilen LA2.1.
+   ============================================================ */
+.pille-kort.glaspille{display:flex;align-items:center;gap:12px;max-width:none;min-height:74px;padding:12px 12px 12px 20px;text-align:left;font-size:13px;font-weight:400;line-height:1.4;text-wrap:pretty;color:var(--ink2);overflow:visible;transition:transform .35s var(--spring)}
+.pille-kort.glaspille:active{transform:scale(.98)}
+.pille-kort.glaspille::before{background:var(--pille-kerne,#f6f4ef)}
+/* .promo.fb har sin egen blå flade og sin polstring (designets kort) —
+   pillen tager dem af, så det er kernen, der bærer farven. */
+.pille-kort.glaspille.promo.fb{background:rgba(255,255,255,.06);padding:12px 12px 12px 20px;border-radius:var(--plade-r);color:rgba(255,255,255,.9)}
+.pille-kort.fb{--pille-kerne:#0866ff}
+.pille-kort.pris-kort{--pille-kerne:linear-gradient(135deg,#f8e29a,#e6b84a 46%,#c9952c);color:#0e0f10}
+.pille-tegn{flex:none;display:grid;place-items:center;width:34px;height:34px;font-size:22px;line-height:1}
+.pille-tegn svg{width:24px;height:24px}
+.pille-kort .smiley-kort-tekst{flex:1;min-width:0;font-size:13px;line-height:1.4;color:inherit}
+.pille-kort .smiley-kort-tekst b{display:block;font-size:15px;font-weight:600;line-height:1.3;color:var(--ink)}
+.pille-kort.fb .smiley-kort-tekst b{color:#fff}
+.pille-kort.pris-kort .smiley-kort-tekst,.pille-kort.pris-kort .smiley-kort-tekst b{color:#0e0f10}
+.la-lens::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(to bottom right,rgba(255,255,255,.9),rgba(255,255,255,.05) 50%,rgba(255,255,255,.3));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.la-lens{position:relative;flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.18);color:#fff}
 .la-lens svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .la-lens.lys{background:rgba(216,209,197,.75);color:#0e0f10}
 .la-lens.lys::after{background:linear-gradient(to bottom right,#fff,rgba(0,0,0,.04) 55%,rgba(0,0,0,.22))}
-.la-knap{display:inline-flex;align-items:center;gap:14px;height:48px;padding:0 4px 0 22px;border-radius:24px;background:#f6f4ef;color:#0e0f10;font-family:"Host Grotesk",system-ui,sans-serif;font-size:15px;font-weight:500;line-height:16px}
-/* Smileyen og prisen: tekst til venstre, linsen til højre som i knappen. */
-.smiley-kort.la-glas{gap:14px;padding:12px 12px 12px 20px}
-.la-glas .smiley-kort-tekst{color:rgba(246,244,239,.8)}
-.la-glas .smiley-kort-tekst b{color:#f6f4ef;font-weight:500}
-.smiley-kort.pris-kort.la-glas{--la-tone:rgba(222,176,72,.86);color:#0e0f10}
-.pris-kort.la-glas .smiley-kort-tekst,.pris-kort.la-glas .smiley-kort-tekst b{color:#0e0f10}
-.promo.fb.la-glas{--la-tone:rgba(21,87,196,.9);background:var(--la-tone);padding:20px}
-.promo.fb .cta.la-knap{margin-top:14px;height:48px;padding:0 4px 0 22px;border-radius:24px;background:#f6f4ef;color:#0e0f10;font-size:15px;font-weight:500}
+/* På guldet er linsen hvid glas med blæk — travertin på guld blev mudret. */
+.la-lens.guld{background:rgba(255,255,255,.4);color:#0e0f10}
 /* Telefonen i en knap er husets tegn, ikke 📞 (27/9, persondatasiden). */
 .g>svg{width:18px;height:18px;flex:none}
 #alt .row-card .ic{background:rgba(255,255,255,.6);box-shadow:var(--kant-inde)}
