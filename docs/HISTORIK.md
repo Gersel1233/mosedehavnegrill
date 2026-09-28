@@ -7,6 +7,26 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**KNAPPERNE I APPLES KLARE GLAS, TAPASFADET SOM EN TEGNET MENU** (28/9, aften).
+Mikkels ord: knapperne *"er ikke gode nok … brug Higgsfield til at generere en
+liquid glass iOS 18-inspireret"* og tapasdelen *"ligner noget generisk med de små
+bølger … indholdet og måden den er solgt med pris"*. Tolv forslag i Higgsfield
+(GPT Image 2.5, ~33 kredit) i to runder; første runde *"får vand-agtige"*. Han
+valgte **nr. 7** og **nr. 10**.
+- **Facebook, smileyen og prisen** (`.glasraekke`, index.html): klart glas — let
+  hvidlig flade, skarp lys kant øverst, hårfin omkreds, blød skygge, INGEN farvet
+  kerne og ingen backdrop-filter (de ruller med siden på flad creme). Farven sidder
+  i tegnet. Tegn til venstre, titel + dæmpet linje, pil. Prisens titel står hel
+  ("Indstillet til Greve Iværksætterpris 2026") og balanceret over to linjer
+- **Tapas** (m-tapas.html): hver ting sin egen røde blæktegning
+  (`billeder/tapas-tegn/*.webp`, klippet af `vaerktoej/lav-tapastegn.py`), prisen
+  stort under listen, "Læg til" som en lille menu med prisen ude til højre i husets
+  prisetiket (,-). `tegnFor` i tapas.js vælger tegningen efter ordet — også for
+  ejerens egen liste; ukendt ord → et fad. Bølgen fra 9/9 og undtagelsen fra 6/9
+  er væk; listen følger gennemgangens regel om ét tegn pr. punkt
+- Prøver vendt med grund: forsidens fire pilleprøver → "det samme klare glas";
+  tapas: tegning pr. ord (facit i prøven); typografi-loftet 38 → 39 skygger
+
 **SIDEN STÅR STILLE: GLANSEN OG DET USYNLIGE GLAS** (28/9, eftermiddag). Mikkels
 ord efter filmrettelsen: *"tapas-siden med video og hele sådan tingen er ret laggy
 og virker ikke optimalt og hakkende"*. MÅLT på tapassiden (telefon, CPU bremset 4×,
