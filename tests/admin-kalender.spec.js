@@ -1968,10 +1968,75 @@ test.describe('Bordkortet: ét skridt frem, resten bag døren', () => {
        lære som aabnMere() (31/8) og visFane() (30/8): gå den vej,
        et menneske går, så er prøven samtidig en prøve på, at
        vejen findes. */
-    await page.locator('#borde-faerdige-kort summary').click();
+    /* #borde-faerdige-titel, ikke "summary": kortet har sin egen
+       foldede note ("Skriv en note", 28/9), og den er også en
+       summary inde i folden. */
+    await page.locator('#borde-faerdige-titel').click();
     const k = page.locator('#borde-faerdige-kort .bestil-kort').first();
     await expect(k.locator('.knap-raekke .knap:visible')).toHaveCount(1);
     await expect(k.locator('.knap-raekke .knap:visible')).toContainText('Gendan');
     await expect(k.locator('.bestil-mere')).toContainText('Slet');
+  });
+
+  /* ============================================================
+     KORTET, SOM MIKKEL SÅ DET  (28/9)
+     *"når man bestiller bord, være pænere og bedre i admin"*.
+     Fire ting, der stod forkert på kortet: "1 personer", den blå
+     "i gang"-farve på en familie, der sidder ved bordet, døren
+     (···), der åbnede et andet sted end kortet, og bordvælgeren
+     på en booking, der var overstået. */
+  test('én person står i ental', async ({ page }) => {
+    const d = medBooking('ny');
+    d.bordbestillinger[0].antal_personer = 1;
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-borde');
+    const k = page.locator('#borde-venter .bestil-kort').first();
+    await expect(k).toContainText('1 person');
+    await expect(k).not.toContainText('1 personer');
+  });
+
+  /* Farven måles mod bestillingskortets færdige grønne — tallet
+     kommer fra den anden fane og ikke fra reglen, der tegner her. */
+  test('en ankommet booking er grøn som en færdig bestilling', async ({ page }) => {
+    await åbnAdmin(page, { data: medBooking('bekraeftet') });
+    await visFane(page, 'p-borde');
+    await page.locator('#borde-faerdige-titel').click();
+    const k = page.locator('#borde-faerdige-kort .bestil-kort').first();
+    const kant = await k.evaluate((el) => getComputedStyle(el).borderLeftColor);
+    const facit = await page.evaluate(() => {
+      const el = document.createElement('div');
+      el.className = 'bestil-kort b-afhentet b-faerdig';
+      document.getElementById('p-bestillinger').appendChild(el);
+      const f = getComputedStyle(el).borderLeftColor;
+      el.remove();
+      return f;
+    });
+    expect(kant, 'den ankomne familie står i "i gang"-farven').toBe(facit);
+  });
+
+  test('døren (···) åbner inde på kortet, ikke et andet sted', async ({ page }) => {
+    const k = await kortet(page, 'ny');
+    await k.locator('.knap-mere').click();
+    const udeblev = k.locator('.bestil-mere .knap', { hasText: 'Udeblev' });
+    await expect(udeblev).toBeVisible();
+    const kort = await k.boundingBox();
+    const knap = await udeblev.boundingBox();
+    expect(knap.y, 'Udeblev står over kortet').toBeGreaterThanOrEqual(kort.y - 2);
+    expect(knap.y + knap.height, 'Udeblev står under kortet')
+      .toBeLessThanOrEqual(kort.y + kort.height + 160);
+    expect(knap.x, 'Udeblev står til venstre for kortet').toBeGreaterThanOrEqual(kort.x - 2);
+  });
+
+  test('en overstået booking får ingen bordvælger', async ({ page }) => {
+    const d = medBooking('bekraeftet');
+    d.bordbestillinger[0].bord_id = null;
+    d.borde = [{ id: 1, lokation_id: 'mosede', nummer: '7', pladser: 4,
+      placering: 'ude', aktiv: true, sortering: 10 }];
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-borde');
+    await page.locator('#borde-faerdige-titel').click();
+    const k = page.locator('#borde-faerdige-kort .bestil-kort').first();
+    await expect(k).toBeVisible();
+    await expect(k.locator('select')).toHaveCount(0);
   });
 });

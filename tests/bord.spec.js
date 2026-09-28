@@ -328,7 +328,9 @@ test.describe('Personalet bekræfter', () => {
     await kort.getByRole('button', { name: /Ankommet/ }).click();
 
     // Efter hakket er bookingen FÆRDIG — som en afhentet bestilling.
-    await expect(page.locator('#borde-faerdige .bestil-kort .maerke'))
+    /* [data-status]: kortet bærer også dagens mærke ("I morgen",
+       28/9), og det er et .maerke. Det er STATUS, der måles. */
+    await expect(page.locator('#borde-faerdige .bestil-kort .maerke[data-status]'))
       .toContainText('Ankommet');
     /* /ring/i alene duer ikke: ordet "kvitteringen" indeholder det.
        Det, der måles, er OPFORDRINGEN — "ring til". */

@@ -26,6 +26,80 @@
     ny: 'Ny', bekraeftet: 'Ankommet', afvist: 'Afvist', udeblevet: 'Udeblev',
   };
 
+  function tidTekst(b) { return String(b.tid || '').slice(0, 5).replace(':', '.'); }
+  /* "1 personer" stod på kortet (fundet 28/9). Ental ved én. */
+  function personer(n) {
+    var t = Number(n) || 0;
+    return t + (t === 1 ? ' person' : ' personer');
+  }
+
+  /* ============================================================
+     HANDLINGERNE BOR ÉT STED  (28/9)
+     ------------------------------------------------------------
+     Mikkels ord: *"i overblik kan jeg ikke trykke ankommet, når
+     nogen har bestilt borde, så skal jeg ind i sektionen borde …
+     alt det de specifikke dage skal kunne administreres inde i
+     overblik"*. Overblikket skal kunne det samme som kortet her —
+     og derfor står spørgsmålene og skrivningen HER, én gang, og
+     begge skærme kalder dem. To udgaver af "er de kommet?" ville
+     langsomt sige hver sit om den samme familie.
+
+     ⚠️ ALDRIG Butik.skrive.bestillingStatus PÅ EN BOOKING. En
+     booking og en bestilling kan have det samme id i hver sin
+     tabel; overblikkets "Færdig" for mad ville have ændret en
+     helt anden bestilling uden en fejl.
+
+     `note` er kortets notefelt (Admin.nyNote); overblikket har
+     intet notefelt og sender undefined — bordStatus sender kun
+     kolonner, der ikke er undefined. */
+  var HANDLING = {
+    ankommet: function (b, note) {
+      /* BOOKET ER BOOKET (23/8): gæsten fik "vi ses" i kvitteringen.
+         Hakket sættes, når familien KOMMER (kundens vending 3/9). */
+      if (!confirm('Er ' + b.navn + ' kommet? — ' + personer(b.antal_personer)
+        + ' ' + Admin.pænDato(b.dato) + ' kl. ' + tidTekst(b) + '\n\n'
+        + 'Bookingen flyttes til Færdige. Kom de ikke, så tryk '
+        + 'Udeblev i stedet.')) return null;
+      return gemBord(Butik.skrive.bordStatus(b.id, 'bekraeftet', note),
+        b.navn + ' er ankommet.');
+    },
+    udeblev: function (b, note) {
+      if (!confirm('Kom ' + b.navn + ' ikke?\n\n'
+        + 'Bookingen flyttes til Færdige og tælles som en '
+        + 'udeblivelse. Der skal ikke ringes.')) return null;
+      return gemBord(Butik.skrive.bordStatus(b.id, 'udeblevet', note),
+        b.navn + ' er noteret som udeblevet.');
+    },
+    afvis: function (b, note) {
+      /* DET ER HER, DER SKAL RINGES: gæsten regner med bordet. */
+      if (!confirm('Afvis bookingen fra ' + b.navn + '?\n\n'
+        + 'RING TIL ' + b.telefon + ' — gæsten har fået bordet i sin '
+        + 'kvittering og regner med det.')) return null;
+      return gemBord(Butik.skrive.bordStatus(b.id, 'afvist', note),
+        'Bookingen er afvist. Ring til ' + b.telefon + '.');
+    },
+    /* GENDAN FØRER TIL NY (3/9): "bekraeftet" betyder ANKOMMET. */
+    gendan: function (b, note) {
+      return gemBord(Butik.skrive.bordStatus(b.id, 'ny', note),
+        'Bookingen står som ny igen.');
+    },
+    slet: function (b) {
+      if (!confirm('Flyt bookingen fra ' + b.navn + ' til skraldespanden?\n\n'
+        + 'Det kan hentes tilbage i 30 dage.')) return null;
+      return gemBord(Butik.skrive.tilSkraldespand('bord', b.id),
+        'Ønsket ligger i skraldespanden.');
+    },
+  };
+  Admin.bordHandling = function (hvad, b, note) { return HANDLING[hvad](b, note); };
+  Admin.bordStatusNavn = function (s) { return STATUS_NAVNE[s] || s; };
+  Admin.personer = personer;
+  Admin.bordNummer = function (b) {
+    var bord = (Admin.lister.bordliste || []).filter(function (x) {
+      return String(x.id) === String(b.bord_id);
+    })[0];
+    return bord ? 'Bord ' + bord.nummer : '';
+  };
+
   var borde = [];
 
   /* ⚠️ EFTER DAG OG TID, OGSÅ DE NYE (16/9). Her stod "den ÆLDSTE
@@ -286,19 +360,28 @@
   }
 
   function bordKort(b) {
-    var k = lav('div', 'bestil-kort b-' + b.status);
+    /* ⚠️ ANKOMMET ER FÆRDIG, OG FÆRDIG ER GRØN (28/9). Kortet fik
+       b-bekraeftet — den blå, der på en bestilling betyder "i gang".
+       En familie, der sidder ved bordet, lignede altså en sag, der
+       ventede. .b-faerdig er husets ord for "det gik godt". */
+    var k = lav('div', 'bestil-kort b-' + b.status
+      + (b.status === 'bekraeftet' ? ' b-faerdig' : ''));
+    k.setAttribute('data-id', String(b.id));
+    var aaben = b.status === 'ny' && !faerdig(b);
 
+    /* TIDEN STOR OG DAGEN SOM MÆRKE — bestillingskortets form (8/9),
+       Admin.dagMaerke. Bookingen stod med dato og tid som brødtekst
+       og antallet i prissøjlens dæmpede grå: det, personalet skal
+       vide (hvornår, hvor mange), var det mindste på kortet. */
     var top = lav('div', 'bestil-top');
+    top.appendChild(lav('span', 'bestil-tid', tidTekst(b)));
+    var dag = Admin.dagMaerke && Admin.dagMaerke(b.dato);
+    if (dag) top.appendChild(dag);
     top.appendChild(Admin.statusMaerke(b.status,
       STATUS_NAVNE[b.status] || b.status));
-    /* ⚠️ NUMMERET FØRST, REFERENCEN SOM title  (4/9). Kundens
-       ord med et skærmbillede af fanen: *"og det her reffereance
-       nummer ka vi ik fix det"* — det der var BO260904-658KG.
-       Nøjagtig samme klage som SM260831-UBJ7E fik 31/8, og
-       nøjagtig samme svar: referencen er stadig rækkens nøgle
-       (kvitteringer og mails peger på den) og kan slås op på
-       title — den er flyttet, ikke fjernet. Gamle rækker uden
-       nummer viser referencen som før. */
+    /* NUMMERET FØRST, REFERENCEN SOM title (4/9, kundens klage over
+       BO260904-658KG). Referencen er rækkens nøgle i databasen og
+       kan slås op i Find sag; nummeret er det, man siger højt. */
     var refM = lav('span', 'bestil-ref',
       (Butik.pæntNummer && Butik.pæntNummer(b.nummer, 'bord')) || b.reference);
     refM.title = b.reference;
@@ -306,28 +389,23 @@
     k.appendChild(top);
 
     var hvem = lav('div', 'bestil-hvem');
-    /* Navnet med stort forbogstav — Admin.pæntNavn, samme regel
-       som Overblik og Bestillinger (6/9). */
     hvem.appendChild(lav('span', 'vare-navn',
       Admin.pæntNavn ? Admin.pæntNavn(b.navn) : b.navn));
-    /* ⚠️ SAMME KONTAKTLINJE SOM PÅ DE ANDRE FANER. Kortet skrev
-       nummeret NØGENT (uden 📞) og mailen som DÆMPET BRØDTEKST
-       i stedet for som et link (kundens regel fra 31/8) — den samme
-       booking så altså forskellig ud, alt efter hvilken fane
-       personalet stod på. Reglen bor i Admin.kontakt. */
+    /* Samme kontaktlinje som de andre faner: Admin.kontakt. */
     Admin.kontakt(b).forEach(function (e) { hvem.appendChild(e); });
     k.appendChild(hvem);
 
     var detaljer = lav('div', 'bestil-linjer');
     var r1 = lav('div', 'bestil-linje');
-    r1.appendChild(lav('span', 'bestil-vare',
-      Admin.pænDato(b.dato) + ' kl. ' + String(b.tid || '').slice(0, 5).replace(':', '.')));
-    r1.appendChild(lav('span', 'bestil-linjepris', b.antal_personer + ' personer'));
+    var hvad = '👥 ' + personer(b.antal_personer);
+    var bordNavn = Admin.bordNummer(b);
+    if (bordNavn) hvad += ' · ' + bordNavn;
+    r1.appendChild(lav('span', 'bestil-vare', hvad));
     detaljer.appendChild(r1);
     k.appendChild(detaljer);
 
-    /* Tegningen bor i kerne.js, så alarmen ved en allergi er den
-       samme på alle fanerne — se noten ved Admin.gaestebesked. */
+    /* Tegningen bor i kerne.js (Admin.gaestebesked): allergien
+       alarmerer ens på alle faner. */
     Admin.gaestebesked(k, b);
 
     var note = lav('div', 'felt');
@@ -338,13 +416,8 @@
     felt.id = 'bord-note-' + b.id;
     felt.maxLength = 1000;
     felt.value = b.intern_note || '';
-    /* ⚠️ HJÆLPETEKSTEN BAD OM BORDET (rettet 16/9, set på et skud).
-       Her stod "Fx: bord 4 ved vinduet" — og lige under står nu
-       bordVÆLGEREN. To steder at skrive det samme er præcis den
-       tvetydighed, kolonnen skulle fjerne: en travl medarbejder
-       skriver bordet i noten, og så kan systemet stadig ikke se, at
-       to familier har fået bord 7 kl. 18. Noten er til det, der
-       ikke har sit eget felt. */
+    /* Noten er til det, der ikke har sit eget felt — bordet har
+       vælgeren nedenfor (16/9). */
     felt.placeholder = 'Fx: barnestol, kørestol, fejrer fødselsdag';
     felt.addEventListener('change', function () {
       if (felt.value === (b.intern_note || '')) return;
@@ -352,27 +425,29 @@
     });
     note.appendChild(etiket);
     note.appendChild(felt);
-    k.appendChild(note);
+    /* DEN TOMME NOTE FOLDES VÆK — samme greb som bestillingskortet:
+       ti åbne notefelter med den samme grå pladsholder fylder mere
+       end ti gange navn, tid og antal. */
+    if (b.intern_note) {
+      k.appendChild(note);
+    } else {
+      var fold = lav('details', 'note-fold');
+      fold.appendChild(lav('summary', null, '📝 Skriv en note'));
+      fold.appendChild(note);
+      fold.addEventListener('toggle', function () {
+        if (fold.open) felt.focus();
+      });
+      k.appendChild(fold);
+    }
 
     /* ============================================================
        HVILKET BORD FÅR DE?  (16/9, supabase/bord-plads.sql)
-       ------------------------------------------------------------
-       Ejerens ord: bordbestillingen skal kunne styres ordentligt.
-       Før stod bordet i NOTEN ovenfor ("Fx: bord 4 ved vinduet"),
-       altså i fri tekst — og så kan systemet ikke se, at to
-       familier har fået det samme bord kl. 18.
-
-       ⚠️ VÆLGEREN FINDES IKKE, FØR KOLONNEN GØR. Samme greb som
-       menukortets billede og nyhedernes datoer: vi læser, hvad
-       DATABASEN har svaret. Uden det ville hvert gem fejle med
-       PGRST204 på en fil, ejeren ikke ved eksisterer.
-
-       ⚠️ OG DEN HER LISTE ER EN HJÆLP, IKKE VÆRNET. Databasen
-       dømmer (bordbestilling_plads): to medarbejdere, der tildeler
-       det samme bord i samme sekund, ser begge det gamle billede.
-       Derfor er et optaget bord spærret HER, og afvist alligevel
-       DÉR. */
-    if (Admin.harNoegle(borde, 'bord_id')) {
+       Vælgeren findes kun, når kolonnen gør (Admin.harNoegle), og
+       den er en hjælp, ikke værnet: databasen dømmer
+       (bordbestilling_plads). ⚠️ OG KUN PÅ EN ÅBEN BOOKING (28/9):
+       på en afvist, udeblevet eller ankommet familie er der intet
+       bord at give. */
+    if (aaben && Admin.harNoegle(borde, 'bord_id')) {
       var pladsBoks = lav('div', 'felt bord-plads');
       var pladsEtiket = lav('label', null, 'Bord');
       pladsEtiket.setAttribute('for', 'bord-plads-' + b.id);
@@ -385,18 +460,15 @@
       vaelger.appendChild(tom);
 
       (Admin.lister.bordliste || []).forEach(function (bord) {
-        /* Et slukket bord står der ikke — undtagen hvis det ER det
-           valgte: så skal personalet kunne se, hvad der står, og
-           tage det af. */
+        /* Et slukket bord står der ikke — undtagen hvis det ER det valgte. */
         if (bord.aktiv === false && String(bord.id) !== String(b.bord_id)) return;
         var o = document.createElement('option');
         o.value = bord.id;
         var dele = ['Bord ' + bord.nummer];
         if (bord.pladser) dele.push(bord.pladser + ' pl.');
         if (bord.zone) dele.push(bord.zone);
-        /* ⚠️ ET FOR LILLE BORD SPÆRRES IKKE, DET MÆRKES. To borde kan
-           sættes sammen, og en vælger, der er strengere end
-           virkeligheden, er en vælger, personalet arbejder udenom. */
+        /* Et for lille bord spærres ikke, det mærkes: to borde kan
+           sættes sammen. */
         if (bord.pladser && b.antal_personer > bord.pladser) dele.push('for lille');
         var optaget = bordOptaget(bord.id, b);
         if (optaget) {
@@ -418,151 +490,53 @@
       k.appendChild(pladsBoks);
     }
 
-    /* ⚠️ SAMME FORM SOM DE TO ANDRE KORT — ét skridt frem, resten
-       bag "···" (31/8 paa bestillingskortet, 8/9 paa
-       forespoergselskortet). Bordkortet fik den ALDRIG, og det
-       kostede to ting paa én gang:
+    /* ÉT SKRIDT FREM, RESTEN BAG "···" (31/8, 8/9) — og klassen er
+       bestil-handling, så den grønne, døren og placeringen til
+       højre fra 900 px er de samme regler som på de andre kort.
 
-         1) TRE KNAPPER I TRAEK, alle lige vigtige. Personalet
-            trykker paa "Ankommet" ni gange ud af ti; Udeblev og
-            Afvis stod side om side med den.
-         2) OG DEN GROENNE VAR ROED. Koden siger 'knap primaer
-            gron', men `.knap.gron` findes KUN scopet til
-            `.vagt-handling` og `.bestil-handling` — og raekken her
-            laa i ingen af dem, saa den arvede husets roede
-            gradient. MAALT paa kundens eget skud: ✓ Ankommet,
-            Udeblev og Afvis i tre ens roede.
-
-       ⚠️ KLASSEN ER `bestil-handling`, IKKE EN NY. Den baerer
-       ALLE de regler, de to andre kort allerede har — den
-       groenne, doerens udfoldning, og at handlingen staar til
-       HOEJRE fra 900 px. En ny klasse ville vaere en fjerde udgave
-       af det samme, og de tre ville skride fra hinanden. */
+       ⚠️ DØREN LIGGER INDE I RÆKKEN (28/9). Den blev hængt på
+       KORTET, og .bestil-mere er absolut placeret mod den nærmeste
+       placerede forælder — det er .bestil-handling. Udenfor den
+       åbnede Udeblev/Afvis/Slet et andet sted på siden end kortet.
+       Alle de andre kort har den inde i rækken. */
     var raekke = lav('div', 'knap-raekke bestil-handling');
     var mere = lav('div', 'bestil-mere');
-    var merKnap = lav('button', 'knap-mere', '\u00B7\u00B7\u00B7');
+    var merKnap = lav('button', 'knap-mere', '···');
     merKnap.type = 'button';
     merKnap.setAttribute('aria-expanded', 'false');
     merKnap.setAttribute('aria-label', 'Flere handlinger for ' + b.navn);
     merKnap.addEventListener('click', function () {
-      var aaben = mere.classList.toggle('aaben');
-      merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+      var aabnet = mere.classList.toggle('aaben');
+      merKnap.setAttribute('aria-expanded', aabnet ? 'true' : 'false');
     });
+    function knap(klasse, tekst, hvad) {
+      var el = lav('button', klasse, tekst);
+      el.type = 'button';
+      el.addEventListener('click', function () {
+        HANDLING[hvad](b, Admin.nyNote(felt, b.intern_note));
+      });
+      return el;
+    }
 
     if (b.status === 'ny') {
-      /* ⚠️ GRØN MED ET HAK, som bestillingernes sidste trin. De to
-         trin før er husets røde: de flytter sagen videre, men
-         lukker den ikke. Her er der kun ét trin. */
-      var frem = lav('button', 'knap primaer gron', '\u2713 Ankommet');
-      frem.addEventListener('click', function () {
-        /* BOOKET ER BOOKET (23/8). Gæsten har ALLEREDE fået at
-           vide, at bordet står der — kvitteringen siger "vi ses".
-           Der skal ikke ringes for at sige ja.
-
-           ⚠️ OG KNAPPEN HED "BEKRÆFT BORDET" INDTIL 3/9. Kunden
-           vendte den: hakket skal sættes, når familien KOMMER, og
-           så er sagen lukket — ligesom bestillingernes ✓ Færdig.
-           Opkaldet hører stadig til den anden vej: Afvis. */
-        if (!confirm('Er ' + b.navn + ' kommet? — '
-          + b.antal_personer + ' personer ' + Admin.pænDato(b.dato)
-          + ' kl. ' + String(b.tid || '').slice(0, 5).replace(':', '.') + '\n\n'
-          + 'Bookingen flyttes til Færdige. Kom de ikke, så tryk '
-          + 'Udeblev i stedet.')) return;
-        gemBord(Butik.skrive.bordStatus(b.id, 'bekraeftet', Admin.nyNote(felt, b.intern_note)),
-          b.navn + ' er ankommet.');
-      });
-      raekke.appendChild(frem);
+      /* Grøn med et hak, som bestillingernes sidste trin. */
+      raekke.appendChild(knap('knap primaer gron', '✓ Ankommet', 'ankommet'));
+      /* UDEBLEV OG AFVIS KUN PÅ EN NY BOOKING (3/9): en familie, der
+         er kommet, kan hverken udeblive eller afvises. */
+      mere.appendChild(knap('knap sekundaer', 'Udeblev', 'udeblev'));
+      mere.appendChild(knap('knap fare', 'Afvis', 'afvis'));
+    } else {
+      /* ⚠️ GENDAN ER HVID, IKKE HUSETS RØDE (28/9) — et skridt TILBAGE
+         må ikke ligne det primære. Samme regel som bestillingskortet.
+         På et færdigt kort er det den ene handling, der er tilbage. */
+      raekke.appendChild(knap('knap sekundaer', '↩ Gendan', 'gendan'));
+      mere.appendChild(knap('knap fare', 'Slet', 'slet'));
     }
-
-    /* ⚠️ ET TOMT BORD ER IKKE ET AFSLAG.
-
-       En bekræftet booking havde ét sted at gå hen: Afvis. Men at
-       "afvise" et bord, gæsten skulle have siddet ved, er
-       forkert — vi sagde jo ja. Uden et andet ord blev enten
-       udeblivelsen skrevet som et afslag, eller også blev der
-       ikke trykket, og bookingen stod som kommende for evigt.
-
-       Nummeret samles, som ved bestillingerne: en familie, der
-       booker seks pladser hver lørdag og aldrig kommer, skal
-       kunne ses — før næste lørdag. */
-    /* ⚠️ UDEBLEV HØRER PÅ EN *NY* BOOKING NU (3/9). Den lå på en
-       bekræftet, dengang "bekræftet" betød "vi har set den". Nu
-       betyder det ANKOMMET — og en familie, der er kommet, kan
-       ikke udeblive. Bordet, der stod tomt, er en booking, ingen
-       nåede at hakke af. */
-    if (b.status === 'ny') {
-      var udeblev = lav('button', 'knap', 'Udeblev');
-      udeblev.addEventListener('click', function () {
-        if (!confirm('Kom ' + b.navn + ' ikke?\n\n'
-          + 'Bookingen flyttes til Færdige og tælles som en '
-          + 'udeblivelse. Der skal ikke ringes.')) return;
-        gemBord(Butik.skrive.bordStatus(b.id, 'udeblevet', Admin.nyNote(felt, b.intern_note)),
-          b.navn + ' er noteret som udeblevet.');
-      });
-      mere.appendChild(udeblev);
-    }
-
-    /* ⚠️ AFVIS KUN PÅ EN *NY* BOOKING (3/9). Betingelsen var "alt,
-       der ikke er afvist eller udeblevet" — og da bekraeftet blev
-       ANKOMMET, stod Afvis på en familie, der lige var kommet ind
-       ad døren. Set på et skud, ikke læst.
-
-       Er de kommet, og var det en fejl, er vejen Gendan: bookingen
-       tilbage i Nye, og derfra kan den afvises. */
-    if (b.status === 'ny') {
-      var afvis = lav('button', 'knap fare', 'Afvis');
-      afvis.addEventListener('click', function () {
-        /* DET ER HER, DER SKAL RINGES. Gæsten fik bordet i sin
-           kvittering og regner med det; et afslag, hun ikke har
-           hørt, er en familie, der møder op. Nummeret står i
-           beskeden, så det ikke skal slås op bagefter. */
-        if (!confirm('Afvis bookingen fra ' + b.navn + '?\n\n'
-          + 'RING TIL ' + b.telefon + ' — gæsten har fået bordet i sin '
-          + 'kvittering og regner med det.')) return;
-        gemBord(Butik.skrive.bordStatus(b.id, 'afvist', Admin.nyNote(felt, b.intern_note)),
-          'Bookingen er afvist. Ring til ' + b.telefon + '.');
-      });
-      mere.appendChild(afvis);
-    }
-
-    /* ⚠️ GENDAN FØRER TIL *NY*, IKKE TIL BEKRÆFTET (rettet 3/9).
-
-       Den førte til bekraeftet, dengang det ord betød "vi har set
-       den" — rækken HAVDE været set, det var derfor, nogen
-       trykkede. Efter kundens ændring betyder bekraeftet
-       ANKOMMET, og så ville et fortrudt fejltryk sige, at
-       familien kom. Det gjorde de ikke; bookingen er åben igen og
-       venter på dem.
-
-       ⚠️ OG ANKOMMET KAN OGSÅ FORTRYDES. Rammer fingeren forkert
-       i en frokost, skal bookingen kunne komme tilbage i Nye —
-       "fortryd kan altid lade sig gøre" (31/8). */
-    if (b.status === 'afvist' || b.status === 'udeblevet'
-        || b.status === 'bekraeftet') {
-      var gendan = lav('button', 'knap', 'Gendan');
-      gendan.addEventListener('click', function () {
-        gemBord(Butik.skrive.bordStatus(b.id, 'ny', Admin.nyNote(felt, b.intern_note)),
-          'Bookingen står som ny igen.');
-      });
-      raekke.appendChild(gendan);
-
-      var slet = lav('button', 'knap fare', 'Slet');
-      slet.addEventListener('click', function () {
-        if (!confirm('Flyt bookingen fra ' + b.navn + ' til skraldespanden?\n\n'
-          + 'Det kan hentes tilbage i 30 dage.')) return;
-        gemBord(Butik.skrive.tilSkraldespand('bord', b.id),
-          'Ønsket ligger i skraldespanden.');
-      });
-      mere.appendChild(slet);
-    }
-
     if (mere.childNodes.length) {
       raekke.appendChild(merKnap);
-      k.appendChild(raekke);
-      k.appendChild(mere);
-    } else {
-      k.appendChild(raekke);
+      raekke.appendChild(mere);
     }
+    k.appendChild(raekke);
     return k;
   }
 
