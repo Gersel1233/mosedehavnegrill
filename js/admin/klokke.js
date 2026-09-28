@@ -284,7 +284,7 @@
     var veje = $('klokke-veje');
     if (veje) {
       Admin.tøm(veje);
-      [['📦 Bestillinger', 'p-bestillinger'], ['📅 Borde', 'p-borde'],
+      [['📦 Bestillinger', 'p-bestillinger'], ['📅 Bookinger', 'p-borde'],
         ['🕐 Historik', 'p-historik']].forEach(function (v) {
         var k = lav('button', 'klokke-vej', v[0]);
         k.type = 'button';

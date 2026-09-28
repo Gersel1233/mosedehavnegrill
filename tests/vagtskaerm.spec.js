@@ -898,31 +898,101 @@ test.describe('Færdig fra Overblik', () => {
     }
   });
 
-  /* En booking flyttes videre på sin egen fane, hvor pladserne og
-     dagens billede står. En færdig-knap her ville lade personalet
-     lukke et bord uden at se, hvad det gjorde ved dagen. */
-  test('en bordbooking har ingen færdig-knap', async ({ page }) => {
+  /* ⚠️ REGLEN ER VENDT (28/9) — PÅ MIKKELS ORD.
+
+     Her stod "en bordbooking har ingen færdig-knap": et bord skulle
+     flyttes videre på sin egen fane. Mikkels ord: *"i overblik kan
+     jeg ikke trykke ankommet, når nogen har bestilt borde, så skal
+     jeg ind i sektionen borde det skal rettes … alt det de
+     specifikke dage skal kunne administreres inde i overblik"*.
+
+     Det, der stadig gælder, og som prøven vogter: knappen på en
+     booking er ANKOMMET og skriver i bordbestillinger — ALDRIG
+     bestillingens "Færdig", som ville ændre en helt anden gæsts mad,
+     hvis de to havde det samme id. */
+  function medBordIDag(status, ekstra) {
     const d = travlDag();
     d.borde = [{ id: 1, lokation_id: 'mosede', nummer: '7', pladser: 4,
       placering: 'ude', aktiv: true, sortering: 10 }];
-    d.bordbestillinger = [{
+    d.bordbestillinger = [Object.assign({
+      /* id 1 — SAMME id som Anna Vinds bestilling i travlDag(). Det er
+         netop fælden: en knap, der skrev i den forkerte tabel, ville
+         flytte Annas mad. */
       id: 1, lokation_id: 'mosede', reference: 'BO-1', navn: 'Familien Sø',
       telefon: '20304060', dato: '2026-08-07', tid: '18:00', antal_personer: 6,
-      status: 'ny', besked: null, intern_note: null, slettet: null,
-      oprettet: '2026-08-07T10:00:00Z',
-    }];
-    await åbnAdmin(page, { data: d });
+      status, besked: 'Vi har en barnevogn med', intern_note: null, slettet: null,
+      bord_id: 1, oprettet: '2026-08-07T10:00:00Z',
+    }, ekstra || {})];
+    return d;
+  }
 
+  test('en bordbooking kan hakkes af som Ankommet direkte i Overblik', async ({ page }) => {
+    page.on('dialog', (d) => d.accept());
+    await åbnAdmin(page, { data: medBordIDag('ny') });
     const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Familien Sø' });
     await expect(raekke).toHaveCount(1);
-    /* ⚠️ MÅLT PÅ ORDET, IKKE PÅ KLASSEN (1/9). Genvejen til
-       Borde-fanen er husets .knap nu (den ligger bag "···"), så
-       "ingen .knap" ville falde på en knap, der intet gør ved
-       bookingen. Reglen er den samme: der er ingen vej til at
-       LUKKE en booking herfra. */
     await expect(raekke.locator('button', { hasText: 'Færdig' })).toHaveCount(0);
-    await expect(raekke.locator('.vagt-frem')).toHaveCount(0);
-    await expect(raekke.locator('button', { hasText: 'Borde' })).toHaveCount(1);
+    // telefonen, beskeden og bordet står på rækken — man skal ikke skifte fane
+    await expect(raekke).toContainText('20304060');
+    await expect(raekke).toContainText('barnevogn');
+    await expect(raekke).toContainText('6 personer · Bord 7');
+
+    await raekke.locator('button', { hasText: 'Ankommet' }).click();
+
+    // ud af forløbet og ned i Færdige — uden et faneskift
+    await expect(page.locator('#overblik-vagt')).not.toContainText('Familien Sø');
+    await expect(page.locator('#faerdige-titel')).toContainText('Færdige (');
+    await expect(page.locator('#overblik-faerdige')).toContainText('Familien Sø');
+    await expect(page.locator('#p-overblik')).not.toHaveClass(/skjult/);
+
+    const gemt = await gemteData(page);
+    expect(gemt.bordbestillinger.find((b) => b.id === 1).status).toBe('bekraeftet');
+    // og Anna Vinds bestilling med det samme id er urørt
+    expect(gemt.bestillinger.find((b) => b.id === 1).status).toBe('ny');
+  });
+
+  test('Udeblev og Afvis ligger bag ··· på bookingens række', async ({ page }) => {
+    page.on('dialog', (d) => d.accept());
+    await åbnAdmin(page, { data: medBordIDag('ny') });
+    const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Familien Sø' });
+    await expect(raekke.locator('.bestil-mere')).toContainText('Udeblev');
+    await expect(raekke.locator('.bestil-mere')).toContainText('Afvis');
+    await raekke.locator('.knap-mere').click();
+    await raekke.locator('.bestil-mere button', { hasText: 'Udeblev' }).click();
+    await expect(page.locator('#overblik-vagt')).not.toContainText('Familien Sø');
+    const gemt = await gemteData(page);
+    expect(gemt.bordbestillinger.find((b) => b.id === 1).status).toBe('udeblevet');
+  });
+
+  test('en ankommet booking kan gendannes fra Færdige i Overblik', async ({ page }) => {
+    await åbnAdmin(page, { data: medBordIDag('bekraeftet') });
+    await expect(page.locator('#overblik-vagt')).not.toContainText('Familien Sø');
+    await page.locator('#faerdige-titel').click();
+    const raekke = page.locator('#overblik-faerdige .vagt-raekke', { hasText: 'Familien Sø' });
+    await expect(raekke).toContainText('Ankommet');
+    await raekke.locator('button', { hasText: 'Gendan' }).click();
+    await expect(page.locator('#overblik-vagt')).toContainText('Familien Sø');
+    const gemt = await gemteData(page);
+    expect(gemt.bordbestillinger.find((b) => b.id === 1).status).toBe('ny');
+  });
+
+  /* Alarmen sagde "Familien Sø skulle have hentet kl. 18.00" om et
+     bord — og kl. 18.01 om en familie, der var fem minutter forsinket. */
+  test('et bord er ikke "skulle have hentet", og kvarteret er respit', async ({ page }) => {
+    // 16.05Z er 18.05 dansk sommertid — fem minutter over bordets tid
+    await åbnAdmin(page, { ur: '2026-08-07T16:05:00Z', data: medBordIDag('ny') });
+    await expect(page.locator('#plan-alarm')).not.toContainText('Familien Sø');
+    const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Familien Sø' });
+    await expect(raekke.locator('.m-sen')).toHaveCount(0);
+  });
+
+  test('et kvarter over tiden siger alarmen det med bordets ord', async ({ page }) => {
+    await åbnAdmin(page, { ur: '2026-08-07T16:20:00Z', data: medBordIDag('ny') });
+    const alarm = page.locator('#plan-alarm');
+    await expect(alarm).toContainText('Familien Sø har booket bord kl. 18.00');
+    await expect(alarm).not.toContainText('skulle have hentet kl. 18.00');
+    const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Familien Sø' });
+    await expect(raekke.locator('.m-sen')).toHaveText('Ikke kommet');
   });
 });
 
@@ -1162,22 +1232,24 @@ test.describe('Ruderne under forløbet', () => {
     return d;
   }
 
-  /* ⚠️ STRIBEN FINDES KUN, NÅR DER ER NOGET. En fast boks, der
-     som regel siger "alt er fint", bliver til udsmykning på en
-     uge — og så ses den heller ikke den dag, den siger noget.
-     Samme regel som baglokalets ⚠️-kort fik 28/8. */
-  test('en booking, der venter, får den røde stribe', async ({ page }) => {
+  /* ⚠️ STRIBEN "⏳ 1 VENTER PÅ SVAR – RING OG FÅ DEM PÅ PLADS" ER VÆK
+     (28/9). Den blev skrevet, da et bord var et ønske, der skulle
+     ringes om. bord/ BOOKER (23/8), og kundens regel er "Bestilt er
+     bestilt, booket er booket. Opkaldet hører til Afvis". Kortet
+     siger nu, hvad dagen er — og dagens borde hakkes af i forløbet. */
+  test('kortet siger dagens borde og personer, uden et opkald', async ({ page }) => {
     await åbnAdmin(page, { data: medBooking('ny') });
-    const stribe = page.locator('#ob-booking .ob-stribe');
-    await expect(stribe).toHaveCount(1);
-    await expect(stribe).toContainText('1 venter på svar');
+    const boks = page.locator('#ob-booking');
+    await expect(boks).toContainText('I dag: 1 bord · 6 personer');
+    await expect(boks).toContainText('Ankommet');
+    await expect(boks).not.toContainText(/ring/i);
+    await expect(boks).not.toContainText('venter på svar');
   });
 
-  test('er alle hakket af, står der ingen stribe', async ({ page }) => {
+  test('er de kommet, siger kortet det', async ({ page }) => {
     await åbnAdmin(page, { data: medBooking('bekraeftet') });
     await expect(page.locator('#ob-booking-kort')).not.toHaveClass(/skjult/);
-    await expect(page.locator('#ob-booking .ob-stribe')).toHaveCount(0);
-    await expect(page.locator('#ob-booking')).toContainText('hakket af');
+    await expect(page.locator('#ob-booking')).toContainText('de er kommet');
   });
 
   test('uden bookinger findes kortet ikke', async ({ page }) => {
@@ -1185,15 +1257,25 @@ test.describe('Ruderne under forløbet', () => {
     await expect(page.locator('#ob-booking-kort')).toHaveClass(/skjult/);
   });
 
-  /* Ruden retter ingenting: knappen fører hen til fanen, hvor
-     pladserne og dagens billede står. */
-  /* ⚠️ FANEN HEDDER KØKKENET FRA 16/9. Køkken-kø og Borde blev slået
-     sammen på ejerens ord ("det er praktisk det samme"). Reglen,
-     prøven vogter, er urørt: striben fører hen til den fane, hvor
-     bookingerne står — og bookingerne skal være dér. */
-  test('striben fører hen til fanen med bookingerne', async ({ page }) => {
+  test('de næste dage står som dag og antal', async ({ page }) => {
+    const d = medBooking('ny');
+    d.bordbestillinger.push(Object.assign({}, d.bordbestillinger[0],
+      { id: 2, reference: 'BO-R-2', dato: '2026-08-08' }));
+    d.bordbestillinger.push(Object.assign({}, d.bordbestillinger[0],
+      { id: 3, reference: 'BO-R-3', dato: '2026-08-08' }));
+    await åbnAdmin(page, { data: d });
+    // 8. august 2026 er en lørdag — ugedagen kommer fra kalenderen, ikke fra koden
+    await expect(page.locator('#ob-booking .ob-dag')).toHaveText('Lør 8. august · 2');
+  });
+
+  /* Knappen fører hen til fanen, hvor pladserne og dagens billede står.
+     ⚠️ FANEN HEDDER KØKKENET FRA 16/9, og knappen sagde "Åbn
+     overblikket →" — mens man stod i Overblik. */
+  test('knappen fører hen til fanen med bookingerne', async ({ page }) => {
     await åbnAdmin(page, { data: medBooking('ny') });
-    await page.locator('#ob-booking .ob-stribe').click();
+    const knap = page.locator('#ob-til-borde');
+    await expect(knap).toHaveText('Se alle bookinger →');
+    await knap.click();
     await expect(page.locator('.faner button[aria-selected="true"]'))
       .toContainText('Køkkenet');
     await expect(page.locator('#p-borde')).not.toHaveClass(/skjult/);

@@ -402,7 +402,9 @@ test.describe('Personalet bekræfter', () => {
     const nyt = page.locator('#overblik-nyt');
     await expect(nyt).toContainText('Familien Vind');
     await expect(nyt).toContainText('Bord · 4 personer');
-    await expect(nyt).toContainText('Åbn bordene');
+    /* "Åbn bordene" stod her. Fanen har heddet Køkkenet siden 16/9,
+       og det, knappen åbner, er bookingerne (28/9). */
+    await expect(nyt).toContainText('Åbn bookingerne');
   });
 });
 

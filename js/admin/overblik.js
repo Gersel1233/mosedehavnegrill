@@ -246,17 +246,32 @@
 
     var dato = Butik.nu().dato;
     (Admin.lister.borde || []).forEach(function (b) {
-      if (b.slettet || b.status === 'afvist' || b.status === 'udeblevet') return;
+      /* ⚠️ KUN DE FAMILIER, DER IKKE ER KOMMET ENDNU (28/9). En
+         ankommet booking stod videre i forløbet — og blev kl. 18.05
+         til "Overskredet" og en rød alarm om en gæst, der sad og
+         spiste. Ankommet er færdig; den står i Færdige-folden
+         nedenfor, med Gendan, som en udleveret bestilling. */
+      if (b.slettet || b.status !== 'ny') return;
       if (b.dato !== dato) return;
+      var bordNavn = Admin.bordNummer ? Admin.bordNummer(b) : '';
       ud.push({
         min: tilMinutter(b.tid),
         tid: String(b.tid || '').slice(0, 5).replace(':', '.'),
         navn: b.navn,
-        hvad: (b.antal_personer || '?') + ' personer',
+        hvad: (Admin.personer ? Admin.personer(b.antal_personer)
+          : (b.antal_personer || '?') + ' personer')
+          + (bordNavn ? ' · ' + bordNavn : ''),
         maerke: '',
-        ny: b.status === 'ny',
+        /* Intet "Ny"-mærke: på en booking betyder ny "ikke kommet
+           endnu", og det siger rækken selv ved at stå her. */
+        ny: false,
+        /* ⚠️ `booking`, ALDRIG `b`. Rækkens `b` er en BESTILLING, og
+           knappen på den kalder bestillingStatus. En booking og en
+           bestilling kan have samme id i hver sin tabel — en booking
+           i `b` ville have ændret en helt anden gæsts mad. */
+        booking: b,
         kilde: 'booking',
-        fane: 'p-borde', faneNavn: 'Borde',
+        fane: 'p-borde', faneNavn: 'Køkkenet',
       });
     });
 
@@ -285,8 +300,17 @@
     return tid;
   }
 
+  /* EN FAMILIE, DER ER FEM MINUTTER FORSINKET, ER IKKE EN ALARM
+     (28/9). Maden ved lugen er overskredet, når klokken er gået;
+     et bord er det først, når kvarteret er gået. */
+  var BOOKING_RESPIT = 15;
+  function erOverskredet(r, nu) {
+    if (r.min === null) return false;
+    return r.min + (r.booking ? BOOKING_RESPIT : 0) < nu.minutter;
+  }
+
   function vagtRaekke(r, nu) {
-    var overskredet = r.min !== null && r.min < nu.minutter;
+    var overskredet = erOverskredet(r, nu);
     var k = lav('div', 'vagt-raekke kilde-' + (r.kilde || 'lugen')
       + (overskredet ? ' overskredet' : ''));
 
@@ -340,7 +364,8 @@
        `m-ny` — statussens klasse — så en række kunne have "Ny" og
        "Overskredet" i præcis samme pille, og øjet kunne ikke se,
        at det var to forskellige slags oplysning. */
-    if (overskredet) linje.appendChild(lav('span', 'maerke m-sen', 'Overskredet'));
+    if (overskredet) linje.appendChild(lav('span', 'maerke m-sen',
+      r.booking ? 'Ikke kommet' : 'Overskredet'));
     midt.appendChild(linje);
     /* ⚠️ ÉN VARE PR. LINJE, IKKE ÉN LANG SÆTNING. Se varelinjer(). */
     if (r.b) {
@@ -358,6 +383,12 @@
       }
     } else {
       midt.appendChild(lav('div', 'vare-tekst', r.hvad));
+      /* BOOKINGENS BESKED OG ALLERGI — samme tegning som Køkkenet-
+         fanens kort (Admin.gaestebesked). "Vi har en barnevogn med"
+         skal kunne læses, der hvor man trykker Ankommet. */
+      if (r.booking && Admin.gaestebesked && Admin.gaestebesked(midt, r.booking)) {
+        midt.classList.remove('har-allergi');
+      }
     }
     /* ⚠️ NUMMERET OG KONTAKTEN STOD KUN PÅ BESTILLINGER-FANEN.
        Personalet står ved lugen med Overblik åben; for at ringe
@@ -365,7 +396,7 @@
        kortet igen. Kundens ord 1/9: "telefon nummer". Reglen bor
        i Admin.kontakt, så de to faner ikke kan komme til at vise
        nummeret på hver sin måde. */
-    if (r.b) {
+    if (r.b || r.booking) {
       var kontakt = lav('div', 'vagt-kontakt');
       /* ⚠️ KLOKKESLÆTTET STOD TO GANGE PÅ DEN SAMME RÆKKE (6/9).
          Forlægget havde "kl. 16.00 · 📞 61799448" her, og senere
@@ -374,7 +405,7 @@
          SUMMEN, og den kunne kun ses på et skud: "kl. 12.15" i
          aksen og "kl. 12.15" i kontaktlinjen, 30 px fra hinanden.
          Aksen er den, man skimmer ned ad, så den bliver. */
-      (Admin.kontakt ? Admin.kontakt(r.b) : []).forEach(function (e) {
+      (Admin.kontakt ? Admin.kontakt(r.b || r.booking) : []).forEach(function (e) {
         kontakt.appendChild(e);
       });
       /* ⚠️ OG HVOR DEN SKAL KØRES HEN  (21/9). Personalet står ved
@@ -383,7 +414,7 @@
          over på Bestillinger-fanen for at finde den. Reglen bor i
          Admin.leveringsLink, så de to faner ikke kan komme til at
          vise adressen på hver sin måde. */
-      var levLink = Admin.leveringsLink && Admin.leveringsLink(r.b, 'bestil-tlf');
+      var levLink = r.b && Admin.leveringsLink && Admin.leveringsLink(r.b, 'bestil-tlf');
       if (levLink) kontakt.appendChild(levLink);
       /* ⚠️ BESTILLINGSNUMMERET STÅR IKKE HER. Forlægget har det
          ikke på rækken, og det er rigtigt: linjen er "kl. 16.00 ·
@@ -406,8 +437,13 @@
        den samme bestilling to forskellige næste trin, alt efter
        hvilken fane man stod på.
 
-       Bookinger har ingen knap: et bord flyttes videre på sin
-       egen fane, hvor pladserne og dagens billede står. */
+       ⚠️ BOOKINGEN HAR SIN EGEN KNAP NU (28/9). Her stod
+       "Bookinger har ingen knap: et bord flyttes videre på sin egen
+       fane". Mikkels ord: *"i overblik kan jeg ikke trykke ankommet,
+       når nogen har bestilt borde, så skal jeg ind i sektionen borde
+       … alt det de specifikke dage skal kunne administreres inde i
+       overblik"*. Spørgsmålene og skrivningen er Køkkenet-fanens
+       egne (Admin.bordHandling) — ikke en kopi. */
     /* ⚠️ HANDLINGERNE LIGGER I DERES EGEN KOLONNE (30/8).
 
        De to knapper var direkte børn af grid'et og faldt derfor
@@ -452,6 +488,19 @@
       });
       handling.appendChild(frem);
     }
+    if (r.booking && Admin.bordHandling) {
+      var kom = lav('button', 'knap primaer gron vagt-frem', '✓ Ankommet');
+      kom.type = 'button';
+      kom.addEventListener('click', function () {
+        var l = Admin.bordHandling('ankommet', r.booking);
+        if (!l) return;
+        kom.disabled = true;
+        /* gemBord melder bordene ind (Admin.meld), og efterHent
+           tegner Overblik om — rækken flytter sig selv til Færdige. */
+        l.then(function () { kom.disabled = false; });
+      });
+      handling.appendChild(kom);
+    }
 
     /* ⚠️ DØREN ER "···", SOM PÅ BESTILLINGSKORTET  (1/9).
        Forlægget har præcis to knapper på rækken: den grønne
@@ -472,6 +521,18 @@
       var aaben = mere.classList.toggle('aaben');
       merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
     });
+    /* Udeblev og Afvis bag døren, som på Køkkenet-fanens kort. */
+    if (r.booking && Admin.bordHandling) {
+      [['knap sekundaer', 'Udeblev', 'udeblev'], ['knap fare', 'Afvis', 'afvis']]
+        .forEach(function (h) {
+          var kn = lav('button', h[0], h[1]);
+          kn.type = 'button';
+          kn.addEventListener('click', function () {
+            Admin.bordHandling(h[2], r.booking);
+          });
+          mere.appendChild(kn);
+        });
+    }
     mere.appendChild(faneKnap(r.fane, r.faneNavn + ' →'));
     handling.appendChild(merKnap);
     handling.appendChild(mere);
@@ -596,7 +657,12 @@
      bestilling sig fra "senere" til "snart", er det den SAMME
      række, og den skal ikke lyse op som ny. */
   function forloebRaekke(r, nu) {
-    var id = (r.b ? 'b' + r.b.id : 'k' + (r.fane || '') + (r.tid || '') + r.navn);
+    /* 'bo' + id for en booking: en booking og en bestilling kan have
+       det samme id, og to rækker med samme nøgle ville tegne hinanden
+       om. */
+    var id = r.b ? 'b' + r.b.id
+      : r.booking ? 'bo' + r.booking.id
+      : 'k' + (r.fane || '') + (r.tid || '') + r.navn;
     return {
       erSag: true,
       noegle: id,
@@ -605,8 +671,9 @@
          for HVER række, så to forskellige mærker ville se ens ud —
          og et kort, der HAVDE ændret sig, blev ikke tegnet om. */
       aftryk: [r.tid, r.navn, r.hvad, r.maerke && r.maerke.tekst, r.ny, r.allergi,
-        r.b ? r.b.status : '', r.min !== null && r.min < nu.minutter,
-        r.b ? (r.b.besked || '') + '/' + (r.b.antal_personer || '') : ''].join('|'),
+        r.b ? r.b.status : '', erOverskredet(r, nu),
+        r.b ? (r.b.besked || '') + '/' + (r.b.antal_personer || '') : '',
+        r.booking ? JSON.stringify(r.booking) : ''].join('|'),
       byg: function () { return vagtRaekke(r, nu); },
     };
   }
@@ -782,6 +849,40 @@
   //
   //  Foldet sammen, så de ikke fylder — og med en vej tilbage.
   // ----------------------------------------------------------
+  function ankommetRaekke(b) {
+    var k = lav('div', 'vagt-raekke faerdig-raekke b-faerdig');
+    k.setAttribute('data-booking', String(b.id));
+    k.appendChild(tidsAkse(String(b.tid || '').slice(0, 5).replace(':', '.')));
+    var midt = lav('div', 'vagt-midt');
+    var hvem = lav('div', 'bestil-hvem');
+    hvem.appendChild(lav('span', 'vare-navn',
+      Admin.pæntNavn ? Admin.pæntNavn(b.navn) : b.navn));
+    hvem.appendChild(lav('span', 'maerke kilde-maerke', '📅 Bordbooking'));
+    hvem.appendChild(lav('span', 'maerke m-faerdig', '✓ Ankommet'));
+    midt.appendChild(hvem);
+    var bordNavn = Admin.bordNummer ? Admin.bordNummer(b) : '';
+    midt.appendChild(lav('div', 'vare-tekst',
+      (Admin.personer ? Admin.personer(b.antal_personer) : b.antal_personer + ' personer')
+      + (bordNavn ? ' · ' + bordNavn : '')));
+    var kontakt = lav('div', 'vagt-kontakt');
+    (Admin.kontakt ? Admin.kontakt(b) : []).forEach(function (e) {
+      kontakt.appendChild(e);
+    });
+    if (kontakt.childNodes.length) midt.appendChild(kontakt);
+    var handling = lav('div', 'vagt-handling');
+    var knap = lav('button', 'knap lille', '↩ Gendan');
+    knap.type = 'button';
+    /* Gendan fører til NY — "ikke kommet endnu" (3/9) — og så står
+       familien i forløbet igen. Skrivningen er Køkkenet-fanens. */
+    knap.addEventListener('click', function () {
+      if (Admin.bordHandling) Admin.bordHandling('gendan', b);
+    });
+    handling.appendChild(knap);
+    midt.appendChild(handling);
+    k.appendChild(midt);
+    return k;
+  }
+
   function tegnFaerdige() {
     var kort = $('faerdige-kort');
     var boks = $('overblik-faerdige');
@@ -794,9 +895,20 @@
     }).sort(function (a, b) {
       return String(b.hent_tid || '').localeCompare(String(a.hent_tid || ''));
     });
+    /* DE ANKOMNE BORDE STÅR HER OGSÅ (28/9) — en booking, der er
+       hakket af, er færdig på samme måde som en udleveret bestilling,
+       og et fejltryk skal kunne tages tilbage herfra. */
+    var iDagIso = Butik.nu().dato;
+    var ankomne = (Admin.lister.borde || []).filter(function (b) {
+      return !b.slettet && b.status === 'bekraeftet' && b.dato === iDagIso;
+    }).sort(function (a, b) {
+      return String(b.tid || '').localeCompare(String(a.tid || ''));
+    });
 
-    kort.classList.toggle('skjult', !liste.length);
-    titel.textContent = '✓ Færdige (' + liste.length + ')';
+    var i_alt = liste.length + ankomne.length;
+    kort.classList.toggle('skjult', !i_alt);
+    titel.textContent = '✓ Færdige (' + i_alt + ')';
+    ankomne.forEach(function (b) { boks.appendChild(ankommetRaekke(b)); });
     if (!liste.length) return;
 
     /* ⚠️ ORDENE ER BESTILLINGSFANENS, IKKE EN KOPI (31/8). Her
@@ -920,7 +1032,7 @@
         dato: b.dato,
         naar: Admin.pænDato(b.dato) + ' kl. '
           + String(b.tid || '').slice(0, 5).replace(':', '.'),
-        fane: 'p-borde', faneNavn: 'Åbn bordene',
+        fane: 'p-borde', faneNavn: 'Åbn bookingerne',
       });
     });
 
@@ -1051,9 +1163,16 @@
           ? ret.navn
           : ret.antal_tilbage + ' tilbage']);
 
+    /* ⚠️ I DAG OG FREM, OG "IKKE KOMMET" (28/9). Flisen talte hver
+       ny booking, også en fra i forgårs, som ingen havde hakket af —
+       og sagde "ikke set på endnu", som om nogen skulle ringe. En
+       booking er booket; "ny" betyder, at familien ikke er kommet. */
+    var fraIDag = Butik.nu().dato;
     felter.push(['Nye bookinger',
-      borde.filter(function (b) { return b.status === 'ny'; }).length,
-      'ikke set på endnu']);
+      borde.filter(function (b) {
+        return !b.slettet && b.status === 'ny' && b.dato >= fraIDag;
+      }).length,
+      'i dag og frem, ikke kommet endnu']);
     felter.push(['Venter på svar', venter, 'forespørgsler og baglokale']);
 
     felter.forEach(function (t) {
@@ -1100,8 +1219,15 @@
     /* 1) DET, DER SKULLE HAVE VÆRET HENTET. Bordene tæller ikke
        med — de har ingen hentetid, og deres egen linje står
        nedenfor. */
-    var sene = dagensArbejde().filter(function (r) {
-      return r.min !== null && r.min < nu.minutter;
+    /* ⚠️ KUN LUGEN (28/9). Bookingerne står også i dagensArbejde,
+       og alarmen skrev "Familien Holm skulle have hentet kl. 18.00"
+       om et bord. Bordene har deres egen linje nedenfor. */
+    var arbejde = dagensArbejde();
+    var sene = arbejde.filter(function (r) {
+      return r.kilde !== 'booking' && erOverskredet(r, nu);
+    });
+    var ikkeKommet = arbejde.filter(function (r) {
+      return r.kilde === 'booking' && erOverskredet(r, nu);
     });
     if (sene.length) {
       /* ⚠️ OGSÅ HER (6/9). Admin.pæntNavn stod i kerne.js, og
@@ -1116,6 +1242,17 @@
           + '. Står øverst i forløbet.'
         : sene.length + ' bestillinger skulle have været hentet — den ældste kl. '
           + sene[0].tid + '. De står øverst i forløbet.'));
+    }
+    if (ikkeKommet.length) {
+      var pænt2 = function (n) {
+        return Admin.pæntNavn ? Admin.pæntNavn(n) : n;
+      };
+      linjer.push('📅 ' + (ikkeKommet.length === 1
+        ? pænt2(ikkeKommet[0].navn) + ' har booket bord kl. ' + ikkeKommet[0].tid
+          + ' og er ikke hakket af.'
+        : ikkeKommet.length + ' bookinger er ikke hakket af — den første kl. '
+          + ikkeKommet[0].tid + '.')
+        + ' Tryk ✓ Ankommet i forløbet, når de sidder ned, eller Udeblev under ···.');
     }
 
     /* 2) BORDENE. ⚠️ GRÆNSEN ER KØKKENETS EGEN (Admin.bordForLaenge
@@ -1488,31 +1625,61 @@
 
     var iDag = Butik.nu().dato;
     var alle = (Admin.lister.borde || []).filter(function (b) {
-      return !b.slettet && b.dato >= iDag;
+      return !b.slettet && b.dato >= iDag
+        && (b.status === 'ny' || b.status === 'bekraeftet');
     });
-    var venter = alle.filter(function (b) { return b.status === 'ny'; }).length;
     kort.classList.toggle('skjult', !alle.length);
     if (!alle.length) return;
 
-    if (venter) {
-      /* ⚠️ EN BOOKING, DER VENTER, ER ARBEJDE — og gæsten har
-         fået "vi ses". Striben er rød, fordi den skal ses, og den
-         siger HVAD man gør: ring. Samme ord som Borde-fanen. */
-      var stribe = lav('button', 'ob-stribe', '');
-      stribe.type = 'button';
-      stribe.appendChild(lav('b', null, '⏳ ' + venter
-        + (venter === 1 ? ' venter på svar' : ' venter på svar')));
-      stribe.appendChild(document.createTextNode(
-        ' – ring og få dem på plads →'));
-      stribe.addEventListener('click', function () {
-        Admin.visFane('p-borde');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-      boks.appendChild(stribe);
+    /* ⚠️ INGEN "RING OG FÅ DEM PÅ PLADS" (28/9). Striben sagde
+       "⏳ 1 venter på svar – ring og få dem på plads" om hver ny
+       booking. Men bord/ BOOKER (23/8): gæsten har fået "vi ses", og
+       kundens regel er "Bestilt er bestilt, booket er booket.
+       Opkaldet hører til Afvis". Nu siger kortet, hvad dagen er, og
+       dagens borde hakkes af i forløbet ovenfor. */
+    var idag = alle.filter(function (b) { return b.dato === iDag; });
+    var kommet = idag.filter(function (b) { return b.status === 'bekraeftet'; }).length;
+    var gaester = idag.reduce(function (s, b) {
+      return s + (Number(b.antal_personer) || 0);
+    }, 0);
+    var pers = function (n) {
+      return Admin.personer ? Admin.personer(n) : n + ' personer';
+    };
+    var linje = lav('p', 'ob-booking-idag');
+    if (idag.length) {
+      linje.appendChild(lav('b', null, 'I dag: ' + idag.length
+        + (idag.length === 1 ? ' bord' : ' borde') + ' · ' + pers(gaester)));
+      linje.appendChild(document.createTextNode(
+        kommet === idag.length
+          ? (idag.length === 1 ? ' — de er kommet.' : ' — alle er kommet.')
+          : kommet
+            ? ' — ' + kommet + ' er kommet. De andre står i forløbet ovenfor.'
+            : ' — de står i forløbet ovenfor. Tryk ✓ Ankommet, når de sidder ned.'));
     } else {
-      boks.appendChild(lav('p', 'hjaelp',
-        alle.length + (alle.length === 1 ? ' booking' : ' bookinger')
-        + ' i dag og frem — alle er hakket af.'));
+      linje.textContent = 'Ingen borde booket i dag.';
+    }
+    boks.appendChild(linje);
+
+    /* DE NÆSTE DAGE — antallet pr. dag, så man kan se en travl
+       lørdag komme. Detaljerne står på Køkkenet og i Kalender. */
+    var pr = {};
+    alle.forEach(function (b) {
+      if (b.dato === iDag || b.status !== 'ny') return;
+      pr[b.dato] = (pr[b.dato] || 0) + 1;
+    });
+    var dage = Object.keys(pr).sort();
+    if (dage.length) {
+      var frem = lav('div', 'ob-booking-frem');
+      dage.slice(0, 4).forEach(function (d) {
+        var chip = lav('span', 'maerke m-dag dag-frem ob-dag',
+          Admin.pænDato(d).replace(/^\S+/, function (u) { return u.slice(0, 3); })
+          + ' · ' + pr[d]);
+        frem.appendChild(chip);
+      });
+      if (dage.length > 4) {
+        frem.appendChild(lav('span', 'hjaelp', '+ ' + (dage.length - 4) + ' dage mere'));
+      }
+      boks.appendChild(frem);
     }
   }
 

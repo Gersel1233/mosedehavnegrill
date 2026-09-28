@@ -3396,24 +3396,21 @@ body.personale .ob-chip.solgt {
   color: #24704a;
 }
 
-/* Striben er en KNAP: den fører hen til bordene. En rød kasse,
-   man ikke kan trykke på, er en besked om noget, man selv skal
-   finde. */
-body.personale .ob-stribe {
-  display: block;
-  width: 100%;
-  text-align: left;
-  border: 1px solid rgba(214, 42, 58, .35);
-  border-radius: 14px;
-  background: rgba(214, 42, 58, .07);
-  color: var(--red-tekst);
-  padding: 12px 14px;
-  font: inherit;
+/* BOOKINGKORTET I OVERBLIK (28/9): dagen i én linje og de næste
+   dage som små datomærker. Den røde stribe ("ring og få dem på
+   plads") er væk — en booking er booket, og der skal ikke ringes. */
+body.personale .ob-booking-idag {
+  margin: 0;
   font-size: 15px;
-  line-height: 1.4;
-  cursor: pointer;
+  line-height: 1.45;
 }
-body.personale .ob-stribe:hover { background: rgba(214, 42, 58, .11); }
+body.personale .ob-booking-frem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
 /* ⚠️ NUMMERET MÅ IKKE SKUBBE SIG SELV UD I KANTEN. .bestil-ref
    har margin-left:auto på bestillingskortet, hvor den ER yderst;
    her står den i en linje med tid og telefon og skal blive på

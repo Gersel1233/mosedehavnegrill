@@ -2003,7 +2003,7 @@
        der SKETE i telefonen; "Opret booking denne dag" beskriver,
        hvad KNAPPEN gør. Det er dét, man leder efter. */
     knap('+ Opret booking denne dag',
-      'Åbner Borde-fanen med dagen udfyldt', function () {
+      'Åbner Køkkenet-fanen med dagen udfyldt', function () {
         tilFold('p-borde', 'tag-booking', 'nyb-dato', 'nyb-navn');
       }, 'knap dag-hoved-handling');
 
