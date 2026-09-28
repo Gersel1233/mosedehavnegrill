@@ -1464,6 +1464,14 @@
       Admin.brøl('Navn, telefon og dato skal udfyldes.');
       return;
     }
+    /* ⚠️ NUMMERET TJEKKES HER, IKKE KUN AF DATABASEN (28/9). "12" gik
+       igennem feltet og kom tilbage som en afvisning fra databasen —
+       og øvetilstanden tog imod det. Samme regel som gæstesiderne. */
+    var tlfFejl = Butik.tjek.telefon(telefon);
+    if (tlfFejl) {
+      Admin.brøl(tlfFejl.replace('så vi kan få fat i dig', 'så I kan få fat i gæsten'));
+      return;
+    }
 
     var knap = $('opret-udlejning');
     knap.disabled = true;

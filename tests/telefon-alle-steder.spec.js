@@ -16,7 +16,7 @@
    sætning (js/skal/feltfejl.js).
    ============================================================ */
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, visFane, grunddata, gemteData } = require('./hjaelp');
 
 const FREDAG = '2026-08-07T11:00:00Z';
 
@@ -142,5 +142,37 @@ test.describe('Øvetilstanden', () => {
     });
     expect(svar.bord).toMatch(/Telefonnummeret blev afvist/);
     expect(svar.bestil).toMatch(/Telefonnummeret blev afvist/);
+  });
+});
+
+/* bord/ satte aria-invalid på feltet, men ingen regel læste det, og
+   feltfejlene havde role=alert — så de blev tegnet som store kort, mens
+   bestil/ tegnede dem som små linjer. Nu: små linjer og et rødt felt. */
+test.describe('bord/', () => {
+  test('et for kort nummer: feltet er rødt, og fejlen er en linje, ikke et kort', async ({ page }) => {
+    await åbn(page, '/bord/');
+    await page.locator('#bord-antal').fill('4');
+    await page.locator('#bord-navn').fill('Familien Vind');
+    await page.locator('#bord-telefon').fill('2030');
+    await page.locator('#bord-send').click();
+    await expect(page.locator('#fejl-telefon')).toContainText('for kort');
+    const kant = await page.locator('#bord-telefon').evaluate((el) => getComputedStyle(el).outlineStyle);
+    expect(kant, 'feltet har ingen rød kant').toBe('solid');
+    const flade = await page.locator('#fejl-telefon').evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(flade, 'feltfejlen er tegnet som et kort').toBe('rgba(0, 0, 0, 0)');
+  });
+});
+
+test.describe('Admin', () => {
+  test('en udlejning i telefonen med "12" som nummer bliver sagt fra', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await visFane(page, 'p-lokale');
+    await page.locator('#lokale-tag-booking summary').click();
+    await page.fill('#nyl-navn', 'Bodil Storm');
+    await page.fill('#nyl-telefon', '12');
+    await page.fill('#nyl-dato', '2026-09-12');
+    await page.locator('#opret-udlejning').click();
+    await expect(page.locator('#fejl')).toContainText('for kort');
+    expect((await gemteData(page)).udlejninger || []).toHaveLength(0);
   });
 });

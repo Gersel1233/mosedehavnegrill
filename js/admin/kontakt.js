@@ -68,6 +68,16 @@
     var email = $('lok-email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'E-mailen ser ikke rigtig ud.';
 
+    /* ⚠️ HUSETS NUMMER BLIVER TIL "RING TIL OS" PÅ HVER SIDE (28/9).
+       Feltet havde intet tjek, og et nummer med et ciffer for lidt
+       ville stå som en knap, der ringer forkert, på alle gæstesider.
+       Tomt er tilladt (så er der intet nummer at vise). */
+    var husTlf = $('lok-telefon').value.trim();
+    if (husTlf) {
+      var tf = Butik.tjek.telefon(husTlf);
+      if (tf) return 'Husets ' + tf.charAt(0).toLowerCase() + tf.slice(1);
+    }
+
     /* ⚠️ CVR: OTTE CIFRE ELLER TOMT — INTET IMELLEM (8/9).
        Nummeret er lovpligtigt på en erhvervsside (e-handelsloven
        § 7), og det står på jura-siden. Et nummer med syv cifre

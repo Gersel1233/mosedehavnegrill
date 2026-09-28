@@ -6940,6 +6940,17 @@ body.personale .hjaelp.hjaelp-stor {
   line-height: 1;
   vertical-align: 1px;
 }
+/* ⚠️ OG FELTET SELV BLIVER RØDT (28/9). bestil/ og bord/ satte
+   aria-invalid på feltet, men ingen regel læste det — sætningen stod
+   under et felt, der så helt normalt ud. Mikkels ord: et ugyldigt
+   nummer skal være TYDELIGT. Outline, ikke box-shadow: fokusringen er
+   box-shadow, og kanten skal blive, mens gæsten retter.
+   ⚠️ SCOPET TIL GÆSTESIDERNE — admin sætter ikke attributten, men en
+   regel uden scope laver hele admin om (CLAUDE.md). */
+body:not(.personale) :is(input, select, textarea)[aria-invalid="true"] {
+  outline: 2px solid var(--red);
+  outline-offset: -2px;
+}
 /* FEJLKORTET (14/9). En fejl, der står for sig selv (role=alert —
    #bestil-fejl og #kig-fejl), er et KORT: lys flade, rød kant, blæk
    og ikke rød tekst. Den ene sætning er det, gæsten skal læse, og

@@ -198,7 +198,7 @@
                    min="1" max="100" step="1" placeholder="Antal" required>
             <button type="button" class="stepper-knap" data-trin="1" aria-label="En mere">+</button>
           </div>
-          <div class="fejl skjult" id="fejl-antal" role="alert"></div>
+          <div class="fejl skjult" id="fejl-antal" aria-live="polite"></div>
         </div>
       </div>
       <p class="hjaelp">
@@ -214,14 +214,14 @@
           <label for="bord-navn">Navn</label>
           <input type="text" id="bord-navn" autocomplete="name"
                  maxlength="80" required>
-          <div class="fejl skjult" id="fejl-navn" role="alert"></div>
+          <div class="fejl skjult" id="fejl-navn" aria-live="polite"></div>
         </div>
 
         <div class="felt">
           <label for="bord-telefon">Telefon</label>
           <input type="tel" id="bord-telefon" autocomplete="tel"
                  inputmode="tel" maxlength="30" required>
-          <div class="fejl skjult" id="fejl-telefon" role="alert"></div>
+          <div class="fejl skjult" id="fejl-telefon" aria-live="polite"></div>
         </div>
       </div>
 
@@ -244,7 +244,7 @@
           <div class="felt">
             <label for="bord-email">E-mail <span class="hjaelp">(valgfri)</span></label>
             <input type="email" id="bord-email" autocomplete="email" maxlength="160">
-            <div class="fejl skjult" id="fejl-email" role="alert"></div>
+            <div class="fejl skjult" id="fejl-email" aria-live="polite"></div>
           </div>
         </div>
       </div>
