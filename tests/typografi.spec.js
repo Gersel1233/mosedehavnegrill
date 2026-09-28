@@ -241,8 +241,10 @@ test.describe('Skalaen kan ikke skride tilbage', () => {
        enten være en af de eksisterende, eller loftet skal hæves
        MED en grund.
        38 (27/9): LESREG's Rim-skygge, 9 · 18 · 44 px i 24 %, fra Figmas
-       Plate (LA31 Content / Quote, node 104:556). Glaspillen er bygget
-       efter den, og skyggen er dens — ét lys, nede til højre. */
+       Plate (LA31 Content / Quote, node 104:556).
+       28/9: Rim-skyggen er væk igen (den skubbede pillen skævt ned til
+       højre, Mikkels ord: "ikke centralt af outlinen"), og pladsen er
+       givet til glaspillens kerne: en hvid ring og lyset i kernen. */
     const c = css();
     const sizes = new Set([...c.matchAll(/font-size:\s*([^;}]+)/g)].map((m) => m[1].trim()));
     const shadows = new Set([...c.matchAll(/box-shadow:\s*([^;}]+)/g)].map((m) => m[1].trim()));

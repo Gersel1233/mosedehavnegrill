@@ -561,6 +561,41 @@ test.describe('Forsidens kobling', () => {
     }
   });
 
+  /* ⚠️ STÅR MIDT I KANTEN, OG KANTEN ER GLAS (28/9). Mikkels ord:
+     *"fødevarestyrelsen er ikke centralt af outlinen, og outlinen ligner
+     ikke liquid glass nok … guld-tingen er for fed"*. Målt på et skud i
+     3×: kanten gik fra hvid til SORT nede til højre, og skyggen faldt
+     skråt ned til højre — kernen så skubbet op i sin ramme ud. Prøven
+     måler de tre ting: ingen mørk farve i lyskanten, skyggen falder lige
+     ned (x = 0), og glasset slører det bagved. Guldets mørkeste farve
+     skal være lys (lyshed over 60 %) — det mørke messing var 48 %. */
+  test('pillerne står midt i en lys glaskant, og guldet er lyst', async ({ page }) => {
+    const data = grunddata();
+    data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
+    await åbn(page, '/index.html', { data });
+    for (const sel of ['.promo.fb', 'a.smiley-kort[href*="findsmiley.dk"]', '.pris-kort', '.menucard .glaspille']) {
+      const m = await page.locator(sel).evaluate((e) => {
+        const c = getComputedStyle(e);
+        const kant = getComputedStyle(e, '::after').backgroundImage;
+        // ydre skygger (ikke inset): "rgba(...) Xpx Ypx B S"
+        const ydre = c.boxShadow.split(/,(?![^(]*\))/).map((x) => x.trim()).filter((x) => !/inset/.test(x));
+        const xs = ydre.map((x) => parseFloat(x.replace(/rgba?\([^)]*\)/, '').trim().split(/\s+/)[0]));
+        return { kant, xs, slør: c.backdropFilter || c.webkitBackdropFilter || '' };
+      });
+      expect(m.kant, sel + ': lyskanten har en mørk farve').not.toMatch(/rgba\(0, 0, 0/);
+      expect(m.xs.every((x) => x === 0), sel + ': skyggen falder skråt: ' + m.xs).toBe(true);
+      expect(m.slør, sel + ': glasset slører ikke').toContain('blur(');
+    }
+    const lyshed = await page.locator('.pris-kort').evaluate((e) => {
+      const farver = getComputedStyle(e, '::before').backgroundImage.match(/rgba?\([^)]+\)/g) || [];
+      return Math.min(...farver.filter((f) => !/rgba\(255, 255, 255/.test(f)).map((f) => {
+        const [r, g, b] = f.match(/[\d.]+/g).slice(0, 3).map((v) => v / 255);
+        return (Math.max(r, g, b) + Math.min(r, g, b)) / 2;
+      }));
+    });
+    expect(lyshed, 'guldet er for mørkt og tungt').toBeGreaterThan(0.6);
+  });
+
   test('en knap, der ikke kan trykkes, er ikke rød', async ({ page }) => {
     await åbn(page, '/index.html');
     const knap = page.locator('#bestil button.g.solid:disabled').first();
