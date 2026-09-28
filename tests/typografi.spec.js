@@ -244,12 +244,15 @@ test.describe('Skalaen kan ikke skride tilbage', () => {
        Plate (LA31 Content / Quote, node 104:556).
        28/9: Rim-skyggen er væk igen (den skubbede pillen skævt ned til
        højre, Mikkels ord: "ikke centralt af outlinen"), og pladsen er
-       givet til glaspillens kerne: en hvid ring og lyset i kernen. */
+       givet til glaspillens kerne: en hvid ring og lyset i kernen.
+       39 (28/9, aften): Apples klare glas på Facebook, smileyen og prisen
+       (Mikkels valg af forslag 7) — lys kant øverst, hårfin omkreds og en
+       skygge, der falder lige ned. Én regel for alle tre rækker. */
     const c = css();
     const sizes = new Set([...c.matchAll(/font-size:\s*([^;}]+)/g)].map((m) => m[1].trim()));
     const shadows = new Set([...c.matchAll(/box-shadow:\s*([^;}]+)/g)].map((m) => m[1].trim()));
     expect(sizes.size, 'flere skriftstørrelser end 30: ' + [...sizes].join(', ')).toBeLessThanOrEqual(30);
-    expect(shadows.size, 'flere skygger end 38').toBeLessThanOrEqual(38);
+    expect(shadows.size, 'flere skygger end 39').toBeLessThanOrEqual(39);
   });
 
   test('overskriften flyttede sig ikke — h1 står, hvor designet satte den', async ({ page }, info) => {

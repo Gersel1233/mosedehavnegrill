@@ -187,33 +187,59 @@ test.describe('Forsidens kobling', () => {
     }
   });
 
-  /* ⚠️ PRISEN ER GUL (27/9). Mikkels ord: "måske lad awarden være gul du
-     ved for prisen agtig". Samme LESREG-plade, men kernen er guld. Tallet
-     udefra er ordet "gul": kernens midterste farve skal ligge i det gule
-     (nuance 38–58°) og være mættet — og teksten er blæk, ikke den dæmpede
-     brune, der ikke holder 4,5:1 på guld. */
-  test('prisen står på en guldplade, og teksten er blæk', async ({ page }) => {
-    await åbn(page, '/index.html');
-    const m = await page.locator('.pris-kort').evaluate((e) => {
-      /* ⚠️ GULDET ER KERNEN (28/9): pillen er allergiens Rim, og det er
-         den massive kerne (::before), der er guld — en gradient, så den
-         midterste farve i den måles. */
-      const k = getComputedStyle(e, '::before');
-      const farver = (k.backgroundImage.match(/rgba?\([^)]+\)/g) || [k.backgroundColor]);
-      const midt = farver[Math.floor(farver.length / 2)].match(/[\d.]+/g).map(Number);
-      const [r, g, b] = midt.slice(0, 3).map((v) => v / 255);
-      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
-      const l = (max + min) / 2;
-      const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
-      let h = 0;
-      if (d) h = max === r ? 60 * (((g - b) / d) % 6) : max === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4);
-      /* Pillen er allergiens kopi (28/9): teksten står i pillen selv. */
-      return { nuance: (h + 360) % 360, mætning: s, tekst: getComputedStyle(e).color };
-    });
-    expect(m.nuance, 'kernen er ikke gul').toBeGreaterThanOrEqual(38);
-    expect(m.nuance, 'kernen er ikke gul').toBeLessThanOrEqual(58);
-    expect(m.mætning, 'kernen er grå, ikke guld').toBeGreaterThan(0.5);
-    expect(m.tekst, 'teksten på guldet er Figmas obsidian').toBe('rgb(14, 15, 16)');
+  /* ============================================================
+     FACEBOOK, SMILEYEN OG PRISEN ER APPLES KLARE GLAS  (28/9, aften)
+     ------------------------------------------------------------
+     Mikkels valg af seks Higgsfield-forslag (nr. 7), efter ordene *"de
+     får vand-agtige … det skal virkelig bare være iOS 18 Apple liquid
+     glass"*. Det VENDER fire prøver fra samme dag: guldpladen, den blå
+     kerne, kopien af allergipillen og glaskanten med blur. Alle fire
+     målte en FARVET kerne, og det var den, der lignede gele.
+
+     Reglerne nu, og tallene kommer udefra — fra hinanden:
+     · de tre er det SAMME glas (flade, skygge, hjørne, luft)
+     · lyset: en skarp hvid kant øverst, skyggen falder lige ned
+     · ingen farvet kerne (::before) og ingen sløring: rækkerne ruller
+       med siden på flad creme, der er intet bag dem (31/8)
+     · hele rækken er linket, med titel, en linje under og en pil
+     ============================================================ */
+  test('Facebook, smileyen og prisen er det samme klare glas', async ({ page }) => {
+    const data = grunddata();
+    data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
+    await åbn(page, '/index.html', { data });
+    const rækker = ['.promo.fb', 'a.smiley-kort[href*="findsmiley.dk"]', '.pris-kort'];
+    const læs = (e) => {
+      const c = getComputedStyle(e), k = getComputedStyle(e, '::before');
+      const ydre = c.boxShadow.split(/,(?![^(]*\))/).map((x) => x.trim()).filter((x) => !/inset/.test(x));
+      const tekst = e.querySelector('.gr-tekst');
+      return {
+        glas: [c.backgroundImage, c.boxShadow, c.borderTopLeftRadius, c.paddingTop + ' ' + c.paddingLeft].join(' | '),
+        lys: /rgb\(255, 255, 255\) 0px 1px 0px 0px inset/.test(c.boxShadow),
+        lige: ydre.map((x) => parseFloat(x.replace(/rgba?\([^)]*\)/, '').trim().split(/\s+/)[0])),
+        kerne: k.content !== 'none' && k.content !== 'normal',
+        slør: c.backdropFilter || c.webkitBackdropFilter || 'none',
+        tag: e.tagName, knapper: e.querySelectorAll('a, button').length,
+        titel: (e.querySelector('.gr-tekst b') || {}).textContent || '',
+        under: (e.querySelector('.gr-tekst span') || {}).textContent || '',
+        juster: tekst ? getComputedStyle(tekst).textAlign : '',
+        pil: !!e.querySelector('.gr-pil'),
+      };
+    };
+    const facit = await page.locator(rækker[0]).evaluate(læs);
+    for (const sel of rækker) {
+      const m = await page.locator(sel).evaluate(læs);
+      expect(m.glas, sel + ': ikke samme glas som Facebook-rækken').toBe(facit.glas);
+      expect(m.lys, sel + ': den lyse kant øverst mangler').toBe(true);
+      expect(m.lige.every((x) => x === 0), sel + ': skyggen falder skråt: ' + m.lige).toBe(true);
+      expect(m.kerne, sel + ': der er en farvet kerne igen — det var den, der lignede gele').toBe(false);
+      expect(m.slør, sel + ': sløring uden noget bagved').toBe('none');
+      expect(m.tag, sel + ': rækken er ikke selv linket').toBe('A');
+      expect(m.knapper, sel + ': der er en knap inde i rækken').toBe(0);
+      expect(m.titel.length, sel + ': ingen titel').toBeGreaterThan(5);
+      expect(m.under.length, sel + ': ingen linje under titlen').toBeGreaterThan(5);
+      expect(m.juster, sel + ': teksten står ikke til venstre').toBe('left');
+      expect(m.pil, sel + ': pilen mangler').toBe(true);
+    }
   });
 
   /* ⚠️ KORTENE PÅ DUGEN (27/9). Mikkels ord: menukort-delen på forsiden
@@ -504,104 +530,22 @@ test.describe('Forsidens kobling', () => {
 
   /* ⚠️ VENDT SAMME DAG (13/9) — kundens ord: "gør lige facebook tingen i
      toppen blå som før". Og 28/9: "skift farven på facebook til blå".
+     Fra 28/9, aften (forslag 7) sidder den blå i TEGNET, ikke i glasset.
      Tallet kommer UDEFRA: Facebooks blå er den, logoet i striben lige
      over står i — samme side, samme blå. */
-  test('Facebook-pillens kerne er Facebooks egen blå', async ({ page }) => {
+  test('Facebook-rækkens tegn er Facebooks egen blå', async ({ page }) => {
     const data = grunddata();
     data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
     await åbn(page, '/index.html', { data });
-    const kerne = await page.locator('.promo.fb').evaluate((e) => getComputedStyle(e, '::before').backgroundColor);
+    const tegn = await page.locator('.promo.fb .gr-tegn svg path').first().evaluate((e) => getComputedStyle(e).fill);
     const logo = await page.locator('.social a[data-social="facebook"] svg path').first()
       .evaluate((e) => getComputedStyle(e).fill);
-    expect(kerne, 'kernen er ikke logoets blå').toBe(logo);
+    expect(tegn, 'tegnet er ikke logoets blå').toBe(logo);
   });
 
-  /* ============================================================
-     FACEBOOK, SMILEYEN OG PRISEN ER GLASPILLER — SOM ALLERGIEN (28/9)
-     Mikkels ord: *"lav facebook, award og fødevarestyrelsen iOS 18
-     glass pillars helt forfra — de ligner intet af figma-siderne,
-     ligesom med allergien"*. Facit er ALLERGIPILLEN på samme side
-     (.menucard .glaspille) — tallene kommer derfra, ikke fra reglen,
-     der tegner de tre: samme kerne-indryk, samme skygge, helt rund,
-     en lyskant — og linsen er Figmas (116:890, 40 px, pilen LA2.1).
-     ⚠️ HELE PILLEN ER LINKET: en pille med en knap i er to mål. */
-  /* ⚠️ OG DE ER KOPIER AF DEN (28/9, eftermiddag). Mikkels ord: *"allergi-
-     pillen er bedre, kan den ikke bare kopieres og ændre farve agtig"*.
-     Første udgave havde ikon, overskrift, undertekst og en rund pil. Nu
-     skal skrift, luft og justering være ALLERGIENS — tallene læses af
-     allergipillen på samme side, ikke af reglen, der tegner de tre. */
-  test('Facebook, smileyen og prisen er samme glaspille som allergien', async ({ page }) => {
-    const data = grunddata();
-    data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
-    await åbn(page, '/index.html', { data });
-    const læs = (e) => {
-      const c = getComputedStyle(e);
-      return {
-        ind: getComputedStyle(e, '::before').top, skygge: c.boxShadow,
-        skrift: c.fontSize + '/' + c.fontWeight, juster: c.textAlign,
-        luft: c.paddingTop + ' ' + c.paddingLeft,
-      };
-    };
-    const facit = await page.locator('.menucard .glaspille').evaluate(læs);
-    for (const sel of ['.promo.fb', 'a.smiley-kort[href*="findsmiley.dk"]', '.pris-kort']) {
-      const m = await page.locator(sel).evaluate((e, læsKilde) => {
-        const læs = new Function('return ' + læsKilde)();
-        const k = getComputedStyle(e, '::before');
-        return Object.assign(læs(e), {
-          tag: e.tagName,
-          kerne: k.backgroundImage !== 'none' || !/rgba\(\d+, \d+, \d+, 0\)|transparent/.test(k.backgroundColor),
-          rund: parseFloat(getComputedStyle(e).borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1,
-          lys: getComputedStyle(e, '::after').content,
-          knapper: e.querySelectorAll('a, button').length,
-        });
-      }, læs.toString());
-      expect(m.tag, sel + ': pillen er ikke selv linket').toBe('A');
-      expect(m.knapper, sel + ': der er en knap inde i pillen').toBe(0);
-      expect(m.ind, sel + ': kernen ligger ikke som allergiens').toBe(facit.ind);
-      expect(m.skygge, sel + ': skyggen er ikke allergiens').toBe(facit.skygge);
-      expect(m.skrift, sel + ': skriften er ikke allergiens').toBe(facit.skrift);
-      expect(m.juster, sel + ': teksten står ikke som allergiens').toBe(facit.juster);
-      expect(m.luft, sel + ': luften er ikke allergiens').toBe(facit.luft);
-      expect(m.kerne, sel + ': kernen er ikke massiv').toBe(true);
-      expect(m.rund, sel + ': ikke en pille').toBe(true);
-      expect(m.lys, sel + ': glaskantens lys mangler').not.toBe('none');
-    }
-  });
-
-  /* ⚠️ STÅR MIDT I KANTEN, OG KANTEN ER GLAS (28/9). Mikkels ord:
-     *"fødevarestyrelsen er ikke centralt af outlinen, og outlinen ligner
-     ikke liquid glass nok … guld-tingen er for fed"*. Målt på et skud i
-     3×: kanten gik fra hvid til SORT nede til højre, og skyggen faldt
-     skråt ned til højre — kernen så skubbet op i sin ramme ud. Prøven
-     måler de tre ting: ingen mørk farve i lyskanten, skyggen falder lige
-     ned (x = 0), og glasset slører det bagved. Guldets mørkeste farve
-     skal være lys (lyshed over 60 %) — det mørke messing var 48 %. */
-  test('pillerne står midt i en lys glaskant, og guldet er lyst', async ({ page }) => {
-    const data = grunddata();
-    data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
-    await åbn(page, '/index.html', { data });
-    for (const sel of ['.promo.fb', 'a.smiley-kort[href*="findsmiley.dk"]', '.pris-kort', '.menucard .glaspille']) {
-      const m = await page.locator(sel).evaluate((e) => {
-        const c = getComputedStyle(e);
-        const kant = getComputedStyle(e, '::after').backgroundImage;
-        // ydre skygger (ikke inset): "rgba(...) Xpx Ypx B S"
-        const ydre = c.boxShadow.split(/,(?![^(]*\))/).map((x) => x.trim()).filter((x) => !/inset/.test(x));
-        const xs = ydre.map((x) => parseFloat(x.replace(/rgba?\([^)]*\)/, '').trim().split(/\s+/)[0]));
-        return { kant, xs, slør: c.backdropFilter || c.webkitBackdropFilter || '' };
-      });
-      expect(m.kant, sel + ': lyskanten har en mørk farve').not.toMatch(/rgba\(0, 0, 0/);
-      expect(m.xs.every((x) => x === 0), sel + ': skyggen falder skråt: ' + m.xs).toBe(true);
-      expect(m.slør, sel + ': glasset slører ikke').toContain('blur(');
-    }
-    const lyshed = await page.locator('.pris-kort').evaluate((e) => {
-      const farver = getComputedStyle(e, '::before').backgroundImage.match(/rgba?\([^)]+\)/g) || [];
-      return Math.min(...farver.filter((f) => !/rgba\(255, 255, 255/.test(f)).map((f) => {
-        const [r, g, b] = f.match(/[\d.]+/g).slice(0, 3).map((v) => v / 255);
-        return (Math.max(r, g, b) + Math.min(r, g, b)) / 2;
-      }));
-    });
-    expect(lyshed, 'guldet er for mørkt og tungt').toBeGreaterThan(0.6);
-  });
+  /* Prøverne "samme glaspille som allergien" og "midt i en lys glaskant,
+     og guldet er lyst" (28/9) er VENDT samme aften og samlet i "det
+     samme klare glas" ovenfor — se grunden dér. */
 
   test('en knap, der ikke kan trykkes, er ikke rød', async ({ page }) => {
     await åbn(page, '/index.html');
@@ -2893,7 +2837,7 @@ test.describe('Isen er premium som dagens ret', () => {
    slags, ingen opdager, før nogen spørger til pokalen.
    ============================================================ */
 test.describe('Greve-prisen øverst', () => {
-  test('står lige under smileyen, på sin egen guldplade, med linket og "indstillet til"', async ({ page }) => {
+  test('står lige under smileyen, i samme glas, med linket og "indstillet til"', async ({ page }) => {
     await åbn(page, '/index.html');
     await springIntroOver(page);
 
@@ -2916,19 +2860,12 @@ test.describe('Greve-prisen øverst', () => {
     });
     expect(m.lige_under, 'prisen står ikke lige under smileyen').toBe(true);
     expect(m.afstand, 'prisen hænger ikke sammen med smileyen').toBeLessThanOrEqual(16);
-    /* ⚠️ VENDT 27/9 — MIKKELS ORD: "måske lad awarden være gul du ved
-       for prisen agtig". Her stod, at prisens kort skulle være i
-       smileyens glas (25/9). Nu er det LESREG-pladen med en kerne i guld,
-       og den skal netop IKKE ligne smileyen. Guldet måles i prøven
-       "prisen står på en guldplade"; her står det, at de to er forskellige,
-       og at pladen har sin lyskant. */
-    /* Samme glas som smileyen (27/9, nat) — det er TONEN, der er guld. */
-    /* Kernen (28/9): pillerne har samme glaskant; det er kernen, der er guld. */
-    const tone = (sel) => page.locator(sel).evaluate((e) => {
-      const k = getComputedStyle(e, '::before'); return k.backgroundImage + '|' + k.backgroundColor; });
-    expect(await tone('.pris-kort'), 'prisen har samme tone som smileyen').not.toEqual(await tone('a.smiley-kort[href*="findsmiley.dk"]'));
-    expect(await pris.evaluate((e) => getComputedStyle(e, '::after').content),
-      'pladen har ingen lyskant').not.toBe('none');
+    /* ⚠️ VENDT IGEN 28/9, AFTEN — MIKKELS VALG AF FORSLAG 7. Guldpladen
+       (27/9) og guldkernen (28/9) er væk: alle tre rækker er det samme
+       klare glas, og prisens guld sidder i medaljen. Prøven sammenligner
+       prisen med smileyen lige over — samme flade og samme skygge. */
+    expect(m.pris.grund + m.pris.skygge + m.pris.hjoerne, 'prisen er ikke samme glas som smileyen')
+      .toBe(m.smil.grund + m.smil.skygge + m.smil.hjoerne);
 
     /* Og bunden beholder sin linje — ligesom smileyen står begge steder. */
     await expect(page.locator('footer a[href="https://erhvervscentret.greve.dk/gba"]')).toHaveCount(1);

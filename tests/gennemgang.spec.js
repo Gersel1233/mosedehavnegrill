@@ -953,29 +953,28 @@ test.describe('Lister med forskellige slags har forskellige tegn', () => {
   function medGetlist() {
     return fs.readdirSync('.')
       .filter((f) => /\.html$/.test(f))
-      .filter((f) => /class="getlist"/.test(fs.readFileSync(f, 'utf8')));
+      .filter((f) => /class="getlist[ "]/.test(fs.readFileSync(f, 'utf8')));
   }
 
-  /* ⚠️ TAPASSIDEN ER UNDTAGELSEN, OG DEN HAR EN GRUND.
-     Catering og baglokalet svarer på *"hvad kan I gøre for os"* —
-     hver linje er sin egen ting. m-tapas' liste svarer på *"hvad
-     ligger der PÅ fadet"*: dér hører punkterne til den SAMME ret,
-     og det fælles mærke betyder faktisk noget.
-
-     En undtagelsesliste uden en grund vokser bare, til prøven
-     måler ingenting — derfor står grunden her, og derfor er den
-     ÉN side og ikke et mønster. */
-  const FAELLES_MAERKE = ['m-tapas.html'];
+  /* ⚠️ TAPASSIDEN VAR UNDTAGELSEN TIL 28/9 (ét fælles tegn, først et
+     hjerte, så en bølge). Mikkels ord: *"tapas-delen ligner også noget
+     generisk med de små bølger"* — han valgte forslag 10: hver ting
+     med sin egen tegning. Nu gælder reglen den som de andre, og
+     undtagelseslisten er væk. Tegnet er dér et <img> og ikke et emoji. */
 
   test('hvert punkt har sit eget tegn — og listerne læses af mappen',
     async ({ page }) => {
-      const sider = medGetlist().filter((f) => FAELLES_MAERKE.indexOf(f) === -1);
+      const sider = medGetlist();
       expect(sider.length, 'der ER lister at måle').toBeGreaterThan(0);
 
       for (const fil of sider) {
         await åbnSkal(page, '/' + fil, { data: grunddata() });
-        const tegn = await page.locator('.getlist > span .gl-i')
-          .evaluateAll((els) => els.map((e) => e.textContent.trim()));
+        const tegn = await page.locator('.getlist > span').evaluateAll((els) => els.map((e) => {
+          const i = e.querySelector('.gl-i');
+          if (i) return i.textContent.trim();
+          const img = e.querySelector('img');
+          return img ? img.getAttribute('src') : null;
+        }).filter(Boolean));
         const punkter = await page.locator('.getlist > span').count();
 
         expect(tegn.length, fil + ': hvert punkt skal have et tegn')
@@ -988,83 +987,9 @@ test.describe('Lister med forskellige slags har forskellige tegn', () => {
       }
     });
 
-  /* ============================================================
-     ⚠️ TAPASSIDENS FÆLLES TEGN ER EN BØLGE  (9/9)
-     ------------------------------------------------------------
-     Kundens ord: *"hjerterne til små bølger istedet — sådan den
-     her emoji-lignende som hjerterne bare med en bølge istedet
-     🌊."*
-
-     ⚠️ UNDTAGELSEN OVENFOR STÅR VED MAGT, og det er hele grunden
-     til, at den her prøve findes: undtagelsen siger, at
-     tapassiden må have ÉT tegn til alle punkter — og en
-     undtagelse uden en vagt er et hul. Nu måler den også, HVAD
-     tegnet er.
-
-     ⚠️ OG HJERTET MÅ IKKE KOMME TILBAGE. Tallet kommer udefra:
-     prøven læser FILEN og fælder hjertets egen kurve. En prøve,
-     der kun spurgte "er der to <path>", ville bestå på et hjerte
-     med en streg under.
-     ============================================================ */
-  test('tapaslistens fælles tegn er en bølge, ikke et hjerte', async ({ page }) => {
-    const fil = FAELLES_MAERKE[0];
-    const kilde = fs.readFileSync(fil, 'utf8');
-
-    /* Hjertets egen kurve fra designbundtet — den må ikke stå i
-       filen mere. */
-    expect(kilde.indexOf('M12 20S3.6 14.6'),
-      fil + ': hjertet er tilbage i listen').toBe(-1);
-
-    await åbnSkal(page, '/' + fil, { data: grunddata() });
-
-    /* ⚠️ TEGNET BOR I ikoner.svg (27/9). Ikonerne blev tegnet om
-       i Higgsfield og samlet i én fil; punktet på siden er nu
-       <svg><use href="ikoner.svg#boelger"/></svg>. Prøven læser
-       derfor HVILKET tegn punkterne peger på, og måler formen i
-       FILEN — tallene kommer udefra, ikke fra siden. Før 27/9 var
-       tegnet to åbne streger; nu er det to fyldte omrids, så
-       "ingen z" er skiftet ud med "bredere end høj". */
-    const m = await page.locator('.getlist > span').evaluateAll((els) => {
-      const tegn = els.map((e) => {
-        const brug = e.querySelector('svg use');
-        return brug ? brug.getAttribute('href') : null;
-      });
-      return { punkter: els.length, tegn: tegn,
-        unikke: [...new Set(tegn)].length };
-    });
-
-    expect(m.punkter, 'der ER punkter at måle').toBeGreaterThan(4);
-    /* ⚠️ ÉT tegn til dem alle — det er undtagelsen, og den skal
-       stadig gælde. Kom der et emoji pr. punkt her, ville
-       reglen fra 6/9 være brudt i den anden retning. */
-    expect(m.unikke, fil + ': punkterne deler ikke ét tegn').toBe(1);
-    expect(m.tegn[0], fil + ': punktet henter ikke sit tegn fra ikoner.svg')
-      .toMatch(/^ikoner\.svg#[\w-]+$/);
-
-    const id = m.tegn[0].split('#')[1];
-    const sprite = fs.readFileSync('ikoner.svg', 'utf8');
-    const sym = new RegExp('<symbol id="' + id + '"[^>]*>\\s*<path[^>]* d="([^"]+)"').exec(sprite);
-    expect(sym, 'ikoner.svg har intet tegn ved navn ' + id).not.toBeNull();
-
-    /* ⚠️ OG DET SKAL VÆRE VAND: to bølger på hver sin højde, hver
-       langt bredere end høj. Et hjerte er ét omrids omtrent lige
-       så højt som bredt (med hul og prik: tre delstier). */
-    const dele = sym[1].match(/M[^M]*/g);
-    expect(dele.length, fil + ': tegnet er ikke to bølger').toBe(2);
-    const kasser = dele.map((del) => {
-      const t = del.match(/-?\d+(?:\.\d+)?/g).map(Number);
-      const xs = t.filter((_, i) => i % 2 === 0), ys = t.filter((_, i) => i % 2 === 1);
-      return { b: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys),
-        midt: (Math.max(...ys) + Math.min(...ys)) / 2, kurve: /C/.test(del) };
-    });
-    for (const k of kasser) {
-      expect(k.b / k.h, fil + ': en del af tegnet er ikke en vandret bølge')
-        .toBeGreaterThan(2.5);
-      expect(k.kurve, fil + ': bølgen har ingen kurve').toBe(true);
-    }
-    expect(Math.abs(kasser[1].midt - kasser[0].midt),
-      fil + ': de to bølger ligger oven i hinanden').toBeGreaterThan(3);
-  });
+  /* Prøven "tapaslistens fælles tegn er en bølge, ikke et hjerte" (9/9)
+     er VENDT 28/9 — se undtagelsen ovenfor. Tegningerne og ordene, der
+     vælger dem, måles i tests/skal-tapas.spec.js. */
 
   /* ⚠️ OG TEGNET MÅ IKKE LÆSES OP. Samme lov som forsidens
      emoji-fliser 31/8: en skærmlæser skal sige "Smørrebrød og
@@ -1073,9 +998,13 @@ test.describe('Lister med forskellige slags har forskellige tegn', () => {
     let set = 0;
     for (const fil of medGetlist()) {
       await åbnSkal(page, '/' + fil, { data: grunddata() });
-      set += await page.locator('.getlist .gl-i').count();
+      set += await page.locator('.getlist .gl-i, .getlist > span > img').count();
       const uden = await page.locator('.getlist .gl-i:not([aria-hidden="true"])').count();
       expect(uden, fil + ': et tegn uden aria-hidden').toBe(0);
+      /* En tegning (tapas, 28/9) er stum med en tom alt — ikke uden alt,
+         for så læser en skærmlæser filnavnet op. */
+      const talende = await page.locator('.getlist > span > img:not([alt=""])').count();
+      expect(talende, fil + ': en tegning uden tom alt').toBe(0);
     }
     /* ⚠️ EN TOM LØKKE BESTÅR HVER ENESTE REGEL (arret fra
        toBeHidden 30/8). Forsvandt tegnene helt, ville prøven

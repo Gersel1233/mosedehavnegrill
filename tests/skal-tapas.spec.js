@@ -213,9 +213,52 @@ test.describe('Det får I-listen', () => {
     const punkter = page.locator('.getlist span');
     await expect(punkter).toHaveCount(3);
     await expect(punkter.nth(1)).toContainText('Serranoskinke');
-    /* Hjertet er designets eget, klonet med — ikke en kopi i
-       koden. Uden det ville listen skifte form med koblingen. */
-    await expect(punkter.first().locator('svg')).toHaveCount(1);
+    /* Tegningen er designets egen, klonet med — ikke en kopi i
+       koden. Uden den ville listen skifte form med koblingen. */
+    await expect(punkter.first().locator('img')).toHaveCount(1);
+  });
+
+  /* ⚠️ TEGNINGEN VÆLGES AF ORDET (28/9). Mikkels valg (forslag 10):
+     hver ting med sin egen røde tegning — også når ejeren skriver sin
+     egen liste i admin. Facit står her, skrevet af et menneske, ikke
+     læst af tapas.js: "baguette og smør" er brød, chilimayo er en dip,
+     og et ord, reglen ikke kender, får et fad — ikke en forkert ret. */
+  test('ejerens egen liste får den tegning, ordet peger på', async ({ page }) => {
+    const d = data();
+    d.menu_varer.find((v) => /tapas/i.test(v.navn)).beskrivelse =
+      'Fem forskellige oste · Serranoskinke · Chorizo · Baguette og smør · '
+      + 'Hjemmelavet chilimayo og tzatziki · Grønt · Røget ål';
+    await åbn(page, d);
+    const tegn = await page.locator('.getlist > span img').evaluateAll((els) =>
+      els.map((e) => e.getAttribute('src').replace(/^.*\//, '')));
+    expect(tegn).toEqual(['ost.webp', 'skinke.webp', 'chorizo.webp', 'baguette.webp',
+      'dip.webp', 'groent.webp', 'fad.webp']);
+  });
+
+  test('designets egen liste: hver ting sin egen tegning, og de kommer frem', async ({ page }) => {
+    await åbn(page);
+    const punkter = page.locator('.getlist > span');
+    const m = await punkter.evaluateAll((els) => els.map((e) => ({
+      tekst: e.textContent.trim(),
+      fil: (e.querySelector('img') || { getAttribute: () => '' }).getAttribute('src').replace(/^.*\//, ''),
+      alt: e.querySelector('img') ? e.querySelector('img').getAttribute('alt') : null,
+    })));
+    const FACIT = {
+      '5 forskellige oste': 'ost.webp', 'Chorizo': 'chorizo.webp', 'Lufttørret skinke': 'skinke.webp',
+      'Paté': 'pate.webp', 'Lakserilette': 'lakserilette.webp', 'Hummus': 'hummus.webp',
+      'Pesto': 'pesto.webp', 'Oliven': 'oliven.webp', 'Cornichoner': 'cornichoner.webp',
+      'Frugt': 'frugt.webp', 'Vores hjemmelavede langtidshævede havnebrød': 'broed.webp',
+    };
+    expect(m.map((p) => p.tekst)).toEqual(Object.keys(FACIT));
+    for (const p of m) {
+      expect(p.fil, p.tekst).toBe(FACIT[p.tekst]);
+      expect(p.alt, p.tekst + ': tegningen læses op').toBe('');
+    }
+    // De ELLEVE tegninger er ELLEVE forskellige filer, og alle kommer frem.
+    expect(new Set(m.map((p) => p.fil)).size).toBe(m.length);
+    await page.locator('.getlist').scrollIntoViewIfNeeded();
+    await expect.poll(() => page.locator('.getlist img').evaluateAll((els) =>
+      els.every((e) => e.complete && e.naturalWidth > 0)), { timeout: 10000 }).toBe(true);
   });
 
   test('uden en beskrivelse står designets egen liste', async ({ page }) => {

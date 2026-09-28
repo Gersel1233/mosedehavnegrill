@@ -18,10 +18,11 @@
    hver af dem skal have sin egen fejlbesked — men ALLE gæstesider
    blev målt, da reglen blev lavet (se docs/HISTORIK.md 25/9).
 
-   ⚠️ ÉN UNDTAGELSE, OG DEN ER NAVNGIVET: tapassidens tre `.tnote`-
-   linjer (vin 175, levering 79, kage 30) er ejerens egne faste tilbud,
+   ⚠️ ÉN UNDTAGELSE, OG DEN ER NAVNGIVET: tapassidens tre tilkøb
+   (vin 175, levering 79, kage 30) er ejerens egne faste tilbud,
    skrevet i HTML'en 21/9 — ikke reservedata. De står, uanset om
-   databasen svarer.
+   databasen svarer. Til 28/9 stod de i `.tnote`; nu i `.tilkoeb`
+   (forslag 10: en lille menu med prisen ude til højre).
    ============================================================ */
 const { test, expect } = require('@playwright/test');
 const { sætUr, åbnSkal, grunddata } = require('./hjaelp');
@@ -55,7 +56,7 @@ function synligePriser(page) {
   return page.evaluate(() => {
     const ud = [];
     document.querySelectorAll('body *').forEach((e) => {
-      if (e.closest('script,style,noscript,option,.tnote')) return;
+      if (e.closest('script,style,noscript,option,.tnote,.tilkoeb')) return;
       const egen = [...e.childNodes].filter((n) => n.nodeType === 3)
         .map((n) => n.textContent).join('').trim();
       if (!egen || !/\d+\s*(,-|kr\b)/.test(egen)) return;
