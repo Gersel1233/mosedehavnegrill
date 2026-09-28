@@ -65,53 +65,47 @@
 <p class="tcap rev">Alt anrettes i hånden på dagen. Det, der ligger på fadet, står herunder.</p>
 
 <section style="padding-top:22px">
-  <div class="panel rev" style="margin-top:0">
+  <div class="panel rev tapas-fad" style="margin-top:0">
     <h3>Det får I</h3>
-    <!-- ⚠️ ÉT FÆLLES TEGN, OG DET ER EN BØLGE  (9/9)
-         Kundens ord: *"hjerterne til små bølger istedet — sådan
-         den her emoji-lignende som hjerterne bare med en bølge
-         istedet 🌊."*
+    <!-- ============================================================
+         HVER TING SIN EGEN TEGNING  (28/9)
+         ------------------------------------------------------------
+         Mikkels ord: *"tapas-delen ligner også noget generisk med de
+         små bølger … og indholdet og måden den er solgt med pris"*.
+         Han valgte forslag 10 af seks fra Higgsfield: en rød
+         blæktegning ved hver ting, prisen stort under listen og
+         tilkøbene som en lille menu med prisen ude til højre.
 
-         ⚠️ UNDTAGELSEN FRA 6/9 STÅR VED MAGT. Catering og
-         baglokalet fik et emoji PR. PUNKT, fordi hver linje dér
-         er sin egen ting. Listen her svarer på *"hvad ligger der
-         PÅ fadet"* — punkterne hører til den SAMME ret, og så
-         BETYDER det fælles tegn noget. Grunden står i
-         gennemgangens undtagelsesliste (FAELLES_MAERKE), og en
-         undtagelse uden en grund vokser, til prøven måler
-         ingenting. Kun FORMEN skifter: hjerte → bølge.
+         Det tager bølgen fra 9/9 og undtagelsen fra 6/9 tilbage:
+         listen har nu ÉT tegn pr. punkt som catering og baglokalet
+         (gennemgangens regel gælder den igen).
 
-         ⚠️ OG TEGNET ER TEGNET, IKKE ET EMOJI. `js/skal/tapas.js`
-         KLONER det første `<span>` som skabelon, når ejerens egen
-         beskrivelse af fadet kommer fra menukortet — et emoji i
-         teksten ville ryge ud med tekstknuderne. Bølgen er to
-         streger i `currentColor`, så den følger husets røde.
-
-         ⚠️ TO KAMME OG IKKE TRE. Målt på et skud ved 15 px: tre
-         kamme i to linjer bliver en tæt rød klat, og den, der
-         læser listen, ser et hjerte igen. To kamme over hele
-         bredden læses som vand. -->
-    <div class="getlist">
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>5 forskellige oste</span>
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Chorizo</span>
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Lufttørret skinke</span>
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Paté</span>
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Lakserilette</span>
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Hummus</span>
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Pesto</span>
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Oliven</span>
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Cornichoner</span>
-      <span><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Frugt</span>
-      <span class="wide"><svg viewBox="0 0 24 24"><use href="ikoner.svg#boelger"/></svg>Vores hjemmelavede langtidshævede havnebrød</span>
+         ⚠️ TEGNINGEN VÆLGES AF ORDET. `js/skal/tapas.js` (tegnFor)
+         sætter tegningen efter punktets tekst — også når ejeren
+         skriver sin egen liste i admin → Menukort. Står der noget,
+         den ikke kender, får punktet et fad. Tegningerne laves med
+         vaerktoej/lav-tapastegn.py. -->
+    <div class="getlist tegnet">
+      <span><img src="billeder/tapas-tegn/ost.webp" alt="" width="44" height="44" loading="lazy" decoding="async">5 forskellige oste</span>
+      <span><img src="billeder/tapas-tegn/chorizo.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Chorizo</span>
+      <span><img src="billeder/tapas-tegn/skinke.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Lufttørret skinke</span>
+      <span><img src="billeder/tapas-tegn/pate.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Paté</span>
+      <span><img src="billeder/tapas-tegn/lakserilette.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Lakserilette</span>
+      <span><img src="billeder/tapas-tegn/hummus.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Hummus</span>
+      <span><img src="billeder/tapas-tegn/pesto.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Pesto</span>
+      <span><img src="billeder/tapas-tegn/oliven.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Oliven</span>
+      <span><img src="billeder/tapas-tegn/cornichoner.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Cornichoner</span>
+      <span><img src="billeder/tapas-tegn/frugt.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Frugt</span>
+      <span class="wide"><img src="billeder/tapas-tegn/broed.webp" alt="" width="44" height="44" loading="lazy" decoding="async">Vores hjemmelavede langtidshævede havnebrød</span>
     </div>
     <!-- ⚠️ KASSERNE STÅR SKJULT OG TOMME  (25/9, aften). Designets "199 kr."
          og "548 kr." stod her mod menukortets 179 — og blev stående, når
          databasen ikke svarede. js/skal/tapas.js (visHeroPris) skriver
          tallet ind og viser kassen, når prisen er ejerens. -->
-    <div class="pricebox" style="display:none"><b data-tapas-pris></b><p>pr. person</p></div>
-    <div class="pricebox" style="display:none"><b data-tapas-par></b><p>for 2 personer inkl. en flaske Cava Brut Nature, anbefalet af vores vinmand</p></div>
-    <div class="tnote"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kalender"/></svg><span data-varsel>bestilles senest 2 dage før</span></div>
-    <div class="tnote"><svg viewBox="0 0 24 24"><use href="ikoner.svg#catering"/></svg><span>Kan anrettes på porcelænsfade, så det hele er klar til servering, og på store fade, hvis I er flere sammen</span></div>
+    <div class="tapas-pris">
+      <div class="pricebox" style="display:none"><b data-tapas-pris></b><p>pr. person</p></div>
+      <div class="pricebox" style="display:none"><b data-tapas-par></b><p>for 2 personer inkl. en flaske Cava Brut Nature, anbefalet af vores vinmand</p></div>
+    </div>
     <!-- ============================================================
          EJERENS FIRE TILKØB  (21/9)
          ------------------------------------------------------------
@@ -127,10 +121,21 @@
          ændrer han gebyret i admin, er DET tallet, der gælder alle
          andre steder. Ryger de to fra hinanden, er den her linje
          den, der skal rettes.
+
+         28/9: sat som en lille menu (forslag 10) — navnet til venstre,
+         prisen ude til højre. Tallene er de samme; formen er husets
+         prisetiket (",-", Butik.kroner i js/store.js), som fadets egen
+         pris lige over — to formater i samme kasse så sjusket ud.
          ============================================================ -->
-    <div class="tnote"><svg viewBox="0 0 24 24"><use href="ikoner.svg#vin"/></svg><span>Tag en valgfri flaske vin med for 175 kr.</span></div>
-    <div class="tnote"><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg><span>Vi kører ud med det for 79 kr.</span></div>
-    <div class="tnote"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kage"/></svg><span>Kage til 30 kr., eller tilkøb en isdessert fra kortet</span></div>
+    <h4 class="laeg-til">Læg til</h4>
+    <ul class="tilkoeb">
+      <li><span>En valgfri flaske vin</span><b>175,-</b></li>
+      <li><span>Vi kører det ud</span><b>79,-</b></li>
+      <li><span>Kage</span><b>30,-</b></li>
+    </ul>
+    <p class="tilkoeb-mere">Eller tilkøb en isdessert fra kortet.</p>
+    <div class="tnote"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kalender"/></svg><span data-varsel>bestilles senest 2 dage før</span></div>
+    <div class="tnote"><svg viewBox="0 0 24 24"><use href="ikoner.svg#catering"/></svg><span>Kan anrettes på porcelænsfade, så det hele er klar til servering, og på store fade, hvis I er flere sammen</span></div>
   </div>
 
   <div class="panel rev d1" id="bestil-tapas">

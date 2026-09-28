@@ -1655,6 +1655,35 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .pricebox p{margin:0;font-size:13px;line-height:1.4;color:var(--ink2)}
 .tnote{display:flex;align-items:flex-start;gap:9px;margin-top:12px;font-size:13px;line-height:1.45;color:var(--ink2)}
 .tnote svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--red)}
+/* ============================================================
+   TAPASFADET SOM EN LILLE MENU  (28/9)
+   ------------------------------------------------------------
+   Mikkels valg af seks forslag (nr. 10): en rød blæktegning ved
+   hver ting, prisen stort under listen og tilkøbene med prisen ude
+   til højre. Kun .tapas-fad og .getlist.tegnet — catering og
+   baglokalet har deres egen .getlist med et tegn pr. punkt og skal
+   ikke ændres af det her.
+   ============================================================ */
+.getlist.tegnet{gap:12px 10px;margin-top:16px}
+.getlist.tegnet>span{align-items:center;gap:10px;font-size:14px;line-height:1.3}
+.getlist.tegnet img{width:44px;height:44px;flex:none;object-fit:contain}
+.getlist.tegnet>span.wide img{width:56px;height:56px}
+.tapas-pris{margin-top:18px;padding-top:16px;border-top:1px solid rgba(214,42,58,.18)}
+.tapas-pris:not(:has(.pricebox:not([style*="none"]))){display:none}
+.tapas-fad .pricebox{flex-direction:column;align-items:flex-start;gap:2px;margin:0;padding:0;background:none}
+.tapas-fad .pricebox+.pricebox{margin-top:12px}
+.tapas-fad .pricebox b{font-size:44px;font-weight:700;letter-spacing:-.025em;line-height:1;min-width:0}
+.tapas-fad .pricebox p{font-size:15px;font-weight:600;color:var(--red-tekst)}
+.tapas-fad .pricebox+.pricebox b{font-size:28px}
+.tapas-fad .pricebox+.pricebox p{font-size:13px;font-weight:400;color:var(--ink2)}
+.laeg-til{margin:22px 0 6px;font-family:"Host Grotesk",system-ui,sans-serif;font-size:20px;font-weight:700;letter-spacing:-.01em;color:var(--red-tekst)}
+.tilkoeb{list-style:none;margin:0;padding:0}
+.tilkoeb li{display:flex;align-items:baseline;gap:8px;padding:5px 0;font-size:14px;line-height:1.35;color:var(--ink)}
+/* Prikkerne mellem navn og pris, som på et trykt menukort. */
+.tilkoeb li span{flex:1;display:flex;align-items:baseline;gap:8px;min-width:0}
+.tilkoeb li span::after{content:"";flex:1;min-width:16px;border-bottom:1.5px dotted rgba(36,26,23,.3);transform:translateY(-4px)}
+.tilkoeb li b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tilkoeb-mere{margin:4px 0 0;font-size:13px;line-height:1.45;color:var(--ink2)}
 .addon{display:flex;align-items:center;gap:12px;margin-top:14px;padding:14px;border-radius:18px;background:var(--cream2);box-shadow:var(--kant-inde)}
 .addon h4{font-family:"Host Grotesk",system-ui,sans-serif;font-size:15px;font-weight:600}
 .addon p{margin:4px 0 0;font-size:13px;color:var(--ink2)}
@@ -3041,52 +3070,46 @@ footer .smiley-linje{
    men ingen Rim-skygge — på 34 px høj blev den en plet ved siden af. */
 .glaspille.nyt{padding:9px 16px;font-size:13px;font-weight:600;color:var(--red-tekst);box-shadow:none}
 .menucard .glaspille,.phead .glaspille{justify-self:center}
-/* ⚠️ PRISEN ER EN GULDPLADE (27/9). Mikkels ord: *"pillerne ved allergi og
-   awarden skal også være bedre og måske lad awarden være gul du ved for
-   prisen agtig"*. Samme LESREG-plade som glaspillen ovenfor (Rim, 1 px
-   lyskant, Rim-skyggen nede til højre), men kernen er guld: messing i
-   −45° med en lys glans øverst — lyset kommer samme sted fra som på alt
-   andet glas. Teksten er blæk på kernen (10:1 på det lyse guld, over 6:1
-   på det mørkeste), aldrig den dæmpede brune, der faldt under 4,5. Kun
-   prisen: smileyen lige over er Fødevarestyrelsens og bliver hvid. */
 /* ============================================================
-   FACEBOOK, SMILEYEN OG PRISEN ER GLASPILLER — SOM ALLERGIEN (28/9)
+   FACEBOOK, SMILEYEN OG PRISEN: APPLES KLARE GLAS  (28/9, aften)
    ------------------------------------------------------------
-   Mikkels ord: *"du skal lave facebook, award og fødevarestyrelsen
-   iOS 18 glass pillars helt forfra — de ligner intet af figma-siderne,
-   ligesom med allergien — og skift farven på facebook til blå og den
-   anden til guld"*.
+   Mikkels valg af seks forslag fra Higgsfield (nr. 7), efter ordene
+   *"de får vand-agtige … det skal virkelig bare være iOS 18 Apple
+   liquid glass"*. Fire runder før: plade, Figma-knap, farvet kerne og
+   en kopi af allergipillen. Alle havde en FARVET, tyk kerne, og det
+   var den, der lignede gele og vand.
 
-   To forsøg før var bygget som KORT: først pladen med en kvadratisk
-   kerne, så Figmas Glass-KNAP (LA32 116:886) strakt ud til et kort på
-   190 px med overskrift og knap. Ingen af dem var en pille, og glas
-   over husets flade creme er "glass over nothing" — Figmas eget nej
-   (Glass material library, D, 53:299): der er intet bag det at bryde,
-   så det stod som en farvet kasse.
+   Apples glas er tyndt: en let, hvidlig flade, en skarp lys kant
+   øverst (1 px), en svag kant forneden, en hårfin omkreds og en blød
+   skygge. Farven sidder i TEGNET (Facebooks blå, smileyen, medaljen),
+   ikke i glasset. Teksten står til venstre: titel og en dæmpet linje
+   under, og en pil til højre — en række man trykker på, som i iOS.
 
-   Nu er de alle tre den SAMME pille som allergilinjen (.glaspille):
-   Figmas Rim (Glass material library, 52:273) — en 5-6 px glaskant med
-   lys fra −45°, en MASSIV kerne ("glass keeps the edge; solids keep the
-   words") og Rim-skyggen 9/18/44 — rundet helt af som en kapsel. Det,
-   der skifter, er kernen: Facebooks egen blå (#0866FF, samme blå som
-   logoet i striben over), prisens guld og smileyens porcelæn. Linsen
-   til højre er Figmas (116:890) med pilen LA2.1.
+   ⚠️ INGEN backdrop-filter. Rækkerne ligger i siden på den flade
+   creme og ruller MED siden; der er intet bag dem at sløre (husets
+   grænse fra 31/8, og tests/siden-staar-stille.spec.js 28/9). Glasset
+   er lyset i kanten og skyggen — det er dét, øjet læser som glas.
+
+   Klasserne .promo/.smiley-kort/.pris-kort bliver: kontakt.js leder
+   efter .promo, og prøverne finder rækkerne ved dem. Derfor står
+   reglerne her med to klasser, så de slår .promo.fb og .smiley-kort.
    ============================================================ */
-/* ⚠️ KOPIEN AF ALLERGIPILLEN (28/9, eftermiddag). Mikkels ord: *"allergi-
-   pillen er bedre, kan den ikke bare kopieres og ændre farve agtig"*.
-   Første udgave var et kort i pilleform — ikon, overskrift, undertekst og
-   en rund pil — og ved siden af allergien så det tungt og rodet ud. Nu er
-   de tre ALLERGIENS pille: samme glas, samme luft (15/24), samme skrift
-   (14/500, centreret, balanceret), tegnet foran teksten. Det ENESTE, der
-   skifter, er kernen: Facebooks blå, prisens guld, og smileyen er
-   porcelæn som allergien. Den eneste forskel i formen er bredden: allergien
-   står inde i menukort-kortet, de tre fylder spalten. */
-.pille-kort.glaspille{display:block;max-width:none;overflow:visible;transition:transform .35s var(--spring)}
-.pille-kort.glaspille:active{transform:scale(.98)}
-.pille-kort.glaspille.promo.fb{background:radial-gradient(90% 140% at 18% 0%,rgba(255,255,255,.95),rgba(255,255,255,0) 60%),linear-gradient(180deg,rgba(255,255,255,.85),var(--pille-tone) 55%,rgba(255,255,255,.8));padding:15px 24px;border-radius:var(--plade-r);color:#fff}
-.pille-kort.fb{--pille-kerne:#0866ff;--pille-tone:rgba(8,102,255,.2);color:#fff}
-.pille-kort.pris-kort{--pille-kerne:linear-gradient(135deg,#fcf0c4,#f1d27c 55%,#e4bd62);--pille-tone:rgba(241,210,124,.4);color:#0e0f10}
-.pille-kort>[aria-hidden] svg{width:17px;height:17px;vertical-align:-3px}
+.glasraekke.promo,.glasraekke.promo.fb,.glasraekke.smiley-kort{display:flex;align-items:center;gap:14px;min-height:66px;padding:11px 16px 11px 14px;border-radius:33px;overflow:visible;color:var(--ink);text-decoration:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.62) 55%,rgba(255,255,255,.72));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(255,255,255,.5),inset 0 0 0 .5px rgba(36,26,23,.1),0 1px 2px rgba(36,26,23,.06),0 8px 22px rgba(36,26,23,.09);
+  transition:transform .35s var(--spring)}
+.glasraekke:active{transform:scale(.98)}
+.gr-tegn{flex:none;width:36px;height:36px;display:grid;place-items:center;font-size:27px;line-height:1}
+.gr-tegn svg{width:32px;height:32px;display:block}
+.gr-tekst{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left}
+/* ⚠️ PRISENS TITEL ER TO LINJER PÅ EN TELEFON. "Indstillet til Greve
+   Iværksætterpris 2026" skal stå hel (prøven og 25/9: "indstillet til",
+   ikke "vinder"), og den er for lang til én linje ved 390 px — ubalanceret
+   stod "2026" alene. Balanceret deler den midt over, og radius 33 (halvdelen
+   af 66) er en kapsel ved to linjer og et blødt kort ved tre. */
+.gr-tekst b{font-size:15px;font-weight:600;line-height:1.25;color:var(--ink);text-wrap:balance}
+.gr-tekst span{font-size:13px;line-height:1.3;color:var(--muted)}
+.gr-pil{flex:none;width:18px;height:18px;color:rgba(36,26,23,.38)}
 /* Telefonen i en knap er husets tegn, ikke 📞 (27/9, persondatasiden). */
 .g>svg{width:18px;height:18px;flex:none}
 #alt .row-card .ic{background:rgba(255,255,255,.6);box-shadow:var(--kant-inde)}

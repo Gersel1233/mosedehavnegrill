@@ -547,9 +547,9 @@
     });
   }
 
-  /* .getlist er designets liste af punkter med et hjerte-ikon pr.
-     linje. Det FØRSTE span klones som skabelon, så ikonet er
-     designets eget og ikke en kopi her i koden — flytter designet
+  /* .getlist er designets liste af punkter med en tegning pr.
+     linje. Det FØRSTE span klones som skabelon, så punktets form er
+     designets egen og ikke en kopi her i koden — flytter designet
      sig, følger listen med. */
   function visIndhold() {
     /* ⚠️ DOKUMENTET, IKKE PANELET. Filens find() søger i
@@ -558,26 +558,72 @@
        designets punkter blev stående, mens alt andet så rigtigt
        ud. Fundet ved at måle i øvetilstand, ikke ved at læse. */
     var liste = find('.getlist', document);
-    if (!liste || !fad) return;
+    if (!liste) return;
 
-    var punkter = String(fad.beskrivelse || '').split('·')
+    var punkter = String((fad && fad.beskrivelse) || '').split('·')
       .map(function (l) { return l.trim(); })
       .filter(Boolean);
-    if (!punkter.length) return;
-
     var skabelon = liste.querySelector('span');
-    if (!skabelon) return;
 
-    liste.textContent = '';
-    punkter.forEach(function (p) {
-      var s = skabelon.cloneNode(true);
-      /* Klonens tekstknuder fjernes, og punktet sættes ind — svg'et
-         bliver stående. textContent på spannet ville slette ikonet. */
-      Array.prototype.slice.call(s.childNodes).forEach(function (k) {
-        if (k.nodeType === 3) s.removeChild(k);
+    if (punkter.length && skabelon) {
+      liste.textContent = '';
+      punkter.forEach(function (p) {
+        var s = skabelon.cloneNode(true);
+        s.className = '';
+        /* Klonens tekstknuder fjernes, og punktet sættes ind —
+           tegningen bliver stående. textContent på spannet ville
+           slette den. */
+        Array.prototype.slice.call(s.childNodes).forEach(function (k) {
+          if (k.nodeType === 3) s.removeChild(k);
+        });
+        s.appendChild(document.createTextNode(p));
+        liste.appendChild(s);
       });
-      s.appendChild(document.createTextNode(p));
-      liste.appendChild(s);
+    }
+    tegnListe(liste);
+  }
+
+  /* ============================================================
+     TEGNINGEN VÆLGES AF ORDET  (28/9)
+     ------------------------------------------------------------
+     Mikkels valg: hver ting på fadet med sin egen røde tegning
+     (forslag 10). Ejeren kan skrive sin egen liste i admin →
+     Menukort, så tegningen kan ikke stå fast i HTML'en alene —
+     den læses af punktets tekst. Designets egen liste går
+     samme vej, så de to aldrig kan vælge forskelligt.
+
+     ⚠️ RÆKKEFØLGEN BETYDER NOGET. "Baguette og smør" er brød,
+     ikke smør, og osten står sidst: "ost" står inde i andre ord.
+     Kender reglen ikke ordet, får punktet et fad — hellere et
+     tegn, der ikke påstår noget, end en forkert ret.
+     ============================================================ */
+  var TEGN = [
+    [/baguette/i, 'baguette'],
+    [/brød/i, 'broed'],
+    [/chorizo|salami|pølse/i, 'chorizo'],
+    [/skinke|serrano|parma|prosciutto/i, 'skinke'],
+    [/pat[eé]/i, 'pate'],
+    [/laks|rillette/i, 'lakserilette'],
+    [/hummus/i, 'hummus'],
+    [/pesto/i, 'pesto'],
+    [/oliven/i, 'oliven'],
+    [/cornichon|agurk/i, 'cornichoner'],
+    [/frugt|drue|jordbær|melon/i, 'frugt'],
+    [/grønt|salat|rucola/i, 'groent'],
+    [/smør/i, 'smoer'],
+    [/dip|mayo|tzatziki|aioli/i, 'dip'],
+    [/(^|\s)ost/i, 'ost']
+  ];
+  function tegnFor(tekst) {
+    for (var i = 0; i < TEGN.length; i++) {
+      if (TEGN[i][0].test(tekst)) return TEGN[i][1];
+    }
+    return 'fad';
+  }
+  function tegnListe(liste) {
+    Array.prototype.forEach.call(liste.children, function (s) {
+      var img = s.querySelector('img');
+      if (img) img.src = 'billeder/tapas-tegn/' + tegnFor(s.textContent) + '.webp';
     });
   }
 
