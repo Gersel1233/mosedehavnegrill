@@ -83,8 +83,8 @@
     if (!opsat) {
       $('push-til').classList.add('skjult');
       $('push-fra').classList.add('skjult');
-      sigStatus('Opsætningen mangler: lav nøglerne med supabase/lav-vapid.html, '
-        + 'og sæt den OFFENTLIGE ind herunder. Se README under push.');
+      sigStatus('Opsætningen mangler: beskeder på telefonen skal have en nøgle, '
+        + 'som Lesreg laver og sætter ind herunder.');
       return;
     }
     if (!kanPush()) {
@@ -202,7 +202,7 @@
       var boks = $('push-enheder');
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'hjaelp',
-        'Listen kunne ikke hentes — er push-opsætningen kørt i Supabase? Se README.'));
+        'Listen kunne ikke hentes. ' + Admin.sigTilLesreg('push-opsætningen')));
     });
   }
 
@@ -212,8 +212,8 @@
   $('gem-vapid').addEventListener('click', function () {
     var v = $('vapid-noegle').value.trim();
     if (!/^[A-Za-z0-9_-]{87}$/.test(v)) {
-      return Admin.brøl('Det ligner ikke den offentlige nøgle — den er 87 tegn '
-        + 'og starter typisk med B. Kopiér den fra lav-vapid.html.');
+      return Admin.brøl('Det ligner ikke nøglen — den er 87 tegn og starter '
+        + 'typisk med B. Kopiér den igen fra Lesreg.');
     }
     Admin.gem(Butik.skrive.indstilling('vapid_offentlig', v),
       'Nøglen er gemt. Slå beskeder til på enhederne herunder.');

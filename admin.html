@@ -2687,7 +2687,7 @@
           bestilles. Åbnes i Excel, Numbers eller Google Sheets.
         </p>
         <div class="knap-raekke">
-          <button type="button" class="knap" id="hent-menukort">Hent regneark (CSV)</button>
+          <button type="button" class="knap" id="hent-menukort">Hent menukortet som regneark</button>
         </div>
       </div>
     </div>
@@ -3150,9 +3150,8 @@
         </div>
 
         <p class="hjaelp">
-          Personen skal også oprettes i Supabase under
-          <strong>Authentication → Users</strong> med den samme e-mail —
-          ellers er der ingen at logge ind som.
+          Personen skal også have et login med den samme e-mail —
+          det opretter Lesreg. Uden det er der ingen at logge ind som.
         </p>
       </div>
     </div>
@@ -3230,9 +3229,9 @@
         </div>
         <p class="hjaelp" id="login-hvem"></p>
         <p class="hjaelp">
-          Adgangskoden skiftes i Supabase under
-          <strong>Authentication → Users</strong>. Skal en ny medarbejder ind,
-          oprettes brugeren samme sted og skrives på listen over adgange.
+          Er koden glemt, eller skal den skiftes, så sig det til Lesreg.
+          Skal en ny medarbejder ind, giver du adgang under Personale, og
+          Lesreg opretter login'et.
         </p>
       </div>
 
@@ -3245,7 +3244,7 @@
           Gem den et sted, der ikke er denne maskine — så findes tallene,
           også den dag noget går galt.
         </p>
-        <button class="knap" id="hent-backup" type="button">Download sikkerhedskopi (JSON)</button>
+        <button class="knap" id="hent-backup" type="button">Hent sikkerhedskopi</button>
       </div>
 
       <!-- ============ BESKED PÅ TELEFONEN ==================
@@ -3265,9 +3264,9 @@
              browser — de har aldrig været i repoet eller en chat. -->
         <div id="push-opsaetning" class="skjult">
           <div class="felt">
-            <label for="vapid-noegle">Offentlig nøgle (VAPID_OFFENTLIG)</label>
+            <label for="vapid-noegle">Nøgle til beskeder (fra Lesreg)</label>
             <input type="text" id="vapid-noegle" maxlength="90"
-                   placeholder="Indsæt nøglen fra lav-vapid.html">
+                   placeholder="Indsæt nøglen, Lesreg har sendt">
           </div>
           <div class="knap-raekke">
             <button class="knap sekundaer" id="gem-vapid" type="button">Gem nøglen</button>

@@ -2672,9 +2672,8 @@
          der ingenting at styre — og et opdigtet filnavn sender
          nogen ud at lede, så det RIGTIGE står her. */
       rod.appendChild(Admin.lav('p', 'hjaelp',
-        'Tapasfadet står ikke på menukortet endnu. Kør '
-        + 'supabase/menukort-ud-af-huset.sql i Supabase, så kommer '
-        + 'felterne her af sig selv.'));
+        'Tapasfadet står ikke på menukortet endnu, så der er intet at '
+        + 'styre her. ' + Admin.sigTilLesreg('menukort-ud-af-huset.sql')));
       return;
     }
 
@@ -2704,7 +2703,7 @@
     rod.appendChild(indhold);
     rod.appendChild(Admin.lav('p', 'hjaelp',
       'Listen står på tapassiden under "Det får I" og som fadets '
-      + 'linje på menukortet. Tom liste = designets egen bliver stående.'));
+      + 'linje på menukortet. Tom liste = den tekst, der står på siden nu, bliver stående.'));
 
     /* ---- TILKØB TIL FADET  (13/9) ----
        Kundens ord: "prøvede at adde kage til tapas — det virkede

@@ -174,7 +174,7 @@
       var kode = Number(hent[1]);
       if (kode === 401 || kode === 403) return 'Du er blevet logget ud. Log ind igen, så henter skærmen det hele.';
       if (kode >= 500) return 'Databasen svarer ikke lige nu. Skærmen prøver selv igen om lidt.';
-      if (kode === 404) return 'En tabel mangler i databasen — sig det til Lesreg.';
+      if (kode === 404) return 'En del af systemet mangler. ' + sigTilLesreg(hent[0].split(':')[0]);
     }
     /* Databasens egen ordlyd: Could not find the 'X' column of
        'Y' in the schema cache. Den kommer fra PostgREST og er
@@ -186,11 +186,21 @@
     var tabel = m[2];
     var fil = KOLONNE_FIL[tabel + '.' + kolonne];
 
-    return 'Databasen kender ikke feltet "' + kolonne + '" på ' + tabel + ' endnu.'
-      + (fil
-        ? ' Kør supabase/' + fil + ' i Supabase — så virker det.'
-        : ' Der mangler en SQL-fil, som ikke er kørt i Supabase endnu.')
-      + ' Indtil da kan resten af fanen bruges som før.';
+    return 'Det her felt er ikke slået til i systemet endnu. '
+      + sigTilLesreg(fil || (tabel + '.' + kolonne))
+      + ' Resten af fanen virker som før.';
+  }
+
+  /* ⚠️ PERSONALET KØRER IKKE SQL  (28/9). Mikkels ord: "ret også
+     udviklersproget … i admin". Her stod "Kør supabase/restaurant.sql i
+     Supabase først" og "Er supabase/roller.sql kørt?" på skærmen i en
+     café, hvor ingen ved, hvad Supabase er. Det, de KAN gøre, er at sige
+     det til Lesreg — og filnavnet står i parentes, så Lesreg ved præcis,
+     hvad der mangler. Én sætning, ét sted: fem filer skrev den hver for
+     sig. */
+  function sigTilLesreg(hvad) {
+    return 'Det kræver en opdatering, som Lesreg laver — sig det til Lesreg'
+      + (hvad ? ' (' + hvad + ')' : '') + '.';
   }
 
   /* ⚠️ KNAPPEN SVARER MED DET SAMME  (31/8).
@@ -1568,6 +1578,7 @@
     leveringTekst: leveringTekst,
     leveringsLink: leveringsLink,
     kontakt: kontakt,
+    sigTilLesreg: sigTilLesreg,
     pæntNavn: pæntNavn,
     erAllergi: erAllergi,
     gaestebesked: gaestebesked,

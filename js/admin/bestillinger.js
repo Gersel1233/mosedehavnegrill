@@ -1194,8 +1194,8 @@
                  databasen ikke ordet — og så skal der stå HVAD man
                  gør, ikke en rå constraint-fejl. */
               if (/bestilling_status_ok/.test(e.message || '')) {
-                throw new Error('Databasen kender ikke "udeblevet" endnu. '
-                  + 'Kør supabase/udeblivelser.sql i Supabase først.');
+                throw new Error('Udeblev er ikke slået til i systemet endnu. '
+                  + Admin.sigTilLesreg('udeblivelser.sql'));
               }
               throw e;
             }),

@@ -974,8 +974,8 @@
            hverken 'tilberedes' eller 'serveret' — og så skal der stå
            HVAD man gør, ikke en rå constraint-fejl. */
         if (/bestilling_status_ok/.test(m)) {
-          m = 'Databasen kender ikke "' + navnFor(status) + '" endnu. '
-            + 'Kør supabase/restaurant.sql i Supabase først.';
+          m = '"' + navnFor(status) + '" er ikke slået til i systemet endnu. '
+            + Admin.sigTilLesreg('restaurant.sql');
         }
         Admin.brøl(m);
       });

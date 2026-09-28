@@ -91,7 +91,7 @@
 
     if (!liste || !liste.length) {
       boks.appendChild(lav('p', 'hjaelp',
-        'Ingen på holdet endnu. Er supabase/roller.sql kørt?'));
+        'Ingen på holdet endnu — giv adgang herunder.'));
       return;
     }
 

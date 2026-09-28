@@ -57,7 +57,7 @@
      mærke, og knappen brøler den. */
   function samlKontakt() {
     var l = (Admin.data.lokationer || [])[0];
-    if (!l) return 'Der er ingen lokation at rette. Kør setup.sql først.';
+    if (!l) return 'Husets oplysninger er ikke sat op endnu. ' + Admin.sigTilLesreg('setup.sql');
 
     var f = Butik.tjek.navn($('lok-navn').value, 'navn', 120)
          || Butik.tjek.navn($('lok-adresse').value, 'adresse', 120)
