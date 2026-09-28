@@ -217,11 +217,25 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .g.dark{color:#fff;background:rgba(255,255,255,.18);box-shadow:inset 0 1px .5px rgba(255,255,255,.6),inset 0 0 0 1px rgba(255,255,255,.34),0 10px 26px rgba(0,0,0,.35)}
 .g.solid{color:#fff;background:linear-gradient(180deg,#e2394a,#c11f2f);box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 .5px rgba(120,10,18,.4),0 10px 26px rgba(214,42,58,.4)}
 .g.ink{color:#fff;background:linear-gradient(180deg,#3a2924,#241a17);box-shadow:inset 0 1px .5px rgba(255,255,255,.28),0 10px 26px rgba(36,26,23,.34)}
+/* ⚠️ DE RØDE OG DE MØRKE KNAPPER ER DÆKKENDE — INTET GLAS BAG DEM (28/9).
+   .g giver alle knapper backdrop-filter; på .solid og .ink ligger der en
+   helt dækkende flade ovenpå, så sløringen kan ikke ses, men den regnes
+   ud, hver gang noget bag knappen flytter sig. MÅLT på alle gæstesider,
+   telefon og computer: ingen .solid eller .ink har en gennemsigtig
+   baggrund. Får en af dem det en dag, skal glasset med igen dér. */
+.g.solid,.g.ink{-webkit-backdrop-filter:none;backdrop-filter:none}
 .g.sm{height:38px;padding:0 16px;font-size:13px}
 .g.blk{width:100%}
 .icn{width:40px;height:40px;padding:0;border-radius:999px;flex:none}.icn svg{width:18px;height:18px}
-.sheen{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);animation:sheen 5.2s cubic-bezier(.5,0,.3,1) 1.6s infinite}
-@keyframes sheen{0%{left:-60%}20%,100%{left:130%}}
+/* ⚠️ GLANSEN FLYTTES MED transform, IKKE left (28/9). Den gik med `left`,
+   og så skulle siden lægges om og tegnes om ved HVERT billede, så længe den
+   var åben — også mens striben "hvilede" de sidste 80 % af runden. MÅLT på
+   tapassiden: 240 omberegninger på to sekunder (to striber × 60) og hele
+   siden tegnet om 10-15 gange i sekundet, uden at nogen rørte den. Med
+   transform klarer skærmkortet det alene. Samme vej: -60 % → 130 % af
+   knappen er -150 % → 325 % af striben, der er 40 % bred. */
+.sheen{position:absolute;top:0;left:0;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:translateX(-150%) skewX(-18deg);animation:sheen 5.2s cubic-bezier(.5,0,.3,1) 1.6s infinite}
+@keyframes sheen{0%{transform:translateX(-150%) skewX(-18deg)}20%,100%{transform:translateX(325%) skewX(-18deg)}}
 /* crest / logo — den RUNDE krans fra intro-animationen (300-net).
    Teksten er introens egne tal; bredderne er sat, saa maerket
    fylder samme HOEJDE som den gamle oval (bredde x 0,7), ellers
@@ -348,8 +362,14 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 }
 .topbar.stuck .ordmaerke,.topbar.solid .ordmaerke{opacity:1;visibility:visible}
 .topbar .sp{margin-left:auto}
-/* Fast creme, ikke 80 % (13/9): over de mørke afsnit blev bjælken grumset grå, og på telefonen skinnede sociale-striben igennem bag navnet. */
-.topbar.stuck{background:var(--cream);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
+/* Fast creme, ikke 80 % (13/9): over de mørke afsnit blev bjælken grumset grå, og på telefonen skinnede sociale-striben igennem bag navnet.
+   ⚠️ OG DERFOR INTET GLAS BAG DEN (28/9). Sløringen blev stående, da fladen
+   blev helt dækkende — den kunne ikke ses, men telefonen regnede den stadig
+   ud ved HVERT billede: på tapassiden sætter bjælken sig fast lige der, hvor
+   filmen glider ind under den, og så blev 60 filmbilleder i sekundet sløret
+   for ingenting. Mikkels ord: *"tapas-siden … er ret laggy og hakkende"*.
+   .topbar.solid (90 %) beholder sit — dér skinner det igennem. */
+.topbar.stuck{background:var(--cream);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
 .topbar.stuck .brandmark{filter:none}
 /* ⚠️ BJÆLKEN ER LAVERE, NÅR DEN STÅR FAST — PÅ TELEFONEN (11/9).
    Kundens ord: bjælken med "Mosede Havnecafe" skal være "lidt mindre,
