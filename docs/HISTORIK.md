@@ -7,6 +7,24 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**INGEN PAKKEPRIS FOR TO, OG ALLE LYSE PILLER I SAMME GLAS** (28/9, aften).
+- Mikkels ord om "for 2 personer inkl. en flaske Cava" (657,- med hans priser):
+  *"det er ikke en attraktiv pris … fjern det"*. Kassen er ude af m-tapas.html,
+  og tallet regnes ikke længere (tapas.js). Prisen pr. person står alene; Cavaen
+  er stadig tilkøb i bestillingen
+- *"fix lige alle pillerne de andre steder, f.eks. allergi-tingen"*: glasset fra
+  forslag 7 står nu ét sted (`--glas-flade`, `--glas-skygge`) og bæres af de tre
+  rækker øverst, allergilinjen (forsiden og menukortet), "Nyhed", striben og isens
+  prislinjer. Kernen, ringen, blur'en og isens diagonale glans er væk. De mørke
+  piller (smiley-linjen i bunden, "Åbent nu" på fotoet) er uændrede
+- ⚠️ Kommentarer i havnegrillen.css og skal-forside.spec.js citerede LESREG-
+  specifikationens tekst ordret — det står der ikke længere (kun værdier og
+  node-numre må stå i det offentlige repo)
+- Fuld runde i fire bidder: 1 fejl på begge profiler, `admin-nyheder` "en
+  manglende kolonne peger på filen" — forældet siden admin-sproget i formiddags
+  (beskeden siger "sig det til Lesreg (nyheder-fra-til.sql)", ikke kolonnen og
+  ikke stien). Prøven rettet med grund og set fejle mod det gamle udviklersprog
+
 **KNAPPERNE I APPLES KLARE GLAS, TAPASFADET SOM EN TEGNET MENU** (28/9, aften).
 Mikkels ord: knapperne *"er ikke gode nok … brug Higgsfield til at generere en
 liquid glass iOS 18-inspireret"* og tapasdelen *"ligner noget generisk med de små

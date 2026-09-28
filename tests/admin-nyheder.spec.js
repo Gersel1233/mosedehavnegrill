@@ -632,9 +632,17 @@ test.describe('Databasefejl oversættes', () => {
       const svar = await page.evaluate(() => window.Admin.forklarFejl(new Error(
         'Kunne ikke gemme (400). {"code":"PGRST204","message":'
         + '"Could not find the \'vis_fra\' column of \'nyheder\' in the schema cache"}')));
-      expect(svar).toContain('vis_fra');
-      expect(svar).toContain('supabase/nyheder-fra-til.sql');
+      /* ⚠️ VENDT 28/9 — MIKKELS ORD: "ret også udviklersproget … i admin".
+         Personalet kører ikke SQL og ved ikke, hvad en kolonne er; de
+         skal sige det til Lesreg. Filnavnet står i parentes til Lesreg
+         (Admin.sigTilLesreg i js/admin/kerne.js) — uden mappen, for en
+         sti er udviklersprog — så det er stadig præcist, hvad der mangler. Kolonnens navn (vis_fra) står der
+         ikke længere — filen siger det samme til den, der skal bruge det. */
+      expect(svar).toContain('sig det til Lesreg');
+      expect(svar).toContain('(nyheder-fra-til.sql)');
+      expect(svar, 'en sti er udviklersprog').not.toContain('supabase/');
       expect(svar).not.toContain('PGRST204');
+      expect(svar).not.toMatch(/Kør |schema cache/);
     });
 
   /* ⚠️ DEN GÆTTER IKKE ET FILNAVN. Kender vi ikke kolonnen,
