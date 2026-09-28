@@ -313,6 +313,23 @@
      film i det forkerte format bliver beskåret forkert. */
   var FILM_VENT_MS = 8000;
   var EFTER_FILM_MS = 1200;
+  /* ⚠️ FILMEN VISES FØRST, NÅR DEN KAN SPILLE TIL ENDE  (28/9).
+     Mikkels ord: *"tapas-siden er laggy med videoen"*. Filmen står
+     øverst på telefonen og fik play() i samme øjeblik, siden åbnede
+     — med preload="metadata", så de 1,3 MB først blev hentet, MENS
+     den spillede. På et mobilnet gik den i stå, hver gang nettet
+     ikke kunne følge med: en ost, der hang i luften, og så videre.
+     Forsidens film lærte det samme 14/9 (js/skal/hero-film.js); her
+     er reglen den samme:
+     · play() kaldes stadig med det samme — iOS henter først filmen,
+       når den bliver bedt om at spille
+     · men kan den ikke nå til ende (canplaythrough, eller filen er
+       hentet helt), stilles den på første billede — som ER dens
+       plakat — til resten er her
+     · og går den i stå midt i alligevel i mere end STOP_MS, tages
+       den væk, og dens eget slutbillede står tilbage. En film, der
+       står frosset midt i en bevægelse, er værre end ingen film. */
+  var STOP_MS = 400;
   /* Samme tal som overgangen på .foto-skift img i havnegrillen.css. */
   var TONE_MS = 900;
   var filmBred = '(min-width: 821px)';
@@ -416,30 +433,76 @@
       v.setAttribute('playsinline', '');
       v.setAttribute('aria-hidden', 'true');
       v.disablePictureInPicture = true;
-      v.preload = 'metadata';
+      /* Hele filen, ikke kun hovedet — den skal kunne spille til ende,
+         før den vises (se STOP_MS). */
+      v.preload = 'auto';
       v.poster = navn + '-start.jpg';
       v.src = navn + '.mp4';
       rod.appendChild(v);
 
-      var færdig = false, vagt = null;
+      var færdig = false, vagt = null, stop = null;
+      var ønsket = false, kanTilEnde = false, vist = false;
       /* Filmen tages væk, og billedet under den (dens eget sidste
          billede) står tilbage. Galleriet begynder først nu. */
       function slut() {
         if (færdig) return;
         færdig = true;
         if (vagt) clearTimeout(vagt);
+        if (stop) clearTimeout(stop);
         if (v.parentNode) v.parentNode.removeChild(v);
         start(true);
       }
       v.addEventListener('ended', slut, { once: true });
       v.addEventListener('error', slut, { once: true });
 
-      function spil() {
-        if (færdig) return;
-        vagt = setTimeout(function () { if (v.paused || v.currentTime === 0) slut(); }, FILM_VENT_MS);
-        hentNæste();
+      function hentetHelt() {
+        try {
+          var b = v.buffered;
+          return b.length > 0 && isFinite(v.duration)
+            && b.end(b.length - 1) >= v.duration - 0.25;
+        } catch (e) { return false; }
+      }
+      function afspil() {
         var p = v.play();
         if (p && typeof p.catch === 'function') p.catch(slut);
+      }
+      /* Resten er kommet: spil forfra, fra plakaten. */
+      function klar() {
+        if (!kanTilEnde && hentetHelt()) kanTilEnde = true;
+        if (kanTilEnde && ønsket && !vist && !færdig && v.paused) {
+          try { v.currentTime = 0; } catch (e) { /* intet at spole */ }
+          afspil();
+        }
+      }
+      v.addEventListener('canplaythrough', function () { kanTilEnde = true; klar(); });
+      v.addEventListener('progress', klar);
+      v.addEventListener('playing', function () {
+        if (stop) { clearTimeout(stop); stop = null; }
+        if (vist || færdig) return;
+        if (!kanTilEnde && !hentetHelt()) {
+          /* Den spiller, men kan ikke nå til ende: stands den på første
+             billede, og vent på resten (klar). */
+          v.pause();
+          return;
+        }
+        vist = true;
+        if (vagt) clearTimeout(vagt);
+        /* Det næste billede hentes FØRST NU — før kæmpede det med
+           filmen om nettet i de sekunder, hvor filmen skulle hentes. */
+        hentNæste();
+      });
+      v.addEventListener('waiting', function () {
+        if (!vist || færdig || stop) return;
+        stop = setTimeout(slut, STOP_MS);
+      });
+
+      function spil() {
+        if (færdig) return;
+        ønsket = true;
+        /* Er den ikke i gang efter FILM_VENT_MS, kører galleriet uden
+           den — også når nettet er for langsomt til at hente den. */
+        vagt = setTimeout(function () { if (!vist) slut(); }, FILM_VENT_MS);
+        afspil();
       }
       /* Filmen spiller, når gæsten kan SE den — ikke mens galleriet
          ligger under folden og spiller for ingen. */
