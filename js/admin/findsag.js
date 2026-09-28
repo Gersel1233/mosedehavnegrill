@@ -46,9 +46,22 @@
     return n === '' ? null : Number(n);
   }
 
-  function passer(sag, ord) {
+  function passer(sag, ord, sted) {
     var ref = String(sag.reference || '').toUpperCase();
     if (ref && ref.indexOf(ord.toUpperCase()) !== -1) return true;
+
+    /* ⚠️ NUMMERET, SOM DET STÅR PÅ KORTET OG KVITTERINGEN (28/9).
+       Gæsten læser "B-0012" op — og feltet fandt kun "12" eller
+       "0012": bindestregen og bogstavet gjorde, at hverken tallet
+       eller referencen passede. Bogstavet er slagsen (Butik.pæntNummer:
+       M mad, B bord, F forespørgsel, L lokale, T tilmelding), og det
+       SKAL passe: M-0012 og B-0012 er to forskellige gæster. */
+    var paent = /^([mbflt])\s*-?\s*#?\s*([0-9]+)$/i.exec(ord);
+    if (paent && sted && Butik.pæntNummer) {
+      var bogstav = Butik.pæntNummer(1, sted.slags).charAt(0);
+      if (bogstav.toUpperCase() === paent[1].toUpperCase()
+          && taller(sag.nummer) === taller(paent[2])) return true;
+    }
 
     /* Kun HELE tal må matche nummeret. Ellers ville "4" hente
        hver eneste bestilling fra 4 til 400 frem. */
@@ -177,7 +190,7 @@
     var fund = [];
     STEDER.forEach(function (s) {
       (Admin.lister[s.liste] || []).forEach(function (sag) {
-        if (passer(sag, ord)) fund.push({ sted: s, sag: sag });
+        if (passer(sag, ord, s)) fund.push({ sted: s, sag: sag });
       });
     });
     return fund;

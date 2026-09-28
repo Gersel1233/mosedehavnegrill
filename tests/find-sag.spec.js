@@ -337,3 +337,21 @@ test('et træf fører hen til sagens egen fane', async ({ page }) => {
      skride fra hinanden. */
   await expect(page.locator('#p-forespoergsler')).toBeVisible();
 });
+
+/* ⚠️ NUMMERET, SOM GÆSTEN LÆSER DET OP (28/9). Kvitteringen og kortet
+   siger "B-0003" — og feltet fandt kun "3" eller "0003". Bogstavet skal
+   passe: M-0003 er ikke Familien Nielsens bord. Fiksturet har en
+   bestilling med nummer 44 og en booking med nummer 3. */
+test('"B-0003" finder bookingen — og kun bookingen', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  for (const ord of ['B-0003', 'b3', 'B 3', 'B-3']) {
+    const traef = await soeg(page, ord);
+    await expect(traef, ord).toHaveCount(1);
+    await expect(traef.first(), ord).toContainText('Bordbooking');
+  }
+  const forkert = await soeg(page, 'M-0003');
+  await expect(forkert, 'M-0003 fandt bordet').toHaveCount(0);
+  const mad = await soeg(page, 'M-0044');
+  await expect(mad).toHaveCount(1);
+  await expect(mad.first()).toContainText('Bestilling');
+});
