@@ -7,6 +7,25 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**SIDEN STÅR STILLE: GLANSEN OG DET USYNLIGE GLAS** (28/9, eftermiddag). Mikkels
+ord efter filmrettelsen: *"tapas-siden med video og hele sådan tingen er ret laggy
+og virker ikke optimalt og hakkende"*. MÅLT på tapassiden (telefon, CPU bremset 4×,
+ingen berøring, filmen spillende): 242 omberegninger, 35 layout og 32 omtegninger af
+hele siden på 4 s — nu 0.
+- **Glansen** (`.sheen`, alle røde knapper på hele sitet) gik med `left`: siden blev
+  lagt om og tegnet om ved hvert billede, så længe den var åben. Nu `transform`,
+  samme vej (-150 % → 325 % af en stribe på 40 %)
+- **Usynligt glas:** `.topbar.stuck` (fast creme) og `.g.solid`/`.g.ink` (dækkende
+  flader) havde `backdrop-filter`, der ikke kunne ses, men blev regnet ud — på
+  tapassiden lige dér, hvor filmen glider ind under bjælken. Taget af. Målt: ingen
+  .solid/.ink har en gennemsigtig baggrund på nogen gæsteside
+- **Filmen** stoppede og startede forfra, når 'playing' kom før 'canplaythrough' i
+  samme millisekund. readyState 4 tæller nu som klar
+- Skud før/efter: højst 1–2 farvetrin forskel (kanten af bjælken, pillens runde
+  ende). `tests/siden-staar-stille.spec.js` (alle gæstesider, læst af mappen) og en
+  ny prøve i `tests/tapas-film.spec.js` — begge set fejle mod det gamle
+- ⚠️ Målt i Chromium; WebKit (iPhone) findes ikke i sky-containeren
+
 **TAPASFILMEN: HAKKEDE OG VAR BLØD** (28/9, formiddag). Mikkels ord: *"tapas-siden
 er laggy med videoen og i dårlig kvalitet"*.
 - **Hakkene — årsagen:** filmen står øverst på telefonen og fik play(), i samme
