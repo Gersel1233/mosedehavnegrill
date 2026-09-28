@@ -29,16 +29,27 @@ const fremme = (page) => page.evaluate(() => {
 });
 const fmt = (info) => (info.project.name === 'computer' ? '16x9' : '4x3');
 
-async function kanSpille(page) {
-  await page.route('**/film/tapas-*.mp4*', (r) => r.fulfill({ status: 200, contentType: 'video/webm', body: WEBM }));
+/* Stubben opfører sig som en rigtig browser, der spiller: play()
+   sender 'playing', og pause() standser den (28/9 — filmen stiller
+   sig selv på pause, hvis den ikke kan nå til ende, og det skal
+   kunne ses herfra). Selve filen hentes rigtigt, så 'canplaythrough'
+   og buffered kommer fra Chromium og ikke fra prøven. `hold` holder
+   svaret tilbage, til prøven slipper det — et langsomt mobilnet. */
+async function kanSpille(page, { hold } = {}) {
+  await page.route('**/film/tapas-*.mp4*', async (r) => {
+    if (hold) await hold;
+    await r.fulfill({ status: 200, contentType: 'video/webm', body: WEBM });
+  });
   await page.addInitScript(() => {
     HTMLMediaElement.prototype.canPlayType = () => 'probably';
     HTMLMediaElement.prototype.play = function () {
       this.__spiller = true;
-      Object.defineProperty(this, 'paused', { configurable: true, get: () => false });
-      Object.defineProperty(this, 'currentTime', { configurable: true, get: () => 1, set: () => {} });
+      this.__spil = (this.__spil || 0) + 1;
+      Object.defineProperty(this, 'paused', { configurable: true, get: () => !this.__spiller });
+      setTimeout(() => { if (this.__spiller) this.dispatchEvent(new Event('playing')); }, 0);
       return Promise.resolve();
     };
+    HTMLMediaElement.prototype.pause = function () { this.__spiller = false; };
   });
 }
 
@@ -98,6 +109,46 @@ test.describe('Tapasfilmen i galleriet', () => {
     const gammel = await page.locator('.tshot .foto-skift img').first()
       .evaluate((f) => Number(getComputedStyle(f).opacity));
     expect(gammel).toBe(1);
+  });
+
+  /* ⚠️ MIKKEL 28/9: *"tapas-siden er laggy med videoen"*. Filmen fik
+     play(), før den var hentet, og hakkede sig igennem på et mobilnet.
+     Nu står den på sin plakat, til den kan spille til ende. */
+  test('en film, der ikke er hentet, venter på plakaten — og spiller så forfra', async ({ page }) => {
+    let slip;
+    await kanSpille(page, { hold: new Promise((r) => { slip = r; }) });
+    await åbnSkal(page, '/m-tapas.html', { ur: FREDAG, data: grunddata() });
+    const video = page.locator('.tshot .foto-skift video.foto-film');
+    await expect.poll(() => video.evaluate((v) => v.__spil || 0)).toBeGreaterThan(0);
+    // Bedt om at spille, men stillet på pause af sig selv: resten mangler.
+    await expect.poll(() => video.evaluate((v) => v.__spiller)).toBe(false);
+    expect(await fremme(page)).toBe(0);
+
+    slip();
+    await expect.poll(() => video.evaluate((v) => v.__spiller), { timeout: 5000 }).toBe(true);
+    expect(await video.evaluate((v) => v.__spil)).toBeGreaterThan(1);
+    await expect(video).toHaveCount(1);
+  });
+
+  test('går filmen i stå midt i, står slutbilledet i stedet — et kort hik gør ingenting', async ({ page }, info) => {
+    await kanSpille(page);
+    await åbnSkal(page, '/m-tapas.html', { ur: FREDAG, data: grunddata() });
+    const video = page.locator('.tshot .foto-skift video.foto-film');
+    // Filmen er vist, når billede 2 bliver hentet (det venter på filmen).
+    await expect.poll(() => page.locator('.tshot .foto-skift img').nth(1)
+      .evaluate((f) => f.complete && f.naturalWidth > 0)).toBe(true);
+
+    // Et hik, den kommer over med det samme: filmen bliver.
+    await video.evaluate((v) => { v.dispatchEvent(new Event('waiting')); v.dispatchEvent(new Event('playing')); });
+    await page.waitForTimeout(900);
+    await expect(video).toHaveCount(1);
+
+    // Et stop, den ikke kommer over: væk inden for et sekund.
+    await video.evaluate((v) => v.dispatchEvent(new Event('waiting')));
+    await expect(page.locator('.tshot video')).toHaveCount(0, { timeout: 1200 });
+    await expect(page.locator('.tshot .foto-skift img').first())
+      .toHaveAttribute('src', new RegExp(`film/tapas-${fmt(info)}-slut\\.jpg`));
+    await expect.poll(() => fremme(page), { timeout: 4000 }).toBe(1);
   });
 
   test('en film, der aldrig kommer i gang, holder ikke billederne fast', async ({ page }) => {
