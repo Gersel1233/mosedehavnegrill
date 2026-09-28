@@ -207,7 +207,8 @@ test.describe('Forsidens kobling', () => {
       const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
       let h = 0;
       if (d) h = max === r ? 60 * (((g - b) / d) % 6) : max === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4);
-      return { nuance: (h + 360) % 360, mætning: s, tekst: getComputedStyle(e.querySelector('.smiley-kort-tekst')).color };
+      /* Pillen er allergiens kopi (28/9): teksten står i pillen selv. */
+      return { nuance: (h + 360) % 360, mætning: s, tekst: getComputedStyle(e).color };
     });
     expect(m.nuance, 'kernen er ikke gul').toBeGreaterThanOrEqual(38);
     expect(m.nuance, 'kernen er ikke gul').toBeLessThanOrEqual(58);
@@ -524,40 +525,46 @@ test.describe('Forsidens kobling', () => {
      der tegner de tre: samme kerne-indryk, samme skygge, helt rund,
      en lyskant — og linsen er Figmas (116:890, 40 px, pilen LA2.1).
      ⚠️ HELE PILLEN ER LINKET: en pille med en knap i er to mål. */
+  /* ⚠️ OG DE ER KOPIER AF DEN (28/9, eftermiddag). Mikkels ord: *"allergi-
+     pillen er bedre, kan den ikke bare kopieres og ændre farve agtig"*.
+     Første udgave havde ikon, overskrift, undertekst og en rund pil. Nu
+     skal skrift, luft og justering være ALLERGIENS — tallene læses af
+     allergipillen på samme side, ikke af reglen, der tegner de tre. */
   test('Facebook, smileyen og prisen er samme glaspille som allergien', async ({ page }) => {
     const data = grunddata();
     data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
     await åbn(page, '/index.html', { data });
-    const facit = await page.locator('.menucard .glaspille').evaluate((e) => ({
-      ind: getComputedStyle(e, '::before').top, skygge: getComputedStyle(e).boxShadow,
-    }));
+    const læs = (e) => {
+      const c = getComputedStyle(e);
+      return {
+        ind: getComputedStyle(e, '::before').top, skygge: c.boxShadow,
+        skrift: c.fontSize + '/' + c.fontWeight, juster: c.textAlign,
+        luft: c.paddingTop + ' ' + c.paddingLeft,
+      };
+    };
+    const facit = await page.locator('.menucard .glaspille').evaluate(læs);
     for (const sel of ['.promo.fb', 'a.smiley-kort[href*="findsmiley.dk"]', '.pris-kort']) {
-      const m = await page.locator(sel).evaluate((e) => {
-        const c = getComputedStyle(e);
+      const m = await page.locator(sel).evaluate((e, læsKilde) => {
+        const læs = new Function('return ' + læsKilde)();
         const k = getComputedStyle(e, '::before');
-        const lens = e.querySelector('.la-lens');
-        const l = lens && lens.getBoundingClientRect();
-        return {
+        return Object.assign(læs(e), {
           tag: e.tagName,
-          ind: k.top,
           kerne: k.backgroundImage !== 'none' || !/rgba\(\d+, \d+, \d+, 0\)|transparent/.test(k.backgroundColor),
-          skygge: c.boxShadow,
-          rund: parseFloat(c.borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1,
+          rund: parseFloat(getComputedStyle(e).borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1,
           lys: getComputedStyle(e, '::after').content,
-          linse: l ? Math.round(l.width) + 'x' + Math.round(l.height) : 'ingen',
-          pil: lens ? lens.querySelector('path').getAttribute('d') : '',
           knapper: e.querySelectorAll('a, button').length,
-        };
-      });
+        });
+      }, læs.toString());
       expect(m.tag, sel + ': pillen er ikke selv linket').toBe('A');
-      expect(m.knapper, sel + ': der er et link inde i pillen').toBe(0);
+      expect(m.knapper, sel + ': der er en knap inde i pillen').toBe(0);
       expect(m.ind, sel + ': kernen ligger ikke som allergiens').toBe(facit.ind);
-      expect(m.kerne, sel + ': kernen er ikke massiv').toBe(true);
       expect(m.skygge, sel + ': skyggen er ikke allergiens').toBe(facit.skygge);
+      expect(m.skrift, sel + ': skriften er ikke allergiens').toBe(facit.skrift);
+      expect(m.juster, sel + ': teksten står ikke som allergiens').toBe(facit.juster);
+      expect(m.luft, sel + ': luften er ikke allergiens').toBe(facit.luft);
+      expect(m.kerne, sel + ': kernen er ikke massiv').toBe(true);
       expect(m.rund, sel + ': ikke en pille').toBe(true);
       expect(m.lys, sel + ': glaskantens lys mangler').not.toBe('none');
-      expect(m.linse, sel + ': knappen er ikke Figmas linse på 40 px').toBe('40x40');
-      expect(m.pil, sel + ': pilen er ikke Figmas LA2.1').toBe('M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6');
     }
   });
 
