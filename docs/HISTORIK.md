@@ -20,7 +20,15 @@ den anden til guld"* og *"ret også udviklersproget, knapper osv. ting i admin"*
 - **Admin:** `Admin.sigTilLesreg` er den ene sætning, når noget kræver en opdatering;
   ingen "Kør supabase/….sql", VAPID, README eller "Supabase → Authentication" på
   skærmen. Vagten `tests/admin-sprog.spec.js` læser filerne
-- Udgivet: pillerne som 454d885; admin-sproget efter
+- **To runder mere samme formiddag.** *"Fødevarestyrelsen er ikke centralt af
+  outlinen, outlinen ligner ikke liquid glass nok, guldet er for fedt"* (2d68afe):
+  den mørke kant og den skæve skygge ud, frost, tone og glans i kanten, kernen 5 px
+  inde hele vejen rundt, guldet champagne. Så *"allergipillen er bedre, kan den ikke
+  bare kopieres og ændre farve"* (b8436b1): ikon, overskrift, undertekst og pil er
+  væk — de tre er allergipillen tegn for tegn (luft 15/24, skrift 14/500 centreret,
+  tegnet foran teksten), og kun kernen skifter. Prøven læser facit AF allergipillen
+  på samme side, så de ikke kan glide fra hinanden igen
+- Udgivet: pillerne som 454d885, 2d68afe og b8436b1; admin-sproget efter
 
 **NATTENS RUNDE: FROKOST, TILBUD, TELEFONEN, OVERBLIK OG ADMINS ORD** (28/9, nat).
 Mikkels besked: frokostordningen er ikke på højde med bestillingsflowet; "hver uge"
