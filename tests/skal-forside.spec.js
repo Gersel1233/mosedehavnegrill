@@ -151,39 +151,45 @@ test.describe('Forsidens kobling', () => {
     });
   }
 
-  /* ⚠️ ALLERGILINJEN ER LESREG'S PLATE (27/9). Mikkels ord: "lav allergi
-     tingen en liquid glass pille lesreg style" — og om første udgave: "for
-     gennemsigtig … tag fra figma sheetsne". Den satte tekst på klart glas;
-     Liquid Atelier 3.2 §1.2 siger: "Text never sits on clear glass. Use
-     Smoke or a solid core inside a 6 px Rim". Tallene her er Figmas
-     (LA31 Content / Quote, Plate, node 104:556), ikke sidens egne: en
-     MASSIV kerne 5 px inde, en lyskant om den og ingen stiplet kant.
-     Kundens nød står (31/8). */
-  const pladen = (e) => {
-    const c = getComputedStyle(e);
-    const k = getComputedStyle(e, '::before');
-    const alfa = (f) => { const m = f.match(/rgba?\(([^)]+)\)/); if (!m) return 0; const d = m[1].split(',').map(parseFloat); return d.length > 3 ? d[3] : 1; };
+  /* ⚠️ ALLE LYSE PILLER ER HUSETS KLARE GLAS (28/9, aften). Mikkels ord,
+     efter at Facebook, smileyen og prisen fik Apples klare glas (forslag
+     7): *"fix lige alle pillerne de andre steder, f.eks. allergi-tingen"*.
+     Det VENDER prøven "allergilinjen er LESREG-pladen" (27/9), der krævede
+     en massiv kerne 5 px inde. Nu: samme flade og skygge som Facebook-
+     rækken øverst — tallet kommer derfra, ikke fra reglen, der tegner
+     pillen — ingen kerne, ingen sløring, ingen stiplet kant, helt rund.
+     Allergien begge steder (forsiden og menukortet), striben og isens
+     prislinjer. Kundens nød står (31/8). */
+  const glasset = (e) => {
+    const c = getComputedStyle(e), k = getComputedStyle(e, '::before');
     return {
+      glas: c.backgroundImage + ' | ' + c.boxShadow,
+      kerne: k.content !== 'none' && k.content !== 'normal',
+      slør: c.backdropFilter || c.webkitBackdropFilter || 'none',
       kant: c.borderTopStyle,
-      kerne: alfa(k.backgroundColor),
-      ind: parseFloat(k.top),
-      lys: getComputedStyle(e, '::after').content,
-      store: c.textTransform,
       rund: parseFloat(c.borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1,
     };
   };
-  test('allergilinjen er LESREG-pladen begge steder: massiv kerne i en glaskant', async ({ page }) => {
-    for (const [sti, sel] of [['/index.html', '.menucard .glaspille'], ['/m-menukort.html', '.mk-allergi']]) {
-      await åbn(page, sti);
-      const pille = page.locator(sel);
-      await expect(pille).toContainText('🥜');
-      await expect(pille).toContainText('Allergi?');
-      const m = await pille.evaluate(pladen);
-      expect(m.kant, sti + ': den stiplede kant er tilbage').toBe('none');
-      expect(m.kerne, sti + ': teksten står på klart glas, ikke på en massiv kerne').toBe(1);
-      expect(m.ind, sti + ': kernen skal ligge 5 px inde i glaskanten (Figma 104:556)').toBe(5);
-      expect(m.lys, sti + ': glaskantens lys mangler').not.toBe('none');
-      expect(m.rund, sti + ': ikke en pille').toBe(true);
+  test('allergilinjen og de lyse piller er det samme klare glas som rækkerne øverst', async ({ page }) => {
+    const data = grunddata();
+    data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
+    await åbn(page, '/index.html', { data });
+    const facit = await page.locator('.promo.fb').evaluate(glasset);
+    const piller = [['/index.html', '.menucard .glaspille'], ['/index.html', '.social a'],
+      ['/index.html', '.is-priser li'], ['/m-menukort.html', '.mk-allergi']];
+    for (const [sti, sel] of piller) {
+      if (page.url().indexOf(sti) === -1) await åbn(page, sti, { data });
+      const pille = page.locator(sel).first();
+      const m = await pille.evaluate(glasset);
+      expect(m.glas, sti + ' ' + sel + ': ikke samme glas som Facebook-rækken').toBe(facit.glas);
+      expect(m.kerne, sti + ' ' + sel + ': en massiv kerne er tilbage').toBe(false);
+      expect(m.slør, sti + ' ' + sel + ': sløring uden noget bagved').toBe('none');
+      expect(m.kant, sti + ' ' + sel + ': den stiplede kant er tilbage').toBe('none');
+      expect(m.rund, sti + ' ' + sel + ': ikke en pille').toBe(true);
+      if (/allergi|glaspille/.test(sel)) {
+        await expect(pille).toContainText('🥜');
+        await expect(pille).toContainText('Allergi?');
+      }
     }
   });
 
@@ -260,12 +266,23 @@ test.describe('Forsidens kobling', () => {
   });
 
   /* "Nyhed" var en rød mærkat i spærrede versaler — det tegn, bid 1
-     tog af mærkaterne over overskrifterne. Nu samme plade, almindelig skrift. */
-  test('"Nyhed" på tapaskortet står i almindelig skrift på LESREG-pladen', async ({ page }) => {
-    await åbn(page, '/index.html');
-    const m = await page.locator('.tapasec .nyt').evaluate(pladen);
+     tog af mærkaterne over overskrifterne. Almindelig skrift, og fra 28/9
+     (aften) husets klare glas som de andre piller: samme flade, ingen
+     kerne. Skyggen er kun kanterne — et mærke på 34 px med den bløde
+     skygge under blev en plet. */
+  test('"Nyhed" på tapaskortet står i almindelig skrift i husets klare glas', async ({ page }) => {
+    const data = grunddata();
+    data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
+    await åbn(page, '/index.html', { data });
+    const facit = await page.locator('.promo.fb').evaluate((e) => getComputedStyle(e).backgroundImage);
+    const m = await page.locator('.tapasec .nyt').evaluate((e) => {
+      const c = getComputedStyle(e), k = getComputedStyle(e, '::before');
+      return { store: c.textTransform, flade: c.backgroundImage,
+        kerne: k.content !== 'none' && k.content !== 'normal' };
+    });
     expect(m.store, 'versalerne er tilbage').toBe('none');
-    expect(m.kerne, 'teksten står på klart glas').toBe(1);
+    expect(m.flade, 'ikke husets glas').toBe(facit);
+    expect(m.kerne, 'en massiv kerne er tilbage').toBe(false);
   });
 
   test('dagens ret kommer fra admin — og afsnittet forsvinder, når der ikke er en', async ({ page }) => {

@@ -609,7 +609,9 @@ html.film-styret.film-aabner .hero.film .hero-badge,html.film-styret.film-aabner
 /* social + musik */
 .social{display:flex;gap:8px;padding:16px var(--pad) 4px;overflow-x:auto;scrollbar-width:none}
 .social::-webkit-scrollbar{height:0}
-.social a{flex:none;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 15px;border-radius:999px;font-size:13px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 0 0 .5px rgba(36,26,23,.07),0 8px 20px rgba(36,26,23,.09);transition:transform .32s var(--spring)}
+/* Striben er husets klare glas (28/9, aften — se "APPLES KLARE GLAS").
+   Uden sløring: striben ruller over flad creme, der er intet bag den. */
+.social a{flex:none;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 15px;border-radius:999px;font-size:13px;font-weight:500;color:var(--ink);background:var(--glas-flade);box-shadow:var(--glas-skygge);transition:transform .32s var(--spring)}
 .social a:active{transform:scale(.955)}
 .social a svg{width:16px;height:16px;flex:none;color:var(--red)}
 .music{margin:14px var(--pad) 0;position:relative;display:flex;align-items:flex-start;gap:12px;padding:15px;border-radius:24px;color:#fff;overflow:hidden;background:linear-gradient(135deg,#3a1d1c,#1f1210)}
@@ -1791,16 +1793,12 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    goer INGENTING at se paa — det koster bare billeder i sekundet.
    Det er husets egen graense fra 31/8: sloering kun paa flader, der
    ligger oven paa noget, der ruller forbi; lag, linsekant og
-   indvendigt lys koster ingenting at tegne. Tallene er `.g`s egne. */
+   indvendigt lys koster ingenting at tegne.
+   28/9, aften: linjerne bærer husets klare glas (se "APPLES KLARE
+   GLAS") — samme opskrift som allergien og de tre rækker øverst, og
+   ikke længere en kopi af `.g` med diagonal glans. */
 .is-priser li{display:flex;align-items:center;gap:10px;padding:11px 15px;border-radius:999px;
-  position:relative;overflow:hidden;
-  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.72));
-  box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
-/* Den diagonale glans er `.g::after` — samme vinkel og samme stop. */
-.is-priser li::after{content:"";position:absolute;inset:0;border-radius:inherit;
-  background:linear-gradient(150deg,rgba(255,255,255,.55),transparent 42%);
-  pointer-events:none}
-.is-priser li>*{position:relative}
+  position:relative;background:var(--glas-flade);box-shadow:var(--glas-skygge)}
 .is-tegn{font-size:22px;line-height:1}
 .is-navn{flex:1;font-size:15px;color:var(--ink)}
 .is-pris{flex:none;font-size:15px;font-weight:600;color:var(--red-tekst);font-variant-numeric:tabular-nums}
@@ -3019,53 +3017,34 @@ footer .smiley-linje{
 #alt>.rev:first-child{position:relative;isolation:isolate;background-color:rgba(255,255,255,.8);background-image:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 55%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-radius:26px;padding:18px 18px 16px;box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
 #alt .row-card{isolation:isolate;border-radius:24px;background-color:rgba(255,255,255,.62);background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.08) 60%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
 #alt>.rev:first-child::before,#alt .row-card::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1.2px;pointer-events:none;background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(255,255,255,.15) 35%,rgba(255,255,255,.1) 65%,rgba(255,255,255,.85));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
-/* ⚠️ GLASPILLEN ER LESREG'S PLATE (27/9, sent). Mikkels ord: *"lav allergi
-   tingen en liquid glass pille lesreg style"* og så, om første udgave:
-   *"for gennemsigtig og dårlig og ikke nok lesreg agtig, tag fra figma
-   sheetsne"*. Den første satte tekst direkte på klart glas — netop det,
-   Liquid Atelier 3.2 forbyder (§1.2: "Text never sits on clear glass. Use
-   Smoke or a solid core inside a 6 px Rim").
+/* ============================================================
+   APPLES KLARE GLAS — ÉN OPSKRIFT TIL ALLE PILLER  (28/9, aften)
+   ------------------------------------------------------------
+   Mikkels valg af Higgsfield-forslag 7 til Facebook, smileyen og prisen
+   (.glasraekke), og så: *"fix lige alle pillerne de andre steder, f.eks.
+   allergi-tingen"*. Opskriften står HER én gang, og alle piller bærer
+   den: allergilinjen (forsiden og menukortet), "Nyhed" og de tre rækker.
 
-   Nu Figmas egen: LA31 Content / Quote, Style=Plate (node 104:556),
-   tegnet som en pille. Tre lag:
-   · RIM: 6 % hvidt glas, 1 px lyskant i −45° (--edge-on-light: hvid oppe
-     til venstre, mørk nede til højre) og Rim-skyggen, der falder nede
-     til højre (9 · 18 · 44, 24 %) — ét lys, som alle LESREG's kanter.
-   · KERNE: massiv porcelæn (#F6F4EF), 5 px inde, samme hjørne.
-   · TEKST: Host Grotesk Medium på kernen, aldrig på glasset.
-   Kundens 🥜 og ord står (31/8, "vi nøjes med emojisne"). */
-/* ⚠️ ÉN PLADE, FEM STEDER (27/9, sent). Mikkels ord: *"glass pillerne med de
-   tre ting facebook, fødevarestyrelsen og guld award skal lige have en kopi
-   inde fra figma ligesom allergien"*. Opskriften står HER én gang og bæres af
-   allergien, "Nyhed", smileyen, prisen og Facebook-kortet; kun kernens farve
-   skifter (porcelæn, guld, Facebooks blå — den blå er kundens valg 13/9).
-   --plade-r er pladens hjørne; kernen følger 5 px inde (koncentrisk). */
-/* ⚠️ GLASKANTEN ER LYS HELE VEJEN RUNDT, OG SKYGGEN FALDER LIGE NED
-   (28/9). Mikkels ord: *"fødevarestyrelsen er ikke centralt af outlinen, og
-   outlinen ligner ikke liquid glass nok"*. MÅLT på et skud i 3× opløsning:
-   kanten gik fra hvid til SORT 22 % nede til højre, og skyggen faldt 9 px
-   til højre og 18 ned — tilsammen så kernen ud, som om den var skubbet op
-   til venstre i sin ramme, og den mørke streg lignede en kant på et kort,
-   ikke glas. Figmas eget Rim-lys (52:273) er hvidt i BEGGE ender (85 % →
-   12 % → 40 %); det sorte var en "på lys bund"-variant, der ikke hørte til.
-   Nu:
-   · glasringen er frostet hvid — lysest øverst og nederst, som tykt glas
-     bryder lyset i kanterne — med slør bag sig
-   · kanten er Figmas hvide lys, og en tynd hvid linje ligger, hvor glasset
-     møder kernen, så kernen står midt i glasset
-   · skyggen er husets bløde glasskygge, lige nedad, med lyset ovenfra
-   · lyset rammer glasset øverst til venstre (en blank plet), kernens farve
-     skinner svagt igennem glasringen (--pille-tone), og kernen har en
-     glans øverst — det er de tre ting, der gør en ring hvid til GLAS */
-.glaspille{position:relative;isolation:isolate;border-radius:var(--plade-r,26px);background:radial-gradient(90% 140% at 18% 0%,rgba(255,255,255,.95),rgba(255,255,255,0) 60%),linear-gradient(180deg,rgba(255,255,255,.85),var(--pille-tone,rgba(255,255,255,.45)) 55%,rgba(255,255,255,.8));-webkit-backdrop-filter:blur(8px) saturate(1.5);backdrop-filter:blur(8px) saturate(1.5);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 0 0 .5px rgba(36,26,23,.08),0 6px 16px rgba(36,26,23,.12)}
-.glaspille::before{content:"";position:absolute;inset:5px;z-index:-1;border-radius:calc(var(--plade-r,26px) - 5px);background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 50%),var(--pille-kerne,#f6f4ef);box-shadow:0 0 0 1px rgba(255,255,255,.8),inset 0 1px 1px rgba(255,255,255,.55),inset 0 -1px 1.5px rgba(36,26,23,.1)}
-.glaspille::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(255,255,255,.12) 45%,rgba(255,255,255,.4));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
-.glaspille{display:inline-block;max-width:min(100%,38ch);padding:15px 24px;--plade-r:999px;font-size:14px;font-weight:500;line-height:1.4;text-align:center;color:var(--ink);text-wrap:balance}
+   Før var glaspillen en ring af frostet glas med en MASSIV kerne 5 px
+   inde (porcelæn, guld, Facebooks blå) og blur bag sig. Det var kernen,
+   der lignede gele og vand. Nu er glasset tyndt: en let hvidlig flade,
+   en skarp lys kant øverst, en svag kant forneden, en hårfin omkreds og
+   en blød skygge, der falder lige ned. Farven sidder i tegnet.
+
+   ⚠️ INGEN backdrop-filter. Pillerne ligger i siden på creme eller på et
+   kort og ruller MED siden — der er intet bag dem at sløre (husets grænse
+   fra 31/8; tests/siden-staar-stille.spec.js 28/9). */
+:root{
+  --glas-flade:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.62) 55%,rgba(255,255,255,.72));
+  --glas-skygge:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(255,255,255,.5),inset 0 0 0 .5px rgba(36,26,23,.1),0 1px 2px rgba(36,26,23,.06),0 8px 22px rgba(36,26,23,.09);
+}
+.glaspille{position:relative;display:inline-block;max-width:min(100%,38ch);padding:15px 24px;border-radius:999px;background:var(--glas-flade);box-shadow:var(--glas-skygge);font-size:14px;font-weight:500;line-height:1.4;text-align:center;color:var(--ink);text-wrap:balance}
 .glaspille>[aria-hidden]{margin-right:6px}
 .menucard .glaspille{margin-top:18px}
-/* "Nyhed" er et mærke på et kort, ikke en plade over det: kant og kerne,
-   men ingen Rim-skygge — på 34 px høj blev den en plet ved siden af. */
-.glaspille.nyt{padding:9px 16px;font-size:13px;font-weight:600;color:var(--red-tekst);box-shadow:none}
+/* "Nyhed" er et mærke på et kort, ikke en plade over det: den bløde
+   skygge under glasset blev en plet ved siden af et mærke på 34 px, så
+   mærket har kun kanterne og omkredsen. */
+.glaspille.nyt{padding:9px 16px;font-size:13px;font-weight:600;color:var(--red-tekst);box-shadow:inset 0 1px 0 rgba(255,255,255,1),inset 0 0 0 .5px rgba(36,26,23,.14)}
 .menucard .glaspille,.phead .glaspille{justify-self:center}
 /* ============================================================
    FACEBOOK, SMILEYEN OG PRISEN: APPLES KLARE GLAS  (28/9, aften)
@@ -3092,8 +3071,7 @@ footer .smiley-linje{
    reglerne her med to klasser, så de slår .promo.fb og .smiley-kort.
    ============================================================ */
 .glasraekke.promo,.glasraekke.promo.fb,.glasraekke.smiley-kort{display:flex;align-items:center;gap:14px;min-height:66px;padding:11px 16px 11px 14px;border-radius:33px;overflow:visible;color:var(--ink);text-decoration:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.62) 55%,rgba(255,255,255,.72));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(255,255,255,.5),inset 0 0 0 .5px rgba(36,26,23,.1),0 1px 2px rgba(36,26,23,.06),0 8px 22px rgba(36,26,23,.09);
+  background:var(--glas-flade);box-shadow:var(--glas-skygge);
   transition:transform .35s var(--spring)}
 .glasraekke:active{transform:scale(.98)}
 .gr-tegn{flex:none;width:36px;height:36px;display:grid;place-items:center;font-size:27px;line-height:1}
