@@ -7,6 +7,27 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**TAPASFILMEN: HAKKEDE OG VAR BLØD** (28/9, formiddag). Mikkels ord: *"tapas-siden
+er laggy med videoen og i dårlig kvalitet"*.
+- **Hakkene — årsagen:** filmen står øverst på telefonen og fik play(), i samme
+  øjeblik siden åbnede, med `preload="metadata"` — de 1,3 MB blev hentet, MENS den
+  spillede, og på et mobilnet gik den i stå undervejs. Forsidens film lærte det samme
+  14/9. Nu (`js/skal/billedplads.js`): filmen vises først, når den kan spille til
+  ende (canplaythrough eller hentet helt) — indtil da står den på sin plakat, som ER
+  dens første billede; går den i stå midt i i mere end 0,4 s, står slutbilledet i
+  stedet; og galleriets næste billede hentes først, når filmen spiller
+- **Kvaliteten:** 24 billeder i sekundet (ost og pølse flyver ind og sprang), bløde i
+  sig selv, og uden farvemærke — slutbilledet var trukket ud som BT.601, fire trin fra
+  det, browseren viser. Begge film (telefonens er en SELVSTÆNDIG film, ikke et klip
+  af computerens) er opskaleret til 2K og 60 billeder i sekundet (Higgsfield,
+  ByteDance "aigc") og kodet igen med BT.709-mærke. SSIM mod kilden: computer 0,953 →
+  0,979 (2,63 MB), telefon 0,946 → 0,973 (1,37 MB). Opskriften:
+  `vaerktoej/lav-tapasfilm.sh` (kilderne på 26 MB ligger ikke i repoet)
+- Prøverne (`tests/tapas-film.spec.js`): stubben sender nu 'playing' og kan pauses som
+  en rigtig browser; nye prøver for plakaten, der venter, stoppet midt i, og 60
+  billeder/størrelse/farvemærke læst af mp4-filen selv. Alle set fejle mod det gamle
+- Pillerne øverst: *"stadig ikke helt gode nok, men fair"* — står som b8436b1
+
 **GLASPILLERNE ØVERST OG ADMINS SPROG** (28/9, formiddag). Mikkels ord: *"lav
 facebook, award og fødevarestyrelsen iOS 18 glass pillars helt forfra — de ligner
 intet af figma-siderne, ligesom med allergien — skift farven på facebook til blå og
