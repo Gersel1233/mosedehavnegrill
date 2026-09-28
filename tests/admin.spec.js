@@ -1205,12 +1205,16 @@ test.describe('Salg', () => {
     expect(tekst, 'der står ikke, at det kun er online-salget')
       .toContain('gennem hjemmesiden');
     expect(tekst, 'der står ikke, at lugen ikke er med').toContain('lugen');
-    expect(tekst).toContain('afhentet');
+    /* "Afhentet" var knappens gamle navn; den hedder "✓ Færdig" siden
+       31/8, og teksten siger nu det ord, personalet trykker på (28/9). */
+    expect(tekst).toContain('færdig');
   });
 
   test('en tom periode siger det højt', async ({ page }) => {
     await åbnSalg(page, []);
-    await expect(page.locator('#salg-varer')).toContainText('ikke hentet eller serveret noget');
+    /* "Hentet eller serveret" var de to gamle ord; begge hedder
+       "Færdig" på skærmen siden 31/8 (28/9). */
+    await expect(page.locator('#salg-varer')).toContainText('ikke noget færdigt');
   });
 });
 

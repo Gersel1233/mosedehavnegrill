@@ -1602,8 +1602,10 @@
     boks.appendChild(lav('p', 'hjaelp',
       'Den lægger sig NEDERST på menukortet under sin afdeling, og den kan '
       + 'ikke bestilles endnu: den står under "Kun på menukortet", til I '
-      + 'sætter fluebenene "Kan bestilles". Rækkefølgen flytter I med pilene '
-      + '— på forsiden står kategorierne i den samme rækkefølge som her.'));
+      + 'sætter hak under "Sælges:" (Smørrebrødssiden, Forsidens bestilling '
+      + 'eller QR-koden ved bordene). Rækkefølgen flytter I med pilene; '
+      + 'på forsiden kan "Øverst på bestillingen" flytte en kategori op '
+      + 'efter tid på dagen.'));
 
     var r = lav('div', 'admin-raekke');
     var navn = document.createElement('input');

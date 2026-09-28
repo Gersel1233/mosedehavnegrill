@@ -720,7 +720,8 @@
             <input type="number" id="varsel-bord" min="0" max="1440" step="5" placeholder="fx 15">
           </div>
         </div>
-        <p class="hjaelp">Tomme felter = det gamle varsel i timer fra Bestillinger.
+        <p class="hjaelp">Tomme felter = varslet i timer under Bestillinger →
+          Regler for bestilling. Står der et tal her, er det dét, der gælder.
           En kategori kan have sit eget — se Menukort.</p>
         <div class="knap-raekke">
           <button class="knap" id="gem-koekken">Gem køkkenets tider</button>
@@ -756,8 +757,9 @@
         <div class="felt">
           <label>Hvilke kategorier koster emballage?</label>
           <div id="emballage-kat" class="afkryds-net"></div>
-          <p class="hjaelp">Sæt ingen hak = alt, der bestilles ud af huset.
-            En sodavand skal sjældent pakkes; en portion pommes skal.</p>
+          <p class="hjaelp">Sæt ingen hak = alt, der bestilles ud af huset
+            (isen får aldrig emballage). En sodavand skal sjældent pakkes; en
+            portion pommes skal.</p>
         </div>
         <div class="knap-raekke">
           <button class="knap" id="gem-emballage">Gem emballage</button>
@@ -790,8 +792,9 @@
           <div class="felt">
             <label for="levering-postnr">Postnumre I leverer til</label>
             <input type="text" id="levering-postnr" placeholder="2635 2670 2680 2690 4600">
-            <p class="hjaelp">Skriv dem med mellemrum. En adresse udenfor får
-              at vide, at det aftales over telefonen — ikke et afslag.</p>
+            <p class="hjaelp">Skriv dem med mellemrum. En adresse udenfor kan
+              ikke vælge levering — gæsten får at vide, at I ikke kører derud,
+              og kan vælge at hente selv.</p>
           </div>
         </div>
         <div class="knap-raekke">
@@ -1259,8 +1262,9 @@
             <summary id="bestil-sum-navn">Dagens tal og produktion</summary>
             <p class="bestil-sum" id="bestil-sum"></p>
             <div class="prod-raekke" id="bestil-produktion"></div>
-            <p class="hjaelp">Navn, telefon og indhold kan ikke rettes: skal
-              noget ændres, ringer du og laver en ny.</p>
+            <p class="hjaelp">Navn, telefon og indhold kan ikke rettes her.
+              Skal noget ændres, så skriv det i kortets note — eller bed gæsten
+              bestille igen og afvis den gamle.</p>
           </details>
         </div>
 
@@ -1348,7 +1352,9 @@
                  ikke sat en pris" — så siger siden, at I ringer og
                  aftaler den. Skrev vi 0 kr., ville gæsten regne
                  med gratis levering. -->
-            <span class="hjaelp">Er feltet tomt, siger siden at I ringer og aftaler prisen.</span>
+            <span class="hjaelp">Teksten, gæsten læser — tom, siger siden, at I
+              aftaler prisen. Beløbet på regningen sættes under Åbningstider →
+              Hvad koster leveringen?</span>
           </div>
         </div>
         <p class="hjaelp">
@@ -1373,8 +1379,9 @@
         </label>
 
         <p class="hjaelp">
-          Fjerner du hakket, kan gæsten ikke sende noget — der står
-          telefonnummeret i stedet. Brug det når køkkenet ikke kan følge med.
+          Kan køkkenet ikke følge med, så fjern hakket ved <em>Tag imod
+          bestillinger på hjemmesiden</em> øverst: så kan gæsten ikke sende
+          noget, og der står telefonnummeret i stedet.
         </p>
 
         <div class="felt-par luft-top">
@@ -1454,8 +1461,8 @@
              der kommer ind, åbner mailen, og minder om at skrive
              den aftalte dag i kalenderen. Mere skal den ikke. -->
         <p class="hjaelp"><strong>En forespørgsel er et spørgsmål, ikke en
-          booking.</strong> Den kommer fra en af de fire sider — selskaber,
-          catering, frokostordning eller baglokalet — og gæsten har fået at
+          booking.</strong> Den kommer fra en af de tre sider — selskaber,
+          frokostordning eller baglokalet (catering er en mail) — og gæsten har fået at
           vide, at I vender tilbage <strong>inden for et døgn</strong>. Der er
           ikke reserveret noget for hende endnu.</p>
         <p class="hjaelp">Sådan lukker I en sag — og det er de samme tre
@@ -1808,8 +1815,9 @@
             Er kvarteret fyldt, får gæsten <em>&quot;der er run på lige nu — prøv
             igen om lidt, eller kom op til lugen&quot;</em>. Det er noget andet end
             lukket: bordene, der ikke har bestilt endnu, kan stadig komme til.
-            Tomt felt = intet loft. Gælder <strong>kun bordene</strong> — mad
-            ud af huset bestilles dagen før og rører ikke lugen nu.
+            Tomt felt = intet loft. Gælder <strong>kun bordene</strong> —
+            bestillingerne til lugen har deres eget loft pr. kvarter under
+            Bestillinger → Regler for bestilling.
           </p>
           <p class="hjaelp">
             Ventetiden er den, gæsten får at se, når hun scanner. Er den
@@ -2499,7 +2507,7 @@
           <h2 class="h-panel">Salg</h2>
           <span class="kort-note">bestilt gennem hjemmesiden eller fra et bord</span>
         </div>
-        <p class="hjaelp">Tæller først, når maden er ud ad døren — <strong>Afhentet</strong> eller <strong>Serveret</strong>. Købet ved lugen er ikke med: der er ingen kasse i systemet.</p>
+        <p class="hjaelp">Tæller først, når maden er ud ad døren — når der er trykket <strong>✓ Færdig</strong>. Købet ved lugen er ikke med: der er ingen kasse i systemet.</p>
 
         <div class="type-valg" id="salg-perioder" role="group"
              aria-label="Vælg periode"></div>
@@ -2510,7 +2518,7 @@
       <div class="kort luft-top">
         <div class="kort-hoved">
           <h2 class="h-panel">Mest solgte</h2>
-          <span class="kort-note">hentet eller serveret i perioden</span>
+          <span class="kort-note">færdige bestillinger i perioden</span>
         </div>
         <div id="salg-varer"></div>
 
@@ -2551,7 +2559,8 @@
              ÉN blok — en sætning mere er ikke et afsnit mere.
              En kommentar er ikke en flytning. -->
         <p class="hjaelp">
-          Alt gemmes automatisk, mens du skriver. <strong>Tom pris</strong> =
+          Navne og tekster gemmes, mens du skriver. <strong>Priser</strong>
+          gemmes med <strong>Gem priserne</strong> (eller Enter). <strong>Tom pris</strong> =
           varen kan ses, men ikke bestilles. <strong>Udsolgt</strong> streger
           den ud med det samme — også for en telefon, der havde kortet åbent
           i forvejen; <strong>Vis</strong> tager den helt af kortet.
@@ -2980,7 +2989,7 @@
           <button class="knap sekundaer lille" id="tilmeld-opret" type="button">
             + Opret et arrangement
           </button>
-          Sæt flueben ved <em>Tager imod tilmeldinger</em>, så står gæsterne her.
+          Sæt flueben ved <em>Gæsterne skal kunne reservere plads</em>, så står gæsterne her.
           Når dagen er gået, flytter arrangementet selv ned under
           <em>Tidligere på havnen</em> på forsiden.
         </p>
@@ -3346,8 +3355,7 @@
         <h3 class="luft-top">Hvor skriver gæsten hen?</h3>
         <p class="hjaelp">
           De to adresser står i bunden af hjemmesiden med hver sin
-          etiket. Lader I dem stå urørt, bruges dem, der allerede er
-          på siden.
+          etiket. Tømmer I et felt, forsvinder linket fra siden.
         </p>
         <div class="felt-par">
           <div class="felt">
@@ -3381,7 +3389,7 @@
 
              Er feltet tomt, står linket IKKE på siden. Skriv
              adressen, og det kommer af sig selv. -->
-        <h3 class="luft-top">Facebook, Instagram og Google</h3>
+        <h3 class="luft-top">Facebook, Instagram, TikTok og Google</h3>
         <p class="hjaelp">
           Tomme felter betyder, at linket slet ikke står på forsiden.
           Vi finder ikke selv på en adresse.
@@ -3402,7 +3410,7 @@
           <div class="felt">
             <label for="soc-tiktok">TikTok</label>
             <input type="url" id="soc-tiktok" maxlength="200"
-                   placeholder="tiktok.com/@mosede.havn.gril">
+                   placeholder="tiktok.com/@…">
           </div>
           <div class="felt">
             <label for="soc-google">Google-anmeldelser</label>

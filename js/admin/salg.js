@@ -131,7 +131,7 @@
     var borde = fraBordene(liste);
 
     var felter = [
-      ['Solgt for', Butik.pris(kroner), 'afhentet og serveret'],
+      ['Solgt for', Butik.pris(kroner), 'færdige bestillinger'],
       ['Bestillinger', liste.length, 'ud af døren i perioden'],
       ['Stykker', stykker, 'lagt sammen'],
     ];
@@ -257,7 +257,7 @@
 
     if (!raekker.length) {
       boks.appendChild(lav('p', 'vare-tekst',
-        'Der er ikke hentet eller serveret noget i perioden endnu.'));
+        'Der er ikke noget færdigt i perioden endnu.'));
       return;
     }
 
@@ -326,8 +326,8 @@
     if (!gaengere.length) {
       boks.appendChild(lav('p', 'vare-tekst',
         'Ingen numre med flere udeblivelser de sidste 180 dage. '
-        + 'Sæt en bestilling til "Udeblevet" på Bestillinger-fanen, '
-        + 'når maden var klar, og ingen kom.'));
+        + 'Kom ingen efter maden, så tryk Udeblev under ··· på '
+        + 'bestillingen på Bestillinger-fanen.'));
       return;
     }
 
