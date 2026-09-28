@@ -120,8 +120,10 @@ test.describe('Tapasfilmen i galleriet', () => {
     await åbnSkal(page, '/m-tapas.html', { ur: FREDAG, data: grunddata() });
     const video = page.locator('.tshot .foto-skift video.foto-film');
     await expect.poll(() => video.evaluate((v) => v.__spil || 0)).toBeGreaterThan(0);
-    // Bedt om at spille, men stillet på pause af sig selv: resten mangler.
-    await expect.poll(() => video.evaluate((v) => v.__spiller)).toBe(false);
+    /* Bedt om at spille, men stillet på pause af sig selv: resten mangler.
+       To sekunder — længe før vagten (FILM_VENT_MS, 8 s) tager filmen. */
+    await expect.poll(() => video.evaluate((v) => v.__spiller), { timeout: 2000 }).toBe(false);
+    await expect(video).toHaveCount(1);
     expect(await fremme(page)).toBe(0);
 
     slip();
