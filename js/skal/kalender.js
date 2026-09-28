@@ -491,18 +491,41 @@
   function fineFelt() { return panel && panel.querySelector('.fine'); }
   var oprindeligFine = '';
 
-  function sigFejl(tekst) {
+  /* ⚠️ ET FEJLKORT OG FELTET RØDT (28/9). Her stod "⚠ " + sætningen i
+     den grå 12 px-linje under knappen med klassen fejl-linje — som INGEN
+     regel i stilarket kendte. Feltet fik hverken fokus eller farve.
+     Formen er den samme som forespørgslernes (js/skal/feltfejl.js). */
+  function sigFejl(tekst, feltEl) {
     var f = fineFelt();
-    if (!f) return false;
-    f.textContent = '⚠ ' + tekst;
-    f.classList.add('fejl-linje');
+    if (f) {
+      f.classList.add('fejlkort');
+      f.setAttribute('role', 'alert');
+      f.textContent = '';
+      var ikon = document.createElement('span');
+      ikon.className = 'fejl-ikon';
+      ikon.setAttribute('aria-hidden', 'true');
+      ikon.textContent = '!';
+      var t = document.createElement('span');
+      t.className = 'fejl-tekst';
+      t.textContent = tekst;
+      f.appendChild(ikon);
+      f.appendChild(t);
+    }
+    if (feltEl && window.MosedeFeltfejl) {
+      window.MosedeFeltfejl.vis(feltEl, tekst);
+      window.MosedeFeltfejl.frem(feltEl);
+    }
+    if (feltEl && feltEl.focus) {
+      try { feltEl.focus({ preventScroll: true }); } catch (e) { feltEl.focus(); }
+    }
     return false;
   }
   function rydFejl() {
     var f = fineFelt();
     if (!f) return;
     f.textContent = oprindeligFine;
-    f.classList.remove('fejl-linje');
+    f.classList.remove('fejlkort');
+    f.removeAttribute('role');
   }
 
   function send() {
@@ -518,9 +541,14 @@
       if (boks && boks.scrollIntoView) boks.scrollIntoView({ block: 'center', behavior: 'smooth' });
       return sigFejl('Vælg hvilket arrangement du vil med til. Tryk på et af dem øverst.');
     }
-    if (String(navn).trim().length < 2) return sigFejl('Skriv dit navn.');
-    if (String(tlf).replace(/[^0-9]/g, '').length < 8) {
-      return sigFejl('Skriv et telefonnummer, så vi kan sige til, hvis noget ændrer sig.');
+    if (String(navn).trim().length < 2) return sigFejl('Skriv dit navn.', id('knavn'));
+    /* Reglen er Butik.tjek.telefon (28/9). Kopien her så kun "under 8
+       cifre" — et nummer med seksten gik igennem i øvetilstanden og
+       blev afvist af databasen med "Otte cifre." */
+    var tlfFejl = Butik.tjek.telefon(tlf);
+    if (tlfFejl) {
+      return sigFejl(String(tlf).trim() ? tlfFejl
+        : 'Skriv dit telefonnummer, så vi kan sige til, hvis noget ændrer sig.', id('ktlf'));
     }
 
     var knap = panel.querySelector('button.g.solid.blk');
@@ -579,7 +607,8 @@
     }).then(function (svar) {
       visTak(svar);
     }).catch(function (e) {
-      sigFejl(e.message || String(e));
+      var grund = e.message || String(e);
+      sigFejl(grund, /telefonnummer/i.test(grund) ? id('ktlf') : null);
       if (knap) knap.disabled = false;
     });
   }

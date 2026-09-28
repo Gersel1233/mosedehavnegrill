@@ -446,6 +446,8 @@
     }
     fejlVises = true;
     var f = feltId ? find('#' + feltId) : null;
+    /* Og ved feltet (28/9) — se js/skal/feltfejl.js. */
+    if (f && window.MosedeFeltfejl) window.MosedeFeltfejl.vis(f, besked);
     if (f) f.focus();
     return tekst;
   }
@@ -472,9 +474,9 @@
     besked = Butik.medAllergi(besked, allergi);
 
     if (navn.trim().length < 2) return brøl('Skriv dit navn.', 'tnavn');
-    if (tlf.replace(/[^0-9]/g, '').length < 8) {
-      return brøl('Skriv et telefonnummer, vi kan få fat i dig på.', 'ttlf');
-    }
+    // Reglen er Butik.tjek.telefon (28/9), ikke en kopi.
+    var tlfFejl = Butik.tjek.telefon(tlf);
+    if (tlfFejl) return brøl(tlfFejl, 'ttlf');
     if (!valgtDag || !tid || !tid.value) return brøl('Vælg en dag og et tidspunkt.');
 
     var linjer = [{ navn: fad.navn, antal: n, pris: fad.pris }];
@@ -522,8 +524,10 @@
          gæst, hvis fad lige var udsolgt, fik "kunne ikke sendes" og
          ingen vej videre; Butik.bestil har oversat grunden hele
          tiden, som forsiden viser den siden 4/9. */
-      var tekst = brøl((fejl && fejl.message)
-        || 'Bestillingen kunne ikke sendes lige nu. Ring til os, så tager vi den over telefonen.');
+      var grund = (fejl && fejl.message)
+        || 'Bestillingen kunne ikke sendes lige nu. Ring til os, så tager vi den over telefonen.';
+      // Databasens nej til et nummer hører ved nummeret (28/9).
+      var tekst = brøl(grund, /telefonnummer/i.test(grund) ? 'ttlf' : null);
       /* ⚠️ NETTET ER VÆK: TO VEJE VIDERE (14/9). bestil/ har haft
          sms-nødudgangen siden foråret; her stod der "IKKE sendt endnu"
          og intet at trykke på — en blindgyde, præcis når gæsten har

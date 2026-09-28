@@ -2418,6 +2418,11 @@
     }
     fejlVises = true;
     var f = feltNavn ? felt(feltNavn) : null;
+    /* ⚠️ OG VED FELTET (28/9, js/skal/feltfejl.js). Kortet står ved
+       Send; fokus sprang op til feltet, som så helt normalt ud — på en
+       telefon med tastaturet over kortet. Mikkels ord: et ugyldigt
+       nummer skal være TYDELIGT. */
+    if (f && window.MosedeFeltfejl) window.MosedeFeltfejl.vis(f, besked);
     if (f) f.focus();
     return tekst;
   }
@@ -2526,9 +2531,10 @@
     besked = Butik.medAllergi(besked, allergi);
 
     if (navn.trim().length < 2) return brøl('Skriv dit navn.', 'navn');
-    if (tlf.replace(/[^0-9]/g, '').length < 8) {
-      return brøl('Skriv et telefonnummer, vi kan få fat i dig på.', 'tlf');
-    }
+    /* Reglen er Butik.tjek.telefon (28/9) — kopien her så kun "under
+       8 cifre", og et nummer med seksten gik videre til databasen. */
+    var tlfFejl = Butik.tjek.telefon(tlf);
+    if (tlfFejl) return brøl(tlfFejl, 'tlf');
     if (svar === 'levering' && adresse.trim().length < 5) {
       return brøl('Skriv adressen, maden skal køres til.', 'adresse');
     }
@@ -2652,8 +2658,10 @@
          Reserven bliver: en rå teknisk streng må ikke stå på
          skærmen. */
       if (fejl && fejl.tidFuld) friskTider();
-      var tekst = brøl((fejl && fejl.message)
-        || 'Bestillingen kunne ikke sendes lige nu. Ring til os, så tager vi den over telefonen.');
+      var grund = (fejl && fejl.message)
+        || 'Bestillingen kunne ikke sendes lige nu. Ring til os, så tager vi den over telefonen.';
+      /* Databasens nej til et nummer hører ved nummeret (28/9). */
+      var tekst = brøl(grund, /telefonnummer/i.test(grund) ? 'tlf' : null);
       /* ⚠️ NETTET ER VÆK: TO VEJE VIDERE (14/9). bestil/ har haft
          sms-nødudgangen siden foråret; her stod der "IKKE sendt endnu"
          og intet at trykke på — en blindgyde, præcis når gæsten har
