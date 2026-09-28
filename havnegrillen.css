@@ -1671,11 +1671,8 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .tapas-pris{margin-top:18px;padding-top:16px;border-top:1px solid rgba(214,42,58,.18)}
 .tapas-pris:not(:has(.pricebox:not([style*="none"]))){display:none}
 .tapas-fad .pricebox{flex-direction:column;align-items:flex-start;gap:2px;margin:0;padding:0;background:none}
-.tapas-fad .pricebox+.pricebox{margin-top:12px}
 .tapas-fad .pricebox b{font-size:44px;font-weight:700;letter-spacing:-.025em;line-height:1;min-width:0}
 .tapas-fad .pricebox p{font-size:15px;font-weight:600;color:var(--red-tekst)}
-.tapas-fad .pricebox+.pricebox b{font-size:28px}
-.tapas-fad .pricebox+.pricebox p{font-size:13px;font-weight:400;color:var(--ink2)}
 .laeg-til{margin:22px 0 6px;font-family:"Host Grotesk",system-ui,sans-serif;font-size:20px;font-weight:700;letter-spacing:-.01em;color:var(--red-tekst)}
 .tilkoeb{list-style:none;margin:0;padding:0}
 .tilkoeb li{display:flex;align-items:baseline;gap:8px;padding:5px 0;font-size:14px;line-height:1.35;color:var(--ink)}

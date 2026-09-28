@@ -477,24 +477,19 @@ test.describe('Heroens pris er menukortets', () => {
     await expect(page.locator('[data-tapas-pris]')).toHaveText('145,-');
   });
 
-  test('pakkeprisen regnes af kortet — to fade og en flaske', async ({ page }) => {
+  /* ⚠️ INGEN PAKKEPRIS FOR TO (28/9). Her stod "pakkeprisen regnes af
+     kortet" og "uden en flaske findes den ikke". Mikkels ord om tallet
+     (2 fade + en flaske Cava, 657,- med hans priser): *"det er ikke en
+     attraktiv pris … fjern det"*. Prøven giver siden ALT, den skulle
+     bruge for at regne pakken — fad og flaske med priser — og kræver,
+     at der alligevel ikke står et samlet tal. Cavaen er stadig tilkøb. */
+  test('der står ingen pakkepris for to — heller ikke med en flaske på kortet', async ({ page }) => {
     await åbn(page, data(true, true));
-    /* 2 x 145 + 295 = 585. Designet skrev 548, og det tal svarer
-       til 2 x 199 + 150 — altså designets egne priser. */
-    await expect(page.locator('[data-tapas-par]')).toHaveText('585,-');
-    await expect(page.locator('[data-tapas-par]').locator('..'))
-      .toContainText('Cava, flaske');
-  });
-
-  /* ⚠️ EN PAKKE, VI IKKE KAN REGNE, ER ET LØFTE, INGEN HAR GIVET.
-     Uden en flaske på kortet findes kassen ikke — vi finder ikke
-     på et beløb på forretningens vegne. Modstykket er prøven
-     ovenfor: uden den ville en regel, der ALTID skjulte kassen,
-     bestå den her. */
-  test('uden en flaske på kortet findes pakkeprisen ikke', async ({ page }) => {
-    await åbn(page, data(true, false));
-    await expect(page.locator('[data-tapas-par]')).toBeHidden();
-    await expect(page.locator('[data-tapas-pris]')).toBeVisible();
+    await expect(page.locator('[data-tapas-pris]')).toHaveText('145,-');
+    await expect(page.locator('[data-tapas-par]')).toHaveCount(0);
+    await expect(page.locator('.tapas-fad')).not.toContainText('for 2 personer');
+    await expect(page.locator('.tapas-fad')).not.toContainText('585');
+    await expect(page.locator('.addon h4')).toHaveText('Cava, flaske');
   });
 
   /* ⚠️ FLASKEN SLÅR GLASSET. Ejerens kort har begge, og listen

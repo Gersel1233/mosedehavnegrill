@@ -338,15 +338,13 @@
      her. Designets tal er reserven — de staar, saa laenge
      databasen ikke har noget at sige.
 
-     ⚠️ OG PARKASSEN FORSVINDER UDEN EN FLASKE. "548 kr. for 2
-     personer inkl. en flaske Cava" er en PAKKE: kan vi ikke
-     regne den af kortet, er tallet et loefte, ingen har givet.
-     Vi finder ikke paa et beloeb paa forretningens vegne. */
+     (Parkassen "for 2 personer inkl. en flaske Cava" er fjernet
+     28/9 — se nederst i visHeroPris.) */
   function visHeroPris() {
     /* ⚠️ RESERVEDATA ER ALDRIG EN PRIS  (25/9, aften). Mikkels ord:
        "Hvis databasen ikke svarer, må hjemmesiden aldrig vise forældede
-       reservepriser." Begge kasser står skjult i HTML'en og vises kun,
-       når tallet er ejerens. */
+       reservepriser." Kassen står skjult i HTML'en og vises kun, når
+       tallet er ejerens. */
     var nede = !!(Butik.reservedata && Butik.reservedata(data));
     var et = find('[data-tapas-pris]', document);
     var enKasse = et && et.closest ? et.closest('.pricebox') : null;
@@ -358,20 +356,10 @@
         enKasse.style.display = 'none';
       }
     }
-
-    var par = find('[data-tapas-par]', document);
-    var kasse = par && par.closest ? par.closest('.pricebox') : null;
-    if (!par || !kasse) return;
-
-    var flaske = bobler && /flaske/i.test(bobler.navn) ? bobler : null;
-    if (nede || pris(fad) === null || !flaske || pris(flaske) === null) {
-      kasse.style.display = 'none';
-      return;
-    }
-    kasse.style.display = '';
-    par.textContent = S.kroner(2 * fad.pris + flaske.pris);
-    var tekst = find('p', kasse);
-    if (tekst) tekst.textContent = 'for 2 personer inkl. en ' + flaske.navn;
+    /* ⚠️ INGEN PAKKEPRIS FOR TO (28/9). Her regnedes "for 2 personer
+       inkl. en flaske Cava" (2 fade + en flaske). Mikkels ord: *"det er
+       ikke en attraktiv pris … fjern det"*. Kassen er taget ud af
+       m-tapas.html, og tallet regnes ikke længere. */
   }
 
   // ----------------------------------------------------------
