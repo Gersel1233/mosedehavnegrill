@@ -117,11 +117,14 @@
       hop: 'Håndmadder',
       hel: [
         { titel: 'Varianter', udenPris: true, kolonner: 2, kilder: [{ kat: 'Håndmadder' }] },
+        /* ⚠️ MAGEN TIL SMØRREBRØDETS BOKS (29/9, chefens ord: "Den store
+           boks i bunden skal være magen til den der er på Smørrebrøds
+           kortet"). Fire felter med hver sin pris i samme form; boksen
+           "Ikke som håndmad" (rejemad og tartar) er taget ud. */
         { boks: 'raekke', felter: [
           { over: 'Varianter', titel: 'Alle varianter', pris: { ens: 'Håndmadder' }, tekst: 'Gælder alle almindelige håndmadder på listen.' },
           { over: 'Egen pris', titel: 'Hjemmelavet lun delle', pris: { vare: 'Lun delle eller steg' } },
           { over: 'Egen pris', titel: 'Hjemmelavet flæskesvær', pris: { vare: 'Hjemmelavet flæskesvær' } },
-          { over: 'Ikke som håndmad', titel: 'Rejemad & tartar', tekst: 'Rejemad fås både på rugbrød og franskbrød. Tartar fås som smørrebrød.' },
           { over: 'Sig til ved lugen', titel: 'Glutenfrit brød', pris: { vare: 'Glutenfrit brød (tillæg)', plus: true }, tekst: 'Med eller uden smør — bare sig til.' },
         ] },
       ],

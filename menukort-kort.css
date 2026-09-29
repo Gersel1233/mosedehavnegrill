@@ -354,11 +354,16 @@
   color: var(--mk-rod);
 }
 
-/* ---- Den blå bølgelinje i bunden ---- */
+/* ---- Havblå bølger i bunden ----
+   ⚠️ RIGTIGE BØLGER, IKKE EN STREG AF HALVCIRKLER (29/9). Chefens ord:
+   *"Det må meget gerne være større, 'ægte' og havblå farvede bølger
+   der er i bunden af alle menukort"*. To lag som havet: den lyse
+   bagved (--mk-blaa-let) og husets blå foran (--mk-blaa, logoets
+   EST. 2025). SVG'en har farverne skrevet ud — en data-URI kan ikke
+   læse CSS-variabler — og de er de samme to hex som tokens ovenfor. */
 .mk-bund {
-  height: 18px;
-  background: radial-gradient(circle at 50% 100%, transparent 9px, var(--mk-blaa-let) 9.5px, var(--mk-blaa-let) 11.5px, transparent 12px) 0 0 / 26px 18px repeat-x;
-  opacity: .9;
+  height: 34px;
+  background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 34" preserveAspectRatio="none"%3E%3Cpath d="M0 13C20 3 40 3 60 13S100 23 120 13V34H0Z" fill="%239fb5cb"/%3E%3Cpath d="M0 20C20 10 40 10 60 20S100 30 120 20V34H0Z" fill="%232a5f8f"/%3E%3C/svg%3E') 0 100% / 120px 34px repeat-x;
 }
 
 /* ---- Glasbjælken med kortenes navne ----

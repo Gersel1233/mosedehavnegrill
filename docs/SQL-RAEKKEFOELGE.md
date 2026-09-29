@@ -52,8 +52,12 @@ og derfra:
   → glutenfrit-broed-5-kr.sql → haandmadder-27-kr.sql
   → haandmadder-hel-skive.sql
   → gaestens-vaern-26-9.sql → bremse-uden-borde-26-9.sql
-  → kortenes-rettelser-27-9.sql
+  → kortenes-rettelser-27-9.sql → chefens-rettelser-29-9.sql
 ```
+
+**⚠️ `chefens-rettelser-29-9.sql` (29/9) — IKKE kørt i produktionen endnu.**
+Chefens besked 29/9: Bearnaise- og Chilinaiseburger tændes (90), "Flaske øl,
+stor Lux 75 cl" oprettes (80), og sandwichen får "Dagens pålægssalat".
 
 **⚠️ `kortenes-rettelser-27-9.sql` (27/9) — kørt i produktionen af Mikkel 27/9.**
 Afvigelsesrapporten 27/9: navne, beskrivelser og varianter som de trykte kort
@@ -149,7 +153,7 @@ Datafilerne (`kortets-priser*.sql`, `borde-55.sql`, `ejerens-oplysninger.sql`,
 `glutenfri-vaffel-samme-pris.sql`, `sluk-det-kortene-ikke-viser.sql`,
 `chefens-rettelser-25-9.sql`, `isens-opsaetning.sql`,
 `glutenfrit-broed-5-kr.sql`, `haandmadder-27-kr.sql`, `haandmadder-hel-skive.sql`,
-`kortenes-rettelser-27-9.sql`)
+`kortenes-rettelser-27-9.sql`, `chefens-rettelser-29-9.sql`)
 har med vilje INTET tjek: de skriver ejerens tal, og et tjek ville sige ❌ den dag,
 han retter sit eget tal i admin.
 
