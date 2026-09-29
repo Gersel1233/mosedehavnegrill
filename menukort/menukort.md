@@ -1,12 +1,12 @@
 # Menukortet hos Mosede Havnecafe
 
-Hentet direkte ud af databasen **2026-09-27**. Databasen er sandheden —
+Hentet direkte ud af databasen **2026-09-29**. Databasen er sandheden —
 retter ejeren en pris i admin, er filen her forældet samme sekund.
 Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 
-- **239 varer** i **23 kategorier** står på kortet
+- **242 varer** i **23 kategorier** står på kortet
 - **1** af dem har ingen pris (og skal ikke have en — se nederst)
-- **197** kan bestilles online, ved lugen og fra bordet
+- **200** kan bestilles online, ved lugen og fra bordet
 
 ## Retter
 
@@ -73,8 +73,12 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
   <br>Saftig bøf med smeltet ost og sprød bacon, salat, tomat og dressing i ristet burgerbolle.
 - **Dobbelt burger** — 125 kr.
   <br>To saftige bøffer med smeltet ost, salat, tomat og dressing — til den store sult.
+- **Bearnaiseburger** — 90 kr.
+  <br>Saftig bøf med cremet bearnaise, salat og tomat i ristet burgerbolle.
 - **Bacon & Cheeseburger** — 95 kr.
   <br>Saftig bøf med smeltet ost og sprød bacon, salat, tomat og dressing i ristet burgerbolle.
+- **Chilinaiseburger** — 90 kr.
+  <br>Saftig bøf med stærk chilimayo, salat og tomat i ristet burgerbolle.
 - **Cheeseburger** — 85 kr.
   <br>Saftig bøf med smeltet ost, sprød salat, tomat, syltede agurker og dressing i ristet burgerbolle.
 - **Ekstra tilbehør** — 10 kr.
@@ -398,6 +402,7 @@ Kør `vaerktoej/hent-menukort.sh` igen i stedet for at rette i den.
 - **Fadøl lux, stor** — 60 kr.
 - **Flaske eller dåse** — 30 kr.
 - **Gylden Dame / Lux** — 40 kr.
+- **Flaske øl, stor Lux 75 cl** — 80 kr.
 - **Alkoholfri øl** — 30 kr.
 - **Specialøl, lille** — 50 kr.
 - **Specialøl, stor** — 70 kr.

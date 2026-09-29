@@ -55,7 +55,7 @@ og derfra:
   → kortenes-rettelser-27-9.sql → chefens-rettelser-29-9.sql
 ```
 
-**⚠️ `chefens-rettelser-29-9.sql` (29/9) — IKKE kørt i produktionen endnu.**
+**⚠️ `chefens-rettelser-29-9.sql` (29/9) — kørt i produktionen af Mikkel 29/9.**
 Chefens besked 29/9: Bearnaise- og Chilinaiseburger tændes (90), "Flaske øl,
 stor Lux 75 cl" oprettes (80), og sandwichen får "Dagens pålægssalat".
 

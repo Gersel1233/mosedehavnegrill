@@ -7,6 +7,18 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**CHEFENS RETTELSER OG KØKKENETS OVERBLIK** (29/9). Udgivet og tjekket live.
+- **Køkkenet** (`0124cb0`): "Lav nu" (det ÅBNE pr. ret på tværs af bordene,
+  drikke for sig, klar tæller ikke), mad/drikke delt på kortet efter
+  `menu_kategorier.afdeling`, to spalter fra 900 px, KLAR med grøn kant.
+  Prøve: `tests/koekken-lav-nu.spec.js`, set fejle
+- **Chefens besked** (`dfb5c05` + `chefens-rettelser-29-9.sql`, KØRT 29/9):
+  Bearnaise- og Chilinaiseburger tændt (90), "Flaske øl, stor Lux 75 cl" (80)
+  efter Gylden Dame, Sandwich · Dagens pålægssalat, havblå bølger på
+  menukortet, håndmadsboksen som smørrebrødets. ⚠️ `lower('Øl')` virker ikke
+  med locale C — filen matcher kategorinavnet direkte (målt: tavst intet)
+- De trykte kort og bestillingslisterne tager Mikkel selv
+
 **INGEN PAKKEPRIS FOR TO, OG ALLE LYSE PILLER I SAMME GLAS** (28/9, aften).
 - Mikkels ord om "for 2 personer inkl. en flaske Cava" (657,- med hans priser):
   *"det er ikke en attraktiv pris … fjern det"*. Kassen er ude af m-tapas.html,
