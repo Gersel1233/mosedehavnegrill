@@ -8975,6 +8975,82 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
 }
 .koek-kort.sent { border-left-color: var(--red); }
 
+/* ------------------------------------------------------------
+   KØKKENETS OVERBLIK  (29/9, Lesreg)
+   ------------------------------------------------------------ */
+/* KLAR ER GRØN. Maden er lavet; nu skal den bæres ud. Rød (for
+   længe) vinder stadig — et klart bord, der har ventet 25 min, er
+   stadig et bord, der har ventet 25 min. */
+.koek-kort.status-klar { border-left-color: #1f7a4a; }
+.koek-kort.status-klar.sent { border-left-color: var(--red); }
+.koek-status {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--sand2);
+}
+.koek-status.status-tilberedes { background: rgba(176, 120, 30, .14); color: #7a5410; }
+.koek-status.status-klar { background: rgba(31, 122, 74, .14); color: #1f6b45; }
+
+/* Mad og drikke hver for sig på kortet — kun når kortet har begge. */
+.koek-gruppe {
+  margin: 10px 0 2px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.koek-gruppe:first-child { margin-top: 0; }
+.koek-gruppe.drikke { color: #2a5f8f; }
+
+/* LAV NU: pillerne er Overbliks egne (.prod-pille), så de to
+   skærme siger det samme i det samme sprog. */
+.koek-lavnu {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-flade);
+  background: #fff;
+}
+.koek-lavnu-raekke { display: grid; gap: 8px; }
+.koek-lavnu-titel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--red-tekst);
+}
+.koek-lavnu-raekke.drikke .koek-lavnu-titel { color: #2a5f8f; }
+
+/* PÅ TELEFONEN MÅ "LAV NU" IKKE SKUBBE KØEN UD AF SKÆRMEN:
+   mindre piller, tættere. */
+@media (max-width: 600px) {
+  .koek-lavnu { padding: 12px; gap: 8px; }
+  .koek-lavnu .prod-raekke { gap: 6px; }
+  .koek-lavnu .prod-pille { padding: 5px 10px; gap: 6px; }
+  .koek-lavnu .prod-antal { font-size: 18px; }
+  .koek-lavnu .prod-navn { font-size: 14px; }
+}
+
+/* TO SPALTER, NÅR DER ER PLADS. En iPad på højkant (1024) viste
+   fire borde ad gangen i én lang kolonne; to spalter viser det
+   dobbelte uden at rulle. Rækkefølgen er stadig ældste først —
+   læst linje for linje, venstre før højre. */
+@media (min-width: 900px) {
+  body.personale #koekken-liste {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    align-items: start;
+  }
+  body.personale #koekken-liste > .koek-kort { margin-top: 0; }
+  body.personale #koekken-liste > :not(.koek-kort) { grid-column: 1 / -1; }
+  body.personale #koekken-liste { margin-top: 14px; }
+}
+
 .koek-top {
   display: flex;
   align-items: baseline;

@@ -263,6 +263,78 @@
      navnet, og de er skærmens puls: står de stille, mens køkkenet
      har travlt, tror ingen på dem. Uret nederst i filen tegner
      hele fanen om hvert minut, så linjen følger med af sig selv. */
+
+  // ----------------------------------------------------------
+  //  AFDELINGEN OG "LAV NU"  (29/9, Lesreg)
+  // ----------------------------------------------------------
+  /* Hvilken afdeling hører en linje til — mad, is eller drikke?
+     Svaret er EJERENS: menu_kategorier.afdeling, som han sætter i
+     admin → Menukort. Varen slås op på navnet (linjen bærer ikke sin
+     kategori). Kan den ikke findes — en vare, der er omdøbt, siden
+     gæsten bestilte — er den mad: hellere en øl for meget i "Lav nu"
+     end en ret for lidt. */
+  function afdelingFor(l) {
+    var d = Admin.data || {};
+    var navn = String((l && l.navn) || '').trim().toLowerCase();
+    var v = (d.menu_varer || []).filter(function (x) {
+      return String(x.navn || '').trim().toLowerCase() === navn;
+    })[0];
+    if (!v) return 'mad';
+    var k = (d.menu_kategorier || []).filter(function (x) { return x.id === v.kategori_id; })[0];
+    return (k && k.afdeling) || 'mad';
+  }
+
+  /* HVAD SKAL LAVES LIGE NU — lagt sammen på tværs af bordene.
+     Overblik har "Produktion i alt" for hele DAGEN; køkkenet midt i
+     en frokost har brug for det, der står ÅBENT nu. Samme regler som
+     Overbliks: linjens navn MED varianten (to skiver med hvert sit
+     fyld er to stykker arbejde) og ingen emballage. KLAR tæller ikke
+     med — den er lavet og venter kun på at blive båret ud. Drikke
+     står for sig: de skænkes, de laves ikke på panden. */
+  function lavNu(liste) {
+    var mad = {}, drikke = {};
+    liste.forEach(function (b) {
+      if (b.status === 'klar') return;
+      (b.linjer || []).forEach(function (l) {
+        if (Butik.erEmballage && Butik.erEmballage(Admin.data, l)) return;
+        var navn = Butik.linjeNavn(l);
+        if (!navn) return;
+        var kurv = afdelingFor(l) === 'drikke' ? drikke : mad;
+        var r = kurv[navn] || (kurv[navn] = { navn: navn, ialt: 0 });
+        r.ialt += Number(l.antal) || 0;
+      });
+    });
+    function sorter(k) {
+      return Object.keys(k).map(function (n) { return k[n]; })
+        .sort(function (a, b) { return b.ialt - a.ialt || a.navn.localeCompare(b.navn, 'da'); });
+    }
+    return { mad: sorter(mad), drikke: sorter(drikke) };
+  }
+
+  function tegnLavNu(liste) {
+    var boks = $('koekken-lavnu');
+    if (!boks) return;
+    Admin.tøm(boks);
+    var nu = lavNu(liste);
+    /* Findes kun, når der er noget at lave — en tom "Lav nu" er en
+       boks, der vænner øjet til at springe den over. */
+    boks.classList.toggle('skjult', !nu.mad.length && !nu.drikke.length);
+    [['Lav nu', nu.mad, ''], ['Drikke', nu.drikke, ' drikke']].forEach(function (a) {
+      if (!a[1].length) return;
+      var raekke = lav('div', 'koek-lavnu-raekke' + a[2]);
+      raekke.appendChild(lav('span', 'koek-lavnu-titel', a[0]));
+      var piller = lav('div', 'prod-raekke');
+      a[1].forEach(function (r) {
+        var p = lav('div', 'prod-pille');
+        p.appendChild(lav('b', 'prod-antal', r.ialt));
+        p.appendChild(lav('span', 'prod-navn', r.navn));
+        piller.appendChild(p);
+      });
+      raekke.appendChild(piller);
+      boks.appendChild(raekke);
+    });
+  }
+
   function tegnLinje() {
     var el = $('koekken-linje');
     if (!el) return;
@@ -866,6 +938,7 @@
     tegnLugen();
 
     var liste = vistKoe();
+    tegnLavNu(liste);
 
     if (!liste.length) {
       Admin.tøm(boks);
@@ -912,6 +985,8 @@
            lugen afhentet, skal advarslen her forsvinde med den. */
         aftryk: [b.status, b.intern_note || '', b.aendret || '',
           zonen(b.bord_nummer), runde(b), maalTid(),
+          /* Afdelingen læses af menuen — kom den efter kortet, skal kortet tegnes om. */
+          ((Admin.data && Admin.data.menu_varer) || []).length,
           (Admin.sammeGaest ? Admin.sammeGaest(b) : [])
             .map(function (x) { return x.id + ':' + x.status; }).join(',')].join('|'),
         byg: function () { return kort(b); },
@@ -986,7 +1061,11 @@
     var min = Admin.minutterSiden(b.oprettet);
     var sent = min !== null && min >= maalTid();
 
-    var k = lav('div', 'koek-kort' + (sent ? ' sent' : ''));
+    /* ⚠️ STATUS PÅ SELVE KORTET (29/9). "KLAR" stod med lille grå
+       skrift i foden, og et bord med maden klar til at bære ud lignede
+       alle de andre. Nu bærer kortet sin status som klasse (grøn kant
+       ved klar), og foden har en farvet pille. */
+    var k = lav('div', 'koek-kort status-' + String(b.status || 'ny') + (sent ? ' sent' : ''));
     k.setAttribute('data-bord', b.bord_nummer);
 
     var top = lav('div', 'koek-top');
@@ -1057,13 +1136,26 @@
     top.appendChild(ur);
     k.appendChild(top);
 
+    /* ⚠️ MAD OG DRIKKE HVER FOR SIG (29/9). Øllen kan gå ud med det
+       samme; maden venter på panden. Stod de blandet, skulle den, der
+       skænker, læse hele kortet for at finde sine to linjer. Delingen
+       vises kun, når kortet har BEGGE dele — "Mad" over et kort med
+       tre retter er et ord, ingen læser. Afdelingen er ejerens egen
+       (menu_kategorier.afdeling, se afdelingFor). */
+    var alleL = b.linjer || [];
+    var grupper = [
+      ['Mad', alleL.filter(function (l) { return afdelingFor(l) !== 'drikke'; })],
+      ['Drikke', alleL.filter(function (l) { return afdelingFor(l) === 'drikke'; })],
+    ].filter(function (g) { return g[1].length; });
     var linjer = lav('div', 'koek-linjer');
-    (b.linjer || []).forEach(function (l) {
-      var r = lav('div', 'koek-linje');
-      r.appendChild(lav('b', null, (l.antal || 1) + ' ×'));
-      r.appendChild(lav('span', null,
-        Butik.linjeNavn(l)));
-      linjer.appendChild(r);
+    grupper.forEach(function (g) {
+      if (grupper.length > 1) linjer.appendChild(lav('div', 'koek-gruppe' + (g[0] === 'Drikke' ? ' drikke' : ''), g[0]));
+      g[1].forEach(function (l) {
+        var r = lav('div', 'koek-linje');
+        r.appendChild(lav('b', null, (l.antal || 1) + ' ×'));
+        r.appendChild(lav('span', null, Butik.linjeNavn(l)));
+        linjer.appendChild(r);
+      });
     });
     k.appendChild(linjer);
 
@@ -1166,7 +1258,8 @@
     k.appendChild(handling);
 
     var bund = lav('div', 'koek-bund');
-    bund.appendChild(lav('span', 'koek-status', t.navn));
+    bund.appendChild(lav('span', 'koek-status status-' + String(b.status || 'ny'),
+      b.status === 'klar' ? 'Klar — bær ud' : t.navn));
     bund.appendChild(lav('span', 'koek-kl', 'bestilt ' + klokken(b.oprettet)));
 
     var kr = beloeb(b);
