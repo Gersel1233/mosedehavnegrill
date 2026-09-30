@@ -750,3 +750,81 @@ test.describe('Genvejen fra forsiden lander på isen', () => {
       .toBe(0);
   });
 });
+
+/* ============================================================
+   KORTVISNINGEN FØLGER DE TRYKTE KORTS EGNE NAVNE  (30/9)
+   ------------------------------------------------------------
+   De trykte grillkort er rokeret om. Ejerens besked: *"ingen varer
+   eller priser er ændret. Kort 1: Morgenmad og frokost. Kort 2: À
+   la carte, burgere og pølser. Sandwich bliver sammen med burgerne
+   som før."*
+
+   Kort 2 passede allerede. Kort 1 gjorde ikke: det hed »Menukort«
+   og lovede i sin egen indledning »burgere lavet på bestilling« —
+   og burgerne ligger på kort 2. En gæst med det trykte kort i
+   hånden ledte efter et kapitel, skærmen ikke havde.
+
+   ⚠️ KUN NAVNENE. Ingen vare, ingen pris og ingen kilde er rørt —
+   det er en omrokering på papiret, ikke i køkkenet. `id` på
+   kapitlet bliver også: det er ankeret, ikke en overskrift, og at
+   skifte det ville brække links uden at gæsten så noget.
+
+   ⚠️ OG »Menukort« STOD I FORVEJEN TO GANGE: siden har sin egen
+   <h1>Menukort</h1> lige over kortet. Navnet gik altså ikke tabt.
+   ============================================================ */
+test.describe('Kapitlernes navne følger de trykte kort', () => {
+
+  /* Det samme blandede kort som blokken ovenfor — helt sin egen, så
+     en rettelse dér ikke flytter tallene her. */
+  function kortMedMad() {
+    const d = grunddata();
+    d.menu_kategorier = [
+      { id: 1, afdeling: 'mad', navn: 'Retter', sortering: 1, aktiv: true },
+      { id: 2, afdeling: 'is', navn: 'Softice og vafler', sortering: 20, aktiv: true },
+      { id: 4, afdeling: 'mad', navn: 'Burgere', sortering: 30, aktiv: true },
+      { id: 5, afdeling: 'mad', navn: 'Sandwich', sortering: 31, aktiv: true },
+    ];
+    d.menu_varer = [
+      { id: 11, kategori_id: 1, navn: 'Pariserbøf', pris: 105, sortering: 1, aktiv: true },
+      { id: 12, kategori_id: 2, navn: 'Softice', pris: 30, sortering: 1, aktiv: true },
+      { id: 14, kategori_id: 4, navn: 'Cheeseburger', pris: 85, sortering: 1, aktiv: true },
+      { id: 16, kategori_id: 5, navn: 'Kyllingesandwich', pris: 75, sortering: 1, aktiv: true },
+    ];
+    return d;
+  }
+
+  test('kort 1 hedder Morgenmad & frokost — på kortet og i hop-båndet',
+    async ({ page }) => {
+      await åbn(page, kortMedMad());
+      const foerste = page.locator('#mk-kat .mk-kapitel').first();
+      await expect(foerste).toHaveAttribute('data-kapitel', 'grillen');
+      await expect(foerste.locator('.mk-kh-titel')).toContainText('Morgenmad');
+      await expect(foerste.locator('.mk-kh-titel')).toContainText('frokost');
+      await expect(foerste.locator('.mk-kh-titel'),
+        'kortet hedder stadig "Menukort", som sidens egen overskrift')
+        .not.toContainText('Menukort');
+      const baand = await page.locator('#mk-hop a, #mk-hop button').allInnerTexts();
+      expect(baand.map((s) => s.trim())[0]).toBe('Morgenmad & frokost');
+    });
+
+  /* ⚠️ INDLEDNINGEN MÅ IKKE LOVE BURGERE PÅ ET KORT UDEN BURGERE.
+     Den stod der fra dengang kort 1 var hele grillens kort. */
+  test('kort 1 lover ikke burgere længere', async ({ page }) => {
+    await åbn(page, kortMedMad());
+    await expect(page.locator('#kapitel-grillen .mk-kh-tekst'))
+      .not.toContainText(/burger/i);
+  });
+
+  /* MODSTYKKET: kort 2 var rigtigt i forvejen og skal blive ved. */
+  test('kort 2 er stadig À la carte, burgere & pølser — med sandwichen',
+    async ({ page }) => {
+      await åbn(page, kortMedMad());
+      const k = page.locator('#kapitel-burgere');
+      await expect(k.locator('.mk-kh-titel')).toContainText('À la carte');
+      await expect(k.locator('.mk-kh-titel')).toContainText('burgere & pølser');
+      /* Sandwichen hører til burgernes afsnit — "som før". */
+      const afsnit = k.locator('.mk-sek', { hasText: 'Burgere & sandwiches' });
+      await expect(afsnit.locator('[data-vare="Kyllingesandwich"]')).toHaveCount(1);
+      await expect(afsnit.locator('[data-vare="Cheeseburger"]')).toHaveCount(1);
+    });
+});

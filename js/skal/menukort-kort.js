@@ -47,12 +47,30 @@
 
   var KAPITLER = [
     {
+      /* ⚠️ ID'ET BLIVER 'grillen'  (30/9). Kortet hedder "Morgenmad
+         & frokost" nu, men id'et er ANKERET (#kapitel-grillen) og
+         ikke en overskrift: skiftede vi det, ville links og
+         prøver brække, uden at gæsten så en eneste forskel. */
       id: 'grillen',
       over: 'Mosede Havnecafe',
-      titel: ['Menukort'],
+      /* ⚠️ KORTET HEDDER DET, DET TRYKTE KORT HEDDER  (30/9).
+         De trykte grillkort er rokeret om — ingen vare og ingen
+         pris ændret, men kort 1 er nu "Morgenmad og frokost" og
+         kort 2 "À la carte, burgere og pølser".
+
+         Her stod ['Menukort']. To ting var galt med det: en gæst
+         med det trykte kort i hånden ledte efter et kapitel,
+         skærmen ikke havde — og ordet stod i forvejen TO gange,
+         fordi m-menukort.html har sin egen <h1>Menukort</h1> lige
+         over. Navnet gik altså ikke tabt ved at flytte. */
+      titel: ['Morgenmad', '& frokost'],
       under: 'Fra grillen',
-      tekst: 'Morgenmad fra tidligt, klassikerne fra pladen og burgere lavet på bestilling — alt sammen ved lugen.',
-      hop: 'Grillen',
+      /* ⚠️ INGEN BURGERE I INDLEDNINGEN MERE. Sætningen er fra
+         dengang kort 1 var hele grillens kort; burgerne ligger på
+         kort 2, og et kort, der lover noget, det ikke har, sender
+         gæsten det forkerte sted hen. */
+      tekst: 'Morgenmad fra tidligt og klassikerne fra pladen — alt sammen ved lugen.',
+      hop: 'Morgenmad & frokost',
       venstre: [
         { titel: 'Morgenmad', kilder: [{ kat: 'Morgenmad' }] },
         { titel: 'Tilkøb til morgenmaden', samle: true, kilder: [{ kat: 'Tilkøb morgenmad' }] },
