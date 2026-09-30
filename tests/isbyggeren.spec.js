@@ -169,6 +169,43 @@ test.describe('Byg din is', () => {
     expect(top.pris).toBe(8);
   });
 
+  /* ============================================================
+     TVILLINGEN SKAL OGSÅ BÆRE VALGET  (30/9)
+     ------------------------------------------------------------
+     js/skal/bestil.js (forsiden og smørrebrødssiden) har SIN EGEN
+     laegIs, tvilling til den i js/bestilling.js (bordet). Da
+     tilbehøret fik valg 30/9, rettede jeg først kun den ene — og
+     den her fil faldt med "Cannot read properties of undefined".
+
+     ⚠️ MEN DA JEG BAGEFTER FALSIFICEREDE ved at sætte
+     `variant: null` tilbage i tvillingen, faldt INGEN prøve.
+     Fejlen kunne altså komme snigende igen uden et ord. Derfor
+     den her: forsiden skal bære valget hele vejen til linjen,
+     præcis som bordet gør (tests/ved-bordet.spec.js).
+     ============================================================ */
+  test('et tilbehør med valg bærer sit valg til linjen — også fra forsiden',
+    async ({ page }) => {
+      await åbnSkal(page, '/index.html', { ur: UR, data: (() => {
+        const d = data();
+        const t = d.menu_varer.find((v) => v.navn === 'Strøssel, topping eller guf');
+        t.valg = ['Strøssel', 'Topping', 'Guf'];
+        return d;
+      })() });
+      await page.waitForSelector('.isbyg-blok');
+      await knapMed(page, 1, 'Vaffel').click();
+      await trin(page, 2).locator('.isbyg-knap[data-vare="2 kugler"]').click();
+      await trin(page, 3).locator('.isbyg-smag').nth(0).selectOption('Vanilje');
+      await trin(page, 3).locator('.isbyg-smag').nth(1).selectOption('Lakrids');
+      await trin(page, 4).locator('.isbyg-knap').filter({ hasText: 'Topping' })
+        .first().click();
+      await page.locator('.isbyg-laeg').click();
+      await sendBestilling(page);
+      const linjer = (await gemteData(page)).bestillinger[0].linjer;
+      const top = linjer.find((l) => l.navn === 'Strøssel, topping eller guf');
+      expect(top, 'tilbehøret nåede slet ikke linjen').toBeTruthy();
+      expect(top.variant, 'valget faldt bort i js/skal/bestil.js').toBe('Topping');
+    });
+
   /* ⚠️ TO IS MED HVER SIN SMAG ER TO LINJER. Lagde de sig sammen
      som antal 2, ville køkkenet lave to ens — og gæsten få en is,
      hun ikke har bestilt. */
