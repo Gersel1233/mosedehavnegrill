@@ -777,11 +777,14 @@
   /* ø/æ/å og oe/ae/aa foldes til det samme, så stavemåden ikke
      afgør, om man finder sin vare. Rækkefølgen er med vilje:
      ø→o FØR oe→o, ellers ville "Pølse" blive til "plse". */
-  function fold(s) {
-    return String(s == null ? '' : s).toLowerCase()
-      .replace(/ø/g, 'o').replace(/æ/g, 'a').replace(/å/g, 'a')
-      .replace(/oe/g, 'o').replace(/ae/g, 'a').replace(/aa/g, 'a');
-  }
+  /* ⚠️ FOLDNINGEN OG ORDREGLEN ER FLYTTET TIL Butik  (30/9).
+     De stod her OG i js/bestilling.js, og de to var holdt op med
+     at mene det samme: den her delte spørgsmålet i ord, gæstens
+     gjorde ikke. Ejerens ord: "admin og bestillingen, sammenhæng
+     og dygtighed, er ikke god nok". Reglen bor ét sted nu, og
+     den kan mere end før — se noten ved soegPasser i
+     js/store.js. */
+  function fold(s) { return Butik.soegFold(s); }
 
   function katNavnFor(id) {
     var fundet = ((Admin.data && Admin.data.menu_kategorier) || [])
@@ -789,36 +792,13 @@
     return fundet ? fundet.navn : '';
   }
 
-  /* ⚠️ ET KORT ORD SKAL STÅ FØRST I ET ORD — MÅLT, IKKE GÆTTET.
-
-     Første udgave lod hvert søgeord matche hvor som helst. Så gav
-     "Øl nr. 3" alle tolv PØLSER, fordi "øl" foldes til "ol", og
-     "ol" står inde i "polser". To prøver faldt på det.
-
-     Men kravet må ikke gælde alle ord: "løg" skal stadig finde
-     "rødløg", og "vand" skal finde "sodavand". Grænsen går ved to
-     tegn — det er dér, et ord er så kort, at det rammer tilfældigt
-     inde i et andet. */
-  function harOrdet(hoestak, o) {
-    if (o.length > 2) return hoestak.indexOf(o) !== -1;
-    var i = hoestak.indexOf(o);
-    while (i !== -1) {
-      if (i === 0 || /[^a-z0-9]/.test(hoestak.charAt(i - 1))) return true;
-      i = hoestak.indexOf(o, i + 1);
-    }
-    return false;
-  }
-
   function passerSoeg(v) {
     if (!soeg) return true;
-    var hoestak = fold(v.navn) + ' ' + fold(v.beskrivelse)
-      + ' ' + fold(katNavnFor(v.kategori_id));
-    /* ⚠️ ALLE ord skal findes, ikke bare ét. Ellers ville "pølser
-       flødeskumsbolle" give alle tolv pølser — en søgning, der
-       svarer på noget andet end det, der blev spurgt om. */
-    var ord = fold(soeg).split(/\s+/).filter(Boolean);
-    if (!ord.length) return true;
-    return ord.every(function (o) { return harOrdet(hoestak, o); });
+    /* Kategorien har altid været med her — og det var netop dét,
+       gæstens høstak manglede. Nu har begge den. */
+    return Butik.soegPasser(
+      v.navn + ' ' + (v.beskrivelse || '') + ' ' + katNavnFor(v.kategori_id),
+      soeg);
   }
 
   function passer(v) {

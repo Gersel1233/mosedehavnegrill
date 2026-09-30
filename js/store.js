@@ -1178,6 +1178,132 @@
      skimme efter. Den får ikke sin egen kolonne: `besked` er den
      ene tekst, alle fire skærme allerede læser, og en kolonne
      mere ville være et sted til at glemme den. */
+  /* ============================================================
+     SØGNINGEN — ÉN REGEL FOR GÆSTEN OG FOR PERSONALET  (30/9)
+     ------------------------------------------------------------
+     Ejerens ord: *"folk søger jo ikke korrekt stavning hver gang
+     … og admin og bestillingen, sammenhæng og dygtighed, er ikke
+     god nok."*
+
+     MÅLT 30/9, og han havde ret — men omvendt af det forventede:
+     ADMIN havde den kloge søgning, GÆSTEN den dumme.
+
+       js/admin/menukort.js   ord.every(harOrdet)  alle ord, fri orden
+       js/bestilling.js       hoestak.indexOf(q)   ét ord, i træk
+
+     En gæst, der skrev "stor øl", fik NUL træf, mens der stod
+     "Fadøl, stor" på kortet — og personalet, der tastede det
+     samme i admin, fandt varen. To søgninger, to svar, samme
+     spørgsmål, midt i den samme telefonsamtale.
+
+     Reglen bor her, fordi begge skærme indlæser store.js. En
+     kopi mere ville være en tredje mening om det samme.
+
+     TRE TING, DEN KAN:
+
+     1. ALLE ORD, I VILKÅRLIG RÆKKEFØLGE. "stor øl" og "øl stor"
+        finder det samme. (Admins regel siden 25/9 — nu gæstens
+        også.)
+
+     2. ET KORT ORD SKAL STÅ FORREST I ET ORD. "øl" foldes til
+        "ol", og "ol" står midt i "polse": uden den her ville en
+        søgning på øl give alle pølserne. Grænsen går ved to
+        tegn — "løg" skal stadig finde "rødløg".
+
+     3. ÉT TEGN MÅ VÆRE GALT, fra fire tegn og op. "burgir" finder
+        Bøfburger, "softis" finder Softice, "frittes" finder
+        frites. ⚠️ IKKE på de korte ord: dér er ét tegn forskellen
+        på "øl" og "ål", og en søgning, der gætter, er værre end
+        en, der siger nej.
+     ============================================================ */
+  function soegFold(s) {
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/ø/g, 'o').replace(/æ/g, 'a').replace(/å/g, 'a')
+      .replace(/oe/g, 'o').replace(/ae/g, 'a').replace(/aa/g, 'a');
+  }
+
+  /* Levenshtein med loft: vi skal kun vide, OM der er højst ét
+     tegns forskel, ikke hvor mange der er. Stopper, så snart
+     loftet er brudt. */
+  function soegAfstand(a, b, loft) {
+    if (a === b) return 0;
+    if (Math.abs(a.length - b.length) > loft) return loft + 1;
+    var forrige = [], naeste, i, j;
+    for (j = 0; j <= b.length; j++) forrige[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      naeste = [i];
+      var mindst = i;
+      for (j = 1; j <= b.length; j++) {
+        naeste[j] = Math.min(
+          forrige[j] + 1,
+          naeste[j - 1] + 1,
+          forrige[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+        if (naeste[j] < mindst) mindst = naeste[j];
+      }
+      if (mindst > loft) return loft + 1;
+      forrige = naeste;
+    }
+    return forrige[b.length];
+  }
+
+  /* ⚠️ VINDUET GLIDER INDE I ET ORD OG IKKE HEN OVER HØSTAKKEN.
+     "burgir" skal finde "bofburger" — altså midt inde i ordet —
+     men to halve ord på hver side af et mellemrum er ikke et ord,
+     og et gæt hen over skellet ville ramme i flæng. */
+  function soegNaestenI(hoestak, o) {
+    var ord = hoestak.split(/[^a-z0-9]+/);
+    for (var k = 0; k < ord.length; k++) {
+      var w = ord[k];
+      if (!w) continue;
+      for (var i = 0; i + o.length - 1 <= w.length; i++) {
+        /* ⚠️ FØRSTE BOGSTAV SKAL PASSE — MÅLT 30/9, IKKE GÆTTET.
+           Uden det gav "kaffe" 29 træf og "vand" 63: "vaffel" er
+           ét tegn fra "kaffe", og på et menukort med vafler er
+           det hver eneste af dem. En søgning, der svarer på noget
+           andet end det, der blev spurgt om, er værre end en, der
+           siger nej. Stavefejl rammer sjældent det første
+           bogstav — "burgir", "softis", "majo" og "frittes"
+           består alle med kravet. */
+        if (w.charAt(i) !== o.charAt(0)) continue;
+        for (var d = -1; d <= 1; d++) {
+          var L = o.length + d;
+          if (L < 1 || i + L > w.length + 1) continue;
+          if (soegAfstand(o, w.substr(i, L), 1) <= 1) return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function soegHarOrdet(hoestak, o) {
+    if (o.length > 2 && hoestak.indexOf(o) !== -1) return true;
+    if (o.length <= 2) {
+      var i = hoestak.indexOf(o);
+      while (i !== -1) {
+        if (i === 0 || /[^a-z0-9]/.test(hoestak.charAt(i - 1))) return true;
+        i = hoestak.indexOf(o, i + 1);
+      }
+      return false;
+    }
+    /* Stavefejlen prøves til sidst: den koster mere, og den må
+       aldrig komme foran et rigtigt træf. */
+    return o.length >= 4 && soegNaestenI(hoestak, o);
+  }
+
+  /* Høstakken er alt det, varen kan findes på: navn, beskrivelse
+     OG kategorien. ⚠️ Kategorien er ikke pynt — uden den falder
+     "stor øl", fordi "ol" ikke står på en ordgrænse i "fadol".
+     Det var netop dér, gæstens søgning var ringere end admins. */
+  function soegPasser(hoestak, forespoergsel) {
+    var ord = soegFold(forespoergsel).trim().split(/\s+/).filter(Boolean);
+    if (!ord.length) return true;
+    var h = soegFold(hoestak);
+    for (var i = 0; i < ord.length; i++) {
+      if (!soegHarOrdet(h, ord[i])) return false;
+    }
+    return true;
+  }
+
   function medAllergi(besked, allergi) {
     var a = String(allergi === null || allergi === undefined ? '' : allergi).trim();
     var b = String(besked === null || besked === undefined ? '' : besked).trim();
@@ -5042,6 +5168,8 @@
     allergiMangler: allergiMangler,
     vilkaar: { vis: vilkaarVis, mangler: vilkaarMangler, kendt: vilkaarKendt },
     medAllergi: medAllergi,
+    soegFold: soegFold,
+    soegPasser: soegPasser,
     klokken: klokken,
     menu: menu,
     menuAfsnit: menuAfsnit,

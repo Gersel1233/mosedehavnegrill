@@ -369,10 +369,23 @@
      så en foldning kan kun SLÅ ord sammen — aldrig skille dem ad.
      Derfor koster det ekstra træf og aldrig et manglende: både
      "rødgrød", "roedgroed" og "rodgrod" bliver til "rodgrod". */
-  function foldNed(t) {
-    return String(t || '').toLowerCase()
-      .replace(/æ/g, 'a').replace(/ø/g, 'o').replace(/å/g, 'a')
-      .replace(/ae/g, 'a').replace(/oe/g, 'o').replace(/aa/g, 'a');
+  /* ⚠️ FOLDNINGEN ER FLYTTET TIL Butik.soegFold  (30/9).
+     Den stod her OG i js/admin/menukort.js, og de to søgninger
+     var holdt op med at mene det samme: admin delte spørgsmålet i
+     ord, det her gjorde ikke. En gæst, der skrev "stor øl", fik
+     nul træf på noget, personalet kunne finde. Se den lange note
+     ved soegPasser i js/store.js. */
+  function foldNed(t) { return Butik.soegFold(t); }
+
+  /* Det, søgningen leder i: navn, beskrivelse OG kategorien.
+     ⚠️ KATEGORIEN ER IKKE PYNT. Uden den falder "stor øl", fordi
+     "øl" foldes til "ol", og "ol" står ikke på en ordgrænse inde
+     i "fadol" — men det gør det i kategorien "Øl". Det var
+     præcis dér, gæstens søgning var ringere end admins, som har
+     haft kategorinavnet i høstakken hele tiden. */
+  function soegTekstFor(v, s) {
+    return v.navn + ' ' + (v.beskrivelse || '')
+      + ' ' + ((s && s.kategoriNavn) ? s.kategoriNavn(v) : '');
   }
 
   /* SØGETEKSTEN OG CHIPPEN LEVER UDEN FOR TEGNINGEN — som
@@ -443,7 +456,10 @@
          anden — og det ville ingen opdage, for hver af dem ser
          rigtig ud for sig selv. */
       function synlig(r, gNavn) {
-        var passerSoeg = !q || foldNed(r.getAttribute('data-soeg')).indexOf(q) !== -1;
+        /* ⚠️ IKKE indexOf LÆNGERE. Alle ord skal findes, i
+           vilkårlig rækkefølge, og ét tegn må være galt fra fire
+           tegn og op — den samme regel, personalet søger med. */
+        var passerSoeg = !q || Butik.soegPasser(r.getAttribute('data-soeg'), q);
         var passerChip = kortValgtChip === 'alt'
           || (kortValgtChip === '__favorit'
                ? r.getAttribute('data-favorit') === 'ja'
@@ -490,8 +506,10 @@
          under beskeden. */
       var isb = boks.querySelector('.isbyg-blok');
       if (isb) {
-        var isSoeg = foldNed(isb.getAttribute('data-soeg') || '');
-        var isVis = (!q || isSoeg.indexOf(q) !== -1)
+        /* Isbyggeren søges med den SAMME regel som varerne —
+           ellers ville "softis" finde softicen i listen og ikke
+           byggeren, der sælger den. */
+        var isVis = (!q || Butik.soegPasser(isb.getAttribute('data-soeg') || '', q))
           && (kortValgtChip === 'alt' || kortValgtChip === '__is');
         isb.hidden = !isVis;
         if (isVis) traf++;
@@ -1231,7 +1249,7 @@
          ikke efter det, retten hedder. Sat som attribut og ikke
          læst af DOM'en hver gang: søgningen løber 242 rækker
          igennem ved hvert tastetryk. */
-      r.setAttribute('data-soeg', v.navn + ' ' + (v.beskrivelse || ''));
+      r.setAttribute('data-soeg', soegTekstFor(v, s));
       /* ⚠️ SÅ KURVENS LISTE KAN FINDE RÆKKEN IGEN (31/8). Uden
          den måtte et tryk i kurven tegne HELE listen om for at
          rette ét tal — 242 rækker for ét minus, og præcis den
@@ -1458,7 +1476,7 @@
          navn, som på alle andre rækker; uden den kan hverken
          kurven, filtrene eller en prøve få fat i den. */
       r.setAttribute('data-vare', v.navn);
-      r.setAttribute('data-soeg', v.navn + ' ' + (v.beskrivelse || ''));
+      r.setAttribute('data-soeg', soegTekstFor(v, s));
       var tegn2 = vareTegn(v, s.katFor && s.katFor(v));
       if (tegn2) r.appendChild(tegn2);
       var tekst = lav('div', 'stk-tekst');
@@ -1516,7 +1534,7 @@
          udsolgte burger som det ENESTE tilbage på skærmen, mens
          gæsten søgte på noget helt andet. */
       r.setAttribute('data-vare', v.navn);
-      r.setAttribute('data-soeg', v.navn + ' ' + (v.beskrivelse || ''));
+      r.setAttribute('data-soeg', soegTekstFor(v, s));
       r.setAttribute('data-gruppe', gruppeNavnFor(v));
       var tegn3 = vareTegn(v, s.katFor && s.katFor(v));
       if (tegn3) r.appendChild(tegn3);
