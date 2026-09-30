@@ -47,9 +47,23 @@
     'sauce, topping eller guf': ['Sauce', 'Topping', 'Guf'],
     'boblevaffel med 2 kugler eller softice': ['2 kugler', 'Softice'],
     // ---- Drikke og snacks ----
+    /* ⚠️ BEGGE NAVNE, OG DET ER IKKE DOBBELTARBEJDE (30/9).
+       kortenes-tekster-30-9.sql døber varen om til kortenes eget
+       navn. Nøglen her ER varenavnet med små bogstaver, så i det
+       sekund filen køres, ville forslaget holde op med at findes —
+       tavst. Ejeren ser bare, at knappen ikke er der mere.
+
+       Det gamle navn bliver stående: filen kan køres igen, og en
+       browser kan være dage gammel. Samme greb som de to
+       sodavandslinjer nedenfor, der har både kakao og cacao.
+       tests/menukort-admin.spec.js læser omdøbningerne UD AF
+       SQL-filen og fælder den næste, der bliver glemt. */
     'lumumba': ['Kold', 'Varm'],
+    'lumumba, varm eller kold': ['Kold', 'Varm'],
     'sodavand, juice, iste eller kakao – lille': DRIKKE,
     'sodavand, juice, iste eller kakao – stor': DRIKKE,
+    'sodavand, juice, iste eller cacao – lille': DRIKKE,
+    'sodavand, juice, iste eller cacao – stor': DRIKKE,
     'smoothie eller milkshake': ['Smoothie', 'Milkshake'],
     'dåse eller flaske sodavand': ['Dåse', 'Flaske'],
     'juice eller capri-sun': ['Juice', 'Capri-Sun'],

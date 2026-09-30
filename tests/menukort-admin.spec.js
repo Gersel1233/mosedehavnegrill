@@ -2183,3 +2183,107 @@ test.describe('Valg på en vare kan sættes i admin', () => {
     await expect(page.locator('[data-vare-valg]')).toHaveCount(0);
   });
 });
+
+/* ============================================================
+   EN OMDØBNING I SQL MÅ IKKE TAGE VALGFORSLAGET MED SIG  (30/9)
+   ------------------------------------------------------------
+   `supabase/kortenes-tekster-30-9.sql` retter varenavnene, så de
+   står som på de endelige trykte kort. Forslagene i
+   js/admin/valgforslag.js slår op på varens navn med små
+   bogstaver — så i det sekund filen køres i produktionen, holder
+   forslaget op med at findes for netop den vare, medmindre
+   listen har fået det nye navn med.
+
+   Det er tavst: ejeren ser bare, at knappen "Brug valgene" ikke
+   er der mere, og skriver dem i hånden — hvis han opdager det.
+
+   ⚠️ MÅLT 30/9, FØR FILEN BLEV KØRT: `Lumumba` → `Lumumba, varm
+   eller kold` stod i SQL'en, og valgforslag.js kendte kun
+   `lumumba`. De to sodavandslinjer var husket (både `kakao` og
+   `cacao` står), Lumumba var ikke.
+
+   ⚠️ PRØVEN LÆSER SQL-FILEN, IKKE EN LISTE. Omdøbningerne hentes
+   ud af filen selv, så den næste `ret(...)`-linje er dækket i det
+   øjeblik, den skrives — en håndholdt liste ville bestå, fordi
+   ingen huskede at rette den.
+
+   ⚠️ OG DET GAMLE NAVN BEHOLDES. Filen kan køres igen, og en
+   browser kan være dage gammel — begge navne skal kunne slås op.
+   ============================================================ */
+test.describe('Kortenes omdøbninger 30/9', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const SQL = path.resolve(__dirname, '..', 'supabase/kortenes-tekster-30-9.sql');
+
+  /* [gammelt navn, nyt navn] for hver linje, der faktisk skifter navn.
+     `ret('X', null, ...)` rører kun beskrivelsen og hører ikke med. */
+  function omdoebninger() {
+    const s = fs.readFileSync(SQL, 'utf8').replace(/^\s*--.*$/gm, '');
+    const ud = [];
+    const m = s.matchAll(/pg_temp\.ret\(\s*'((?:[^']|'')+)'\s*,\s*'((?:[^']|'')+)'/g);
+    for (const t of m) ud.push([t[1].replace(/''/g, "'"), t[2].replace(/''/g, "'")]);
+    return ud;
+  }
+
+  test('filen omdøber overhovedet noget', () => {
+    /* ⚠️ UDEN DEN HER BESTÅR PRØVEN NEDENFOR EN TOM LISTE. Skrider
+       mønsteret — eller får filen et nyt navn — ville nul
+       omdøbninger melde grønt. Tallet er filens, ikke vores. */
+    expect(omdoebninger().length,
+      'ingen omdøbninger læst ud af kortenes-tekster-30-9.sql')
+      .toBeGreaterThanOrEqual(5);
+  });
+
+  test('hvert nyt navn kender de samme valg som det gamle', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    const par = omdoebninger();
+    const tabt = await page.evaluate((liste) => liste.map(([gammel, nyt]) => {
+      const a = window.Admin.valgForslag(gammel);
+      const b = window.Admin.valgForslag(nyt);
+      /* Havde det gamle navn ingen forslag, er der intet at miste. */
+      if (!a || !a.length) return null;
+      return (b && b.join('|') === a.join('|')) ? null
+        : gammel + ' → ' + nyt + ' (mistede: ' + a.join(', ') + ')';
+    }).filter(Boolean), par);
+    expect(tabt, 'omdøbninger, der tager valgforslaget med sig').toEqual([]);
+  });
+
+  /* ⚠️ OG KORTVISNINGEN HAR SAMME FÆLDE — DEN BOR HER, HOS SIN
+     TVILLING. js/skal/menukort-kort.js er gæstesidens fil og ikke
+     admins, men reglen er den samme: den slår varer op på deres
+     EKSAKTE navn (`navne: ['Lumumba', …]`), så en omdøbning lader
+     varen forsvinde fra det trykte kort uden en eneste fejl. To
+     prøver i hver sin fil ville betyde, at den næste, der tilføjer
+     en `ret(...)`-linje, kun fandt den ene.
+
+     ⚠️ KUN NAVNE, DER ER SKREVET UD. Kommer varen med, fordi hele
+     dens kategori er med (`kat: 'Ispinde'`), betyder navnet
+     ingenting, og så er der intet at fælde. */
+  test('en omdøbt vare bliver ikke væk fra det trykte kort', () => {
+    const kort = fs.readFileSync(
+      path.resolve(__dirname, '..', 'js/skal/menukort-kort.js'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '');
+    const væk = omdoebninger()
+      .filter(([gammel, nyt]) =>
+        kort.indexOf("'" + gammel + "'") !== -1
+        && kort.indexOf("'" + nyt + "'") === -1)
+      .map(([gammel, nyt]) => gammel + ' → ' + nyt);
+    expect(væk, 'omdøbte varer, kortvisningen ikke kan finde mere').toEqual([]);
+  });
+
+  /* MODSTYKKET: det gamle navn skal blive ved med at virke. Filen
+     kan køres igen, og admin kan stå åben i en browser fra i går. */
+  test('de gamle navne beholder deres forslag', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    const væk = await page.evaluate((liste) => liste
+      .filter(([gammel]) => {
+        const f = window.Admin.valgForslag(gammel);
+        return !f || !f.length;
+      })
+      .map(([gammel]) => gammel), omdoebninger());
+    /* Kun de navne, der HAVDE et forslag, tælles — resten har
+       aldrig haft et. Listen herunder er dem, vi ved havde ét. */
+    expect(væk.filter((n) => /^(lumumba|sodavand, juice)/i.test(n.toLowerCase())),
+      'et gammelt navn har mistet sit forslag').toEqual([]);
+  });
+});

@@ -156,7 +156,7 @@
         { titel: 'Kaffe', tabel: 'stor', kilder: [{ kat: 'Kaffe og varme drikke', medValg: 'Stor' },
           { kat: '*', navne: ['Espresso'] }] },
         { titel: 'Varmt & ekstra', kilder: [
-          { kat: '*', navne: ['1 iskugle i kaffen', 'Ekstra shot kaffe', 'Sirup', 'Te', 'Lumumba', 'Irish coffee', 'Irish coffee, stor'] },
+          { kat: '*', navne: ['1 iskugle i kaffen', 'Ekstra shot kaffe', 'Sirup', 'Te', 'Lumumba, varm eller kold', 'Lumumba', 'Irish coffee', 'Irish coffee, stor'] },
         ] },
         { titel: 'Kage', kilder: [
           { kat: '*', navne: ['Kage & desserter', 'Gammeldags æblekage', 'Flødekager'] },
