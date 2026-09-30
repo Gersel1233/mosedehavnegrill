@@ -541,7 +541,7 @@ window.MosedeIsbygger = (function () {
              størrelse, må et tilvalg fra den anden liste ikke følge
              usynligt med i prisen. */
           var lovlige = ekstraFor(v);
-          ekstra = ekstra.filter(function (x) { return lovlige.indexOf(x) !== -1; });
+          ekstra = ekstra.filter(function (x) { return lovlige.indexOf(x.v) !== -1; });
           marker(v2, k);
           tegnOm();
         });
@@ -592,7 +592,7 @@ window.MosedeIsbygger = (function () {
       /* Kuglerne i isen PLUS en ekstra kugle, der er valgt til —
          en ekstra kugle har også en smag, og den skal køkkenet vide. */
       function ekstraKugler() {
-        return ekstra.reduce(function (n, v) { return n + rolle(v, data).kugler; }, 0);
+        return ekstra.reduce(function (n, x) { return n + rolle(x.v, data).kugler; }, 0);
       }
       function antalKugler() {
         return valgtVare ? rolle(valgtVare, data).kugler + ekstraKugler() : 0;
@@ -613,7 +613,10 @@ window.MosedeIsbygger = (function () {
         var p = Butik.prisMedValg
           ? Number(Butik.prisMedValg(valgtVare, valgtVariant) || 0)
           : Number(valgtVare.pris || 0);
-        ekstra.forEach(function (v) { p += Number(v.pris || 0); });
+        ekstra.forEach(function (x) {
+          p += Butik.prisMedValg ? Number(Butik.prisMedValg(x.v, x.variant) || 0)
+                                 : Number(x.v.pris || 0);
+        });
         return p;
       }
 
@@ -661,20 +664,51 @@ window.MosedeIsbygger = (function () {
         } else if (liste.length) {
           var gr = lav('div', 'isbyg-ekstra');
           liste.forEach(function (v) {
-            var k = knap(v.navn, kr(v.pris));
-            k.classList.add('isbyg-ekstra-knap');
-            var på = ekstra.indexOf(v) !== -1;
-            k.classList.toggle('valgt', på);
-            k.setAttribute('aria-pressed', på ? 'true' : 'false');
-            k.addEventListener('click', function () {
-              var j = ekstra.indexOf(v);
-              if (j === -1) ekstra.push(v); else ekstra.splice(j, 1);
-              /* Tages en ekstra kugle fra igen, må dens smag ikke
-                 blive hængende i en plads, der ikke findes. */
-              smage.length = Math.min(smage.length, antalKugler());
-              tegnOm();
+            /* ⚠️ ET TILBEHØR MED VALG SKAL SIGE HVILKET  (30/9).
+               Ejerens ord: *"kunden skal vælge konkret mellem sauce,
+               topping eller guf, og valget skal fremgå tydeligt på
+               medarbejderens ordre."*
+
+               Her stod ÉN knap med varens navn på. Slog gæsten
+               "Strøssel, topping eller guf" til, fik køkkenet en
+               linje, hvor der bogstaveligt stod "eller" — samme
+               fejl som de otte varer i den almindelige liste, bare
+               et sted, hvor menu_varer.valg aldrig blev læst.
+
+               ⚠️ REGLEN ER Butik.vareValg, DEN SAMME SOM LISTEN
+               SPØRGER. En egen regel her ville være en tredje
+               mening om, hvornår en vare har valg. Har varen ingen
+               valg, er der ét mærke som før. */
+            var valgene = Butik.vareValg ? Butik.vareValg(v) : null;
+            (valgene || [null]).forEach(function (variant) {
+              var pris = Butik.prisMedValg
+                ? Butik.prisMedValg(v, variant) : v.pris;
+              var k = knap(variant || v.navn, kr(pris));
+              k.classList.add('isbyg-ekstra-knap');
+              if (variant) k.setAttribute('data-ekstra-valg', variant);
+              var på = ekstra.some(function (x) {
+                return x.v === v && x.variant === variant;
+              });
+              k.classList.toggle('valgt', på);
+              k.setAttribute('aria-pressed', på ? 'true' : 'false');
+              /* Navnet siger stadig, hvad det ER, for en skærmlæser:
+                 "Topping" alene er ikke nok, når knappen står for
+                 "Strøssel, topping eller guf". */
+              if (variant) k.setAttribute('aria-label', v.navn + ' · ' + variant);
+              k.addEventListener('click', function () {
+                var j = -1;
+                for (var i = 0; i < ekstra.length; i++) {
+                  if (ekstra[i].v === v && ekstra[i].variant === variant) { j = i; break; }
+                }
+                if (j === -1) ekstra.push({ v: v, variant: variant });
+                else ekstra.splice(j, 1);
+                /* Tages en ekstra kugle fra igen, må dens smag ikke
+                   blive hængende i en plads, der ikke findes. */
+                smage.length = Math.min(smage.length, antalKugler());
+                tegnOm();
+              });
+              gr.appendChild(k);
             });
-            gr.appendChild(k);
           });
           t4.krop.appendChild(gr);
         } else {

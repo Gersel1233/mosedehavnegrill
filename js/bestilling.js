@@ -211,11 +211,23 @@
                         variant: is.variant || null,
                         kat: is.vare.kategori_id };
     if ((is.smage || []).length) kurv.smage[nk] = [is.smage.slice()];
-    (is.ekstra || []).forEach(function (v) {
-      var ek = 'is-ekstra' + VALG_SKEL + v.navn;
+    /* ⚠️ TILBEHØRET BÆRER SIT VALG MED  (30/9). Isbyggerens trin 4
+       spørger nu, HVILKET tilbehør det er ("Sauce" og ikke
+       "Sauce, topping eller guf"), og valget skal hele vejen til
+       køkkenets kort. Nøglen bærer det også, ellers ville en
+       sauce og en topping lægge sig oven i hinanden som antal 2,
+       og kollegaen ville lave to ens. Samme regel som isen selv. */
+    (is.ekstra || []).forEach(function (x) {
+      /* Ældre kald sender den nøgne vare; begge former skal virke,
+         så en browser fra i går ikke mister sit tilbehør. */
+      var v = x && x.v ? x.v : x;
+      var variant = (x && x.v) ? (x.variant || null) : null;
+      var ek = 'is-ekstra' + VALG_SKEL + v.navn + VALG_SKEL + (variant || '');
       kurv.stk[ek] = (kurv.stk[ek] || 0) + 1;
-      kurv.ispris[ek] = { navn: v.navn, pris: v.pris, variant: null,
-                          kat: v.kategori_id };
+      kurv.ispris[ek] = { navn: v.navn,
+                          pris: Butik.prisMedValg
+                            ? Butik.prisMedValg(v, variant) : v.pris,
+                          variant: variant, kat: v.kategori_id };
     });
     gemKurv();
     visSum();
@@ -441,6 +453,60 @@
     var chips = lav('div', 'kort-chips');
     chips.setAttribute('role', 'group');
     chips.setAttribute('aria-label', 'Vælg en del af menuen');
+    /* ============================================================
+       ⚠️ GENVEJENE VAR DER — DE VAR BARE UDEN FOR SKÆRMEN  (30/9)
+       ------------------------------------------------------------
+       Ejerens ord: *"man skal ikke gennem ca. 17 skærme for at nå
+       første burger … gør navigationen hurtigere."*
+
+       MÅLT ved bord 1 mod det levende kort: siden er 46,5 skærme
+       lang, og første burger ligger 17 skærme nede. Striben HAR
+       nitten genveje — men den er 2.815 px bred i en 322 px
+       skærm, så kun TRE er synlige, og "Burgere" er nummer syv.
+       Der var intet tegn på, at der var mere til højre.
+
+       Knappen folder hele sættet ud i ét greb. To tryk i stedet
+       for otte swipes i blinde.
+
+       ⚠️ BÅNDET ER UÆNDRET, TIL NOGEN TRYKKER. Den, der bare
+       ruller, skal ikke møde en anden side end i går — og et
+       udfoldet bånd, der dækker menuen, ville have flyttet
+       problemet i stedet for at løse det. Derfor lukker det af
+       sig selv, så snart der er valgt, og har et loft i CSS'en.
+
+       ⚠️ TALLET STÅR PÅ KNAPPEN. "Alle 19" siger, at der ER mere;
+       et nøgent "Alle" ligner en genvej mere i rækken. */
+    var alle = lav('button', 'kort-alle');
+    alle.type = 'button';
+    alle.setAttribute('aria-controls', 'kort-chips-baand');
+    chips.id = 'kort-chips-baand';
+    function saetAlle(aaben) {
+      chips.classList.toggle('udfoldet', aaben);
+      alle.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+      alle.textContent = aaben ? 'Luk ▴'
+        : 'Alle ' + chips.querySelectorAll('.kort-chip').length + ' ▾';
+    }
+    alle.addEventListener('click', function () {
+      saetAlle(!chips.classList.contains('udfoldet'));
+    });
+    /* ⚠️ KNAPPEN LIGGER INDE I BÅNDET OG KOSTER INGEN HØJDE — MÅLT
+       TO GANGE, 30/9.
+
+       Først stod den UNDER båndet: udfoldet blev den skubbet til
+       697 px i en 664 px skærm, altså uden for skærmen, og gæsten
+       kunne åbne panelet uden at kunne se, hvordan hun lukkede
+       igen.
+
+       Så stod den OVER båndet. Det virkede — men den gjorde den
+       klæbende bjælke 44 px højere, og så faldt den første vares
+       plusknap 22 px under folden. Prøven "den første vare er på
+       det første skærmbillede" fældede det. En genvej, der koster
+       den første vare, har byttet ét problem for et andet.
+
+       Nu er den første element i selve striben og KLÆBER til dens
+       venstre kant (position: sticky), så den hverken koster en
+       linje eller forsvinder, når gæsten swiper. */
+    chips.appendChild(alle);
     bar.appendChild(chips);
     boks.appendChild(bar);
 
@@ -564,6 +630,10 @@
            er — striben er bredere end skærmen. Samme greb som
            admins fanestribe. */
         try { b.scrollIntoView({ inline: 'nearest', block: 'nearest' }); } catch (e) { /* ældre browsere */ }
+        /* Valgt er valgt: panelet lukker, så listen står frem.
+           Blev det stående, ville gæsten se sit valg gennem en
+           skærm fuld af knapper. */
+        saetAlle(false);
       });
       chips.appendChild(b);
       return b;
@@ -600,6 +670,11 @@
        Chippen står SIDST, fordi blokken står sidst: striben og
        listen skal sige det samme om rækkefølgen. */
     if (medIs) chip('🍦  Is & sødt', '__is');
+
+    /* Teksten skrives FØRST nu, hvor alle chipsene står — tallet
+       på knappen skal være det rigtige, og det kendes ikke, før
+       striben er bygget. */
+    saetAlle(false);
 
     var timer = null;
     soeg.addEventListener('input', function () {

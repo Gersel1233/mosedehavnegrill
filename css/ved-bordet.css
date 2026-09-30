@@ -190,6 +190,59 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
   margin-right: -14px;
 }
 .kort-chips::-webkit-scrollbar { display: none; }
+
+/* ============================================================
+   UDFOLDET: HELE SÆTTET PÅ ÉN GANG  (30/9)
+   ------------------------------------------------------------
+   Målt ved bord 1: striben er 2.815 px bred i en 322 px skærm,
+   så nitten genveje blev til tre synlige. Udfoldet ombrydes de,
+   og så kan de ses i ét blik.
+
+   ⚠️ LOFTET ER IKKE PYNT. Bjælken KLÆBER, og et bånd uden loft
+   ville dække menuen, gæsten skal vælge i — altså flytte
+   problemet i stedet for at løse det. 44vh lader resten af
+   skærmen vise, hvad man vælger imellem, og ruller panelet, hvis
+   ejeren en dag har fyrre kategorier.
+   ============================================================ */
+.kort-chips.udfoldet {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  overflow-y: auto;
+  max-height: 44vh;
+  margin-right: 0;
+  padding-right: 2px;
+}
+
+/* Knappen er ikke en genvej mere i rækken: den står for sig selv
+   under striben, i husets klare glas, og bærer TALLET — "Alle 19"
+   siger, at der ER mere, hvor et nøgent "Alle" bare ligner en
+   kategori. */
+.kort-alle {
+  /* ⚠️ KLÆBER TIL STRIBENS VENSTRE KANT. Den ligger INDE i
+     striben, så den koster ingen højde — og sticky gør, at den
+     ikke swiper væk sammen med chipsene. Se den lange note i
+     js/bestilling.js om de to placeringer, der blev målt og
+     forkastet. */
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--streg);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .72);
+  font: 600 13px/1 var(--brod);
+  color: var(--sea);
+  cursor: pointer;
+  /* Den er ikke en kategori: den skal kunne skelnes fra chipsene,
+     den står ved siden af. */
+  box-shadow: 6px 0 10px -6px rgba(0, 0, 0, .35);
+}
+.kort-alle:hover { background: #fff; }
+/* Udfoldet ombrydes striben, og så skal knappen ikke klæbe —
+   den står bare som den første i gitteret. */
+.kort-chips.udfoldet .kort-alle { position: static; box-shadow: none; }
 .kort-chip {
   flex: 0 0 auto;
   min-height: 40px;

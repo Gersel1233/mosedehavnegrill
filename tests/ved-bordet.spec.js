@@ -928,6 +928,63 @@ test.describe('Byg din is ved bordet', () => {
     await page.waitForSelector('.isbyg-blok');
   }
 
+  /* ============================================================
+     TILBEHØRET SKAL OGSÅ SIGE HVILKET  (30/9)
+     ------------------------------------------------------------
+     Ejerens ord: *"ret 'Sauce, topping eller guf' i isbyggeren, så
+     kunden skal vælge konkret mellem sauce, topping eller guf, og
+     valget fremgår tydeligt på medarbejderens ordre."*
+
+     MÅLT 30/9: trin 4 tegnede ÉN knap pr. tilbehørsvare, med
+     varens navn på. Slog gæsten "Strøssel, topping eller guf" til,
+     fik køkkenet en linje, hvor der bogstaveligt stod "eller" —
+     samme fejl som de otte varer i den almindelige liste, bare et
+     sted hvor menu_varer.valg aldrig blev læst.
+
+     ⚠️ REGLEN ER Butik.vareValg, DEN SAMME SOM LISTEN BRUGER. En
+     anden regel her ville være en tredje mening om, hvornår en
+     vare har valg. */
+  test('et tilbehør med valg giver én knap pr. valg — ikke én for varen',
+    async ({ page }) => {
+      await åbn(page, SIDE + '?bord=7', { ur: UR, data: (() => {
+        const g = medIs();
+        g.menu_varer.find((v) => v.id === 9007).valg = ['Sauce', 'Topping', 'Guf'];
+        return g;
+      })() });
+      await page.waitForSelector('.isbyg-blok');
+      await knap(page, 1, 'Vaffel').click();
+      await knap(page, 2, '1 kugle').click();
+      const ekstra = trin(page, 4).locator('.isbyg-ekstra-knap');
+      const tekster = (await ekstra.allInnerTexts()).map((t) => t.split('\n')[0].trim());
+      expect(tekster, 'tilbehøret spørger stadig ikke hvilket')
+        .toEqual(expect.arrayContaining(['Sauce', 'Topping', 'Guf']));
+      expect(tekster.join(' | '), 'den tvetydige knap står der endnu')
+        .not.toContain('Strøssel, topping eller guf');
+    });
+
+  test('og valget står på kollegaens linje', async ({ page }) => {
+    await åbn(page, SIDE + '?bord=7', { ur: UR, data: (() => {
+      const g = medIs();
+      g.menu_varer.find((v) => v.id === 9007).valg = ['Sauce', 'Topping', 'Guf'];
+      return g;
+    })() });
+    await page.waitForSelector('.isbyg-blok');
+    await knap(page, 1, 'Vaffel').click();
+    await knap(page, 2, '1 kugle').click();
+    await trin(page, 4).locator('.isbyg-ekstra-knap').filter({ hasText: 'Topping' })
+      .first().click();
+    /* Én kugle skal have én smag, før knappen åbner. */
+    const vælger = trin(page, 3).locator('select');
+    if (await vælger.count()) await vælger.first().selectOption({ label: 'Vanilje' });
+    await page.locator('.isbyg-blok button', { hasText: /Læg i kurven/ }).first().click();
+    await page.waitForTimeout(400);
+    await sendFraBordet(page);
+    const b = (await gemteData(page)).bestillinger[0];
+    const linjer = b.linjer.map((l) => l.navn + ' · ' + (l.variant || 'INTET VALG'));
+    expect(linjer.join(' | '), 'tilbehøret kom ind uden at sige hvilket')
+      .toContain('Strøssel, topping eller guf · Topping');
+  });
+
   const trin = (page, nr) => page.locator(`.isbyg-trin[data-trin="${nr}"]`);
   const knap = (page, nr, tekst) =>
     trin(page, nr).locator('.isbyg-knap').filter({ hasText: tekst }).first();
@@ -1275,5 +1332,143 @@ test.describe('Valget følger med fra bordet til køkkenet', () => {
     const b = (await gemteData(page)).bestillinger[0];
     expect(b.linjer.map((l) => l.navn + ' · ' + (l.variant || 'INTET VALG')))
       .toEqual(['Sodavand, juice, iste eller cacao – lille · Cacao']);
+  });
+});
+
+/* ============================================================
+   KATEGORIERNE SKAL KUNNE SES — IKKE SWIPES FREM  (30/9)
+   ------------------------------------------------------------
+   Ejerens ord: *"forbedr bordbestillingen, så man ikke skal
+   gennem ca. 17 skærme for at nå første burger. Bevar søgningen,
+   men gør navigationen hurtigere, fx med bedre kategori-genvej
+   eller placering."*
+
+   MÅLT 30/9 ved bord 1 mod det levende kort:
+     · siden er 30.882 px = 46,5 skærme lang
+     · første burger ligger 11.284 px nede = 17 skærmes rulning
+     · genvejene FINDES — 19 chips — men båndet er 2.815 px bredt
+       i en 322 px skærm, så KUN TRE er synlige. "Burgere" er
+       nummer syv.
+
+   Genvejen var der altså; den var bare gemt ude til højre uden
+   et tegn på, at der var mere. Nu kan hele sættet foldes ud med
+   ét tryk, og et tryk mere vælger. To tryk i stedet for otte
+   swipes i blinde.
+
+   ⚠️ BÅNDET ER UÆNDRET, TIL NOGEN TRYKKER. En gæst, der bare
+   ruller, skal ikke møde en anden side end i går — og den
+   klæbende bjælke må ikke vokse og æde skærmen.
+   ============================================================ */
+test.describe('Alle kategorier kan foldes ud', () => {
+
+  function mangeKategorier() {
+    const g = grunddata({ borde: BORDE });
+    const b = { beskrivelse: null, fremhaevet: false, udsolgt: false, aktiv: true, valg: null };
+    g.menu_kategorier = [];
+    g.menu_varer = [];
+    const navne = ['Andre retter', 'Smørrebrød', 'Håndmadder', 'Retter', 'Burgere',
+      'Sandwich', 'Pølser', 'Platter', 'Morgenmad', 'Kaffe og varme drikke',
+      'Øl', 'Vin, cava og champagne', 'Sodavand, juice og kakao', 'Snacks og slik'];
+    navne.forEach((navn, i) => {
+      g.menu_kategorier.push({ id: 100 + i, lokation_id: 'mosede', navn,
+        afdeling: i >= 9 ? 'drikke' : 'mad', sortering: i + 1, aktiv: true });
+      g.menu_varer.push({ id: 200 + i, kategori_id: 100 + i, lokation_id: 'mosede',
+        navn: navn + '-ret', pris: 50, sortering: 1, ...b });
+    });
+    g.indstillinger = Object.assign({}, grunddata().indstillinger,
+      { bestilbare_kategorier: g.menu_kategorier.map((k) => k.id) });
+    return g;
+  }
+
+  async function åbnMange(page) {
+    await åbn(page, SIDE + '?bord=7', { ur: UR, data: mangeKategorier() });
+    await page.waitForSelector('.kort-chips');
+  }
+
+  /* ⚠️ TALLET KOMMER UDEFRA: hvor mange chips der ligger uden for
+     båndets synlige kasse, læses af browseren — ikke af en liste,
+     vi selv har skrevet. Uden den her ville prøven nedenfor bestå
+     på et kort med tre kategorier, hvor der intet problem er. */
+  test('problemet findes: de fleste genveje ligger uden for skærmen', async ({ page }) => {
+    await åbnMange(page);
+    const m = await page.evaluate(() => {
+      const baand = document.querySelector('.kort-chips');
+      const chips = [...baand.querySelectorAll('.kort-chip')];
+      const y = baand.getBoundingClientRect();
+      return { i_alt: chips.length,
+        synlige: chips.filter((c) => {
+          const x = c.getBoundingClientRect();
+          return x.left >= y.left - 1 && x.right <= y.right + 1;
+        }).length };
+    });
+    expect(m.i_alt).toBeGreaterThanOrEqual(12);
+    expect(m.synlige, 'kortet er for lille til at måle problemet').toBeLessThan(6);
+  });
+
+  test('ét tryk folder dem alle ud — og de er synlige uden at swipe',
+    async ({ page }) => {
+      await åbnMange(page);
+      const alle = page.locator('.kort-alle');
+      await expect(alle, 'der er ingen vej til de skjulte genveje').toHaveCount(1);
+      await alle.click();
+      await page.waitForTimeout(250);
+      const m = await page.evaluate(() => {
+        const baand = document.querySelector('.kort-chips');
+        const chips = [...baand.querySelectorAll('.kort-chip')];
+        const y = baand.getBoundingClientRect();
+        return { i_alt: chips.length,
+          synlige: chips.filter((c) => {
+            const x = c.getBoundingClientRect();
+            return x.left >= y.left - 1 && x.right <= y.right + 1;
+          }).length,
+          baandHoejde: Math.round(y.height), skaerm: window.innerHeight };
+      });
+      expect(m.synlige, 'der er stadig genveje gemt til højre').toBe(m.i_alt);
+      /* ⚠️ OG BJÆLKEN MÅ IKKE ÆDE SKÆRMEN. Et udfoldet bånd, der
+         dækker menuen, har flyttet problemet i stedet for at løse det. */
+      expect(m.baandHoejde, 'det udfoldede bånd dækker over det halve af skærmen')
+        .toBeLessThan(m.skaerm * 0.55);
+    });
+
+  test('et tryk på en genvej filtrerer og lukker igen', async ({ page }) => {
+    await åbnMange(page);
+    await page.locator('.kort-alle').click();
+    await page.waitForTimeout(200);
+    await page.locator('.kort-chip', { hasText: 'Burgere' }).first().click();
+    await page.waitForTimeout(350);
+    await expect(page.locator('[data-vare="Burgere-ret"]')).toBeVisible();
+    await expect(page.locator('[data-vare="Pølser-ret"]')).toBeHidden();
+    await expect(page.locator('.kort-chips.udfoldet'),
+      'panelet blev stående åbent oven på det, gæsten valgte').toHaveCount(0);
+  });
+
+  /* ⚠️ OG KNAPPEN SKAL KUNNE SES, NÅR PANELET ER ÅBENT.
+     MÅLT 30/9: den stod UNDER båndet, og udfoldet blev den skubbet
+     til 697 px i en 664 px skærm — altså uden for skærmen. Gæsten
+     kunne åbne panelet og ikke se, hvordan hun lukkede det igen.
+     Den står over båndet nu, hvor den ikke flytter sig. */
+  test('luk-knappen er på skærmen, både lukket og åben', async ({ page }) => {
+    await åbnMange(page);
+    const maal = () => page.evaluate(() => {
+      const r = document.querySelector('.kort-alle').getBoundingClientRect();
+      return { top: Math.round(r.top), bund: Math.round(r.bottom),
+               skaerm: window.innerHeight };
+    });
+    const lukket = await maal();
+    expect(lukket.top).toBeGreaterThanOrEqual(0);
+    expect(lukket.bund, 'knappen er uden for skærmen, før den er trykket')
+      .toBeLessThanOrEqual(lukket.skaerm);
+
+    await page.locator('.kort-alle').click();
+    await page.waitForTimeout(250);
+    const aaben = await maal();
+    expect(aaben.bund, 'luk-knappen blev skubbet uden for skærmen')
+      .toBeLessThanOrEqual(aaben.skaerm);
+  });
+
+  /* MODSTYKKET: uden et tryk skal siden være, som den var. */
+  test('båndet er uændret, til nogen trykker', async ({ page }) => {
+    await åbnMange(page);
+    await expect(page.locator('.kort-chips.udfoldet')).toHaveCount(0);
   });
 });

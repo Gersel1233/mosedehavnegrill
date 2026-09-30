@@ -1547,11 +1547,31 @@
                          nøjagtig samme is. */
                       smage: (is.smage || []).length ? [is.smage.slice()] : undefined };
     }
-    (is.ekstra || []).forEach(function (v) {
-      var n2 = 'is-ekstra|' + v.navn;
+    /* ⚠️ TILBEHØRET BÆRER SIT VALG MED  (30/9) — og den her løkke
+       er TVILLING til den i js/bestilling.js. Isbyggerens trin 4
+       spørger nu, hvilket tilbehør det er ("Sauce" og ikke
+       "Sauce, topping eller guf"), og valget skal hele vejen til
+       køkkenet.
+
+       ⚠️ JEG RETTEDE FØRST KUN DEN ENE. tests/isbyggeren.spec.js
+       faldt med "Cannot read properties of undefined" — to
+       kopier af den samme løkke, og kun den ene fulgte med. Det
+       er husets egen regel, jeg gik i: en kopi er en kommende
+       fejl. Ændres den ene, skal den anden med.
+
+       Nøglen bærer valget, ellers ville en sauce og en topping
+       lægge sig oven i hinanden som antal 2. */
+    (is.ekstra || []).forEach(function (x) {
+      /* Ældre kald sender den nøgne vare; begge former skal virke. */
+      var v = x && x.v ? x.v : x;
+      var variant = (x && x.v) ? (x.variant || null) : null;
+      var n2 = 'is-ekstra|' + v.navn + '|' + (variant || '');
       if (kurv[n2]) kurv[n2].antal += 1;
-      else kurv[n2] = { navn: v.navn, pris: v.pris, antal: 1,
-                        variant: null, kat: v.kategori_id, kugler: 0 };
+      else kurv[n2] = { navn: v.navn,
+                        pris: Butik.prisMedValg
+                          ? Butik.prisMedValg(v, variant) : v.pris,
+                        antal: 1, variant: variant,
+                        kat: v.kategori_id, kugler: 0 };
     });
     visSum();
     visKategoriTal();
