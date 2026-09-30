@@ -56,8 +56,19 @@ og derfra:
   → kortenes-tekster-30-9.sql
 ```
 
-**⚠️ `kortenes-tekster-30-9.sql` (30/9) — IKKE kørt i produktionen endnu.**
+**⚠️ `kortenes-tekster-30-9.sql` (30/9) — kørt i produktionen 30/9.**
 Navne og beskrivelser som de endelige trykte kort; Alkoholfri øl sidst. Ingen pris.
+Rapporten svarede: gamle navne 0 · sandwichteksten ✔ · isboksen "…6 valgfrie kugler
+eller softice" · sidste øl "Alkoholfri øl". Prøvet først på en lokal Postgres med
+produktionens egne rækker sået ind — den lokale kopi har dem ikke, de er lavet i
+admin — og kørt to gange dér: anden kørsel flytter ingenting.
+
+⚠️ **En omdøbning her koster to steder i koden**, og begge slår op på det EKSAKTE
+navn: `js/admin/valgforslag.js` (ejerens knap "Brug valgene") og
+`js/skal/menukort-kort.js` (det trykte kort). Begge navne skal stå — det gamle
+også, for filen kan køres igen, og en browser kan være dage gammel.
+`tests/menukort-admin.spec.js` læser omdøbningerne ud af SQL-filen og fælder den,
+der bliver glemt (Lumumba var glemt 30/9, fundet af prøven før kørslen).
 
 **⚠️ `chefens-rettelser-29-9.sql` (29/9) — kørt i produktionen af Mikkel 29/9.**
 Chefens besked 29/9: Bearnaise- og Chilinaiseburger tændes (90), "Flaske øl,
