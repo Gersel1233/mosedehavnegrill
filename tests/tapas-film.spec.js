@@ -5,10 +5,20 @@
    når tilbage til video/slutframe 1, så lad det bare være
    billedet"*.
 
-   Sky-containerens Chromium har ingen H.264, så filmen kan ikke
-   spille her. Prøverne gør det derfor på to måder:
-   · SOM DEN ER: filmen springes over, og galleriet kører — med
-     filmens eget slutbillede som billede 1
+   ⚠️ BEGGE TILSTANDE SÆTTES AF PRØVEN — MÅLT 30/9, RETTET.
+   Her stod: "sky-containerens Chromium har ingen H.264, så filmen
+   kan ikke spille her", og den FØRSTE prøve stolede på det i
+   stedet for at sætte det selv. Det holdt i skyen og faldt på
+   Mikkels Mac, hvor canPlayType('video/mp4; codecs="avc1.640028"')
+   svarer "probably": filmen blev lavet, den spillede fint
+   (readyState 4, 1920 px), og prøven meldte fejl på en side, der
+   gjorde præcis det rigtige.
+
+   En prøve, der måler browserens BYG i stedet for koden, siger
+   forskellige ting på to maskiner — og så ved ingen, hvad der
+   gælder. Nu stubbes begge veje:
+   · KAN IKKE: canPlayType svarer tomt, filmen springes over, og
+     galleriet kører med filmens eget slutbillede som billede 1
    · MED EN BROWSER, DER "KAN": canPlayType og play() stubbes, og
      .mp4'en svares med en lille WebM, Chromium KAN læse (ellers
      kommer en 'error', og filmen tages væk af sig selv). Så
@@ -53,8 +63,20 @@ async function kanSpille(page, { hold } = {}) {
   });
 }
 
+/* Browseren, der IKKE kan spille filmen — ejerens tilfælde:
+   *"hvis browseren ikke kan afspille tapasfilmen, skal der vises et
+   almindeligt billede af tapasfadet som fallback i stedet for et
+   tomt felt."* Modstykket til kanSpille ovenfor, og lige så
+   udtrykkelig: tilstanden sættes, den antages ikke. */
+async function kanIkkeSpille(page) {
+  await page.addInitScript(() => {
+    HTMLMediaElement.prototype.canPlayType = () => '';
+  });
+}
+
 test.describe('Tapasfilmen i galleriet', () => {
   test('uden en film, der kan spille: galleriet kører med filmens slutbillede først', async ({ page }, info) => {
+    await kanIkkeSpille(page);
     await åbnSkal(page, '/m-tapas.html', { ur: FREDAG, data: grunddata() });
     const fotos = page.locator('.tshot .foto-skift img');
     await expect(fotos).toHaveCount(3);

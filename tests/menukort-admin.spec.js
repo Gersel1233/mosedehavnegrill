@@ -2273,6 +2273,36 @@ test.describe('Kortenes omdøbninger 30/9', () => {
 
   /* MODSTYKKET: det gamle navn skal blive ved med at virke. Filen
      kan køres igen, og admin kan stå åben i en browser fra i går. */
+  /* ⚠️ OG DE VALG, DATABASEN FÅR, SKAL ADMIN KENDE  (30/9).
+     valg-paa-varerne-30-9.sql skriver valgene på de otte varer,
+     der spørger i deres eget navn. Kender js/admin/valgforslag.js
+     ikke de samme lister, siger de to skærme forskellige ting om
+     den samme vare: gæsten får ét sæt valg, og ejeren får et
+     andet foreslået, hvis han nogensinde rydder kolonnen.
+
+     Prøven læser LISTERNE UD AF SQL-FILEN, så den næste linje er
+     dækket i det øjeblik, den skrives. */
+  test('hver vare, SQL-filen giver valg, har det samme forslag i admin',
+    async ({ page }) => {
+      const SQL2 = path.resolve(__dirname, '..', 'supabase/valg-paa-varerne-30-9.sql');
+      const tekst = fs.readFileSync(SQL2, 'utf8').replace(/^\s*--.*$/gm, '');
+      const par = [...tekst.matchAll(
+        /pg_temp\.valg\(\s*'((?:[^']|'')+)'\s*,\s*'(\[[^']*\])'/g)]
+        .map((m) => [m[1].replace(/''/g, "'"), JSON.parse(m[2])]);
+      expect(par.length, 'ingen valg læst ud af valg-paa-varerne-30-9.sql')
+        .toBeGreaterThanOrEqual(6);
+
+      await åbnAdmin(page, { data: grunddata() });
+      const uenige = await page.evaluate((liste) => liste
+        .map(([navn, valg]) => {
+          const f = window.Admin.valgForslag(navn);
+          if (!f) return navn + ' → admin har intet forslag';
+          return f.join('|') === valg.join('|') ? null
+            : navn + ' → admin siger [' + f.join(', ') + '], databasen [' + valg.join(', ') + ']';
+        }).filter(Boolean), par);
+      expect(uenige, 'admin og databasen er uenige om valgene').toEqual([]);
+    });
+
   test('de gamle navne beholder deres forslag', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata() });
     const væk = await page.evaluate((liste) => liste

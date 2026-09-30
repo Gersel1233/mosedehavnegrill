@@ -26,10 +26,32 @@
   var FYLD_SANDWICH = ['Æg', 'Pålæg', 'Hønsesalat', 'Æggesalat', 'Wienersalat',
     'Skinkesalat', 'Kebab', 'Kylling', 'Tun'];
   var BROED = ['Toastbrød', 'Rugbrød'];
-  var DRIKKE = ['Sodavand', 'Juice', 'Iste', 'Kakao'];
+  /* ⚠️ "Cacao" OG IKKE "Kakao" (30/9). Varerne hedder
+     "…iste eller cacao" efter kortenes-tekster-30-9.sql, og et
+     valg, der staver anderledes end varen selv, ligner en anden
+     drik. Kategorien hedder stadig "Sodavand, juice og kakao" —
+     begge stavemåder er ejerens, og varens egen vinder. */
+  var DRIKKE = ['Sodavand', 'Juice', 'Iste', 'Cacao'];
   var F = {
     // ---- Retter og pladen ----
     'lun delle eller steg': ['Frikadelle', 'Steg'],
+    /* ⚠️ DE TRE HER ER LÆST AF VARENS EGET NAVN (30/9) og ikke
+       gættet: står der "steg eller leverpostej", er valgene Steg
+       og Leverpostej, i navnets egen rækkefølge. Ejeren bad om
+       netop dem: *"du må også oprette forslag til de varer, hvor
+       valgene tydeligt fremgår af varenavnet."*
+
+       ⚠️ "Ekstra kød eller tilbehør" STÅR IKKE HER. Hvad man kan
+       vælge imellem, står ikke i navnet — ejerens ord: *"den må
+       du ikke gætte på endnu."*
+
+       ⚠️ Og "tomat- eller agurkemad" kan ikke bestilles i dag:
+       kategorien "Vælg fyld til smørrebrødet" er slukket.
+       Forslaget står her, så det er klar, hvis den tændes. */
+    'lun delle, steg eller leverpostej med brød og surt':
+      ['Frikadelle', 'Steg', 'Leverpostej'],
+    'flaske eller dåse': ['Flaske', 'Dåse'],
+    'tomat- eller agurkemad med mayo og løg': ['Tomat', 'Agurk'],
     'lun delle eller steg med leverpostej': ['Frikadelle', 'Steg'],
     'pitabrød': ['Kebab', 'Kylling', 'Tun'],
     'sandwich, lille': FYLD_SANDWICH,
@@ -58,8 +80,8 @@
        sodavandslinjer nedenfor, der har både kakao og cacao.
        tests/menukort-admin.spec.js læser omdøbningerne UD AF
        SQL-filen og fælder den næste, der bliver glemt. */
-    'lumumba': ['Kold', 'Varm'],
-    'lumumba, varm eller kold': ['Kold', 'Varm'],
+    'lumumba': ['Varm', 'Kold'],
+    'lumumba, varm eller kold': ['Varm', 'Kold'],
     'sodavand, juice, iste eller kakao – lille': DRIKKE,
     'sodavand, juice, iste eller kakao – stor': DRIKKE,
     'sodavand, juice, iste eller cacao – lille': DRIKKE,

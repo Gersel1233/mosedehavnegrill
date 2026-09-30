@@ -1195,3 +1195,85 @@ test.describe('Byg din is ved bordet', () => {
     await expect(page.locator('.kort-intet')).toBeHidden();
   });
 });
+
+/* ============================================================
+   VALGET SKAL STÅ BEGGE STEDER — HOS GÆSTEN OG PÅ SEDLEN
+   (30/9)
+   ------------------------------------------------------------
+   Ejerens ord: *"ordresedlen må aldrig bare sige fx 'Sodavand,
+   juice, iste eller cacao', men skal vise det konkrete valg
+   kunden har foretaget … test bagefter, at valget både vises
+   korrekt for gæsten og på medarbejderens ordre/seddel."*
+
+   MÅLT 30/9 ved bord 1 mod det levende kort: fjorten aktive
+   varer havde ordet "eller" i navnet og INGEN valg. Kollegaen
+   fik sedler, hvor der bogstaveligt stod "eller".
+   valg-paa-varerne-30-9.sql giver de otte af dem, der står som
+   en almindelig række, deres valg.
+
+   ⚠️ PRØVEN HER MÅLER MASKINERIET, IKKE DATAEN. Om ejerens egne
+   varer har fået valg, kan en prøve ikke vide — det står i
+   produktionen. Den måler, at NÅR en vare har valg, følger
+   valget hele vejen fra gæstens finger til køkkenets kort.
+   Forsiden har haft den prøve siden 15/9 (skal-bestil.spec.js);
+   BORDET havde den ikke, og det er bordet, ejeren spurgte om.
+   ============================================================ */
+test.describe('Valget følger med fra bordet til køkkenet', () => {
+
+  function medDrikke() {
+    return {
+      menu_kategorier: [{ id: 20, lokation_id: 'mosede',
+        navn: 'Sodavand, juice og kakao', afdeling: 'drikke', sortering: 1, aktiv: true }],
+      menu_varer: [{ id: 133, kategori_id: 20, lokation_id: 'mosede',
+        navn: 'Sodavand, juice, iste eller cacao – lille', beskrivelse: null,
+        pris: 25, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+        valg: ['Sodavand', 'Juice', 'Iste', 'Cacao'] }],
+      indstillinger: { bestilbare_kategorier: [20] },
+    };
+  }
+
+  test('gæsten får én linje pr. valg — og kan tælle dem hver for sig',
+    async ({ page }) => {
+      await åbnBord(page, '?bord=7', { data: medDrikke() });
+      const vare = page.locator('[data-vare="Sodavand, juice, iste eller cacao – lille"]');
+      await expect(vare.locator('.stk-valg-linje')).toHaveCount(4);
+      /* ⚠️ INGEN NØGEN TÆLLER PÅ SELVE VAREN. Stod den der, kunne
+         gæsten bestille "en sodavand, juice, iste eller cacao" —
+         altså præcis den seddel, det hele skal forhindre. */
+      await expect(vare.locator('> .taeller')).toHaveCount(0);
+    });
+
+  test('valget står på kvitteringen og på kollegaens kort', async ({ page }) => {
+    await åbnBord(page, '?bord=7', { data: medDrikke() });
+    const vare = page.locator('[data-vare="Sodavand, juice, iste eller cacao – lille"]');
+    await vare.locator('.stk-valg-linje[data-valg="Cacao"] button[aria-label^="Én mere"]')
+      .first().click();
+    await page.waitForTimeout(300);
+
+    /* ⚠️ OPSUMMERINGEN KOMMER FØRST PÅ BEKRÆFTELSESTRINNET.
+       Første udgave af prøven ledte efter linjen med det samme og
+       faldt — det var prøven, der var for tidlig, ikke siden. */
+    await page.locator('#bestil-navn').fill('Familien Holm');
+    const ja = page.locator('[data-vilkaar-ja]').first();
+    if (await ja.count()) await ja.check({ force: true });
+    await page.locator('button:has-text("Send bestilling")').first().click();
+    await page.waitForTimeout(700);
+
+    /* "Se den efter, før du sender" — dét er gæstens sidste chance
+       for at opdage, at hun har valgt forkert. */
+    await expect(page.locator('#bestil'))
+      .toContainText('Sodavand, juice, iste eller cacao – lille · Cacao');
+
+    await page.locator('button:visible', { hasText: /Send bestilling · / }).first().click();
+    await expect.poll(async () =>
+      ((await gemteData(page)).bestillinger || []).length).toBe(1);
+
+    /* ⚠️ OG DET ER RÆKKEN I DATABASEN, DER TÆLLER — ikke teksten på
+       skærmen. Køkkenets kort, bonen og Overblik læser alle
+       linjens `variant`; står den tom dér, hjælper en pæn
+       kvittering ingen. */
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.linjer.map((l) => l.navn + ' · ' + (l.variant || 'INTET VALG')))
+      .toEqual(['Sodavand, juice, iste eller cacao – lille · Cacao']);
+  });
+});
