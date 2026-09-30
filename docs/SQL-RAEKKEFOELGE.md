@@ -53,8 +53,24 @@ og derfra:
   → haandmadder-hel-skive.sql
   → gaestens-vaern-26-9.sql → bremse-uden-borde-26-9.sql
   → kortenes-rettelser-27-9.sql → chefens-rettelser-29-9.sql
-  → kortenes-tekster-30-9.sql
+  → kortenes-tekster-30-9.sql → valg-paa-varerne-30-9.sql
 ```
+
+**⚠️ `valg-paa-varerne-30-9.sql` (30/9) — kørt i produktionen 30/9.**
+Otte varer, der spørger i deres eget navn ("Lumumba, varm eller kold"), har fået
+deres valg, så ordresedlen viser gæstens konkrete valg i stedet for ordet "eller".
+Valgene er LÆST AF NAVNET, i navnets egen rækkefølge — ikke gættet.
+
+⚠️ **Fire varer er med vilje udeladt:** isboksen, bubblewafflen og de to "Sauce,
+topping eller guf" står ikke i den almindelige liste — `js/isbygger.js` tegner dem
+og læser ikke `menu_varer.valg`. Målt: isboksen spørger allerede selv *"Kugler
+eller softice?"*. Et valg oveni ville spørge to gange. "Tomat- eller agurkemad"
+ligger i en slukket kategori, og **"Ekstra kød eller tilbehør"** venter på ejeren:
+hvad man kan vælge imellem, står ikke i navnet.
+
+De samme lister står som forslag i `js/admin/valgforslag.js`, så admin og
+databasen siger det samme. `tests/menukort-admin.spec.js` læser listerne UD AF
+filen og fælder dem, hvis de skrider fra hinanden.
 
 **⚠️ `kortenes-tekster-30-9.sql` (30/9) — kørt i produktionen 30/9.**
 Navne og beskrivelser som de endelige trykte kort; Alkoholfri øl sidst. Ingen pris.
@@ -168,7 +184,8 @@ Datafilerne (`kortets-priser*.sql`, `borde-55.sql`, `ejerens-oplysninger.sql`,
 `glutenfri-vaffel-samme-pris.sql`, `sluk-det-kortene-ikke-viser.sql`,
 `chefens-rettelser-25-9.sql`, `isens-opsaetning.sql`,
 `glutenfrit-broed-5-kr.sql`, `haandmadder-27-kr.sql`, `haandmadder-hel-skive.sql`,
-`kortenes-rettelser-27-9.sql`, `chefens-rettelser-29-9.sql`, `kortenes-tekster-30-9.sql`)
+`kortenes-rettelser-27-9.sql`, `chefens-rettelser-29-9.sql`, `kortenes-tekster-30-9.sql`,
+`valg-paa-varerne-30-9.sql`)
 har med vilje INTET tjek: de skriver ejerens tal, og et tjek ville sige ❌ den dag,
 han retter sit eget tal i admin.
 
