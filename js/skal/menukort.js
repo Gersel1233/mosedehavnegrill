@@ -467,6 +467,22 @@
       }
       return null;
     }
+    /* ⚠️ `genbrug` — DEN SAMME VARE PÅ FLERE KORT  (2/10).
+       Normalt tages en vare ÉN gang: står den to steder, er det en
+       fejl, og `taget` fanger den. Men de trykte kort gør det med
+       vilje for to varer: "Hjemmelavet lun frikadelle 25,-" og
+       "Hjemmelavet flæskesvær 35,-" står på BÅDE smørrebrødskortet,
+       håndmadskortet og (flæskesværet) bar-kortet.
+
+       Mikkel 2/10: *"Brug varen 'Hjemmelavet lun frikadelle' til
+       25,- på både smørrebrød og håndmadder."*
+
+       Den her finder uden at forbruge — så kortene kan gentage den,
+       og alle de andre varer bliver ved med at kunne stå ét sted. */
+    function frit(pred) {
+      for (var i = 0; i < alle.length; i++) if (pred(alle[i])) return alle[i];
+      return null;
+    }
     function tag(x) { taget.push(x); return x; }
 
     var ud = kap.map(function (c) {
@@ -486,10 +502,13 @@
     hvert(function (a) {
       (a.def.kilder || []).forEach(function (kl) {
         (kl.navne || []).forEach(function (n) {
-          var x = fri(function (y) {
+          function passer(y) {
             return norm(y.v.navn) === norm(n) && (kl.kat === '*' || norm(y.k.navn) === norm(kl.kat));
-          });
+          }
+          var x = kl.genbrug ? frit(passer) : fri(passer);
           if (!x) return;
+          // En genbrugt vare må ikke forsvinde fra sit eget kapitel.
+          if (kl.genbrug) { a.varer.push(x); return; }
           /* ⚠️ `efter` (27/9): en vare, der hentes fra en ANDEN kategori,
              skal stå dér, hvor kortet har den — ikke øverst. `efter: true`
              lægger den sidst i afsnittet, `efter: 'Navn'` lige efter den
@@ -694,6 +713,15 @@
       brugteKatId[førsteKat.id] = true;
       sek.id = 'kat-' + førsteKat.id;
     }
+    /* ⚠️ INGEN OVERSKRIFT = INGEN OVERSKRIFTSLINJE  (2/10). Et
+       afsnit uden titel tegnede før en tom <h3> med ruden og
+       stregen og ikke andet — det så i stykker ud. De to prisvarer
+       nederst i variantlisten er netop sådan et afsnit: på det
+       trykte kort står de i forlængelse af listen, uden deres egen
+       overskrift. */
+    if (!d.titel) {
+      sek.classList.add('mk-sek-fortsat');
+    } else {
     var h = lav('h3', 'mk-sek-titel');
     h.appendChild(lav('span', 'mk-ruder'));
     /* Overskriften er enten kapitlets egen (dansk tekst i
@@ -703,6 +731,7 @@
     h.appendChild(lav('span', 'mk-sek-navn', afsnitTitel(d, førsteKat)));
     h.appendChild(lav('span', 'mk-streger'));
     sek.appendChild(h);
+    }
     if (førsteKat && førsteKat.note && a.varer.every(function (y) { return y.k === førsteKat; })) {
       sek.appendChild(lav('p', 'mk-note', førsteKat.note));
     }

@@ -3642,3 +3642,7 @@ button.g:disabled:active{transform:none}
 .mk-sprog-knap{min-height:40px;padding:6px 16px;border-radius:999px;border:1.5px solid rgba(36,26,23,.18);background:var(--paper,#fff);color:var(--ink,#241a17);font:inherit;font-size:14px;cursor:pointer}
 /* Valgt ses på ramme, bund OG vægt — ikke kun på farven. */
 .mk-sprog-knap.valgt{border-color:var(--red);background:var(--red-svag,rgba(214,42,58,.10));font-weight:600;color:var(--red-tekst,var(--red))}
+/* Et afsnit uden overskrift er en FORTSÆTTELSE af det ovenfor —
+   de to prisvarer sidst i variantlisten (2/10). Ingen egen luft
+   over, ellers ligner det et nyt afsnit, nogen glemte at navngive. */
+.mk-sek-fortsat{margin-top:-10px;padding-top:0}

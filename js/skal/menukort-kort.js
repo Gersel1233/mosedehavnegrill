@@ -116,11 +116,30 @@
       hop: 'Smørrebrød',
       hel: [
         { titel: 'Varianter', udenPris: true, kolonner: 2, kilder: [{ kat: 'Smørrebrød' }] },
+        /* ⚠️ DE TO MED EGEN PRIS STÅR SIDST I VARIANTERNE  (2/10).
+           De endelige kort 3 og 4 slutter variantlisten med
+           "Hjemmelavet lun delle 25,-" og "Hjemmelavet flæskesvær
+           35,-" — MED pris, modsat resten af listen, hvor alt
+           koster det samme.
+
+           Mikkel 2/10, efter at jeg havde spurgt i stedet for at
+           gætte: *"Brug varen 'Hjemmelavet lun frikadelle' til 25,-
+           på både smørrebrød og håndmadder. 'Lun delle eller steg'
+           er en anden vare og skal ikke bruges som erstatning."*
+
+           ⚠️ EGET AFSNIT UDEN OVERSKRIFT. `udenPris` gælder hele
+           afsnittet og virker kun, når alle priser er ens — lagde
+           vi de to ind i variantlisten, ville ALLE priser komme
+           frem, og den rene liste ville blive til en priskolonne.
+           ⚠️ Og `genbrug`, fordi de samme to varer også står på
+           deres egne kort. Se noten ved frit() i menukort.js. */
+        { kilder: [{ kat: '*', genbrug: true,
+          navne: ['Hjemmelavet lun frikadelle', 'Hjemmelavet flæskesvær'] }] },
         /* Slukket hos ejeren i dag — men tænder han den i admin, står
            fyldet her ved smørrebrødet og ikke i "Mere fra lugen". */
         { titel: 'Vælg fyld', kilder: [{ kat: 'Vælg fyld til smørrebrødet' }] },
         { boks: 'raekke', felter: [
-          { over: 'Varianter', titel: 'Alle varianter', pris: { ens: 'Smørrebrød' }, tekst: 'Gælder alle almindelige smørrebrød på listen.' },
+          { over: 'Smørrebrød', titel: 'Alle varianter', pris: { ens: 'Smørrebrød' }, tekst: 'Gælder alle almindelige smørrebrød på listen.' },
           { over: 'Egen pris', titel: 'Rejemad', pris: { vare: 'Rejemad' }, tekst: 'Fås både på rugbrød og franskbrød.' },
           { over: 'Egen pris', titel: 'Tartar', pris: { vare: 'Tartarmad' }, tekst: 'Bestilles dagen før.' },
           { over: 'Sig til ved lugen', titel: 'Glutenfrit brød', pris: { vare: 'Glutenfrit brød (tillæg)', plus: true }, tekst: 'Med eller uden smør — bare sig til.' },
@@ -135,14 +154,40 @@
       hop: 'Håndmadder',
       hel: [
         { titel: 'Varianter', udenPris: true, kolonner: 2, kilder: [{ kat: 'Håndmadder' }] },
+        /* ⚠️ DE TO MED EGEN PRIS STÅR SIDST I VARIANTERNE  (2/10).
+           Se den lange note på smørrebrødskortet. Kortene 3 og 4 slutter variantlisten med
+           "Hjemmelavet lun delle 25,-" og "Hjemmelavet flæskesvær
+           35,-" — MED pris, modsat resten af listen, hvor alt
+           koster det samme.
+
+           Mikkel 2/10, efter at jeg havde spurgt i stedet for at
+           gætte: *"Brug varen 'Hjemmelavet lun frikadelle' til 25,-
+           på både smørrebrød og håndmadder. 'Lun delle eller steg'
+           er en anden vare og skal ikke bruges som erstatning."*
+
+           ⚠️ EGET AFSNIT UDEN OVERSKRIFT. `udenPris` gælder hele
+           afsnittet og virker kun, når alle priser er ens — lagde
+           vi de to ind i variantlisten, ville ALLE priser komme
+           frem, og den rene liste ville blive til en priskolonne.
+           ⚠️ Og `genbrug`, fordi de samme to varer også står på
+           deres egne kort. Se noten ved frit() i menukort.js. */
+        { kilder: [{ kat: '*', genbrug: true,
+          navne: ['Hjemmelavet lun frikadelle', 'Hjemmelavet flæskesvær'] }] },
         /* ⚠️ MAGEN TIL SMØRREBRØDETS BOKS (29/9, chefens ord: "Den store
            boks i bunden skal være magen til den der er på Smørrebrøds
            kortet"). Fire felter med hver sin pris i samme form; boksen
            "Ikke som håndmad" (rejemad og tartar) er taget ud. */
         { boks: 'raekke', felter: [
-          { over: 'Varianter', titel: 'Alle varianter', pris: { ens: 'Håndmadder' }, tekst: 'Gælder alle almindelige håndmadder på listen.' },
-          { over: 'Egen pris', titel: 'Hjemmelavet lun delle', pris: { vare: 'Lun delle eller steg' } },
-          { over: 'Egen pris', titel: 'Hjemmelavet flæskesvær', pris: { vare: 'Hjemmelavet flæskesvær' } },
+          { over: 'Håndmadder', titel: 'Alle varianter', pris: { ens: 'Håndmadder' }, tekst: 'Gælder alle almindelige håndmadder på listen.' },
+          /* ⚠️ DET ENDELIGE KORT FLYTTEDE BOKSENS INDHOLD  (2/10).
+             Den havde lun delle og flæskesvær; på det godkendte
+             kort 4 er de to rykket op i variantlisten, og boksen
+             siger nu rejemad og tartar med mærket "Kun smørrebrød"
+             — altså hvad man IKKE kan få som håndmad. Det er en
+             oplysning, ikke en vare: står den ikke, bestiller nogen
+             en rejemad som håndmad og får nej ved lugen. */
+          { over: 'Kun smørrebrød', titel: 'Rejemad', pris: { vare: 'Rejemad' }, tekst: 'Fås både på rugbrød og franskbrød.' },
+          { over: 'Kun smørrebrød', titel: 'Tartar', pris: { vare: 'Tartarmad' }, tekst: 'Bestilles dagen før.' },
           { over: 'Sig til ved lugen', titel: 'Glutenfrit brød', pris: { vare: 'Glutenfrit brød (tillæg)', plus: true }, tekst: 'Med eller uden smør — bare sig til.' },
         ] },
       ],
@@ -301,6 +346,8 @@
       'Gælder alle almindelige smørrebrød på listen.': 'Applies to all regular smørrebrød on the list.',
       'Gælder alle almindelige håndmadder på listen.': 'Applies to all regular håndmadder on the list.',
       'Egen pris': 'Special price',
+      'Kun smørrebrød': 'Smørrebrød only',
+      'Hjemmelavet lun frikadelle': 'Frikadelle – homemade warm Danish meatball',
       'Rejemad': 'Prawn open sandwich',
       'Fås både på rugbrød og franskbrød.': 'Available on rye bread or white bread.',
       'Tartar': 'Steak tartare',

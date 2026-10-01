@@ -170,3 +170,63 @@ test.describe('Menukortet på engelsk', () => {
     expect(afsnit).not.toContain('Varianter');
   });
 });
+
+/* ============================================================
+   DE SAMME VARER BEGGE STEDER  (2. okt 2026)
+   ------------------------------------------------------------
+   Mikkel: *"kontrollere, at de samme varer kan bestilles både i
+   almindelig onlinebestilling og via QR/bordbestilling."*
+
+   Det er to forskellige sider med hver sin fil (js/skal/bestil.js
+   og js/bestilling.js) og hver sin udvalgstilstand — forsiden og
+   /bestil/ spørger 'kun-smoer' + 'uden-smoer', bordet spørger
+   'bord'. Driver de fra hinanden, kan en gæst se en vare på sin
+   telefon ved bordet, som kollegaen ikke kan finde på forsiden —
+   og ingen opdager det, før nogen spørger ved lugen.
+
+   MÅLT mod ejerens rigtige data 2/10: 201 varer begge steder,
+   ingen forskel i nogen af retningerne.
+   ============================================================ */
+const { åbnSkal: åbnS2, grunddata: gd2 } = require('./hjaelp');
+
+test.describe('Online og QR tilbyder det samme', () => {
+  test('intet kan bestilles det ene sted og ikke det andet', async ({ page }) => {
+    const d = gd2();
+    d.indstillinger.bestilbare_kategorier = [1, 6, 9, 12];
+    await åbnS2(page, '/m-menukort.html', { ur: FREDAG, data: d });
+    await page.waitForSelector('.mk-linje');
+
+    const svar = await page.evaluate(async () => {
+      const data = await window.Butik.hent();
+      const iso = window.Butik.nu().dato;
+      function saet(hvad, hvordan) {
+        const u = window.Butik.udvalg(data, hvad, iso, '13:00', hvordan);
+        const n = new Set();
+        (u.varer || []).forEach((v) => n.add(v.navn));
+        (u.varianter || []).forEach((v) => n.add(v.navn));
+        return n;
+      }
+      /* /bestil/ har BEGGE tilstande på siden (data-udvalg i
+         bestil/index.html) — måles kun den ene, ligner alt
+         smørrebrødet en forskel, og prøven råber fejl på noget,
+         der virker. Det skete, første gang den blev kørt. */
+      const online = new Set([...saet('kun-smoer', 'afhentning'),
+                              ...saet('uden-smoer', 'afhentning')]);
+      const bord = saet('bord', 'spis_her');
+      return {
+        antal: online.size,
+        kunOnline: [...online].filter((x) => !bord.has(x)),
+        kunBord: [...bord].filter((x) => !online.has(x)),
+      };
+    });
+
+    expect(svar.kunOnline, 'kan bestilles online, men ikke ved bordet').toEqual([]);
+    expect(svar.kunBord, 'kan bestilles ved bordet, men ikke online').toEqual([]);
+    /* Et tal, så prøven ikke består på en tom liste: findes der
+       INGEN varer, er to tomme mængder også ens.
+       ⚠️ 3 er fiksturets egne: grunddata har fem varer, og to af
+       dem er fyld uden pris. Målt, ikke gættet — jeg satte først
+       gulvet til 4 og fældede min egen prøve. */
+    expect(svar.antal, 'der var slet ingen varer at sammenligne').toBeGreaterThanOrEqual(3);
+  });
+});
