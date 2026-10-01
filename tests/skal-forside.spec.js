@@ -3072,3 +3072,56 @@ test.describe('Arrangementsbanneret klipper den lange tekst', () => {
       .toContainText('Husk at bestille bord');
   });
 });
+
+/* ============================================================
+   ET FAST FELT, DER SLUKKER SIG SELV  (1/10)
+   ------------------------------------------------------------
+   Mikkels ord om Knæk Cancer-kortet: *"ja, alt det skal slukke
+   af sig selv efter oktober."*
+
+   Kortet står i index.html og rydder ikke op efter sig. En
+   påmindelse i en kommentar er ikke et værn — det er præcis det,
+   huset har lært: en note er ikke et tjek. Så feltet bærer selv
+   sin sidste dag, og siden skjuler det dagen efter.
+
+   ⚠️ ORDET ER vis-til, SOM NYHEDERNES vis_til. Reglen er den
+   samme tanke (Butik.nyhedSynlig), og to forskellige ord for det
+   samme ville gøre det til to ting at huske.
+
+   ⚠️ OG DEN GÆLDER ALLE FELTER MED ATTRIBUTTEN, ikke bare det
+   ene kort. Næste gang noget skal stå i en måned, er det et
+   dataord og ikke en ny regel.
+   ============================================================ */
+test.describe('Felter med en sidste dag', () => {
+  const NOVEMBER = '2026-11-01T11:00:00Z';
+
+  test('Knæk Cancer-kortet står i oktober', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: '2026-10-15T11:00:00Z' });
+    await expect(page.locator('.knaek-kort')).toBeVisible();
+  });
+
+  test('og er væk den 1. november — uden at nogen rører noget', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: NOVEMBER });
+    await expect(page.locator('.knaek-kort'),
+      'kortet står der stadig efter kampagnen').toBeHidden();
+  });
+
+  /* ⚠️ PÅ SELVE SIDSTE DAG SKAL DET STÅ. En grænse, der lukker en
+     dag for tidligt, tager den sidste indsamlingsdag med sig. */
+  test('det står på sin sidste dag', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: '2026-10-31T11:00:00Z' });
+    await expect(page.locator('.knaek-kort')).toBeVisible();
+  });
+
+  /* MODSTYKKET: de tre andre kort har ingen sidste dag og må
+     aldrig forsvinde. */
+  test('kortene uden en sidste dag bliver stående', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: NOVEMBER });
+    await expect(page.locator('.smiley-kort:not(.pris-kort):not(.knaek-kort)')).toBeVisible();
+    await expect(page.locator('.pris-kort')).toBeVisible();
+    /* ⚠️ FACEBOOK-KORTET ER IKKE MED HER. js/skal/kontakt.js fjerner
+       det, når ejeren ingen Facebook-adresse har — og prøvedataene
+       har ingen. Det ville altså mangle af en HELT anden grund end
+       udløbsreglen, og så målte modstykket ingenting. */
+  });
+});

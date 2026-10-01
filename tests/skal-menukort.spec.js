@@ -828,3 +828,83 @@ test.describe('Kapitlernes navne følger de trykte kort', () => {
       await expect(afsnit.locator('[data-vare="Cheeseburger"]')).toHaveCount(1);
     });
 });
+
+/* ============================================================
+   VEGANSK · VEGETAR · GLUTENFRIT — SOM MULIGHED, IKKE PÅSTAND
+   (1/10)
+   ------------------------------------------------------------
+   Chefens ord: *"vi vil gerne have, at der bliver lavet et
+   Vegansk/Vegetar, Glutenfrit punkt, hvor der står vores salat,
+   hvidløgsbrød, pastasalat, bagt kartoffel med salat og
+   dressing, smørrebrød, sandwich, rejecocktail, pommes frittes,
+   Fish'n chips, fiskefilet, pølse, burger."*
+
+   Mikkels forbehold, og det er det vigtige: *"formulér det som
+   muligheder, der kan fås eller tilpasses — ikke som om alle
+   nævnte retter opfylder alle tre kosttyper."*
+
+   ⚠️ HAN HAR RET, OG FORSKELLEN ER IKKE SPROGLIG. En rejecocktail
+   er ikke vegansk, og fish'n'chips er ikke glutenfrit, fordi det
+   står under en overskrift. Et punkt, der læses som en
+   erklæring, sender en gæst med cøliaki eller en vegansk gæst
+   hen til en ret, køkkenet ikke kan levere — og dét opdages ved
+   bordet, ikke her.
+
+   Punktet siger derfor, hvad vi KAN tale om, og at svaret
+   afhænger af retten og af dagen. Alle tolv retter er slået op i
+   produktionen 1/10 og findes.
+
+   ⚠️ OG DET STÅR UDEN FOR KAPITLERNE. Kapitlerne spejler de
+   trykte kort 1:1 (se js/skal/menukort-kort.js); et kapitel, der
+   ikke er på papiret, ville brække det løfte. Punktet er et
+   panel på siden, som "Skal vi lave det til et selskab?" lige
+   under.
+   ============================================================ */
+test.describe('Kostpunktet på menukortet', () => {
+
+  async function åbnKort(page) {
+    await åbnSkal(page, '/m-menukort.html', { ur: FREDAG, data: grunddata() });
+    await page.waitForSelector('#mk-kat');
+  }
+
+  test('punktet står på siden med alle tre kosttyper', async ({ page }) => {
+    await åbnKort(page);
+    const k = page.locator('#kost');
+    await expect(k).toHaveCount(1);
+    await k.scrollIntoViewIfNeeded();
+    await expect(k).toBeVisible();
+    await expect(k).toContainText('Vegansk');
+    await expect(k).toContainText('Vegetar');
+    await expect(k).toContainText('Glutenfrit');
+  });
+
+  test('retterne, chefen nævnte, står der', async ({ page }) => {
+    await åbnKort(page);
+    const t = await page.locator('#kost').innerText();
+    for (const ret of ['salat', 'hvidløgsbrød', 'pastasalat', 'kartoffel',
+      'smørrebrød', 'sandwich', 'rejecocktail', 'pommes frites',
+      'fish', 'fiskefilet', 'pølse', 'burger']) {
+      expect(t.toLowerCase(), `"${ret}" mangler i punktet`).toContain(ret);
+    }
+  });
+
+  /* ⚠️ MODSTYKKET, OG DET ER HELE POINTEN. Punktet må ikke kunne
+     læses som "alt det her ER vegansk og glutenfrit". Prøven
+     fælder de ord, der ville gøre det til en erklæring. */
+  test('det er formuleret som en mulighed, ikke som en erklæring', async ({ page }) => {
+    await åbnKort(page);
+    const t = (await page.locator('#kost').innerText()).toLowerCase();
+    /* Der SKAL stå, at man spørger — og at det afhænger. */
+    expect(t, 'punktet beder ikke gæsten spørge').toMatch(/spørg|sig til/);
+    /* Og der må IKKE stå noget, der lyder som en garanti. */
+    for (const ord of ['alle retter er', 'alt er vegansk', 'alt er glutenfrit',
+      'garanti', 'altid glutenfri', 'altid vegansk']) {
+      expect(t, `punktet lover "${ord}"`).not.toContain(ord);
+    }
+    /* ⚠️ OG INGEN RET MÅ STÅ MED EN KOSTTYPE KLISTRET TIL SIG:
+       "fish'n'chips (glutenfri)" er den påstand, hele noten
+       handler om. */
+    expect(t, 'en ret står med en kosttype som et løfte')
+      .not.toMatch(/(fish|rejecocktail|pølse|burger)[^.]{0,20}(vegansk|glutenfri)/);
+  });
+});

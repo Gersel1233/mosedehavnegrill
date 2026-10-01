@@ -317,6 +317,39 @@
      ⚠️ OG EN KORT TEKST RØRES IKKE. "Spiller 19–22." skal stå,
      som den er — en prik efter en sætning, der er færdig, ser ud
      som om siden har mistet noget. */
+  /* ============================================================
+     ET FAST FELT MED EN SIDSTE DAG  (1/10)
+     ------------------------------------------------------------
+     Mikkels ord om Knæk Cancer-kortet: *"ja, alt det skal slukke
+     af sig selv efter oktober."*
+
+     Kortet står i index.html og rydder ikke op efter sig. Jeg
+     skrev først en påmindelse i en kommentar ved kortet — og en
+     note er ikke et tjek. Det er husets egen lære, og den gælder
+     også, når det er mig, der skriver noten.
+
+     Feltet bærer nu selv sin sidste dag i data-vis-til, og siden
+     skjuler det dagen efter. ⚠️ ORDET ER DET SAMME SOM
+     NYHEDERNES vis_til (Butik.nyhedSynlig): to ord for den samme
+     tanke ville være to ting at huske.
+
+     ⚠️ TIL OG MED. Datoen er den sidste dag, feltet STÅR — ikke
+     den første, det er væk. En grænse, der lukker en dag for
+     tidligt, tager den sidste indsamlingsdag med sig.
+
+     ⚠️ OG REGLEN GÆLDER ALT MED ATTRIBUTTEN. Næste gang noget
+     skal stå i en måned, er det et dataord og ikke en ny regel.
+     ============================================================ */
+  function skjulUdloebne() {
+    var iDag = Butik.nu().dato;
+    var felter = document.querySelectorAll('[data-vis-til]');
+    Array.prototype.forEach.call(felter, function (e) {
+      var til = String(e.getAttribute('data-vis-til') || '').slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(til)) return;   // et gæt skjuler intet
+      if (iDag > til) skjul(e);
+    });
+  }
+
   function kortFortalt(tekst) {
     var t = String(tekst || '').trim();
     if (t.length <= 110) return t;
@@ -1224,6 +1257,7 @@
     sikkert('dagens ret', visDagensRet, d);
     sikkert('ugens retter', visUgen, d);
     sikkert('nyheder', visNyheder, d);
+    sikkert('udløbne felter', skjulUdloebne, d);
     sikkert('menukortets kategorier', visMenuKategorier, d);
     sikkert('åbningstider', visTider, d);
     sikkert('bundens kort', visFindKort, d);
