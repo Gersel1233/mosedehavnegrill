@@ -56,7 +56,40 @@ og derfra:
   → kortenes-tekster-30-9.sql → valg-paa-varerne-30-9.sql
   → valg-isens-tilbehoer-1-10.sql
   → tilvalg-og-tidsbegraensede-varer-1-10.sql
+  → kortene-endelige-1-10.sql
 ```
+
+**⚠️ `kortene-endelige-1-10.sql` (1/10).** De syv ENDELIGT godkendte danske
+menukort holdt op mod databasen vare for vare. **Ingen pris er rettet på en vare,
+der stod rigtigt** — filen retter navne, hylder og to varer, der ikke kunne
+bestilles:
+
+* »Bagt krydderet kartoffel« → **»Bagt krydret kartoffel«**, i BÅDE `menu_varer`
+  og alle syv rækker i ugeplanen. Rettes kun det ene, slår prisværnet op på et
+  navn, der ikke findes, og ugens ret kan ikke bestilles. Og den flyttes til
+  *Andre retter*, hvor kortet har den.
+* Churros hedder **»6 churros …«** begge steder — antallet stod ikke i navnet.
+* **Morgenbrød** siger nu »Spørg efter en bestillingsliste«. Der oprettes
+  **ingen** morgenbrød-bestillingsliste: vi afventer den nye bager (Mikkel 1/10).
+* »Planke« → **»Platte«** 179, tændt med »Skal bestilles«. Den stod slukket og
+  manglede derfor helt på siden, selv om kortet lover den.
+* **Milkshake 59** og **Hjemmelavet flæskesvær 35** lå i *Tilkøb ud af huset*,
+  som ikke er bestilbar — de kunne ses på menukortet og ikke lægges i kurven.
+  Flyttet til *Sodavand, juice og kakao* og *Snacks og slik*, hvor kortet har dem.
+* De to SLUKKEDE dubletter i *Retter* (Rejemad 85, »Tatarmad« 99) får de rigtige
+  tal, 95 og 95. De slettes ikke — men den dag nogen tænder dem, skal prisen
+  være rigtig.
+
+⚠️ **Filen skriver som ejeren.** `menu_vare_pris_ejer` afviser en prisændring fra
+en fil uden claims (`kun_ejeren_saetter_priser`) — målt på den lokale database,
+før den rørte skyen. Samme greb som `haandmadder-27-kr.sql`.
+
+Prøven står nederst i filen og er **tre-værdig**: fem af de tolv kan kun måles i
+produktionen, og de svarer »ingen data her« lokalt i stedet for NEJ — en prøve,
+der råber fejl på en kulisse, holder man op med at se på. To fælder blev fanget
+undervejs: prøven traf »Vælg fyld til smørrebrødet«, hvor de samme navne står
+uden pris med vilje (et navn er ikke unikt på tværs af kategorier), og den
+lokale kulisse bærer tre pensionerede rækker, produktionen ikke har.
 
 **⚠️ `tilvalg-og-tidsbegraensede-varer-1-10.sql` (1/10) — SKAL STÅ EFTER
 `gaestens-vaern-26-9.sql`.** Den genudsender `mosede_gaestens_regler` med tre
