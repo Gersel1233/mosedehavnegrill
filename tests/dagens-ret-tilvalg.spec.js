@@ -242,7 +242,7 @@ test.describe('En vare med et datovindue', () => {
   /* ⚠️ DEN, DER BETYDER NOGET: dagen efter er den VÆK af sig selv.
      Ingen skal huske at slukke den, og en gammel fane, der prøver
      alligevel, får bestilling_ukendt_vare fra databasen
-     (supabase/proev-tilvalg-og-tidsbegraensede-varer.sql nr. 13). */
+     (supabase/proev-tilvalg-og-tidsbegraensede-varer-1-10.sql nr. 13). */
   test('dagen efter vinduet er varen væk — uden at nogen slukkede den',
     async ({ page }) => {
       await åbn(page, '/bestil/', { ur: FREDAG, data: medTilbud('2026-08-01', '2026-08-07') });

@@ -113,7 +113,7 @@ som strengen `'`). Rettet med `alter function … set search_path to ''` samme
 minut. Fanget, fordi prøven også så på `proconfig` og ikke kun på `prosrc`: et
 aftryk, der stemmer, siger kun noget om funktionens KROP.
 
-Prøven er `proev-tilvalg-og-tidsbegraensede-varer.sql` — 14 af 14. Set fejle:
+Prøven er `proev-tilvalg-og-tidsbegraensede-varer-1-10.sql` — 14 af 14. Set fejle:
 sættes `gaestens-vaern-26-9.sql` tilbage, falder 7 af de 14, og nr. 8 (»tilvalg
 til grundprisen afvises«) *går igennem* — hullet var der.
 

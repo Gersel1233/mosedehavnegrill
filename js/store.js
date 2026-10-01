@@ -1467,9 +1467,24 @@
      ============================================================ */
   function vareIVindue(v, iso) {
     if (!v) return true;
-    var dag = iso || nu().dato;
     var fra = v.vis_fra ? String(v.vis_fra).slice(0, 10) : '';
     var til = v.vis_til ? String(v.vis_til).slice(0, 10) : '';
+    /* ⚠️ UD AF DØREN FØR nu()  (1/10). Her stod `var dag = iso ||
+       nu().dato` ØVERST — altså for hver af kortets 242 varer, hver
+       gang udvalg() kører. Og nu() bygger en NY
+       Intl.DateTimeFormat hver gang, hvilket er noget af det
+       dyreste, der findes i JavaScript.
+
+       MÅLT, ikke gættet: tests/kurvbar.spec.js gik fra 14,9 til
+       44,7 sekunder, og "et tryk på bjælken" faldt på
+       "element is not stable" — siden nåede ikke at falde til ro
+       mellem klikket og målingen. Den lignede en maskinfejl og var
+       det ikke.
+
+       Næsten alle varer har intet vindue, så de svarer ja her og
+       rører aldrig uret. */
+    if (!fra && !til) return true;
+    var dag = iso || nu().dato;
     if (fra && dag < fra) return false;
     if (til && dag > til) return false;
     return true;
