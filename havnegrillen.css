@@ -3604,7 +3604,16 @@ button.g:disabled:active{transform:none}
    To udseender for det samme valg ville betyde, at gæsten lærer
    det ét sted og ikke genkender det det andet — og de to sider er
    ét klik fra hinanden. */
-.item-tilvalg{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+/* ⚠️ flex-basis:100% OG .item får flex-wrap — ellers klemmes chipsene
+   ind ved siden af tælleren i stedet for at stå på deres egen linje.
+   ⚠️ OG SÅ SKAL VENSTRE KOLONNE HOLDES PÅ FØRSTE LINJE. Uden den
+   næste regel brækkede HELE rækken: kartoffel-tegnet stod alene på
+   én linje, titlen på den næste og tælleren på den tredje — målt på
+   et skud af iPhone 13, ikke læst. `flex:1 1 0` giver den resten af
+   første linje; tegnet og tælleren beholder deres egen bredde. */
+.item:has(.item-tilvalg){flex-wrap:wrap}
+.item:has(.item-tilvalg) > div:not(.item-tilvalg):not(.step){flex:1 1 0;min-width:0}
+.item-tilvalg{flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
 .item-tilvalg-titel{flex:0 0 100%;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 /* Mindst 40 px at ramme — se noten i css/style.css. */
 .item-tilvalg-chip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:6px 14px;border-radius:999px;border:1.5px solid rgba(36,26,23,.18);background:var(--paper,#fff);color:var(--ink,#241a17);font:inherit;font-size:14px;cursor:pointer}

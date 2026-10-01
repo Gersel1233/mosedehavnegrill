@@ -103,6 +103,16 @@ og opretter »Pølsemix med pommes, fredagsbar« til 55,- med vinduet 2/10–2/1
 **Den almindelige Pølsemix (nr. 248) røres ikke:** den bliver stående på 90,-,
 og trykfilerne ændres ikke.
 
+**Kørt i produktionen 1/10**, i tre migrationer. Værnet blev lappet PÅ DEN
+LEVENDE TEKST og ikke af filen: `md5(prosrc)` blev målt først og var byte for
+byte `gaestens-vaern-26-9.sql` (`e592a588…`), de tre strenge blev byttet i
+databasen, og aftrykket bagefter er `cda0209e…` — nøjagtig filens. ⚠️ Og den
+`create`-sætning satte først `search_path` til **ét apostroftegn** i stedet for
+den tomme streng (otte apostroffer i en streng bliver til `''''`, som SQL læser
+som strengen `'`). Rettet med `alter function … set search_path to ''` samme
+minut. Fanget, fordi prøven også så på `proconfig` og ikke kun på `prosrc`: et
+aftryk, der stemmer, siger kun noget om funktionens KROP.
+
 Prøven er `proev-tilvalg-og-tidsbegraensede-varer.sql` — 14 af 14. Set fejle:
 sættes `gaestens-vaern-26-9.sql` tilbage, falder 7 af de 14, og nr. 8 (»tilvalg
 til grundprisen afvises«) *går igennem* — hullet var der.

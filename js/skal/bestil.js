@@ -1045,7 +1045,9 @@
         if (tvTaeller && tvTaeller.parentNode) {
           tvTaeller.parentNode.replaceChild(ny2, tvTaeller);
         } else {
-          række.appendChild(ny2);
+          /* Før chipsene: rækken brækker, og tælleren hører til
+             oppe ved prisen — ikke under tilbehøret. */
+          række.insertBefore(ny2, tvRaekke);
         }
         tvTaeller = ny2;
         /* Prisen på mærkatet følger med: 55,- bliver 75,-, så snart
@@ -1081,7 +1083,13 @@
         });
         tvRaekke.appendChild(chip);
       });
-      venstre.appendChild(tvRaekke);
+      /* ⚠️ PÅ RÆKKEN OG IKKE I `venstre` (målt på en iPhone 13):
+         venstre er den smalle kolonne ved siden af tælleren, og to
+         chips stod stablet under hinanden. Med fire tilbehør ville
+         rækken blive dobbelt så høj som sine naboer. Her løber de i
+         fuld bredde under tælleren og brækker selv, når der er for
+         mange. */
+      række.appendChild(tvRaekke);
       tvByg();
       return række;
     }
