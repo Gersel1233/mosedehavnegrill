@@ -54,7 +54,15 @@ og derfra:
   → gaestens-vaern-26-9.sql → bremse-uden-borde-26-9.sql
   → kortenes-rettelser-27-9.sql → chefens-rettelser-29-9.sql
   → kortenes-tekster-30-9.sql → valg-paa-varerne-30-9.sql
+  → valg-isens-tilbehoer-1-10.sql
+  → tilvalg-og-tidsbegraensede-varer-1-10.sql
 ```
+
+**⚠️ `tilvalg-og-tidsbegraensede-varer-1-10.sql` (1/10) — SKAL STÅ EFTER
+`gaestens-vaern-26-9.sql`.** Den genudsender `mosede_gaestens_regler` med tre
+lapper. Køres 26-9-filen bagefter, forsvinder alle tre tavst — og så kan gæsten
+ikke bestille dagens ret med tilbehør uden at få `bestilling_pris_aendret`, mens
+fredagsbarens 55,- kan bestilles for evigt.
 
 **⚠️ `valg-paa-varerne-30-9.sql` (30/9) — kørt i produktionen 30/9.**
 Otte varer, der spørger i deres eget navn ("Lumumba, varm eller kold"), har fået
@@ -71,6 +79,33 @@ hvad man kan vælge imellem, står ikke i navnet.
 De samme lister står som forslag i `js/admin/valgforslag.js`, så admin og
 databasen siger det samme. `tests/menukort-admin.spec.js` læser listerne UD AF
 filen og fælder dem, hvis de skrider fra hinanden.
+
+**⚠️ `tilvalg-og-tidsbegraensede-varer-1-10.sql` (1/10).**
+To ting, der bor i den samme funktion — derfor én fil, ikke to.
+
+1. **Tilvalg på dagens ret.** `dagens_retter.tilvalg` er ejerens egen liste,
+   `[{"navn","pris"}]`, skrevet i admin. Gæstens linje bærer de valgte som sin
+   egen nøgle (`tilvalg: ["Oksekød"]`) — **ikke** i `variant`, som databasen
+   kræver er ÉT af varens valg; to tilvalg ville dø på
+   `bestilling_mangler_valg`. Samme grund som smagene fik deres egen nøgle 25/9.
+   `mosede_tilvalg_tillaeg` lægger prisen oveni, og `bestilling_ukendt_tilvalg`
+   afviser et navn, ejeren ikke har skrevet — ellers stod »Bagt kartoffel ·
+   Hummer« på bonen til 55 kr., fordi et ukendt tilvalg koster 0.
+2. **`menu_varer.vis_fra` / `vis_til`.** Et datovindue på varen selv.
+   Kategoriens `dage` kunne ikke bruges: den gentager sig hver fredag, og
+   fredagsbaren er én aften. **Vinduet står i prisopslagets `where`, ikke i
+   dets `filter`** — lå det i filteret, var en udløbet vare stadig *kendt* uden
+   pris, prischecket blev sprunget over, og en gammel fane kunne sende de 55,-
+   i november.
+
+Sætter desuden kartoflens to tilvalg (okse og kylling, 10,- — ejerens egne tal)
+og opretter »Pølsemix med pommes, fredagsbar« til 55,- med vinduet 2/10–2/10.
+**Den almindelige Pølsemix (nr. 248) røres ikke:** den bliver stående på 90,-,
+og trykfilerne ændres ikke.
+
+Prøven er `proev-tilvalg-og-tidsbegraensede-varer.sql` — 14 af 14. Set fejle:
+sættes `gaestens-vaern-26-9.sql` tilbage, falder 7 af de 14, og nr. 8 (»tilvalg
+til grundprisen afvises«) *går igennem* — hullet var der.
 
 **⚠️ `kortenes-tekster-30-9.sql` (30/9) — kørt i produktionen 30/9.**
 Navne og beskrivelser som de endelige trykte kort; Alkoholfri øl sidst. Ingen pris.

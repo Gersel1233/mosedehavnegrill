@@ -107,7 +107,13 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   kanal-vaern bord-plads gaester-ved-bordet
   levering-zone levering-valideret kortene-25-9 kortenes-huller-25-9
   glutenfri-vaffel-samme-pris chefens-rettelser-25-9 isens-opsaetning
-  glutenfrit-broed-5-kr haandmadder-27-kr haandmadder-hel-skive gaestens-vaern-26-9 bremse-uden-borde-26-9 kortenes-rettelser-27-9 chefens-rettelser-29-9 kortenes-tekster-30-9 valg-paa-varerne-30-9"
+  glutenfrit-broed-5-kr haandmadder-27-kr haandmadder-hel-skive gaestens-vaern-26-9 bremse-uden-borde-26-9 kortenes-rettelser-27-9 chefens-rettelser-29-9 kortenes-tekster-30-9 valg-paa-varerne-30-9 valg-isens-tilbehoer-1-10 tilvalg-og-tidsbegraensede-varer-1-10"
+# ⚠️ tilvalg-og-tidsbegraensede-varer-1-10 SKAL STÅ EFTER
+#    gaestens-vaern-26-9 (1/10): den genudsender mosede_gaestens_regler
+#    med tilvalgenes tillæg og varens datovindue. Står 26-9-filen
+#    efter den, forsvinder begge dele tavst — og så kan gæsten ikke
+#    bestille dagens ret med tilbehør, uden at nogen får en fejl at
+#    lede efter. Se docs/SQL-RAEKKEFOELGE.md.
 # ⚠️ bremse-uden-borde-26-9 skriver bestilling_bremse forfra (26/9) og
 #    skal stå efter bremse.sql og skraldespand.sql; den har
 #    skraldespandens "slettet is null" med. Rækkefølgen mod
