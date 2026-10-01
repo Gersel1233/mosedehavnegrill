@@ -66,6 +66,14 @@
   <div class="mk-sortiment">
     <!-- På telefonen klæber båndet under topbjælken; på en bred
          skærm står det ude i siden som en fast liste. -->
+    <!-- ⚠️ SPROGKNAPPEN STÅR VED KORTENE, ikke i topbjælken (2/10).
+         Mikkel: "lad menukortene kunne oversættes til engelsk" — det
+         er KORTET, der skifter sprog, ikke hele siden. Et flag i
+         topbjælken ville love en engelsk hjemmeside, vi ikke har. -->
+    <div class="mk-sprog" id="mk-sprog" role="group" aria-label="Sprog / Language">
+      <button type="button" class="mk-sprog-knap" data-sprog="da" aria-pressed="true">Dansk</button>
+      <button type="button" class="mk-sprog-knap" data-sprog="en" aria-pressed="false">English</button>
+    </div>
     <div class="mk-hop" id="mk-hop" role="navigation" aria-label="Hop til kategori"></div>
     <div class="mk-kat rev d1" id="mk-kat"></div>
   </div>

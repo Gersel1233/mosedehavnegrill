@@ -614,8 +614,18 @@
        fra smørrebrødet med samme navn — men kort 04 skriver bare
        "Flæskesteg med surt" under overskriften HÅNDMADDER. Navnet i
        data-vare og i bestillingen er det fulde. */
-    txt.appendChild(lav('h4', null, String(v.navn).replace(/,?\s+håndmad$/i, '')));
-    if (v.beskrivelse) txt.appendChild(lav('p', null, v.beskrivelse));
+    /* ⚠️ KUN VISNINGEN OVERSÆTTES  (2/10). `data-vare` lige ovenfor
+       bliver ved med at være det DANSKE navn, og det er med vilje:
+       kapitlerne i menukort-kort.js peger på danske navne,
+       bestillingen sender danske navne, og databasens prisværn slår
+       op på danske navne. Oversatte vi dem, ville hele kortet holde
+       op med at matche sig selv i det øjeblik, nogen valgte engelsk.
+       Butik.paaSprog falder tilbage på dansk, når oversættelsen
+       mangler — aldrig et hul. */
+    txt.appendChild(lav('h4', null,
+      String(Butik.paaSprog(v, 'navn')).replace(/,?\s+håndmad$/i, '')));
+    var vBeskr = Butik.paaSprog(v, 'beskrivelse');
+    if (vBeskr) txt.appendChild(lav('p', null, vBeskr));
     linje.appendChild(txt);
     if (v.udsolgt) {
       linje.classList.add('mk-udsolgt');
@@ -645,6 +655,30 @@
     return linje;
   }
 
+  /* Afsnittets overskrift på det valgte sprog.
+     Rækkefølgen er: kapitlets egen oversættelse (titelEn), så
+     kategoriens, så den danske. Et afsnit, hvis titel ER
+     kategoriens navn, oversættes af kategorien — ellers skulle den
+     samme streng stå to steder. */
+  /* ⚠️ KATEGORIEN FØRST, SÅ ORDBOGEN. Hedder afsnittet det samme
+     som kategorien, er oversættelsen kategoriens — ejeren retter
+     den i databasen, og så følger kortet med. Er det kapitlets
+     egen overskrift ("Fisk & klassikere"), står den i ordbogen i
+     menukort-kort.js. Falder begge fra, står dansk. */
+  function afsnitTitel(d, kat) {
+    var sp = Butik.sprog();
+    if (sp === 'da') return d.titel;
+    if (kat && d.titel === kat.navn) return Butik.paaSprog(kat, 'navn', sp);
+    return KORTTEKST(d.titel);
+  }
+
+  /* Én indgang til kortets faste tekster — menukort-kort.js ejer
+     ordbogen, så kapitlerne og deres oversættelser bor i samme fil. */
+  function KORTTEKST(s) {
+    return (window.MosedeMenukort && MosedeMenukort.tekst)
+      ? MosedeMenukort.tekst(s) : s;
+  }
+
   var brugteKatId = {};
   function tegnAfsnit(a, grupper) {
     var d = a.def;
@@ -662,7 +696,11 @@
     }
     var h = lav('h3', 'mk-sek-titel');
     h.appendChild(lav('span', 'mk-ruder'));
-    h.appendChild(lav('span', 'mk-sek-navn', d.titel));
+    /* Overskriften er enten kapitlets egen (dansk tekst i
+       menukort-kort.js, med `titelEn` ved siden af) eller — for et
+       afsnit, der laves af en kategori — kategoriens navn. Begge
+       veje ender her, så oversættelsen hører hjemme ét sted. */
+    h.appendChild(lav('span', 'mk-sek-navn', afsnitTitel(d, førsteKat)));
     h.appendChild(lav('span', 'mk-streger'));
     sek.appendChild(h);
     if (førsteKat && førsteKat.note && a.varer.every(function (y) { return y.k === førsteKat; })) {
@@ -731,15 +769,15 @@
   }
   function boksFelt(f, grupper) {
     var felt = lav('div', 'mk-boks-felt');
-    if (f.over) felt.appendChild(lav('span', 'mk-boks-over', f.over));
-    felt.appendChild(lav('h4', 'mk-boks-titel', f.titel));
+    if (f.over) felt.appendChild(lav('span', 'mk-boks-over', KORTTEKST(f.over)));
+    felt.appendChild(lav('h4', 'mk-boks-titel', KORTTEKST(f.titel)));
     var p = boksPris(f.pris, grupper);
     /* Et fællestal, der ikke findes, er ingen boks — "Alle varianter"
        uden en pris lover noget, siden ikke kan holde. */
     if (f.pris && f.pris.ens && p === null) return null;
     if (p !== null) felt.appendChild(lav('span', 'mk-boks-pris', (f.pris.plus ? '+' : '') + Butik.varePris(p)));
-    if (f.tekst) felt.appendChild(lav('p', 'mk-boks-tekst', f.tekst));
-    if (f.bund) felt.appendChild(lav('span', 'mk-boks-bund', f.bund));
+    if (f.tekst) felt.appendChild(lav('p', 'mk-boks-tekst', KORTTEKST(f.tekst)));
+    if (f.bund) felt.appendChild(lav('span', 'mk-boks-bund', KORTTEKST(f.bund)));
     return felt;
   }
   function tegnBoks(d, grupper) {
@@ -752,8 +790,13 @@
       if (!med.length) return null;
       var t = med.map(function (v) { return Butik.valgTillaeg(v, 'Glutenfri vaffel'); })
         .sort(function (x, z) { return z - x; })[0];
-      d = { over: d.over, titel: d.titel, tekst: 'Alle kugler og al softice kan fås i glutenfri vaffel — '
-        + (t > 0 ? '+' + Butik.varePris(t) + ' pr. vaffel.' : 'samme pris som almindelig vaffel.') };
+      /* ⚠️ SÆTNINGEN BYGGES AF TO STYKKER, så hvert stykke skal slås
+         op for sig — en samlet streng med prisen i ville aldrig
+         kunne stå i ordbogen. */
+      d = { over: d.over, titel: d.titel,
+        tekst: KORTTEKST('Alle kugler og al softice kan fås i glutenfri vaffel — ')
+          + (t > 0 ? '+' + Butik.varePris(t) + KORTTEKST(' pr. vaffel.')
+                   : KORTTEKST('samme pris som almindelig vaffel.')) };
     }
     var boks = lav('div', 'mk-boks' + (d.boks === 'raekke' ? ' mk-boks-raekke' : ''));
     (d.felter || [d]).forEach(function (f) { var el = boksFelt(f, grupper); if (el) boks.appendChild(el); });
@@ -789,7 +832,7 @@
     var kh = lav('header', 'mk-kh' + (d.slogan ? ' mk-kh-kort' : ''));
     if (d.over) {
       var o = lav('div', 'mk-kh-over');
-      o.appendChild(lav('span', null, d.over));
+      o.appendChild(lav('span', null, KORTTEKST(d.over)));
       o.appendChild(lav('i'));
       kh.appendChild(o);
     }
@@ -797,15 +840,22 @@
     /* Den længste linjes tegn: overskriften skaleres, så ordet står
        på én linje ved siden af logoet — "SMØRREBRØD" må aldrig
        knække midt i ordet (menukort-kort.css). */
-    h2.style.setProperty('--tegn', Math.max.apply(null, d.titel.map(function (t) { return t.length; })));
-    d.titel.forEach(function (t, i) {
+    /* ⚠️ --tegn MÅLES PÅ DEN VISTE TEKST (2/10). Tallet skalerer
+       overskriften, så den ikke knækker midt i et ord — og
+       "burgers & hot dogs" er længere end "burgere & pølser".
+       Målte vi på den danske, ville den engelske titel løbe ud
+       over kanten. */
+    var titelLinjer = d.titel.map(KORTTEKST);
+    h2.style.setProperty('--tegn',
+      Math.max.apply(null, titelLinjer.map(function (t) { return t.length; })));
+    titelLinjer.forEach(function (t, i) {
       if (i) h2.appendChild(document.createElement('br'));
       h2.appendChild(document.createTextNode(t));
     });
-    if (d.slogan) h2.appendChild(lav('em', 'mk-kh-slogan', d.slogan));
+    if (d.slogan) h2.appendChild(lav('em', 'mk-kh-slogan', KORTTEKST(d.slogan)));
     kh.appendChild(h2);
-    if (d.under) kh.appendChild(lav('p', 'mk-kh-under', d.under));
-    if (d.tekst) kh.appendChild(lav('p', 'mk-kh-tekst', d.tekst));
+    if (d.under) kh.appendChild(lav('p', 'mk-kh-under', KORTTEKST(d.under)));
+    if (d.tekst) kh.appendChild(lav('p', 'mk-kh-tekst', KORTTEKST(d.tekst)));
     var lg = logo();
     if (lg) kh.appendChild(lg);
     art.appendChild(kh);
@@ -1031,11 +1081,59 @@
     }
   }
 
+  /* ============================================================
+     SPROGKNAPPEN  (2/10)
+     ------------------------------------------------------------
+     Mikkel: *"bar lad menukortene kunne oversættes til engelsk"*.
+
+     ⚠️ KORTET TEGNES FORFRA, der skiftes ikke tekst for tekst.
+        Et skift, der løb DOM'en igennem og byttede strenge, ville
+        glemme ét sted hver gang der kom et nyt afsnit — og så
+        stod der dansk midt i den engelske side, uden at nogen
+        opdagede det. Hele sortimentet bygges af de samme data
+        igen; prisen, lageret og vare-id'et er de samme rækker.
+
+     ⚠️ OG VALGET STÅR I ADRESSEN. Et link med ?sprog=en skal åbne
+        på engelsk, så personalet kan sende det til en gæst. Se
+        Butik.sprog — adressen vinder over det huskede valg. */
+  function visSprogknap(d) {
+    var boks = $('mk-sprog');
+    if (!boks) return;
+    var knapper = boks.querySelectorAll('[data-sprog]');
+    function maal() {
+      var nu = Butik.sprog();
+      Array.prototype.forEach.call(knapper, function (k) {
+        var paa = k.getAttribute('data-sprog') === nu;
+        k.classList.toggle('valgt', paa);
+        k.setAttribute('aria-pressed', paa ? 'true' : 'false');
+      });
+      document.documentElement.setAttribute('lang', nu);
+    }
+    Array.prototype.forEach.call(knapper, function (k) {
+      k.addEventListener('click', function () {
+        if (k.getAttribute('data-sprog') === Butik.sprog()) return;
+        Butik.saetSprog(k.getAttribute('data-sprog'));
+        /* ⚠️ ?sprog= skal UD af adressen igen, ellers kan gæsten
+           ikke skifte tilbage: adressen vinder over valget, og
+           knappen ville se ud til ikke at virke. */
+        try {
+          var u = new URL(location.href);
+          u.searchParams.delete('sprog');
+          history.replaceState(null, '', u);
+        } catch (e) { /* gammel browser: valget gemmes stadig */ }
+        maal();
+        visSortiment(d);
+      });
+    });
+    maal();
+  }
+
   Butik.hent().then(function (d) {
     if (Butik.reservedata && Butik.reservedata(d)) { visNede(); return; }
     visIDag(d);
     visUgen(d);
     visSortiment(d);
+    visSprogknap(d);
 
     /* De nye kort er lavet EFTER, at designets indfald har kigget
        på siden — de står med opacity 0, til nogen ser dem. Uden

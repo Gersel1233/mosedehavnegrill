@@ -224,5 +224,119 @@
     },
   ];
 
-  window.MosedeMenukort = { KAPITLER: KAPITLER };
+  /* ============================================================
+     KORTETS FASTE TEKSTER PÅ ENGELSK  (2/10)
+     ------------------------------------------------------------
+     ⚠️ ÉN ORDBOG, IKKE ET `titelEn` VED HVER STRENG. Kapitlerne
+        ovenfor har omkring fyrre faste tekster — overskrifter,
+        slogans, boksenes mærkater. Et engelsk felt ved hver af
+        dem ville betyde fyrre steder at glemme, og den dag en ny
+        overskrift kom til, ville den stå på dansk midt i den
+        engelske side uden at nogen opdagede det. Her er det ÉN
+        liste, og det, der mangler, falder tilbage på dansk.
+
+     ⚠️ TEKSTERNE ER LÆST AF DE GODKENDTE ENGELSKE KORT
+        ("Mosede Havnecafe - Endelig/05 Menukort engelsk/"), ikke
+        oversat her. Mikkel: *"Brug turistvenligt, naturligt sprog
+        — ikke rå maskinoversættelse."*
+
+     ⚠️ NØGLEN ER DEN DANSKE STRENG. Rettes en dansk overskrift
+        uden at nøglen følger med, falder den tilbage på dansk —
+        synligt, ikke tavst. Det er med vilje det mindst
+        skadelige: en dansk overskrift på en engelsk side kan
+        læses; en tom kan ikke.
+     ============================================================ */
+  var ORDBOG = {
+    en: {
+      // Kapitlernes hoveder
+      'Morgenmad': 'Breakfast',
+      '& frokost': '& lunch',
+      'Fra grillen': 'From the grill',
+      'Morgenmad fra tidligt og klassikerne fra pladen — alt sammen ved lugen.':
+        'Breakfast and lunch – smørrebrød, håndmadder and classics all day.',
+      'À la carte,': 'À la carte,',
+      'burgere & pølser': 'burgers & hot dogs',
+      'stegt på bestilling': 'cooked to order',
+      'Smørrebrød': 'Smørrebrød',
+      'Håndmadder': 'Håndmadder',
+      'Friskbagt rugbrød, smurt når du bestiller. Glutenfrit brød, med eller uden smør — bare sig til.':
+        'Freshly baked rye bread, buttered when you order. Gluten-free bread, with or without butter – just ask.',
+      'Is & sødt': 'Ice cream & sweets',
+      'Kugleis og cremet softice, sprøde bubblewaffles, churros og hjemmelavede pandekager — til en tur langs vandet.':
+        'Scoops and creamy soft serve, crispy bubble waffles, churros and homemade pancakes — for a stroll by the water.',
+      'Kaffe,': 'Coffee,',
+      'koldt & knas': 'cold drinks & snacks',
+      'stemplet, rystet og hældt op': 'freshly brewed, shaken and poured',
+      'Øl, vin': 'Beer, wine',
+      '& bar': '& bar',
+      'fadøl fra hanen og bobler til fest': 'draught beer and bubbles to celebrate',
+      'Mosede Havnecafe': 'Mosede Havnecafe',
+      // Afsnittenes overskrifter
+      'Tilkøb til morgenmaden': 'Breakfast extras',
+      'Fisk & klassikere': 'Fish & classics',
+      'Ekstra': 'Extras',
+      'Andre retter': 'Other dishes',
+      'Sliders': 'Sliders',
+      'Burgere & sandwiches': 'Burgers & sandwiches',
+      'Pølser': 'Hot dogs & sausages',
+      'Varianter': 'Toppings',
+      'Vælg fyld': 'Choose a topping',
+      'Is': 'Ice cream',
+      'Softice': 'Soft serve',
+      'Sødt': 'Sweets',
+      'Kaffe': 'Coffee',
+      'Varmt & ekstra': 'Hot drinks & extras',
+      'Kage': 'Cake',
+      'Kolde drikke': 'Cold drinks',
+      'Øl': 'Beer',
+      'Bar': 'Bar',
+      'Slik & snacks': 'Sweets & snacks',
+      'Vin, cava & champagne': 'Wine, cava & champagne',
+      // Boksene
+      'Til flokken': 'For the group',
+      'Morgenbrød': 'Breakfast rolls / baked goods',
+      'Morgenbrød – spørg ved bestilling.': 'Breakfast rolls / baked goods – ask for an order form.',
+      'Spørg ved lugen': 'Ask at the counter',
+      'Alle varianter': 'All toppings',
+      'Gælder alle almindelige smørrebrød på listen.': 'Applies to all regular smørrebrød on the list.',
+      'Gælder alle almindelige håndmadder på listen.': 'Applies to all regular håndmadder on the list.',
+      'Egen pris': 'Special price',
+      'Rejemad': 'Prawn open sandwich',
+      'Fås både på rugbrød og franskbrød.': 'Available on rye bread or white bread.',
+      'Tartar': 'Steak tartare',
+      'Bestilles dagen før.': 'Order the day before.',
+      'Sig til ved lugen': 'Just ask at the counter',
+      'Glutenfrit brød': 'Gluten-free bread',
+      'Med eller uden smør — bare sig til.': 'With or without butter — just ask.',
+      'Hjemmelavet lun delle': 'Frikadelle – homemade warm Danish meatball',
+      'Hjemmelavet flæskesvær': 'Homemade flæskesvær – pork crackling',
+      'Glutenfri vaffel': 'Gluten-free cone',
+      'Alle kugler og al softice kan fås i glutenfri vaffel — ':
+        'All scoops and soft serve are available in a gluten-free cone — ',
+      ' pr. vaffel.': ' per cone.',
+      'samme pris som almindelig vaffel.': 'same price as a regular cone.',
+      'Kaffe & kage': 'Coffee & cake',
+      'Pausen': 'Take a break',
+      'En kop kaffe og et stykke af dagens kage — eller en pandekage.':
+        'A cup of coffee and a slice of today\u2019s cake — or a pancake.',
+      // Til selskabet
+      'Til selskabet': 'For your party',
+      'Tapasfad, pindemad og tilkøb ud af huset — bestilles i forvejen.':
+        'Tapas platters, canapés and takeaway extras — order in advance.',
+      'Havnens tapas': 'Havnens tapas',
+      'Reception og pindemad': 'Reception & canapés',
+      'Tilkøb ud af huset': 'Takeaway extras',
+      'Glutenfri, laktosefri og vegansk': 'Gluten-free, lactose-free and vegan',
+    },
+  };
+
+  /* Den faste tekst på det valgte sprog. Mangler den, står dansk. */
+  function tekst(s) {
+    if (s === null || s === undefined) return s;
+    var sp = (window.Butik && Butik.sprog) ? Butik.sprog() : 'da';
+    var o = ORDBOG[sp];
+    return (o && o[s]) || s;
+  }
+
+  window.MosedeMenukort = { KAPITLER: KAPITLER, ORDBOG: ORDBOG, tekst: tekst };
 }());

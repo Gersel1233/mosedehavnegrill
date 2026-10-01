@@ -3632,3 +3632,13 @@ button.g:disabled:active{transform:none}
 /* Ikke kun farven: ramme, bund OG fed — se noten i css/style.css. */
 .item-tilvalg-chip.valgt{border-color:var(--red);background:var(--red-svag,rgba(214,42,58,.10));font-weight:600}
 .item-tilvalg-chip.valgt .item-tilvalg-pris{color:var(--red-tekst,var(--red))}
+
+/* ---- Sprogknappen på menukortet  (2/10) ----
+   To knapper, ikke et flag: et flag siger "land", og gæsten leder
+   efter et sprog. Og ingen rullemenu — to muligheder i en menu er
+   et klik for meget. */
+.mk-sprog{display:flex;gap:6px;margin:0 0 10px;flex-wrap:wrap}
+/* Mindst 40 px at ramme — samme mål som chipsene i bestillingen. */
+.mk-sprog-knap{min-height:40px;padding:6px 16px;border-radius:999px;border:1.5px solid rgba(36,26,23,.18);background:var(--paper,#fff);color:var(--ink,#241a17);font:inherit;font-size:14px;cursor:pointer}
+/* Valgt ses på ramme, bund OG vægt — ikke kun på farven. */
+.mk-sprog-knap.valgt{border-color:var(--red);background:var(--red-svag,rgba(214,42,58,.10));font-weight:600;color:var(--red-tekst,var(--red))}

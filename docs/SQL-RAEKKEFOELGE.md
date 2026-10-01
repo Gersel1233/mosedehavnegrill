@@ -57,7 +57,42 @@ og derfra:
   → valg-isens-tilbehoer-1-10.sql
   → tilvalg-og-tidsbegraensede-varer-1-10.sql
   → kortene-endelige-1-10.sql
+  → engelsk-menukort-2-10.sql
 ```
+
+**⚠️ `engelsk-menukort-2-10.sql` (2/10) — kørt i produktionen 2/10.**
+Menukortet kan vises på engelsk. Mikkel: *"bar lad menukortene kunne oversættes
+til engelsk"* — kun engelsk, ikke tysk og fransk.
+
+**Formen er ÉN kolonne, ikke fire datasæt.** `menu_varer.oversaettelser` og
+`menu_kategorier.oversaettelser` holder `{"en": {"navn", "beskrivelse"}}` — og
+intet andet. Pris, lager, udsolgt, antal og vare-id bliver i den samme række, så
+en prisændring aldrig kan gælde det ene sprog og ikke det andet. Det var
+kundens eget krav.
+
+**Dansk er faldskærmen.** Mangler en oversættelse, står det danske navn —
+aldrig et hul. En gæst kan bestille efter et dansk navn; hun kan ikke bestille
+efter en tom linje.
+
+**Teksterne er LÆST AF de godkendte engelske kort**, ikke oversat. De danske
+specialiteter beholder deres navn med en kort forklaring efter, som kortene gør
+det: »Flæskesteg – roast pork with pickles«, »Rullepølse – Danish rolled pork
+cold cut with aspic & onion«. 209 varer og alle aktive kategorier har engelsk.
+
+⚠️ **Kun VISNINGEN oversættes.** `data-vare`, bestillingens linjer og databasens
+prisværn bliver ved med at bruge det danske navn. Oversatte vi dem, ville hver
+bestilling fra en engelsk side blive afvist med `bestilling_ukendt_vare`.
+
+Kortets faste tekster (kapiteloverskrifter, slogans, boksenes mærkater) står i
+ÉN ordbog i `js/skal/menukort-kort.js`, ikke som et `titelEn` ved hver af de
+fyrre strenge — fyrre steder at glemme er fyrre steder, hvor der en dag står
+dansk midt i den engelske side. Nøglen er den danske streng, så en rettet
+overskrift falder synligt tilbage på dansk i stedet for at forsvinde.
+
+Prøven står nederst i filen (15 punkter) og i `tests/menukort-engelsk.spec.js`
+(8 punkter). To fælder fanget undervejs: prøven målte først, at INGEN vare havde
+oversættelser — altså at filen ikke gjorde sit arbejde — og seks kategorier
+manglede, hvilket kunne SES som dansk midt i den engelske side.
 
 **⚠️ `kortene-endelige-1-10.sql` (1/10).** De syv ENDELIGT godkendte danske
 menukort holdt op mod databasen vare for vare. **Ingen pris er rettet på en vare,

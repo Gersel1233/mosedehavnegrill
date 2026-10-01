@@ -1387,6 +1387,73 @@
   }
 
   /* ============================================================
+     MENUKORTET PÅ ENGELSK  (2/10)
+     ------------------------------------------------------------
+     Mikkel: *"bar lad menukortene kunne oversættes til engelsk"*.
+     Og fra oplægget: *"Produktdata og priser skal ikke kopieres
+     til fire separate datasæt … mens pris, lager/tilgængelighed
+     og produkt-ID fortsat kommer fra den samme vare/database."*
+
+     Derfor ÉN kolonne på varen — `oversaettelser` — og ikke en
+     engelsk kopi af hver række. En kopi ville betyde, at en
+     prisændring skulle laves to steder, og den dag kun det ene
+     blev rettet, ville en engelsktalende gæst se en anden pris
+     end en dansk.
+
+     ⚠️ DANSK ER FALDSKÆRMEN, ALDRIG ET HUL. Mangler en
+        oversættelse, står det danske navn. En gæst, der ser
+        "Flæskesteg med surt" på en engelsk side, kan stadig
+        bestille den; en tom linje kan hun ikke. Og de danske
+        specialiteter SKAL beholde deres navn — det er dét, de
+        godkendte engelske kort gør: "Flæskesteg – roast pork
+        with pickles".
+
+     ⚠️ OG REGNESTYKKET ER DET SAMME SOM DATABASENS
+        (mosede_paa_sprog i engelsk-menukort-2-10.sql). To udgaver
+        af "hvad hedder den her vare på engelsk" ville før eller
+        siden svare hver sit, og så står menukortet og
+        bestillingen med hvert sit navn på den samme ret.
+     ============================================================ */
+  var SPROGENE = ['da', 'en'];
+  var SPROG_NOEGLE = 'mosede_sprog';
+
+  function sprogOk(s) {
+    s = String(s || '').trim().toLowerCase();
+    return SPROGENE.indexOf(s) === -1 ? '' : s;
+  }
+
+  /* Adressen vinder over det huskede valg: et link, nogen har
+     delt med ?sprog=en, skal åbne på engelsk — også for en, der
+     selv har valgt dansk på sin egen telefon. */
+  function sprog() {
+    try {
+      var q = sprogOk((location.search.match(/[?&]sprog=([^&]*)/) || [])[1]);
+      if (q) return q;
+      var g = sprogOk(localStorage.getItem(SPROG_NOEGLE));
+      if (g) return g;
+    } catch (e) { /* privat vindue: så er det dansk */ }
+    return 'da';
+  }
+
+  function saetSprog(s) {
+    var v = sprogOk(s) || 'da';
+    try { localStorage.setItem(SPROG_NOEGLE, v); } catch (e) {}
+    return v;
+  }
+
+  function paaSprog(raekke, felt, s) {
+    var dansk = raekke ? raekke[felt] : null;
+    var sp = sprogOk(s) || sprog();
+    if (sp === 'da' || !raekke) return dansk;
+    var o = raekke.oversaettelser;
+    if (!o || typeof o !== 'object') return dansk;
+    var g = o[sp];
+    if (!g || typeof g !== 'object') return dansk;
+    var t = (g[felt] === null || g[felt] === undefined) ? '' : String(g[felt]).trim();
+    return t || dansk;
+  }
+
+  /* ============================================================
      TILVALG PÅ DAGENS RET  (1/10)
      ------------------------------------------------------------
      Mikkel: *"på dagensret gør så de kan tilføje tilbehør ting i
@@ -5370,6 +5437,10 @@
     vareValg: vareValg,
     valgTillaeg: valgTillaeg,
     prisMedValg: prisMedValg,
+    SPROGENE: SPROGENE,
+    sprog: sprog,
+    saetSprog: saetSprog,
+    paaSprog: paaSprog,
     dagensTilvalg: dagensTilvalg,
     tilvalgTillaeg: tilvalgTillaeg,
     prisMedTilvalg: prisMedTilvalg,
