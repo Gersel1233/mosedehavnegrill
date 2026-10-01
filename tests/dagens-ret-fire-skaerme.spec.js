@@ -164,3 +164,66 @@ test('"kun 3 tilbage" er RØD på forsiden — ikke blæk', async ({ page }) => 
     .not.toBe('rgb(36, 26, 23)');
   expect(farve).toBe('rgb(180, 31, 46)');
 });
+
+/* ============================================================
+   EN FAST VARE, DER OGSÅ ER DAGENS RET, STÅR ÉN GANG  (1/10)
+   ------------------------------------------------------------
+   Chefens ord om den bagte kartoffel: *"den må stadig være
+   fremhævet som Ugens ret lige nu, men efter perioden skal selve
+   varen fortsat kunne bestilles som fast ret. Undgå at vise den
+   dobbelt samme sted."*
+
+   ⚠️ UDEN ET VÆRN STÅR DEN FIRE STEDER DOBBELT: i bestillingen
+   under både "Dagens ret" og sin egen kategori, og på menukortet
+   under både "I dag" og sit kapitel.
+
+   ⚠️ DEN GAMLE REGEL DÆKKER DET IKKE. Butik.erDagensRetVare
+   fanger kun en vare, der hedder "Dagens ret" — en pladsholder
+   på kortet. Den her er en RIGTIG vare, som tilfældigvis er
+   dagens ret i dag, og den skal findes igen i morgen.
+
+   ⚠️ OG DEN SKAL FINDES, NÅR DEN IKKE ER DAGENS RET. Et værn,
+   der skjulte varen for altid, ville tage den faste ret med sig
+   — og det er netop dét, chefen beder om at beholde.
+   ============================================================ */
+test.describe('Dagens ret, der også er en fast vare', () => {
+
+  function medKartoffel({ somDagensRet = true } = {}) {
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger, bestilling_varsel_timer: 0 };
+    d.menu_kategorier.push({ id: 40, lokation_id: 'mosede', navn: 'Retter',
+      afdeling: 'mad', sortering: 1, aktiv: true });
+    d.menu_varer.push({ id: 400, kategori_id: 40, lokation_id: 'mosede',
+      navn: 'Bagt krydderet kartoffel', beskrivelse: 'Med blandet salat.',
+      pris: 55, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true, valg: null });
+    d.indstillinger.bestilbare_kategorier =
+      (d.indstillinger.bestilbare_kategorier || []).concat(40);
+    d.dagens_retter = somDagensRet ? [{
+      id: 1, lokation_id: 'mosede', dato: '2026-08-07',
+      navn: 'Bagt krydderet kartoffel', beskrivelse: 'Med blandet salat.',
+      pris: 55, antal_tilbage: null, udsolgt: false, aktiv: true, sortering: 1,
+    }] : [];
+    d.borde = [{ id: 1, lokation_id: 'mosede', nummer: '7', aktiv: true, har_kode: false }];
+    return d;
+  }
+
+  const tael = (page) => page.locator('[data-vare="Bagt krydderet kartoffel"]').count();
+
+  for (const s of SKÆRME) {
+    test('den står ÉN gang på ' + s.navn, async ({ page }) => {
+      await åbnSkærm(page, s, medKartoffel());
+      const n = await tael(page);
+      expect(n, `kartoflen står ${n} gange på ${s.navn}`).toBe(1);
+    });
+  }
+
+  /* MODSTYKKET, OG DET VIGTIGSTE: er den ikke dagens ret i dag,
+     skal den stå i sin kategori som enhver anden fast vare. */
+  test('uden en dagens ret står den i sin kategori', async ({ page }) => {
+    await åbn(page, '/ved-bordet/?bord=7', { ur: UR,
+      data: medKartoffel({ somDagensRet: false }) });
+    await page.waitForTimeout(900);
+    await expect(page.locator('[data-vare="Bagt krydderet kartoffel"]'),
+      'den faste ret forsvandt sammen med dagens ret').toHaveCount(1);
+  });
+});

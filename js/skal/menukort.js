@@ -173,6 +173,29 @@
        træk, når ugen ikke var lagt op — en side under opbygning. En
        lukket dag og "ingen dagens ret" står stadig: de er
        beslutninger, ikke huller. */
+    /* ⚠️ SAMME RET HELE UGEN SIGES ÉN GANG (1/10) — reglen er
+       Butik.sammeRetHeleUgen, den SAMME som forsidens ugestribe
+       spørger. Her stod navnet ni gange ("I dag" plus syv dage),
+       fordi forsiden havde lært det og den her ikke. To tegnere
+       af den samme uge må ikke kunne sige hver sit. */
+    var ensUge = Butik.sammeRetHeleUgen ? Butik.sammeRetHeleUgen(d, i_dag) : null;
+    if (ensUge) {
+      var enRaekke = lav('div', 'mk-dag mk-nu');
+      var vLinje = lav('div', 'mk-navn', 'Hele ugen');
+      vLinje.appendChild(lav('span', 'mk-dato',
+        datoTekst(i_dag) + ' – ' + datoTekst(Butik.isoPlus(i_dag, 6))));
+      enRaekke.appendChild(vLinje);
+      var hLinje = lav('div');
+      hLinje.appendChild(lav('h4', null,
+        ensUge.navn + (ensUge.udsolgt ? ' · udsolgt' : '')));
+      if (ensUge.beskrivelse) hLinje.appendChild(lav('p', null, ensUge.beskrivelse));
+      var ensPris = kroner(ensUge.pris);
+      if (ensPris) hLinje.appendChild(lav('span', 'mk-pris', ensPris));
+      enRaekke.appendChild(hLinje);
+      boks.appendChild(enRaekke);
+      return;
+    }
+
     var skjulte = 0;
     for (var i = 0; i < 7; i++) {
       var iso = Butik.isoPlus(i_dag, i);

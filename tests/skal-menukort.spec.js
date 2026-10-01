@@ -908,3 +908,48 @@ test.describe('Kostpunktet på menukortet', () => {
       .not.toMatch(/(fish|rejecocktail|pølse|burger)[^.]{0,20}(vegansk|glutenfri)/);
   });
 });
+
+/* ============================================================
+   OG MENUKORTETS UGEPLAN SIGER DET SAMME  (1/10)
+   ------------------------------------------------------------
+   Forsiden lærte at sige "hele ugen", da Mikkel spurgte til de
+   syv ens kort. MÅLT bagefter mod det levende kort: på
+   MENUKORTET stod navnet stadig NI gange — "I dag" plus syv
+   dage. Siden havde lært det ét sted og ikke det andet.
+
+   ⚠️ REGLEN BOR I Butik.sammeRetHeleUgen, ikke i hver tegner.
+   Jeg skrev den først kun i js/skal/forside.js — og det er den
+   samme fejl som isbyggerens to laegIs dagen før: en kopi er en
+   kommende fejl, også når det er mig, der laver kopien.
+   ============================================================ */
+test.describe('Menukortets ugeplan slår ens dage sammen', () => {
+  const ret = (dato, navn) => ({
+    id: dato.replace(/-/g, ''), lokation_id: 'mosede', dato,
+    navn, beskrivelse: 'Med blandet salat.', pris: 55,
+    antal_tilbage: null, udsolgt: false, aktiv: true, sortering: 1,
+  });
+  const UGE = ['2026-08-07', '2026-08-08', '2026-08-09', '2026-08-10',
+    '2026-08-11', '2026-08-12', '2026-08-13'];
+
+  test('syv ens dage bliver til én række', async ({ page }) => {
+    await åbnSkal(page, '/m-menukort.html', { ur: FREDAG,
+      data: grunddata({ dagens_retter: UGE.map((d) => ret(d, 'Bagt krydderet kartoffel')) }) });
+    await page.waitForSelector('#mk-uge');
+    const r = page.locator('#mk-uge .mk-dag');
+    const n = await r.count();
+    expect(n, `ugeplanen står med ${n} rækker — det er den samme ret syv gange`).toBe(1);
+    await expect(r.first()).toContainText(/hele ugen/i);
+    await expect(r.first()).toContainText('Bagt krydderet kartoffel');
+  });
+
+  /* MODSTYKKET: én anden dag, og ugen står dag for dag igen. */
+  test('én anden dag, og rækkerne kommer tilbage', async ({ page }) => {
+    const dage = UGE.map((d) => ret(d, 'Bagt krydderet kartoffel'));
+    dage[2].navn = 'Stegt flæsk';
+    await åbnSkal(page, '/m-menukort.html', { ur: FREDAG,
+      data: grunddata({ dagens_retter: dage }) });
+    await page.waitForSelector('#mk-uge');
+    expect(await page.locator('#mk-uge .mk-dag').count()).toBeGreaterThan(1);
+    await expect(page.locator('#mk-uge')).toContainText('Stegt flæsk');
+  });
+});

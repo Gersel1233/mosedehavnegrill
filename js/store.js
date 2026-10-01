@@ -2100,12 +2100,19 @@
     var ekstraVarer = [];
     var ekstraUdsolgt = [];
     var ekstraSpoerg = [];
+    /* Bygges ÉN gang og ikke pr. vare: filteret løber hele kortet
+       igennem, og et sæt pr. række ville være 300 opslag for ingenting. */
+    var iDagsRetter = dagensRetNavne(d, iso);
     ekstraKat.forEach(function (k) {
       (d.menu_varer || [])
         .filter(function (v) {
           /* ⚠️ Kortets "Dagens ret" står ikke i bestillingen — dagens
              ret har sin egen blok. Se erDagensRetVare. */
-          return v.kategori_id === k.id && v.aktiv !== false && !erDagensRetVare(v)
+          if (erDagensRetVare(v)) return false;
+          /* ⚠️ OG EN FAST VARE, DER ER DAGENS RET I DAG, STÅR KUN I
+             BLOKKEN — se den lange note ved dagensRetNavne. */
+          if (iDagsRetter[String(v.navn || '').trim().toLowerCase()]) return false;
+          return v.kategori_id === k.id && v.aktiv !== false
             && vareHer(v);
         })
         .sort(efterSortering)
@@ -5060,6 +5067,70 @@
     return !!v && /^\s*dagens\s+ret\s*$/i.test(String(v.navn || ''));
   }
 
+  /* ============================================================
+     EN FAST VARE, DER OGSÅ ER DAGENS RET, STÅR ÉN GANG  (1/10)
+     ------------------------------------------------------------
+     Chefens ord om den bagte kartoffel: *"den må stadig være
+     fremhævet som Ugens ret lige nu, men efter perioden skal
+     selve varen fortsat kunne bestilles som fast ret. Undgå at
+     vise den dobbelt samme sted."*
+
+     ⚠️ erDagensRetVare OVENFOR DÆKKER DET IKKE. Den fanger kun en
+     vare, der HEDDER "Dagens ret" — en pladsholder på kortet. Her
+     er det en rigtig vare, som tilfældigvis er dagens ret i dag,
+     og som skal findes igen i morgen.
+
+     MÅLT 1/10 med en fast kartoffel og den samme ret på dagen:
+     ved bordet stod den TO gange — én i blokken "Dagens ret" og
+     én i Retter. Dagens ret-blokken vinder, fordi den bærer
+     dagens antal og dagens pris.
+
+     ⚠️ KUN PÅ DAGEN. Et værn, der skjulte varen for altid, ville
+     tage den faste ret med sig — og det er netop dét, chefen
+     beder om at beholde. Derfor bygges navnesættet pr. dag.
+
+     ⚠️ OG NAVNET SAMMENLIGNES SOM DATABASEN GØR DET (btrim +
+     lower), så et mellemrum i enden ikke bliver til to retter. */
+  /* ============================================================
+     ER DET DEN SAMME ENE RET HELE UGEN?  (1/10)
+     ------------------------------------------------------------
+     Mikkel med et skud af ugeplanen: *"og er det meningen, der er
+     det her resten af ugen?"* — syv ens kort efter hinanden.
+
+     Reglen bor HER og ikke i tegnerne. Jeg skrev den først kun i
+     js/skal/forside.js, og menukortets egen ugeplan blev ved med
+     at skrive navnet ni gange — "I dag" plus syv dage. Det er den
+     samme fejl som isbyggerens to laegIs dagen før: en kopi er en
+     kommende fejl, også når det er mig, der laver kopien.
+
+     ⚠️ KUN NÅR DE ER HELT ENS. Én ret pr. dag, samme navn, alle
+     syv dage, og ingen lukket dag imellem. To retter på en dag er
+     ikke "den samme ret", og en lukket dag er en oplysning, der
+     ville forsvinde, hvis ugen blev slået sammen.
+     ============================================================ */
+  function sammeRetHeleUgen(d, iDag) {
+    var start = iDag || nu().dato;
+    var foerste = null;
+    for (var i = 0; i < 7; i++) {
+      var iso = isoPlus(start, i);
+      if (lukketDen(d, iso)) return null;
+      var r = dagensRetter(d, iso) || [];
+      if (r.length !== 1) return null;
+      if (!foerste) foerste = r[0];
+      else if (String(r[0].navn || '') !== String(foerste.navn || '')) return null;
+    }
+    return foerste;
+  }
+
+  function dagensRetNavne(d, iso) {
+    var saet = {};
+    (dagensRetter(d, iso) || []).forEach(function (r) {
+      var n = String((r || {}).navn || '').trim().toLowerCase();
+      if (n) saet[n] = true;
+    });
+    return saet;
+  }
+
   /* ⚠️ TIDLIGERE PÅ HAVNEN BOR ÉT STED  (13/9). Kundens ord: "den
      der med tidligere ting skal hænge sammen med hvad sker der."
      Arkivet står nu både under forsidens nyheder og på
@@ -5136,6 +5207,8 @@
     qrAaben: qrAaben,
     retKanBestilles: retKanBestilles,
     erDagensRetVare: erDagensRetVare,
+    dagensRetNavne: dagensRetNavne,
+    sammeRetHeleUgen: sammeRetHeleUgen,
     NYHED_TEGN: NYHED_TEGN,
     tidligereNyheder: tidligereNyheder,
     tidligereArrangementer: tidligereArrangementer,

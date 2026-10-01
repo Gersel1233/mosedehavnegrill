@@ -408,6 +408,40 @@
 
     tøm(boks);
 
+    /* ============================================================
+       SAMME RET HELE UGEN SIGES ÉN GANG  (1/10)
+       ------------------------------------------------------------
+       Mikkel med et skud af planen: *"og er det meningen, der er
+       det her resten af ugen?"* — syv ens kort, samme navn, samme
+       tekst, samme pris. Afsnittet er bygget til at vise
+       FORSKELLIGE retter; syv ens læses som en fejl, ikke som en
+       uge. Og det er den samme sag, chefen skriver om kartoflen:
+       *"undgå at vise den dobbelt samme sted."*
+
+       ⚠️ DER KLIPPES I VISNINGEN, IKKE I DATAEN. De syv rækker
+       bliver stående, så køkkenet kan sætte et antal pr. dag og
+       tage én dag ud — siden siger det bare én gang, så længe de
+       er ens.
+
+       ⚠️ OG KUN NÅR DE ER HELT ENS: ét navn, én ret pr. dag, alle
+       syv dage, ingen lukket dag imellem. Er bare én dag en anden
+       ret, står ugen dag for dag — det er dét, planen findes for.
+       ============================================================ */
+    var ens = Butik.sammeRetHeleUgen ? Butik.sammeRetHeleUgen(d, iDag) : null;
+    if (ens) {
+      var etKort = lav('div', 'day');
+      etKort.appendChild(lav('div', 'dw', 'Hele ugen'));
+      etKort.appendChild(lav('div', 'dd',
+        pænDato(iDag) + ' – ' + pænDato(Butik.isoPlus(iDag, 6))));
+      etKort.appendChild(lav('h4', null, ens.navn + (ens.udsolgt ? ' · udsolgt' : '')));
+      if (ens.beskrivelse) etKort.appendChild(lav('p', null, ens.beskrivelse));
+      if (ens.pris !== null && ens.pris !== undefined) {
+        etKort.appendChild(lav('div', 'dp', kroner(ens.pris)));
+      }
+      boks.appendChild(etKort);
+      return;
+    }
+
     var skjulte = 0;
     for (var i = 0; i < 7; i++) {
       var iso = Butik.isoPlus(iDag, i);

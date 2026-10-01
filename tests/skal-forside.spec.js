@@ -3125,3 +3125,62 @@ test.describe('Felter med en sidste dag', () => {
        udløbsreglen, og så målte modstykket ingenting. */
   });
 });
+
+/* ============================================================
+   SAMME RET HELE UGEN SIGES ÉN GANG  (1/10)
+   ------------------------------------------------------------
+   Mikkel med et skærmbillede af ugeplanen: *"og er det meningen,
+   der er det her resten af ugen?"* — syv ens kort efter hinanden,
+   samme navn, samme tekst, samme pris.
+
+   Det var min egen beslutning, der slog igennem: "ugens ret"
+   blev lagt ind som dagens ret på hver af de syv dage, og
+   afsnittet er bygget til at vise FORSKELLIGE retter. Syv ens
+   kort læses som en fejl, ikke som en uge.
+
+   Og det er den samme sag, chefen skriver om kartoflen: *"undgå
+   at vise den dobbelt samme sted."*
+
+   ⚠️ DER KLIPPES I VISNINGEN, IKKE I DATAEN. De syv rækker bliver
+   stående, så køkkenet kan sætte et antal pr. dag og tage én dag
+   ud — siden siger det bare én gang, så længe de er ens.
+
+   ⚠️ OG KUN NÅR DE ER HELT ENS. Er bare én dag en anden ret,
+   skal ugen stå dag for dag; det er dét, planen findes for.
+   ============================================================ */
+test.describe('Ugeplanen siger "hele ugen", når retten er den samme', () => {
+  const ret = (dato, navn) => ({
+    id: dato.replace(/-/g, ''), lokation_id: 'mosede', dato,
+    navn, beskrivelse: 'Med blandet salat.', pris: 55,
+    antal_tilbage: null, udsolgt: false, aktiv: true, sortering: 1,
+  });
+  const UGE = ['2026-08-07', '2026-08-08', '2026-08-09', '2026-08-10',
+    '2026-08-11', '2026-08-12', '2026-08-13'];
+
+  test('syv ens dage bliver til ét kort', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN,
+      data: grunddata({ dagens_retter: UGE.map((d) => ret(d, 'Bagt krydderet kartoffel')) }) });
+    const kort = page.locator('.week .day');
+    const n = await kort.count();
+    expect(n, `ugeplanen står med ${n} kort — det er den samme ret syv gange`)
+      .toBe(1);
+    await expect(kort.first()).toContainText('Bagt krydderet kartoffel');
+    /* ⚠️ OG DET SKAL SIGE, AT DET GÆLDER HELE UGEN. Ét kort uden
+       den oplysning ligner, at der kun er en ret i dag. */
+    await expect(kort.first(), 'kortet siger ikke, at retten gælder hele ugen')
+      .toContainText(/hele ugen/i);
+  });
+
+  /* MODSTYKKET, OG DET VIGTIGSTE: er bare én dag en anden ret,
+     skal ugen stå dag for dag. */
+  test('én anden dag, og planen står dag for dag igen', async ({ page }) => {
+    const dage = UGE.map((d) => ret(d, 'Bagt krydderet kartoffel'));
+    dage[3].navn = 'Stegt flæsk';
+    await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN,
+      data: grunddata({ dagens_retter: dage }) });
+    const n = await page.locator('.week .day').count();
+    expect(n, 'ugen blev slået sammen, selv om en dag er en anden ret')
+      .toBeGreaterThan(1);
+    await expect(page.locator('.week')).toContainText('Stegt flæsk');
+  });
+});
