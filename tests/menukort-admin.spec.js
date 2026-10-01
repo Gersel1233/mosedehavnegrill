@@ -2284,13 +2284,32 @@ test.describe('Kortenes omdøbninger 30/9', () => {
      dækket i det øjeblik, den skrives. */
   test('hver vare, SQL-filen giver valg, har det samme forslag i admin',
     async ({ page }) => {
-      const SQL2 = path.resolve(__dirname, '..', 'supabase/valg-paa-varerne-30-9.sql');
-      const tekst = fs.readFileSync(SQL2, 'utf8').replace(/^\s*--.*$/gm, '');
-      const par = [...tekst.matchAll(
-        /pg_temp\.valg\(\s*'((?:[^']|'')+)'\s*,\s*'(\[[^']*\])'/g)]
-        .map((m) => [m[1].replace(/''/g, "'"), JSON.parse(m[2])]);
-      expect(par.length, 'ingen valg læst ud af valg-paa-varerne-30-9.sql')
-        .toBeGreaterThanOrEqual(6);
+      /* ⚠️ ALLE valg-*.sql, IKKE ÉN NAVNGIVEN FIL  (1/10). Her stod
+         kun valg-paa-varerne-30-9.sql, og da isens tilbehør fik sin
+         egen fil dagen efter, stod den ubevogtet: admin og
+         databasen kunne skride fra hinanden på netop de varer,
+         ingen prøve så. En håndholdt filliste er den samme fælde
+         som en håndholdt vareliste. */
+      const mappe = path.resolve(__dirname, '..', 'supabase');
+      const filer = fs.readdirSync(mappe)
+        .filter((f) => /^valg-.*\.sql$/.test(f));
+      expect(filer.length, 'ingen valg-filer fundet i supabase/')
+        .toBeGreaterThanOrEqual(2);
+      const par = [];
+      filer.forEach((f) => {
+        const tekst = fs.readFileSync(path.join(mappe, f), 'utf8')
+          .replace(/^\s*--.*$/gm, '');
+        /* To former: pg_temp.valg('navn', '[...]') og en nøgen
+           update ... set valg = '[...]' ... navn = 'X'. */
+        [...tekst.matchAll(
+          /pg_temp\.valg\(\s*'((?:[^']|'')+)'\s*,\s*'(\[[^']*\])'/g)]
+          .forEach((m) => par.push([m[1].replace(/''/g, "'"), JSON.parse(m[2])]));
+        [...tekst.matchAll(
+          /set valg = '(\[[^']*\])'[\s\S]{0,400}?btrim\(mv\.navn\) = '((?:[^']|'')+)'/g)]
+          .forEach((m) => par.push([m[2].replace(/''/g, "'"), JSON.parse(m[1])]));
+      });
+      expect(par.length, 'ingen valg læst ud af supabase/valg-*.sql')
+        .toBeGreaterThanOrEqual(8);
 
       await åbnAdmin(page, { data: grunddata() });
       const uenige = await page.evaluate((liste) => liste
