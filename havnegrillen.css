@@ -3604,15 +3604,26 @@ button.g:disabled:active{transform:none}
    To udseender for det samme valg ville betyde, at gæsten lærer
    det ét sted og ikke genkender det det andet — og de to sider er
    ét klik fra hinanden. */
-/* ⚠️ flex-basis:100% OG .item får flex-wrap — ellers klemmes chipsene
+/* ⚠️ flex-basis:100% OG rækken får flex-wrap — ellers klemmes chipsene
    ind ved siden af tælleren i stedet for at stå på deres egen linje.
    ⚠️ OG SÅ SKAL VENSTRE KOLONNE HOLDES PÅ FØRSTE LINJE. Uden den
    næste regel brækkede HELE rækken: kartoffel-tegnet stod alene på
    én linje, titlen på den næste og tælleren på den tredje — målt på
    et skud af iPhone 13, ikke læst. `flex:1 1 0` giver den resten af
-   første linje; tegnet og tælleren beholder deres egen bredde. */
-.item:has(.item-tilvalg){flex-wrap:wrap}
-.item:has(.item-tilvalg) > div:not(.item-tilvalg):not(.step){flex:1 1 0;min-width:0}
+   første linje; tegnet og tælleren beholder deres egen bredde.
+
+   ⚠️ .har-tilvalg OG IKKE :has(.item-tilvalg)  (1/10). Den første
+   udgave brugte :has(), og så skal browseren spørge "har DEN her
+   række et barn med den klasse?" ved hver eneste ændring i DOM'en
+   — og kurvsiden ændrer sig hele tiden. MÅLT: kurvbar.spec.js gik
+   fra 14,9 til 43 sekunder, og "et tryk på bjælken" faldt på
+   "element is not stable", fordi siden aldrig faldt til ro.
+   Det lignede en maskinfejl. Det var en CSS-vælger.
+
+   Klassen sættes i forvejen af js/skal/bestil.js, så det koster
+   ingenting at spørge efter den. */
+.item.har-tilvalg{flex-wrap:wrap}
+.item.har-tilvalg > div:not(.item-tilvalg):not(.step){flex:1 1 0;min-width:0}
 .item-tilvalg{flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
 .item-tilvalg-titel{flex:0 0 100%;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 /* Mindst 40 px at ramme — se noten i css/style.css. */
