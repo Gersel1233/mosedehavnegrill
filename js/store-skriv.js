@@ -28,6 +28,40 @@
   var status = I.status, talEllerNull = I.talEllerNull, tvilling = I.tvilling;
   var cfg = I.cfg, hoveder = I.hoveder;
 
+  /* ============================================================
+     DAGENS RETS TILVALG — RENSET SOM DATABASEN VIL HA' DEM  (1/10)
+     ------------------------------------------------------------
+     Listen står to steder: her og som dagens_tilvalg_ok i
+     supabase/tilvalg-og-tidsbegraensede-varer-1-10.sql. Samme
+     fælde som NYHED_SLAGS nedenfor — rettes kun det ene, tager
+     øvetilstanden imod, hvad den rigtige database afviser, og
+     ejeren opdager det først, når han står med en liste, der ikke
+     vil gemmes.
+
+     ⚠️ TOMME LINJER SMIDES VÆK, IKKE AFVIST. Admin har altid en
+        tom linje nederst at skrive i; blev den sendt med, ville
+        hvert eneste gem dø på dagens_tilvalg_ok, og ejeren ville
+        se "⚠ Ikke gemt" uden at have gjort noget forkert.
+     ============================================================ */
+  function renseTilvalg(liste) {
+    if (!Array.isArray(liste)) return null;
+    var ud = [];
+    liste.forEach(function (x) {
+      var navn = String((x && x.navn) || '').trim().slice(0, 60);
+      if (!navn) return;
+      var p = Number(String((x && x.pris) || '').toString().replace(',', '.'));
+      if (!isFinite(p) || p < 0) p = 0;
+      if (p > 1000) p = 1000;
+      ud.push({ navn: navn, pris: Math.round(p * 100) / 100 });
+    });
+    /* Samme loft som databasen: 16 muligheder, 1200 tegn. En liste,
+       der sprænger dem, ville blive afvist af Postgres med en
+       besked, ingen i køkkenet kan bruge til noget. */
+    ud = ud.slice(0, 16);
+    while (ud.length && JSON.stringify(ud).length > 1200) ud.pop();
+    return ud.length ? ud : null;
+  }
+
   /* ⚠️ LISTEN STÅR TO STEDER: her og som nyhed_slags_ok i
      supabase/nyheder-slags-og-billede.sql. Rettes kun det ene,
      tager øvetilstanden imod, hvad den rigtige database afviser —
@@ -471,6 +505,13 @@
       if (r.antal_tilbage !== undefined) {
         ren.antal_tilbage = talEllerNull(r.antal_tilbage);
       }
+      /* ⚠️ KOLONNEN SENDES KUN, HVIS NOGEN HAR RØRT DEN (1/10).
+         Sendte vi tilvalg ubetinget, ville enhver gammel fane, der
+         gemmer en pris, skrive ejerens tilbehørsliste væk — tavst.
+         Og køres filen, FØR kolonnen findes, svarer PostgREST
+         PGRST204 på hele gemmet. Samme regel som antal_tilbage
+         lige ovenfor. */
+      if (r.tilvalg !== undefined) ren.tilvalg = renseTilvalg(r.tilvalg);
 
       if (!SKY) return lokalt(function (d) {
         d.dagens_retter = d.dagens_retter || [];

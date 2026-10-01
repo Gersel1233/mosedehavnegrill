@@ -3598,3 +3598,17 @@ button.g:disabled:active{transform:none}
 .rev:is(.mid,.sub,.tcap,.findhoved),
 .rev:not(.panel):has(> h2:first-child),.rev:not(.panel):has(> h3:first-child),.rev:not(.panel):has(> .eyebrow:first-child){
   opacity:1!important;transform:none!important;transition:none!important}
+
+/* ---- TILBEHØR TIL DAGENS RET — forsiden  (1/10) ----
+   Den SAMME ting som .stk-tilvalg-* ved bordet (css/style.css).
+   To udseender for det samme valg ville betyde, at gæsten lærer
+   det ét sted og ikke genkender det det andet — og de to sider er
+   ét klik fra hinanden. */
+.item-tilvalg{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.item-tilvalg-titel{flex:0 0 100%;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+/* Mindst 40 px at ramme — se noten i css/style.css. */
+.item-tilvalg-chip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:6px 14px;border-radius:999px;border:1.5px solid rgba(36,26,23,.18);background:var(--paper,#fff);color:var(--ink,#241a17);font:inherit;font-size:14px;cursor:pointer}
+.item-tilvalg-pris{font-size:12px;font-weight:600;color:var(--red);white-space:nowrap}
+/* Ikke kun farven: ramme, bund OG fed — se noten i css/style.css. */
+.item-tilvalg-chip.valgt{border-color:var(--red);background:var(--red-svag,rgba(214,42,58,.10));font-weight:600}
+.item-tilvalg-chip.valgt .item-tilvalg-pris{color:var(--red-tekst,var(--red))}

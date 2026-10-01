@@ -81,11 +81,29 @@
      en vare op i kurven, går gennem delNøgle — en løkke, der sammenlignede
      nøglen med varens navn, ville tavst miste hver vare med et valg. */
   var VALG_SKEL = '||';
-  function kurvNøgle(navn, valg) { return valg ? navn + VALG_SKEL + valg : navn; }
+  /* ⚠️ TILVALGENE HAR DERES EGET SKEL  (1/10). De kunne ikke deles
+     med valgets: delNøgle deler på det FØRSTE skel og giver resten
+     som ét valg, så "Kartoffel||Oksekød||Kylling" ville blive til
+     valget "Oksekød||Kylling" — et valg, varen ikke har. Så ville
+     prisen falde tilbage til grundprisen, og gæsten fik tilbehør
+     gratis, til kassen ved lugen ikke stemte. */
+  var TILVALG_SKEL = '++';
+  function kurvNøgle(navn, valg, tilvalg) {
+    var k = valg ? navn + VALG_SKEL + valg : navn;
+    var tv = (tilvalg && tilvalg.length) ? tilvalg.join(TILVALG_SKEL) : '';
+    return tv ? k + TILVALG_SKEL + tv : k;
+  }
   function delNøgle(k) {
-    var i = String(k).indexOf(VALG_SKEL);
-    return i < 0 ? { navn: k, valg: null }
-      : { navn: k.slice(0, i), valg: k.slice(i + VALG_SKEL.length) };
+    var s = String(k);
+    var tv = null;
+    var j = s.indexOf(TILVALG_SKEL);
+    if (j >= 0) {
+      tv = s.slice(j + TILVALG_SKEL.length).split(TILVALG_SKEL).filter(Boolean);
+      s = s.slice(0, j);
+    }
+    var i = s.indexOf(VALG_SKEL);
+    return i < 0 ? { navn: s, valg: null, tilvalg: tv }
+      : { navn: s.slice(0, i), valg: s.slice(i + VALG_SKEL.length), tilvalg: tv };
   }
 
   /* ⚠️ ÉT OPSLAG FOR HELE KURVEN  (25/9). Otte steder i den her fil
@@ -117,8 +135,15 @@
       return x.navn === dn.navn;
     })[0];
     var harPris = v && v.pris !== null && v.pris !== undefined;
-    return { navn: dn.navn, valg: dn.valg,
-      pris: harPris ? Butik.prisMedValg(v, dn.valg) : null,
+    /* ⚠️ OG TILVALGENES PRIS SKAL MED (1/10) — ellers viser kurven
+       55 for en kartoffel med kylling, gæsten sender den, og
+       databasen svarer bestilling_pris_aendret. Butik.tilvalgTillaeg
+       er det SAMME regnestykke som mosede_tilvalg_tillaeg i
+       værnet; svarer 0 for alt uden tilvalg. */
+    var tvPris = (harPris && Butik.tilvalgTillaeg)
+      ? Butik.tilvalgTillaeg(v, dn.tilvalg) : 0;
+    return { navn: dn.navn, valg: dn.valg, tilvalg: dn.tilvalg,
+      pris: harPris ? Butik.prisMedValg(v, dn.valg) + tvPris : null,
       kat: v ? v.kategori_id : null, vare: v || null, is: false };
   }
   /* ============================================================
@@ -845,6 +870,10 @@
         pris: r.pris,
         kategori_id: '__dagens',
         antal_tilbage: r.antal_tilbage,
+        /* Ejerens tilbehørsliste følger med retten hele vejen —
+           uden den ville blokken tegne retten uden det, han
+           skrev i admin (1/10). */
+        tilvalg: r.tilvalg || null,
       };
     });
     return retter.concat(liste);
@@ -1471,12 +1500,87 @@
         return;
       }
 
+      /* ============================================================
+         TILBEHØR TIL DAGENS RET  (1/10)
+         ------------------------------------------------------------
+         Mikkel om kartoflens tekst: *"den står alt for generisk."*
+         Der stod »Tilføj valgfrit tilbehør og kød – 10,- pr. stk.«
+         — hvilket tilbehør? Nu står ejerens egne navne som noget,
+         gæsten kan trykke på, med prisen ved siden af.
+
+         ⚠️ CHIPS OG IKKE TÆLLERE PR. TILBEHØR. Tælleren ville
+            spørge "hvor mange kyllinger?" til "hvor mange
+            kartofler?", og 2 kartofler + 1 kylling kan læses på to
+            måder — køkkenet skulle gætte, hvilken kartoffel den
+            hørte til. Chippen siger ÉN ting: er det her tilbehør
+            på? Og tælleren nedenunder siger, hvor mange portioner
+            af NETOP den sammensætning.
+
+         ⚠️ HVER SAMMENSÆTNING ER SIN EGEN LINJE I KURVEN. To
+            kartofler med hver sit tilbehør er to forskellige ting
+            — samme regel som isens portioner 25/9. Derfor hænger
+            tælleren på nøglen med tilvalgene i (se kurvNøgle). */
+      var tvListe = Butik.dagensTilvalg ? Butik.dagensTilvalg(v) : null;
+      var tvValgte = [];
+      function tvNoegle() { return kurvNøgle(v.navn, null, tvValgte); }
+
+      if (tvListe) {
+        r.classList.add('har-tilvalg');
+        var tvRaekke = lav('div', 'stk-tilvalg');
+        tvRaekke.appendChild(lav('span', 'stk-tilvalg-titel', 'Vælg tilbehør til'));
+        tvListe.forEach(function (t) {
+          var chip = lav('button', 'stk-tilvalg-chip');
+          chip.type = 'button';
+          chip.setAttribute('data-tilvalg', t.navn);
+          chip.setAttribute('aria-pressed', 'false');
+          chip.appendChild(lav('span', 'stk-tilvalg-navn', t.navn));
+          /* Prisen står VED tilbehøret, ikke kun i summen: gæsten
+             skal se de 10 kroner, før hun trykker — samme regel
+             som valgets tillæg 20/9. */
+          if (t.pris) {
+            chip.appendChild(lav('span', 'stk-tilvalg-pris', '+' + Butik.kroner(t.pris)));
+          }
+          chip.addEventListener('click', function () {
+            var i = tvValgte.indexOf(t.navn);
+            if (i < 0) tvValgte.push(t.navn); else tvValgte.splice(i, 1);
+            /* Rækkefølgen er ejerens liste og ikke klikkenes: ellers
+               ville "Kylling + Oksekød" og "Oksekød + Kylling" blive
+               to forskellige linjer i kurven for den samme ret. */
+            tvValgte.sort(function (a, b) {
+              return tvListe.map(function (x) { return x.navn; }).indexOf(a)
+                   - tvListe.map(function (x) { return x.navn; }).indexOf(b);
+            });
+            chip.classList.toggle('valgt', tvValgte.indexOf(t.navn) >= 0);
+            chip.setAttribute('aria-pressed',
+              tvValgte.indexOf(t.navn) >= 0 ? 'true' : 'false');
+            visTilvalgPris();
+            /* Tælleren viser nu DEN nye sammensætning. Står der
+               allerede en af den gamle i kurven, bliver den — den
+               er en anden ret, og den står i kurvlisten nedenfor. */
+            saet(kurv.stk[tvNoegle()] || 0);
+          });
+          tvRaekke.appendChild(chip);
+        });
+        r.appendChild(tvRaekke);
+      }
+
+      /* Prisen på rækken følger tilbehøret: 55,- bliver til 75,-,
+         så snart der er to chips på. Et tal, der ikke følger med,
+         er et tal, gæsten ikke tror på. */
+      function visTilvalgPris() {
+        if (!tvListe) return;
+        var prisFelt = r.querySelector('.stk-pris');
+        if (!prisFelt || v.pris === null || v.pris === undefined) return;
+        var p = Butik.prisMedTilvalg ? Butik.prisMedTilvalg(v, tvValgte) : v.pris;
+        prisFelt.textContent = Butik.varePris ? Butik.varePris(p) : window.MosedePris(p);
+      }
+
       /* Tælleren. To knapper og et tal, ikke et talfelt: på en
          telefon åbner et talfelt tastaturet og dækker halvdelen af
          listen, og man skal alligevel kun én op eller ned. */
       var taeller = lav('div', 'taeller');
       var ned = lav('button', 'glass rund', '−');
-      var tal = lav('span', 'taeller-tal', kurv.stk[v.navn] || 0);
+      var tal = lav('span', 'taeller-tal', kurv.stk[tvNoegle()] || 0);
       var op = lav('button', 'glass rund', '+');
 
       ned.type = op.type = 'button';
@@ -1490,10 +1594,15 @@
          det, der var tilbage, mens rækken lige over talte videre. */
       function saet(n) {
         var loft = loftFor(v.navn);
+        var nk = tvNoegle();
         n = Math.max(0, Math.min(loft, n));
-        if (n) kurv.stk[v.navn] = n; else delete kurv.stk[v.navn];
+        if (n) kurv.stk[nk] = n; else delete kurv.stk[nk];
         tal.textContent = n;
-        r.classList.toggle('valgt', n > 0);
+        /* ⚠️ antalAf OG IKKE n: rækken er "valgt", hvis der står
+           NOGEN udgave af retten i kurven — ellers så en gæst, der
+           havde lagt en kartoffel med kylling i og derefter slog
+           chippen fra, en række, der lignede tom. */
+        r.classList.toggle('valgt', antalAf(v.navn) > 0);
         ned.disabled = n === 0;
         op.disabled = n >= loft;
         op.title = op.disabled ? 'Der er ikke flere tilbage' : '';
@@ -1502,15 +1611,16 @@
         visSum();
       }
 
-      ned.addEventListener('click', function () { saet((kurv.stk[v.navn] || 0) - 1); });
-      op.addEventListener('click', function () { saet((kurv.stk[v.navn] || 0) + 1); });
+      ned.addEventListener('click', function () { saet((kurv.stk[tvNoegle()] || 0) - 1); });
+      op.addEventListener('click', function () { saet((kurv.stk[tvNoegle()] || 0) + 1); });
 
       taeller.appendChild(ned);
       taeller.appendChild(tal);
       taeller.appendChild(op);
       r.appendChild(taeller);
 
-      saet(kurv.stk[v.navn] || 0);
+      visTilvalgPris();
+      saet(kurv.stk[tvNoegle()] || 0);
       boks.appendChild(r);
     });
 
@@ -2867,8 +2977,14 @@
          slags nøgler, og det er dét, der gør bonen ens uanset om
          isen kom fra en tæller eller fra isbyggeren. */
       var p = kurvPost(k, liste);
+      /* ⚠️ TILVALGENE REJSER I DERES EGEN NØGLE (1/10) og ikke i
+         `variant`: databasen kræver, at variant er ÉT af varens
+         valg, så to tilvalg ville dø på bestilling_mangler_valg.
+         Butik.linjeNavn skriver dem ind i linjens navn, så bonen,
+         Overblik og køkken-køen siger det samme. */
       var l = { navn: p.navn, antal: kurv.stk[k], pris: p.pris,
-                variant: p.valg || undefined };
+                variant: p.valg || undefined,
+                tilvalg: (p.tilvalg && p.tilvalg.length) ? p.tilvalg : undefined };
       /* ⚠️ ÉN LINJE PR. PORTION, når der er valgt smage: to vafler
          med hver sin smag er to forskellige ting, og køkkenet skal
          kunne se hvilken kugle hører til hvilken vaffel. Opdelingen

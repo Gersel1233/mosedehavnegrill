@@ -569,7 +569,7 @@
      når tælleren skifter. Et tilbagekald og ikke en ny tæller — to
      tællere ville være to steder at rette den dag, loftet eller
      mindsteantallet ændrer sig. */
-  function tællerFor(nøgle, navn, pris, variant, kat, loft, kugler, efter) {
+  function tællerFor(nøgle, navn, pris, variant, kat, loft, kugler, efter, tilvalg) {
     var boks = lav('div', 'step');
     boks.setAttribute('data-step', '');
     var ned = lav('button', null, '–');
@@ -613,7 +613,10 @@
         var gammel = kurv[nøgle] || {};
         kurv[nøgle] = { navn: navn, pris: pris, antal: ny, variant: variant || null, kat: kat,
                         /* Kuglerne følger POSTEN og ikke rækken: sumlinjen og
-                           afsendelsen læser kurven, ikke DOM'en. */
+                           afsendelsen læser kurven, ikke DOM'en. Det samme
+                           gælder tilvalgene (1/10) — afsendelsen bygger
+                           linjen af POSTEN, ikke af chippen på skærmen. */
+                        tilvalg: (tilvalg && tilvalg.length) ? tilvalg.slice() : null,
                         kugler: kugler || 0, smage: gammel.smage };
       }
       retSmage(nøgle, ny);
@@ -1006,6 +1009,84 @@
        "Leverpostej med baconsvøb" står der uden en pris, og så
        ville pris-værnet afvise hele bestillingen. Se noten i
        Butik.bestil. */
+    /* ============================================================
+       TILBEHØR TIL DAGENS RET  (1/10)
+       ------------------------------------------------------------
+       Den SAMME ting som i js/bestilling.js (ved bordet) — og
+       derfor den samme regel i Butik: dagensTilvalg og
+       prisMedTilvalg. To udgaver af "hvad koster en kartoffel med
+       kylling" ville betyde, at forsiden og bordet viste hver sin
+       pris, og at den ene af dem blev afvist af databasen.
+
+       ⚠️ TÆLLEREN BYGGES OM, NÅR CHIPSENE SKIFTER. tællerFor
+          lukker om nøglen og prisen, så en chip, der bare
+          ændrede en variabel, ville tælle den GAMLE
+          sammensætning op. Målt i isbyggeren 25/9 i en anden
+          form: en lukket værdi, der skulle have fulgt med.
+
+       ⚠️ OG DEN GAMLE SAMMENSÆTNING BLIVER I KURVEN. En kartoffel
+          med kylling og en uden er to forskellige retter; de står
+          hver for sig i kurvlisten, præcis som to is med hver sin
+          smag gør det. */
+    var tvListe = (!v.variantAf && Butik.dagensTilvalg)
+      ? Butik.dagensTilvalg(v) : null;
+    if (tvListe) {
+      række.classList.add('har-tilvalg');
+      var tvValgte = [];
+      var tvRaekke = lav('div', 'item-tilvalg');
+      tvRaekke.appendChild(lav('span', 'item-tilvalg-titel', 'Vælg tilbehør til'));
+
+      var tvTaeller = null;
+      function tvByg() {
+        var n2 = tvValgte.length ? nøgle + '|til|' + tvValgte.join('+') : nøgle;
+        var p2 = Butik.prisMedTilvalg ? Butik.prisMedTilvalg(v, tvValgte) : v.pris;
+        var ny2 = tællerFor(n2, v.navn, p2, null, v.kategori_id,
+                            Butik.antalLoft && Butik.antalLoft(v), 0, null, tvValgte);
+        if (tvTaeller && tvTaeller.parentNode) {
+          tvTaeller.parentNode.replaceChild(ny2, tvTaeller);
+        } else {
+          række.appendChild(ny2);
+        }
+        tvTaeller = ny2;
+        /* Prisen på mærkatet følger med: 55,- bliver 75,-, så snart
+           der er to chips på. Et tal, der ikke følger med, er et
+           tal, gæsten ikke tror på. */
+        var mærke = venstre.querySelector('.tag');
+        if (mærke && Butik.varePris(p2)) mærke.textContent = Butik.varePris(p2);
+      }
+
+      tvListe.forEach(function (t) {
+        var chip = lav('button', 'item-tilvalg-chip');
+        chip.type = 'button';
+        chip.setAttribute('data-tilvalg', t.navn);
+        chip.setAttribute('aria-pressed', 'false');
+        chip.appendChild(lav('span', 'item-tilvalg-navn', t.navn));
+        /* Prisen står VED tilbehøret — gæsten skal se de 10 kroner,
+           før hun trykker. Samme regel som valgets tillæg 20/9. */
+        if (t.pris) {
+          chip.appendChild(lav('span', 'item-tilvalg-pris', '+' + Butik.kroner(t.pris)));
+        }
+        chip.addEventListener('click', function () {
+          var i = tvValgte.indexOf(t.navn);
+          if (i < 0) tvValgte.push(t.navn); else tvValgte.splice(i, 1);
+          /* Rækkefølgen er ejerens liste og ikke klikkenes: ellers
+             ville "Kylling + Oksekød" og "Oksekød + Kylling" blive
+             to linjer i kurven for den samme ret. */
+          var orden = tvListe.map(function (x) { return x.navn; });
+          tvValgte.sort(function (a, b) { return orden.indexOf(a) - orden.indexOf(b); });
+          var på = tvValgte.indexOf(t.navn) >= 0;
+          chip.classList.toggle('valgt', på);
+          chip.setAttribute('aria-pressed', på ? 'true' : 'false');
+          tvByg();
+        });
+        tvRaekke.appendChild(chip);
+      });
+      venstre.appendChild(tvRaekke);
+      tvByg();
+      return række;
+    }
+
+    /* ⚠️ LINJENS NAVN ER STØRRELSEN, IKKE FYLDET. Se noten ovenfor. */
     række.appendChild(v.variantAf
       ? tællerFor(nøgle, v.variantAf, v.pris, v.navn, v.kategori_id, Butik.antalLoft && Butik.antalLoft(v))
       : tællerFor(nøgle, v.navn, v.pris, null, v.kategori_id, Butik.antalLoft && Butik.antalLoft(v)));
@@ -1334,7 +1415,13 @@
         : k.indexOf('v|') === 0
           /* Et valg (15/9) hænger på varens nøgle: "12|Pitabrød|valg|Kebab". */
           ? lovlige['variant|' + k.slice(k.lastIndexOf('|') + 1)]
-          : lovlige[k.split('|valg|')[0]];
+          /* ⚠️ OG TILVALGENES NØGLEFORM SKAL KENDES HER (1/10).
+             "dagens|Bagt kartoffel|til|Oksekød" ligner ingenting på
+             hvidlisten, og en nøgle, listen ikke kan læse, bliver
+             SLETTET — tavst. Nøjagtig samme fælde som isen faldt i
+             25/9: gæsten lagde kartoflen med kylling i, rørte
+             klokkeslættet, og den var væk uden en lyd. */
+          : lovlige[k.split('|til|')[0].split('|valg|')[0]];
       if (!ok) {
         ud.push(Butik.linjeNavn ? Butik.linjeNavn(post) : post.navn);
         delete kurv[k];
@@ -2654,6 +2741,11 @@
              Se noten i Butik.bestil om hvorfor navnet forbliver
              størrelsens. */
           variant: kurv[k].variant || null,
+          /* ⚠️ I DERES EGEN NØGLE og ikke i variant: databasen
+             kræver, at variant er ÉT af varens valg, så to tilvalg
+             ville dø på bestilling_mangler_valg (1/10). */
+          tilvalg: (kurv[k].tilvalg && kurv[k].tilvalg.length)
+            ? kurv[k].tilvalg : undefined,
         });
       }))),
       /* ⚠️ FYLDET ER SIT EGET FELT, IKKE EN LINJE. De 29 slags er

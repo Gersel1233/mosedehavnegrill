@@ -323,6 +323,93 @@
     tekst.value = r.beskrivelse || '';
     tekst.placeholder = 'Beskrivelse (valgfri) — den linje gæsten læser';
 
+    /* ============================================================
+       TILBEHØR, GÆSTEN KAN VÆLGE TIL  (1/10)
+       ------------------------------------------------------------
+       Mikkel: *"på dagensret gør så de kan tilføje tilbehør ting i
+       admin … og at de kan vælge det og i dette tilfælde 10 kroner
+       og selv kan skrive det ind."*
+
+       Baggrunden er kartoflens tekst, han kaldte *"alt for
+       generisk"*: »Tilføj valgfrit tilbehør og kød – 10,- pr.
+       stk.« Hvilket tilbehør? Det stod ingen steder — og køkkenet
+       fik en bon, hvor der heller ikke stod andet end retten.
+
+       ⚠️ NAVN OG PRIS HVER FOR SIG, ikke ét felt med "Kylling 10".
+          Et felt, der skal tolkes, er et felt, der kan tolkes
+          forkert: "Pulled pork 10" har et tal i navnet, og den
+          dag nogen skriver "Bacon 5 skiver", bliver prisen 5.
+          Hvad tror en travl person, feltet betyder?
+
+       ⚠️ DER ER ALTID ÉN TOM LINJE NEDERST. Uden den skulle man
+          først finde en knap for at kunne skrive — og en liste,
+          der ikke kan tilføjes til uden et ekstra tryk, bliver
+          ikke vedligeholdt. Den tomme smides væk ved gemmet
+          (renseTilvalg i store-skriv.js). */
+    var tvBoks = Admin.lav('div', 'tilvalg-boks');
+    var tvTitel = Admin.lav('span', 'tilvalg-titel', 'Tilbehør, gæsten kan vælge til');
+    var tvLinjer = Admin.lav('div', 'tilvalg-linjer');
+    tvBoks.appendChild(tvTitel);
+    tvBoks.appendChild(tvLinjer);
+
+    function tvLinje(navnVaerdi, prisVaerdi) {
+      var l = Admin.lav('div', 'tilvalg-linje');
+
+      var tn = document.createElement('input');
+      tn.type = 'text'; tn.className = 'tilvalg-navn'; tn.maxLength = 60;
+      tn.placeholder = 'fx Kylling';
+      tn.setAttribute('aria-label', 'Navn på tilbehør til ' + r.navn);
+      tn.value = navnVaerdi || '';
+
+      var tp = document.createElement('input');
+      tp.type = 'text'; tp.className = 'smal tilvalg-pris'; tp.inputMode = 'decimal';
+      tp.placeholder = 'kr.';
+      tp.setAttribute('aria-label', 'Pris på tilbehøret til ' + r.navn);
+      tp.value = (prisVaerdi === null || prisVaerdi === undefined || prisVaerdi === '')
+        ? '' : String(prisVaerdi).replace('.', ',');
+
+      var væk = Admin.lav('button', 'knap lille tilvalg-væk', '×');
+      væk.type = 'button';
+      væk.setAttribute('aria-label', 'Fjern tilbehøret');
+      væk.addEventListener('click', function () {
+        l.remove();
+        sidsteLinjeErTom();
+        /* ⚠️ EN FJERNET LINJE SKAL OGSÅ GEMMES. Autogem lytter på
+           input og change; et klik på × er ingen af delene, og
+           tilbehøret ville komme tilbage ved næste genindlæsning
+           — mens skærmen sagde, det var væk. */
+        tn.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+
+      l.appendChild(tn); l.appendChild(tp); l.appendChild(væk);
+      tn.addEventListener('input', sidsteLinjeErTom);
+      return l;
+    }
+
+    // Altid præcis én tom linje nederst — hverken nul eller to.
+    function sidsteLinjeErTom() {
+      var linjer = tvLinjer.querySelectorAll('.tilvalg-linje');
+      var sidste = linjer[linjer.length - 1];
+      var tom = sidste && !sidste.querySelector('.tilvalg-navn').value.trim();
+      if (!tom) tvLinjer.appendChild(tvLinje('', ''));
+    }
+
+    (Butik.dagensTilvalg(r) || []).forEach(function (t) {
+      tvLinjer.appendChild(tvLinje(t.navn, t.pris));
+    });
+    sidsteLinjeErTom();
+
+    function tvSaml() {
+      var ud = [];
+      tvLinjer.querySelectorAll('.tilvalg-linje').forEach(function (l) {
+        ud.push({
+          navn: l.querySelector('.tilvalg-navn').value,
+          pris: l.querySelector('.tilvalg-pris').value,
+        });
+      });
+      return ud;
+    }
+
     // Rørt antallet? Se noten øverst: tallet sendes kun med, hvis
     // nogen har skrevet i feltet.
     var roert = false;
@@ -345,6 +432,11 @@
         id: r.id, dato: r.dato, navn: navn.value, beskrivelse: tekst.value,
         pris: pris.value, udsolgt: udsolgt.checked, aktiv: r.aktiv,
         sortering: r.sortering,
+        /* Altid med fra DEN her række: feltet står på skærmen, så
+           det, der står i det, ER sandheden. Betingelsen i
+           store-skriv.js er for de gemmer, der slet ikke har
+           feltet — se noten dér. */
+        tilvalg: tvSaml(),
       };
       // Se noten øverst: antallet sendes kun med, hvis nogen har
       // rørt feltet — ellers skrives morgenens tal tilbage.
@@ -378,6 +470,7 @@
     raekke.appendChild(gem);
     raekke.appendChild(slet);
     raekke.appendChild(tekst);
+    raekke.appendChild(tvBoks);
     return raekke;
   }
 

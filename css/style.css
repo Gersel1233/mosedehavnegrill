@@ -13377,3 +13377,114 @@ body.personale .isbar-vis-titel {
 /* Telefonens bredde — de fleste gæster bestiller isen på en. */
 body.personale .is-forhaand { max-width: 390px; }
 body.personale .is-forhaand .isbyg-blok { margin-top: 0; }
+
+
+/* ---- Tilbehør til dagens ret  (1/10) ----
+   Ejeren skriver navn og pris på det, gæsten kan vælge til.
+
+   ⚠️ SCOPET TIL body.personale OG .uge-ret. En regel uden scope
+   laver hele admin om — .tilvalg-navn er et almindeligt navn, og
+   uden scope ville den også ramme en kommende liste et andet
+   sted. Det er sket før; se noten i CLAUDE.md.
+
+   Boksen er rykket ind under rækken, så den læses som "hører til
+   retten ovenfor" og ikke som en række mere i ugeplanen. */
+body.personale .uge-ret .tilvalg-boks {
+  flex-basis: 100%;
+  margin: 6px 0 0 0;
+  padding: 10px 0 2px 12px;
+  border-left: 2px solid var(--streg);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+body.personale .uge-ret .tilvalg-titel {
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+body.personale .uge-ret .tilvalg-linjer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+body.personale .uge-ret .tilvalg-linje {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+body.personale .uge-ret .tilvalg-navn { flex: 1 1 10rem; min-width: 0; }
+body.personale .uge-ret .tilvalg-pris { flex: 0 0 5.5rem; width: 5.5rem; }
+/* ⚠️ Mindst 40 px at ramme: × er et lille tegn, og den her knap
+   SLETTER noget. En fejlramt sletning på en travl torsdag er
+   værre end en knap, der fylder lidt. */
+body.personale .uge-ret .tilvalg-væk {
+  flex: 0 0 auto;
+  min-width: 40px;
+  min-height: 40px;
+  line-height: 1;
+}
+@media (max-width: 720px) {
+  body.personale .uge-ret .tilvalg-navn { flex-basis: 100%; }
+}
+
+
+/* ---- TILBEHØR TIL DAGENS RET — ved bordet  (1/10) ----
+   Mikkel om kartoflens tekst: *"den står alt for generisk."* Nu
+   står ejerens navne som chips, gæsten kan trykke på, og prisen
+   ved siden af hver.
+
+   ⚠️ SCOPET TIL body:not(.personale) som naboerne. En regel uden
+   scope ville også ramme admins egen tilvalgsliste — og .valgt er
+   en klasse, hele admin bruger.
+
+   ⚠️ CHIPS OG IKKE EN LISTE MED TÆLLERE: se den lange note i
+   js/bestilling.js. Chippen siger ÉN ting — er det her på? */
+body:not(.personale) .stk-linje > .stk-tilvalg {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+body:not(.personale) .stk-tilvalg-titel {
+  flex: 0 0 100%;
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* ⚠️ MINDST 40 PX HØJ. Chippen trykkes af en gæst med én hånd om
+   en menu og den anden om et barn; en chip på 28 px rammes ved
+   siden af. Samme mål som × i admin. */
+body:not(.personale) .stk-tilvalg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(36, 26, 23, .18);
+  background: var(--paper, #fff);
+  color: var(--ink, #241a17);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+body:not(.personale) .stk-tilvalg-chip .stk-tilvalg-pris {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--red);
+  white-space: nowrap;
+}
+/* Valgt skal kunne SES uden at blive læst — og ikke kun på farven:
+   en chip, der kun skifter kulør, forsvinder for den, der ser
+   farver anderledes. Derfor både ramme, bund og fed skrift. */
+body:not(.personale) .stk-tilvalg-chip.valgt {
+  border-color: var(--red);
+  background: var(--red-svag, rgba(214, 42, 58, .10));
+  font-weight: 600;
+}
+body:not(.personale) .stk-tilvalg-chip.valgt .stk-tilvalg-pris { color: var(--red-tekst, var(--red)); }

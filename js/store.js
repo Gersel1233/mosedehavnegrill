@@ -1386,6 +1386,95 @@
     return n + valgTillaeg(v, valgNavn);
   }
 
+  /* ============================================================
+     TILVALG PÅ DAGENS RET  (1/10)
+     ------------------------------------------------------------
+     Mikkel: *"på dagensret gør så de kan tilføje tilbehør ting i
+     admin … og at de kan vælge det og i dette tilfælde 10 kroner
+     og selv kan skrive det ind."* Og om kartoflens tekst: *"den
+     står alt for generisk."* Der stod »Tilføj valgfrit tilbehør
+     og kød – 10,- pr. stk.« — hvilket tilbehør? Ingen steder, og
+     køkkenet fik en bon uden det.
+
+     ⚠️ TILVALG ER IKKE ET VALG. Et `valg` er samme vare i en anden
+        udgave: ÉN af dem, og databasen kræver, at `variant` er en
+        af dem. Et tilvalg er noget OVENPÅ, og man kan vælge flere
+        — derfor sin egen nøgle på linjen (`tilvalg: [...]`), som
+        smagene fik det 25/9. Lagde vi dem i `variant`, ville to
+        tilvalg dø på bestilling_mangler_valg.
+
+     ⚠️ OG REGNESTYKKET BOR HER, fordi databasen har det samme i
+        mosede_tilvalg_tillaeg. Blev de to uenige, ville gæsten se
+        én pris og få bestilling_pris_aendret i hovedet.
+     ============================================================ */
+  function dagensTilvalg(r) {
+    if (!r || !Array.isArray(r.tilvalg)) return null;
+    var ud = [];
+    r.tilvalg.forEach(function (x) {
+      var navn = valgNavnet(x);
+      if (!navn) return;
+      /* Et negativt tillæg er en rabat, ingen har bedt om, og et
+         ikke-tal ville brede sig som NaN gennem hele summen —
+         samme regel som valgTillaegget lige ovenfor. */
+      var pris = (x && typeof x === 'object') ? Number(x.pris) : NaN;
+      ud.push({ navn: navn, pris: (isFinite(pris) && pris > 0)
+                                  ? Math.round(pris * 100) / 100 : 0 });
+    });
+    /* Loftet er det samme som databasens dagens_tilvalg_ok. */
+    return ud.length ? ud.slice(0, 16) : null;
+  }
+
+  /* Hvad de valgte tilvalg lægger oveni. Et navn, der ikke står på
+     retten, koster 0 — at det ikke må STÅ på linjen, siger
+     databasen selv (bestilling_ukendt_tilvalg). Sammenligningen er
+     lower + trim, nøjagtigt som værnet, så siden og databasen
+     aldrig kan blive uenige om, hvad gæsten pegede på. */
+  function tilvalgTillaeg(r, valgte) {
+    var liste = dagensTilvalg(r);
+    if (!liste || !Array.isArray(valgte)) return 0;
+    var sum = 0;
+    valgte.forEach(function (navn) {
+      var søgt = String(navn === null || navn === undefined ? '' : navn)
+        .trim().toLowerCase();
+      if (!søgt) return;
+      for (var i = 0; i < liste.length; i++) {
+        if (liste[i].navn.toLowerCase() === søgt) { sum += liste[i].pris; return; }
+      }
+    });
+    return sum;
+  }
+
+  function prisMedTilvalg(r, valgte) {
+    var p = r && r.pris;
+    if (p === null || p === undefined || p === '') return null;
+    var n = Number(p);
+    if (!isFinite(n)) return null;
+    return n + tilvalgTillaeg(r, valgte);
+  }
+
+  /* ============================================================
+     EN VARE, DER SLUKKER SIG SELV  (1/10)
+     ------------------------------------------------------------
+     Chefen: *"De 55,- gælder kun fredagsbaren … lav det som et
+     særskilt tidsbegrænset tilbud til 55,-, der automatisk
+     forsvinder efter fredagsbaren."*
+
+     ⚠️ KATEGORIENS `dage` KUNNE IKKE BRUGES: den gentager sig HVER
+        fredag, og fredagsbaren er én aften. Derfor et datovindue
+        på varen selv — og databasen har det samme i
+        mosede_vare_i_vindue, så en gammel fane ikke kan sende de
+        55,- i november.
+     ============================================================ */
+  function vareIVindue(v, iso) {
+    if (!v) return true;
+    var dag = iso || nu().dato;
+    var fra = v.vis_fra ? String(v.vis_fra).slice(0, 10) : '';
+    var til = v.vis_til ? String(v.vis_til).slice(0, 10) : '';
+    if (fra && dag < fra) return false;
+    if (til && dag > til) return false;
+    return true;
+  }
+
   /* ÉN MÅDE AT SKRIVE EN LINJE MED ET VALG  (15/9)
      Der stod "Pitabrød (Kylling)" fire steder og "Pitabrød · Kylling"
      fem: gæsten så den ene form i kurven og den anden på sin
@@ -1415,6 +1504,16 @@
        mens kvitteringen over den sagde "2× Jordbær + 3× Vanilje".
        Målt i en browser mod produktionens data. Nu læses hver portion
        for sig, og flere portioner på én linje skilles med " / ". */
+    /* ⚠️ OG TILVALGENE HØRER MED TIL LINJENS NAVN  (1/10) — samme
+       sag som smagene ovenfor. Står de kun i et felt, som kortet i
+       admin skal huske at hente, læser køkkenet "Bagt kartoffel" og
+       ved ikke, at der skulle kylling på. Prikken er den samme
+       skillelinje, bonen og køkken-køen bruger. */
+    var tv = (l && Array.isArray(l.tilvalg))
+      ? l.tilvalg.map(function (x) { return String(x || '').trim(); }).filter(Boolean)
+      : [];
+    if (tv.length) ud = ud + ' · ' + tv.join(' + ');
+
     var sm = l && l.smage;
     var tekst = (Array.isArray(sm) && sm.some(Array.isArray))
       ? sm.map(function (p) { return samletSmag(smageI({ smage: p })).join(' + '); })
@@ -2043,7 +2142,16 @@
        gæsten har valgt, og en vare må ikke forsvinde, fordi spørgsmålet
        endnu ikke er stillet. */
     function vareHer(v) {
-      return vareSaelgesHer(d, v, sted)
+      /* ⚠️ DATOVINDUET HØRER HJEMME HER  (1/10) — og ikke i den
+         ene løkke, hvor det stod først. `udvalg` har TO veje ud:
+         smørrebrødets egen liste (sm.bestilbare, linje ~2326) og
+         de øvrige kategorier (ekstraKat). Lå reglen kun i den
+         sidste, stod fredagsbarens pølsemix til 55,- stadig på
+         smørrebrødssiden i november — MÅLT: prøven "dagen efter
+         vinduet er varen væk" fandt den. vareHer er det ene sted,
+         begge veje spørger. */
+      return vareIVindue(v, iso)
+        && vareSaelgesHer(d, v, sted)
         && (!hvordan || vareSaelgesHer(d, v, hvordan));
     }
 
@@ -2666,6 +2774,24 @@
          også kigger i — samme grund som `emballage: false`. */
       var sm = smageI(l).map(function (x) { return x.slice(0, 60); }).slice(0, 6);
       if (sm.length) ud.smage = sm;
+
+      /* ⚠️ OG TILVALGENE  (1/10) — HUSETS FASTE FELTLISTE-FÆLDE,
+         SJETTE GANG. `emballage: true` blev tørret af her 4/9,
+         fragten samme dag, isens smage 25/9 — og linjen bygges
+         stadig af FASTE felter. Stod tilvalgene ikke her, ville
+         gæsten se "Bagt kartoffel · Kylling · 65,-" i kurven,
+         trykke send, og databasen svare bestilling_pris_aendret,
+         fordi linjen, der kom frem, kun hed "Bagt kartoffel".
+         Kurven på skærmen ville se helt rigtig ud.
+
+         Loftet er databasens: 16 tilvalg, navne på 60 tegn
+         (dagens_tilvalg_ok). Tom liste sendes ikke — samme grund
+         som `smage: []` og `emballage: false` ovenfor. */
+      var tv = Array.isArray(l.tilvalg)
+        ? l.tilvalg.map(function (x) { return String(x || '').trim().slice(0, 60); })
+            .filter(Boolean).slice(0, 16)
+        : [];
+      if (tv.length) ud.tilvalg = tv;
       return ud;
     }).filter(function (l) { return l.navn && l.antal > 0; });
 
@@ -5229,6 +5355,10 @@
     vareValg: vareValg,
     valgTillaeg: valgTillaeg,
     prisMedValg: prisMedValg,
+    dagensTilvalg: dagensTilvalg,
+    tilvalgTillaeg: tilvalgTillaeg,
+    prisMedTilvalg: prisMedTilvalg,
+    vareIVindue: vareIVindue,
     linjeNavn: linjeNavn,
     smageI: smageI,
     delIPortioner: delIPortioner,
