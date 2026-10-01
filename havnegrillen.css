@@ -3076,6 +3076,11 @@ footer .smiley-linje{
 .glasraekke:active{transform:scale(.98)}
 .gr-tegn{flex:none;width:36px;height:36px;display:grid;place-items:center;font-size:27px;line-height:1}
 .gr-tegn svg{width:32px;height:32px;display:block}
+/* ⚠️ KNUDEN ER BRED, IKKE KVADRATISK (1/10). Kræftens Bekæmpelses mærke er
+   136×72 — presset ned i 32×32 som de andre tegn ville den stå som en
+   streg. Den fylder pladsens bredde og finder selv sin højde, så den
+   vejer visuelt det samme som Facebook-logoet ved siden af. */
+.gr-tegn .knaek-logo{width:36px;height:auto;display:block}
 .gr-tekst{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left}
 /* ⚠️ PRISENS TITEL ER TO LINJER PÅ EN TELEFON. "Indstillet til Greve
    Iværksætterpris 2026" skal stå hel (prøven og 25/9: "indstillet til",

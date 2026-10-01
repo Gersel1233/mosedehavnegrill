@@ -2049,8 +2049,24 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     const menu = page.locator('.menucard .menucard-foto');
     await expect(menu).toHaveAttribute('loading', 'lazy');
     const menuSrc = await menu.evaluate((i) => i.currentSrc || '');
+    /* ⚠️ KNÆK CANCER-LOGOET ER UNDTAGET MED VILJE  (1/10).
+
+       De andre i listen er FOTOS, der står under folden og kun
+       hentes før rul, fordi Chrome strækker sin lazy-afstand.
+       Logoet er noget andet: det står i et kort øverst på siden,
+       og det SKAL være der, når gæsten ser kortet. Et kort med
+       et hul, hvor mærket skulle stå, er værre end de 19 kB.
+
+       ⚠️ OG DET ER 19 kB, IKKE 970. Reglen her blev skrevet for
+       stemningsgalleriets ~970 kB — den er ikke et forbud mod et
+       lille mærke. Prøven herunder holder tallet i skak, så
+       undtagelsen ikke bliver en dør, nogen lægger et foto ind
+       ad. */
+    const kcLogo = hentet.filter((u) => /knaek-cancer\.png$/.test(u));
+    expect(kcLogo.length, 'logoet hentes flere gange').toBeLessThanOrEqual(1);
     expect(hentet.filter((u) => u !== tapasSrc && u !== histSrc && u !== bestSrc
-      && u !== menuSrc && isSrc.indexOf(u) === -1),
+      && u !== menuSrc && isSrc.indexOf(u) === -1
+      && kcLogo.indexOf(u) === -1),
     'forsiden henter et foto, før gæsten har rullet').toEqual([]);
 
     // Rul HELE vejen ned — så må galleriets egne komme, og KUN dem.
@@ -2088,7 +2104,10 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
        og currentSrc var tom. Kun det billede, browseren valgte. */
     const menuFoto = await page.locator('.menucard .menucard-foto')
       .evaluate((i) => i.currentSrc).catch(() => '');
+    /* Knæk Cancer-logoet igen — se grunden ved den første påstand
+       ovenfor. Det er et mærke i et kort øverst, ikke et foto. */
     const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u)
+      && !/knaek-cancer\.png$/.test(u)
       && u !== tapasFoto && u !== findFoto && u !== histFoto && u !== bestFoto
       && u !== menuFoto && isSrc.indexOf(u) === -1);
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
@@ -2897,20 +2916,27 @@ test.describe('Greve-prisen øverst', () => {
    tilbud."* Mikkels ord: *"bare læg op at de støtter i sådan en
    her også, og link til deres hjemmeside."*
 
-   ⚠️ KRÆFTENS BEKÆMPELSES LOGO STÅR IKKE PÅ KORTET, og det er
-   ikke en forglemmelse. cancer.dk har intet offentligt materiale
-   at hente — virksomheder skal kontakte kc@cancer.dk — og et
-   varemærke brugt uden lov er en dårlig historie for en cafe,
-   der gør noget godt. Sløjfen er et almindeligt tegn, præcis som
-   smileykortet bruger 😊 i stedet for Fødevarestyrelsens eget
-   mærke. Samme grund, samme løsning.
+   ⚠️ LOGOET ER EJERENS EGET AT BRUGE — OG DET ER HANS VALG.
+   Først stod der 🎀, fordi cancer.dk ikke har offentligt
+   materiale at hente og et varemærke brugt uden lov er en dårlig
+   historie for en cafe, der gør noget godt. Mikkel leverede
+   1/10 filen selv ("Den-velkendte-sljfe.avif") og bad om den;
+   så er det hans aftale med Kræftens Bekæmpelse, ikke en fil
+   hentet ned fra nettet af os. Prøven herunder måler derfor, at
+   det er NETOP den fil — ikke at der ingen er.
+
+   ⚠️ OG DEN ER PNG, IKKE AVIF. Kildefilen var AVIF, som en ældre
+   iPhone ikke kan vise — og et kort med et hul, hvor logoet
+   skulle stå, er værre end et tegn. Baggrunden var desuden lys
+   grå og ikke gennemsigtig: lagt direkte i det hvide glas havde
+   den givet en grå firkant. Begge dele er målt, ikke antaget.
 
    ⚠️ OG TEKSTEN BÆRER INGEN DATO. Kortet står fast i HTML'en og
    forsvinder ikke af sig selv; en dato ville være forkert den 4.
    oktober. Lørdagen står i kalenderen, som rydder op efter sig.
    ============================================================ */
 test.describe('Knæk Cancer øverst', () => {
-  test('fjerde række: egen tekst, link til cancer.dk, intet logo', async ({ page }) => {
+  test('fjerde række: egen tekst, link til cancer.dk, samme glas', async ({ page }) => {
     await åbn(page, '/index.html');
     await springIntroOver(page);
 
@@ -2943,16 +2969,106 @@ test.describe('Knæk Cancer øverst', () => {
     expect(m.samme_glas, 'kortet er ikke samme glas som de andre tre').toBe(true);
   });
 
-  /* ⚠️ MODSTYKKET: intet efterlignet mærke. Samme regel som
-     smileykortet — se noten der om Fødevarestyrelsens mærke. */
-  test('kortet bruger et tegn, ikke Knæk Cancers eget mærke', () => {
+  /* ⚠️ LOGOFILEN SKAL FINDES, OG DEN SKAL KUNNE VISES OVERALT.
+     Et <img> mod en fil, der ikke er med i udgivelsen, giver et
+     hul i kortet — og AVIF kan en ældre iPhone ikke vise. Målt
+     på filen, ikke læst af opmærkningen. */
+  test('logofilen ligger i repoet, er PNG og har gennemsigtig bund', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const sti = path.resolve(__dirname, '..', 'billeder/knaek-cancer.png');
+    expect(fs.existsSync(sti), 'logofilen mangler i billeder/').toBe(true);
+    const b = fs.readFileSync(sti);
+    /* PNG-signaturen, og color type 6 (RGBA) i IHDR — byte 25. */
+    expect(b.slice(1, 4).toString(), 'filen er ikke en PNG').toBe('PNG');
+    expect(b[25], 'logoet har ingen alfakanal — det giver en grå firkant')
+      .toBe(6);
+    expect(b.length, 'logoet er for tungt til en forside')
+      .toBeLessThan(60 * 1024);
+
+    const html = fs.readFileSync(
+      path.resolve(__dirname, '..', 'index.html'), 'utf8');
+    const kort = html.slice(html.indexOf('knaek-kort'));
+    expect(kort.slice(0, kort.indexOf('</a>')),
+      'kortet peger ikke på logofilen').toContain('billeder/knaek-cancer.png');
+  });
+
+  test('billedet har en tom alt-tekst — teksten står ved siden af', () => {
     const fs = require('fs');
     const path = require('path');
     const html = fs.readFileSync(
       path.resolve(__dirname, '..', 'index.html'), 'utf8');
     const kort = html.slice(html.indexOf('knaek-kort'));
-    const slut = kort.indexOf('</a>');
-    expect(kort.slice(0, slut), 'kortet henter et billede — er det deres logo?')
-      .not.toMatch(/<img|background-image|\.svg|\.png/i);
+    const img = kort.slice(kort.indexOf('<img'), kort.indexOf('</a>'));
+    /* ⚠️ alt="" OG IKKE "Knæk Cancer-logo". Kortets egen overskrift
+       siger det allerede; en skærmlæser ville ellers læse det to
+       gange. Samme regel som husets øvrige pynt. */
+    expect(img, 'logoet læses op oven i overskriften').toMatch(/alt=""/);
+  });
+});
+
+/* ============================================================
+   BANNERET SIGER DET KORTE — KALENDEREN SIGER DET HELE  (1/10)
+   ------------------------------------------------------------
+   Mikkels ord om fredagsbaren på forsiden: *"der står live
+   fredags cafe, så der langt skift nedenunder af beskrivelsen —
+   der skal være beskrivelse, men ikke sådan så meget, og også
+   rodet."*
+
+   Han har ret, og det er min egen tekst, der er problemet.
+   Plakatens indhold — happy hour, tre tilbud, starttid, "husk at
+   bestille bord" — blev skrevet i ÉT felt på 264 tegn, og
+   banneret tegnede hele molevitten under overskriften. En mur.
+
+   Banneret er en appetitvækker med "Se kalenderen →" under sig.
+   Det skal sige, HVAD der sker; detaljerne hører hjemme dér,
+   hvor der er plads til dem.
+
+   ⚠️ TEKSTEN FORKORTES I VISNINGEN, IKKE I DATABASEN. Klippede
+   vi den ved indtastningen, ville resten være væk for altid — og
+   kalendersiden, som HAR plads, ville miste tilbuddene. Ejeren
+   skriver ét felt; de to flader viser hver sin mængde.
+   ============================================================ */
+test.describe('Arrangementsbanneret klipper den lange tekst', () => {
+  const langt = (b) => ([{
+    id: 1, lokation_id: 'mosede', type: 'arrangement', dato: '2026-08-29',
+    slut_dato: null, titel: 'Fredagsbar med Danni Syhler', beskrivelse: b,
+    emoji: '', lukker_kl: null, offentlig: true, kategori: 'musik',
+  }]);
+  const HELE = 'Danni Syhler kommer og spiller god musik og hygge på havnen. '
+    + 'Happy hour på fadøl kl. 17-18. Pølsemix 55,-. Pommes fritter eller toast 25,-. '
+    + '2 ens drinks fra kl. 20-22 for 110,-. '
+    + 'Vi starter kl. 17 og fortsætter, så længe der er gang i festen. Husk at bestille bord.';
+
+  test('banneret viser den første sætning, ikke hele plakaten', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN,
+      data: grunddata({ kalender: langt(HELE) }) });
+    const p = page.locator('.music p');
+    const tekst = (await p.innerText()).trim();
+    expect(tekst.length, `banneret står med ${tekst.length} tegn — det er en mur`)
+      .toBeLessThanOrEqual(120);
+    expect(tekst, 'den første sætning mangler').toContain('Danni Syhler kommer og spiller');
+    /* ⚠️ OG TILBUDDENE MÅ IKKE STÅ HER. Det var netop dem, der
+       gjorde banneret rodet — og de står på kalendersiden. */
+    expect(tekst, 'tilbuddene står stadig i banneret').not.toContain('Pølsemix');
+    expect(tekst, 'tilbuddene står stadig i banneret').not.toContain('110');
+  });
+
+  /* ⚠️ MODSTYKKET, OG DET VIGTIGSTE: en KORT beskrivelse må ikke
+     få en prik. "Spiller 19-22." skal stå, som ejeren skrev den. */
+  test('en kort beskrivelse står urørt — uden …', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN,
+      data: grunddata({ kalender: langt('Spiller 19–22.') }) });
+    await expect(page.locator('.music p')).toHaveText('Spiller 19–22.');
+  });
+
+  /* Og hele teksten skal stadig findes dér, hvor der er plads. */
+  test('kalendersiden har stadig det hele', async ({ page }) => {
+    await åbn(page, '/h-kalender.html', { ur: FREDAG_MIDT_PÅ_DAGEN,
+      data: grunddata({ kalender: langt(HELE) }) });
+    await expect(page.locator('.evcard').first(), 'tilbuddene er væk fra kalenderen')
+      .toContainText('Pølsemix 55,-');
+    await expect(page.locator('.evcard').first())
+      .toContainText('Husk at bestille bord');
   });
 });

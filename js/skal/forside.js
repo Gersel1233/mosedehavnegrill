@@ -288,9 +288,46 @@
     skriv(find('h4', boks), næste.titel + ' · ' + pænDato(næste.dato, true));
     var p = find('p', boks);
     if (p) {
-      if (næste.beskrivelse) p.textContent = næste.beskrivelse;
+      if (næste.beskrivelse) p.textContent = kortFortalt(næste.beskrivelse);
       else skjul(p);
     }
+  }
+
+  /* ============================================================
+     BANNERET SIGER DET KORTE — KALENDEREN SIGER DET HELE  (1/10)
+     ------------------------------------------------------------
+     Mikkels ord om fredagsbaren: *"der skal være beskrivelse, men
+     ikke sådan så meget, og også rodet."*
+
+     Han har ret, og det var min egen tekst, der var problemet.
+     Plakatens indhold — happy hour, tre tilbud, starttid, "husk
+     at bestille bord" — stod i ÉT felt på 264 tegn, og banneret
+     tegnede det hele under overskriften. En mur lige under
+     "Fredagsbar med Danni Syhler".
+
+     Banneret er en appetitvækker med "Se kalenderen →" under sig:
+     det skal sige HVAD der sker. Detaljerne hører hjemme dér,
+     hvor der er plads.
+
+     ⚠️ DER KLIPPES I VISNINGEN, IKKE I DATABASEN. Klippede vi ved
+     indtastningen, ville resten være væk for altid, og
+     kalendersiden ville miste tilbuddene. Ejeren skriver ét felt;
+     de to flader viser hver sin mængde.
+
+     ⚠️ OG EN KORT TEKST RØRES IKKE. "Spiller 19–22." skal stå,
+     som den er — en prik efter en sætning, der er færdig, ser ud
+     som om siden har mistet noget. */
+  function kortFortalt(tekst) {
+    var t = String(tekst || '').trim();
+    if (t.length <= 110) return t;
+    /* Første hele sætning, hvis den er kort nok til at stå alene. */
+    var punktum = t.search(/[.!?](\s|$)/);
+    if (punktum !== -1 && punktum + 1 <= 110) return t.slice(0, punktum + 1);
+    /* Ellers ved sidste ordgrænse før loftet — aldrig midt i et ord. */
+    var kort = t.slice(0, 110);
+    var mellemrum = kort.lastIndexOf(' ');
+    if (mellemrum > 40) kort = kort.slice(0, mellemrum);
+    return kort.replace(/[\s,;:–—-]+$/, '') + '…';
   }
 
   // ----------------------------------------------------------
