@@ -62,7 +62,18 @@ function data() {
       return { ...v, pris: PRIS, navn: DA,
         oversaettelser: { en: { navn: EN, beskrivelse: 'Crispy roast pork, red cabbage and cucumber salad.' } } };
     }
-    // Nr. 3 får BEVIDST ingen oversættelse — faldskærmen skal måles.
+    /* ⚠️ TO SLAGS "MANGLER", OG DE FALDER FORSKELLIGE STEDER.
+       Nr. 3 har slet INGEN oversættelser. Nr. 2 har et engelsk
+       objekt, men uden navn — og dét er den farlige: opslaget når
+       hele vejen ind og finder undefined.
+
+       MÅLT: da jeg fjernede faldskærmen (`return t || dansk`),
+       bestod alle otte prøver alligevel, fordi ingen af dem havde
+       den her form. Et værn, ingen prøve rører, er et værn, der
+       forsvinder næste gang nogen rydder op. */
+    if (v.id === 2) {
+      return { ...v, oversaettelser: { en: { beskrivelse: 'Soft serve with guf.' } } };
+    }
     return v;
   });
   return d;
@@ -120,6 +131,18 @@ test.describe('Menukortet på engelsk', () => {
     await åbn(page, 'en');
     const linje = page.locator('.mk-linje[data-vare="Fadøl, lille"] h4');
     await expect(linje).toHaveText('Fadøl, lille');
+  });
+
+  /* ⚠️ DEN FARLIGE FORM: et engelsk objekt UDEN navn. Opslaget når
+     hele vejen ind og finder undefined — og uden `|| dansk` står
+     overskriften tom. Se noten i fiksturet. */
+  test('et TOMT engelsk navn falder også tilbage på dansk', async ({ page }) => {
+    await åbn(page, 'en');
+    const linje = page.locator('.mk-linje[data-vare="Softice med guf"] h4');
+    await expect(linje).toHaveText('Softice med guf');
+    // … mens beskrivelsen, der ER oversat, står på engelsk.
+    await expect(page.locator('.mk-linje[data-vare="Softice med guf"] p'))
+      .toHaveText('Soft serve with guf.');
   });
 
   test('kategoriens navn følger sproget — ejeren retter det i databasen', async ({ page }) => {
