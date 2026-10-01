@@ -2888,3 +2888,71 @@ test.describe('Greve-prisen øverst', () => {
     await expect(page.locator('footer a[href="https://erhvervscentret.greve.dk/gba"]')).toHaveCount(1);
   });
 });
+
+/* ============================================================
+   "VI STØTTER KNÆK CANCER" SOM FJERDE RÆKKE  (1/10)
+   ------------------------------------------------------------
+   Chefens besked: *"Vi Støtter Knæk Cancer, Støt Brysterne, og
+   samler ind lørdag d. 3/10 med forskellige aktiviteter og
+   tilbud."* Mikkels ord: *"bare læg op at de støtter i sådan en
+   her også, og link til deres hjemmeside."*
+
+   ⚠️ KRÆFTENS BEKÆMPELSES LOGO STÅR IKKE PÅ KORTET, og det er
+   ikke en forglemmelse. cancer.dk har intet offentligt materiale
+   at hente — virksomheder skal kontakte kc@cancer.dk — og et
+   varemærke brugt uden lov er en dårlig historie for en cafe,
+   der gør noget godt. Sløjfen er et almindeligt tegn, præcis som
+   smileykortet bruger 😊 i stedet for Fødevarestyrelsens eget
+   mærke. Samme grund, samme løsning.
+
+   ⚠️ OG TEKSTEN BÆRER INGEN DATO. Kortet står fast i HTML'en og
+   forsvinder ikke af sig selv; en dato ville være forkert den 4.
+   oktober. Lørdagen står i kalenderen, som rydder op efter sig.
+   ============================================================ */
+test.describe('Knæk Cancer øverst', () => {
+  test('fjerde række: egen tekst, link til cancer.dk, intet logo', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await springIntroOver(page);
+
+    const kc = page.locator('.knaek-kort');
+    await expect(kc).toHaveCount(1);
+    await kc.scrollIntoViewIfNeeded();
+    await expect(kc).toBeVisible();
+    await expect(kc).toHaveAttribute('href', 'https://www.cancer.dk/knaek-cancer/');
+    await expect(kc).toHaveAttribute('target', '_blank');
+    await expect(kc).toHaveAttribute('rel', /noopener/);
+    await expect(kc).toContainText('Knæk Cancer');
+
+    /* ⚠️ INGEN DATO I KORTET — den ville stå forkert fra den 4.
+       oktober, og kortet rydder ikke op efter sig selv. */
+    await expect(kc, 'kortet bærer en dato, det ikke kan holde')
+      .not.toContainText(/\d{1,2}\.\s*(okt|oktober)/i);
+
+    const m = await page.evaluate(() => {
+      const pris = document.querySelector('.pris-kort');
+      const kc = document.querySelector('.knaek-kort');
+      const læs = (e) => { const cs = getComputedStyle(e);
+        return cs.backgroundColor + cs.boxShadow + cs.borderRadius; };
+      const a = pris.getBoundingClientRect(), b = kc.getBoundingClientRect();
+      return { lige_under: pris.nextElementSibling === kc,
+        afstand: Math.round(b.top - a.bottom),
+        samme_glas: læs(pris) === læs(kc) };
+    });
+    expect(m.lige_under, 'kortet står ikke lige under Greve-prisen').toBe(true);
+    expect(m.afstand, 'kortet hænger ikke sammen med de tre over').toBeLessThanOrEqual(16);
+    expect(m.samme_glas, 'kortet er ikke samme glas som de andre tre').toBe(true);
+  });
+
+  /* ⚠️ MODSTYKKET: intet efterlignet mærke. Samme regel som
+     smileykortet — se noten der om Fødevarestyrelsens mærke. */
+  test('kortet bruger et tegn, ikke Knæk Cancers eget mærke', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const html = fs.readFileSync(
+      path.resolve(__dirname, '..', 'index.html'), 'utf8');
+    const kort = html.slice(html.indexOf('knaek-kort'));
+    const slut = kort.indexOf('</a>');
+    expect(kort.slice(0, slut), 'kortet henter et billede — er det deres logo?')
+      .not.toMatch(/<img|background-image|\.svg|\.png/i);
+  });
+});
