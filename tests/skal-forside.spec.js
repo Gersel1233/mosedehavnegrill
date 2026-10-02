@@ -2936,7 +2936,15 @@ test.describe('Greve-prisen øverst', () => {
    oktober. Lørdagen står i kalenderen, som rydder op efter sig.
    ============================================================ */
 test.describe('Knæk Cancer øverst', () => {
-  test('fjerde række: egen tekst, link til cancer.dk, samme glas', async ({ page }) => {
+  /* ⚠️ LINKET GIK UD AF HUSET FØR  (2/10). Chefen: "Lad forsidens
+     event/nyhed linke videre til kalenderarrangementet" og "lav
+     ikke en ny permanent underside om Knæk Cancer". Kalenderen ER
+     sidens sted for arrangementer, så gæsten bliver på havnens
+     egen side, til hun har set, hvad caféen selv laver.
+     Reglen om INGEN DATO nedenfor står uændret — og den fangede
+     mig: jeg skrev først "Lyserød Lørdag den 3. oktober" i
+     kortet, og det ville stå forkert fra den 4. */
+  test('fjerde række: egen tekst, link til kalenderen, samme glas', async ({ page }) => {
     await åbn(page, '/index.html');
     await springIntroOver(page);
 
@@ -2944,9 +2952,10 @@ test.describe('Knæk Cancer øverst', () => {
     await expect(kc).toHaveCount(1);
     await kc.scrollIntoViewIfNeeded();
     await expect(kc).toBeVisible();
-    await expect(kc).toHaveAttribute('href', 'https://www.cancer.dk/knaek-cancer/');
-    await expect(kc).toHaveAttribute('target', '_blank');
-    await expect(kc).toHaveAttribute('rel', /noopener/);
+    await expect(kc).toHaveAttribute('href', /^h-kalender\.html#arr-\d+$/);
+    /* ⚠️ INTET target="_blank" MERE: linket bliver PÅ siden nu, og
+       en ny fane til sin egen hjemmeside er en fane for meget. */
+    await expect(kc).not.toHaveAttribute('target', '_blank');
     await expect(kc).toContainText('Knæk Cancer');
 
     /* ⚠️ INGEN DATO I KORTET — den ville stå forkert fra den 4.
