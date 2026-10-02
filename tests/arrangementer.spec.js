@@ -1048,3 +1048,77 @@ test.describe('Arrangementets kategori', () => {
     expect(gemt.kalender.length).toBe(1);
   });
 });
+
+/* ============================================================
+   ET LINK TIL ÉT ARRANGEMENT  (2. okt 2026)
+   ------------------------------------------------------------
+   Chefen om Lyserød Lørdag: *"Lad forsidens event/nyhed linke
+   videre til kalenderarrangementet, hvis hjemmesidens system
+   understøtter det"* — og *"lav ikke en ny permanent underside
+   om Knæk Cancer"*.
+
+   Det gjorde systemet ikke: kortene havde ingen id, så et link
+   kunne kun pege på siden. Nu bærer hver række sit EGET id, så
+   henvisningen aldrig kan lande på et naboarrangement, hvis
+   rækkefølgen skifter.
+   ============================================================ */
+test.describe('Et link kan pege på ét arrangement', () => {
+  function medToArrangementer() {
+    const d = grunddata();
+    d.kalender = [
+      { id: 71, lokation_id: 'mosede', type: 'arrangement', dato: '2026-08-08',
+        titel: 'Fredagsbar', beskrivelse: 'Musik på havnen.', offentlig: true },
+      { id: 72, lokation_id: 'mosede', type: 'arrangement', dato: '2026-08-09',
+        titel: '🎀 Lyserød Lørdag',
+        beskrivelse: 'Mosede Havnecafé deltager i Lyserød Lørdag. Der er live musik '
+          + 'og forskellige arrangementer i løbet af lørdagen, og en del af '
+          + 'overskuddet går til Kræftens Bekæmpelse.',
+        kategori: 'musik', offentlig: true },
+    ];
+    return d;
+  }
+
+  test('hvert arrangement har sit eget anker', async ({ page }) => {
+    await åbnKalender(page, { data: medToArrangementer() });
+    /* ⚠️ ID'ET ER RÆKKENS EGET, ikke dens plads i listen. Et anker
+       på plads nr. 2 ville pege på noget andet, så snart ejeren
+       lagde et arrangement ind imellem. */
+    await expect(page.locator('#arr-71')).toHaveCount(1);
+    await expect(page.locator('#arr-72')).toHaveCount(1);
+    await expect(page.locator('#arr-72')).toContainText('Lyserød Lørdag');
+  });
+
+  test('… og de tre ting, chefen bad om, står i arrangementet', async ({ page }) => {
+    await åbnKalender(page, { data: medToArrangementer() });
+    const t = await page.locator('#arr-72').innerText();
+    expect(t, 'deltagelsen mangler').toMatch(/deltager i Lyserød Lørdag/i);
+    expect(t, 'musikken og arrangementerne mangler').toMatch(/live musik/i);
+    expect(t, 'hvor pengene går hen mangler').toMatch(/Kræftens Bekæmpelse/i);
+  });
+
+  /* ⚠️ MODSTYKKET: et link til noget, der ikke findes, må ikke
+     vælte siden. Et arrangement, der er slettet eller udløbet, er
+     en helt almindelig dag — så lander gæsten øverst i kalenderen. */
+  test('et link til et arrangement, der ikke findes, vælter ikke siden', async ({ page }) => {
+    const fejl = [];
+    page.on('pageerror', (e) => fejl.push(e.message));
+    await åbnSkal(page, '/h-kalender.html#arr-999', { data: medToArrangementer() });
+    await page.locator('.evcard, .evtom').first().waitFor({ state: 'attached' });
+    await expect(page.locator('.evcard')).toHaveCount(2);
+    expect(fejl, 'siden kastede en fejl på et ukendt anker').toEqual([]);
+  });
+});
+
+/* ⚠️ OG FORSIDENS KORT SKAL PEGE DERHEN. Stod der stadig
+   cancer.dk, ville gæsten blive sendt væk fra havnen, før hun har
+   set, hvad caféen selv laver — og chefens punkt 4 ville være
+   ord uden kode. Læses UD AF index.html, så prøven falder, hvis
+   nogen ændrer linket tilbage. */
+test('forsidens Knæk Cancer-kort peger på kalenderarrangementet', () => {
+  const fs = require('fs');
+  const html = fs.readFileSync('index.html', 'utf8');
+  const kort = (html.match(/<a[^>]*knaek-kort[^>]*>/) || [])[0] || '';
+  expect(kort, 'kortet findes ikke længere på forsiden').toContain('knaek-kort');
+  expect(kort, 'kortet peger stadig ud af huset').toMatch(/href="h-kalender\.html#arr-\d+"/);
+  expect(kort, 'kortet skal stadig slukke sig selv').toContain('data-vis-til=');
+});

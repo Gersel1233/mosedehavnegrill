@@ -73,6 +73,21 @@
     'juli', 'august', 'september', 'oktober', 'november', 'december'];
 
   var arrangementer = [];
+  var hoppet = false;
+
+  /* Et link til ÉT arrangement: h-kalender.html#arr-33.
+     Samme form som menukortets hopTilHash — ét greb, der kendes
+     igen, i stedet for to måder at gøre det samme. */
+  function hopTilArrangement() {
+    if (hoppet) return;
+    var id = String(location.hash || '').replace(/^#/, '');
+    if (!/^arr-\d+$/.test(id)) return;
+    var maal = document.getElementById(id);
+    if (!maal) return;
+    hoppet = true;
+    try { maal.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    catch (e) { maal.scrollIntoView(); }
+  }
   var pladser = {};
   var valgt = null;
 
@@ -171,6 +186,16 @@
       kort.setAttribute('data-kind', slags);
       kort.setAttribute('data-ev', String(i));
       kort.setAttribute('data-kalender', String(k.id));
+      /* ⚠️ ET ARRANGEMENT KAN LINKES TIL  (2/10). Chefen: *"Lad
+         forsidens event/nyhed linke videre til kalenderarrangementet,
+         hvis hjemmesidens systemet understøtter det."* Det gjorde
+         det ikke — kortene havde ingen id, så et link kunne kun
+         pege på siden og ikke på arrangementet.
+         Rækken bærer sit eget id, så henvisningen aldrig peger på
+         et NABO-arrangement, hvis rækkefølgen skifter. Findes
+         ankeret ikke (arrangementet er slettet eller udløbet),
+         lander gæsten øverst på kalenderen — ikke på en fejl. */
+      kort.id = 'arr-' + k.id;
 
       var dato = lav('div', 'date');
       dato.appendChild(lav('b', null, String(dagsTal(k.dato)).padStart(2, '0')));
@@ -250,6 +275,15 @@
     Array.prototype.forEach.call(liste.querySelectorAll('.rev'), function (el) {
       el.classList.add('in');
     });
+
+    /* ⚠️ OG SÅ HOP DERHEN, hvis nogen er kommet med et link til ét
+       arrangement (2/10). EFTER .in er sat: et element med
+       opacity 0 har stadig en plads, men et smooth scroll til noget
+       usynligt ser ud som om linket ikke virkede.
+       Findes ankeret ikke, sker der ingenting — gæsten står øverst
+       på kalenderen, hvilket er det rigtige svar for et
+       arrangement, der er væk. */
+    hopTilArrangement();
   }
 
   /* ============================================================
