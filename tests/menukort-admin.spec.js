@@ -1428,6 +1428,46 @@ test.describe('Isens smage', () => {
     return d;
   }
 
+  /* ⚠️ EN SMAG KUNNE SLET IKKE TILFØJES  (2. okt 2026)
+     ------------------------------------------------------------
+     Mikkel med tre skud: *"smagene opdaterer sig ikke."* Han havde
+     skrevet "Bubblegum" i admin; databasen havde stadig kun de tre
+     gamle, og gæsten så tre.
+
+     MÅLT, ikke gættet: `is_opsaetning` i produktionen gemmer
+     størrelserne UDEN et kugletal — en softice-størrelse HAR ingen
+     kugler, og admin tegner ikke engang feltet for den rolle. Men
+     gemmefunktionen læste `Number(undefined)` = NaN for hver af dem
+     og afviste med "Kugler skal være et helt tal fra 0 til 12."
+     Beskeden stod under SMAGS-feltet og handlede om noget helt
+     andet.
+
+     Og værre: den tog smagene med sig — selv om kommentaren over
+     autogem lovede, at de to gemmes "hver for sig, så en fejl i
+     den ene ikke tager den anden med". Husets egen regel: en
+     kommentar er ikke et værn.
+
+     Kulissen her har PRÆCIS produktionens form: en størrelse uden
+     kugletal i den gemte opsætning. */
+  test('en størrelse uden kugletal spærrer ikke for smagene', async ({ page }) => {
+    const d = medIs();
+    d.indstillinger.is_opsaetning = {
+      // Som ejerens egen: rollen er sat, kugletallet findes ikke.
+      9101: { rolle: 'stoerrelse' },
+    };
+    await åbnMenufanen(page, { data: d });
+
+    await page.fill('#is-smage', 'Jordbær\nVanilje\nChokolade\nBubblegum');
+    await page.locator('#is-smage').blur();
+
+    await expect(page.locator('#is-smage-kort .gemt-maerke'),
+      'gemmet blev afvist med en besked om kugler').toContainText('Gemt');
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.is_smage, 'den nye smag nåede aldrig databasen')
+      .toContain('Bubblegum');
+  });
+
   test('det ejeren taster, bliver gæstens valgmuligheder', async ({ page }) => {
     await åbnMenufanen(page, { data: medIs() });
 

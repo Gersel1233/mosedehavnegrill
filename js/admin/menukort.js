@@ -3138,12 +3138,47 @@
     if (linjer.length > 40) return 'Der er plads til 40 smage — ikke flere.';
     var forLang = linjer.filter(function (x) { return x.length > 60; })[0];
     if (forLang) return 'En smag må fylde 60 tegn: “' + forLang.slice(0, 20) + '…”';
+    /* ⚠️ EN STØRRELSE HAR INTET KUGLETAL  (2/10). Her stod
+       `Number(isTilstand[id].kugler)` for HVER række — også dem
+       med rollen "størrelse", som admin bevidst ikke tegner et
+       kuglefelt for, og som derfor står i den gemte opsætning
+       helt uden nøglen. Number(undefined) er NaN, NaN >= 0 er
+       falsk, og så fejlede tjekket ALTID.
+
+       Følgen var ikke et skævt tal: smagene kunne slet ikke
+       gemmes. Mikkel 2/10: *"smagene opdaterer sig ikke."* Han
+       havde skrevet "Bubblegum"; databasen havde stadig de tre
+       gamle. Beskeden stod under smags-feltet og handlede om
+       kugler — altså om noget helt andet end det, han rørte.
+
+       Nu dømmes kun de rækker, der FAKTISK bærer et kugletal. */
     var forMange = Object.keys(isTilstand).filter(function (id) {
-      var k = Number(isTilstand[id].kugler);
+      var raa = isTilstand[id].kugler;
+      if (raa === undefined || raa === null || raa === '') return false;
+      var k = Number(raa);
       return !(k >= 0 && k <= 12 && Math.round(k) === k);
     })[0];
-    if (forMange) return 'Kugler skal være et helt tal fra 0 til 12.';
-    return Butik.skrive.indstilling('is_smage', linjer.join('\n')).then(gemIsOpsaetning);
+
+    /* ⚠️ OG SMAGENE GEMMES UANSET  (2/10) — det er dét, noten over
+       autogem har lovet hele tiden: "hver for sig, så en fejl i den
+       ene ikke tager den anden med". Koden gjorde det modsatte:
+       den vendte om på hælen, FØR smagene blev skrevet. En
+       kommentar er ikke et værn; den skal åbnes og læses.
+
+       Smagene er ejerens liste og kan ikke være i vejen for noget.
+       Er der et skævt kugletal, gemmes de alligevel — og beskeden
+       fortæller om opsætningen bagefter. */
+    return Butik.skrive.indstilling('is_smage', linjer.join('\n'))
+      .then(function (r) {
+        if (forMange) {
+          var v = (Admin.data.menu_varer || []).filter(function (x) {
+            return String(x.id) === String(forMange);
+          })[0];
+          throw new Error('Smagene er gemt. Men kuglerne på “'
+            + ((v && v.navn) || 'en vare') + '” skal være et helt tal fra 0 til 12.');
+        }
+        return gemIsOpsaetning().then(function () { return r; });
+      });
   });
 
   /* Og EFTER autogem: skærmen følger med. Admin.data opdateres i
