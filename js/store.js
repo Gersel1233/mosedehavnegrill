@@ -569,18 +569,65 @@
      0 = aldrig; i øvetilstand er der intet net at miste (null). */
   var sidstSvar = 0;
 
-  function hentTabel(navn, forespørgsel, harFornyet) {
+  /* ============================================================
+     ÉT BLINK PÅ NETTET MÅ IKKE GIVE EN HALV SIDE  (2/10)
+     ------------------------------------------------------------
+     Mikkel: *"på siden når man loader, kommer den nogle gange til
+     at starte med en offline eller en eller anden mærkelig
+     incomplete version af siden."*
+
+     MÅLT: Butik.hent() er ét Promise.all over NI tabeller, og her
+     blev der kun prøvet igen ved 401. Svigtede ÉN af de ni —
+     et blink, en timeout, en 5xx — væltede hele hentningen, og
+     siden faldt i nød-tilstanden med kodens reservedata. Med ni
+     samtidige kald er chancen for mindst ét svigt ni gange så
+     stor som for ét. Det er præcis "nogle gange".
+
+     ⚠️ SAMME GRÆNSE SOM SKRIVNINGEN, der har haft tre forsøg siden
+        22/8 (spiis' lærepenge): kun netfejl og svar på 500 og
+        derover. Et 404 betyder, at tabellen ikke findes, og dét
+        svar bliver ikke rigtigere af at spørge tre gange —
+        nødmenuen ER det rigtige svar, og den skal komme hurtigt.
+        En 403 eller 401 er heller ikke noget, ventetid løser.
+
+     ⚠️ OG VENTETIDEN ER KORT. Gæsten står med en hvid side imens.
+        Et netfejl-blink afvises på millisekunder, så de to pauser
+        (250 + 600 ms) ER hele prisen: under et sekund ekstra i
+        værste fald. Et TIDSLOFT prøves ikke igen — tre forsøg à
+        12 sekunder ville være 36 sekunders hvid side, altså
+        værre end den halve side, forsøgene findes for at undgå.
+     ============================================================ */
+  var HENT_FORSOEG = 3;
+  var HENT_PAUSE = [250, 600];
+
+  function hentTabel(navn, forespørgsel, harFornyet, forsøg) {
+    forsøg = forsøg || 1;
     var url = cfg.url + '/rest/v1/' + navn + '?' + (forespørgsel || 'select=*');
     var styr = typeof AbortController === 'function' ? new AbortController() : null;
     var ur;
     var loft = new Promise(function (_, fejl) {
       ur = setTimeout(function () {
         if (styr) styr.abort();
-        fejl(new Error(navn + ': svarede ikke inden ' + (HENT_LOFT_MS / 1000) + ' sek.'));
+        var e = new Error(navn + ': svarede ikke inden ' + (HENT_LOFT_MS / 1000) + ' sek.');
+        /* ⚠️ MÆRKET, SÅ DEN IKKE PRØVES IGEN. Se noten ved
+           HENT_FORSOEG: tre forsøg à 12 sekunder er 36 sekunders
+           hvid side — værre end den halve side, forsøgene findes
+           for at undgå. Et loft betyder, at nettet HÆNGER; det
+           blinker ikke. */
+        e.tidsloft = true;
+        fejl(e);
       }, HENT_LOFT_MS);
     });
     var kald = fetch(url, styr ? { headers: hoveder(), signal: styr.signal }
       : { headers: hoveder() });
+    function igen() {
+      return new Promise(function (ja) {
+        setTimeout(ja, HENT_PAUSE[forsøg - 1] || 600);
+      }).then(function () {
+        return hentTabel(navn, forespørgsel, harFornyet, forsøg + 1);
+      });
+    }
+
     return Promise.race([kald, loft]).then(function (r) {
       clearTimeout(ur);
       if (r.ok) { sidstSvar = Date.now(); return r.json(); }
@@ -591,7 +638,29 @@
           throw new Error(navn + ': ' + r.status);
         });
       }
+      // 500 og derover: serveren havde en dårlig dag, ikke os.
+      if (r.status >= 500 && forsøg < HENT_FORSOEG) return igen();
       throw new Error(navn + ': ' + r.status);
+    }, function (fejl) {
+      clearTimeout(ur);
+      /* Netfejl: fetch afviser uden status, og det sker på
+         millisekunder — dét er et blink, og dét prøves igen.
+         ⚠️ MEN IKKE ET TIDSLOFT. Det har allerede ventet 12
+         sekunder; tre af dem er 36 sekunders hvid side. Se
+         mærket, hvor loftet sættes. */
+      /* ⚠️ OG EN AbortError ER OGSÅ LOFTET. Når loftet rammer,
+         kalder det styr.abort(), og SÅ afviser fetch med
+         AbortError — de to afvisninger kappes om Promise.race, og
+         AbortError kan vinde. Så ville loftet blive prøvet igen
+         alligevel, og de 36 sekunder var tilbage.
+         MÅLT: robusthed.spec.js "et kald, der aldrig svarer"
+         faldt på præcis dét, med en falsk klokke, der kun blev
+         skruet 15,5 sekund frem.
+         Vi er de eneste, der afbryder, så en AbortError betyder
+         altid vores eget loft. */
+      if (fejl && (fejl.tidsloft || fejl.name === 'AbortError')) throw fejl;
+      if (forsøg < HENT_FORSOEG) return igen();
+      throw fejl;
     });
   }
 

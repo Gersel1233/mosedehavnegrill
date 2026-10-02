@@ -418,7 +418,15 @@ test.describe('Når databasen er nede, lover siden ikke noget', () => {
     await sætUr(page, '2026-08-07T11:00:00Z');   // fredag 13.00 dansk
     await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
     await springIntroOver(page);
-    await page.waitForTimeout(600);
+    /* ⚠️ 1800 OG IKKE 600 (2/10). Hentningen prøver nu igen ved et
+       netfejl-blink — ÉN tabel, der svigter af de ni, må ikke
+       vælte hele siden (Mikkel: "nogle gange en mærkelig
+       incomplete version"). De to pauser er 250 + 600 ms, og
+       aborts her er øjeblikkelige, så nød-tilstanden indtræffer
+       ~850 ms senere end før. Påstanden nedenfor er uændret;
+       det er kun ventetiden, der følger med reglen.
+       ⚠️ Et TIDSLOFT prøves ikke igen — se noten i js/store.js. */
+    await page.waitForTimeout(1800);
     /* ⚠️ ÉT AF TALLENE KOMMER UDEFRA: uden et eneste kald til den
        falske adresse kørte siden i øvetilstand, og prøven målte
        ingenting. Det er nøjagtig dét, der skete, første gang
