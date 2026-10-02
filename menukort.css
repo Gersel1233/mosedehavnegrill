@@ -327,6 +327,20 @@
     align-items: start;
   }
 
+  /* ⚠️ SPROGKNAPPEN TAGER IKKE BÅNDETS PLADS  (2/10).
+     .mk-sortiment er et gitter på 224px + 1fr. Da sprogknappen kom
+     ind som FØRSTE barn, lagde den sig i den smalle spalte, skubbede
+     båndet over i den brede og kortene ned på næste række — og så lå
+     båndet præcis dér, hvor det aldrig må ligge: hen over kortene.
+     MÅLT af tests/skal-menukort.spec.js ("båndet ligger aldrig oven
+     på kortene"): båndet sluttede ved 1240 px i stedet for 41.
+     Det er den samme fejl, kunden selv fandt 24/8 — og prøven, der
+     blev skrevet dengang, fangede den igen nu.
+     Derfor eksplicitte pladser i stedet for rækkefølgen i HTML'en. */
+  .mk-sortiment .mk-sprog { grid-column: 1; grid-row: 1; margin-bottom: 14px; }
+  .mk-sortiment .mk-hop   { grid-column: 1; grid-row: 2; }
+  .mk-sortiment .mk-kat   { grid-column: 2; grid-row: 1 / span 2; }
+
   .mk-hop {
     position: sticky;
     /* Kun topbjælken skal der være plads til her — båndet klæber
