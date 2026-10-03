@@ -388,7 +388,29 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
   -webkit-backdrop-filter:blur(24px) saturate(180%);
   backdrop-filter:blur(24px) saturate(180%);
   box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
-body:has(.hero.film) .topbar.stuck{background:var(--cream);
+/* ⚠️ OG [data-film] SKAL MED  (3/10). Første udgave spurgte kun
+   efter .hero.film og lod derfor TAPASSIDEN få glas — og det er
+   præcis den side, hele reglen blev lavet for: dér sætter bjælken
+   sig fast over den spillende film. Filmen ligger som
+   data-film="film/tapas" på et <image-slot>, ikke som et <video>
+   i opmærkningen, så mit første greb ramte den ikke.
+   tests/siden-staar-stille.spec.js fangede det — den prøve blev
+   skrevet netop for, at "en ændring af reglen ovenfor ikke kan
+   lade netop den glide".
+   ⚠️ SIDEN MÆRKER SIG SELV — jeg prøvede tre greb før dette, og
+      de to første var gæt:
+        .hero.film      → tapassiden har ikke den klasse
+        [data-film]     → <image-slot data-film="film/tapas"> bliver
+                          ERSTATTET ved kørsel, og attributten går med
+        :has(video)     → virkede i browseren, men IKKE i prøverne:
+                          uden data indsættes filmen aldrig, og så fik
+                          film-siden glas alligevel
+      Klassen på <body> er der fra første billede, uanset data, net og
+      JavaScript. Det er det eneste, der ikke kan skride.
+   ⚠️ Og den kan ikke glemmes i stilhed: tests/siden-staar-stille.spec.js
+      måler, at hver side med en film BÅDE har klassen og en
+      bjælke uden glas. */
+body.har-film .topbar.stuck{background:var(--cream);
   -webkit-backdrop-filter:none;backdrop-filter:none}
 .topbar.stuck .brandmark{filter:none}
 /* ⚠️ BJÆLKEN ER LAVERE, NÅR DEN STÅR FAST — PÅ TELEFONEN (11/9).

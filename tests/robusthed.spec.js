@@ -503,7 +503,19 @@ test.describe('Gæstesiden kommer sig selv, når databasen er tilbage', () => {
     });
     await sætUr(page, '2026-08-07T11:00:00Z');
     await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(800);
+
+    /* ⚠️ VENT PÅ TILSTANDEN, IKKE PÅ ET TAL (3/10). Her stod
+       waitForTimeout(800). Da hentningen fik tre forsøg mod et
+       blink på nettet (250 + 600 ms imellem), nåede siden ikke at
+       GIVE OP inden for de 800 ms — og så klikkede prøven,
+       før nød-tilstanden fandtes. Flaget "gæsten har rørt noget"
+       blev aldrig sat, siden hentede sig selv igen, og prøven
+       lignede en fejl i genopretningen.
+       Statuspillen er sidens eget signal om, at den har opgivet:
+       uden data lover den hverken åbent eller lukket. */
+    await expect(page.locator('.status').first(),
+      'siden nåede aldrig nød-tilstanden').toContainText(/ring og hør/i,
+      { timeout: 15000 });
     expect(t.kald, 'prøven ramte aldrig databasen — den måler ingenting').toBeGreaterThan(0);
     return t;
   }

@@ -115,3 +115,46 @@ test('tapassiden: den faste bjælke over filmen er fast creme uden glas', async 
   });
   expect(bf).toBe('none');
 });
+
+/* ⚠️ EN FILM-SIDE MÅ IKKE GLEMME SIT MÆRKE  (3. okt 2026)
+   ------------------------------------------------------------
+   Reglen om, at bjælken er fast creme uden glas, hænger på
+   klassen `har-film` på <body>. Den er valgt, fordi alt andet
+   skred — se den lange note i havnegrillen.css.
+
+   Men en klasse, nogen skal huske at sætte, ruster. Den her
+   prøve læser SIDERNES EGEN opmærkning: har en side en film,
+   skal den have mærket. Så kan den næste film-side ikke glide
+   igennem og tage lagget med sig, sådan som tapassiden gjorde
+   den 28/9. */
+test('hver side med en film bærer mærket har-film', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const rod = path.join(__dirname, '..');
+  const mangler = fs.readdirSync(rod)
+    .filter((f) => f.endsWith('.html'))
+    .map((f) => ({ f, s: fs.readFileSync(path.join(rod, f), 'utf8') }))
+    /* En film er enten et <video> i opmærkningen eller en
+       data-film, som billedplads.js laver om til ét. */
+    .filter((x) => /<video|data-film=/.test(x.s))
+    .filter((x) => !/<body[^>]*\bhar-film\b/.test(x.s))
+    .map((x) => x.f);
+  expect(mangler, 'de her sider har en film, men ikke klassen har-film '
+    + '— så får deres bjælke glas, og sløringen koster billeder over filmen')
+    .toEqual([]);
+});
+
+/* Modstykket: mærket må ikke stå på en side UDEN film, for så
+   mister den glasset uden grund. */
+test('og ingen side bærer mærket uden at have en film', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const rod = path.join(__dirname, '..');
+  const forkert = fs.readdirSync(rod)
+    .filter((f) => f.endsWith('.html'))
+    .map((f) => ({ f, s: fs.readFileSync(path.join(rod, f), 'utf8') }))
+    .filter((x) => /<body[^>]*\bhar-film\b/.test(x.s))
+    .filter((x) => !/<video|data-film=/.test(x.s))
+    .map((x) => x.f);
+  expect(forkert, 'de her sider har mærket, men ingen film').toEqual([]);
+});
