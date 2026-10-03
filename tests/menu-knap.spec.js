@@ -41,15 +41,38 @@ test('vagt: der ER designsider med en burger', () => {
 });
 
 for (const side of DESIGN) {
-  test(`${side}: knappen er et fast felt, der siger "Menu"`, async ({ page }) => {
+  /* ⚠️ REGLEN ER OMSKREVET, IKKE SLÆKKET  (3/10).
+     Den krævede før, at knappen var HELT dækkende og uden glas.
+     Begrundelsen var to ting: ordet "Menu" skal stå der (ikke tre
+     streger, man skal gætte sig til), og *"glas bag en fast flade
+     er spild"* — sløring, browseren regner ud for ingenting.
+
+     Mikkel 3/10: *"selve menu tabben er heller ikke liquid glass"*.
+     Knappen stod som et fladt hvidt felt ved siden af tilbage-pilen,
+     der ER glas, og de to lignede ikke hinanden.
+
+     Ordet bliver. Og læren om spildt sløring bliver — den er bare
+     skrevet som dét, den handler om: man må ikke have en sløring
+     BAG en flade, der alligevel ikke kan ses igennem. Enten
+     dækkende uden glas, eller gennemsigtig MED. Aldrig dækkende
+     med glas. */
+  test(`${side}: knappen siger "Menu", og glasset er ikke spildt`, async ({ page }) => {
     await åbnSide(page, side);
     const s = await page.locator('#burger').evaluate((e) => {
       const c = getComputedStyle(e);
       return { bg: c.backgroundColor, efter: getComputedStyle(e, '::after').content, blur: c.backdropFilter };
     });
-    expect(alfa(s.bg), 'knappen er gennemsigtig: ' + s.bg).toBe(1);
-    expect(s.blur, 'glas bag en fast flade er spild').toBe('none');
     expect(s.efter, 'ordet står der ikke').toBe('"Menu"');
+    const daekkende = alfa(s.bg) === 1;
+    const harGlas = s.blur !== 'none' && s.blur !== '';
+    expect(daekkende && harGlas,
+      'sløring bag en helt dækkende flade kan ikke ses og koster billeder: ' + s.bg)
+      .toBe(false);
+    /* ⚠️ OG EN GENNEMSIGTIG KNAP SKAL HAVE GLASSET — ellers er den
+       bare en bleg plet, og ordet drukner i det, der er bagved. */
+    if (!daekkende) {
+      expect(harGlas, 'gennemsigtig knap uden sløring: ' + s.bg).toBe(true);
+    }
   });
 
   test(`${side}: skuffen står helt på skærmen, og det første punkt kan trykkes`, async ({ page }) => {

@@ -76,6 +76,15 @@
 .hist .topbar .g.icn.dark.menu,
 .hist:has(.h-hero.film) .topbar:not(.stuck) .g.icn.dark.menu {
   background: #1b1512;
+  /* ⚠️ OG SÅ SLØRINGEN FRA  (3/10). Fladen her er HELT dækkende,
+     og en sløring bag den kan ikke ses — men browseren regner den
+     ud alligevel, ved hvert billede. Den stod før i
+     havnegrillen.css; da menuknappen blev glas de andre steder,
+     fulgte sløringen med hertil, hvor den er spild.
+     Den slås fra dér, hvor fladen gøres dækkende — ikke et tredje
+     sted. Målt af tests/menu-knap.spec.js. */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   box-shadow: 0 0 0 1px rgba(210, 172, 107, .45), 0 6px 16px rgba(0, 0, 0, .4);
   color: var(--salt);
 }

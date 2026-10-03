@@ -369,7 +369,27 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
    filmen glider ind under den, og så blev 60 filmbilleder i sekundet sløret
    for ingenting. Mikkels ord: *"tapas-siden … er ret laggy og hakkende"*.
    .topbar.solid (90 %) beholder sit — dér skinner det igennem. */
-.topbar.stuck{background:var(--cream);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
+/* ⚠️ GLASSET ER TILBAGE — MEN KUN HVOR DET ER GRATIS  (3/10).
+   Mikkel: "selve menu tabben er heller ikke liquid glass". Han har
+   ret: bjælken var en massiv cremefarvet stribe, og indholdet blev
+   skåret af under den uden at skinne igennem.
+
+   ⚠️ MEN GRUNDEN TIL AT DEN BLEV MASSIV STÅR OVENFOR OG GÆLDER
+      STADIG: på en side med en FILM i heroen sætter bjælken sig
+      fast lige dér, hvor filmen glider under den, og så sløres 60
+      billeder i sekundet for ingenting — det var Mikkels eget
+      "tapas-siden er ret laggy og hakkende" den 28/9.
+
+   Derfor: glas på de almindelige sider, hvor der ikke er andet end
+   tekst og stillbilleder at sløre — og den massive creme beholdes
+   på film-siderne. Reglen hænger på :has(.hero.film), så den
+   følger siden selv og ikke en liste, nogen skal huske at rette. */
+.topbar.stuck{background:rgba(253,247,239,.82);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  backdrop-filter:blur(24px) saturate(180%);
+  box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
+body:has(.hero.film) .topbar.stuck{background:var(--cream);
+  -webkit-backdrop-filter:none;backdrop-filter:none}
 .topbar.stuck .brandmark{filter:none}
 /* ⚠️ BJÆLKEN ER LAVERE, NÅR DEN STÅR FAST — PÅ TELEFONEN (11/9).
    Kundens ord: bjælken med "Mosede Havnecafe" skal være "lidt mindre,
@@ -1342,7 +1362,14 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    glas, man skal gætte sig til. Ordet er et ::after, så de fjorten sider
    ikke skal have ny opmærkning; aria-label="Menu" står der i forvejen.
    Under 361 px er der ikke plads til ordet ved siden af navnet. */
-.topbar .g.icn.menu{width:auto;padding:0 15px 0 13px;gap:7px;color:var(--ink);background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+/* ⚠️ KNAPPEN ER GLAS IGEN (3/10) — den stod som et fladt hvidt
+   felt ved siden af tilbage-pilen, der ER glas, og de to lignede
+   ikke hinanden. Ordet "Menu" bliver: det var pointen i noten
+   ovenfor, og det er ordet, ikke fladen, der gør knappen tydelig.
+   Baggrunden er lidt tættere end .g's egen (.72 mod .62), så
+   ordet stadig kan læses over et billede. */
+.topbar .g.icn.menu{width:auto;padding:0 15px 0 13px;gap:7px;color:var(--ink);
+  background:rgba(255,255,255,.72)}
 .topbar .g.icn.menu::after{content:"Menu";position:static;inset:auto;background:none;border-radius:0;font-size:14px;font-weight:600;letter-spacing:.01em;pointer-events:none}
 @media(max-width:360px){.topbar .g.icn.menu{padding:0;width:40px}.topbar .g.icn.menu::after{content:none}}
 /* reveal */

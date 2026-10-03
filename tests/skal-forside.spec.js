@@ -520,10 +520,23 @@ test.describe('Forsidens kobling', () => {
      nogle steder er dårlige og kedelige og matcher ikke med det nye".
      Hver prøve måler den BEREGNEDE stil eller det, der står på skærmen.
      ============================================================ */
-  test('uden nye nyheder hedder afsnittet det, det er', async ({ page }) => {
+  /* ⚠️ ÉN LINJE I STEDET FOR EN OVERSKRIFT OVER EN FOLD  (3/10).
+     Reglen fra 13/9 står: uden nye nyheder må der ikke stå en stor
+     "Nyheder" over en lukket fold — det lignede et tomt afsnit.
+     Svaret dengang var at omdøbe overskriften. Men så stod der en
+     overskrift i fuld størrelse med én bjælke under sig, og Mikkel
+     3/10: *"de der tidligere på havnen ligner også lort"*.
+     Nu bærer folden selv navnet, og overskriften er skjult. Reglen
+     er den samme; kun svaret er bedre. */
+  test('uden nye nyheder er afsnittet ÉN fold, ikke en tom overskrift', async ({ page }) => {
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN });
-    await expect(page.locator('#nyheder h2')).toHaveText('Tidligere på havnen');
-    await expect(page.locator('#nyheder .tidligere summary')).toContainText('Se det, der har været');
+    await expect(page.locator('#nyheder .mid')).toBeHidden();
+    await expect(page.locator('#nyheder .tidligere summary'))
+      .toContainText('Tidligere på havnen');
+    /* ⚠️ OG DER MÅ IKKE STÅ "Nyheder" NOGEN STEDER — det var hele
+       pointen i 13/9-reglen, og en skjult overskrift, der stadig
+       siger det, ville være den samme fejl i det skjulte. */
+    await expect(page.locator('#nyheder')).not.toContainText(/^Nyheder$/);
   });
 
   test('med en ny nyhed hedder det stadig Nyheder', async ({ page }) => {
@@ -994,15 +1007,21 @@ test.describe('Forsidens kobling', () => {
     await expect(page.locator('#idag .today .g')).toContainText('Bestil dagens ret');
   });
 
-  /* ⚠️ DAMP, IKKE EN BØLGE (13/9). Kundens ord: "den der bølge ting
-     ved idag … skal altså være bedre". 〰 er en vandret bølge; tre
-     lodrette striber, der stiger, er damp. Animationen har sin egen
-     prøve længere nede. */
-  test('dampen er tre striber, ikke en bølge', async ({ page }) => {
+  /* ⚠️ DAMPEN ER TAGET UD (3/10) — og prøven med den.
+     Historien: 13/9 bad kunden om noget bedre end bølgen (〰), og
+     svaret blev tre lodrette striber, der stiger. 3/10 ser Mikkel
+     på det igen: *"den der smoke ting på dagensret ser pisse
+     generisk ud"*. Tre tynde streger læses ikke som damp — de
+     læses som ingenting, og ordet "I dag" står tydeligere alene.
+
+     Prøven slettes med vilje og ikke i stilhed: står den, måler
+     den noget, der ikke findes, og så ser den næste en rød prøve
+     uden at kunne se hvorfor. Vil nogen have dampen tilbage, står
+     opmærkningen i index.html's historik. */
+  test('"I dag" står alene — ingen damp ved siden af', async ({ page }) => {
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medDagensRet({}) });
-    const damp = page.locator('#idag .today .idag-blok .damp');
-    await expect(damp.locator('svg path')).toHaveCount(3);
-    expect(await damp.textContent()).not.toContain('〰');
+    await expect(page.locator('#idag .today .idag-ord')).toHaveText('I dag');
+    await expect(page.locator('#idag .today .damp')).toHaveCount(0);
   });
 
   /* ⚠️ SELSKABER STÅR ÉT STED PÅ FORSIDEN (13/9). Kundens ord: "der
@@ -2580,54 +2599,19 @@ test.describe('Den mørke sektion er historiens', () => {
    fra 31/8: intet stilark må animere en egenskab, der udløser
    layout.
    ============================================================ */
-test.describe('Dagens ret-blokken damper', () => {
+/* ⚠️ AFSNITTET "DAGENS RET-BLOKKEN DAMPER" ER FJERNET  (3/10).
+   Det målte dampens animation og at den stod stille ved reduced
+   motion. Dampen selv er taget ud — Mikkel: *"den der smoke ting
+   på dagensret ser pisse generisk ud"* — og to prøver, der måler
+   en animation på et element, der ikke findes, er to røde prøver
+   uden en fejl bagved.
 
-  /* Blokken findes kun, når der ER en dagens ret på den mockede
-     dag. Datoen kommer fra prøvens eget ur — se den lange note
-     ved den anden medDagensRet: en prøve, der låner
-     virkeligheden, arver alt hvad der står på den. */
-  function medRet() {
-    const d = grunddata();
-    d.dagens_retter = [{
-      id: 1, lokation_id: 'mosede', dato: FREDAG_MIDT_PÅ_DAGEN.slice(0, 10),
-      navn: 'Boller i karry', beskrivelse: 'Med ris og syltet agurk.',
-      pris: 109, antal: 40, antal_tilbage: 28, udsolgt: false, sortering: 1,
-    }];
-    return d;
-  }
-
-  test('dampen har en animation, og den kører af sig selv', async ({ page }) => {
-    await åbnSkal(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medRet() });
-    const damp = page.locator('.today .idag-blok .damp');
-    /* ⚠️ BLOKKEN STÅR PÅ ALLE SKÆRME NU (12/9) — på telefonen som et
-       bånd over retten. Kravet om, at den ER synlig, står stadig FØR
-       reglen: et element uden kasse har ingen animation at måle. */
-    await expect(damp).toBeVisible();
-
-    const stil = await damp.evaluate((el) => {
-      const c = getComputedStyle(el);
-      return { navn: c.animationName, tid: c.animationDuration,
-        gentag: c.animationIterationCount };
-    });
-    expect(stil.navn, 'dampen har ingen animation').not.toBe('none');
-    expect(stil.gentag, 'dampen damper én gang og holder op')
-      .toBe('infinite');
-    expect(parseFloat(stil.tid), 'animationen varer nul').toBeGreaterThan(0.5);
-  });
-
-  /* ⚠️ OG DEN STÅR STILLE FOR DEN, DER HAR BEDT OM DET. En
-     uendelig animation er præcis det, reduced motion findes for.
-     Modstykket til prøven ovenfor: uden den ville en regel, der
-     altid damper, bestå. */
-  test('men den står stille ved reduced motion', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await åbnSkal(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medRet() });
-    const damp = page.locator('.today .idag-blok .damp');
-    await expect(damp).toBeVisible();
-    expect(await damp.evaluate((el) => getComputedStyle(el).animationName))
-      .toBe('none');
-  });
-});
+   Historien bevares, så valget kan vendes om med åbne øjne:
+   dampen kom 13/9 som svar på kundens *"den der bølge ting ved
+   idag … skal altså være bedre"*, og den havde sin egen
+   reduced-motion-regel. Opmærkningen står i index.html's
+   kommentar. At "I dag" nu står ALENE, måles af prøven
+   "I dag står alene — ingen damp ved siden af" længere oppe. */
 
 /* ============================================================
    BUNDEN ER TO KORT  (9/9)
