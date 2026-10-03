@@ -850,7 +850,13 @@
     var art = lav('article', 'mk-kapitel');
     art.id = d.anker || ('kapitel-' + d.id);
     art.setAttribute('data-kapitel', d.id);
-    art.setAttribute('data-hop-navn', d.hop || d.titel.join(' '));
+    /* ⚠️ OG BÅNDETS NAVN SKAL OGSÅ OVERSÆTTES  (3/10). Mikkel:
+       "når man vælger engelsk, bliver tabben med sectioner ikke
+       engelsk". Hele glasbåndet stod på dansk midt i den engelske
+       side — overskrifterne var oversat, men genvejene til dem
+       var ikke. Det er den samme streng, der skal slås op; den
+       stod bare ét sted, jeg havde overset. */
+    art.setAttribute('data-hop-navn', KORTTEKST(d.hop || d.titel.join(' ')));
     if (d.anker) {
       /* Kapitlet har både sit eget navn og forsidens (#afsnit-is). */
       var mærke = lav('span', 'mk-anker');

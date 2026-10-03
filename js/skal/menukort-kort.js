@@ -316,6 +316,12 @@
       '& bar': '& bar',
       'fadøl fra hanen og bobler til fest': 'draught beer and bubbles to celebrate',
       'Mosede Havnecafe': 'Mosede Havnecafe',
+      // Glasbåndets genveje (`hop`) — se noten i menukort.js
+      'Morgenmad & frokost': 'Breakfast & lunch',
+      'À la carte & burgere': 'À la carte & burgers',
+      'Is & sødt': 'Ice cream & sweets',
+      'Kaffe & koldt': 'Coffee & cold drinks',
+      'Øl, vin & bar': 'Beer, wine & bar',
       // Afsnittenes overskrifter
       'Tilkøb til morgenmaden': 'Breakfast extras',
       'Fisk & klassikere': 'Fish & classics',

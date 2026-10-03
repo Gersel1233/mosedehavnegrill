@@ -699,11 +699,19 @@
          "Nyheder" over en lukket fold lignede et tomt afsnit — kundens
          "forældet". Folden bliver lukket (fartprøven), men den siger nu,
          hvad der er i den. */
-      var h2 = afsnit.querySelector('.mid h2');
-      if (h2) h2.textContent = 'Tidligere på havnen';
+      /* ⚠️ ÉN LINJE, IKKE EN OVERSKRIFT OVER EN LUKKET FOLD (3/10).
+         Her stod en stor "Tidligere på havnen" i samme størrelse
+         som sidens rigtige afsnit — med en enkelt hvid bjælke
+         under sig og ellers ingenting. Mikkel: "de der tidligere
+         på havnen ligner også lort", og han har ret: overskriften
+         lovede et afsnit, folden var alt, der var.
+         Nu bærer folden selv navnet, og den fylder, hvad den er
+         værd. Står der rigtige nyheder, er afsnittet uberørt. */
+      var mid = afsnit.querySelector('.mid');
+      if (mid) mid.hidden = true;
       var sum = afsnit.querySelector('.tidligere summary');
       if (sum && sum.firstChild && sum.firstChild.nodeType === 3) {
-        sum.firstChild.nodeValue = 'Se det, der har været ';
+        sum.firstChild.nodeValue = 'Tidligere på havnen ';
       }
       return;
     }
