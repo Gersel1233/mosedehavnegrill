@@ -710,6 +710,32 @@
             <p class="hjaelp">Lukker køkkenet 20.00 og står der 30, er sidste bestilling 19.30.</p>
           </div>
         </div>
+        <!-- ⚠️ SIDSTE BESTILLING PR. MÅDE (3/10). Mikkel: "bare så de
+             selv kan administrere det". Systemet kunne det i forvejen,
+             men KUN dag for dag — og ingen sætter tre klokkeslæt hver
+             morgen. Tomt felt = reglen ovenfor, altså køkkenets
+             lukketid minus minutterne. Dagens egen regel i Kalenderen
+             vinder stadig over begge. -->
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="senest-togo">Sidste to-go</label>
+            <input type="time" id="senest-togo">
+            <p class="hjaelp">Tomt = som ovenfor.</p>
+          </div>
+          <div class="felt felt-smal">
+            <label for="senest-spis-her">Sidste spisning</label>
+            <input type="time" id="senest-spis-her">
+            <p class="hjaelp">For dem, der sidder ned.</p>
+          </div>
+        </div>
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="senest-levering">Sidste levering</label>
+            <input type="time" id="senest-levering">
+            <p class="hjaelp">Tomt = samme som to-go.</p>
+          </div>
+          <div class="felt felt-smal"></div>
+        </div>
         <div class="felt-par">
           <div class="felt felt-smal">
             <label for="varsel-togo">Varsel ud af huset (min.)</label>

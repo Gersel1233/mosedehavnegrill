@@ -184,6 +184,49 @@
     return isFinite(n) && n >= 0 ? Math.round(n) : 30;
   }
 
+  /* ============================================================
+     SIDSTE BESTILLING PR. KANAL — EN FAST INDSTILLING  (3/10)
+     ------------------------------------------------------------
+     Mikkel: *"bare så de selv kan administrere det, og det hele
+     hænger sammen, og at kunder så ikke kan dit og dat."*
+
+     Systemet kunne det i forvejen — men kun DAG FOR DAG
+     (dags_regler.senest_togo / senest_spis_her). MÅLT 3/10: der
+     var to dagsregler i databasen og NUL med tiderne sat, så i
+     praksis delte to-go, spisning og levering ét klokkeslæt:
+     lukketid minus 30. Skal køkkenet stoppe to-go tidligere end
+     dem, der sidder ned, skulle ejeren sætte det hver morgen —
+     og dét gør ingen.
+
+     Nu er der en fast indstilling pr. kanal. Rækkefølgen er:
+
+       1. dagens egen regel (dags_regler)  — vinder altid
+       2. den faste indstilling             — gælder resten
+       3. lukketid minus sidste_bestilling_min — som hidtil
+
+     ⚠️ LEVERING FALDER TILBAGE PÅ TO-GO, ikke på spisning. Begge
+        er ud af huset, og maden skal nå at komme af sted. Sætter
+        ejeren en egen tid for levering, vinder den.
+     ⚠️ OG DE KAN KUN SNÆVRE IND. En indstilling, der lå EFTER
+        lukketid, ville love en luge, der ikke er bemandet —
+        kaldet nedenfor tager altid det tidligste.
+     ============================================================ */
+  function senestFast(d, hvordan) {
+    var i = d.indstillinger || {};
+    if (hvordan === 'spis_her') return tidTilMin(i.senest_spis_her);
+    if (hvordan === 'levering') {
+      var eget = tidTilMin(i.senest_levering);
+      return eget === null ? tidTilMin(i.senest_togo) : eget;
+    }
+    if (hvordan) return tidTilMin(i.senest_togo);
+    /* Uden en valgt måde er svaret det SENESTE, nogen kan nå —
+       vælgeren tegnes, før gæsten har valgt, og en tid må ikke
+       forsvinde, fordi spørgsmålet endnu ikke er stillet. */
+    var alle = [i.senest_spis_her, i.senest_togo, i.senest_levering]
+      .map(tidTilMin).filter(function (x) { return x !== null; });
+    return alle.length ? Math.max.apply(null, alle) : null;
+  }
+
   /* ⚠️ VARSLET ER KANALENS, IKKE FORRETNINGENS ENE TAL.
      Ved bordet sidder gæsten der allerede; ud af huset skal hun
      nå at komme. Kundens tal: 30 og 15. */
@@ -531,16 +574,20 @@
        en dag, der åbnede TIDLIGERE end åbningstiderne, ville love
        en luge, der ikke er bemandet. Personalet sætter et
        klokkeslæt, ikke en ny åbningstid. */
+    var sidste = null;
     if (regel) {
       var dagFra = Butik.tilMinutter(regel.tidligst);
       if (dagFra !== null && dagFra > fra) fra = dagFra;
 
-      var sidste = Butik.tilMinutter(
+      sidste = Butik.tilMinutter(
         hvordan === 'spis_her' ? regel.senest_spis_her
           : hvordan ? regel.senest_togo
             : (regel.senest_spis_her || regel.senest_togo));
-      if (sidste !== null && sidste < til) til = sidste;
     }
+    /* Dagens egen regel vinder; ellers den faste indstilling.
+       Se den lange note ved senestFast. */
+    if (sidste === null) sidste = senestFast(d, hvordan);
+    if (sidste !== null && sidste < til) til = sidste;
 
     /* ⚠️ KØKKENET LUKKER FØR LUGEN (30/8). Kundens ord:
        "køkkenet lukker jo 20.00, så sidste spisning og to-go

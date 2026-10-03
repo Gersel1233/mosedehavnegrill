@@ -134,7 +134,8 @@
     if (!$('koekken-lukker')) return;
     if (document.activeElement && document.activeElement.closest
         && document.activeElement.closest('#gem-koekken, .kort')
-        && ['koekken-lukker', 'sidste-bestilling', 'varsel-togo', 'varsel-bord']
+        && ['koekken-lukker', 'sidste-bestilling', 'varsel-togo', 'varsel-bord',
+            'senest-togo', 'senest-spis-her', 'senest-levering']
           .indexOf(document.activeElement.id) !== -1) return;
 
     $('koekken-lukker').value = String(i.koekken_lukker || '').slice(0, 5);
@@ -144,6 +145,12 @@
       || i.varsel_min_togo === null ? '' : i.varsel_min_togo;
     $('varsel-bord').value = i.varsel_min_bord === undefined
       || i.varsel_min_bord === null ? '' : i.varsel_min_bord;
+    /* Sidste bestilling pr. måde (3/10) — se noten i admin.html. */
+    ['senest-togo:senest_togo', 'senest-spis-her:senest_spis_her',
+     'senest-levering:senest_levering'].forEach(function (par) {
+      var d = par.split(':');
+      if ($(d[0])) $(d[0]).value = String(i[d[1]] || '').slice(0, 5);
+    });
   }
 
   function tal(id, mindst, mest) {
@@ -178,6 +185,18 @@
       .then(function () {
         return Butik.skrive.indstilling('varsel_min_bord',
           bord.tom ? '' : bord.vaerdi);
+      })
+      /* ⚠️ TOMT SKRIVES SOM TOMT — som de andre felter her. Et tomt
+         klokkeslæt betyder "brug køkkenets lukketid minus
+         minutterne", og det er noget andet end midnat. */
+      .then(function () {
+        return Butik.skrive.indstilling('senest_togo', $('senest-togo').value || '');
+      })
+      .then(function () {
+        return Butik.skrive.indstilling('senest_spis_her', $('senest-spis-her').value || '');
+      })
+      .then(function () {
+        return Butik.skrive.indstilling('senest_levering', $('senest-levering').value || '');
       });
   }
 
