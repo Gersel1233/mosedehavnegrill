@@ -24,8 +24,14 @@
 
   if (!window.Butik) return;
 
-  var MÅNEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
-    'juli', 'august', 'september', 'oktober', 'november', 'december'];
+  /* Månedsnavnene er Butiks (4/10). De stod som hver sin kopi her og
+     i den anden tegner, og en tredje var på vej — to lister, der skal
+     sige det samme, skrider. store.js er indlæst før os (se sidens
+     bund), men listen hentes med et værn: en tom måned i en dato er
+     ikke en fejl, der må tage siden med sig. */
+  var MÅNEDER = (window.Butik && Butik.MÅNEDER)
+    || ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
+      'juli', 'august', 'september', 'oktober', 'november', 'december'];
 
   /* ---- ET ANSIGT PR. KATEGORI ----
      Listen bor i js/menu-emoji.js, fordi bordsiden skal have de
@@ -173,17 +179,19 @@
        træk, når ugen ikke var lagt op — en side under opbygning. En
        lukket dag og "ingen dagens ret" står stadig: de er
        beslutninger, ikke huller. */
-    /* ⚠️ SAMME RET HELE UGEN SIGES ÉN GANG (1/10) — reglen er
-       Butik.sammeRetHeleUgen, den SAMME som forsidens ugestribe
-       spørger. Her stod navnet ni gange ("I dag" plus syv dage),
-       fordi forsiden havde lært det og den her ikke. To tegnere
-       af den samme uge må ikke kunne sige hver sit. */
-    var ensUge = Butik.sammeRetHeleUgen ? Butik.sammeRetHeleUgen(d, i_dag) : null;
-    if (ensUge) {
+    /* ⚠️ EN STRIBE ENS DAGE SIGES ÉN GANG (1/10, udvidet 4/10) —
+       reglen er Butik.sammeRetFlereDage, den SAMME som forsidens
+       ugestribe spørger. Her stod navnet ni gange ("I dag" plus syv
+       dage), fordi forsiden havde lært det og den her ikke. To
+       tegnere af den samme uge må ikke kunne sige hver sit. */
+    var stribe = Butik.sammeRetFlereDage ? Butik.sammeRetFlereDage(d, i_dag) : null;
+    var start = 0;
+    if (stribe) {
+      var ensUge = stribe.ret;
       var enRaekke = lav('div', 'mk-dag mk-nu');
-      var vLinje = lav('div', 'mk-navn', 'Hele ugen');
+      var vLinje = lav('div', 'mk-navn', Butik.spaendOrd(stribe.dage));
       vLinje.appendChild(lav('span', 'mk-dato',
-        datoTekst(i_dag) + ' – ' + datoTekst(Butik.isoPlus(i_dag, 6))));
+        Butik.datoSpaend(stribe.fra, stribe.til)));
       enRaekke.appendChild(vLinje);
       var hLinje = lav('div');
       hLinje.appendChild(lav('h4', null,
@@ -193,11 +201,12 @@
       if (ensPris) hLinje.appendChild(lav('span', 'mk-pris', ensPris));
       enRaekke.appendChild(hLinje);
       boks.appendChild(enRaekke);
-      return;
+      if (stribe.dage >= 7) return;
+      start = stribe.dage;
     }
 
     var skjulte = 0;
-    for (var i = 0; i < 7; i++) {
+    for (var i = start; i < 7; i++) {
       var iso = Butik.isoPlus(i_dag, i);
       var række = lav('div', 'mk-dag' + (i === 0 ? ' mk-nu' : ''));
       række.setAttribute('data-dag', iso);

@@ -32,8 +32,14 @@
   // Ingen motor på siden = ingen kobling. Skallen står som den er.
   if (!window.Butik) return;
 
-  var MÅNEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
-    'juli', 'august', 'september', 'oktober', 'november', 'december'];
+  /* Månedsnavnene er Butiks (4/10). De stod som hver sin kopi her og
+     i den anden tegner, og en tredje var på vej — to lister, der skal
+     sige det samme, skrider. store.js er indlæst før os (se sidens
+     bund), men listen hentes med et værn: en tom måned i en dato er
+     ikke en fejl, der må tage siden med sig. */
+  var MÅNEDER = (window.Butik && Butik.MÅNEDER)
+    || ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
+      'juli', 'august', 'september', 'oktober', 'november', 'december'];
 
   function find(vælger, rod) {
     try { return (rod || document).querySelector(vælger); } catch (e) { return null; }
@@ -409,41 +415,48 @@
     tøm(boks);
 
     /* ============================================================
-       SAMME RET HELE UGEN SIGES ÉN GANG  (1/10)
+       EN STRIBE ENS DAGE SIGES ÉN GANG  (1/10, udvidet 4/10)
        ------------------------------------------------------------
        Mikkel med et skud af planen: *"og er det meningen, der er
        det her resten af ugen?"* — syv ens kort, samme navn, samme
        tekst, samme pris. Afsnittet er bygget til at vise
-       FORSKELLIGE retter; syv ens læses som en fejl, ikke som en
+       FORSKELLIGE retter; ens kort læses som en fejl, ikke som en
        uge. Og det er den samme sag, chefen skriver om kartoflen:
        *"undgå at vise den dobbelt samme sted."*
 
-       ⚠️ DER KLIPPES I VISNINGEN, IKKE I DATAEN. De syv rækker
-       bliver stående, så køkkenet kan sætte et antal pr. dag og
-       tage én dag ud — siden siger det bare én gang, så længe de
-       er ens.
+       ⚠️ DER KLIPPES I VISNINGEN, IKKE I DATAEN. Rækkerne bliver
+       stående, så køkkenet kan sætte et antal pr. dag og tage én
+       dag ud — siden siger det bare én gang, så længe de er ens.
 
-       ⚠️ OG KUN NÅR DE ER HELT ENS: ét navn, én ret pr. dag, alle
-       syv dage, ingen lukket dag imellem. Er bare én dag en anden
-       ret, står ugen dag for dag — det er dét, planen findes for.
+       ⚠️ REGLEN ER Butik.sammeRetFlereDage, den SAMME som
+       menukortets ugeplan spørger. Den tæller striben fra i dag og
+       frem; resten af ugen tegnes dag for dag nedenfor, startende
+       dér hvor striben slap.
        ============================================================ */
-    var ens = Butik.sammeRetHeleUgen ? Butik.sammeRetHeleUgen(d, iDag) : null;
-    if (ens) {
-      var etKort = lav('div', 'day');
-      etKort.appendChild(lav('div', 'dw', 'Hele ugen'));
-      etKort.appendChild(lav('div', 'dd',
-        pænDato(iDag) + ' – ' + pænDato(Butik.isoPlus(iDag, 6))));
+    var stribe = Butik.sammeRetFlereDage ? Butik.sammeRetFlereDage(d, iDag) : null;
+    var start = 0;
+    if (stribe) {
+      var ens = stribe.ret;
+      var etKort = lav('div', 'day spaend nu');
+      etKort.appendChild(lav('div', 'dw', Butik.spaendOrd(stribe.dage)));
+      etKort.appendChild(lav('div', 'dd', Butik.datoSpaend(stribe.fra, stribe.til)));
       etKort.appendChild(lav('h4', null, ens.navn + (ens.udsolgt ? ' · udsolgt' : '')));
       if (ens.beskrivelse) etKort.appendChild(lav('p', null, ens.beskrivelse));
+      /* ⚠️ PRISEN SKAL HAVE DAGSKORTENES KLASSE (fundet 4/10). Her
+         stod 'dp' — en klasse, der ikke findes i havnegrillen.css —
+         og tallet stod som løs brødtekst, hvor hvert andet kort har
+         pillen. En klasse, ingen regel kender, er ikke pynt, der
+         mangler; det er en pris, der ikke ligner en pris. */
       if (ens.pris !== null && ens.pris !== undefined) {
-        etKort.appendChild(lav('div', 'dp', kroner(ens.pris)));
+        etKort.appendChild(lav('div', 'pr', kroner(ens.pris)));
       }
       boks.appendChild(etKort);
-      return;
+      if (stribe.dage >= 7) return;
+      start = stribe.dage;
     }
 
     var skjulte = 0;
-    for (var i = 0; i < 7; i++) {
+    for (var i = start; i < 7; i++) {
       var iso = Butik.isoPlus(iDag, i);
       var retter = Butik.dagensRetter(d, iso) || [];
       var lukket = Butik.lukketDen(d, iso);

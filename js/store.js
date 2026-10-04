@@ -264,6 +264,12 @@
   }
 
   var UGEDAGE = ['Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag', 'Søndag'];
+  /* ⚠️ MÅNEDERNE BOR HER NU (4/10). Forsiden og menukortet havde hver
+     sin kopi af den samme tolv navne, og en tredje var på vej, da
+     datoSpaend skulle skrives. Et navn er ikke en regel — men to
+     lister, der skal sige det samme, er den slags, der skrider. */
+  var MÅNEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
+    'juli', 'august', 'september', 'oktober', 'november', 'december'];
 
   // "21:00:00" og "21:00" skal begge virke – Postgres sender det
   // ene, admin-formularen det andet.
@@ -5369,7 +5375,7 @@
      ⚠️ OG NAVNET SAMMENLIGNES SOM DATABASEN GØR DET (btrim +
      lower), så et mellemrum i enden ikke bliver til to retter. */
   /* ============================================================
-     ER DET DEN SAMME ENE RET HELE UGEN?  (1/10)
+     ER DET DEN SAMME ENE RET FLERE DAGE I TRÆK?  (1/10, udvidet 4/10)
      ------------------------------------------------------------
      Mikkel med et skud af ugeplanen: *"og er det meningen, der er
      det her resten af ugen?"* — syv ens kort efter hinanden.
@@ -5380,23 +5386,62 @@
      samme fejl som isbyggerens to laegIs dagen før: en kopi er en
      kommende fejl, også når det er mig, der laver kopien.
 
-     ⚠️ KUN NÅR DE ER HELT ENS. Én ret pr. dag, samme navn, alle
-     syv dage, og ingen lukket dag imellem. To retter på en dag er
-     ikke "den samme ret", og en lukket dag er en oplysning, der
-     ville forsvinde, hvis ugen blev slået sammen.
-     ============================================================ */
-  function sammeRetHeleUgen(d, iDag) {
+     ⚠️ EN STRIBE, IKKE KUN EN HEL UGE (4/10). Første udgave slog
+     kun sammen, når ALLE SYV dage var ens — og køkkenet skriver
+     ikke syv dage. MÅLT i databasen 4/10: fire ens dage, søndag
+     til onsdag, og ingenting bagefter. Fire ens kort ved siden af
+     hinanden ramte lige mellem reglerne, og Mikkels ord var
+     *"forældet og sjusket"*. Nu tælles striben fra i dag og frem,
+     så længe dagene er ens, og resten af ugen står dag for dag.
+
+     ⚠️ KUN NÅR DE ER HELT ENS. Én ret pr. dag, samme navn, og
+     ingen lukket dag imellem. To retter på en dag er ikke "den
+     samme ret", og en lukket dag er en oplysning, der ville
+     forsvinde, hvis dagene blev slået sammen.
+
+     ⚠️ OG ÉN DAG ER IKKE EN STRIBE. Striben skal være på mindst
+     to dage, ellers er der ingenting at slå sammen — så står
+     dagen som en dag, med sin ugedag og sin dato.
+
+     Svaret er null eller { ret, dage, fra, til }. `dage` er det,
+     tegnerne skriver ud; ved syv siger de "hele ugen", for det er
+     kortere at læse end et tal. */
+  function sammeRetFlereDage(d, iDag) {
     var start = iDag || nu().dato;
     var foerste = null;
+    var dage = 0;
     for (var i = 0; i < 7; i++) {
       var iso = isoPlus(start, i);
-      if (lukketDen(d, iso)) return null;
+      if (lukketDen(d, iso)) break;
       var r = dagensRetter(d, iso) || [];
-      if (r.length !== 1) return null;
+      if (r.length !== 1) break;
       if (!foerste) foerste = r[0];
-      else if (String(r[0].navn || '') !== String(foerste.navn || '')) return null;
+      else if (String(r[0].navn || '') !== String(foerste.navn || '')) break;
+      dage++;
     }
-    return foerste;
+    if (dage < 2) return null;
+    return { ret: foerste, dage: dage, fra: start, til: isoPlus(start, dage - 1) };
+  }
+
+  /* "7.–10. august", og "30. august – 2. september" hen over et
+     månedsskifte. Spændet skrives ét sted, fordi forsiden og
+     menukortet begge skal kunne sige det — og fordi tankestregen
+     uden mellemrum kun er rigtig inden for den samme måned. */
+  function datoSpaend(fra, til) {
+    var a = new Date(String(fra).slice(0, 10) + 'T12:00:00Z');
+    var b = new Date(String(til).slice(0, 10) + 'T12:00:00Z');
+    if (isNaN(a.getTime()) || isNaN(b.getTime())) return '';
+    if (a.getUTCMonth() === b.getUTCMonth() && a.getUTCFullYear() === b.getUTCFullYear()) {
+      return a.getUTCDate() + '.–' + b.getUTCDate() + '. ' + MÅNEDER[b.getUTCMonth()];
+    }
+    return a.getUTCDate() + '. ' + MÅNEDER[a.getUTCMonth()]
+      + ' – ' + b.getUTCDate() + '. ' + MÅNEDER[b.getUTCMonth()];
+  }
+
+  /* "Hele ugen" eller "4 dage" — det ord, der står ud for striben.
+     Også her: ét sted, to tegnere. */
+  function spaendOrd(dage) {
+    return dage >= 7 ? 'Hele ugen' : dage + ' dage';
   }
 
   function dagensRetNavne(d, iso) {
@@ -5485,7 +5530,10 @@
     retKanBestilles: retKanBestilles,
     erDagensRetVare: erDagensRetVare,
     dagensRetNavne: dagensRetNavne,
-    sammeRetHeleUgen: sammeRetHeleUgen,
+    sammeRetFlereDage: sammeRetFlereDage,
+    datoSpaend: datoSpaend,
+    spaendOrd: spaendOrd,
+    MÅNEDER: MÅNEDER,
     NYHED_TEGN: NYHED_TEGN,
     tidligereNyheder: tidligereNyheder,
     tidligereArrangementer: tidligereArrangementer,
