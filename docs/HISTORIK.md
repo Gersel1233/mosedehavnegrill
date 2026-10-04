@@ -7,6 +7,35 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**GLEMT KODE — OG CHEFENS LOGIN ER ALDRIG BLEVET BRUGT** (4/10). Bygget,
+prøvet og committet. **Ikke pushet**: Mikkels valg — SMTP sættes op først.
+- **Fundet, der er værre end en glemt kode.** MÅLT i `auth.users`:
+  `bogholderi@mosedehavnecafe.dk` (ejer, "Cheferne") er oprettet 15/9 09:46 og
+  har `last_sign_in_at` NULL, nul sessioner, `updated_at` == `created_at` —
+  **aldrig logget ind, koden aldrig skiftet**. `kontakt@` (medarbejder) logget
+  ind ÉN gang, 15/9 11:58, og har **én session, der har levet lige siden**.
+  Køkkenets iPad kører altså på en session fra overdragelsesdagen; den dag den
+  dør, står personalet uden for døren, og ingen kender koden
+- **`admin_adgang` har ingen kodekolonne** — den er en ren adgangsliste
+  (email, lokation, rolle, aktiv, navn). Koden ligger i Supabase Auth, så en
+  nulstilling i dashboardet er den rigtige vej. Det bekræfter rådet fra 3/10
+- **"Glemt koden?" på loginskærmen** (`admin.html` + `js/admin/login.js`) og
+  **`ny-kode.html`** + `js/ny-kode.js`, som mailens link lander på. Mekanismen
+  er Supabases egen: `/auth/v1/recover` og `/auth/v1/user`. Ingen hemmelig
+  nøgle i klientkoden, ingen koder gemt hos os
+- **Nøglen tørres af adresselinjen** med `history.replaceState`, før noget
+  andet sker — den er et login i tekstform, og adresselinjen deles, skrives
+  ned og ligger i historikken. Falsificeret særskilt: uden aftørringen fanger
+  prøven den
+- **Svaret er det samme, om e-mailen findes eller ej.** Ellers er loginskærmen
+  en liste over, hvem der kan komme ind
+- Prøve: `tests/glemt-kode.spec.js` — elleve, **alle set fejle**. To af dem
+  fejlede først på en fejl i prøven selv (svaret sendt ind under et forkert
+  navn), ikke i koden
+- **Før det kan virke:** `docs/SUPABASE-MAIL-OPSAETNING.md` — SMTP, Redirect
+  URLs og den danske mailskabelon. Uden SMTP sender Supabase kun til
+  projektets egne medlemmer, og knappen ville lyve
+
 **UGEN DER KOMMER OG DAGENS RET SER IKKE SJUSKEDE UD LÆNGERE** (4/10).
 Mikkels ord: *"uge der kommer dagensret og dagenret tingen på forsiden ser
 forældet og sjusket ud vi skal havde fixet designet uden at kører 1000 runder"*
