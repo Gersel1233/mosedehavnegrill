@@ -63,87 +63,41 @@ async function åbnLogin(page, { svar } = {}) {
   return kald;
 }
 
-test.describe('Loginskærmen kan sende en ny kode', () => {
-  test('der står en vej videre, når koden er glemt', async ({ page }) => {
+/* ⚠️ PRØVERNE FOR KNAPPEN PÅ LOGINSKÆRMEN ER TAGET UD IGEN (4/10,
+   samme dag de kom) — og de slettes med VILJE og ikke i stilhed, så
+   den næste ikke ser en rød prøve uden at kunne se hvorfor.
+
+   Knappen virkede kun, hvis Supabase kunne sende mails. Det kunne
+   den ikke: Google svarede `535 5.7.8 Username and Password not
+   accepted` på hvert eneste forsøg (læst i auth-loggen, ikke gættet)
+   — SMTP-koden skal være en app-adgangskode. Mikkels ord efter tre
+   forsøg: *"ærlig kan vi ik lade vær med det her og bar sørge for at
+   ... kan logge ind"*. En knap, der svarer "giv Lesreg besked", er
+   præcis det opkald, den skulle fjerne.
+
+   MASKINERIET ER URØRT, og prøverne for det står nedenfor: siden,
+   mailens link lander på, kan stadig sætte en kode. Kommer knappen
+   tilbage (én linje i admin.html), hører prøverne for den med.
+   Historien står i docs/HISTORIK.md og i admin.html. */
+test.describe('Loginskærmen lover ikke en mail, der ikke kan sendes', () => {
+  test('der står ingen "glemt kode" på loginskærmen', async ({ page }) => {
     await åbnLogin(page);
-    const knap = page.locator('#glemt-kode');
-    await expect(knap, 'loginskærmen har ingen "glemt kode"').toHaveCount(1);
-    await expect(knap).toBeVisible();
-    /* ⚠️ EN RIGTIG KNAP, IKKE EN DØD LINJE. Køkkenets iPad har
-       ingen mus, og den, der har glemt sin kode, er i forvejen
-       presset — en <span>, man skal gætte sig til, er ingen vej. */
-    expect(await knap.evaluate((e) => e.tagName)).toBe('BUTTON');
+    await expect(page.locator('#glemt-kode'),
+      'knappen er tilbage — så skal prøverne for den også være det').toHaveCount(0);
   });
 
-  test('uden en e-mail bliver der ikke sendt noget', async ({ page }) => {
-    const kald = await åbnLogin(page);
-    await page.locator('#glemt-kode').click();
-    await expect(page.locator('#login-fejl')).toBeVisible();
-    await expect(page.locator('#login-fejl')).toContainText(/e-mail/i);
-    expect(kald.length, 'der blev sendt en mail uden en adresse').toBe(0);
-  });
-
-  test('med en e-mail går kaldet til Supabases egen recover', async ({ page }) => {
-    const kald = await åbnLogin(page);
-    await page.locator('#email').fill('kontakt@mosedehavnecafe.dk');
-    await page.locator('#glemt-kode').click();
-    await expect(page.locator('#login-besked')).toBeVisible();
-
-    expect(kald.length, 'der blev ikke sendt noget').toBe(1);
-    expect(kald[0].krop.email).toBe('kontakt@mosedehavnecafe.dk');
-    /* Linket i mailen skal lande på siden, der sætter koden — og
-       på DEN HER vært, ikke på en skrevet ind i hånden. */
-    expect(decodeURIComponent(kald[0].url), 'mailen peger ikke på ny-kode.html')
-      .toContain('ny-kode.html');
-  });
-
-  /* ⚠️ SVARET MÅ IKKE AFSLØRE, OM E-MAILEN FINDES. */
-  test('beskeden er den samme for en ukendt e-mail', async ({ page }) => {
+  /* ⚠️ OG KODEN BAG DEN MÅ IKKE VÆRE REVET UD I SAMME HUG. Det tal
+     kommer udefra: fra store.js, ikke fra loginskærmen. Uden den her
+     halvdel kunne en oprydning tage hele vejen tilbage med sig, og
+     prøven ville være grøn. */
+  test('maskineriet bag står der stadig', async ({ page }) => {
     await åbnLogin(page);
-    await page.locator('#email').fill('kontakt@mosedehavnecafe.dk');
-    await page.locator('#glemt-kode').click();
-    await expect(page.locator('#login-besked')).toBeVisible();
-    const kendt = await page.locator('#login-besked').innerText();
-
-    await page.reload();
-    await page.waitForSelector('#login-form');
-    await page.locator('#email').fill('en-der-ikke-findes@eksempel.dk');
-    await page.locator('#glemt-kode').click();
-    await expect(page.locator('#login-besked')).toBeVisible();
-    const ukendt = await page.locator('#login-besked').innerText();
-
-    expect(ukendt, 'skærmen røber, hvem der har et login').toBe(kendt);
-    expect(kendt).toMatch(/hvis.*findes|har et login/i);
-  });
-
-  /* ⚠️ MÅLT PÅ DEN LEVENDE DATABASE 4/10, lige efter SMTP var sat op:
-     Supabase svarede 500 med {"msg":"Error sending recovery email"} —
-     og skærmen viste den engelske sætning ordret videre. Et køkken
-     kan hverken læse den eller gøre noget ved den: en 500 her er en
-     fejl i MAILOPSÆTNINGEN, ikke noget, den der trykker kan rette.
-     Det var min egen fejl at stole på j.msg. */
-  test('en fejl i mailopsætningen siger det på dansk — ikke Supabases engelsk', async ({ page }) => {
-    await åbnLogin(page, { svar: { status: 500,
-      body: '{"code":500,"error_code":"unexpected_failure","msg":"Error sending recovery email"}' } });
-    await page.locator('#email').fill('kontakt@mosedehavnecafe.dk');
-    await page.locator('#glemt-kode').click();
-    const f = page.locator('#login-fejl');
-    await expect(f).toBeVisible();
-    await expect(f, 'Supabases engelske tekst står på skærmen')
-      .not.toContainText(/Error sending|unexpected_failure/i);
-    await expect(f, 'skærmen siger ikke, hvem der kan gøre noget ved det')
-      .toContainText(/Lesreg|mailopsætning/i);
-  });
-
-  test('for mange forsøg siger det ligeud', async ({ page }) => {
-    await åbnLogin(page, { svar: { status: 429, body: '{"msg":"email rate limit exceeded"}' } });
-    await page.locator('#email').fill('kontakt@mosedehavnecafe.dk');
-    await page.locator('#glemt-kode').click();
-    const f = page.locator('#login-fejl');
-    await expect(f).toBeVisible();
-    await expect(f, 'en engelsk rate-limit-besked siger intet til et køkken')
-      .toContainText(/for mange|prøv igen om/i);
-    await expect(f).not.toContainText('rate limit');
+    const har = await page.evaluate(() => ({
+      glemt: typeof Butik.auth.glemtKode,
+      saet: typeof Butik.auth.saetNyKode,
+    }));
+    expect(har.glemt, 'Butik.auth.glemtKode er væk').toBe('function');
+    expect(har.saet, 'Butik.auth.saetNyKode er væk').toBe('function');
   });
 });
 

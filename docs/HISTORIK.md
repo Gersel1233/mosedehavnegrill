@@ -7,6 +7,36 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**KNAPPEN UD IGEN — DE TO LOGINS SÆTTES MED SQL I STEDET** (4/10, aften).
+Mikkel efter tre forsøg på Gmail: *"ærlig kan vi ik lade vær med det her og bar
+sørge for at kontaktmosedehavnecafe kam logge ind og bogholderi kan logge ind."*
+- **Googles eget svar, læst i auth-loggen** (ikke gættet): `535 5.7.8 Username
+  and Password not accepted · BadCredentials`, tre gange. SMTP-koden skal være
+  en **app-adgangskode**, ikke postkassens egen. Alt andet var rigtigt:
+  loggen viser, at opsætningen blev gemt kl. 11.23, hvor GoTrue hævede sin
+  mailgrænse fra 2/1h til 30
+- ⚠️ **Logtabellen hedder `logs` med en `source`-kolonne**, ikke `auth_logs`.
+  Jeg prøvede `auth_logs`, `edge_logs` og `postgres_logs` og fik "does not
+  exist" hver gang, før jeg slog syntaksen op. `where source = 'auth_logs'`
+- **"Glemt koden?" er taget af loginskærmen igen**, samme dag den kom. Den
+  svarede "giv Lesreg besked" — præcis det opkald, den skulle fjerne. En død
+  knap er værre end ingen knap. **Maskineriet står**: `ny-kode.html`,
+  `js/ny-kode.js` og `Butik.auth.glemtKode/saetNyKode` er urørte og prøvede.
+  Én linje i `admin.html` sætter knappen tilbage, den dag mailen virker
+- **Prøverne for knappen er slettet med vilje og ikke i stilhed** — to værn er
+  sat i stedet: at knappen IKKE er der, og at koden bag den stadig er. Uden
+  den anden halvdel kunne en oprydning tage hele vejen med sig
+- **`supabase/saet-de-to-koder-4-10.sql`**: koderne skrives af Mikkel selv i
+  SQL Editor og kommer aldrig forbi mig. Målt først, at
+  `extensions.crypt(..., gen_salt('bf'))` giver `$2a$`, 60 tegn, der
+  verificerer — det er GoTrues eget format. Filen har et værn, fordi en SQL,
+  der rammer nul rækker, siger "Success" og er tavs
+- ⚠️ **En kode skiftet med SQL smider ikke køkkenets iPad ud.** Sessionen fra
+  15/9 lever videre; den nye kode gælder næste gang, nogen logger ind
+- **Rollerne er allerede rigtige** og deler admin i to: `KUN_EJER` i
+  `js/admin/personale.js` skjuler Tider, Kontakt, Historik, Salg og Personale
+  for en medarbejder, og databasens `er_ejer()` holder det samme fra neden
+
 **GLEMT KODE — OG CHEFENS LOGIN ER ALDRIG BLEVET BRUGT** (4/10). Bygget,
 prøvet og committet. **Ikke pushet**: Mikkels valg — SMTP sættes op først.
 - **Fundet, der er værre end en glemt kode.** MÅLT i `auth.users`:
