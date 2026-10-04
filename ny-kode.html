@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ny adgangskode – Mosede Havnecafe</title>
+<!-- ⚠️ SAMME LOV SOM ADMIN: ude af søgemaskinerne. Siden er en dør
+     ind til personalesystemet, og den skal ikke kunne findes. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#fdf7ef">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css?v=__V__">
+</head>
+<body class="personale">
+
+<header class="top">
+  <div class="midt">
+    <a class="top-navn" href="index.html">Mosede Havnecafe</a>
+  </div>
+</header>
+
+<main class="midt">
+  <!-- ============================================================
+       SIDEN, MAILENS LINK LANDER PÅ  (4/10)
+       ------------------------------------------------------------
+       Supabase sender mailen; linket i den bærer en midlertidig
+       nøgle i adressens hash. Siden her bytter nøglen til en ny
+       kode og sender folk tilbage til login.
+
+       ⚠️ NØGLEN ER ET LOGIN I TEKSTFORM. Den læses ud af adressen
+       og TØRRES AF ADRESSELINJEN med det samme: adresselinjen
+       deles, skrives ned, ligger i historikken og står på skærmen
+       i et køkken, hvor andre går forbi.
+
+       ⚠️ OG DEN GEMMES IKKE. Hverken i localStorage eller
+       sessionStorage — den lever i en variabel, til koden er sat.
+       ============================================================ -->
+  <div id="ny-kode-side" class="login-boks kort">
+    <h1 class="h-panel">Ny adgangskode</h1>
+
+    <div class="advarsel skjult" id="ny-kode-fejl"></div>
+    <div class="besked skjult" id="ny-kode-besked"></div>
+
+    <form id="ny-kode-form" class="skjult" novalidate>
+      <p class="vare-tekst">
+        Vælg en kode, I kan huske — mindst 8 tegn. Den gælder for den
+        e-mail, I bad om linket til.
+      </p>
+      <div class="felt">
+        <label for="kode1">Ny adgangskode</label>
+        <input type="password" id="kode1" autocomplete="new-password">
+      </div>
+      <div class="felt">
+        <label for="kode2">Skriv den igen</label>
+        <input type="password" id="kode2" autocomplete="new-password">
+      </div>
+      <button class="knap" type="submit" id="saet-kode">Gem den nye kode</button>
+    </form>
+
+    <p class="hjaelp"><a href="admin.html">Tilbage til log ind</a></p>
+  </div>
+</main>
+
+<script src="js/config.js?v=__V__"></script>
+<script src="js/store.js?v=__V__"></script>
+<script src="js/ny-kode.js?v=__V__"></script>
+</body>
+</html>

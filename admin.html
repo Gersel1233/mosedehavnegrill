@@ -69,7 +69,24 @@
       </label>
 
       <button class="knap" type="submit" id="login-knap">Log ind</button>
+
+      <!-- ⚠️ GLEMT KODE (4/10). Mikkels ord: "har glemt deres
+           adganskoder osv til deres login". MÅLT samme dag: chefens
+           login var ALDRIG blevet brugt, og køkkenets iPad kørte på
+           én session fra overdragelsesdagen 15/9. Den dag, den
+           session dør, står personalet uden for døren — og vejen ind
+           igen var at ringe til Lesreg.
+
+           En KNAP og ikke en linje tekst: iPad'en i køkkenet har
+           ingen mus, og den, der har glemt sin kode, er i forvejen
+           presset. Den ligger uden for formens indsending, så et
+           tryk på enter i kodefeltet stadig logger ind. -->
+      <button class="knap-tekst" type="button" id="glemt-kode">Glemt koden?</button>
     </form>
+
+    <!-- Kvitteringen for en sendt mail står for sig selv og ikke i
+         fejlfeltet: en mail på vej er ikke en fejl. -->
+    <div class="besked skjult" id="login-besked"></div>
   </div>
 
   <!-- ---------------------------------------------------------

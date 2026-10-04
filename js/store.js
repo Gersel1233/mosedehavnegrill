@@ -4713,6 +4713,92 @@
       });
     },
 
+    /* ============================================================
+       GLEMT KODE  (4/10)
+       ------------------------------------------------------------
+       Mikkels ord: *"har glemt deres adganskoder osv til deres
+       login"*. Indtil nu var vejen ind igen at ringe til Lesreg —
+       hverken noget, kunden skal betale for, eller noget, de kan
+       regne med klokken 11 på en lørdag.
+
+       ⚠️ DET ER SUPABASES EGEN MEKANISME. /auth/v1/recover sender
+       mailen; mailens link bærer en midlertidig nøgle, og
+       /auth/v1/user sætter koden med den. Vi gemmer ingen koder,
+       sender ingen mails selv, og der er stadig kun anon-nøglen i
+       klientkoden — den, der allerede ligger i js/config.js.
+
+       ⚠️ SVARET ER DET SAMME, OM E-MAILEN FINDES ELLER EJ. Supabase
+       svarer selv 200 på en ukendt adresse, netop for ikke at
+       afsløre, hvem der har et login, og skærmen gør det samme.
+       En loginskærm, der svarer forskelligt, er en liste over,
+       hvem der kan komme ind.
+
+       ⚠️ OG LINKET SKAL PEGE PÅ DEN VÆRT, MAN STÅR PÅ. Skrev vi
+       adressen ind i hånden, ville en nulstilling fra en prøveside
+       sende folk ud på den rigtige — og omvendt. */
+    glemtKode: function (email, hvorhen) {
+      if (!SKY) {
+        // Øvetilstand: der er ingen at sende til, og det skal
+        // skærmen sige — ikke lade som om, mailen er på vej.
+        return Promise.reject(new Error(
+          'Der er ingen forbindelse til databasen i øvetilstand, så der kan ikke sendes en mail.'));
+      }
+      var maal = hvorhen || (location.origin + '/ny-kode.html');
+      return fetch(cfg.url + '/auth/v1/recover?redirect_to='
+          + encodeURIComponent(maal), {
+        method: 'POST',
+        headers: { apikey: cfg.anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email }),
+      }).catch(function () {
+        throw new Error('Ingen forbindelse lige nu. Tjek nettet, og prøv igen.');
+      }).then(function (r) {
+        /* ⚠️ 429 ER DEN, DER FAKTISK SKER. Supabase holder igen på
+           antallet af mails, og "email rate limit exceeded" siger
+           ingenting til et køkken. */
+        if (r.status === 429) {
+          throw new Error('Der er sendt for mange mails lige nu. Prøv igen om en halv time.');
+        }
+        if (!r.ok) {
+          return r.json().catch(function () { return {}; }).then(function (j) {
+            throw new Error(j.msg || j.error_description
+              || 'Mailen kunne ikke sendes. Prøv igen om lidt.');
+          });
+        }
+        return true;
+      });
+    },
+
+    /* Sætter koden med den midlertidige nøgle fra mailens link.
+       Nøglen er et login i tekstform — den sendes som Bearer og
+       bliver ikke gemt nogen steder. */
+    saetNyKode: function (noegle, kode) {
+      if (!SKY) {
+        return Promise.reject(new Error('Ingen forbindelse til databasen.'));
+      }
+      return fetch(cfg.url + '/auth/v1/user', {
+        method: 'PUT',
+        headers: {
+          apikey: cfg.anonKey,
+          Authorization: 'Bearer ' + noegle,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: kode }),
+      }).catch(function () {
+        throw new Error('Ingen forbindelse lige nu. Tjek nettet, og prøv igen.');
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (r.ok) return j;
+          /* Et link, der er brugt eller for gammelt, er den
+             almindelige fejl her — og den skal kunne læses. */
+          if (r.status === 401 || r.status === 403) {
+            throw new Error('Linket er udløbet eller brugt. Bed om et nyt fra loginskærmen.');
+          }
+          throw new Error(j.msg || j.error_description
+            || 'Koden kunne ikke sættes. Prøv igen.');
+        });
+      });
+    },
+
     /* Fornyer nøglen med refresh_token. Kaldes af hentTabel og
        skriv når et kald svarer 401 — se dér. Fejler den, er man
        reelt logget ud, og så skal man se loginskærmen frem for en

@@ -56,6 +56,62 @@
       });
   });
 
+  /* ============================================================
+     GLEMT KODEN  (4/10)
+     ------------------------------------------------------------
+     MÅLT i databasen samme dag: chefens login (bogholderi@) var
+     ALDRIG blevet brugt — oprettet 15/9, nul sessioner — og
+     køkkenets iPad kørte på én session fra overdragelsesdagen.
+     Den dag, den session dør, står personalet uden for døren, og
+     vejen ind igen var at ringe til Lesreg.
+
+     ⚠️ BESKEDEN ER DEN SAMME, OM E-MAILEN FINDES ELLER EJ. Ellers
+     er loginskærmen en liste over, hvem der kan komme ind. Den
+     står i sit eget felt og ikke i fejlfeltet — en mail på vej er
+     ikke en fejl. Reglen om selve kaldet bor i Butik.auth. */
+  var GLEMT_SVAR = 'Hvis der findes et login med den e-mail, er der nu sendt '
+    + 'en mail med et link til at sætte en ny kode. Linket holder en time. '
+    + 'Kig også i spam.';
+
+  if ($('glemt-kode')) {
+    $('glemt-kode').addEventListener('click', function () {
+      var fejl = $('login-fejl');
+      var besked = $('login-besked');
+      fejl.classList.add('skjult');
+      besked.classList.add('skjult');
+
+      var email = $('email').value.trim();
+      if (!email) {
+        /* ⚠️ FELTET ER DER ALLEREDE — vi beder ikke om adressen i en
+           prompt. Den, der har glemt sin kode, har som regel
+           skrevet sin e-mail i forvejen. */
+        fejl.textContent = 'Skriv din e-mail i feltet ovenfor først — '
+          + 'så sender vi linket dertil.';
+        fejl.classList.remove('skjult');
+        $('email').focus();
+        return;
+      }
+
+      var knap = $('glemt-kode');
+      knap.disabled = true;
+      knap.textContent = 'Sender…';
+
+      Butik.auth.glemtKode(email)
+        .then(function () {
+          besked.textContent = GLEMT_SVAR;
+          besked.classList.remove('skjult');
+        })
+        .catch(function (err) {
+          fejl.textContent = err.message || 'Mailen kunne ikke sendes.';
+          fejl.classList.remove('skjult');
+        })
+        .then(function () {
+          knap.disabled = false;
+          knap.textContent = 'Glemt koden?';
+        });
+    });
+  }
+
   udgange.forEach(function (id) {
     if (!$(id)) return;
     $(id).addEventListener('click', function (e) {
