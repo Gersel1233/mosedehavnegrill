@@ -116,6 +116,25 @@ test.describe('Loginskærmen kan sende en ny kode', () => {
     expect(kendt).toMatch(/hvis.*findes|har et login/i);
   });
 
+  /* ⚠️ MÅLT PÅ DEN LEVENDE DATABASE 4/10, lige efter SMTP var sat op:
+     Supabase svarede 500 med {"msg":"Error sending recovery email"} —
+     og skærmen viste den engelske sætning ordret videre. Et køkken
+     kan hverken læse den eller gøre noget ved den: en 500 her er en
+     fejl i MAILOPSÆTNINGEN, ikke noget, den der trykker kan rette.
+     Det var min egen fejl at stole på j.msg. */
+  test('en fejl i mailopsætningen siger det på dansk — ikke Supabases engelsk', async ({ page }) => {
+    await åbnLogin(page, { svar: { status: 500,
+      body: '{"code":500,"error_code":"unexpected_failure","msg":"Error sending recovery email"}' } });
+    await page.locator('#email').fill('kontakt@mosedehavnecafe.dk');
+    await page.locator('#glemt-kode').click();
+    const f = page.locator('#login-fejl');
+    await expect(f).toBeVisible();
+    await expect(f, 'Supabases engelske tekst står på skærmen')
+      .not.toContainText(/Error sending|unexpected_failure/i);
+    await expect(f, 'skærmen siger ikke, hvem der kan gøre noget ved det')
+      .toContainText(/Lesreg|mailopsætning/i);
+  });
+
   test('for mange forsøg siger det ligeud', async ({ page }) => {
     await åbnLogin(page, { svar: { status: 429, body: '{"msg":"email rate limit exceeded"}' } });
     await page.locator('#email').fill('kontakt@mosedehavnecafe.dk');

@@ -4758,11 +4758,21 @@
         if (r.status === 429) {
           throw new Error('Der er sendt for mange mails lige nu. Prøv igen om en halv time.');
         }
+        /* ⚠️ SUPABASES EGEN TEKST MÅ IKKE NÅ SKÆRMEN (målt 4/10).
+           Lige efter SMTP var sat op, svarede den levende database
+           500 med {"msg":"Error sending recovery email"} — og
+           skærmen viste den sætning ordret videre til personalet.
+           Den er engelsk, og den er ikke deres at rette: en 5xx her
+           betyder, at mailopsætningen er gået i stykker, ikke at
+           den, der trykkede, gjorde noget forkert. Det var min egen
+           fejl at stole på j.msg. */
+        if (r.status >= 500) {
+          throw new Error('Mailen kunne ikke sendes — der er noget galt med '
+            + 'mailopsætningen. Det er ikke noget, I kan rette herfra. '
+            + 'Giv Lesreg besked.');
+        }
         if (!r.ok) {
-          return r.json().catch(function () { return {}; }).then(function (j) {
-            throw new Error(j.msg || j.error_description
-              || 'Mailen kunne ikke sendes. Prøv igen om lidt.');
-          });
+          throw new Error('Mailen kunne ikke sendes. Prøv igen om lidt.');
         }
         return true;
       });
