@@ -7,6 +7,38 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**UGEN DER KOMMER OG DAGENS RET SER IKKE SJUSKEDE UD LÆNGERE** (4/10).
+Mikkels ord: *"uge der kommer dagensret og dagenret tingen på forsiden ser
+forældet og sjusket ud vi skal havde fixet designet uden at kører 1000 runder"*
+— så: skud, ikke fuld runde. Husets egen regel (udseende må gå live efter et
+skud) gjaldt for CSS-delen; regelændringen fik sine egne prøver først.
+- **Fire ens dage er ikke en uge.** MÅLT i databasen: køkkenet havde skrevet
+  "Bagt krydret kartoffel" på FIRE dage (4.–7.) og ingenting bagefter.
+  Sammenslåningen fra 1/10 krævede alle syv, så forsiden stod med fire kort,
+  der var bogstavelig talt ens. `Butik.sammeRetHeleUgen` → `sammeRetFlereDage`:
+  striben tælles fra i dag og frem, mindst to dage, og resten af ugen står dag
+  for dag. Samme regel på forsiden og menukortet — ét sted.
+  Prøve: `tests/ugen-slaas-sammen.spec.js`, fire af syv set fejle
+- **Prisen på det sammenslåede kort stod med klassen `dp`**, som ingen regel i
+  `havnegrillen.css` kender. Tallet lå som løs brødtekst, hvor hvert andet kort
+  har pillen — en fejl, jeg selv lavede 1/10 og ikke så. Tallet udefra i prøven
+  er stylesheetets afrunding: pillen er 999px, brødtekst er 0px
+- **Ternet var et skakbræt.** Felterne var 9 px, og på en telefon med tre
+  pixels pr. px blev de til 27 px — fire rækker store kvadrater tværs over
+  kortet. 5 px nu, og den lyse tråd svagere: det læses som stof. Heroen og
+  footeren rører jeg ikke; de ligger langt fra øjet
+- **"I dag" var kursivt.** Et kursivt ord på rødt tern er præcis den
+  café-hjemmeside, siden ikke skal ligne. Ordet låner husets etiketform
+  (versaler, spærret, lille) — den samme som `.eyebrow` og ugekortenes `.dw`,
+  så dagens ret endelig rimer på ugestriben lige under. Teksten i
+  opmærkningen er stadig "I dag", så prøven fra 3/10 læser det samme
+- **Overskriften sagde "i dag" tre gange** inden for hundrede pixels: datoen,
+  "Dagens ret i dag" og båndet. Overskriften er "Dagens ret" nu
+- **Månedsnavnene** stod i hver sin kopi i `forside.js` og `menukort.js`, og en
+  tredje var på vej med `datoSpaend`. De er `Butik.MÅNEDER` nu
+- Kørt: de syv prøvefiler, der rører `.today`, `.day`, `#ugen` og ugeplanen —
+  264 grønne på computer, 260 på telefon. **Ikke** den fulde runde, efter aftale
+
 **CHEFENS RETTELSER OG KØKKENETS OVERBLIK** (29/9). Udgivet og tjekket live.
 - **Køkkenet** (`0124cb0`): "Lav nu" (det ÅBNE pr. ret på tværs af bordene,
   drikke for sig, klar tæller ikke), mad/drikke delt på kortet efter

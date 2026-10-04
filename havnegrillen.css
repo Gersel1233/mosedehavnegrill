@@ -703,8 +703,11 @@ h2{font-size:35px;margin-top:9px}
 /* dagens ret i dag */
 .today{margin-top:18px;position:relative;border-radius:26px;background:var(--paper);box-shadow:var(--skygge-kort);overflow:hidden}
 .today .in{padding:16px 18px 18px}
-.today .lbl{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--red-tekst)}
-.today h3{font-size:29px;margin-top:9px}
+/* Serveringstiden stod i rødt lige under et rødt bånd og kæmpede
+   med det om øjet (4/10). Båndet bærer det røde; linjen her er en
+   oplysning, og den må gerne være en oplysning. */
+.today .lbl{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:var(--muted);letter-spacing:-.005em}
+.today h3{font-size:31px;margin-top:7px;letter-spacing:-.025em}
 .today p{margin:8px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
 /* ⚠️ PRISEN OG PORTIONERNE ER PILLER (7/9, kundens skærmbillede).
    De stod som nøgen tekst ved siden af en knap i fuld bredde;
@@ -712,7 +715,10 @@ h2{font-size:35px;margin-top:9px}
    bruger --red-tekst og ikke --red: den lille skrift på en
    telefon falder under 4,5:1 med mærkefarven selv (reglen fra
    menukortet). */
-.today .price{display:inline-flex;align-items:center;font-family:"Host Grotesk",system-ui,sans-serif;font-size:19px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red-tekst);background:var(--red-svag,rgba(214,42,58,.10));border-radius:999px;padding:8px 16px;white-space:nowrap}
+/* Prisen stod som en bleg pille ved siden af en knap i fuld rød
+   (4/10) — tallet, gæsten leder efter, var det svageste på linjen.
+   Samme form, mere vægt. */
+.today .price{display:inline-flex;align-items:center;font-family:"Host Grotesk",system-ui,sans-serif;font-size:20px;font-weight:700;letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:var(--red-tekst);background:rgba(214,42,58,.13);border-radius:999px;padding:8px 17px;white-space:nowrap}
 /* Portionerne er DATABASENS tal. Uden et antal findes pillen
    ikke — [hidden] er browserens egen, og .rest sætter ikke
    display, så den slår igennem (arret fra .music og .lk-tegn). */
@@ -734,9 +740,17 @@ h2{font-size:35px;margin-top:9px}
    ternet stribe på 10 px. Et bånd foroven tager INGEN bredde, så
    grunden holder, og blokken kan stå på alle skærme. Fra 560 px
    står den i siden, som forlægget har den. */
-.today .idag-blok{display:flex;align-items:center;gap:8px;padding:10px 18px;
+/* ⚠️ TERNET VAR ET SKAKBRÆT (4/10). Felterne var 9 px, og på en
+   telefon med tre pixels pr. px blev de til 27 px på skærmen — fire
+   rækker store røde kvadrater tværs over kortet. Mikkels ord om hele
+   afsnittet: *"ser forældet og sjusket ud"*. Husets tern skal LÆSES
+   SOM STOF og ikke som et brætspil: felterne er 5 px nu, og den
+   lysere tråd står svagere, så det er en vævning på afstand. Heroen
+   og footeren beholder deres egne mål — de ligger langt væk fra
+   øjet; det her bånd ligger 38 px fra rettens navn. */
+.today .idag-blok{display:flex;align-items:center;gap:8px;padding:9px 18px;
   background-color:var(--red);
-  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.11) 0 9px,transparent 9px 18px),repeating-linear-gradient(0deg,rgba(255,255,255,.11) 0 9px,transparent 9px 18px);
+  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.085) 0 5px,transparent 5px 10px),repeating-linear-gradient(0deg,rgba(255,255,255,.085) 0 5px,transparent 5px 10px);
   color:#fff}
 /* ⚠️ DAMPEN SKAL DAMPE (7/9). Kundens ord: "det der på når man
    har lagt en dagens ret om skal være levende og steaming."
@@ -767,9 +781,19 @@ h2{font-size:35px;margin-top:9px}
 @media (prefers-reduced-motion: reduce){
   .today .idag-blok .damp{animation:none;opacity:.75;transform:none}
 }
-.today .idag-blok .idag-ord{font-family:"Host Grotesk",system-ui,sans-serif;font-style:italic;font-size:19px;line-height:1}
+/* ⚠️ ORDET VAR KURSIVT OG ALENE (4/10). Et kursivt "I dag" på et
+   rødt ternet felt er den café-hjemmeside, siden IKKE skal ligne.
+   Huset har allerede en form til den slags markør — .eyebrow og
+   ugekortenes .dw: versaler, spærret, lille. Ordet låner den, og så
+   rimer dagens ret endelig på ugestriben lige under. Teksten i
+   opmærkningen er stadig "I dag"; det er text-transform, der gør
+   resten, så prøven fra 3/10 læser det samme ord. */
+.today .idag-blok .idag-ord{font-family:"Host Grotesk",system-ui,sans-serif;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;line-height:1}
 @media (min-width:560px){
-  .today{display:grid;grid-template-columns:96px minmax(0,1fr)}
+  /* 84 px i stedet for 96 (4/10): ordet er en etiket nu og fylder
+     under det halve af, hvad det kursive gjorde. Prøven måler, at
+     blokken bliver under en tredjedel af kortet — den holder. */
+  .today{display:grid;grid-template-columns:84px minmax(0,1fr)}
   .today .idag-blok{flex-direction:column;justify-content:center;gap:6px;padding:0}
   .today .in{padding:18px 20px}
 }
@@ -959,6 +983,22 @@ html{touch-action:manipulation}
 .day h4:has(+ .pr),.day p:has(+ .pr){margin-bottom:14px}
 .day .pr{align-self:flex-start;margin-top:auto;font-size:15px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red-tekst);background:var(--red-svag,rgba(214,42,58,.10));border-radius:999px;padding:6px 12px}
 .day.nu{box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.55),0 10px 26px rgba(214,42,58,.14)}
+/* ---- STRIBEN: DEN SAMME RET FLERE DAGE I TRÆK (4/10) -------
+   Kortet dækker fire-syv dage, hvor nabokortene dækker én, og så
+   må det ikke have samme størrelse som dem: et bredt kort med et
+   datospænd LÆSES som en periode, hvor et smalt læses som endnu
+   en dag, man har glemt at give sin egen ret.
+
+   ⚠️ BREDDEN ER min(), IKKE EN FAST VÆRDI. Striben er tit det
+   eneste kort i rullebeholderen, og 300 px fast ville stikke ud
+   over kanten på en lille telefon (320 px minus to gange --pad).
+   Dagskortenes 186 px bliver stående — de skal kunne stå fire i
+   træk og rulles. */
+.day.spaend{width:min(300px,calc(100vw - 2 * var(--pad)))}
+.day.spaend .dw{font-size:12px;letter-spacing:.14em}
+.day.spaend .dd{font-size:14px;color:var(--ink2)}
+.day.spaend h4{font-size:18px;letter-spacing:-.015em}
+.day.spaend p{font-size:13.5px}
 .day.closed{background:rgba(255,255,255,.6);box-shadow:none;border:1.5px solid rgba(36,26,23,.12)}
 .day.closed.nu{border-color:rgba(214,42,58,.45)}
 .day.closed:not(.nu) .dw{color:var(--muted)}
