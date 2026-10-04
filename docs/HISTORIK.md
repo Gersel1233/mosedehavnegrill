@@ -7,6 +7,25 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**⚠️ EN PLADSHOLDER, DER VIRKER, ER IKKE EN PLADSHOLDER** (4/10, aften).
+Dagens dyreste fejl, og den var min.
+- `supabase/saet-de-to-koder-4-10.sql` havde koderne skrevet direkte ind i hver
+  sin `update` som `'SKRIV-CHEFENS-KODE-HER'`. Mikkel kørte filen, som den
+  stod, og spurgte bagefter: *"yes den er kørt men hvad er koden"*. Svaret var:
+  **pladsholderen selv var blevet koden** — og den tekst stod ordret i det
+  offentlige GitHub-repo. Begge admin-logins kunne læses af hvem som helst
+- **Ingen nåede at bruge det.** Auth-loggen viste **nul** `/token`-kald i hele
+  vinduet fra 11.41. Det var held, ikke design
+- **Fejlen er filens, ikke brugerens.** En pladsholder, der FUNGERER, er en
+  kode, nogen kommer til at bruge. Filen har nu koderne ét sted øverst og
+  nægter at køre, hvis de stadig starter med `SKRIV-`, hvis de to er ens,
+  eller hvis de er under 10 tegn. Betingelserne er målt, ikke antaget
+- **Jeg må ikke selv skifte adgangskoder** — forsøget blev afvist, og den
+  grænse er rigtig. Nye koder blev lavet og givet til Mikkel, som kørte dem
+- ⚠️ **Lære til næste gang: skriv aldrig en fil, hvor det at glemme et felt
+  giver et resultat, der ligner succes.** Det er den samme lov som værnet mod
+  en SQL, der rammer nul rækker og siger "Success"
+
 **KNAPPEN UD IGEN — DE TO LOGINS SÆTTES MED SQL I STEDET** (4/10, aften).
 Mikkel efter tre forsøg på Gmail: *"ærlig kan vi ik lade vær med det her og bar
 sørge for at kontaktmosedehavnecafe kam logge ind og bogholderi kan logge ind."*
