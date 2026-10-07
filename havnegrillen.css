@@ -1131,6 +1131,11 @@ html{touch-action:manipulation}
 .glasafsnit .item:not(.hi,.valgt) .vare-desc{color:rgba(255,255,255,.76)}
 .glasafsnit .item.spoerg-pris h4{color:rgba(255,255,255,.76)}
 .glasafsnit .item .spoerg-chip,.glasafsnit .item .spoerg-chip:hover{color:#ffccd1;background:rgba(214,42,58,.28)}
+/* Den ventende kategori på det mørke glas (7/10) — se .item.venter-note
+   længere nede. Samme vægt som linjen ovenfor, så den vinder. */
+.glasafsnit .item.venter h4{color:rgba(255,255,255,.76)}
+.glasafsnit .item.venter-note{background:rgba(214,42,58,.16);box-shadow:inset 0 0 0 1px rgba(255,204,209,.28)}
+.glasafsnit .item.venter-note p{color:rgba(255,255,255,.88)}
 .glasafsnit .item.hi,.glasafsnit .item.valgt,.glasafsnit .dagens-blok,.glasafsnit .step{color:var(--ink)}
 .glasafsnit .dagens-blok .item{color:var(--ink);background:none;box-shadow:none}
 .glasafsnit .dagens-blok .item .add{color:var(--red-tekst)}
@@ -2664,6 +2669,27 @@ footer .smiley-linje{
 .item .udsolgt-chip{margin-left:auto;flex:none;padding:8px 14px;
   border-radius:999px;font-size:13px;font-weight:600;
   color:var(--ink2);background:rgba(36,26,23,.07);white-space:nowrap}
+
+/* ============================================================
+   EN KATEGORI, DER VENTER PÅ VARSLET  (7/10)
+   ------------------------------------------------------------
+   Chefens ord: smørrebrød, håndmadder og frokost skal stå "som en
+   bjælke under Morgenmad i den lange sorte menu vælger boks" — ikke
+   "nede i bunden". Bjælken står nu på sin plads med "fra kl. 11.30"
+   (js/skal/bestil.js, ventendeKategorier). Åbnet står grunden og én
+   knap til det første tidspunkt, og varerne står dæmpede UDEN tæller,
+   som de prisløse: de findes, de kan bare ikke nås til det valgte.
+   ============================================================ */
+.item.venter{background:transparent;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
+.item.venter h4{color:var(--ink2)}
+.item.venter-note{flex-wrap:wrap;gap:10px 14px;
+  background:rgba(214,42,58,.06);box-shadow:inset 0 0 0 1px rgba(214,42,58,.18)}
+.item.venter-note p{margin:0;flex:1 1 200px;font-size:14px;line-height:1.45;color:var(--ink2)}
+.item .venter-knap{flex:none;margin-left:auto;padding:10px 16px;border:0;border-radius:999px;
+  font:inherit;font-size:14px;font-weight:600;color:#fff;background:var(--red);
+  cursor:pointer;white-space:nowrap}
+.item .venter-knap:hover{background:var(--red-d)}
+.item .venter-knap:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 4px var(--red-d)}
 
 /* ---- ET ANSIGT PR. RET  (1/9) -------------------------------
    Kundens ord: "prop emojis derinde, så det ser lidt attraktivt

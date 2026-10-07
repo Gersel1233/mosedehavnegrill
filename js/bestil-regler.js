@@ -333,8 +333,15 @@
            regnestykke. Og med et døgn eller mere siger linjen, hvad man
            så kan gøre. Mikkel: *"Platter: 1 dags varsel, med tekst om at
            man kan ringe og spørge ved særlige ønsker."* */
+        /* ⚠️ `varsel: true` SIGER, AT DET KUN ER VARSLET  (7/10). En
+           kategori, der bare skal bestilles i god tid, FINDES på det
+           tidspunkt — den kan nås senere samme dag eller i morgen.
+           Forsiden tegner den derfor som en bjælke på sin plads med
+           "fra kl. 11.30" (js/skal/bestil.js, ventendeKategorier), mens
+           "kun til kl. 11" og en lukket ugedag stadig står i linjen. */
         return {
           aaben: false,
+          varsel: true,
           grund: 'bestilles ' + varselOrd(varsel) + ' før'
             + (varsel >= 1440 ? ' — ring og spørg ved særlige ønsker' : ''),
         };

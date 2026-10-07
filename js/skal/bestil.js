@@ -312,6 +312,102 @@
     return (udvalgNu() || {}).udsolgt || [];
   }
 
+  /* ============================================================
+     DET, DER KUN VENTER PÅ VARSLET, STÅR PÅ SIN PLADS  (7/10)
+     ------------------------------------------------------------
+     Chefens ord: *"Hvorfor er frokost, Smørrebrød, og håndmadder ikke
+     som en bjælke under Morgenmad i den lange sorte menu vælger boks
+     på hjemmesiden, det kommer først frem nede i bunden"* — og
+     Mikkel: *"de skal også kunne bestilles helt normalt der ligesom
+     alt andet."*
+
+     MÅLT 7/10 med ejerens rækker efter chefens-rettelser-7-10.sql:
+     vælgeren står fra start på det første kvarter, gæsten kan nå (en
+     halv time ude). Smørrebrødet og håndmadderne skal have en time,
+     platterne et døgn — så alle tre stod i "Ikke lige nu"-linjen
+     nederst og aldrig som bjælker, uanset hvad klokken var.
+
+     Nu står en kategori, der KUN venter på varslet, som en bjælke på
+     sin plads i kunderejsen med "fra kl. 11.30". Åbnes den, står
+     varerne og én knap, der vælger det første tidspunkt, de kan nås.
+
+     ⚠️ KNAPPEN FLYTTER TIDEN — IKKE ET TRYK PÅ BJÆLKEN. Et nyt
+     tidspunkt kan tage noget ud af kurven (morgenmaden slutter kl.
+     11). Det skal gæsten selv vælge, og ryddedeKurven siger, hvad der
+     røg ud.
+     ⚠️ REGLEN ER URØRT. Varerne har ingen tæller, før tiden er flyttet,
+     og databasen afviser stadig for kort varsel (gaestens-regler.sql).
+     Tidspunktet findes med de SAMME funktioner, vælgeren bygges af —
+     R.tiderFor, R.kategoriPaaTid og Butik.udvalg — ingen kopi.
+     "Ikke lige nu" står tilbage med det, der er lukket af andre
+     grunde: "kun til kl. 11", en ugedag uden.
+     ============================================================ */
+  var ventendeHuske = null;
+  function ventendeKategorier() {
+    if (!side.folder || !R.tiderFor || !R.kategoriPaaTid) return [];
+    var nøgle = valgtDag + '|' + valgtTid() + '|' + hvordan();
+    if (ventendeHuske && ventendeHuske.nøgle === nøgle) return ventendeHuske.ud;
+    var afd = {};
+    (data.menu_kategorier || []).forEach(function (k) { afd[k.id] = k.afdeling; });
+    /* De dage, vælgeren selv tilbyder — fra den valgte og frem. */
+    var datoFelt = felt('dato');
+    var dage = datoFelt
+      ? Array.prototype.filter.call(datoFelt.options, function (o) {
+        return o.value && !o.disabled && o.value >= valgtDag;
+      }).map(function (o) { return o.value; })
+      : [valgtDag];
+    var ud = [];
+    (udvalgNu().lukkede || []).forEach(function (l) {
+      /* Isen har sin egen blok og sin egen bygger; den venter ikke her. */
+      if (!l.varsel || afd[l.id] === 'is') return;
+      var f = førsteTid(l.id, dage);
+      if (f) ud.push({ id: l.id, navn: l.navn, grund: l.grund, dag: f.dag, tid: f.tid, varer: f.varer });
+    });
+    ventendeHuske = { nøgle: nøgle, ud: ud };
+    return ud;
+  }
+  function førsteTid(katId, dage) {
+    function mine(v) { return Number(v.kategori_id) === Number(katId); }
+    for (var i = 0; i < dage.length; i++) {
+      var tider = R.tiderFor(data, dage[i], null, hvordan(), [katId]) || [];
+      for (var j = 0; j < tider.length; j++) {
+        if (!R.kategoriPaaTid(data, katId, dage[i], tider[j], hvordan()).aaben) continue;
+        var u = Butik.udvalg(data, side.udvalg, dage[i], tider[j], hvordan()) || {};
+        var varer = (u.varer || []).filter(mine)
+          .concat((u.spoergPris || []).filter(mine).map(function (v) { return { vare: v, slags: 'spoerg' }; }))
+          .concat((u.udsolgt || []).filter(mine).map(function (v) { return { vare: v, slags: 'udsolgt' }; }));
+        /* Ingen varer den dag (en ugedag uden) — så prøves næste dag. */
+        if (!varer.length) break;
+        return { dag: dage[i], tid: tider[j], varer: varer };
+      }
+    }
+    return null;
+  }
+  /* "kl. 11.30" i dag, ellers dagen foran: "i morgen kl. 10.45". */
+  function venterHvornår(w, kort) {
+    var kl = 'kl. ' + String(w.tid).slice(0, 5).replace(':', '.');
+    if (w.dag === valgtDag) return kl;
+    var dag = w.dag === R.isoPlus(Butik.nu().dato, 1) ? 'i morgen'
+      : Butik.UGEDAGE[(new Date(w.dag + 'T12:00:00Z').getUTCDay() + 6) % 7].toLowerCase();
+    return kort ? dag : dag + ' ' + kl;
+  }
+  function flytTilVenter(w, id) {
+    aabne[id] = true;
+    var dato = felt('dato');
+    if (dato && dato.value !== w.dag) {
+      dato.value = w.dag;
+      dato.dispatchEvent(new Event('change'));
+    }
+    var tid = felt('tid');
+    var findes = tid && Array.prototype.some.call(tid.options, function (o) {
+      return o.value === w.tid && !o.disabled;
+    });
+    if (findes && tid.value !== w.tid) {
+      tid.value = w.tid;
+      tid.dispatchEvent(new Event('change'));
+    }
+  }
+
   function grupper() {
     var navne = {};
     /* ⚠️ AFDELINGEN SKAL MED UD AF DEN HER FUNKTION  (25/9).
@@ -349,6 +445,14 @@
     varerne().forEach(function (v) { iKasse(v, null); });
     spoergVarerne().forEach(function (v) { iKasse(v, 'spoerg'); });
     udsolgteVarer().forEach(function (v) { iKasse(v, 'udsolgt'); });
+    /* Det, der kun venter på varslet, står på sin plads — se
+       ventendeKategorier ovenfor. Sorteringen herunder sætter den ind. */
+    ventendeKategorier().forEach(function (w) {
+      var id = String(w.id);
+      if (kasser[id]) return;
+      kasser[id] = { id: id, navn: w.navn, afdeling: afd[w.id], varer: w.varer, venter: w };
+      rækkefølge.push(kasser[id]);
+    });
 
     /* ⚠️ MENUKORTETS RÆKKEFØLGE, IKKE LISTERNES  (13/9). Kundens ord:
        "når jeg skifter dagene på bestillingen ændrer rækkefølgen på
@@ -1176,6 +1280,26 @@
     return række;
   }
 
+  /* En vare i en kategori, der venter på varslet: navn, pris og
+     tekst som alle andre — men ingen tæller, før tiden er flyttet.
+     En plusknap, der bare sagde nej, ville være værre end ingen. */
+  function venterRække(v) {
+    var række = lav('div', 'item venter');
+    sætAfdeling(række, v);
+    række.setAttribute('data-vare', v.navn);
+    if (window.MosedeEmoji && window.MosedeEmoji.forVare) {
+      var tegn = lav('span', 'item-tegn', window.MosedeEmoji.forVare(v, katFor(v)));
+      tegn.setAttribute('aria-hidden', 'true');
+      række.appendChild(tegn);
+    }
+    var venstre = lav('div');
+    venstre.appendChild(lav('h4', null, v.navn));
+    venstre.appendChild(lav('span', 'tag', Butik.varePris(v.pris) || 'pris følger'));
+    if (v.beskrivelse) venstre.appendChild(lav('p', 'vare-desc', v.beskrivelse));
+    række.appendChild(venstre);
+    return række;
+  }
+
   function kategoriRække(g, liste) {
     var række = lav('div', 'item');
     række.setAttribute('data-kategori', g.navn);
@@ -1228,7 +1352,12 @@
        dem ud én ad gangen for at finde de to pommes frites igen.
        Tallet står, uanset om folden er åben eller lukket: det er
        en oplysning om indholdet, ikke om folden. */
-    var knap = lav('span', 'add', aabne[g.id] ? '– luk' : '+ tilføj');
+    /* En kategori, der venter på varslet, siger HVORNÅR i stedet for
+       "+ tilføj" — se ventendeKategorier. */
+    var venter = g.venter;
+    if (venter) række.setAttribute('data-venter', '');
+    var knap = lav('span', 'add', aabne[g.id] ? '– luk'
+      : venter ? 'fra ' + venterHvornår(venter, true) : '+ tilføj');
     knap.setAttribute('data-add', '');
     række.appendChild(knap);
     var maerke = lav('span', 'kat-valgt');
@@ -1242,7 +1371,25 @@
     });
 
     liste.appendChild(række);
-    if (aabne[g.id]) {
+    if (aabne[g.id] && venter) {
+      /* Grunden med kategoriens eget navn foran — "Smørrebrød bestilles
+         1 time før." — og ét tryk til det første tidspunkt, den kan nås. */
+      var note = lav('div', 'item venter-note');
+      note.appendChild(lav('p', null, g.navn + ' ' + venter.grund + '.'));
+      var vælg = lav('button', 'venter-knap', 'Vælg ' + venterHvornår(venter));
+      vælg.type = 'button';
+      vælg.addEventListener('click', function (e) {
+        e.stopPropagation();
+        flytTilVenter(venter, g.id);
+      });
+      note.appendChild(vælg);
+      liste.appendChild(note);
+      g.varer.forEach(function (v) {
+        if (v && v.slags === 'spoerg') liste.appendChild(spoergRække(v.vare));
+        else if (v && v.slags === 'udsolgt') liste.appendChild(udsolgtRække(v.vare));
+        else liste.appendChild(venterRække(v));
+      });
+    } else if (aabne[g.id]) {
       g.varer.forEach(function (v) {
         if (v && v.slags === 'spoerg') liste.appendChild(spoergRække(v.vare));
         else if (v && v.slags === 'udsolgt') liste.appendChild(udsolgtRække(v.vare));
@@ -1533,7 +1680,10 @@
   function visLukkede() {
     var boks = find('#lukkede', panel);
     if (!boks) return;
-    var liste = (udvalgNu().lukkede || []);
+    /* Det, der står som en ventende bjælke, gentages ikke her. */
+    var vises = {};
+    ventendeKategorier().forEach(function (w) { vises[w.id] = true; });
+    var liste = (udvalgNu().lukkede || []).filter(function (l) { return !vises[l.id]; });
     tøm(boks);
     boks.hidden = !liste.length;
     if (!liste.length) return;
@@ -1675,6 +1825,9 @@
   function visVarer() {
     var liste = panel && panel.querySelector('[data-liste]');
     if (!liste) return;
+    /* Ventetiderne regnes forfra ved hver optegning: ejerens data kan
+       være kommet ind på ny, og klokken går. */
+    ventendeHuske = null;
     /* KUN rækkerne ryddes — ikke hele feltet. Første udgave tømte
        .field'en og tog designets <label>"Vælg jeres retter" med
        sig; overskriften var væk, og prøven på feltrækkefølgen

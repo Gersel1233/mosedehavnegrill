@@ -964,14 +964,23 @@ test.describe('Tidsmodellen', () => {
     await page.locator('#dato').selectOption('2026-08-08');
 
     await page.locator('#tid').selectOption('11:00');
-    await expect(page.locator('[data-kategori="Smørrebrød"]')).toHaveCount(0);
-    await expect(page.locator('#lukkede')).toContainText('Smørrebrød');
-    /* ⚠️ VENDT 7/10: "et døgn", ikke "24 timer" — grunden bruger nu
-       R.varselOrd, de samme ord som resten af siden. Reglen er den samme. */
-    await expect(page.locator('#lukkede')).toContainText('bestilles et døgn før');
+    /* ⚠️ VENDT 7/10 (aften): bjælken STÅR — som ventende, med "fra kl.
+       13.00" og uden tæller — i stedet for at forsvinde ned i "Ikke lige
+       nu". Chefens ord: smørrebrødet skal stå "som en bjælke … i den
+       lange sorte menu vælger boks", ikke "nede i bunden". Reglen, prøven
+       vogter, er den samme: varslet ruller over midnat — kl. 11 i morgen
+       er 22 timer, og først kl. 13.00 er et døgn. */
+    const smoer = page.locator('#bestil [data-liste] > [data-kategori="Smørrebrød"]');
+    await expect(smoer).toHaveAttribute('data-venter', '');
+    await expect(smoer.locator('[data-add]')).toHaveText('fra kl. 13.00');
+    await smoer.click();
+    await expect(page.locator('#bestil .venter-note')).toContainText('bestilles et døgn før');
+    await expect(page.locator('#bestil .item.venter button')).toHaveCount(0);
+    await expect(page.locator('#lukkede')).not.toContainText('Smørrebrød');
 
     await page.locator('#tid').selectOption('13:30');
     await expect(page.locator('[data-kategori="Smørrebrød"]')).toHaveCount(1);
+    await expect(page.locator('[data-kategori="Smørrebrød"]')).not.toHaveAttribute('data-venter', '');
   });
 
   /* ⚠️ DET, DER ER TALT OP, MÅ IKKE BLIVE HÆNGENDE USYNLIGT.
@@ -1893,7 +1902,12 @@ test.describe('Bestil mad følger kunderejsen', () => {
     await åbn(page, { data: rejsen() });
     await vælgTid(page, '15:00');
     await expect(page.locator('#bestil [data-kategori="Smørrebrød"]')).toBeVisible();
-    expect(await listen(page)).toEqual(['Morgenmad', 'Tilkøb morgenmad', 'Andre retter',
+    /* ⚠️ VENDT 7/10 (aften): PLATTERNE STÅR MED. Her manglede de, fordi
+       de skal bestilles et døgn før og kl. 15 i dag ikke kan nås — så
+       de stod kun i "Ikke lige nu" nederst. Chefen: *"Hvorfor er frokost,
+       Smørrebrød, og håndmadder ikke som en bjælke under Morgenmad …"*
+       Nu står de på deres plads som ventende bjælke ("fra i morgen"). */
+    expect(await listen(page)).toEqual(['Morgenmad', 'Tilkøb morgenmad', 'Andre retter', 'Platter',
       'Sandwich', 'Burgere', 'Smørrebrød', 'Håndmadder', 'Retter', 'Pølser',
       'Is & sødt', 'Kaffe og varme drikke', 'Øl', 'Snacks og slik',
       'Tillæg: glutenfri, laktosefri og vegansk']);
@@ -1905,21 +1919,47 @@ test.describe('Bestil mad følger kunderejsen', () => {
     await vælgTid(page, '15:00');
     await expect(page.locator('#bestil [data-liste] > [data-kategori="Smørrebrød"]')).toHaveCount(1);
     await expect(page.locator('#bestil [data-liste] > [data-kategori="Håndmadder"]')).toHaveCount(1);
-    // Kl. 13.30 — en halv time ude: for tæt på, og linjen siger hvorfor
+    await expect(page.locator('#bestil [data-liste] > [data-kategori="Smørrebrød"]')).not.toHaveAttribute('data-venter', '');
+    /* Kl. 13.30 — en halv time ude: for tæt på.
+       ⚠️ VENDT 7/10 (aften): bjælken står stadig på sin plads og siger
+       HVORNÅR ("fra kl. 14.00") i stedet for at forsvinde ned i "Ikke
+       lige nu" — og ét tryk vælger det tidspunkt. Tallet 14.00 kommer
+       udefra: uret står 13.00, og varslet er en time. */
     await vælgTid(page, '13:30');
-    await expect(page.locator('#lukkede')).toContainText('Smørrebrød (bestilles 1 time før)');
+    const smoer = page.locator('#bestil [data-liste] > [data-kategori="Smørrebrød"]');
+    await expect(smoer).toHaveAttribute('data-venter', '');
+    await expect(smoer.locator('[data-add]')).toHaveText('fra kl. 14.00');
+    await expect(page.locator('#lukkede')).not.toContainText('Smørrebrød');
+    await smoer.click();
+    await expect(page.locator('#bestil .venter-note')).toContainText('Smørrebrød bestilles 1 time før.');
+    // Varen står — men uden tæller, før tiden er flyttet
+    await expect(page.locator('#bestil .item.venter[data-vare="Leverpostej med surt"]')).toHaveCount(1);
+    await expect(page.locator('#bestil [data-vare="Leverpostej med surt"] button')).toHaveCount(0);
+    await page.locator('#bestil .venter-knap').click();
+    await expect(page.locator('#tid')).toHaveValue('14:00');
+    await expect(smoer).not.toHaveAttribute('data-venter', '');
+    await expect(page.locator('#bestil [data-vare="Leverpostej med surt"] button').first()).toBeVisible();
   });
 
-  test('platter kræver et døgn — og linjen siger, at man kan ringe', async ({ page }) => {
+  /* ⚠️ VENDT 7/10 (aften): PLATTERNE STÅR SOM BJÆLKE I DAG OGSÅ — "fra
+     i morgen" — og ikke kun i "Ikke lige nu" nederst. Chefen ville have
+     frokosten "som en bjælke under Morgenmad". Teksten med at ringe står
+     nu i bjælkens egen note, og knappen vælger i morgen. */
+  test('platter kræver et døgn — bjælken siger "fra i morgen", og at man kan ringe', async ({ page }) => {
     await åbn(page, { data: rejsen() });
     await vælgTid(page, '15:00');
-    await expect(page.locator('#bestil [data-liste] > [data-kategori="Platter"]')).toHaveCount(0);
-    await expect(page.locator('#lukkede'))
-      .toContainText('Platter (bestilles et døgn før — ring og spørg ved særlige ønsker)');
-    // I morgen står de der
+    const platter = page.locator('#bestil [data-liste] > [data-kategori="Platter"]');
+    await expect(platter).toHaveAttribute('data-venter', '');
+    await expect(platter.locator('[data-add]')).toHaveText('fra i morgen');
+    await platter.click();
+    await expect(page.locator('#bestil .venter-note'))
+      .toContainText('Platter bestilles et døgn før — ring og spørg ved særlige ønsker.');
+    await expect(page.locator('#bestil [data-vare="Platte"] button')).toHaveCount(0);
+    // Ét tryk: i morgen — og så kan platten bestilles
     const iMorgen = await page.$$eval('#dato option', (o) => o[1].value);
-    await page.locator('#dato').selectOption(iMorgen);
-    await vælgTid(page, '15:00');
-    await expect(page.locator('#bestil [data-liste] > [data-kategori="Platter"]')).toHaveCount(1);
+    await page.locator('#bestil .venter-knap').click();
+    await expect(page.locator('#dato')).toHaveValue(iMorgen);
+    await expect(platter).not.toHaveAttribute('data-venter', '');
+    await expect(page.locator('#bestil [data-vare="Platte"] button').first()).toBeVisible();
   });
 });

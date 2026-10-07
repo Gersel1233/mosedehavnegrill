@@ -2360,7 +2360,7 @@
     function paaTid(k) {
       if (!R || !R.kategoriPaaTid) return true;
       var svar = R.kategoriPaaTid(d, k.id, iso, tid, hvordan);
-      if (!svar.aaben) lukkede.push({ navn: k.navn, grund: svar.grund, id: k.id });
+      if (!svar.aaben) lukkede.push({ navn: k.navn, grund: svar.grund, id: k.id, varsel: !!svar.varsel });
       return svar.aaben;
     }
 
