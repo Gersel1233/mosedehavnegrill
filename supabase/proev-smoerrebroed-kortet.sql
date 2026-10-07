@@ -74,11 +74,17 @@ select pg_temp.svar('3. De 24 håndmadder fra kortet står til én og samme pris
     where k.navn = 'Håndmadder' and k.lokation_id = 'mosede' and v.aktiv
       and v.navn not in (select navn from senere)));
 
-select pg_temp.svar('4. De 25 hele skiver står til 55 kr.',
+/* ⚠️ ÉN AF DE 25 HAR SIN EGEN PRIS FRA 7/10. Chefen: *"Fiskefilet med
+   Rejer og Mayo +10,-kr."* — chefens-rettelser-7-10.sql sætter den til
+   65. Prøven tæller stadig alle 25, men den ene til sin egen pris: en
+   prøve, der bare sprang den over, ville også bestå, hvis den stod til
+   55 igen. */
+select pg_temp.svar('4. De 25 hele skiver står til 55 kr. (fiskefilet med rejer 55 eller 65)',
   (select count(*) = 25 from public.menu_varer v
      join public.menu_kategorier k on k.id = v.kategori_id
     where k.navn = 'Smørrebrød' and k.lokation_id = 'mosede'
-      and v.aktiv and v.pris = 55
+      and v.aktiv
+      and (v.pris = 55 or (v.navn = 'Fiskefilet med rejer og mayo' and v.pris in (55, 65)))
       and v.navn not in (select navn from senere)));
 
 -- ------------------------------------------------------------

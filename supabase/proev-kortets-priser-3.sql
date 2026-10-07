@@ -71,8 +71,13 @@ select pg_temp.svar('3. Vinflasken og den alkoholfri er 249',
 select pg_temp.svar('4. Cava i glas er 69',
   pg_temp.pris('Vin, cava og champagne', 'Cava, glas') = 69);
 
+/* ⚠️ RTD HEDDER NOGET ANDET FRA 7/10. chefens-rettelser-7-10.sql
+   døber den om til "RTD, 1 stk. Breezer eller Smirnoff" (og lægger
+   en 3 stk. til 100 ved siden af). Prisen er den samme; prøven slår
+   op på begge navne, så den måler PRISEN og ikke stavemåden. */
 select pg_temp.svar('5. RTD er 40, ikke 46',
-  pg_temp.pris('Sodavand, juice og kakao', 'RTD') = 40);
+  coalesce(pg_temp.pris('Sodavand, juice og kakao', 'RTD'),
+           pg_temp.pris('Sodavand, juice og kakao', 'RTD, 1 stk. Breezer eller Smirnoff')) = 40);
 
 /* ⚠️ DE TO HER ER FUNDET VED AT MÅLE, IKKE VED AT LÆSE.
    `kortets-priser-2.sql` rettede dem 30/8 — men pegede på
