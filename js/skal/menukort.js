@@ -781,9 +781,12 @@
       linje.appendChild(ens !== null ? prisMærke(ens)
         : (laveste ? lav('span', 'mk-pris', 'fra ' + Butik.varePris(laveste)) : prisMærke(null)));
       liste.appendChild(linje);
-    } else {
+    } else if (!d.henvisFoerst) {
       a.varer.forEach(function (y) { liste.appendChild(linjeFor(y, visning)); });
     }
+    /* ⚠️ HENVISNINGERNE KAN STÅ ØVERST  (7/10). Kort 1's Frokost
+       begynder med "Smørrebrød · Se smørrebrødskortet" og
+       "Håndmadder · Se håndmadskortet" og har retterne under. */
     henvis.forEach(function (hv) {
       var p = ensPris(katVarer(grupper, hv.navn));
       var l = lav('a', 'mk-linje mk-henvis');
@@ -801,6 +804,9 @@
       });
       liste.appendChild(l);
     });
+    if (d.henvisFoerst && !d.samle) {
+      a.varer.forEach(function (y) { liste.appendChild(linjeFor(y, visning)); });
+    }
     sek.appendChild(liste);
     return sek;
   }

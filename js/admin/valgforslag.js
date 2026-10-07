@@ -50,6 +50,8 @@
        Forslaget står her, så det er klar, hvis den tændes. */
     'lun delle, steg eller leverpostej med brød og surt':
       ['Frikadelle', 'Steg', 'Leverpostej'],
+    // 7/10: kort 1 kalder den det korte navn (chefens-rettelser-7-10.sql)
+    'lun delle, steg eller leverpostej': ['Frikadelle', 'Steg', 'Leverpostej'],
     'flaske eller dåse': ['Flaske', 'Dåse'],
     'tomat- eller agurkemad med mayo og løg': ['Tomat', 'Agurk'],
     'lun delle eller steg med leverpostej': ['Frikadelle', 'Steg'],

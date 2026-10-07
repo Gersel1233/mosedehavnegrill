@@ -1079,3 +1079,87 @@ test.describe('Chefens rettelser 7/10 på kortet', () => {
     await expect(page.locator('#kapitel-mere'), 'en vare, kortene ikke fandt plads til').toHaveCount(0);
   });
 });
+
+/* ============================================================
+   KORT 1: MORGENMAD OG FROKOST — SOM KORREKTUREN 7/10
+   ------------------------------------------------------------
+   Mikkel: *"Jeg sender dig det nyeste danske kort 1. Brug det som
+   facit og byg Frokost som korrekt afsnit på hjemmesiden."* — og
+   chefen: *"Hvorfor er frokost, Smørrebrød, og håndmadder ikke som
+   en bjælke under Morgenmad …"*.
+
+   Rækkefølgen og priserne herunder er LÆST AF KORTET (korrektur-PNG
+   7/10), ikke af koden: Smørrebrød og Håndmadder først som
+   henvisninger, så rejemad, tartarmad, platte, rejecocktail, lun
+   delle, frikadelle, de to toast og hvidløgsbrødet. Juleplatten står
+   kun på hjemmesiden — lige efter platten.
+   ============================================================ */
+test.describe('Kort 1: Frokost som det trykte kort', () => {
+  function kort1() {
+    const d = medRet();
+    let id = 500;
+    const v = (kat, navn, pris, ekstra) => Object.assign({ id: ++id, kategori_id: kat, navn,
+      beskrivelse: null, pris, fremhaevet: false, udsolgt: false, sortering: id, aktiv: true }, ekstra || {});
+    d.menu_kategorier = [
+      { id: 8, afdeling: 'mad', navn: 'Morgenmad', sortering: 12, aktiv: true },
+      { id: 9, afdeling: 'mad', navn: 'Retter', sortering: 1, aktiv: true },
+      { id: 10, afdeling: 'mad', navn: 'Andre retter', sortering: 2, aktiv: true },
+      { id: 13, afdeling: 'mad', navn: 'Smørrebrød', sortering: 6, aktiv: true },
+      { id: 39, afdeling: 'mad', navn: 'Håndmadder', sortering: 7, aktiv: true },
+      { id: 27, afdeling: 'mad', navn: 'Platter', sortering: 9, aktiv: true },
+    ];
+    d.menu_varer = [
+      v(8, 'Morgen komplet', 99), v(8, 'Rundstykke med pålæg', 35),
+      v(9, 'Stjerneskud', 105), v(9, 'Lun delle, steg eller leverpostej', 65,
+        { beskrivelse: 'Med brød og surt', valg: ['Frikadelle', 'Steg', 'Leverpostej'] }),
+      v(9, 'Pitabrød', 65),
+      v(10, 'Gammeldags rejecocktail med brød og smør', 90), v(10, 'Hjemmelavet lun frikadelle', 25),
+      v(10, 'Hjemmelavet toast, ost og skinke', 35), v(10, 'Hjemmelavet cowboytoast', 45),
+      v(10, '1 stk. hjemmelavet hvidløgsbrød', 45, { beskrivelse: 'Med tomat & ost' }),
+      v(10, 'Snackkurv', 85),
+      v(13, 'Leverpostej med surt', 55), v(13, 'Ostemad', 55), v(13, 'Hvide sild', 55),
+      v(13, 'Rejemad', 95), v(13, 'Tartarmad', 95),
+      v(39, 'Leverpostej med surt, håndmad', 27), v(39, 'Ostemad, håndmad', 27), v(39, 'Hvide sild, håndmad', 27),
+      v(27, 'Platte', 199, { beskrivelse: 'Inkl. friskbagt brød og smør · skal bestilles' }),
+      v(27, 'Juleplatte', 199, { beskrivelse: 'Inkl. friskbagt brød og smør' }),
+      v(27, 'Brunchplatte til 2 personer', 349),
+    ];
+    return d;
+  }
+  const frokost = (page) => page.locator('#kapitel-grillen .mk-sek',
+    { has: page.locator('.mk-sek-navn', { hasText: /^Frokost$/ }) });
+
+  test('Frokost står i kortets rækkefølge med kortets priser', async ({ page }) => {
+    await åbn(page, kort1());
+    const linjer = await frokost(page).locator('.mk-linje').evaluateAll((l) => l.map((e) =>
+      [(e.querySelector('h4') || {}).textContent, ((e.querySelector('.mk-pris') || {}).textContent || '').trim()]));
+    expect(linjer).toEqual([
+      ['Smørrebrød', '55,-'], ['Håndmadder', '27,-'], ['Rejemad', '95,-'], ['Tartarmad', '95,-'],
+      ['Platte', '199,-'], ['Juleplatte', '199,-'],
+      ['Gammeldags rejecocktail med brød og smør', '90,-'], ['Lun delle, steg eller leverpostej', '65,-'],
+      ['Hjemmelavet lun frikadelle', '25,-'], ['Hjemmelavet toast, ost og skinke', '35,-'],
+      ['Hjemmelavet cowboytoast', '45,-'], ['1 stk. hjemmelavet hvidløgsbrød', '45,-'],
+    ]);
+    await expect(frokost(page).locator('[data-vare="Platte"] p'))
+      .toHaveText('Inkl. friskbagt brød og smør · skal bestilles');
+  });
+
+  test('Frokost står i kapitel 1 ved siden af Morgenmad — og varerne kun ét sted', async ({ page }) => {
+    await åbn(page, kort1());
+    await expect(page.locator('#kapitel-grillen .mk-hoejre .mk-sek-navn').first()).toHaveText('Frokost');
+    await expect(page.locator('#kapitel-grillen .mk-venstre .mk-sek-navn').first()).toHaveText('Morgenmad');
+    for (const n of ['Hjemmelavet cowboytoast', '1 stk. hjemmelavet hvidløgsbrød', 'Lun delle, steg eller leverpostej'])
+      await expect(page.locator(`#mk-kat [data-vare="${n}"]`), n + ' står to steder').toHaveCount(1);
+    // Kort 1 har ingen fisk; de bliver, til kort 2 viser, hvor de hører til
+    await expect(page.locator('#mk-kat [data-vare="Stjerneskud"]')).toHaveCount(1);
+    await expect(page.locator('#kapitel-mere')).toHaveCount(0);
+  });
+
+  test('kortets egne tekster: indledningen og morgenbrødsboksen', async ({ page }) => {
+    await åbn(page, kort1());
+    await expect(page.locator('#kapitel-grillen .mk-kh-tekst'))
+      .toHaveText('Morgenmad og frokost – smørrebrød, håndmadder og klassikere hele dagen.');
+    await expect(page.locator('#kapitel-grillen .mk-boks-tekst').first())
+      .toHaveText('Morgenbrød – spørg efter en bestillingsliste.');
+  });
+});

@@ -33,7 +33,8 @@
 --    · Børnekoppens tekst ("uden is") — varen oprettes til 59 uden tekst
 --    · Prisen på "Æg & bacon" og "Isvand, kande" — begge oprettes
 --      SKJULT og uden pris; ejeren sætter prisen og tænder dem i admin.
---      Morgenkomplet siger stadig "æg ELLER bacon"
+--      Morgen komplet siger stadig "æg ELLER bacon"
+--    · "Morgen komplet" eller "Morgenkomplet" — chefen og kort 1 er uenige
 --    · Afsnittet "Frokost" — det nye kort 1 er ikke set; varerne er
 --      rettet, men de flyttes ikke til et afsnit, siden ikke kender
 --    · Juleplattens periode og indhold — admin styrer det
@@ -330,9 +331,12 @@ select pg_temp.ny('Snacks og slik', 'Slikpind', 8, null, 8, 'Lollipop');
 select pg_temp.ny('Snacks og slik', '1 stk. frugt', 8, null, 9, '1 piece of fruit');
 
 -- ------------------------------------------------------------
---  10) MORGENMAD — "Morgenkomplet" i ét ord, som chefen skriver
+--  10) MORGENMAD
+--     ⚠️ "MORGEN KOMPLET" RØRES IKKE. Chefen skrev "Morgenkomplet" i ét
+--     ord, men korrekturen af kort 1 (7/10 — facit) siger stadig
+--     "Morgen komplet". To kilder er uenige; navnet står, som det står,
+--     til Mikkel har afgjort det.
 -- ------------------------------------------------------------
-select pg_temp.ret('Morgen komplet', 'Morgenkomplet', kategori => 'Morgenmad');
 
 /* "Æg & bacon" som sin egen vare — SKJULT OG UDEN PRIS, af samme grund
    som kanden. Morgenkomplettens tekst ("æg eller bacon") røres ikke:
@@ -340,7 +344,11 @@ select pg_temp.ret('Morgen komplet', 'Morgenkomplet', kategori => 'Morgenmad');
 select pg_temp.ny('Morgenmad', 'Æg & bacon', null, null, 5, 'Egg & bacon', p_aktiv => false);
 
 -- ------------------------------------------------------------
---  11) FROKOST — HVIDLØGSBRØDET, PLATTEN OG JULEPLATTEN
+--  11) FROKOST — SOM KORT 1 (korrekturen 7/10 er facit)
+--     Kortet skriver navnene kort og lægger resten i teksten:
+--     "1 stk. hjemmelavet hvidløgsbrød · Med tomat & ost",
+--     "Lun delle, steg eller leverpostej · Med brød og surt" og
+--     "Platte 199,- · Inkl. friskbagt brød og smør · skal bestilles".
 --     ⚠️ JULEPLATTEN HAR INGEN PERIODE ENDNU. Mikkel: *"indhold/periode
 --     kan administreres senere via admin."* vis_fra/vis_til står tomme;
 --     admin sætter dem på varen. Den ligger i Platter, så kategoriens
@@ -350,15 +358,21 @@ select pg_temp.ny('Morgenmad', 'Æg & bacon', null, null, 5, 'Egg & bacon', p_ak
 --     en senere sammenligning med de trykte kort slukker den ikke.
 -- ------------------------------------------------------------
 select pg_temp.ret('Hjemmelavet hvidløgsbrød med tomat & ost',
-                   '1 stk. hjemmelavet hvidløgsbrød med tomat & ost', kategori => 'Andre retter');
-select pg_temp.en('Andre retter', '1 stk. hjemmelavet hvidløgsbrød med tomat & ost',
-                  '1 homemade garlic bread with tomato & cheese');
+                   '1 stk. hjemmelavet hvidløgsbrød', 'Med tomat & ost', kategori => 'Andre retter');
+select pg_temp.en('Andre retter', '1 stk. hjemmelavet hvidløgsbrød',
+                  '1 homemade garlic bread', 'With tomato & cheese');
+
+/* Navnet sagde "med brød og surt", og teksten under sagde det igen. Kortet
+   siger det én gang. Valgene (Frikadelle, Steg, Leverpostej) følger med. */
+select pg_temp.ret('Lun delle, steg eller leverpostej med brød og surt',
+                   'Lun delle, steg eller leverpostej', kategori => 'Retter');
 
 select pg_temp.pris('Platter', 'Platte', 199);
 /* ⚠️ "SKAL BESTILLES" BLIVER — den nye tekst lægges til. Chefens
-   besked sagde ikke, at den skulle ud (Mikkel 7/10). */
-select pg_temp.ret('Platte', null, 'Inkl. friskbagt brød og smør. Skal bestilles.', kategori => 'Platter');
-select pg_temp.en('Platter', 'Platte', 'Platter', 'Incl. freshly baked bread and butter. Pre-order only.');
+   besked sagde ikke, at den skulle ud (Mikkel 7/10), og kort 1 skriver
+   dem sammen, ordret: "Inkl. friskbagt brød og smør · skal bestilles". */
+select pg_temp.ret('Platte', null, 'Inkl. friskbagt brød og smør · skal bestilles', kategori => 'Platter');
+select pg_temp.en('Platter', 'Platte', 'Platter', 'Incl. freshly baked bread and butter · pre-order only');
 select pg_temp.ny('Platter', 'Juleplatte', 199, 'Inkl. friskbagt brød og smør', 1,
                   'Christmas platter', 'Incl. freshly baked bread and butter');
 
@@ -434,8 +448,9 @@ forventet(kat, navn, pris) as (values
   ('Håndmadder', 'Hjemmelavet flæskesteg med surt, håndmad', 27),
   ('Håndmadder', 'Hjemmelavet roastbeef med remoulade og løg, håndmad', 27),
   ('Andre retter', 'Husets blandede salat', 55),
-  ('Andre retter', '1 stk. hjemmelavet hvidløgsbrød med tomat & ost', 45),
-  ('Morgenmad', 'Morgenkomplet', 99),
+  ('Andre retter', '1 stk. hjemmelavet hvidløgsbrød', 45),
+  ('Retter', 'Lun delle, steg eller leverpostej', 65),
+  ('Morgenmad', 'Morgen komplet', 99),
   ('Sodavand, juice og kakao', 'Isvand', 25))
 select
   /* Hver af chefens linjer: præcis ÉN tændt række, i sin kategori,
@@ -480,7 +495,7 @@ select
                (('Sodavand, juice og kakao', 'Isvand, kande'), ('Morgenmad', 'Æg & bacon'))
                and not aktiv and pris is null) = 2
        then 'JA' else '** NEJ **' end                        as kande_og_aeg_skjult_uden_pris,
-  case when (select beskrivelse from v where kat = 'Platter' and navn = 'Platte') like '%Skal bestilles%'
+  case when (select beskrivelse from v where kat = 'Platter' and navn = 'Platte') ilike '%skal bestilles%'
         and (select beskrivelse from v where kat = 'Platter' and navn = 'Platte') like '%friskbagt brød og smør%'
         and (select beskrivelse from v where kat = 'Andre retter' and navn = 'Snackkurv') ilike '%med en dip%'
         and (select beskrivelse from v where kat = 'Andre retter' and navn = 'Snackkurv') like '%2 cheesetops%'
@@ -488,6 +503,7 @@ select
   /* Ikke et JA/NEJ — en påmindelse i selve svaret. */
   'Bøfsandwich ' || coalesce((select pris::int::text from v where kat = 'Sandwich' and navn = 'Bøfsandwich'), '?')
     || ',- (databasens egen pris) — BEKRÆFTES AF CHEFEN'      as skal_bekraeftes,
-  (select count(*) from v where navn in ('Blandet salat', 'Morgen komplet', 'RTD',
+  (select count(*) from v where navn in ('Blandet salat', 'Hjemmelavet hvidløgsbrød med tomat & ost',
+     'Lun delle, steg eller leverpostej med brød og surt', 'RTD',
      'Irish coffee', 'Irish coffee, stor', 'Lumumba, varm eller kold', '2 hjemmelavede pandekager')
      and kat <> 'Vælg fyld til smørrebrødet')               as gamle_navn_skal_vaere_0;

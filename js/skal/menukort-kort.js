@@ -68,25 +68,49 @@
       /* ⚠️ INGEN BURGERE I INDLEDNINGEN MERE. Sætningen er fra
          dengang kort 1 var hele grillens kort; burgerne ligger på
          kort 2, og et kort, der lover noget, det ikke har, sender
-         gæsten det forkerte sted hen. */
-      tekst: 'Morgenmad fra tidligt og klassikerne fra pladen — alt sammen ved lugen.',
+         gæsten det forkerte sted hen.
+         7/10: ordret fra korrekturen af kort 1 (facit). Den engelske
+         udgave stod allerede i ordbogen — læst af de engelske kort. */
+      tekst: 'Morgenmad og frokost – smørrebrød, håndmadder og klassikere hele dagen.',
       hop: 'Morgenmad & frokost',
       venstre: [
         { titel: 'Morgenmad', kilder: [{ kat: 'Morgenmad' }] },
         { titel: 'Tilkøb til morgenmaden', samle: true, kilder: [{ kat: 'Tilkøb morgenmad' }] },
         { boks: 'flokken', over: 'Til flokken', titel: 'Morgenbrød',
-          /* Kort 01, ordret (27/9): ingen henvisning til en bestillingsliste
-             til morgenbrød — der findes ingen. */
-          tekst: 'Morgenbrød – spørg ved bestilling.', bund: 'Spørg ved lugen' },
+          /* ⚠️ VENDT 7/10. Kort 01 sagde 27/9 "spørg ved bestilling" —
+             ingen bestillingsliste fandtes. Korrekturen af kort 1 (7/10,
+             facit) siger nu ordret "spørg efter en bestillingsliste", som
+             morgenbrødets egen linje har gjort siden 1/10. */
+          tekst: 'Morgenbrød – spørg efter en bestillingsliste.', bund: 'Spørg ved lugen' },
       ],
       hoejre: [
-        { titel: 'Fisk & klassikere', kilder: [
-          { kat: '*', navne: ['Stjerneskud', 'Fish’n’chips', "Fish'n'chips", 'Fiskefilet med pommes', 'Tartarmad', 'Rejemad'] },
-          { kat: 'Platter' },
-          { kat: 'Retter' },
+        /* ⚠️ FROKOST SOM KORT 1  (7/10). Korrekturen af kort 1 er facit
+           (Mikkel: *"Brug det som facit og byg Frokost som korrekt
+           afsnit"*), og rækkefølgen er kortets: Smørrebrød og Håndmadder
+           ØVERST som henvisninger, så de syv retter. Juleplatten står kun
+           på hjemmesiden (chefen) — lige efter platten.
+           Chefens spørgsmål var netop, hvorfor smørrebrød og håndmadder
+           ikke stod ved morgenmaden; her står de ved siden af den.
+           ⚠️ Varerne tages ved navn og står kun HER — rejecocktailen,
+           toastene og hvidløgsbrødet forlader Andre retter på kort 2. */
+        { titel: 'Frokost', henvisFoerst: true, kilder: [
+          { kat: '*', navne: ['Rejemad', 'Tartarmad'] },
+          { kat: 'Platter', navne: ['Platte', 'Juleplatte'] },
+          { kat: '*', navne: ['Gammeldags rejecocktail med brød og smør',
+            'Lun delle, steg eller leverpostej', 'Lun delle, steg eller leverpostej med brød og surt',
+            'Hjemmelavet lun frikadelle', 'Hjemmelavet toast, ost og skinke', 'Hjemmelavet cowboytoast',
+            '1 stk. hjemmelavet hvidløgsbrød', 'Hjemmelavet hvidløgsbrød med tomat & ost'] },
         ], henvis: [
           { navn: 'Smørrebrød', note: 'Se smørrebrødskortet', til: 'smoerrebroed' },
           { navn: 'Håndmadder', note: 'Se håndmadskortet', til: 'haandmadder' },
+        ] },
+        /* ⚠️ FISK & KLASSIKERE STÅR IKKE PÅ KORT 1 MERE (7/10) — men kort 2
+           er ikke set. Afsnittet bliver her, under Frokost, til kort 2 viser,
+           hvor det hører til. At flytte det i blinde ville være at gætte. */
+        { titel: 'Fisk & klassikere', kilder: [
+          { kat: '*', navne: ['Stjerneskud', 'Fish’n’chips', "Fish'n'chips", 'Fiskefilet med pommes'] },
+          { kat: 'Platter' },
+          { kat: 'Retter' },
         ] },
         { titel: 'Ekstra', kilder: [{ kat: '*', navne: ['Dip eller dressing', 'Ekstra kød m.m.'] }] },
       ],
@@ -98,7 +122,8 @@
       hop: 'À la carte & burgere',
       venstre: [
         { titel: 'Andre retter', kilder: [
-          { kat: '*', navne: ['Lun delle, steg eller leverpostej med brød og surt', 'Lun delle eller steg', 'Pitabrød'] },
+          /* Lun delle, steg eller leverpostej står under Frokost på kort 1 (7/10). */
+          { kat: '*', navne: ['Lun delle eller steg', 'Pitabrød'] },
           { kat: 'Andre retter' },
         ] },
         { titel: 'Sliders', kilder: [{ kat: 'Sliders' }] },
@@ -332,7 +357,7 @@
       'Morgenmad': 'Breakfast',
       '& frokost': '& lunch',
       'Fra grillen': 'From the grill',
-      'Morgenmad fra tidligt og klassikerne fra pladen — alt sammen ved lugen.':
+      'Morgenmad og frokost – smørrebrød, håndmadder og klassikere hele dagen.':
         'Breakfast and lunch – smørrebrød, håndmadder and classics all day.',
       'À la carte,': 'À la carte,',
       'burgere & pølser': 'burgers & hot dogs',
@@ -359,6 +384,7 @@
       'Øl, vin & bar': 'Beer, wine & bar',
       // Afsnittenes overskrifter
       'Tilkøb til morgenmaden': 'Breakfast extras',
+      'Frokost': 'Lunch',
       'Fisk & klassikere': 'Fish & classics',
       'Ekstra': 'Extras',
       'Andre retter': 'Other dishes',
@@ -381,7 +407,7 @@
       // Boksene
       'Til flokken': 'For the group',
       'Morgenbrød': 'Breakfast rolls / baked goods',
-      'Morgenbrød – spørg ved bestilling.': 'Breakfast rolls / baked goods – ask for an order form.',
+      'Morgenbrød – spørg efter en bestillingsliste.': 'Breakfast rolls / baked goods – ask for an order form.',
       'Spørg ved lugen': 'Ask at the counter',
       'Alle varianter': 'All toppings',
       'Gælder alle almindelige smørrebrød på listen.': 'Applies to all regular smørrebrød on the list.',
