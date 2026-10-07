@@ -158,40 +158,45 @@ returns void language sql as $$
 $$;
 
 -- ------------------------------------------------------------
---  1) BURGERE & SANDWICHES — DE TRE SANDWICH ER TILBAGE
+--  1) BURGERE — DE TRE SANDWICH ER TILBAGE, SOM EGNE VARER
 --     Chefen: *"Under burgere mangler der: Frikadelle Sandwich,
---     Flæskestegs Sandwich, Bøfsandwich."* De blev slukket 25/9
---     (sluk-det-kortene-ikke-viser.sql) og er TÆNDT igen her — med
---     den pris, de har. Mikkel: *"behold den eksisterende
---     databasepris, hvis der ligger én entydig pris."* Det gør der
---     (75, én række hver); er det ikke længere sandt, tændes de ikke.
---     Rækkefølgen er chefens: frikadelle, flæskesteg, bøf, så den
---     almindelige.
+--     Flæskestegs Sandwich, Bøfsandwich."* Og hans endelige afklaring
+--     7/10: *"Frikadellesandwich 80,- · Flæskestegssandwich 80,- ·
+--     Bøfsandwich 75,-. Alle tre er selvstændige produkter under
+--     Burgere. De er ikke almindelige sandwich-varianter, selv om
+--     navnet lyder sådan."*
 --
---     ⚠️ BØFSANDWICHENS 75,- SKAL BEKRÆFTES AF CHEFEN. Han gav ingen
---     pris. 75 er databasens egen, dokumenteret fra start
---     (menukort.sql: ('Bøfsandwich', null, 75 …), og kortene-25-9.sql:
---     "Bøfsandwich 75,- står i databasen"). Mikkel 7/10: *"Behold 75,-
---     kun hvis det er den eksisterende dokumenterede databasepris."*
---     Derfor tændes den KUN, hvis prisen stadig er præcis 75 — har
---     nogen rørt den, står den slukket, og rapporten siger det.
+--     De blev slukket 25/9 (sluk-det-kortene-ikke-viser.sql). Her
+--     tændes de, FLYTTES til kategorien Burgere og får chefens priser.
+--     Rækkefølgen er hans: frikadelle, flæskesteg, bøf — efter burgerne
+--     (3–10) og før "Ekstra kød eller tilbehør" (91), som skal stå sidst.
+--     ⚠️ Hylden er ikke pynt: den afgør, hvilken kategoris åbningstid
+--     og varsel der gælder, og hvor varen står i Bestil mad.
+--     ⚠️ Kun hvis der er ÉN række med navnet i hele tabellen — to ville
+--     gøre bonen og prisværnet tvetydige (lære fra 1/10).
 -- ------------------------------------------------------------
 update public.menu_varer mv
    set aktiv = true,
+       kategori_id = (select b.id from public.menu_kategorier b
+                       where b.lokation_id = 'mosede' and btrim(b.navn) = 'Burgere' limit 1),
        sortering = case lower(btrim(mv.navn))
-                     when 'frikadellesandwich' then 1
-                     when 'flæskestegssandwich' then 2
-                     when 'bøfsandwich' then 3 end
+                     when 'frikadellesandwich' then 13
+                     when 'flæskestegssandwich' then 14
+                     when 'bøfsandwich' then 15 end
   from public.menu_kategorier mk
  where mk.id = mv.kategori_id
    and mk.lokation_id = 'mosede'
-   and btrim(mk.navn) = 'Sandwich'
+   and btrim(mk.navn) in ('Sandwich', 'Burgere')
    and lower(btrim(mv.navn)) in ('frikadellesandwich', 'flæskestegssandwich', 'bøfsandwich')
-   and mv.pris is not null
-   and (lower(btrim(mv.navn)) <> 'bøfsandwich' or mv.pris = 75)
+   and exists (select 1 from public.menu_kategorier b
+                where b.lokation_id = 'mosede' and btrim(b.navn) = 'Burgere')
    and (select count(*) from public.menu_varer x
          where x.lokation_id = 'mosede'
            and lower(btrim(x.navn)) = lower(btrim(mv.navn))) = 1;
+
+select pg_temp.pris('Burgere', 'Frikadellesandwich', 80);
+select pg_temp.pris('Burgere', 'Flæskestegssandwich', 80);
+select pg_temp.pris('Burgere', 'Bøfsandwich', 75);
 
 /* ⚠️ INGEN DUBLETTER. Er frikadelle og flæskesteg egne varer, må de
    ikke OGSÅ være fyld i den almindelige sandwich — så står de to
@@ -217,9 +222,9 @@ update public.menu_varer mv
    and exists (select 1 from jsonb_array_elements(mv.valg) e
                 where lower(coalesce(e->>'navn', e #>> '{}')) in ('frikadelle', 'flæskesteg'));
 
-select pg_temp.en('Sandwich', 'Frikadellesandwich', 'Frikadelle sandwich – Danish meatball');
-select pg_temp.en('Sandwich', 'Flæskestegssandwich', 'Roast pork sandwich');
-select pg_temp.en('Sandwich', 'Bøfsandwich', 'Bøfsandwich – Danish beef patty sandwich');
+select pg_temp.en('Burgere', 'Frikadellesandwich', 'Frikadelle sandwich – Danish meatball');
+select pg_temp.en('Burgere', 'Flæskestegssandwich', 'Roast pork sandwich');
+select pg_temp.en('Burgere', 'Bøfsandwich', 'Bøfsandwich – Danish beef patty sandwich');
 
 -- ------------------------------------------------------------
 --  2) ANDRE RETTER
@@ -495,8 +500,8 @@ with v as (
     join public.menu_kategorier mk on mk.id = mv.kategori_id
    where mk.lokation_id = 'mosede'),
 forventet(kat, navn, pris) as (values
-  ('Sandwich', 'Frikadellesandwich', 75), ('Sandwich', 'Flæskestegssandwich', 75),
-  ('Sandwich', 'Bøfsandwich', 75),
+  ('Burgere', 'Frikadellesandwich', 80), ('Burgere', 'Flæskestegssandwich', 80),
+  ('Burgere', 'Bøfsandwich', 75),
   ('Kaffe og varme drikke', 'Kakao', 45), ('Kaffe og varme drikke', 'Flødekager', 45),
   ('Kaffe og varme drikke', 'Lumumba, lille 3 cl', 75), ('Kaffe og varme drikke', 'Lumumba, stor 6 cl', 145),
   ('Kaffe og varme drikke', 'Irish coffee, lille 3 cl', 75), ('Kaffe og varme drikke', 'Irish coffee, stor 6 cl', 145),
@@ -584,9 +589,13 @@ select
         and (select beskrivelse from v where kat = 'Andre retter' and navn = 'Snackkurv') ilike '%med en dip%'
         and (select beskrivelse from v where kat = 'Andre retter' and navn = 'Snackkurv') like '%2 cheesetops%'
        then 'JA' else '** NEJ **' end                        as platte_og_snackkurv_beholder_teksten,
-  /* Ikke et JA/NEJ — en påmindelse i selve svaret. */
-  'Bøfsandwich ' || coalesce((select pris::int::text from v where kat = 'Sandwich' and navn = 'Bøfsandwich'), '?')
-    || ',- (databasens egen pris) — BEKRÆFTES AF CHEFEN'      as skal_bekraeftes,
+  /* Chefens rækkefølge under Burgere — efter burgerne, før ekstra-linjen. */
+  case when (select string_agg(navn, ' > ' order by sortering) from v
+              where kat = 'Burgere' and aktiv and navn in ('Cheeseburger', 'Frikadellesandwich',
+                'Flæskestegssandwich', 'Bøfsandwich', 'Ekstra kød eller tilbehør'))
+          = 'Cheeseburger > Frikadellesandwich > Flæskestegssandwich > Bøfsandwich > Ekstra kød eller tilbehør'
+        and not exists (select 1 from v where kat = 'Sandwich' and navn ilike '%sandwich' and navn <> 'Sandwich' and aktiv)
+       then 'JA' else '** NEJ **' end                        as tre_sandwich_under_burgere,
   (select count(*) from v where navn in ('Blandet salat', 'Hjemmelavet hvidløgsbrød med tomat & ost',
      'Lun delle, steg eller leverpostej med brød og surt', 'RTD', 'Isvand',
      'Irish coffee', 'Irish coffee, stor', 'Lumumba, varm eller kold', '2 hjemmelavede pandekager')

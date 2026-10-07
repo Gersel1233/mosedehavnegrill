@@ -992,8 +992,10 @@ test.describe('Chefens rettelser 7/10 på kortet', () => {
     d.menu_varer = [
       vare(1, 10, 'Hjemmelavet lun frikadelle', 25),
       vare(2, 11, 'Cheeseburger', 85),
-      vare(3, 63, 'Frikadellesandwich', 75), vare(4, 63, 'Flæskestegssandwich', 75),
-      vare(5, 63, 'Bøfsandwich', 75), vare(6, 63, 'Sandwich', 75),
+      /* Chefens endelige afklaring 7/10: egne varer UNDER BURGERE, 80/80/75 —
+         ikke sandwich-varianter. */
+      vare(3, 11, 'Frikadellesandwich', 80), vare(4, 11, 'Flæskestegssandwich', 80),
+      vare(5, 11, 'Bøfsandwich', 75), vare(6, 63, 'Sandwich', 75),
       vare(10, 13, 'Hjemmelavet flæskesteg med surt', 55),
       vare(11, 13, 'Fiskefilet med rejer og mayo', 65),
       vare(12, 13, 'Leverpostej med surt', 55), vare(13, 13, 'Dyrlægens natmad', 55),
@@ -1071,10 +1073,13 @@ test.describe('Chefens rettelser 7/10 på kortet', () => {
     expect(slik.slice(-3)).toEqual(['1 stk. frugt', 'Dagens frugtfad', 'Hjemmelavet flæskesvær']);
   });
 
-  test('de tre sandwich står under Burgere & sandwiches — og intet er faldet ud', async ({ page }) => {
+  test('de tre sandwich står under Burgere til chefens priser — og intet er faldet ud', async ({ page }) => {
     await åbn(page, efterChefen());
     const b = await navne(afsnit(page, '#kapitel-burgere', 'Burgere & sandwiches'));
     expect(b).toEqual(['Cheeseburger', 'Frikadellesandwich', 'Flæskestegssandwich', 'Bøfsandwich', 'Sandwich']);
+    // Chefens priser 7/10: "Frikadellesandwich 80,- · Flæskestegssandwich 80,- · Bøfsandwich 75,-"
+    for (const [n, p] of [['Frikadellesandwich', '80,-'], ['Flæskestegssandwich', '80,-'], ['Bøfsandwich', '75,-']])
+      await expect(page.locator(`#kapitel-burgere [data-vare="${n}"] .mk-pris`)).toHaveText(p);
     expect(await navne(afsnit(page, '#afsnit-is', 'Is'))).toContain('Børnekop');
     await expect(page.locator('#kapitel-mere'), 'en vare, kortene ikke fandt plads til').toHaveCount(0);
   });

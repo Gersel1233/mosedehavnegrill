@@ -63,7 +63,8 @@ og derfra:
 
 **⚠️ `chefens-rettelser-7-10.sql` (7/10) — IKKE KØRT I PRODUKTIONEN.** Mikkel:
 *"Rør ikke live endnu."* Chefens besked med rettelser pr. afsnit, det der kan
-rettes nu: de tre sandwich tændt igen (75, og frikadelle og flæskesteg ud af den
+rettes nu: de tre sandwich tændt igen som egne varer under Burgere (chefen 7/10:
+frikadelle 80, flæskesteg 80, bøf 75 — og frikadelle og flæskesteg ud af den
 almindelige sandwichs valg), priser (kakao 45, Latte Ice stor 70, flødekager 45,
 bakken 67, platten 199 (»Skal bestilles« bliver, »Inkl. friskbagt brød og smør« lægges til), fiskefilet med rejer 65, pandekagerne 50), Lumumba og
 Irish coffee i lille 3 cl og stor 6 cl, nye varer (Juleplatte, Børnekop,
@@ -74,16 +75,16 @@ som kunderejsen i Bestil mad, varsel 1 time på smørrebrød og håndmadder og e
 på platter, og tidspunkts-sorteringen (kategori_dagsdel) slået fra, »Hjemmelavet« foran flæskesteg, frikadelle og roastbeef, og »bestilles
 dagen før« væk fra tartaren. Hele listen, og det der VENTER, står i filens hoved.
 
-* ⚠️ **Bøfsandwichens 75,- skal bekræftes af chefen** — han gav ingen pris; 75 er
-  databasens egen (menukort.sql). Den tændes KUN, hvis prisen stadig er 75 (set
-  virke med 80: forblev slukket). Rapportens `skal_bekraeftes` siger det hver gang.
+* **De tre sandwich flyttes til Burgere** og får chefens priser (80/80/75, bekræftet
+  7/10). Rapportens `tre_sandwich_under_burgere` måler, at de står efter burgerne og
+  før »Ekstra kød eller tilbehør« — og at ingen af dem står i Sandwich mere.
 * **Den skal stå efter `engelsk-menukort-2-10.sql`** — den skriver
   `oversaettelser`, som den fil laver.
 * ⚠️ **Omdøbningerne er scopet til en kategori.** »Flæskesteg med surt« m.fl.
   står også i den slukkede *Vælg fyld til smørrebrødet*; uden kategorien fik
   fyldet »Hjemmelavet« foran. Rapportens `fyldet_uroert` er set fejle på netop det.
 * **Skriver som ejeren** (samme greb som 1/10). Prøvet på en lokal Postgres med
-  produktionens rækker sået ind, to gange i træk: alle ti kolonner JA. Og
+  produktionens rækker sået ind, to gange i træk: alle elleve kolonner JA. Og
   rapporten er set sige NEJ på databasen fra før.
 * **Siden følger med** i samme commit: `js/skal/menukort-kort.js` (Lumumba og
   Irish i Varmt & ekstra, RTD også i baren, frugtfadet også i Slik & snacks,

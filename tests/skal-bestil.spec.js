@@ -1858,7 +1858,7 @@ test.describe('Bestil mad følger kunderejsen', () => {
     d.menu_varer = [
       vare(1, 8, 'Rundstykke med pålæg', 35), vare(2, 31, 'Blødkogt æg', 10),
       vare(3, 10, 'Hjemmelavet cowboytoast', 45), vare(4, 27, 'Platte', 199),
-      vare(5, 63, 'Frikadellesandwich', 75), vare(6, 11, 'Cheeseburger', 85),
+      vare(5, 63, 'Sandwich', 75), vare(6, 11, 'Cheeseburger', 85),
       vare(7, 13, 'Leverpostej med surt', 55), vare(8, 39, 'Leverpostej med surt, håndmad', 27),
       vare(9, 9, 'Stjerneskud', 105), vare(10, 12, 'Ristet pølse', 30),
       vare(11, 16, 'Softice, lille', 37), vare(12, 16, '6 churros med sukker og kanel', 45),
