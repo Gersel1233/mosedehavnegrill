@@ -1273,3 +1273,78 @@ test.describe('Varens datovindue gælder også menukortet', () => {
     await expect(page.locator('#mk-kat [data-vare="Fadøl, i dag"]')).toHaveCount(1);
   });
 });
+
+/* ============================================================
+   BÅNDET PÅ TELEFONEN LIGGER OVER KORTENE — ALDRIG OVEN PÅ DEM  (7/10)
+   ------------------------------------------------------------
+   Mikkel på et skud af kort 2 ved 390 px: "kategori-navigationen
+   overlapper toppen af menukortet … ligger oven på den røde header og
+   dækker titel/logo." To fejl, målt ved 320–430 px:
+   · båndet var en 58 % dækkende glaspille inde i sidens margen — det
+     røde hoved og titlen skinnede igennem og ud på begge sider
+   · et tryk i båndet lagde husets scroll-padding OVEN I kapitlets
+     scroll-margin, og kortsamlingens glid-ind (26 px) flyttede målet
+     undervejs: kort 2 landede 122 px for langt nede — og efter den
+     første rettelse 12 px INDE UNDER båndet
+
+   Tallene kommer udefra: skærmens egen bredde og båndets egen bund.
+   ============================================================ */
+test.describe('Båndet på telefonen ligger over kortene — aldrig oven på dem', () => {
+  function langtKort() {
+    const d = medRet();
+    d.menu_kategorier.push({ id: 50, afdeling: 'mad', navn: 'Lang liste', sortering: 30, aktiv: true });
+    for (let i = 0; i < 30; i++) {
+      d.menu_varer.push({ id: 500 + i, kategori_id: 50, navn: 'Vare ' + i, pris: 10 + i,
+        sortering: i, aktiv: true, udsolgt: false });
+    }
+    return d;
+  }
+
+  for (const bredde of [320, 430]) {
+    test(`et tryk i båndet lander kortet under båndet med titel og logo fri (${bredde} px)`, async ({ page }, info) => {
+      test.skip(info.project.name === 'computer', 'på computeren står båndet ude i siden');
+      await page.setViewportSize({ width: bredde, height: 760 });
+      await åbn(page, langtKort());
+      await page.locator('#mk-hop button').nth(1).click();
+      // Vent, til rullet er faldet til ro — to ens målinger i træk
+      let før = -1;
+      await expect.poll(async () => {
+        const y = await page.evaluate(() => Math.round(scrollY));
+        const ro = y > 0 && y === før;
+        før = y;
+        return ro;
+      }, { intervals: [200], timeout: 6000 }).toBe(true);
+      const m = await page.evaluate(() => {
+        const bånd = document.getElementById('mk-hop').getBoundingClientRect();
+        const kap = document.querySelectorAll('#mk-kat .mk-kapitel')[1];
+        return {
+          båndBund: Math.round(bånd.bottom),
+          kapTop: Math.round(kap.getBoundingClientRect().top),
+          titel: Math.round(kap.querySelector('.mk-kh-titel').getBoundingClientRect().top),
+          logo: Math.round(kap.querySelector('.mk-kh-logo').getBoundingClientRect().top),
+        };
+      });
+      expect(m.kapTop, 'kortet lander inde under båndet').toBeGreaterThanOrEqual(m.båndBund);
+      expect(m.titel, 'titlen ligger under båndet').toBeGreaterThan(m.båndBund);
+      expect(m.logo, 'logoet ligger under båndet').toBeGreaterThan(m.båndBund);
+      expect(m.kapTop - m.båndBund, 'kortet lander langt under båndet — med det forrige kort imellem')
+        .toBeLessThanOrEqual(30);
+    });
+  }
+
+  test('båndet er en hylde i fuld bredde — intet skinner igennem', async ({ page }, info) => {
+    test.skip(info.project.name === 'computer', 'på computeren står båndet ude i siden');
+    await page.setViewportSize({ width: 390, height: 760 });
+    await åbn(page, langtKort());
+    const m = await page.evaluate(() => {
+      const b = document.getElementById('mk-hop');
+      const r = b.getBoundingClientRect();
+      const farve = getComputedStyle(b).backgroundColor;
+      const alfa = /rgba/.test(farve) ? Number(farve.split(',')[3].replace(')', '')) : 1;
+      return { venstre: Math.round(r.left), højre: Math.round(r.right), skærm: innerWidth, alfa };
+    });
+    expect(m.venstre, 'kortet kan ses ved siden af båndet').toBeLessThanOrEqual(0);
+    expect(m.højre, 'kortet kan ses ved siden af båndet').toBeGreaterThanOrEqual(m.skærm);
+    expect(m.alfa, 'kortets tekst skinner igennem båndet').toBe(1);
+  });
+});

@@ -421,9 +421,54 @@
 }
 .mk-linse.vis { opacity: 1; }
 
+/* ⚠️ PÅ TELEFONEN ER BÅNDET EN HYLDE, IKKE GLAS OVEN PÅ KORTET  (7/10).
+   Mikkel på et skud af kort 2 ved 390 px: "kategori-navigationen
+   overlapper toppen af menukortet … ligger oven på den røde header og
+   dækker titel/logo." Glaspillen var 58 % dækkende og stod inde i
+   sidens margen: mens man rullede, skinnede kortets røde hoved og
+   titlen igennem den og ud på begge sider af den — tekst oven på tekst.
+
+   Nu: fuld bredde, uigennemsigtig creme og en kant forneden. Kortet
+   glider IND UNDER båndet, som det glider under topbjælken — aldrig
+   igennem det. Linsen og knapperne er de samme. Kun under 820 px; på
+   computeren står listen ude i siden og rører ikke kortene. */
 @media (max-width: 820px) {
-  .mk-hop { margin-left: 0; margin-right: 0; }
+  .mk-hop {
+    margin: 12px calc(var(--pad) * -1) 0;
+    padding: 8px var(--pad);
+    border-radius: 0;
+    background: var(--cream, #fdf7ef);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: 0 1px 0 rgba(36, 26, 23, .1), 0 12px 18px -14px rgba(36, 26, 23, .4);
+  }
+
+  /* ⚠️ ÉT LANDINGSSTED, IKKE TO LAGT SAMMEN  (7/10). Husets fælles
+     scroll-padding på html (--top-luft + 70, havnegrillen.css) lagde
+     sig OVEN I kapitlets egen scroll-margin. MÅLT ved 320–430 px: et
+     tryk på "À la carte & burgere" lod kort 2 lande 232 px nede —
+     122 px under båndet, med halen af kort 1 imellem. Filen her
+     hentes kun af menukortet, så nulstillingen når ikke andre sider.
+
+     Tallet er båndets egen bund — bjælkens kompakte top + 48 px
+     (.mk-hop i menukort.css) + båndets 54 (8 + 38 + 8) — og 14 px luft.
+     Retter nogen båndets højde, skal tallet med. */
+  html { scroll-padding-top: 0; }
+  .mk-kat .panel,
+  #mk-kat .mk-kapitel,
+  #mk-kat .mk-sek.panel {
+    scroll-margin-top: calc(max(calc(env(safe-area-inset-top) + 6px), 12px) + 48px + 54px + 14px);
+  }
 }
+
+/* ⚠️ KORTENE GLIDER IKKE IND — DE TONER IND  (7/10). #mk-kat er .rev,
+   og .rev står 26 px nede (translate3d) til den kommer i syne. Et tryk
+   i båndet fra toppen af siden regnede landingen ud fra den forskudte
+   kasse; så kom kortene i syne, gled 26 px op, og kort 2 endte INDE
+   UNDER båndet. MÅLT: første tryk landede kortet på 102 px (båndets bund
+   114), andet tryk — kortene allerede fremme — på de rigtige 128. En
+   blok på flere skærme behøver ikke glide; den toner stadig ind. */
+#mk-kat.rev { transform: none; }
 
 /* ---- Bred skærm ---- */
 @media (min-width: 821px) {
