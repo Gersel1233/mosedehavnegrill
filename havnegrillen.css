@@ -706,7 +706,7 @@ h2{font-size:35px;margin-top:9px}
 /* Serveringstiden stod i rødt lige under et rødt bånd og kæmpede
    med det om øjet (4/10). Båndet bærer det røde; linjen her er en
    oplysning, og den må gerne være en oplysning. */
-.today .lbl{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:var(--muted);letter-spacing:-.005em}
+.today .lbl{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--muted);letter-spacing:-.005em}
 .today h3{font-size:31px;margin-top:7px;letter-spacing:-.025em}
 .today p{margin:8px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
 /* ⚠️ PRISEN OG PORTIONERNE ER PILLER (7/9, kundens skærmbillede).
@@ -998,7 +998,7 @@ html{touch-action:manipulation}
 .day.spaend .dw{font-size:12px;letter-spacing:.14em}
 .day.spaend .dd{font-size:14px;color:var(--ink2)}
 .day.spaend h4{font-size:18px;letter-spacing:-.015em}
-.day.spaend p{font-size:13.5px}
+.day.spaend p{font-size:14px}
 .day.closed{background:rgba(255,255,255,.6);box-shadow:none;border:1.5px solid rgba(36,26,23,.12)}
 .day.closed.nu{border-color:rgba(214,42,58,.45)}
 .day.closed:not(.nu) .dw{color:var(--muted)}

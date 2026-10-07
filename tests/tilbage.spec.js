@@ -55,7 +55,13 @@ const y = (page) => page.evaluate(() => Math.round(window.scrollY)).catch(() => 
 function gæstesider() {
   const rod = path.join(__dirname, '..');
   const ud = [];
-  const erSide = (f) => !/http-equiv="refresh"/i.test(fs.readFileSync(path.join(rod, f), 'utf8'));
+  /* ⚠️ OG EN noindex-SIDE ER IKKE EN GÆSTESIDE (7/10). ny-kode.html
+     (personalets nye kode, 4/10) faldt her — den er noindex som admin.
+     Læst af siden selv, som canonical-prøven i kontakt-post.spec.js. */
+  const erSide = (f) => {
+    const t = fs.readFileSync(path.join(rod, f), 'utf8');
+    return !/http-equiv="refresh"/i.test(t) && !/name="robots" content="noindex/.test(t);
+  };
   for (const f of fs.readdirSync(rod)) {
     const p = path.join(rod, f);
     if (f.endsWith('.html') && !/^(admin|googlea)/.test(f) && erSide(f)) ud.push(f);

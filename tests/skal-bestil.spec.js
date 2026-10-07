@@ -966,7 +966,9 @@ test.describe('Tidsmodellen', () => {
     await page.locator('#tid').selectOption('11:00');
     await expect(page.locator('[data-kategori="Smørrebrød"]')).toHaveCount(0);
     await expect(page.locator('#lukkede')).toContainText('Smørrebrød');
-    await expect(page.locator('#lukkede')).toContainText('24 timer');
+    /* ⚠️ VENDT 7/10: "et døgn", ikke "24 timer" — grunden bruger nu
+       R.varselOrd, de samme ord som resten af siden. Reglen er den samme. */
+    await expect(page.locator('#lukkede')).toContainText('bestilles et døgn før');
 
     await page.locator('#tid').selectOption('13:30');
     await expect(page.locator('[data-kategori="Smørrebrød"]')).toHaveCount(1);
