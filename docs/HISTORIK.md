@@ -7,6 +7,22 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**SMØRREBRØD, HÅNDMADDER OG PLATTER SOM BJÆLKER I BESTIL MAD** (7/10, aften —
+IKKE LIVE). Chefen: *"Hvorfor er frokost, Smørrebrød, og håndmadder ikke som en
+bjælke under Morgenmad i den lange sorte menu vælger boks … det kommer først frem
+nede i bunden"*. Mikkel: *"de skal også kunne bestilles helt normalt der."*
+- MÅLT: vælgeren står fra start en halv time ude; med 1 times / 1 døgns varsel
+  stod de tre i "Ikke lige nu" nederst og aldrig som bjælker — også efter
+  SQL-filen
+- Nu: en kategori, der KUN venter på varslet, står på sin plads med "fra kl.
+  11.30" / "fra i morgen". Åbnet: grunden + én knap ("Vælg kl. 11.30"), der
+  flytter tiden — så har varerne tæller. Reglen og databasens værn er urørte
+- QR/bordet havde dem allerede (bordet har intet varsel, også i databasen). ⚠️
+  Åbent: platter kan derfor bestilles ved bordet UDEN døgnet — spørg chefen. Og
+  bordets is-blok står sidst, forsidens før drikkevarerne
+- Prøver: fire i skal-bestil vendt med chefens ord, set fejle; computer 1490 /
+  0 fejlet (alle forsidens bestillingsfiler), mobil 164 / 0 (vælgerens filer)
+
 **MOBIL: KATEGORIBÅNDET OVER KORTET, IKKE OVEN PÅ** (7/10, aften — IKKE LIVE).
 Mikkel: *"På mobil overlapper den vandrette kategori-navigation toppen af
 menukortet … dækker titel/logo."* Den eneste visuelle blocker før launch.
