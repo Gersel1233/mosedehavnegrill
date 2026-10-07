@@ -7,6 +7,19 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**MOBIL: KATEGORIBÅNDET OVER KORTET, IKKE OVEN PÅ** (7/10, aften — IKKE LIVE).
+Mikkel: *"På mobil overlapper den vandrette kategori-navigation toppen af
+menukortet … dækker titel/logo."* Den eneste visuelle blocker før launch.
+- **Båndet er en hylde under 820 px**: fuld bredde, uigennemsigtig creme, kant
+  forneden. Før var det en 58 % dækkende glaspille inde i margenen, og kortets
+  røde hoved skinnede igennem og ud på begge sider. Computerens liste er urørt
+- **Ét landingssted**: html's scroll-padding lagde sig oven i kapitlets
+  scroll-margin (kort 2 landede 122 px under båndet), og kortsamlingens
+  glid-ind (.rev, 26 px) flyttede målet undervejs (første tryk landede kortet
+  INDE under båndet). Nu: båndets bund + 14 px — 128 px ved 320, 360, 390 og 430
+- Prøve: "Båndet på telefonen ligger over kortene — aldrig oven på dem" (3), set
+  fejle begge veje. Responsive filer: computer 344 / mobil 349, 0 fejlet
+
 **KORT 2 OG DATOVINDUET** (7/10, sidst på dagen — IKKE LIVE). Mikkel: *"Brug
 [kort 2] som facit for, hvor 'Fisk & klassikere' skal ligge."*
 - **Fisk & klassikere** står øverst i kapitel 2 i kortets rækkefølge (Stjerneskud,
