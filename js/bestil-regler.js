@@ -328,11 +328,15 @@
           * 24 * 60 + m - nu.minutter
         : 0;
       if (frem > 0 && frem < varsel) {
+        /* ⚠️ SAMME ORD SOM RESTEN AF SIDEN  (7/10): "bestilles et døgn
+           før", "bestilles 1 time før" — R.varselOrd, ikke en egen
+           regnestykke. Og med et døgn eller mere siger linjen, hvad man
+           så kan gøre. Mikkel: *"Platter: 1 dags varsel, med tekst om at
+           man kan ringe og spørge ved særlige ønsker."* */
         return {
           aaben: false,
-          grund: varsel >= 120
-            ? 'bestilles ' + Math.round(varsel / 60) + ' timer før'
-            : 'bestilles ' + varsel + ' min. før',
+          grund: 'bestilles ' + varselOrd(varsel) + ' før'
+            + (varsel >= 1440 ? ' — ring og spørg ved særlige ønsker' : ''),
         };
       }
     }

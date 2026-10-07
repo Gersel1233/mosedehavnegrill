@@ -1822,3 +1822,102 @@ test.describe('Kurven overlever en genindlæsning', () => {
       .not.toContainText('Fadøl');
   });
 });
+
+
+/* ============================================================
+   BESTIL MAD FØLGER KUNDEREJSEN  (7/10)
+   ------------------------------------------------------------
+   Mikkel, med chefens ord om den mørke vælger: *"Den skal
+   organiseres i en naturlig kunderejse, cirka: 1. Morgenmad
+   2. Frokost 3. Sandwich / Burgere 4. Smørrebrød 5. Håndmadder
+   6. Aftensmad / varme retter / grill 7. Is & sødt 8. Drikkevarer
+   9. Tilbehør."* Og reglerne: *"Smørrebrød og håndmadder: samme
+   dag, 1 times varsel. Platter: 1 dags varsel, med tekst om at man
+   kan ringe og spørge ved særlige ønsker."*
+
+   Fiksturet er ejerens kategorier med de id'er, navne og
+   sorteringstal, supabase/chefens-rettelser-7-10.sql efterlader.
+   Rækkefølgen, prøven forventer, er Mikkels liste — ikke koden.
+   ============================================================ */
+test.describe('Bestil mad følger kunderejsen', () => {
+  function rejsen() {
+    const d = data();
+    const K = [
+      [8, 'Morgenmad', 'mad', 1], [31, 'Tilkøb morgenmad', 'mad', 2],
+      [10, 'Andre retter', 'mad', 3], [27, 'Platter', 'mad', 4],
+      [63, 'Sandwich', 'mad', 5], [11, 'Burgere', 'mad', 6],
+      [13, 'Smørrebrød', 'mad', 7], [39, 'Håndmadder', 'mad', 8],
+      [9, 'Retter', 'mad', 9], [12, 'Pølser', 'mad', 10],
+      [15, 'Kugleis', 'is', 11], [16, 'Softice og vafler', 'is', 12],
+      [17, 'Kaffe og varme drikke', 'drikke', 14], [18, 'Øl', 'drikke', 15],
+      [21, 'Snacks og slik', 'drikke', 18], [32, 'Tillæg: glutenfri, laktosefri og vegansk', 'mad', 19],
+    ];
+    d.menu_kategorier = K.map(([id, navn, afdeling, sortering]) => ({ id, navn, afdeling, sortering, aktiv: true }));
+    const vare = (id, kat, navn, pris) => ({ id, kategori_id: kat, navn, beskrivelse: null, pris,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true });
+    d.menu_varer = [
+      vare(1, 8, 'Rundstykke med pålæg', 35), vare(2, 31, 'Blødkogt æg', 10),
+      vare(3, 10, 'Hjemmelavet cowboytoast', 45), vare(4, 27, 'Platte', 199),
+      vare(5, 63, 'Frikadellesandwich', 75), vare(6, 11, 'Cheeseburger', 85),
+      vare(7, 13, 'Leverpostej med surt', 55), vare(8, 39, 'Leverpostej med surt, håndmad', 27),
+      vare(9, 9, 'Stjerneskud', 105), vare(10, 12, 'Ristet pølse', 30),
+      vare(11, 16, 'Softice, lille', 37), vare(12, 16, '6 churros med sukker og kanel', 45),
+      // Ejerens kugleis med valget — så kan isen BYGGES, og blokken tegnes
+      Object.assign(vare(17, 15, '1 kugle', 35), { valg: ['Vaffel', 'Bæger'] }),
+      vare(13, 17, 'Te', 25), vare(14, 18, 'Fadøl, lille', 35),
+      vare(15, 21, 'Slikpind', 8), vare(16, 32, 'Glutenfrit brød (tillæg)', 5),
+    ];
+    Object.assign(d.indstillinger, {
+      bestilbare_kategorier: K.map((k) => k[0]),
+      bestilling_varsel_timer: 1,           // produktionens kanaltal
+      varsel_min_togo: 30,
+      kategori_dagsdel: {},
+      is_smage: 'Vanilje\nJordbær',
+      kategori_tider: { 13: { varsel_min: 60 }, 39: { varsel_min: 60 }, 27: { varsel_min: 1440 } },
+    });
+    return d;
+  }
+  /* Listen, som gæsten ser den: blokkene og foldene i rækkefølge. */
+  const listen = (page) => page.$$eval('#bestil [data-liste] > *', (l) => l.map((e) =>
+    e.classList.contains('isbyg-blok') ? 'Is & sødt'
+      : e.classList.contains('dagens-blok') ? 'Dagens ret'
+        : e.getAttribute('data-kategori')).filter(Boolean));
+  async function vælgTid(page, kl) {
+    const v = await page.$$eval('#tid option', (o, k) => (o.find((x) => x.value >= k) || {}).value, kl);
+    await page.locator('#tid').selectOption(v);
+  }
+
+  test('rækkefølgen er kunderejsen — og isen står før drikkevarerne', async ({ page }) => {
+    await åbn(page, { data: rejsen() });
+    await vælgTid(page, '15:00');
+    await expect(page.locator('#bestil [data-kategori="Smørrebrød"]')).toBeVisible();
+    expect(await listen(page)).toEqual(['Morgenmad', 'Tilkøb morgenmad', 'Andre retter',
+      'Sandwich', 'Burgere', 'Smørrebrød', 'Håndmadder', 'Retter', 'Pølser',
+      'Is & sødt', 'Kaffe og varme drikke', 'Øl', 'Snacks og slik',
+      'Tillæg: glutenfri, laktosefri og vegansk']);
+  });
+
+  test('smørrebrød og håndmadder kan bestilles samme dag med en times varsel', async ({ page }) => {
+    await åbn(page, { data: rejsen() });
+    // Kl. 15 i dag — to timer ude: begge står som bjælker
+    await vælgTid(page, '15:00');
+    await expect(page.locator('#bestil [data-liste] > [data-kategori="Smørrebrød"]')).toHaveCount(1);
+    await expect(page.locator('#bestil [data-liste] > [data-kategori="Håndmadder"]')).toHaveCount(1);
+    // Kl. 13.30 — en halv time ude: for tæt på, og linjen siger hvorfor
+    await vælgTid(page, '13:30');
+    await expect(page.locator('#lukkede')).toContainText('Smørrebrød (bestilles 1 time før)');
+  });
+
+  test('platter kræver et døgn — og linjen siger, at man kan ringe', async ({ page }) => {
+    await åbn(page, { data: rejsen() });
+    await vælgTid(page, '15:00');
+    await expect(page.locator('#bestil [data-liste] > [data-kategori="Platter"]')).toHaveCount(0);
+    await expect(page.locator('#lukkede'))
+      .toContainText('Platter (bestilles et døgn før — ring og spørg ved særlige ønsker)');
+    // I morgen står de der
+    const iMorgen = await page.$$eval('#dato option', (o) => o[1].value);
+    await page.locator('#dato').selectOption(iMorgen);
+    await vælgTid(page, '15:00');
+    await expect(page.locator('#bestil [data-liste] > [data-kategori="Platter"]')).toHaveCount(1);
+  });
+});

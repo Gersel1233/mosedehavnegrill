@@ -1057,6 +1057,12 @@ test.describe('Canonical og delelinks', () => {
     return fs.readdirSync(ROD)
       .filter((f) => f.endsWith('.html') && f !== 'admin.html')
       .filter((f) => !erGoogleKvittering(f))
+      /* ⚠️ EN SIDE MED noindex ER IKKE UDGIVET TIL GOOGLE (7/10).
+         ny-kode.html (personalets nye kode, 4/10) faldt her: den er
+         noindex som admin og skal ikke have en canonical. Læst af
+         siden selv og ikke af en liste — så en gæsteside, der ved et
+         uheld får noindex, falder i SEO-prøverne i stedet. */
+      .filter((f) => !/name="robots" content="noindex/.test(fs.readFileSync(path.join(ROD, f), 'utf8')))
       .concat(['bestil/index.html', 'bord/index.html', 'selskaber/index.html',
         'nyheder/index.html', 'arrangementer/index.html', 'baglokale/index.html',
         'catering/index.html', 'smoerrebroed-ud-af-huset/index.html']);

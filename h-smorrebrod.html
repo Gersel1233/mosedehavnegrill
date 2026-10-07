@@ -95,7 +95,7 @@
 
 <section style="padding-top:22px">
 <div class="facts rev">
-  <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kalender"/></svg><span><b>Bestil <span data-varsel>senest dagen før</span></b> Vi skal nå at bestille fisken og bage rugbrødet.</span></div>
+  <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kalender"/></svg><span><b>Bestil <span data-varsel>i god tid</span></b> Det bliver smurt, når du bestiller.</span></div>
   <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg><span id="lev-fakta"><b>Levering</b> Du kan også hente selv ved lugen.</span></div>
   <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#hjerte"/></svg><span><b>Vi tilpasser gerne</b> Glutenfrit brød, vegetarisk eller uden løg. Skriv det i beskeden.</span></div>
 </div>
@@ -177,7 +177,10 @@
     <div class="field">
       <label for="sdato">Hvornår skal I bruge det?</label>
       <select class="inp" id="sdato"></select>
-      <p class="hint">Bestil senest dagen før.</p>
+      <!-- Reserven: motoren skriver reglens eget varsel her (R.varselOrd).
+           Står der et tal i opmærkningen, er det forkert, den dag ejeren
+           ændrer varslet — "senest dagen før" stod her, da det blev 1 time (7/10). -->
+      <p class="hint">Bestil i god tid.</p>
     </div>
     <!-- ⚠️ TIDEN STÅR LIGE UNDER DATOEN  (26/9) — samme regel som på
          forsiden (Mikkels ja på et skærmbillede): dag og tid først, så

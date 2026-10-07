@@ -11,7 +11,7 @@
 --     læst af hans besked, ikke af databasen. Hvor han ikke gav en
 --     pris, bruges den, der står (sandwichene 75) — og kun hvis der er
 --     ÉN række med det navn i hele tabellen. Findes der ingen pris,
---     oprettes varen SKJULT og uden pris (kanden, æg & bacon).
+--     oprettes varen SKJULT og uden pris (æg & bacon).
 --
 --  ⚠️ ET NAVN ER IKKE UNIKT. "Flæskesteg med surt", "Frikadelle med
 --     surt" og "Roastbeef med remoulade og løg" står OGSÅ i den
@@ -31,8 +31,8 @@
 --    · "Tilføjes 1 foran Spejlæg" under Fisk & klassikere — der er
 --      ingen spejlæg-linje dér; hvilken han mener, er ikke afklaret
 --    · Børnekoppens tekst ("uden is") — varen oprettes til 59 uden tekst
---    · Prisen på "Æg & bacon" og "Isvand, kande" — begge oprettes
---      SKJULT og uden pris; ejeren sætter prisen og tænder dem i admin.
+--    · Prisen på "Æg & bacon" — den oprettes SKJULT og uden pris;
+--      ejeren sætter prisen og tænder den i admin.
 --      Morgen komplet siger stadig "æg ELLER bacon"
 --    · "Morgen komplet" eller "Morgenkomplet" — chefen og kort 1 er uenige
 --    · Afsnittet "Frokost" — det nye kort 1 er ikke set; varerne er
@@ -286,15 +286,22 @@ select pg_temp.ny('Kaffe og varme drikke', 'Hjemmelavede cookies', 20, null, 222
 -- ------------------------------------------------------------
 --  6) KOLDE DRIKKE (og BAR — RTD står begge steder, som chefen
 --     skrev; det er menukort-kort.js, der viser den i baren)
---     ⚠️ "ISVAND, KANDE" ER EN NY VARE — SKJULT OG UDEN PRIS. Chefen
---     skrev "Isvand Kande" uden pris. Den isvand, der står (25), er
---     ikke nødvendigvis en kande, og at døbe den om ville sige, at
---     den er. Mikkel 7/10: *"Opfind ikke en pris bare for at få den
---     oprettet … lad varen være skjult/inaktiv, indtil vi har sat
---     den korrekte pris i admin."* Isvand til 25 står urørt.
+--     ⚠️ "ISVAND, KANDE" ER DEN ISVAND, DER STÅR — IKKE EN NY VARE.
+--     Mikkel 7/10: *"Det er IKKE en ny vare. Omdøb den eksisterende
+--     vand/isvand-vare til 'Isvand, kande'. Behold den eksisterende
+--     pris."* Prisen (25) røres ikke.
+--     En tidligere udgave af filen oprettede en SKJULT "Isvand, kande"
+--     uden pris. Den er aldrig kørt i produktionen, men findes dubletten
+--     (en database, hvor den gamle udgave nåede at køre), slettes den
+--     her FØR omdøbningen — så der aldrig står to.
 -- ------------------------------------------------------------
-select pg_temp.ny('Sodavand, juice og kakao', 'Isvand, kande', null, null, 9,
-                  'Iced water, jug', p_aktiv => false);
+delete from public.menu_varer mv
+ using public.menu_kategorier mk
+ where mk.id = mv.kategori_id and mk.lokation_id = 'mosede'
+   and btrim(mv.navn) = 'Isvand, kande' and mv.pris is null and not mv.aktiv
+   and exists (select 1 from public.menu_varer x where x.lokation_id = 'mosede' and btrim(x.navn) = 'Isvand');
+select pg_temp.ret('Isvand', 'Isvand, kande', kategori => 'Sodavand, juice og kakao');
+select pg_temp.en('Sodavand, juice og kakao', 'Isvand, kande', 'Iced water, jug');
 
 select pg_temp.ret('RTD', 'RTD, 1 stk. Breezer eller Smirnoff', kategori => 'Sodavand, juice og kakao');
 select pg_temp.en('Sodavand, juice og kakao', 'RTD, 1 stk. Breezer eller Smirnoff',
@@ -413,6 +420,67 @@ update public.menu_kategorier
  where lokation_id = 'mosede' and btrim(navn) = 'Smørrebrød'
    and note like '%Tartar bestilles dagen før.%';
 
+-- ------------------------------------------------------------
+--  13) BESTIL MAD: KUNDEREJSEN OG VARSLET  (Mikkel 7/10)
+--     *"chefen har også ret i, at rækkefølgen på den mørke Bestil
+--     mad-vælger ikke giver mening nu. Den skal organiseres i en
+--     naturlig kunderejse … Brug de eksisterende kategorier."*
+--
+--     Rækkefølgen er kategoriernes egen `sortering` — den samme, ejeren
+--     flytter med pilene i admin. Ingen ny kategori. "Frokost" er Andre
+--     retter (ejerens egen frokost-markering fra 15/9) og Platter (kort
+--     1's Frokost har platten); "varme retter" er Retter og Pølser.
+--     Isen står efter maden og før drikkevarerne; tilbehøret sidst. De
+--     fire, der ikke kan bestilles online (tapas, sliders, pindemad,
+--     tilkøb ud af huset), står bagerst, hvor de ikke er i vejen.
+-- ------------------------------------------------------------
+update public.menu_kategorier mk set sortering = r.nr
+  from (values
+    ('Morgenmad', 1), ('Tilkøb morgenmad', 2),
+    ('Andre retter', 3), ('Platter', 4),
+    ('Sandwich', 5), ('Burgere', 6),
+    ('Smørrebrød', 7), ('Håndmadder', 8),
+    ('Retter', 9), ('Pølser', 10),
+    ('Kugleis', 11), ('Softice og vafler', 12), ('Ispinde', 13),
+    ('Kaffe og varme drikke', 14), ('Øl', 15), ('Vin, cava og champagne', 16),
+    ('Sodavand, juice og kakao', 17),
+    ('Snacks og slik', 18), ('Tillæg: glutenfri, laktosefri og vegansk', 19),
+    ('Tapasfad', 20), ('Sliders', 21), ('Reception og pindemad', 22),
+    ('Tilkøb ud af huset', 23), ('Vælg fyld til smørrebrødet', 24)
+  ) as r(navn, nr)
+ where mk.lokation_id = 'mosede' and btrim(mk.navn) = r.navn
+   and mk.sortering is distinct from r.nr;
+
+/* ⚠️ TIDSPUNKTET FLYTTER IKKE LÆNGERE RUNDT PÅ DEM. kategori_dagsdel
+   (16/9) løftede "frokost" og "aften" op over de andre efter det valgte
+   klokkeslæt — kl. 14 stod Andre retter, smørrebrød og håndmadder
+   øverst, kl. 18 retter, burgere og pølser. Det var præcis den
+   rækkefølge, der "ikke giver mening". Kunderejsen ER allerede dagens
+   gang, og morgenmaden forsvinder af sig selv efter 12.30.
+   Afkrydsningerne kan sættes igen i admin → Menukort under kategorien. */
+update public.indstillinger set vaerdi = '{}'::jsonb, aendret = now()
+ where lokation_id = 'mosede' and noegle = 'kategori_dagsdel' and vaerdi <> '{}'::jsonb;
+
+/* VARSLET. Mikkel: *"Smørrebrød og håndmadder: samme dag, 1 times
+   varsel. Platter: 1 dags varsel."* Det er kategoriernes egne tal i
+   kategori_tider (admin → Menukort → kategoriens tider) — det samme
+   tal, gæstens datovælger, teksterne (R.varselOrd) og databasens værn
+   (gaestens-regler) går efter. Kategorierne slås op på NAVN; et id er
+   ikke det samme i en frisk database. Andre felter på kategorien
+   (fra/til) røres ikke. */
+insert into public.indstillinger (lokation_id, noegle, vaerdi)
+values ('mosede', 'kategori_tider', '{}'::jsonb)
+on conflict (lokation_id, noegle) do nothing;
+
+update public.indstillinger i
+   set vaerdi = i.vaerdi || (
+         select jsonb_object_agg(k.id::text,
+                  coalesce(i.vaerdi -> k.id::text, '{}'::jsonb) || jsonb_build_object('varsel_min', r.minutter))
+           from (values ('Smørrebrød', 60), ('Håndmadder', 60), ('Platter', 1440)) as r(navn, minutter)
+           join public.menu_kategorier k on k.lokation_id = 'mosede' and btrim(k.navn) = r.navn),
+       aendret = now()
+ where i.lokation_id = 'mosede' and i.noegle = 'kategori_tider';
+
 commit;
 
 
@@ -451,7 +519,7 @@ forventet(kat, navn, pris) as (values
   ('Andre retter', '1 stk. hjemmelavet hvidløgsbrød', 45),
   ('Retter', 'Lun delle, steg eller leverpostej', 65),
   ('Morgenmad', 'Morgen komplet', 99),
-  ('Sodavand, juice og kakao', 'Isvand', 25))
+  ('Sodavand, juice og kakao', 'Isvand, kande', 25))
 select
   /* Hver af chefens linjer: præcis ÉN tændt række, i sin kategori,
      til hans pris. Tom liste = JA. */
@@ -489,12 +557,28 @@ select
                             'Roastbeef med remoulade og løg', 'Fiskefilet med rejer og mayo')
                and pris is null) = 4
        then 'JA' else '** NEJ **' end                        as fyldet_uroert,
-  /* De to uden pris: findes, er SKJULT og har ingen pris — en opfundet
-     pris er netop det, Mikkel bad os lade være med. */
-  case when (select count(*) from v where (kat, navn) in
-               (('Sodavand, juice og kakao', 'Isvand, kande'), ('Morgenmad', 'Æg & bacon'))
-               and not aktiv and pris is null) = 2
-       then 'JA' else '** NEJ **' end                        as kande_og_aeg_skjult_uden_pris,
+  /* Æg & bacon: findes, er SKJULT og har ingen pris — en opfundet pris er
+     netop det, Mikkel bad os lade være med. Og kanden er den gamle
+     isvand: præcis ÉN, tændt, til 25, og ingen "Isvand" tilbage. */
+  case when (select count(*) from v where kat = 'Morgenmad' and navn = 'Æg & bacon'
+               and not aktiv and pris is null) = 1
+        and (select count(*) from v where navn = 'Isvand, kande') = 1
+        and (select count(*) from v where navn = 'Isvand') = 0
+       then 'JA' else '** NEJ **' end                        as kanden_er_isvanden_og_aeg_skjult,
+  /* Kunderejsen: kategorierne i den rækkefølge, Mikkel gav. */
+  case when (select string_agg(navn, ' > ' order by sortering) from public.menu_kategorier
+              where lokation_id = 'mosede' and navn in ('Morgenmad', 'Andre retter', 'Platter', 'Sandwich',
+                'Burgere', 'Smørrebrød', 'Håndmadder', 'Retter', 'Kugleis', 'Kaffe og varme drikke', 'Snacks og slik'))
+          = 'Morgenmad > Andre retter > Platter > Sandwich > Burgere > Smørrebrød > Håndmadder > Retter > Kugleis > Kaffe og varme drikke > Snacks og slik'
+        and (select vaerdi = '{}'::jsonb from public.indstillinger where lokation_id = 'mosede' and noegle = 'kategori_dagsdel')
+       then 'JA' else '** NEJ **' end                        as kunderejsen,
+  /* Varslet: Mikkels tal, i minutter. */
+  case when (select bool_and((i.vaerdi -> k.id::text ->> 'varsel_min')::int = r.minutter)
+               from (values ('Smørrebrød', 60), ('Håndmadder', 60), ('Platter', 1440)) as r(navn, minutter)
+               join public.menu_kategorier k on k.lokation_id = 'mosede' and k.navn = r.navn
+               cross join public.indstillinger i
+              where i.lokation_id = 'mosede' and i.noegle = 'kategori_tider')
+       then 'JA' else '** NEJ **' end                        as varsel_1_time_og_platter_1_doegn,
   case when (select beskrivelse from v where kat = 'Platter' and navn = 'Platte') ilike '%skal bestilles%'
         and (select beskrivelse from v where kat = 'Platter' and navn = 'Platte') like '%friskbagt brød og smør%'
         and (select beskrivelse from v where kat = 'Andre retter' and navn = 'Snackkurv') ilike '%med en dip%'
@@ -504,6 +588,6 @@ select
   'Bøfsandwich ' || coalesce((select pris::int::text from v where kat = 'Sandwich' and navn = 'Bøfsandwich'), '?')
     || ',- (databasens egen pris) — BEKRÆFTES AF CHEFEN'      as skal_bekraeftes,
   (select count(*) from v where navn in ('Blandet salat', 'Hjemmelavet hvidløgsbrød med tomat & ost',
-     'Lun delle, steg eller leverpostej med brød og surt', 'RTD',
+     'Lun delle, steg eller leverpostej med brød og surt', 'RTD', 'Isvand',
      'Irish coffee', 'Irish coffee, stor', 'Lumumba, varm eller kold', '2 hjemmelavede pandekager')
      and kat <> 'Vælg fyld til smørrebrødet')               as gamle_navn_skal_vaere_0;

@@ -228,11 +228,15 @@ test.describe('Byg din is', () => {
     expect(l.reduce((a, x) => a + x.pris * x.antal, 0), 'to gange 35').toBe(70);
   });
 
-  /* ⚠️ ISEN LIGGER FOR SIG OG NEDERST (kundens ord: "lad hele
-     is-blokken ryge ned og stå som en eksklusiv ting"). Så længe
-     den var en kategori mellem de andre, var den en fold som
-     pølser og øl. */
-  test('isen er sin egen blok nederst — ikke en fold mellem de andre', async ({ page }) => {
+  /* ⚠️ ISEN LIGGER FOR SIG (25/9, kundens ord: "lad hele is-blokken
+     ryge ned og stå som en eksklusiv ting"). Så længe den var en
+     kategori mellem de andre, var den en fold som pølser og øl.
+     ⚠️ VENDT 7/10: IKKE LÆNGERE NEDERST. Mikkel med chefens ord om den
+     mørke Bestil mad-vælger: *"… 7. Is & sødt 8. Drikkevarer 9.
+     Tilbehør."* Blokken er stadig sin egen — den står bare efter maden
+     og før drikkevarerne, dér hvor isen står i ejerens sortering.
+     Fiksturet: Smørrebrød (6) · is (11) · Øl (21). */
+  test('isen er sin egen blok — efter maden og før drikkevarerne', async ({ page }) => {
     await åbn(page);
     /* Ingen is-kategori i den almindelige liste. */
     await expect(page.locator('#bestil .item[data-afd="is"]'),
@@ -240,12 +244,14 @@ test.describe('Byg din is', () => {
 
     const plads = await page.evaluate(() => {
       const liste = document.querySelector('[data-liste]');
-      const b = liste.querySelector('.isbyg-blok');
       const alle = Array.prototype.slice.call(liste.children);
-      return { nr: alle.indexOf(b), ialt: alle.length };
+      const nr = (sel) => alle.indexOf(liste.querySelector(sel));
+      return { is: nr('.isbyg-blok'), smoer: nr('.item[data-kategori="Smørrebrød"]'),
+        oel: nr('.item[data-kategori="Øl"]') };
     });
-    expect(plads.nr, 'is-blokken blev ikke tegnet').toBeGreaterThan(-1);
-    expect(plads.nr, 'isen står ikke nederst i listen').toBe(plads.ialt - 1);
+    expect(plads.is, 'is-blokken blev ikke tegnet').toBeGreaterThan(-1);
+    expect(plads.is, 'isen står før maden').toBeGreaterThan(plads.smoer);
+    expect(plads.is, 'isen står efter drikkevarerne').toBeLessThan(plads.oel);
   });
 
   /* Vejen til hele sortimentet — kundens ord: "på bestil is skal

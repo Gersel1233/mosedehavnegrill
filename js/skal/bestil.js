@@ -1750,11 +1750,23 @@
          udgave tog dem altid ud og lagde dem nederst i en nødudgang,
          og MÅLT faldt prøven "kategorierne står i menukortets
          rækkefølge": isen lå efter Øl i stedet for før. */
+      /* ⚠️ VENDT 7/10: IS-BLOKKEN STÅR, HVOR ISEN HØRER TIL I
+         KUNDEREJSEN — efter maden, før drikkevarerne. Mikkel:
+         *"rækkefølgen på den mørke Bestil mad-vælger ikke giver mening
+         nu … 7. Is & sødt 8. Drikkevarer 9. Tilbehør."* Blokken er
+         stadig sin egen, eksklusive form (25/9) — den står bare ikke
+         nederst længere. Pladsen er den FØRSTE is-kategoris i ejerens
+         sortering, så den flytter med, hvis ejeren flytter isen. */
       var byggerKanTegnes = kanByggeIs();
-      grupper().filter(function (g) {
-        return !byggerKanTegnes || g.afdeling !== 'is';
-      }).forEach(function (g) { kategoriRække(g, liste); });
-      if (byggerKanTegnes) isBlok(liste);
+      var isTegnet = false;
+      grupper().forEach(function (g) {
+        if (byggerKanTegnes && g.afdeling === 'is') {
+          if (!isTegnet) { isBlok(liste); isTegnet = true; }
+          return;
+        }
+        kategoriRække(g, liste);
+      });
+      if (byggerKanTegnes && !isTegnet) isBlok(liste);
     } else {
       /* ⚠️ FYLDET STÅR ØVERST, IKKE UNDER DE FÆRDIGE RETTER.
          Det er dét, gæsten kommer efter; rejemad, tartar og
