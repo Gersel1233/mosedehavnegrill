@@ -917,7 +917,6 @@
   var isoPlus = R.isoPlus;
   var ugedagFor = R.ugedagFor;
   var planFor = R.planFor;
-  var varselTimer = R.varselTimer;
   var tidligst = R.tidligst;
   /* ⚠️ VÆLGEREN SKAL KENDE DE KATEGORIER, SIDEN SÆLGER (30/8).
      Varslet er den mindste af dem: bestil/ sælger kun smørrebrød
@@ -3561,17 +3560,14 @@
 
     /* Varslet skrives ud som det ejeren har sat det. Står der 24,
        står der "et døgn i forvejen" – ikke "vi skal have god tid",
-       som ikke betyder noget. */
-    var timer = varselTimer(d);
+       som ikke betyder noget.
+       ⚠️ SIDENS EGNE KATEGORIER, IKKE KANALENS TAL (7/10). Her stod
+       varselTimer(d) — og den sagde "mindst 1 timer i forvejen" på
+       bestil/, mens smørrebrødet kræver et døgn. Se R.varselFor. */
+    var ord = R.varselOrd(R.varselFor(d, hvilketUdvalg(), kurv.hvordan));
     var vt = $('bestil-varsel');
     if (vt) {
-      vt.textContent = timer >= 48
-        ? 'Vi skal have bestillingen mindst ' + Math.round(timer / 24) + ' dage i forvejen.'
-        : timer >= 24
-          ? 'Vi skal have bestillingen mindst et døgn i forvejen.'
-          : timer > 0
-            ? 'Vi skal have bestillingen mindst ' + timer + ' timer i forvejen.'
-            : '';
+      vt.textContent = ord ? 'Vi skal have bestillingen mindst ' + ord + ' i forvejen.' : '';
       vt.classList.toggle('skjult', !vt.textContent);
     }
 

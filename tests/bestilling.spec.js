@@ -170,6 +170,19 @@ test.describe('Formularen siger hvad der sker', () => {
     await expect(page.locator('#bestil-varsel')).toContainText('3 dage');
   });
 
+  /* ⚠️ "MINDST 1 TIMER I FORVEJEN" (7/10, målt på den udgivne side).
+     To fejl i én linje: forkert dansk — og forkert tal. Kanalens gamle
+     tal er 1 time, men smørrebrødet har sit eget døgn, og det er dét,
+     datovælgeren går efter. Tallene er produktionens. */
+  test('varslet er smørrebrødets eget døgn — ikke kanalens time', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.bestilling_varsel_timer = 1;
+    d.indstillinger.kategori_tider = { 1: { varsel_min: 1440 } };
+    await åbnBestil(page, { data: d });
+    await expect(page.locator('#bestil-varsel'))
+      .toHaveText('Vi skal have bestillingen mindst et døgn i forvejen.');
+  });
+
   test('personalet kan lukke for bestillinger', async ({ page }) => {
     const d = grunddata();
     d.indstillinger.bestilling_aaben = false;

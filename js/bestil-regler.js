@@ -546,6 +546,40 @@
     return mindst === null ? kanalVarsel(d, hvordan) : mindst;
   }
 
+  /* ============================================================
+     VARSLET SAGT MED ORD — ÉT STED  (7/10)
+     ------------------------------------------------------------
+     MÅLT på de udgivne sider 7/10, med ejerens rigtige data:
+       h-smorrebrod.html  "Bestil senest 1 time før" og "Bestilles
+                          mindst 1 time i forvejen" — og på SAMME
+                          side "Ikke lige nu: Smørrebrød (bestilles
+                          24 timer før)"
+       bestil/            "Vi skal have bestillingen mindst 1 timer
+                          i forvejen"
+     Teksterne læste `bestilling_varsel_timer` (1), som er KANALENS
+     gamle tal. Smørrebrødets kategori har sit eget døgn
+     (kategori_tider: 1440 min.), og det er dét, datovælgeren og
+     databasen går efter. Mikkel: *"Sørg for, at forklaringen … er
+     konsistent med den faktiske regel."*
+
+     ⚠️ SAMME TAL SOM VÆLGEREN. `varselFor` er `mindsteVarsel` over
+        sidens EGNE kategorier — præcis det, `tiderFor` gater dagene
+        med. Så kan teksten og vælgeren ikke sige hver sit igen.
+     ⚠️ "ET DØGN" OG IKKE "DAGEN FØR". Reglen er 24 timer: kl. 15 i
+        dag til kl. 10 i morgen er dagen før, men kun 19 timer. */
+  function varselFor(d, udvalg, hvordan) {
+    var u = (window.Butik && Butik.udvalg)
+      ? (Butik.udvalg(d, udvalg, Butik.nu().dato, '', hvordan) || {}) : {};
+    return mindsteVarsel(d, u.katIds, hvordan);
+  }
+  function varselOrd(min) {
+    var m = Math.round(Number(min));
+    if (!isFinite(m) || m <= 0) return '';
+    if (m % 1440 === 0) return m === 1440 ? 'et døgn' : (m / 1440) + ' dage';
+    if (m % 60 === 0) return (m / 60) + (m === 60 ? ' time' : ' timer');
+    return m + ' minutter';
+  }
+
   function tiderFor(d, iso, mindst, hvordan, katIds, smoerIds) {
     var p = planFor(d, iso);
     if (!p) return [];
@@ -835,6 +869,8 @@
     leveringsPostnr: leveringsPostnr,
     leveringSvar: leveringSvar,
     mindsteVarsel: mindsteVarsel,
+    varselFor: varselFor,
+    varselOrd: varselOrd,
     tidligst: tidligst,
     tiderFor: tiderFor,
     muligeDage: muligeDage,

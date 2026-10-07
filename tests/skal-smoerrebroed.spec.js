@@ -406,11 +406,30 @@ test.describe('Varslet er reglens tal', () => {
   /* ⚠️ HEROENS MANCHET OG FAKTAKORTET SAGDE ENGANG "senest 2 dage
      før", mens formularen holdt ejerens eget tal (30/8). Gæsten
      læser det første og møder det andet. */
+  /* ⚠️ VENDT 7/10: "ET DØGN", IKKE "DAGEN FØR". Reglen er 24 timer:
+     kl. 15 i dag til kl. 10 i morgen er dagen før, men kun 19 timer —
+     og vælgeren siger nej. Ordet skal sige det, reglen gør. */
   test('faktakortet skriver ejerens eget tal', async ({ page }) => {
     const d = data();
     d.indstillinger.bestilling_varsel_timer = 24;
     await åbn(page, d);
-    await expect(page.locator('[data-varsel]').first()).toContainText('senest dagen før');
+    await expect(page.locator('[data-varsel]').first()).toContainText('senest et døgn før');
+  });
+
+  /* ⚠️ PRODUKTIONENS EGEN OPSÆTNING, MÅLT 7/10. Kanalens gamle tal er
+     1 time (bestilling_varsel_timer), og smørrebrødets kategorier har
+     deres eget døgn (kategori_tider, 1440 min.). Siden sagde "Bestil
+     senest 1 time før" og "Bestilles mindst 1 time i forvejen" — lige
+     over "Ikke lige nu: Smørrebrød (bestilles 24 timer før)". Tallene
+     her er produktionens, ikke prøvens. */
+  test('kategoriens døgn vinder over kanalens time — overalt på siden', async ({ page }) => {
+    const d = data();
+    d.indstillinger.bestilling_varsel_timer = 1;
+    d.indstillinger.kategori_tider = { 13: { varsel_min: 1440 }, 14: { varsel_min: 1440 } };
+    await åbn(page, d);
+    await expect(page.locator('[data-varsel]').first()).toHaveText('senest et døgn før');
+    await expect(page.locator('#bestil .field:has(#sdato) .hint')).toContainText('mindst et døgn i forvejen');
+    await expect(page.locator('body')).not.toContainText(/1 timer? (før|i forvejen)/);
   });
 
   test('datofeltets hint siger det samme', async ({ page }) => {

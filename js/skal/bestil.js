@@ -1928,16 +1928,17 @@
      ⚠️ ORDET SKAL VÆRE DAGE, NÅR DER ER DAGE. "Bestil senest 24
      timer før" er sandt og ubrugeligt — man planlægger en
      fødselsdag i dage. */
+  /* ⚠️ OG DET ER SIDENS EGEN REGEL, IKKE KANALENS  (7/10). Her stod
+     R.varselTimer(data) — kanalens gamle tal, 1 time — og
+     smørrebrødssiden sagde "Bestil senest 1 time før" lige over
+     "Ikke lige nu: Smørrebrød (bestilles 24 timer før)". Ordene
+     kommer nu fra R.varselOrd, som bestil/ også bruger. */
   function skrivVarselTekst() {
     var el = alle('[data-varsel]', document);
     if (!el.length) return;
-    var timer = R.varselTimer(data);
-    if (!timer || timer <= 0) return;   // designets tekst bliver stående
-    var dage = Math.floor(timer / 24);
-    var ord = dage >= 2 ? 'senest ' + dage + ' dage før'
-      : dage === 1 ? 'senest dagen før'
-        : 'senest ' + timer + (timer === 1 ? ' time' : ' timer') + ' før';
-    el.forEach(function (e) { e.textContent = ord; });
+    var ord = R.varselOrd(R.varselFor(data, side && side.udvalg, hvordan()));
+    if (!ord) return;   // designets tekst bliver stående
+    el.forEach(function (e) { e.textContent = 'senest ' + ord + ' før'; });
   }
 
   /* ⚠️ MINDSTEANTALLET SKAL STÅ, FØR HUN FYLDER KURVEN  (4/9).
@@ -2001,14 +2002,11 @@
     }
 
     if (side.varselHint) {
-      var timer = R.varselTimer(data);
-      var dage = Math.floor(timer / 24);
-      linje.textContent = timer <= 0
+      // Samme regel og samme ord som [data-varsel] ovenfor (7/10).
+      var ord = R.varselOrd(R.varselFor(data, side.udvalg, hvordan()));
+      linje.textContent = !ord
         ? 'Bestil gerne i god tid, og ring, hvis det haster.'
-        : 'Bestilles mindst ' + (dage >= 1
-          ? dage + (dage === 1 ? ' dag' : ' dage')
-          : timer + (timer === 1 ? ' time' : ' timer'))
-          + ' i forvejen. Ring, hvis det haster.';
+        : 'Bestilles mindst ' + ord + ' i forvejen. Ring, hvis det haster.';
       return;
     }
 
