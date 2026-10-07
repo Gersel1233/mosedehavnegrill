@@ -1985,21 +1985,20 @@ test.describe('Leveringen som nyhed', () => {
     return d;
   }
 
-  test('slået til: heroen, Bestil mad og rækken siger det — med ejerens område og pris', async ({ page }) => {
+  test('slået til: heroen og Bestil mad siger det — med ejerens område og pris', async ({ page }) => {
     await åbn(page, { data: medLevering(true) });
     await expect(page.locator('.hero-nyhed')).toBeVisible();
     const felt = page.locator('#bestil .lev-nyhed');
     await expect(felt).toBeVisible();
     await expect(felt).toContainText('Til Greve og Tune.');
     await expect(felt).toContainText('79,- pr. bestilling');
-    await expect(page.locator('#alt [data-levering-nyhed]')).toContainText('79,- pr. bestilling');
     await expect(page.locator('[data-lev-nav]')).toHaveText('to-go, spis her eller levering');
   });
 
   test('slået fra: nyheden står ingen steder', async ({ page }) => {
     await åbn(page, { data: medLevering(false) });
     await expect(page.locator('#bestil [data-kategori]').first()).toBeVisible();
-    for (const sel of ['.hero-nyhed', '#bestil .lev-nyhed', '#alt [data-levering-nyhed]']) {
+    for (const sel of ['.hero-nyhed', '#bestil .lev-nyhed']) {
       await expect(page.locator(sel), sel + ' står, selv om levering er slået fra').toBeHidden();
     }
     await expect(page.locator('[data-lev-nav]')).toHaveText('to-go eller spis her');

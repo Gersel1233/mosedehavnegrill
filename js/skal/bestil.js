@@ -385,7 +385,7 @@
   }
   /* "kl. 11.30" i dag, ellers dagen foran: "i morgen kl. 10.45". */
   function venterHvornår(w, kort) {
-    var kl = 'kl. ' + String(w.tid).slice(0, 5).replace(':', '.');
+    var kl = 'kl. ' + Butik.klokken(w.tid);   // husets ene klokkeslæt (punktum)
     if (w.dag === valgtDag) return kl;
     var dag = w.dag === R.isoPlus(Butik.nu().dato, 1) ? 'i morgen'
       : Butik.UGEDAGE[(new Date(w.dag + 'T12:00:00Z').getUTCDay() + 6) % 7].toLowerCase();
@@ -3270,9 +3270,8 @@
     }
     visTidLabel();
 
-    /* ⚠️ "VI KØRER MADEN UD" FØRER HELT IND  (7/10). Heroens pille,
-       nyhedsfeltet over formularen og rækken under "Hvad skal vi
-       hjælpe med?" bærer [data-vaelg-levering]: et tryk vælger
+    /* ⚠️ "VI KØRER MADEN UD" FØRER HELT IND  (7/10). Heroens pille og
+       nyhedsfeltet over formularen bærer [data-vaelg-levering]: et tryk vælger
        Levering her. Andre sider linker med ?hvordan=levering.
        Knappen er formularens EGEN — samme klik som gæstens — så
        adressefeltet, prisen og dagene følger med uden en kopi af

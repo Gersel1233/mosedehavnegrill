@@ -7,6 +7,32 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LEVERING SOM NYHED, FOTOS I MIDTEN, SIDERNE HÆNGER SAMMEN** (7/10, aften —
+IKKE LIVE). Mikkel: *"levering er stadig slet ikke godt nok og highlighted som en
+ny og fed ting og bliver heller ikke gjort godt nok i admin"*, *"der er nogen
+billeder hvor retterne ikke er i centrum"* og *"det hele på siden skal hænge
+sammen og linke til hinanden"*.
+- **Fotos**: hvert foto har et FOKUS (aflæst på et gitter), og menukort.js
+  beskærer efter kassens faktiske mål (4:5 / 4:3 / 21:9). Lånte varer (genbrug)
+  giver intet foto — smørrebrødskortet viste biksemad og chips
+- **Levering hos gæsten**: "Nyhed · Vi kører maden ud" i heroen og over Bestil
+  mad (område, 79,- pr. bestilling — uanset størrelse, betal når maden kommer),
+  navigationen "to-go, spis her eller levering", og menukortet linker dertil.
+  Et tryk vælger Levering (`?hvordan=levering` fra andre sider). Kun ejerens
+  felter, kun når levering er slået til (js/skal/kontakt.js)
+- ⚠️ IKKE en række under "Hvad skal vi hjælpe med?" — prøvet og taget ud igen:
+  samme grund som selskaberne 13/9 (to veje til ét ærinde på samme side)
+- **Pristeksten**: produktionen sagde stadig "under 200 kr. … over telefonen"
+  (ejeren droppede det 3/9; ejerens-oplysninger.sql skrev den tilbage). Rettet i
+  chefens-rettelser-7-10.sql afsnit 14 (12 × JA) og i seed-filen
+- **Admin**: kontakten hedder nu "Vi leverer — forsiden, smørrebrødet og
+  bestil/"; beskeden ved tænd lovede "ingen pris". Bestillinger har "🚗
+  Levering" i Hvor fra, og 🚗-tallet er en knap til dagens ture
+- **Åbne spørgsmål til ejeren** (ikke bygget): tapas lover "Vi kører det ud
+  79,-", men formularen kan ikke levere; skal hver levering stadig have et opkald
+  (adressen tjekkes siden 21/9)?; "På vej"/"Leveret" i admin (kræver SQL);
+  egen sidste leveringstid/varsel (køretid); is til levering?
+
 **SMØRREBRØD, HÅNDMADDER OG PLATTER SOM BJÆLKER I BESTIL MAD** (7/10, aften —
 IKKE LIVE). Chefen: *"Hvorfor er frokost, Smørrebrød, og håndmadder ikke som en
 bjælke under Morgenmad i den lange sorte menu vælger boks … det kommer først frem

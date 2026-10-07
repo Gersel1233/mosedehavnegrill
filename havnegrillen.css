@@ -653,9 +653,9 @@ html.film-styret.film-aabner .hero.film .hero-badge,html.film-styret.film-aabner
    ------------------------------------------------------------
    Mikkel: levering skal stå "som en ny og fed ting". Tre steder på
    forsiden, samme form: et rødt "Nyhed"-mærke og ordene "Vi kører
-   maden ud" — i heroen som en glaspille under knapperne, over Bestil
-   mad som et felt med område og pris, og som en række under "Hvad skal
-   vi hjælpe med?". Teksten fyldes af js/skal/kontakt.js.
+   maden ud" — i heroen som en glaspille under knapperne og over Bestil
+   mad som et felt med område og pris (menukortet har pillen i den lyse
+   udgave). Teksten fyldes af js/skal/kontakt.js.
    Skjult med [hidden], til levering er slået til — og husets fælles
    `[hidden] { display: none !important; }` længere nede vinder over
    .row-card's flex. (Prøvet 7/10: en egen regel her var en kopi af den.)
@@ -664,7 +664,7 @@ html.film-styret.film-aabner .hero.film .hero-badge,html.film-styret.film-aabner
   border-radius:999px;color:#fff;font-size:15px;font-weight:600;text-decoration:none;
   background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
   box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.4),0 10px 26px rgba(0,0,0,.32)}
-.hero-nyhed b,.lev-nyhed-titel b,.row-card .ny{display:inline-block;padding:4px 9px;border-radius:999px;
+.hero-nyhed b,.lev-nyhed-titel b{display:inline-block;padding:4px 9px;border-radius:999px;
   font-size:11px;font-weight:700;font-style:normal;letter-spacing:.08em;text-transform:uppercase;
   color:#fff;background:var(--red);line-height:1.2}
 .hero-nyhed i{font-style:normal;opacity:.85;transition:transform .3s var(--spring)}
@@ -674,22 +674,20 @@ html.film-styret.film-aabner .hero.film .hero-badge,html.film-styret.film-aabner
   padding:16px 18px;border-radius:24px;color:#fff;
   background:linear-gradient(135deg,rgba(214,42,58,.42),rgba(214,42,58,.14));
   -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
-  box-shadow:inset 0 1px .5px rgba(255,255,255,.45),inset 0 0 0 1px rgba(255,204,209,.38),0 10px 26px rgba(0,0,0,.32)}
-.lev-nyhed-ikon{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--red);
-  box-shadow:0 6px 16px rgba(214,42,58,.45)}
+  box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.4),0 10px 26px rgba(0,0,0,.32)}
+.lev-nyhed-ikon{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--red)}
 .lev-nyhed-ikon svg{width:26px;height:26px;color:#fff;fill:currentColor}
 .lev-nyhed-tekst{flex:1 1 220px;min-width:0}
 .lev-nyhed-tekst p{margin:0;font-size:14px;line-height:1.45;color:rgba(255,255,255,.88)}
 .lev-nyhed-tekst .lev-nyhed-titel{display:flex;align-items:center;gap:9px;margin-bottom:4px;font-size:18px;font-weight:700;color:#fff}
 .lev-nyhed-knap{flex:none;margin-left:auto;padding:11px 18px;border:0;border-radius:999px;cursor:pointer;
-  font:inherit;font-size:15px;font-weight:600;color:var(--red-d);background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+  font:inherit;font-size:15px;font-weight:600;color:var(--red-d);background:#fff;box-shadow:var(--skygge-let)}
 .lev-nyhed-knap:hover{background:#ffeef0}
 @media (max-width:480px){.lev-nyhed-knap{width:100%;margin-left:0}}
-.row-card .ny{margin-left:6px;vertical-align:3px}
 /* Den lyse udgave står på papir (menukortets overskrift), ikke på film. */
+/* Husets lyse glaspille (.glaspille) — samme flade og skygge. */
 .hero-nyhed.lys{justify-self:center;width:max-content;max-width:100%;margin:14px auto 0;text-align:left;
-  color:var(--ink);background:rgba(255,255,255,.72);font-size:14px;
-  box-shadow:inset 0 1px .5px rgba(255,255,255,.9),inset 0 0 0 1px rgba(36,26,23,.1),0 8px 20px rgba(36,26,23,.1)}
+  color:var(--ink);background:var(--glas-flade);font-size:14px;box-shadow:var(--glas-skygge)}
 /* social + musik */
 .social{display:flex;gap:8px;padding:16px var(--pad) 4px;overflow-x:auto;scrollbar-width:none}
 .social::-webkit-scrollbar{height:0}
@@ -1176,7 +1174,7 @@ html{touch-action:manipulation}
 /* Den ventende kategori på det mørke glas (7/10) — se .item.venter-note
    længere nede. Samme vægt som linjen ovenfor, så den vinder. */
 .glasafsnit .item.venter h4{color:rgba(255,255,255,.76)}
-.glasafsnit .item.venter-note{background:rgba(214,42,58,.16);box-shadow:inset 0 0 0 1px rgba(255,204,209,.28)}
+.glasafsnit .item.venter-note{background:rgba(214,42,58,.16);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12)}
 .glasafsnit .item.venter-note p{color:rgba(255,255,255,.88)}
 .glasafsnit .item.hi,.glasafsnit .item.valgt,.glasafsnit .dagens-blok,.glasafsnit .step{color:var(--ink)}
 .glasafsnit .dagens-blok .item{color:var(--ink);background:none;box-shadow:none}
@@ -2725,13 +2723,13 @@ footer .smiley-linje{
 .item.venter{background:transparent;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
 .item.venter h4{color:var(--ink2)}
 .item.venter-note{flex-wrap:wrap;gap:10px 14px;
-  background:rgba(214,42,58,.06);box-shadow:inset 0 0 0 1px rgba(214,42,58,.18)}
+  background:rgba(214,42,58,.06);box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
 .item.venter-note p{margin:0;flex:1 1 200px;font-size:14px;line-height:1.45;color:var(--ink2)}
 .item .venter-knap{flex:none;margin-left:auto;padding:10px 16px;border:0;border-radius:999px;
   font:inherit;font-size:14px;font-weight:600;color:#fff;background:var(--red);
   cursor:pointer;white-space:nowrap}
 .item .venter-knap:hover{background:var(--red-d)}
-.item .venter-knap:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 4px var(--red-d)}
+.item .venter-knap:focus-visible{outline:2px solid var(--red-d);outline-offset:3px}
 
 /* ---- ET ANSIGT PR. RET  (1/9) -------------------------------
    Kundens ord: "prop emojis derinde, så det ser lidt attraktivt
