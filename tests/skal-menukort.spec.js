@@ -1114,7 +1114,7 @@ test.describe('Kort 1: Frokost som det trykte kort', () => {
       { id: 27, afdeling: 'mad', navn: 'Platter', sortering: 9, aktiv: true },
     ];
     d.menu_varer = [
-      v(8, 'Morgen komplet', 99), v(8, 'Rundstykke med pålæg', 35),
+      v(8, 'Morgenkomplet', 99), v(8, 'Rundstykke med pålæg', 35),
       v(9, 'Stjerneskud', 105), v(9, 'Lun delle, steg eller leverpostej', 65,
         { beskrivelse: 'Med brød og surt', valg: ['Frikadelle', 'Steg', 'Leverpostej'] }),
       v(9, 'Pitabrød', 65),
@@ -1125,7 +1125,8 @@ test.describe('Kort 1: Frokost som det trykte kort', () => {
       v(13, 'Leverpostej med surt', 55), v(13, 'Ostemad', 55), v(13, 'Hvide sild', 55),
       v(13, 'Rejemad', 95), v(13, 'Tartarmad', 95),
       v(39, 'Leverpostej med surt, håndmad', 27), v(39, 'Ostemad, håndmad', 27), v(39, 'Hvide sild, håndmad', 27),
-      v(27, 'Platte', 199, { beskrivelse: 'Inkl. friskbagt brød og smør · skal bestilles' }),
+      /* ⚠️ 189 og ikke kortets 199 — Mikkels afklaring 7/10 er den seneste. */
+      v(27, 'Platte', 189, { beskrivelse: 'Inkl. friskbagt brød og smør · skal bestilles' }),
       v(27, 'Juleplatte', 199, { beskrivelse: 'Inkl. friskbagt brød og smør' }),
       v(27, 'Brunchplatte til 2 personer', 349),
     ];
@@ -1140,7 +1141,7 @@ test.describe('Kort 1: Frokost som det trykte kort', () => {
       [(e.querySelector('h4') || {}).textContent, ((e.querySelector('.mk-pris') || {}).textContent || '').trim()]));
     expect(linjer).toEqual([
       ['Smørrebrød', '55,-'], ['Håndmadder', '27,-'], ['Rejemad', '95,-'], ['Tartarmad', '95,-'],
-      ['Platte', '199,-'], ['Juleplatte', '199,-'],
+      ['Platte', '189,-'], ['Juleplatte', '199,-'],
       ['Gammeldags rejecocktail med brød og smør', '90,-'], ['Lun delle, steg eller leverpostej', '65,-'],
       ['Hjemmelavet lun frikadelle', '25,-'], ['Hjemmelavet toast, ost og skinke', '35,-'],
       ['Hjemmelavet cowboytoast', '45,-'], ['1 stk. hjemmelavet hvidløgsbrød', '45,-'],

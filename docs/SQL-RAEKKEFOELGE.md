@@ -66,10 +66,11 @@ og derfra:
 rettes nu: de tre sandwich tændt igen som egne varer under Burgere (chefen 7/10:
 frikadelle 80, flæskesteg 80, bøf 75 — og frikadelle og flæskesteg ud af den
 almindelige sandwichs valg), priser (kakao 45, Latte Ice stor 70, flødekager 45,
-bakken 67, platten 199 (»Skal bestilles« bliver, »Inkl. friskbagt brød og smør« lægges til), fiskefilet med rejer 65, pandekagerne 50), Lumumba og
+bakken 67, platten 189 (Mikkel 7/10 — kortet sagde 199; »Skal bestilles« bliver, »Inkl. friskbagt brød og smør« lægges til), fiskefilet med rejer 65, pandekagerne 50), Lumumba og
 Irish coffee i lille 3 cl og stor 6 cl, nye varer (Juleplatte, Børnekop,
 småkagefad, cookies, koldskål, dagens frugtfad, slikpind, 1 stk. frugt, RTD 3
-stk.), Æg & bacon SKJULT og uden pris (til ejeren sætter prisen i admin), den
+stk.), Børnekop med teksten »Uden is«, »Morgenkomplet« i ét ord med »æg & bacon«
+(ingen selvstændig »Æg & bacon«), biksemaden med »1 spejlæg«, den
 eksisterende isvand døbt »Isvand, kande« (pris 25 urørt), kategoriernes rækkefølge
 som kunderejsen i Bestil mad, varsel 1 time på smørrebrød og håndmadder og et døgn
 på platter, og tidspunkts-sorteringen (kategori_dagsdel) slået fra, »Hjemmelavet« foran flæskesteg, frikadelle og roastbeef, og »bestilles

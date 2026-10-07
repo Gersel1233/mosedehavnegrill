@@ -10,8 +10,7 @@
 --  ⚠️ KUN DET, CHEFEN SKREV. Priserne og navnene herunder er
 --     læst af hans besked, ikke af databasen. Hvor han ikke gav en
 --     pris, bruges den, der står (sandwichene 75) — og kun hvis der er
---     ÉN række med det navn i hele tabellen. Findes der ingen pris,
---     oprettes varen SKJULT og uden pris (æg & bacon).
+--     ÉN række med det navn i hele tabellen.
 --
 --  ⚠️ ET NAVN ER IKKE UNIKT. "Flæskesteg med surt", "Frikadelle med
 --     surt" og "Roastbeef med remoulade og løg" står OGSÅ i den
@@ -28,17 +27,9 @@
 --     glemmes. Derfor står hver omdøbning som en ret(...)-linje.
 --
 --  VENTER (rettes IKKE her):
---    · "Tilføjes 1 foran Spejlæg" under Fisk & klassikere — der er
---      ingen spejlæg-linje dér; hvilken han mener, er ikke afklaret
---    · Børnekoppens tekst ("uden is") — varen oprettes til 59 uden tekst
---    · Prisen på "Æg & bacon" — den oprettes SKJULT og uden pris;
---      ejeren sætter prisen og tænder den i admin.
---      Morgen komplet siger stadig "æg ELLER bacon"
---    · "Morgen komplet" eller "Morgenkomplet" — chefen og kort 1 er uenige
---    · Afsnittet "Frokost" — det nye kort 1 er ikke set; varerne er
---      rettet, men de flyttes ikke til et afsnit, siden ikke kender
---    · Juleplattens periode og indhold — admin styrer det
---      (vis_fra/vis_til på varen), når det er besluttet
+--    · Placeringen af Fisk & klassikere — den nyeste korrektur af kort 2
+--      er ikke set (menukort-kort.js, ikke databasen)
+--    · Juleplattens periode — styres med Vis/Skjul i admin (Mikkel 7/10)
 --
 --  Kan køres igen. Kør den i Mosede-projektet (epwyjzakvvbxtpvnhvbn).
 --  Prøvet 7/10 på en lokal Postgres med produktionens egne rækker
@@ -316,9 +307,13 @@ select pg_temp.ny('Sodavand, juice og kakao', 'RTD, 3 stk. Breezer eller Smirnof
 
 -- ------------------------------------------------------------
 --  7) IS OG SOFTICE
---     Børnekop 59 oprettes UDEN tekst: "uden is" er ikke afklaret.
+--     Børnekop 59,- "uden is" — godkendt, som den står (Mikkel 7/10).
+--     Teksten sættes også, hvis varen allerede er oprettet uden (en
+--     tidligere udgave af filen gjorde det).
 -- ------------------------------------------------------------
-select pg_temp.ny('Kugleis', 'Børnekop', 59, null, 11, 'Kids'' cup');
+select pg_temp.ny('Kugleis', 'Børnekop', 59, 'Uden is', 11, 'Kids'' cup', 'Without ice cream');
+select pg_temp.ret('Børnekop', null, 'Uden is', kategori => 'Kugleis');
+select pg_temp.en('Kugleis', 'Børnekop', 'Kids'' cup', 'Without ice cream');
 select pg_temp.pris('Softice og vafler', 'Bakke med vaffelknas, softice, sauce og topping', 67);
 
 -- ------------------------------------------------------------
@@ -343,17 +338,43 @@ select pg_temp.ny('Snacks og slik', 'Slikpind', 8, null, 8, 'Lollipop');
 select pg_temp.ny('Snacks og slik', '1 stk. frugt', 8, null, 9, '1 piece of fruit');
 
 -- ------------------------------------------------------------
---  10) MORGENMAD
---     ⚠️ "MORGEN KOMPLET" RØRES IKKE. Chefen skrev "Morgenkomplet" i ét
---     ord, men korrekturen af kort 1 (7/10 — facit) siger stadig
---     "Morgen komplet". To kilder er uenige; navnet står, som det står,
---     til Mikkel har afgjort det.
+--  10) MORGENMAD — "MORGENKOMPLET" I ÉT ORD, MED ÆG OG BACON
+--     Mikkel 7/10: *"Brug navnet 'Morgenkomplet' i ét ord, som chefen
+--     skrev. Den indeholder både æg og bacon."* og *"Æg & bacon … er
+--     IKKE en selvstændig vare … hører kun til i beskrivelsen af
+--     Morgenkomplet."* Teksten sagde "æg ELLER bacon" — nu chefens egne
+--     ord, "æg & bacon". Prisen (99) røres ikke.
 -- ------------------------------------------------------------
+select pg_temp.ret('Morgen komplet', 'Morgenkomplet',
+  'Kaffe eller juice, rundstykke med pålæg, æg & bacon og grønt', kategori => 'Morgenmad');
+select pg_temp.ret('Morgenkomplet', null,
+  'Kaffe eller juice, rundstykke med pålæg, æg & bacon og grønt', kategori => 'Morgenmad');
+select pg_temp.en('Morgenmad', 'Morgenkomplet', 'Full breakfast',
+  'Coffee or juice, bread roll with toppings, egg & bacon and salad');
 
-/* "Æg & bacon" som sin egen vare — SKJULT OG UDEN PRIS, af samme grund
-   som kanden. Morgenkomplettens tekst ("æg eller bacon") røres ikke:
-   "æg & bacon" dér ville love begge dele til samme pris. */
-select pg_temp.ny('Morgenmad', 'Æg & bacon', null, null, 5, 'Egg & bacon', p_aktiv => false);
+/* ⚠️ DEN SKJULTE "ÆG & BACON" SLETTES. En tidligere udgave af filen
+   oprettede den skjult og uden pris; den er aldrig kørt i produktionen,
+   men findes den (en database, hvor den gamle udgave nåede at køre),
+   tages den ud her. Kun den skjulte uden pris — har nogen givet en
+   "Æg & bacon" en pris og tændt den, er det ejerens vare, og den står. */
+delete from public.menu_varer mv
+ using public.menu_kategorier mk
+ where mk.id = mv.kategori_id and mk.lokation_id = 'mosede'
+   and btrim(mk.navn) = 'Morgenmad'
+   and btrim(mv.navn) = 'Æg & bacon' and mv.pris is null and not mv.aktiv;
+
+-- ------------------------------------------------------------
+--  10b) "1 SPEJLÆG" — CHEFEN: *"Under Fisk & Klassikere: Tilføjes 1
+--     foran Spejlæg."* Mikkel 7/10: *"Der skal stå '1 spejlæg' på den
+--     relevante linje under Fisk & klassikere. Ret ikke andre
+--     spejlæg/ekstra-tilvalg."*
+--     ⚠️ VALGT VED UDELUKKELSE, OG DET STÅR HER: den eneste ret med
+--     spejlæg i navnet, der hverken er smørrebrød, morgenmad eller et
+--     tilvalg, er biksemaden. "Ekstra spejlæg" (10,-) og biksemadens
+--     tekst "Ekstra spejlæg 10 kr." røres ikke.
+-- ------------------------------------------------------------
+select pg_temp.ret('Hjemmelavet biksemad med spejlæg', 'Hjemmelavet biksemad med 1 spejlæg',
+                   kategori => 'Andre retter');
 
 -- ------------------------------------------------------------
 --  11) FROKOST — SOM KORT 1 (korrekturen 7/10 er facit)
@@ -379,7 +400,10 @@ select pg_temp.en('Andre retter', '1 stk. hjemmelavet hvidløgsbrød',
 select pg_temp.ret('Lun delle, steg eller leverpostej med brød og surt',
                    'Lun delle, steg eller leverpostej', kategori => 'Retter');
 
-select pg_temp.pris('Platter', 'Platte', 199);
+/* ⚠️ 189 — MIKKEL 7/10: *"Kontrollér samtidig priserne på hjemmesiden:
+   Platte 189,-, Juleplatte 199,-."* Chefens første besked og
+   korrekturen af kort 1 sagde 199; Mikkels afklaring er den seneste. */
+select pg_temp.pris('Platter', 'Platte', 189);
 /* ⚠️ "SKAL BESTILLES" BLIVER — den nye tekst lægges til. Chefens
    besked sagde ikke, at den skulle ud (Mikkel 7/10), og kort 1 skriver
    dem sammen, ordret: "Inkl. friskbagt brød og smør · skal bestilles". */
@@ -513,7 +537,7 @@ forventet(kat, navn, pris) as (values
   ('Softice og vafler', 'Hjemmelavet koldskål', 35), ('Softice og vafler', 'Dagens frugtfad', 45),
   ('Softice og vafler', '2 stk. hjemmelavede pandekager med sukker eller syltetøj', 50),
   ('Snacks og slik', 'Slikpind', 8), ('Snacks og slik', '1 stk. frugt', 8),
-  ('Platter', 'Platte', 199), ('Platter', 'Juleplatte', 199),
+  ('Platter', 'Platte', 189), ('Platter', 'Juleplatte', 199),
   ('Smørrebrød', 'Fiskefilet med rejer og mayo', 65),
   ('Smørrebrød', 'Hjemmelavet flæskesteg med surt', 55),
   ('Smørrebrød', 'Hjemmelavet frikadelle med surt', 55),
@@ -523,7 +547,9 @@ forventet(kat, navn, pris) as (values
   ('Andre retter', 'Husets blandede salat', 55),
   ('Andre retter', '1 stk. hjemmelavet hvidløgsbrød', 45),
   ('Retter', 'Lun delle, steg eller leverpostej', 65),
-  ('Morgenmad', 'Morgen komplet', 99),
+  ('Morgenmad', 'Morgenkomplet', 99),
+  ('Kugleis', 'Børnekop', 59),
+  ('Andre retter', 'Hjemmelavet biksemad med 1 spejlæg', 85),
   ('Sodavand, juice og kakao', 'Isvand, kande', 25))
 select
   /* Hver af chefens linjer: præcis ÉN tændt række, i sin kategori,
@@ -562,14 +588,17 @@ select
                             'Roastbeef med remoulade og løg', 'Fiskefilet med rejer og mayo')
                and pris is null) = 4
        then 'JA' else '** NEJ **' end                        as fyldet_uroert,
-  /* Æg & bacon: findes, er SKJULT og har ingen pris — en opfundet pris er
-     netop det, Mikkel bad os lade være med. Og kanden er den gamle
-     isvand: præcis ÉN, tændt, til 25, og ingen "Isvand" tilbage. */
-  case when (select count(*) from v where kat = 'Morgenmad' and navn = 'Æg & bacon'
-               and not aktiv and pris is null) = 1
-        and (select count(*) from v where navn = 'Isvand, kande') = 1
+  /* Kanden er den gamle isvand: præcis ÉN, til 25, og ingen "Isvand" tilbage.
+     "Æg & bacon" findes ikke som vare — den står i Morgenkomplettens tekst.
+     Børnekoppen siger "Uden is". Og kun ÉN linje har "1 spejlæg". */
+  case when (select count(*) from v where navn = 'Isvand, kande') = 1
         and (select count(*) from v where navn = 'Isvand') = 0
-       then 'JA' else '** NEJ **' end                        as kanden_er_isvanden_og_aeg_skjult,
+        and (select count(*) from v where navn = 'Æg & bacon') = 0
+        and (select beskrivelse from v where kat = 'Morgenmad' and navn = 'Morgenkomplet') ilike '%æg & bacon%'
+        and (select beskrivelse from v where kat = 'Kugleis' and navn = 'Børnekop') = 'Uden is'
+        and (select count(*) from v where navn ilike '%1 spejlæg%') = 1
+        and (select count(*) from v where navn = 'Ekstra spejlæg' and pris = 10) = 1
+       then 'JA' else '** NEJ **' end                        as kande_morgenkomplet_boernekop_spejlaeg,
   /* Kunderejsen: kategorierne i den rækkefølge, Mikkel gav. */
   case when (select string_agg(navn, ' > ' order by sortering) from public.menu_kategorier
               where lokation_id = 'mosede' and navn in ('Morgenmad', 'Andre retter', 'Platter', 'Sandwich',
@@ -597,6 +626,7 @@ select
         and not exists (select 1 from v where kat = 'Sandwich' and navn ilike '%sandwich' and navn <> 'Sandwich' and aktiv)
        then 'JA' else '** NEJ **' end                        as tre_sandwich_under_burgere,
   (select count(*) from v where navn in ('Blandet salat', 'Hjemmelavet hvidløgsbrød med tomat & ost',
+     'Morgen komplet', 'Hjemmelavet biksemad med spejlæg',
      'Lun delle, steg eller leverpostej med brød og surt', 'RTD', 'Isvand',
      'Irish coffee', 'Irish coffee, stor', 'Lumumba, varm eller kold', '2 hjemmelavede pandekager')
      and kat <> 'Vælg fyld til smørrebrødet')               as gamle_navn_skal_vaere_0;

@@ -7,6 +7,19 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**DE SIDSTE AFKLARINGER** (7/10, eftermiddag — IKKE LIVE). Mikkel: *"Vi har
+allerede afklaret flere af de punkter, du stadig har som åbne."*
+- **Morgenkomplet** i ét ord, og teksten siger "æg & bacon" (begge dele). Den
+  skjulte "Æg & bacon"-vare er ude af filen — og slettes, hvis en ældre udgave
+  nåede at oprette den
+- **"1 spejlæg"**: "Hjemmelavet biksemad med 1 spejlæg" — valgt ved udelukkelse
+  (den eneste ret med spejlæg i navnet, der ikke er smørrebrød, morgenmad eller et
+  tilvalg). "Ekstra spejlæg" er urørt
+- **Børnekop 59,-** med teksten "Uden is" (godkendt)
+- ⚠️ **Platte 189,-** (Mikkel). Chefens første besked og kort 1-korrekturen sagde
+  199 — Mikkels afklaring er den seneste. Juleplatte 199
+- **Fisk & klassikere** flyttes ikke uden den nyeste korrektur af kort 2
+
 **KORT 1, KUNDEREJSEN OG VARSLET** (7/10, senere samme dag — IKKE LIVE).
 - **Frokost som kort 1** (korrekturen 7/10 er facit): kapitel 1 = Morgenmad |
   Frokost. Smørrebrød og Håndmadder øverst som henvisninger, Juleplatten efter
@@ -19,8 +32,6 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 - **Varsel**: smørrebrød og håndmadder 1 time (samme dag), platter et døgn med
   "ring og spørg ved særlige ønsker". Databasens værn prøvet på staging
 - **Isvand, kande** er den eksisterende isvand (25), ikke en ny vare
-- ⚠️ **"Morgen komplet"**: chefen skrev ét ord, kort 1 siger to — urørt, til
-  Mikkel afgør det
 
 **CHEFENS RETTELSER 7/10 — BYGGET OG PRØVET, IKKE LIVE** (7/10). Chefens
 besked pr. afsnit (*"Vi kan ikke Lancere noget der ikke er helt korrekt …"*).
