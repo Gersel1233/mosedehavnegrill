@@ -47,6 +47,59 @@ test.describe('Fotoerne i menukortets kapitler', () => {
        ikke smørrebrødets: kapitlet har kun det ene. */
   });
 
+  /* ⚠️ RETTEN STÅR I MIDTEN  (7/10). Mikkel: *"der er nogen billeder hvor
+     retterne ikke er i centrum"*. Alle fotos blev beskåret ens (50 % 64 %),
+     og i den brede kasse mistede isen sine kugler og softicen sin top.
+     ⚠️ TALLENE KOMMER UDEFRA: hvor retten står, er aflæst på et gitter over
+     fotoet — ikke læst af FOKUS i koden. Billedets egne mål og kassens
+     størrelse er browserens. */
+  for (const bredde of [1280, 390]) {
+    test(`retten står midt i fotoet (${bredde} px)`, async ({ page }) => {
+      const RET = { 'billeder/havn-kugleis.jpg': [52, 45], 'billeder/havn-softice.jpg': [50, 45] };
+      await page.setViewportSize({ width: bredde, height: 900 });
+      const d = medKategorier([['Kugleis', 'is'], ['Softice og vafler', 'is']]);
+      await åbnSkal(page, '/m-menukort.html', { data: d });
+      const img = page.locator('#afsnit-is .mk-foto img');
+      await expect(img).toHaveCount(2);
+      await img.evaluateAll((l) => l.forEach((i) => { i.loading = 'eager'; }));
+      await expect.poll(() => img.evaluateAll((l) => l.every((i) => i.complete && i.naturalWidth > 0)))
+        .toBe(true);
+      await expect.poll(() => img.evaluateAll((l, RET) => Math.max(...l.map((i) => {
+        const [fx, fy] = RET[i.getAttribute('src')];
+        const op = (i.style.objectPosition || getComputedStyle(i).objectPosition).split(' ');
+        const s = Math.max(i.clientWidth / i.naturalWidth, i.clientHeight / i.naturalHeight);
+        const w = i.naturalWidth * s, h = i.naturalHeight * s;
+        // Procent i CSS er en andel af overskuddet (kasse − billede)
+        const px = (v, kasse, billede) => (/%$/.test(v) ? parseFloat(v) / 100 * (kasse - billede) : parseFloat(v));
+        const ox = px(op[0], i.clientWidth, w), oy = px(op[1], i.clientHeight, h);
+        /* Hvor langt fra kassens midte står retten? Nul, hvis der intet er at
+           flytte — eller hvis billedet allerede står ved sin kant: længere kan
+           det ikke rykkes uden at vise en tom stribe (telefonens 4:5-kasse er
+           næsten lige så høj som fotoet). */
+        const afstand = (o, f, b, k) => {
+          if (b <= k + 1) return 0;
+          const vedKant = Math.abs(o) <= 1 || Math.abs(o - (k - b)) <= 1;
+          const d = Math.abs(o + f / 100 * b - k / 2);
+          return vedKant ? Math.min(d, 0) : d;
+        };
+        return Math.max(afstand(ox, fx, w, i.clientWidth), afstand(oy, fy, h, i.clientHeight));
+      })), RET), { message: 'retten står ikke midt i kassen (px fra midten)' })
+        .toBeLessThanOrEqual(2);
+    });
+  }
+
+  /* ⚠️ ET LÅNT FOTO STÅR IKKE PÅ KORTET  (7/10). Smørrebrødskortet låner
+     "Hjemmelavet lun frikadelle" og "flæskesvær" fra Andre retter og Snacks
+     (genbrug), og MÅLT viste det derfor biksemad og chips over smørrebrødet. */
+  test('smørrebrødskortet viser smørrebrød — ikke de lånte varers fotos', async ({ page }) => {
+    const d = medKategorier([['Andre retter'], ['Snacks og slik', 'drikke']]);
+    d.menu_varer.find((v) => v.navn === 'Andre retter vare').navn = 'Hjemmelavet lun frikadelle';
+    d.menu_varer.find((v) => v.navn === 'Snacks og slik vare').navn = 'Hjemmelavet flæskesvær';
+    await åbnSkal(page, '/m-menukort.html', { data: d });
+    await expect(page.locator('#kapitel-smoerrebroed [data-vare="Hjemmelavet lun frikadelle"]')).toHaveCount(1);
+    expect(await src(page, 'kapitel-smoerrebroed')).toEqual(['billeder/selskab-fade.webp']);
+  });
+
   test('fotoet er pynt — tomt alt, hentes først når man ruller derned', async ({ page }) => {
     await åbnSkal(page, '/m-menukort.html', { data: grunddata() });
     const img = page.locator('#mk-kat .mk-foto img').first();

@@ -320,6 +320,75 @@
   }
 
   /* ============================================================
+     RETTEN STÅR I MIDTEN AF FOTOET  (7/10)
+     ------------------------------------------------------------
+     Mikkel: *"der er nogen billeder hvor retterne ikke er i centrum
+     … de lige skal beskæres ordentligt."*
+
+     Alle fotos blev beskåret ens (object-position 50 % 64 %), men
+     fotoerne er høje (2:3), og kassen er 4:5 på telefonen, 4:3 på
+     computeren og 21:9, når et kapitel kun har ét foto. MÅLT på en
+     simulering af alle 20: i 21:9 mistede isen sine kugler, softicen
+     sin top, burgeren og øllet blev skåret over toppen — og tapasfadet
+     stod helt ude til højre, så telefonen viste vinflasken.
+
+     Hvert foto har derfor sit FOKUS: hvor retten står, i procent af
+     billedets bredde og højde — aflæst på et gitter over fotoet. Siden
+     regner selv beskæringen ud fra kassens faktiske mål (centrer), så
+     retten står i midten i alle fire formater. ⚠️ Et procenttal i CSS
+     kan ikke det: 50 % 45 % centrerer i én kasse og ikke i den næste.
+     Et nyt foto uden fokus beskæres som før (menukort-kort.css).
+     ============================================================ */
+  var FOKUS = {
+    'billeder/havn-burgere.jpg': [48, 55],
+    'billeder/havn-kaffe.jpg': [55, 61],
+    'billeder/havn-kugleis.jpg': [52, 45],
+    'billeder/havn-morgenmad.jpg': [48, 62],
+    'billeder/havn-oel.jpg': [50, 57],
+    'billeder/havn-platter.jpg': [47, 58],
+    'billeder/havn-poelser.jpg': [48, 52],
+    'billeder/havn-retter.jpg': [50, 58],
+    'billeder/havn-sliders.jpg': [52, 55],
+    'billeder/havn-sodavand.jpg': [50, 66],
+    'billeder/havn-softice.jpg': [50, 45],
+    'billeder/havn-vin.jpg': [53, 55],
+    'billeder/menu-andre-retter.jpg': [48, 60],
+    'billeder/menu-pindemad.jpg': [50, 57],
+    'billeder/menu-pladen.jpg': [50, 62],
+    'billeder/menu-sandwich.jpg': [52, 50],
+    'billeder/menu-snacks.jpg': [52, 47],
+    'billeder/selskab-anretning.webp': [50, 50],
+    'billeder/selskab-fade.webp': [50, 50],
+    'billeder/tapas-1.jpg': [76, 52],
+  };
+  /* Sætter billedet, så fokuspunktet står midt i <img>'s kasse — og
+     midt i fotoets ramme, for billedet er 112 % af rammen og står lige
+     meget ud foroven og forneden. Kun object-position: ingen skalering
+     (kundens ord 30/8 om en zoom: "hakkende og ik clean"). */
+  function centrer(img) {
+    var f = FOKUS[img.getAttribute('src')];
+    var iw = img.naturalWidth, ih = img.naturalHeight;
+    var bw = img.clientWidth, bh = img.clientHeight;
+    if (!f || !iw || !ih || !bw || !bh) return;
+    var s = Math.max(bw / iw, bh / ih);
+    var w = iw * s, h = ih * s;
+    var x = Math.min(0, Math.max(bw - w, bw / 2 - f[0] / 100 * w));
+    var y = Math.min(0, Math.max(bh - h, bh / 2 - f[1] / 100 * h));
+    img.style.objectPosition = Math.round(x) + 'px ' + Math.round(y) + 'px';
+  }
+  /* Kassen skifter form, når telefonen vendes, eller vinduet trækkes
+     bredere (4:5 ↔ 4:3) — så regnes det igen, én gang pr. billede. */
+  var centrerVenter = false;
+  window.addEventListener('resize', function () {
+    if (centrerVenter) return;
+    centrerVenter = true;
+    requestAnimationFrame(function () {
+      centrerVenter = false;
+      Array.prototype.forEach.call(document.querySelectorAll('#mk-kat .mk-foto img'), centrer);
+    });
+  });
+
+  /* ============================================================
      VARENS LAG  (13/9)
      ------------------------------------------------------------
      Kundens idé: "trykke ind på sådan en ting inde i menukortet og
@@ -522,6 +591,9 @@
              frugt" — uden `efter` kom den ØVERST, fordi de genbrugte
              lægges ud, før kategoriens egne varer er der. */
           if (kl.genbrug) {
+            /* Lånt — og mærket, så kapitlets fotorække ikke låner med
+               (se fotoerne i tegnKapitel). */
+            (a.laant = a.laant || []).push(x);
             if (kl.efter) (a.senere = a.senere || []).push({ x: x, efter: kl.efter });
             else a.varer.push(x);
             return;
@@ -924,10 +996,16 @@
     /* Fotoerne står SKARPT og for sig selv — ikke sløret bag teksten.
        De er kategoriernes egne (FOTOS ovenfor), så et kapitel med
        burgere viser burgeren. Pynt: alt="" og aria-hidden. */
+    /* ⚠️ EN LÅNT VARE GIVER INTET FOTO  (7/10). MÅLT på et skud af alle
+       kapitlerne: smørrebrødskortet og håndmadderkortet viste biksemad og
+       chips, fordi de låner "Hjemmelavet lun frikadelle" og "flæskesvær"
+       fra Andre retter og Snacks (`genbrug`). Kortets fotos er dets egne
+       kategoriers. */
     var fotos = [];
     Object.keys(c.spalter).forEach(function (s) {
       c.spalter[s].forEach(function (a) {
         a.varer.forEach(function (y) {
+          if (a.laant && a.laant.indexOf(y) !== -1) return;
           var f = fotoFor(y.k);
           if (f && fotos.indexOf(f) === -1) fotos.push(f);
         });
@@ -943,7 +1021,7 @@
         img.loading = 'lazy';
         img.decoding = 'async';
         img.src = f;
-        img.addEventListener('load', function () { fig.classList.add('klar'); }, { once: true });
+        img.addEventListener('load', function () { centrer(img); fig.classList.add('klar'); }, { once: true });
         fig.appendChild(img);
         rk.appendChild(fig);
       });
