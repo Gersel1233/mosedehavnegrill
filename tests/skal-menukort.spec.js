@@ -1141,7 +1141,7 @@ test.describe('Kort 1: Frokost som det trykte kort', () => {
       [(e.querySelector('h4') || {}).textContent, ((e.querySelector('.mk-pris') || {}).textContent || '').trim()]));
     expect(linjer).toEqual([
       ['Smørrebrød', '55,-'], ['Håndmadder', '27,-'], ['Rejemad', '95,-'], ['Tartarmad', '95,-'],
-      ['Platte', '189,-'], ['Juleplatte', '199,-'],
+      ['Platte', '189,-'], ['Juleplatte', '199,-'], ['Brunchplatte til 2 personer', '349,-'],
       ['Gammeldags rejecocktail med brød og smør', '90,-'], ['Lun delle, steg eller leverpostej', '65,-'],
       ['Hjemmelavet lun frikadelle', '25,-'], ['Hjemmelavet toast, ost og skinke', '35,-'],
       ['Hjemmelavet cowboytoast', '45,-'], ['1 stk. hjemmelavet hvidløgsbrød', '45,-'],
@@ -1156,8 +1156,9 @@ test.describe('Kort 1: Frokost som det trykte kort', () => {
     await expect(page.locator('#kapitel-grillen .mk-venstre .mk-sek-navn').first()).toHaveText('Morgenmad');
     for (const n of ['Hjemmelavet cowboytoast', '1 stk. hjemmelavet hvidløgsbrød', 'Lun delle, steg eller leverpostej'])
       await expect(page.locator(`#mk-kat [data-vare="${n}"]`), n + ' står to steder').toHaveCount(1);
-    // Kort 1 har ingen fisk; de bliver, til kort 2 viser, hvor de hører til
-    await expect(page.locator('#mk-kat [data-vare="Stjerneskud"]')).toHaveCount(1);
+    // Kort 1 har ingen fisk — Fisk & klassikere står på kort 2 (korrekturen 7/10)
+    await expect(page.locator('#kapitel-grillen [data-vare="Stjerneskud"]')).toHaveCount(0);
+    await expect(page.locator('#kapitel-burgere [data-vare="Stjerneskud"]')).toHaveCount(1);
     await expect(page.locator('#kapitel-mere')).toHaveCount(0);
   });
 
@@ -1167,5 +1168,66 @@ test.describe('Kort 1: Frokost som det trykte kort', () => {
       .toHaveText('Morgenmad og frokost – smørrebrød, håndmadder og klassikere hele dagen.');
     await expect(page.locator('#kapitel-grillen .mk-boks-tekst').first())
       .toHaveText('Morgenbrød – spørg efter en bestillingsliste.');
+  });
+});
+
+/* ============================================================
+   KORT 2: FISK & KLASSIKERE ØVERST  (7/10)
+   ------------------------------------------------------------
+   Mikkel: *"Brug [kort 2] som facit for, hvor 'Fisk & klassikere'
+   skal ligge på hjemmesidens menukort."* Korrekturen af kort 2 har
+   Fisk & klassikere øverst til venstre med Stjerneskud, Fish'n'chips,
+   Fiskefilet med pommes, 8 indbagte rejer, Pariserbøf, biksemaden og
+   spejlægget — og clubsandwichen og "Dip eller dressing" under
+   Burgere & sandwiches. Rækkefølgen herunder er LÆST AF KORTET.
+   Navnene er hjemmesidens (Mikkel: biksemaden "med 1 spejlæg",
+   "Ekstra spejlæg" urørt).
+   ============================================================ */
+test.describe('Kort 2: Fisk & klassikere som det trykte kort', () => {
+  function kort2() {
+    const d = medRet();
+    let id = 700;
+    const v = (kat, navn, pris, sortering) => ({ id: ++id, kategori_id: kat, navn, beskrivelse: null, pris,
+      fremhaevet: false, udsolgt: false, sortering: sortering || id, aktiv: true });
+    d.menu_kategorier = [
+      { id: 9, afdeling: 'mad', navn: 'Retter', sortering: 9, aktiv: true },
+      { id: 10, afdeling: 'mad', navn: 'Andre retter', sortering: 3, aktiv: true },
+      { id: 11, afdeling: 'mad', navn: 'Burgere', sortering: 6, aktiv: true },
+      { id: 63, afdeling: 'mad', navn: 'Sandwich', sortering: 5, aktiv: true },
+    ];
+    d.menu_varer = [
+      // Databasens egen orden (sortering) — IKKE kortets
+      v(9, 'Stjerneskud', 105, 9), v(9, 'Fish’n’chips', 105, 10), v(9, 'Fiskefilet med pommes', 95, 11),
+      v(9, 'Pariserbøf', 105, 12), v(9, 'Clubsandwich', 105, 60),
+      v(10, 'Pølsemix med pommes', 90, 1), v(10, 'Hjemmelavet biksemad med 1 spejlæg', 85, 7),
+      v(10, '8 indbagte rejer med pommes', 95, 12), v(10, 'Dip eller dressing', 10, 20),
+      v(10, 'Ekstra kød m.m.', 10, 21), v(10, 'Ekstra spejlæg', 10, 22),
+      v(11, 'Kyllingeburger', 80, 3), v(11, 'Cheeseburger', 85, 10),
+      v(11, 'Frikadellesandwich', 80, 13),
+      v(63, 'Sandwich', 75, 4),
+    ];
+    return d;
+  }
+  const afsnit = (page, kap, titel) => page.locator(`${kap} .mk-sek`,
+    { has: page.locator('.mk-sek-navn', { hasText: new RegExp('^' + titel + '$', 'i') }) });
+  const navne = (loc) => loc.locator('.mk-linje[data-vare]').evaluateAll(
+    (l) => l.map((e) => e.getAttribute('data-vare')));
+
+  test('Fisk & klassikere står øverst på kort 2 i kortets rækkefølge', async ({ page }) => {
+    await åbn(page, kort2());
+    await expect(page.locator('#kapitel-burgere .mk-venstre .mk-sek-navn').first()).toHaveText('Fisk & klassikere');
+    expect(await navne(afsnit(page, '#kapitel-burgere', 'Fisk & klassikere'))).toEqual([
+      'Stjerneskud', 'Fish’n’chips', 'Fiskefilet med pommes', '8 indbagte rejer med pommes',
+      'Pariserbøf', 'Hjemmelavet biksemad med 1 spejlæg', 'Ekstra spejlæg']);
+    await expect(page.locator('#kapitel-grillen .mk-sek-navn', { hasText: /Fisk|Ekstra/ })).toHaveCount(0);
+  });
+
+  test('clubsandwichen og dip\'en står under Burgere & sandwiches — og intet er faldet ud', async ({ page }) => {
+    await åbn(page, kort2());
+    const b = await navne(afsnit(page, '#kapitel-burgere', 'Burgere & sandwiches'));
+    expect(b).toEqual(['Kyllingeburger', 'Cheeseburger', 'Clubsandwich', 'Frikadellesandwich',
+      'Sandwich', 'Dip eller dressing']);
+    expect(await navne(afsnit(page, '#kapitel-burgere', 'Andre retter'))).toContain('Ekstra kød m.m.');
+    await expect(page.locator('#kapitel-mere')).toHaveCount(0);
   });
 });

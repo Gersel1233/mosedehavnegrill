@@ -95,7 +95,9 @@
            toastene og hvidløgsbrødet forlader Andre retter på kort 2. */
         { titel: 'Frokost', henvisFoerst: true, kilder: [
           { kat: '*', navne: ['Rejemad', 'Tartarmad'] },
-          { kat: 'Platter', navne: ['Platte', 'Juleplatte'] },
+          /* Brunchplatten står ikke på kortene; den lå før under Fisk &
+             klassikere via Platter. Den står nu ved de to andre platter. */
+          { kat: 'Platter', navne: ['Platte', 'Juleplatte', 'Brunchplatte til 2 personer'] },
           { kat: '*', navne: ['Gammeldags rejecocktail med brød og smør',
             'Lun delle, steg eller leverpostej', 'Lun delle, steg eller leverpostej med brød og surt',
             'Hjemmelavet lun frikadelle', 'Hjemmelavet toast, ost og skinke', 'Hjemmelavet cowboytoast',
@@ -103,16 +105,12 @@
         ], henvis: [
           { navn: 'Smørrebrød', note: 'Se smørrebrødskortet', til: 'smoerrebroed' },
           { navn: 'Håndmadder', note: 'Se håndmadskortet', til: 'haandmadder' },
-        ] },
-        /* ⚠️ FISK & KLASSIKERE STÅR IKKE PÅ KORT 1 MERE (7/10) — men kort 2
-           er ikke set. Afsnittet bliver her, under Frokost, til kort 2 viser,
-           hvor det hører til. At flytte det i blinde ville være at gætte. */
-        { titel: 'Fisk & klassikere', kilder: [
-          { kat: '*', navne: ['Stjerneskud', 'Fish’n’chips', "Fish'n'chips", 'Fiskefilet med pommes'] },
           { kat: 'Platter' },
-          { kat: 'Retter' },
         ] },
-        { titel: 'Ekstra', kilder: [{ kat: '*', navne: ['Dip eller dressing', 'Ekstra kød m.m.'] }] },
+        /* ⚠️ FISK & KLASSIKERE ER FLYTTET TIL KORT 2  (7/10). Korrekturen af
+           kort 2 er facit (Mikkel). Det samme gælder Ekstra-afsnittet:
+           "Dip eller dressing" står nu sidst under Burgere & sandwiches, og
+           "Ekstra kød m.m." under Andre retter, som på kort 2. */
       ],
     },
     {
@@ -121,6 +119,22 @@
       slogan: 'stegt på bestilling',
       hop: 'À la carte & burgere',
       venstre: [
+        /* ⚠️ FISK & KLASSIKERE STÅR HER, ØVERST PÅ KORT 2  (7/10).
+           Korrekturen af kort 2 er facit (Mikkel: *"Brug den som facit for,
+           hvor 'Fisk & klassikere' skal ligge"*). Rækkefølgen er kortets:
+           Stjerneskud, Fish'n'chips, Fiskefilet med pommes, 8 indbagte
+           rejer, Pariserbøf, biksemaden og spejlægget.
+           ⚠️ Navnene er hjemmesidens, ikke kortets: biksemaden hedder
+           "… med 1 spejlæg", og "Ekstra spejlæg" er urørt (Mikkel 7/10).
+           Clubsandwichen er rykket til Burgere & sandwiches, som på kortet.
+           Retter-kategoriens rest står her, så en ny ret fra admin lander
+           et sted, der giver mening. */
+        { titel: 'Fisk & klassikere', kilder: [
+          { kat: '*', navne: ['Stjerneskud', 'Fish’n’chips', "Fish'n'chips", 'Fiskefilet med pommes',
+            '8 indbagte rejer med pommes', 'Pariserbøf',
+            'Hjemmelavet biksemad med 1 spejlæg', 'Hjemmelavet biksemad med spejlæg', 'Ekstra spejlæg'] },
+          { kat: 'Retter' },
+        ] },
         { titel: 'Andre retter', kilder: [
           /* Lun delle, steg eller leverpostej står under Frokost på kort 1 (7/10). */
           { kat: '*', navne: ['Lun delle eller steg', 'Pitabrød'] },
@@ -129,7 +143,12 @@
         { titel: 'Sliders', kilder: [{ kat: 'Sliders' }] },
       ],
       hoejre: [
-        { titel: 'Burgere & sandwiches', kilder: [{ kat: 'Burgere' }, { kat: 'Sandwich' }] },
+        /* Clubsandwichen og "Dip eller dressing" står her på kort 2 (7/10):
+           clubsandwichen efter burgerne, dip'en sidst. */
+        { titel: 'Burgere & sandwiches', kilder: [{ kat: 'Burgere' },
+          { kat: '*', navne: ['Clubsandwich'], efter: 'Cheeseburger' },
+          { kat: 'Sandwich' },
+          { kat: '*', navne: ['Dip eller dressing'], efter: true }] },
         { titel: 'Pølser', kilder: [{ kat: 'Pølser' }] },
       ],
     },
@@ -386,7 +405,6 @@
       'Tilkøb til morgenmaden': 'Breakfast extras',
       'Frokost': 'Lunch',
       'Fisk & klassikere': 'Fish & classics',
-      'Ekstra': 'Extras',
       'Andre retter': 'Other dishes',
       'Sliders': 'Sliders',
       'Burgere & sandwiches': 'Burgers & sandwiches',
