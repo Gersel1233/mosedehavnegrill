@@ -166,6 +166,14 @@ $$;
 --     (75, én række hver); er det ikke længere sandt, tændes de ikke.
 --     Rækkefølgen er chefens: frikadelle, flæskesteg, bøf, så den
 --     almindelige.
+--
+--     ⚠️ BØFSANDWICHENS 75,- SKAL BEKRÆFTES AF CHEFEN. Han gav ingen
+--     pris. 75 er databasens egen, dokumenteret fra start
+--     (menukort.sql: ('Bøfsandwich', null, 75 …), og kortene-25-9.sql:
+--     "Bøfsandwich 75,- står i databasen"). Mikkel 7/10: *"Behold 75,-
+--     kun hvis det er den eksisterende dokumenterede databasepris."*
+--     Derfor tændes den KUN, hvis prisen stadig er præcis 75 — har
+--     nogen rørt den, står den slukket, og rapporten siger det.
 -- ------------------------------------------------------------
 update public.menu_varer mv
    set aktiv = true,
@@ -179,6 +187,7 @@ update public.menu_varer mv
    and btrim(mk.navn) = 'Sandwich'
    and lower(btrim(mv.navn)) in ('frikadellesandwich', 'flæskestegssandwich', 'bøfsandwich')
    and mv.pris is not null
+   and (lower(btrim(mv.navn)) <> 'bøfsandwich' or mv.pris = 75)
    and (select count(*) from public.menu_varer x
          where x.lokation_id = 'mosede'
            and lower(btrim(x.navn)) = lower(btrim(mv.navn))) = 1;
@@ -218,11 +227,12 @@ select pg_temp.ret('Blandet salat', 'Husets blandede salat', kategori => 'Andre 
 select pg_temp.en('Andre retter', 'Husets blandede salat', 'House mixed salad');
 
 /* Chefen: *"Snack Kurv, 2 Indbagte Rejer, 2 Cheesetops, 2 Minirulller,
-   & 2 Løgringe."* Teksten erstatter "Med en dip". */
-select pg_temp.ret('Snackkurv', null, '2 indbagte rejer, 2 cheesetops, 2 miniruller & 2 løgringe',
+   & 2 Løgringe."* ⚠️ INDHOLDET LÆGGES TIL — "Med en dip" BLIVER. Chefen
+   sagde ikke, at dippen skulle ud (Mikkel 7/10). */
+select pg_temp.ret('Snackkurv', null, '2 indbagte rejer, 2 cheesetops, 2 miniruller & 2 løgringe — med en dip',
                    kategori => 'Andre retter');
 select pg_temp.en('Andre retter', 'Snackkurv', 'Snack basket',
-                  '2 battered prawns, 2 cheese tops, 2 mini spring rolls & 2 onion rings');
+                  '2 battered prawns, 2 cheese tops, 2 mini spring rolls & 2 onion rings — with a dip');
 
 -- ------------------------------------------------------------
 --  3) KAFFE — LILLE OG STOR
@@ -345,8 +355,10 @@ select pg_temp.en('Andre retter', '1 stk. hjemmelavet hvidløgsbrød med tomat &
                   '1 homemade garlic bread with tomato & cheese');
 
 select pg_temp.pris('Platter', 'Platte', 199);
-select pg_temp.ret('Platte', null, 'Inkl. friskbagt brød og smør', kategori => 'Platter');
-select pg_temp.en('Platter', 'Platte', 'Platter', 'Incl. freshly baked bread and butter');
+/* ⚠️ "SKAL BESTILLES" BLIVER — den nye tekst lægges til. Chefens
+   besked sagde ikke, at den skulle ud (Mikkel 7/10). */
+select pg_temp.ret('Platte', null, 'Inkl. friskbagt brød og smør. Skal bestilles.', kategori => 'Platter');
+select pg_temp.en('Platter', 'Platte', 'Platter', 'Incl. freshly baked bread and butter. Pre-order only.');
 select pg_temp.ny('Platter', 'Juleplatte', 199, 'Inkl. friskbagt brød og smør', 1,
                   'Christmas platter', 'Incl. freshly baked bread and butter');
 
@@ -468,6 +480,14 @@ select
                (('Sodavand, juice og kakao', 'Isvand, kande'), ('Morgenmad', 'Æg & bacon'))
                and not aktiv and pris is null) = 2
        then 'JA' else '** NEJ **' end                        as kande_og_aeg_skjult_uden_pris,
+  case when (select beskrivelse from v where kat = 'Platter' and navn = 'Platte') like '%Skal bestilles%'
+        and (select beskrivelse from v where kat = 'Platter' and navn = 'Platte') like '%friskbagt brød og smør%'
+        and (select beskrivelse from v where kat = 'Andre retter' and navn = 'Snackkurv') ilike '%med en dip%'
+        and (select beskrivelse from v where kat = 'Andre retter' and navn = 'Snackkurv') like '%2 cheesetops%'
+       then 'JA' else '** NEJ **' end                        as platte_og_snackkurv_beholder_teksten,
+  /* Ikke et JA/NEJ — en påmindelse i selve svaret. */
+  'Bøfsandwich ' || coalesce((select pris::int::text from v where kat = 'Sandwich' and navn = 'Bøfsandwich'), '?')
+    || ',- (databasens egen pris) — BEKRÆFTES AF CHEFEN'      as skal_bekraeftes,
   (select count(*) from v where navn in ('Blandet salat', 'Morgen komplet', 'RTD',
      'Irish coffee', 'Irish coffee, stor', 'Lumumba, varm eller kold', '2 hjemmelavede pandekager')
      and kat <> 'Vælg fyld til smørrebrødet')               as gamle_navn_skal_vaere_0;

@@ -14,12 +14,15 @@ live endnu"* og *"små rettelser, ikke en kæmpe test"*.
 - **`supabase/chefens-rettelser-7-10.sql` — IKKE KØRT.** Tre sandwich tændt
   igen (75, den eneste pris i databasen) og frikadelle/flæskesteg ud af den
   almindelige sandwichs valg. Priser: kakao 45 (stor bliver 65), Latte Ice stor
-  70, flødekager 45, bakken 67, platten 199, fiskefilet med rejer 65,
+  70, flødekager 45, bakken 67, platten 199 (»Skal bestilles« BLIVER, den nye
+  tekst lægges til), fiskefilet med rejer 65,
   pandekagerne 50. Lumumba og Irish coffee i lille 3 cl/stor 6 cl. Nye:
   Juleplatte 199, Børnekop 59 (ingen tekst), småkagefad, cookies, koldskål,
   dagens frugtfad, slikpind, 1 stk. frugt, RTD 3 stk. **Skjult og uden pris**:
   Isvand, kande og Æg & bacon. "Hjemmelavet" foran flæskesteg/frikadelle/
   roastbeef, "bestilles dagen før" væk fra tartaren
+- ⚠️ **Bøfsandwich 75,- skal bekræftes af chefen** — databasens egen pris; filen
+  tænder den kun, hvis den stadig er 75. Snackkurven BEHOLDER "med en dip"
 - ⚠️ **Omdøbningerne er scopet til kategorien** — fyldet bærer de samme navne
 - **Menukortet** (`menukort-kort.js`): boksene uden "Egen pris"/"Kun smørrebrød",
   fiskefileten med sin egen pris under listen, Lumumba/Irish i Varmt & ekstra,
