@@ -9,9 +9,9 @@
 --
 --  ⚠️ KUN DET, CHEFEN SKREV. Priserne og navnene herunder er
 --     læst af hans besked, ikke af databasen. Hvor han ikke gav en
---     pris, bruges den, der står (sandwichene 75, isvand 25) — og
---     kun hvis der er ÉN række med det navn i hele tabellen. Er der
---     to, rører filen den ikke, og rapporten siger NEJ.
+--     pris, bruges den, der står (sandwichene 75) — og kun hvis der er
+--     ÉN række med det navn i hele tabellen. Findes der ingen pris,
+--     oprettes varen SKJULT og uden pris (kanden, æg & bacon).
 --
 --  ⚠️ ET NAVN ER IKKE UNIKT. "Flæskesteg med surt", "Frikadelle med
 --     surt" og "Roastbeef med remoulade og løg" står OGSÅ i den
@@ -31,9 +31,9 @@
 --    · "Tilføjes 1 foran Spejlæg" under Fisk & klassikere — der er
 --      ingen spejlæg-linje dér; hvilken han mener, er ikke afklaret
 --    · Børnekoppens tekst ("uden is") — varen oprettes til 59 uden tekst
---    · "Æg & bacon" som selvstændig vare — der er ingen pris. Og
---      Morgenkomplet siger "æg ELLER bacon": at skrive "æg & bacon"
---      lover gæsten begge dele til samme pris, og det er ikke sagt
+--    · Prisen på "Æg & bacon" og "Isvand, kande" — begge oprettes
+--      SKJULT og uden pris; ejeren sætter prisen og tænder dem i admin.
+--      Morgenkomplet siger stadig "æg ELLER bacon"
 --    · Afsnittet "Frokost" — det nye kort 1 er ikke set; varerne er
 --      rettet, men de flyttes ikke til et afsnit, siden ikke kender
 --    · Juleplattens periode og indhold — admin styrer det
@@ -110,11 +110,11 @@ $$;
    kolonnen med sig selv og aldrig oprette noget. */
 create or replace function pg_temp.ny(p_kat text, p_navn text, p_pris numeric,
   p_beskrivelse text, p_sortering int, p_en_navn text, p_en_beskrivelse text default null,
-  p_valg jsonb default null)
+  p_valg jsonb default null, p_aktiv boolean default true)
 returns void language sql as $$
   insert into public.menu_varer
     (kategori_id, lokation_id, navn, beskrivelse, pris, sortering, aktiv, valg, oversaettelser)
-  select mk.id, 'mosede', p_navn, p_beskrivelse, p_pris, p_sortering, true, p_valg,
+  select mk.id, 'mosede', p_navn, p_beskrivelse, p_pris, p_sortering, p_aktiv, p_valg,
          jsonb_build_object('en', jsonb_strip_nulls(
            jsonb_build_object('navn', p_en_navn, 'beskrivelse', p_en_beskrivelse)))
     from public.menu_kategorier mk
@@ -275,18 +275,15 @@ select pg_temp.ny('Kaffe og varme drikke', 'Hjemmelavede cookies', 20, null, 222
 -- ------------------------------------------------------------
 --  6) KOLDE DRIKKE (og BAR — RTD står begge steder, som chefen
 --     skrev; det er menukort-kort.js, der viser den i baren)
---     ⚠️ ISVAND BEHOLDER SIN PRIS (25). Chefen skrev "Isvand Kande"
---     uden pris; Mikkel: *"lad pris afvente hvis der ikke allerede
---     findes en entydig pris."* Der er én række, og den koster 25.
+--     ⚠️ "ISVAND, KANDE" ER EN NY VARE — SKJULT OG UDEN PRIS. Chefen
+--     skrev "Isvand Kande" uden pris. Den isvand, der står (25), er
+--     ikke nødvendigvis en kande, og at døbe den om ville sige, at
+--     den er. Mikkel 7/10: *"Opfind ikke en pris bare for at få den
+--     oprettet … lad varen være skjult/inaktiv, indtil vi har sat
+--     den korrekte pris i admin."* Isvand til 25 står urørt.
 -- ------------------------------------------------------------
-update public.menu_varer mv set navn = 'Isvand, kande'
-  from public.menu_kategorier mk
- where mk.id = mv.kategori_id and mk.lokation_id = 'mosede'
-   and btrim(mk.navn) = 'Sodavand, juice og kakao'
-   and btrim(mv.navn) = 'Isvand'
-   and (select count(*) from public.menu_varer x
-         where x.lokation_id = 'mosede' and lower(btrim(x.navn)) = 'isvand') = 1;
-select pg_temp.en('Sodavand, juice og kakao', 'Isvand, kande', 'Iced water, jug');
+select pg_temp.ny('Sodavand, juice og kakao', 'Isvand, kande', null, null, 9,
+                  'Iced water, jug', p_aktiv => false);
 
 select pg_temp.ret('RTD', 'RTD, 1 stk. Breezer eller Smirnoff', kategori => 'Sodavand, juice og kakao');
 select pg_temp.en('Sodavand, juice og kakao', 'RTD, 1 stk. Breezer eller Smirnoff',
@@ -326,6 +323,11 @@ select pg_temp.ny('Snacks og slik', '1 stk. frugt', 8, null, 9, '1 piece of frui
 --  10) MORGENMAD — "Morgenkomplet" i ét ord, som chefen skriver
 -- ------------------------------------------------------------
 select pg_temp.ret('Morgen komplet', 'Morgenkomplet', kategori => 'Morgenmad');
+
+/* "Æg & bacon" som sin egen vare — SKJULT OG UDEN PRIS, af samme grund
+   som kanden. Morgenkomplettens tekst ("æg eller bacon") røres ikke:
+   "æg & bacon" dér ville love begge dele til samme pris. */
+select pg_temp.ny('Morgenmad', 'Æg & bacon', null, null, 5, 'Egg & bacon', p_aktiv => false);
 
 -- ------------------------------------------------------------
 --  11) FROKOST — HVIDLØGSBRØDET, PLATTEN OG JULEPLATTEN
@@ -422,7 +424,7 @@ forventet(kat, navn, pris) as (values
   ('Andre retter', 'Husets blandede salat', 55),
   ('Andre retter', '1 stk. hjemmelavet hvidløgsbrød med tomat & ost', 45),
   ('Morgenmad', 'Morgenkomplet', 99),
-  ('Sodavand, juice og kakao', 'Isvand, kande', 25))
+  ('Sodavand, juice og kakao', 'Isvand', 25))
 select
   /* Hver af chefens linjer: præcis ÉN tændt række, i sin kategori,
      til hans pris. Tom liste = JA. */
@@ -460,6 +462,12 @@ select
                             'Roastbeef med remoulade og løg', 'Fiskefilet med rejer og mayo')
                and pris is null) = 4
        then 'JA' else '** NEJ **' end                        as fyldet_uroert,
-  (select count(*) from v where navn in ('Blandet salat', 'Morgen komplet', 'RTD', 'Isvand',
+  /* De to uden pris: findes, er SKJULT og har ingen pris — en opfundet
+     pris er netop det, Mikkel bad os lade være med. */
+  case when (select count(*) from v where (kat, navn) in
+               (('Sodavand, juice og kakao', 'Isvand, kande'), ('Morgenmad', 'Æg & bacon'))
+               and not aktiv and pris is null) = 2
+       then 'JA' else '** NEJ **' end                        as kande_og_aeg_skjult_uden_pris,
+  (select count(*) from v where navn in ('Blandet salat', 'Morgen komplet', 'RTD',
      'Irish coffee', 'Irish coffee, stor', 'Lumumba, varm eller kold', '2 hjemmelavede pandekager')
      and kat <> 'Vælg fyld til smørrebrødet')               as gamle_navn_skal_vaere_0;
