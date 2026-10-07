@@ -1231,3 +1231,28 @@ test.describe('Kort 2: Fisk & klassikere som det trykte kort', () => {
     await expect(page.locator('#kapitel-mere')).toHaveCount(0);
   });
 });
+
+/* ============================================================
+   ET TILBUD MED EN SLUTDATO FORSVINDER OGSÅ FRA MENUKORTET  (7/10)
+   ------------------------------------------------------------
+   MÅLT på den udgivne side 7/10: "Pølsemix med pommes, fredagsbar
+   55,- · Tilbud i fredagsbaren den 2. oktober — kun denne aften"
+   stod stadig på menukortet fem dage efter. Varen har vis_fra og
+   vis_til = 2/10, og bestillingen skjulte den (Butik.vareIVindue,
+   1/10) — men menukortet spurgte aldrig. Datoerne herunder er
+   fiksturets fredag 7/8; vinduet er ugen før.
+   ============================================================ */
+test.describe('Varens datovindue gælder også menukortet', () => {
+  test('et udløbet tilbud står ikke på kortet — et aktuelt gør', async ({ page }) => {
+    const d = medRet();
+    d.menu_varer.push(
+      { id: 901, kategori_id: 9, navn: 'Fadøl, fredagsbar', beskrivelse: 'Kun fredag i sidste uge.', pris: 20,
+        fremhaevet: false, udsolgt: false, sortering: 2, aktiv: true, vis_fra: '2026-07-31', vis_til: '2026-07-31' },
+      { id: 902, kategori_id: 9, navn: 'Fadøl, i dag', beskrivelse: null, pris: 25,
+        fremhaevet: false, udsolgt: false, sortering: 3, aktiv: true, vis_fra: '2026-08-07', vis_til: '2026-08-07' });
+    await åbn(page, d);
+    await page.waitForSelector('#mk-kat .mk-kapitel');
+    await expect(page.locator('#mk-kat [data-vare="Fadøl, fredagsbar"]'), 'det udløbne tilbud står stadig').toHaveCount(0);
+    await expect(page.locator('#mk-kat [data-vare="Fadøl, i dag"]')).toHaveCount(1);
+  });
+});

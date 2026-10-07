@@ -7,6 +7,17 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**KORT 2 OG DATOVINDUET** (7/10, sidst på dagen — IKKE LIVE). Mikkel: *"Brug
+[kort 2] som facit for, hvor 'Fisk & klassikere' skal ligge."*
+- **Fisk & klassikere** står øverst i kapitel 2 i kortets rækkefølge (Stjerneskud,
+  Fish'n'chips, Fiskefilet med pommes, 8 indbagte rejer, Pariserbøf, biksemaden
+  med 1 spejlæg, Ekstra spejlæg), så Andre retter. Kapitel 1 er kun Morgenmad |
+  Frokost. Ekstra spejlæg, Platte 189 og Juleplatte 199 urørt
+- ⚠️ **Menukortet viste udløbne tilbud.** `Butik.menu` spurgte ikke
+  `vareIVindue` — kun `udvalg()` gjorde. MÅLT på den udgivne side: fredagsbarens
+  "Pølsemix med pommes" (vis_fra = vis_til = 2/10) stod på menukortet 7/10.
+  Rettet i `menu()`; prøven "Varens datovindue gælder også menukortet" set fejle
+
 **DE SIDSTE AFKLARINGER** (7/10, eftermiddag — IKKE LIVE). Mikkel: *"Vi har
 allerede afklaret flere af de punkter, du stadig har som åbne."*
 - **Morgenkomplet** i ét ord, og teksten siger "æg & bacon" (begge dele). Den
@@ -19,6 +30,7 @@ allerede afklaret flere af de punkter, du stadig har som åbne."*
 - ⚠️ **Platte 189,-** (Mikkel). Chefens første besked og kort 1-korrekturen sagde
   199 — Mikkels afklaring er den seneste. Juleplatte 199
 - **Fisk & klassikere** flyttes ikke uden den nyeste korrektur af kort 2
+  (kom samme aften — se posten ovenfor)
 
 **KORT 1, KUNDEREJSEN OG VARSLET** (7/10, senere samme dag — IKKE LIVE).
 - **Frokost som kort 1** (korrekturen 7/10 er facit): kapitel 1 = Morgenmad |

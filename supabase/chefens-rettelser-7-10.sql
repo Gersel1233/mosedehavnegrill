@@ -27,9 +27,9 @@
 --     glemmes. Derfor står hver omdøbning som en ret(...)-linje.
 --
 --  VENTER (rettes IKKE her):
---    · Placeringen af Fisk & klassikere — den nyeste korrektur af kort 2
---      er ikke set (menukort-kort.js, ikke databasen)
 --    · Juleplattens periode — styres med Vis/Skjul i admin (Mikkel 7/10)
+--  (Fisk & klassikere står øverst på kort 2 efter korrekturen 7/10 —
+--   det er menukort-kort.js, ikke databasen.)
 --
 --  Kan køres igen. Kør den i Mosede-projektet (epwyjzakvvbxtpvnhvbn).
 --  Prøvet 7/10 på en lokal Postgres med produktionens egne rækker

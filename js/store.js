@@ -1001,6 +1001,20 @@
   //  Menukort samlet, klar til visning
   // ----------------------------------------------------------
   function menu(d, afdeling) {
+    /* ⚠️ DATOVINDUET GÆLDER OGSÅ MENUKORTET  (7/10). udvalg() spurgte
+       vareIVindue — menu() gjorde ikke, og den er det, menukortet og
+       forsidens afdelingskort tegner af. MÅLT på den udgivne side:
+       "Pølsemix med pommes, fredagsbar 55,-" (vis_fra = vis_til =
+       2/10) stod stadig på menukortet fem dage efter. Gæsten kunne
+       ikke bestille den, men kunne læse den — og spørge ved lugen.
+       Dagen slås op én gang og kun, hvis en vare har et vindue (se
+       noten i vareIVindue om nu()). */
+    var iDag = null;
+    function iVindue(v) {
+      if (!v.vis_fra && !v.vis_til) return true;
+      if (iDag === null) iDag = nu().dato;
+      return vareIVindue(v, iDag);
+    }
     return (d.menu_kategorier || [])
       .filter(function (k) {
         return k.aktiv !== false && (!afdeling || k.afdeling === afdeling);
@@ -1008,7 +1022,7 @@
       .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); })
       .map(function (k) {
         var varer = (d.menu_varer || [])
-          .filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false; })
+          .filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false && iVindue(v); })
           .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
         return { kategori: k, varer: varer };
       })
