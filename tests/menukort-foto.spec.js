@@ -31,11 +31,14 @@ const src = (page, kap) => page.$$eval(`#${kap} .mk-foto img`, (l) => l.map((i) 
 
 test.describe('Fotoerne i menukortets kapitler', () => {
   test('hvert kapitel får sine egne kategoriers fotos', async ({ page }) => {
-    const d = medKategorier([['Retter'], ['Andre retter'], ['Sandwich'], ['Snacks og slik', 'drikke'],
-      ['Reception og pindemad']]);
+    /* 7/10: Retter (Fisk & klassikere) står på kort 2 efter korrekturen
+       af kort 2 — og dens foto flytter med. Kort 1 bæres af morgenmaden. */
+    const d = medKategorier([['Morgenmad'], ['Retter'], ['Andre retter'], ['Sandwich'],
+      ['Snacks og slik', 'drikke'], ['Reception og pindemad']]);
     await åbnSkal(page, '/m-menukort.html', { data: d });
-    expect(await src(page, 'kapitel-grillen')).toEqual(['billeder/havn-retter.jpg']);
-    expect(await src(page, 'kapitel-burgere')).toEqual(['billeder/menu-andre-retter.jpg', 'billeder/menu-sandwich.jpg']);
+    expect(await src(page, 'kapitel-grillen')).toEqual(['billeder/havn-morgenmad.jpg']);
+    expect(await src(page, 'kapitel-burgere')).toEqual(['billeder/havn-retter.jpg', 'billeder/menu-andre-retter.jpg',
+      'billeder/menu-sandwich.jpg']);
     expect(await src(page, 'kapitel-smoerrebroed')).toEqual(['billeder/selskab-fade.webp']);
     expect(await src(page, 'afsnit-is')).toEqual(['billeder/havn-softice.jpg']);
     expect(await src(page, 'kapitel-bar')).toEqual(['billeder/havn-oel.jpg', 'billeder/menu-snacks.jpg']);

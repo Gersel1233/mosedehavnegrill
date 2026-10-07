@@ -617,6 +617,12 @@ test.describe('Kapitlerne står i kortenes rækkefølge', () => {
       { id: 2, afdeling: 'is', navn: 'Softice og vafler', sortering: 11, aktiv: true },
       { id: 3, afdeling: 'drikke', navn: 'Øl', sortering: 21, aktiv: true },
       { id: 4, afdeling: 'mad', navn: 'Burgere', sortering: 30, aktiv: true },
+      /* ⚠️ MORGENMADEN BÆRER KORT 1 HER  (7/10). Her stod "Retter"
+         (Pariserbøf) for maden på kort 1 — men korrekturen af kort 2
+         (facit 7/10) satte Fisk & klassikere og dermed Retter på kort 2.
+         Uden morgenmad var kort 1 tomt, og prøverne målte et kapitel, der
+         ikke fandtes. Sortering 25: også den står hos ejeren efter isen. */
+      { id: 6, afdeling: 'mad', navn: 'Morgenmad', sortering: 25, aktiv: true },
     ];
     d.menu_varer = [
       { id: 11, kategori_id: 1, navn: 'Pariserbøf', pris: 105, sortering: 1, aktiv: true },
@@ -624,6 +630,8 @@ test.describe('Kapitlerne står i kortenes rækkefølge', () => {
       { id: 12, kategori_id: 2, navn: 'Softice', pris: 30, sortering: 1, aktiv: true },
       { id: 13, kategori_id: 3, navn: 'Fadøl', pris: 45, sortering: 1, aktiv: true },
       { id: 14, kategori_id: 4, navn: 'Cheeseburger', pris: 85, sortering: 1, aktiv: true },
+      { id: 17, kategori_id: 6, navn: 'Morgenkomplet', pris: 95, sortering: 1, aktiv: true },
+      { id: 18, kategori_id: 6, navn: 'Rundstykke med ost', pris: 30, sortering: 2, aktiv: true },
     ];
     return d;
   }
@@ -637,11 +645,16 @@ test.describe('Kapitlerne står i kortenes rækkefølge', () => {
   });
 
   test('ejerens egen sortering bestemmer inde i afsnittet', async ({ page }) => {
+    /* 7/10: målt på morgenmaden, ikke Pariserbøf og Clubsandwich. Begge
+       står nu ved NAVN på kort 2 (Fisk & klassikere / Burgere &
+       sandwiches), og en navngiven vare følger det trykte korts orden —
+       ejerens pile gælder kategoriens øvrige varer. Det er dem, prøven
+       skal måle. */
     const d = medBlandetKort();
-    d.menu_varer[0].sortering = 5;   // Pariserbøf efter Clubsandwich
+    d.menu_varer.find((v) => v.navn === 'Morgenkomplet').sortering = 5;   // efter rundstykket
     await åbn(page, d);
     const r = await page.$$eval('#kapitel-grillen .mk-linje[data-vare]', (l) => l.map((e) => e.getAttribute('data-vare')));
-    expect(r, 'ejerens pile slår ikke igennem på gæstesiden').toEqual(['Clubsandwich', 'Pariserbøf']);
+    expect(r, 'ejerens pile slår ikke igennem på gæstesiden').toEqual(['Rundstykke med ost', 'Morgenkomplet']);
   });
 
   test('en kategori, kortene ikke kender, får sin egen plads', async ({ page }) => {
@@ -783,12 +796,16 @@ test.describe('Kapitlernes navne følger de trykte kort', () => {
       { id: 2, afdeling: 'is', navn: 'Softice og vafler', sortering: 20, aktiv: true },
       { id: 4, afdeling: 'mad', navn: 'Burgere', sortering: 30, aktiv: true },
       { id: 5, afdeling: 'mad', navn: 'Sandwich', sortering: 31, aktiv: true },
+      /* 7/10: Retter står på kort 2 nu (korrekturen af kort 2) — kort 1
+         skal have morgenmad for at findes. */
+      { id: 6, afdeling: 'mad', navn: 'Morgenmad', sortering: 0, aktiv: true },
     ];
     d.menu_varer = [
       { id: 11, kategori_id: 1, navn: 'Pariserbøf', pris: 105, sortering: 1, aktiv: true },
       { id: 12, kategori_id: 2, navn: 'Softice', pris: 30, sortering: 1, aktiv: true },
       { id: 14, kategori_id: 4, navn: 'Cheeseburger', pris: 85, sortering: 1, aktiv: true },
       { id: 16, kategori_id: 5, navn: 'Kyllingesandwich', pris: 75, sortering: 1, aktiv: true },
+      { id: 17, kategori_id: 6, navn: 'Morgenkomplet', pris: 95, sortering: 1, aktiv: true },
     ];
     return d;
   }
