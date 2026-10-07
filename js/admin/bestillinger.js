@@ -329,10 +329,17 @@
     return Object.keys(sæt).sort();
   }
 
+  /* "Er det en levering?" bor i Admin.typeTekst — se noten ved 🚗-tallet. */
+  function erLevering(b) {
+    var t = Admin.typeTekst && Admin.typeTekst(b);
+    return !!t && t.slags === 'levering';
+  }
+
   function iUdvalg(b) {
     if (visDato && b.hent_dato !== visDato) return false;
     if (visKilde === 'lugen' && erBord(b)) return false;
     if (visKilde === 'bordene' && !erBord(b)) return false;
+    if (visKilde === 'levering' && !erLevering(b)) return false;
     return true;
   }
 
@@ -424,6 +431,11 @@
         virk: function () { visKilde = 'alle'; tegnAlt(); } },
       { id: 'lugen', navn: 'Lugen', valgt: visKilde === 'lugen',
         virk: function () { visKilde = 'lugen'; tegnAlt(); } },
+      /* ⚠️ LEVERINGERNE FOR SIG  (7/10). Mikkel: levering "bliver heller
+         ikke gjort godt nok i admin". De stod blandet med to-go efter tid;
+         den, der skal køre, skal kunne se dagens ture alene. */
+      { id: 'levering', navn: '🚗 Levering', valgt: visKilde === 'levering',
+        virk: function () { visKilde = 'levering'; tegnAlt(); } },
       { id: 'bordene', navn: 'Bordene', valgt: visKilde === 'bordene',
         virk: function () { visKilde = 'bordene'; tegnAlt(); } },
     ]));
@@ -613,13 +625,17 @@
        udgave af den samme regel — og det var præcis dén slags,
        der 6/9 gav én bestilling to modstridende mærker. */
     var ruten = liste.filter(function (x) {
-      if (erFaerdig(x)) return false;
-      var t = Admin.typeTekst && Admin.typeTekst(x);
-      return !!t && t.slags === 'levering';
+      return !erFaerdig(x) && erLevering(x);
     }).length;
     if (ruten) {
-      boks.appendChild(lav('span', 'bestil-tal-pille lev',
-        '🚗 ' + ruten + (ruten === 1 ? ' skal køres ud' : ' skal køres ud')));
+      /* En knap, ikke et mærke (7/10): tallet er et spørgsmål — "hvilke?"
+         — og svaret er filteret "🚗 Levering" ovenfor. */
+      var lev = lav('button', 'bestil-tal-pille lev',
+        '🚗 ' + ruten + ' skal køres ud');
+      lev.type = 'button';
+      lev.title = 'Vis kun leveringerne';
+      lev.addEventListener('click', function () { visKilde = 'levering'; tegnAlt(); });
+      boks.appendChild(lev);
     }
   }
 
@@ -1577,9 +1593,14 @@
     $('levering').addEventListener('change', function () {
       var til = $('levering').checked;
       Admin.gem(Butik.skrive.indstilling('levering', til),
-        til ? 'Gæsten kan nu bede om levering af smørrebrød ud af huset. '
-            + 'I ringer og bekræfter hver gang — siden lover ingen pris.'
-            : 'Levering er slået fra. Alt smørrebrød ud af huset hentes.');
+        /* ⚠️ VENDT 7/10: beskeden sagde "smørrebrød ud af huset" og "siden
+           lover ingen pris" — fra før levering kom på forsiden (20/9) og
+           fragten blev et beløb (3/9). Den, der slår til, skal vide, hvad
+           der nu står hos gæsten. */
+        til ? 'Levering er slået til: gæsten kan vælge Levering på forsiden, '
+            + 'smørrebrødssiden og bestil/, og forsiden siger "Vi kører maden ud". '
+            + 'En levering bekræftes aldrig af sig selv — I ringer.'
+            : 'Levering er slået fra. Knappen og forsidens nyhed er væk; alt hentes eller spises her.');
     });
   }
 

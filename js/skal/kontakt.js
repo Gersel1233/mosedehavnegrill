@@ -116,6 +116,7 @@
     visRuter(d);
     visCvr(i);
     visLevering(i);
+    visLeveringsNyhed(i);
     samlSammePostkasse();
   }).catch(function (fejl) {
     // Adresserne står i HTML'en. Går hentningen galt, står de der
@@ -201,8 +202,49 @@
     /* Er levering slået FRA i admin, eller mangler området, står
        designets egen linje. Vi lover ikke en radius, ejeren ikke
        har skrevet. */
-    if (!t.omraade) return;
+    /* ⚠️ OG SLUKKET ER SLUKKET (7/10). Her blev kun området spurgt —
+       stod levering slået fra med et område i feltet, lovede siden
+       stadig at køre ud. Kommentaren ovenfor sagde det rigtige; koden
+       gjorde det ikke. */
+    if (!t.omraade || !i || i.levering !== true) return;
     felt.textContent = t.hint;
+  }
+
+  /* ============================================================
+     LEVERINGEN SOM NYHED — HVOR SIDEN HAR PLADS TIL DEN  (7/10)
+     ------------------------------------------------------------
+     Mikkel: *"levering er stadig slet ikke godt nok og highlighted
+     som en ny og fed ting"* og *"det hele på siden skal hænge sammen
+     og linke til hinanden"*. MÅLT 7/10: heroen, navigationen ("to-go
+     eller spis her") og Bestil mads undertitel nævnte den ikke, og
+     område og pris stod først, når gæsten HAVDE trykket Levering.
+
+     Hvert sted, der viser den, bærer [data-levering-nyhed] og er
+     skjult i HTML'en. Herfra vises de — KUN når levering er slået til
+     i admin — med ejerens egne felter: området (leverings_omraade) og
+     gebyret (leverings_gebyr, det tal kurven faktisk lægger til).
+     ⚠️ Ikke leverings_pris: den tekst sagde 7/10 stadig "under 200
+     kr. aftaler vi det over telefonen", som ejeren droppede 3/9.
+     ⚠️ Tider, køretid og betalingsform er ikke oplyst og loves ikke.
+     ============================================================ */
+  function visLeveringsNyhed(i) {
+    var steder = document.querySelectorAll('[data-levering-nyhed]');
+    var nav = document.querySelectorAll('[data-lev-nav]');
+    var paa = !!i && i.levering === true;
+    Array.prototype.forEach.call(steder, function (el) { el.hidden = !paa; });
+    if (!paa) return;
+    var t = Butik.leveringsTekst ? Butik.leveringsTekst(i) : { omraade: '' };
+    var gebyr = Number(i.leverings_gebyr);
+    var pris = (i.leverings_gebyr !== null && i.leverings_gebyr !== '' && isFinite(gebyr) && gebyr > 0
+      && Butik.varePris) ? Butik.varePris(gebyr) : '';
+    function fyld(sel, tekst, linje) {
+      Array.prototype.forEach.call(document.querySelectorAll(sel), function (el) { el.textContent = tekst; });
+      /* En linje uden sit tal står ikke halvt ("Til ." / " pr. bestilling"). */
+      Array.prototype.forEach.call(document.querySelectorAll(linje), function (el) { el.hidden = !tekst; });
+    }
+    fyld('[data-lev-omraade]', t.omraade, '[data-lev-omraade-linje]');
+    fyld('[data-lev-pris]', pris, '[data-lev-pris-linje]');
+    Array.prototype.forEach.call(nav, function (el) { el.textContent = 'to-go, spis her eller levering'; });
   }
 
   /* ============================================================

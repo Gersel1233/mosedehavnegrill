@@ -134,6 +134,8 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 
 /* ---- det, der skal blive smalt og midtstillet ------------- */
 .panel{max-width:640px;margin-left:auto;margin-right:auto}
+/* Leveringens nyhedsfelt (7/10) står over Bestil mads formular og har dens bredde — ellers stak det 30 px ud på hver side. */
+.lev-nyhed{max-width:640px;margin-left:auto;margin-right:auto}
 .today,.menucard,.tapasec,.talk,.hours{max-width:640px;margin-left:auto;margin-right:auto}
 /* ⚠️ BUNDENS TO KORT STÅR SIDE OM SIDE (9/9) — og `.hours` inde i
    dem må IKKE arve linjen ovenover: en `max-width` på 640 px inde

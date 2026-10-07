@@ -1348,3 +1348,34 @@ test.describe('Båndet på telefonen ligger over kortene — aldrig oven på dem
     expect(m.alfa, 'kortets tekst skinner igennem båndet').toBe(1);
   });
 });
+
+/* ============================================================
+   MENUKORTET PEGER PÅ LEVERINGEN  (7/10)
+   ------------------------------------------------------------
+   Mikkel: *"det hele på siden skal hænge sammen og linke til
+   hinanden"*. Kortet sendte kun til Bestil mad; nu også til
+   leveringen — og kun når den er slået til.
+   ============================================================ */
+test.describe('Menukortet peger på leveringen', () => {
+  test('slået til: to links til Bestil mad med Levering valgt', async ({ page }) => {
+    const d = medRet();
+    Object.assign(d.indstillinger, { levering: true, leverings_gebyr: 79 });
+    await åbn(page, d);
+    const links = page.locator('[data-levering-nyhed]');
+    await expect(links).toHaveCount(2);
+    for (const a of await links.all()) {
+      await expect(a).toBeVisible();
+      await expect(a).toHaveAttribute('href', 'index.html?hvordan=levering#bestil');
+    }
+    await expect(page.locator('.phead [data-levering-nyhed]')).toContainText('79,- pr. bestilling');
+  });
+
+  test('slået fra: ingen af dem står', async ({ page }) => {
+    const d = medRet();
+    Object.assign(d.indstillinger, { levering: false });
+    await åbn(page, d);
+    await page.waitForSelector('#mk-kat .mk-kapitel');
+    await expect(page.locator('[data-levering-nyhed]').first()).toBeHidden();
+    await expect(page.locator('[data-levering-nyhed]').last()).toBeHidden();
+  });
+});

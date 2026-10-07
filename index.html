@@ -193,6 +193,11 @@
       <a class="g solid" href="#bestil">Bestil mad<span class="sheen"></span></a>
       <a class="g ghost" href="#selskab">Selskab &amp; catering</a>
     </div>
+    <!-- ⚠️ LEVERINGEN SOM NYHED  (7/10). Mikkel: "levering er stadig slet
+         ikke godt nok og highlighted som en ny og fed ting". Skjult, til
+         js/skal/kontakt.js har set, at levering er slået til i admin — og
+         et tryk vælger Levering i Bestil mad (js/skal/bestil.js). -->
+    <a class="hero-nyhed" href="#bestil" data-vaelg-levering data-levering-nyhed hidden><b>Nyhed</b>Vi kører maden ud<i aria-hidden="true">→</i></a>
   </div>
 </div>
 
@@ -402,6 +407,20 @@
   <span class="best-slor" aria-hidden="true"></span>
   <div class="rev"><div class="eyebrow">Bestil online</div><h2>Bestil mad</h2>
   <p class="sub">Vælg dag, tid og retter. Bestillingen lander direkte i køkkenet.</p></div>
+  <!-- ⚠️ LEVERINGEN STÅR, FØR GÆSTEN HAR VALGT DEN  (7/10). Område og pris
+       stod kun under adressefeltet — altså først EFTER et tryk på Levering.
+       Teksten er ejerens egne felter (js/skal/kontakt.js); intet her er
+       skrevet i hånden ud over ordene omkring dem. -->
+  <div class="lev-nyhed rev" data-levering-nyhed hidden>
+    <span class="lev-nyhed-ikon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg></span>
+    <div class="lev-nyhed-tekst">
+      <p class="lev-nyhed-titel"><b>Nyhed</b>Vi kører maden ud</p>
+      <p data-lev-omraade-linje>Til <span data-lev-omraade></span>.</p>
+      <p data-lev-pris-linje><span data-lev-pris></span> pr. bestilling — uanset størrelse.</p>
+      <p>I betaler, når maden kommer.</p>
+    </div>
+    <button type="button" class="lev-nyhed-knap" data-vaelg-levering>Vælg levering</button>
+  </div>
   <div class="panel rev d1">
     <!-- ⚠️ ØVERST, IKKE NEDERST  (20/9). Ejerne: "Dåse eller flaske
          sodavand skal fjernes, og kun kunne bestilles ved Take Away."
@@ -870,6 +889,9 @@
          hverdagsagtige af de syv ærinder — resten er noget, man
          planlægger. -->
     <a class="row-card rev" href="bord/"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#bord"/></svg></div><div><h3>Book et bord</h3><p>Vælg dag og tid, så står bordet klar.</p></div><span class="go">→</span></a>
+    <!-- Levering som sit eget ærinde (7/10) — se heroen. Skjult, til
+         levering er slået til; et tryk vælger Levering i Bestil mad. -->
+    <a class="row-card rev" href="#bestil" data-vaelg-levering data-levering-nyhed hidden><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg></div><div><h3>Levering til døren <em class="ny">Nyhed</em></h3><p>Vi kører maden ud.<span data-lev-pris-linje> <span data-lev-pris></span> pr. bestilling.</span></p></div><span class="go">→</span></a>
     <a class="row-card rev" href="h-smorrebrod.html"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#smoerrebroed"/></svg></div><div><h3>Smørrebrød ud af huset</h3><p>Til fødselsdage, møder og selskaber.</p></div><span class="go">→</span></a>
     <!-- ⚠️ SELSKABER STÅR IKKE HER (13/9). Kundens ord: "der hvor de 7
          ting er, der skal selskab helt væk — fordi de allerede er på
@@ -1062,7 +1084,7 @@
 <a class="bestil" id="bestil-pill" href="#bestil"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kurv"/></svg>Bestil mad<span class="sheen"></span></a>
 <div class="sheet" id="sheet"><div class="sheet-in">
   <div class="grab"></div>
-  <nav><a class="on" href="index.html">Forside</a><a href="m-menukort.html">Menukort<span>hele kortet</span></a><a href="#isen">Is ved vandet<span>havnens stolthed</span></a><a href="m-tapas.html">Tapas<span>hele fadet</span></a><a href="#bestil">Bestil mad<span>to-go eller spis her</span></a><a href="bord/">Book et bord<span>dag og tid</span></a><a href="h-smorrebrod.html">Smørrebrød ud af huset</a><a href="h-selskaber.html">Selskaber</a><a href="h-baglokale.html">Udleje af baglokalet<span>40 pers.</span></a><a href="h-catering.html">Catering</a><a href="h-frokost.html">Frokostordning<span>levering</span></a><a href="#nyheder">Nyheder</a><a href="h-kalender.html">Kalender og musik</a>
+  <nav><a class="on" href="index.html">Forside</a><a href="m-menukort.html">Menukort<span>hele kortet</span></a><a href="#isen">Is ved vandet<span>havnens stolthed</span></a><a href="m-tapas.html">Tapas<span>hele fadet</span></a><a href="#bestil">Bestil mad<span data-lev-nav>to-go eller spis her</span></a><a href="bord/">Book et bord<span>dag og tid</span></a><a href="h-smorrebrod.html">Smørrebrød ud af huset</a><a href="h-selskaber.html">Selskaber</a><a href="h-baglokale.html">Udleje af baglokalet<span>40 pers.</span></a><a href="h-catering.html">Catering</a><a href="h-frokost.html">Frokostordning<span>levering</span></a><a href="#nyheder">Nyheder</a><a href="h-kalender.html">Kalender og musik</a>
     <div class="sep"></div>
     <a href="#find">Find os og åbningstider</a>
     <a href="tel:+4528871343">Ring til os<span>28 87 13 43</span></a>

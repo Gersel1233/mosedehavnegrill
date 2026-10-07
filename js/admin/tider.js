@@ -256,8 +256,9 @@
   }
 
   /* ⚠️ TALLET OG OMRÅDET, IKKE SÆTNINGEN. leverings_pris er prosa
-     til gæsten og rettes på Kontakt-fanen; her sættes det, koden
-     REGNER med. Se noten i admin.html. */
+     til gæsten og rettes under Bestillinger → Regler for bestilling
+     (her stod "Kontakt-fanen" — der står den ikke, rettet 7/10); her
+     sættes det, koden REGNER med. Se noten i admin.html. */
   function samlLevering() {
     if (!$('levering-gebyr')) return Promise.resolve();
     var raa = $('levering-gebyr').value.trim();

@@ -510,6 +510,23 @@ update public.indstillinger i
        aendret = now()
  where i.lokation_id = 'mosede' and i.noegle = 'kategori_tider';
 
+-- ------------------------------------------------------------
+--  14) LEVERINGENS PRIS UDEN 200-KRONERS-REGLEN  (7/10)
+--      Ejerens ord 3/9: *"det passer ikke længere, det er
+--      ligegyldigt hvad størrelse ordren er ift 200 kroner"* — og
+--      levering-og-mindsteantal.sql rettede sætningen. MÅLT 7/10 i
+--      produktionen: den stod der igen ("er ordren under 200 kr.,
+--      aftaler vi det over telefonen"), skrevet tilbage af
+--      ejerens-oplysninger.sql 9/9. Lige under forsidens nye
+--      "79,- pr. bestilling — uanset størrelse" sagde den det modsatte.
+--      ⚠️ KUN HVIS DEN STADIG NÆVNER DE 200 — en tekst, ejeren selv
+--      har skrevet siden, røres ikke. Gebyret (leverings_gebyr) er urørt.
+-- ------------------------------------------------------------
+update public.indstillinger
+   set vaerdi = to_jsonb('79 kr. uanset ordrens størrelse'::text), aendret = now()
+ where lokation_id = 'mosede' and noegle = 'leverings_pris'
+   and vaerdi::text like '%200%';
+
 commit;
 
 
@@ -625,6 +642,11 @@ select
           = 'Cheeseburger > Frikadellesandwich > Flæskestegssandwich > Bøfsandwich > Ekstra kød eller tilbehør'
         and not exists (select 1 from v where kat = 'Sandwich' and navn ilike '%sandwich' and navn <> 'Sandwich' and aktiv)
        then 'JA' else '** NEJ **' end                        as tre_sandwich_under_burgere,
+  /* Leveringens pristekst nævner ikke de 200 kr. (afsnit 14). */
+  case when not exists (select 1 from public.indstillinger
+                         where lokation_id = 'mosede' and noegle = 'leverings_pris'
+                           and vaerdi::text like '%200%')
+       then 'JA' else '** NEJ **' end                        as levering_uden_200_kr,
   (select count(*) from v where navn in ('Blandet salat', 'Hjemmelavet hvidløgsbrød med tomat & ost',
      'Morgen komplet', 'Hjemmelavet biksemad med spejlæg',
      'Lun delle, steg eller leverpostej med brød og surt', 'RTD', 'Isvand',

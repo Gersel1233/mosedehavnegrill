@@ -9800,6 +9800,13 @@ body.personale .bestil-tal-pille.lev {
   background: rgba(214, 42, 58, .08);
   color: var(--red-tekst);
 }
+/* 🚗-tallet er en knap (7/10): et tryk viser kun leveringerne. Knappens
+   egen ramme og skrift må ikke slå pillens igennem. */
+body.personale button.bestil-tal-pille {
+  font-family: inherit;   /* ikke `font:` — den ville slå pillens 700 og 14 px */
+  cursor: pointer;
+}
+body.personale button.bestil-tal-pille:hover { background: rgba(214, 42, 58, .14); }
 
 /* ---- De to grupper i listen ---- */
 body.personale .bestil-gruppe {

@@ -3270,6 +3270,44 @@
     }
     visTidLabel();
 
+    /* ⚠️ "VI KØRER MADEN UD" FØRER HELT IND  (7/10). Heroens pille,
+       nyhedsfeltet over formularen og rækken under "Hvad skal vi
+       hjælpe med?" bærer [data-vaelg-levering]: et tryk vælger
+       Levering her. Andre sider linker med ?hvordan=levering.
+       Knappen er formularens EGEN — samme klik som gæstens — så
+       adressefeltet, prisen og dagene følger med uden en kopi af
+       reglerne. Er levering slået fra, findes knappen ikke, og
+       linket ruller bare ned til formularen. */
+    /* Knappen i nyhedsfeltet siger, når det ER sket — ellers står den og
+       tilbyder noget, gæsten allerede har valgt. */
+    function visLevKnap() {
+      var valgt = hvordan() === 'levering';
+      Array.prototype.forEach.call(document.querySelectorAll('.lev-nyhed-knap'), function (k) {
+        k.textContent = valgt ? 'Levering er valgt ✓' : 'Vælg levering';
+        k.setAttribute('aria-pressed', valgt ? 'true' : 'false');
+      });
+    }
+    if (seg) seg.addEventListener('click', visLevKnap);
+    function vælgLevering() {
+      var i = side.segSvar ? side.segSvar.indexOf('levering') : -1;
+      var k = i >= 0 && side.seg ? alle(side.seg + ' button', panel)[i] : null;
+      if (!k || k.style.display === 'none' || !svarTilladt('levering')) return false;
+      if (hvordan() !== 'levering') k.click();
+      return true;
+    }
+    document.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('[data-vaelg-levering]') : null;
+      if (!a || !vælgLevering()) return;
+      /* Knappen over formularen har intet anker at rulle til — så
+         ruller vi selv ned til adressen, der lige er foldet ud. Ingen
+         fokus: et tastatur, der springer op, er ikke et valg. */
+      if (a.tagName === 'BUTTON') {
+        var f = side.adresseFelt ? find(side.adresseFelt, panel) : null;
+        if (f && f.scrollIntoView) f.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    });
+    if (/[?&]hvordan=levering(&|$)/.test(location.search)) vælgLevering();
+
     ['navn', 'tlf'].forEach(function (n) {
       var f = felt(n);
       if (f) f.addEventListener('input', function () { if (fejlVises) visSum(); });

@@ -1048,6 +1048,28 @@ test.describe('En levering er lovet et opkald', () => {
       .toHaveText(/2 skal køres ud/);
   });
 
+  /* ⚠️ ÉT TRYK, SÅ STÅR TUREN ALENE  (7/10). Mikkel: levering "bliver
+     heller ikke gjort godt nok i admin". Tallet sagde HVOR MANGE, men
+     ikke hvilke — leveringerne stod stadig blandet med afhentningerne.
+     Tallet er nu en knap, og filteret "🚗 Levering" holder kun dem. */
+  test('🚗-tallet viser leveringerne alene — afhentningen er væk', async ({ page }) => {
+    const d = medLevering();
+    d.bestillinger.push(b(3, I_DAG, '13:30', 'Mia Kjær', 'Rejemad', 1,
+      { hvordan: 'levering', status: 'bekraeftet',
+        leverings_adresse: 'Havnevej 20, 2670 Greve' }));
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: d });
+    await visFane(page, 'p-bestillinger');
+    const kort = page.locator('#bestillinger-liste .bestil-kort');
+    await expect(kort).toHaveCount(3);
+    await page.locator('#bestil-tal .bestil-tal-pille.lev').click();
+    await expect(kort).toHaveCount(2);
+    await expect(page.locator('#bestillinger-liste')).not.toContainText('Peter Storm');
+    await expect(page.locator('#bestil-dage [data-valg="levering"]')).toHaveAttribute('aria-pressed', 'true');
+    // Og tilbage: "Alle" viser afhentningen igen
+    await page.locator('#bestil-dage [data-valg="alle"]').click();
+    await expect(kort).toHaveCount(3);
+  });
+
   test('… og pillen forsvinder, når alle er kørt ud', async ({ page }) => {
     const d = medLevering();
     d.bestillinger[0].status = 'afhentet';

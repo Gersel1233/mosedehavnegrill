@@ -90,8 +90,13 @@ values
   ('mosede', 'leverings_omraade',
    to_jsonb('Ishøj, Greve, Karslunde, Tune, Solrød og Køge — længere ude efter aftale'::text),
    now()),
+  /* ⚠️ UDEN 200-KRONERS-REGLEN (rettet 7/10). Her stod "er ordren
+     under 200 kr., aftaler vi det over telefonen" — ejeren droppede den
+     3/9 ("det er ligegyldigt hvad størrelse ordren er ift 200 kroner"),
+     levering-og-mindsteantal.sql rettede den, og en ny kørsel af DEN
+     HER fil skrev den tilbage i produktionen. */
   ('mosede', 'leverings_pris',
-   to_jsonb('79 kr. — er ordren under 200 kr., aftaler vi det over telefonen'::text),
+   to_jsonb('79 kr. uanset ordrens størrelse'::text),
    now()),
   /* ⚠️ CVR ER LOVPLIGTIGT (e-handelsloven § 7) OG KOM 9/9.
      Tallet står på årsrapporten for 2020, som Mikkel sendte —

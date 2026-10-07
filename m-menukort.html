@@ -42,7 +42,12 @@
 <div class="screen" id="sc">
 <div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage" data-tilbage><svg viewBox="0 0 24 24"><use href="ikoner.svg#tilbage"/></svg></a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><use href="ikoner.svg#menu"/></svg></button></div>
 <div class="phead"><h1>Menukort</h1><p class="sub">Dagens ret for hver ugedag og vores faste sortiment.</p>
-  <p class="mk-allergi glaspille"><span aria-hidden="true">🥜</span>Allergi? Spørg personalet ift. allergener. Vi hjælper gerne.</p></div>
+  <p class="mk-allergi glaspille"><span aria-hidden="true">🥜</span>Allergi? Spørg personalet ift. allergener. Vi hjælper gerne.</p>
+  <!-- ⚠️ KORTET PEGER PÅ LEVERINGEN  (7/10). Mikkel: "det hele på siden
+       skal hænge sammen og linke til hinanden". Skjult, til
+       js/skal/kontakt.js har set, at levering er slået til; linket vælger
+       Levering i forsidens Bestil mad (?hvordan=levering). -->
+  <a class="hero-nyhed lys" href="index.html?hvordan=levering#bestil" data-levering-nyhed hidden><b>Nyhed</b><span>Vi kører maden ud<span data-lev-pris-linje> · <span data-lev-pris></span> pr. bestilling</span></span><i aria-hidden="true">→</i></a></div>
 
 <!-- DAGENS RET I DAG. Skjuler sig selv, hvis der ikke er sat en
      ret i admin: designets pladsholder må ikke stå som dagens ret
@@ -123,6 +128,7 @@
 <section style="padding-top:6px">
   <div class="mk-slut rev">
     <a class="g solid blk" href="index.html#bestil">Bestil dagens ret<span class="sheen"></span></a>
+    <a class="g blk" href="index.html?hvordan=levering#bestil" data-levering-nyhed hidden>Få det leveret</a>
     <a class="g blk" href="index.html">← Tilbage til forsiden</a>
   </div>
 </section>

@@ -1963,3 +1963,60 @@ test.describe('Bestil mad følger kunderejsen', () => {
     await expect(page.locator('#bestil [data-vare="Platte"] button').first()).toBeVisible();
   });
 });
+
+/* ============================================================
+   LEVERINGEN SOM NYHED — OG ÉN VEJ IND  (7/10)
+   ------------------------------------------------------------
+   Mikkel: *"levering er stadig slet ikke godt nok og highlighted som
+   en ny og fed ting"* og *"det hele på siden skal hænge sammen og
+   linke til hinanden"*. MÅLT 7/10: heroen, navigationen og Bestil
+   mad nævnte ikke leveringen, og område og pris stod først, når
+   gæsten HAVDE trykket Levering.
+   ⚠️ TALLENE KOMMER UDEFRA: området og gebyret er fiksturets — det
+   ejeren skriver i admin. Og med levering slået fra må intet af det
+   stå (husets regel: en knap, der ikke virker, er værre end ingen).
+   ============================================================ */
+test.describe('Leveringen som nyhed', () => {
+  function medLevering(paa) {
+    const d = data();
+    Object.assign(d.indstillinger, {
+      levering: paa, leverings_omraade: 'Greve og Tune', leverings_gebyr: 79,
+    });
+    return d;
+  }
+
+  test('slået til: heroen, Bestil mad og rækken siger det — med ejerens område og pris', async ({ page }) => {
+    await åbn(page, { data: medLevering(true) });
+    await expect(page.locator('.hero-nyhed')).toBeVisible();
+    const felt = page.locator('#bestil .lev-nyhed');
+    await expect(felt).toBeVisible();
+    await expect(felt).toContainText('Til Greve og Tune.');
+    await expect(felt).toContainText('79,- pr. bestilling');
+    await expect(page.locator('#alt [data-levering-nyhed]')).toContainText('79,- pr. bestilling');
+    await expect(page.locator('[data-lev-nav]')).toHaveText('to-go, spis her eller levering');
+  });
+
+  test('slået fra: nyheden står ingen steder', async ({ page }) => {
+    await åbn(page, { data: medLevering(false) });
+    await expect(page.locator('#bestil [data-kategori]').first()).toBeVisible();
+    for (const sel of ['.hero-nyhed', '#bestil .lev-nyhed', '#alt [data-levering-nyhed]']) {
+      await expect(page.locator(sel), sel + ' står, selv om levering er slået fra').toBeHidden();
+    }
+    await expect(page.locator('[data-lev-nav]')).toHaveText('to-go eller spis her');
+  });
+
+  test('et tryk på "Vi kører maden ud" vælger Levering i formularen', async ({ page }) => {
+    await åbn(page, { data: medLevering(true) });
+    const lev = page.locator('[data-seg="how"] button', { hasText: 'Levering' });
+    await expect(lev).not.toHaveClass(/\bon\b/);
+    await page.locator('#bestil .lev-nyhed-knap').click();
+    await expect(lev).toHaveClass(/\bon\b/);
+    await expect(page.locator('#flevfelt')).toBeVisible();
+    await expect(page.locator('#bestil .lev-nyhed-knap')).toHaveText('Levering er valgt ✓');
+  });
+
+  test('et link med ?hvordan=levering lander med Levering valgt', async ({ page }) => {
+    await åbnSkal(page, '/index.html?hvordan=levering#bestil', { ur: FREDAG, data: medLevering(true) });
+    await expect(page.locator('[data-seg="how"] button', { hasText: 'Levering' })).toHaveClass(/\bon\b/);
+  });
+});
