@@ -7,6 +7,39 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**CHEFENS RETTELSER 7/10 — BYGGET OG PRØVET, IKKE LIVE** (7/10). Chefens
+besked pr. afsnit (*"Vi kan ikke Lancere noget der ikke er helt korrekt …"*).
+Mikkel: *"Gå videre med de resterende varer nu … Opfind ikke en pris … Intet
+live endnu"* og *"små rettelser, ikke en kæmpe test"*.
+- **`supabase/chefens-rettelser-7-10.sql` — IKKE KØRT.** Tre sandwich tændt
+  igen (75, den eneste pris i databasen) og frikadelle/flæskesteg ud af den
+  almindelige sandwichs valg. Priser: kakao 45 (stor bliver 65), Latte Ice stor
+  70, flødekager 45, bakken 67, platten 199, fiskefilet med rejer 65,
+  pandekagerne 50. Lumumba og Irish coffee i lille 3 cl/stor 6 cl. Nye:
+  Juleplatte 199, Børnekop 59 (ingen tekst), småkagefad, cookies, koldskål,
+  dagens frugtfad, slikpind, 1 stk. frugt, RTD 3 stk. **Skjult og uden pris**:
+  Isvand, kande og Æg & bacon. "Hjemmelavet" foran flæskesteg/frikadelle/
+  roastbeef, "bestilles dagen før" væk fra tartaren
+- ⚠️ **Omdøbningerne er scopet til kategorien** — fyldet bærer de samme navne
+- **Menukortet** (`menukort-kort.js`): boksene uden "Egen pris"/"Kun smørrebrød",
+  fiskefileten med sin egen pris under listen, Lumumba/Irish i Varmt & ekstra,
+  RTD også i baren, frugtfadet også i Slik & snacks (`genbrug` kan nu stå `efter`)
+- **Varslet siges som reglen** (`R.varselFor`/`R.varselOrd`). MÅLT på de
+  udgivne sider: bestil/ sagde "mindst 1 timer", smørrebrødssiden "senest 1 time
+  før" lige over "bestilles 24 timer før". Nu "et døgn" alle steder. 24
+  timers-reglen selv er urørt
+- **Prøvet som staging**: produktionens rækker (anon-læst) i en lokal Postgres,
+  SQL'en kørt to gange (alle otte JA), lagt i sidens øvetilstand: 20 linjer i
+  kurven med chefens priser og rigtig sum, databasens værn godtager de nye og
+  afviser de gamle priser, admin sætter pris/tekst/Vis på kanden, æg & bacon,
+  juleplatten og børnekoppen. Målrettede prøvefiler: 373 grønne. **Ikke** den
+  fulde runde, efter aftale
+- ⚠️ **Admin har intet felt til en vares periode.** `vis_fra`/`vis_til` virker
+  på siden og i databasen, men juleplatten styres med Vis/Skjul, til der er et felt
+- **Venter**: "1 foran Spejlæg" (hvilken linje?), børnekoppens "uden is",
+  afsnittet "Frokost" (det nye kort 1), frikadellen på håndmadskortet
+  (ikke nævnt), priserne på kanden og æg & bacon
+
 **⚠️ EN PLADSHOLDER, DER VIRKER, ER IKKE EN PLADSHOLDER** (4/10, aften).
 Dagens dyreste fejl, og den var min.
 - `supabase/saet-de-to-koder-4-10.sql` havde koderne skrevet direkte ind i hver
