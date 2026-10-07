@@ -7,6 +7,21 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**KORT 1, KUNDEREJSEN OG VARSLET** (7/10, senere samme dag — IKKE LIVE).
+- **Frokost som kort 1** (korrekturen 7/10 er facit): kapitel 1 = Morgenmad |
+  Frokost. Smørrebrød og Håndmadder øverst som henvisninger, Juleplatten efter
+  platten. Fisk & klassikere står under Frokost, til kort 2 er set
+- **Bestil mad følger kunderejsen** (Mikkel med chefens ord): kategoriernes egen
+  sortering — Morgenmad, Tilkøb, Andre retter, Platter, Sandwich, Burgere,
+  Smørrebrød, Håndmadder, Retter, Pølser, is-blokken, drikkevarerne, Snacks,
+  Tillæg. Tidspunkts-løftet (kategori_dagsdel) er slået fra; is-blokken står
+  ikke nederst mere (VENDT fra 25/9)
+- **Varsel**: smørrebrød og håndmadder 1 time (samme dag), platter et døgn med
+  "ring og spørg ved særlige ønsker". Databasens værn prøvet på staging
+- **Isvand, kande** er den eksisterende isvand (25), ikke en ny vare
+- ⚠️ **"Morgen komplet"**: chefen skrev ét ord, kort 1 siger to — urørt, til
+  Mikkel afgør det
+
 **CHEFENS RETTELSER 7/10 — BYGGET OG PRØVET, IKKE LIVE** (7/10). Chefens
 besked pr. afsnit (*"Vi kan ikke Lancere noget der ikke er helt korrekt …"*).
 Mikkel: *"Gå videre med de resterende varer nu … Opfind ikke en pris … Intet
