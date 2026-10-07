@@ -517,7 +517,15 @@
           var x = kl.genbrug ? frit(passer) : fri(passer);
           if (!x) return;
           // En genbrugt vare må ikke forsvinde fra sit eget kapitel.
-          if (kl.genbrug) { a.varer.push(x); return; }
+          /* ⚠️ OG DEN KAN STÅ `efter` EN ANDEN (7/10). Dagens frugtfad
+             står på kortet under Slik & snacks lige efter "1 stk.
+             frugt" — uden `efter` kom den ØVERST, fordi de genbrugte
+             lægges ud, før kategoriens egne varer er der. */
+          if (kl.genbrug) {
+            if (kl.efter) (a.senere = a.senere || []).push({ x: x, efter: kl.efter });
+            else a.varer.push(x);
+            return;
+          }
           /* ⚠️ `efter` (27/9): en vare, der hentes fra en ANDEN kategori,
              skal stå dér, hvor kortet har den — ikke øverst. `efter: true`
              lægger den sidst i afsnittet, `efter: 'Navn'` lige efter den

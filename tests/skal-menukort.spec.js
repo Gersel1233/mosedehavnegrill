@@ -953,3 +953,129 @@ test.describe('Menukortets ugeplan slår ens dage sammen', () => {
     await expect(page.locator('#mk-uge')).toContainText('Stegt flæsk');
   });
 });
+
+/* ============================================================
+   CHEFENS RETTELSER 7/10 PÅ KORTET
+   ------------------------------------------------------------
+   Chefens besked pr. afsnit, med Mikkels "gå videre med det, der
+   kan rettes nu". Dataene herunder er databasen, som
+   supabase/chefens-rettelser-7-10.sql efterlader den — navnene
+   er filens. Det, prøven måler, er HVOR varerne står, og det
+   kommer fra chefens egne ord:
+     · "Rejemad & Tartarmad Fjern Kun Smørrebrød" og "Fjern Egen pris"
+     · "Tartar skal IKKE bestilles dagen før"
+     · "Fiskefilet med Rejer og Mayo +10,-" (65 — resten 55)
+     · Lumumba og Irish coffee under "Varmt & Ekstra"
+     · RTD under både "Kolde drikke" og "Bar"
+     · Dagens frugtfad under både "Sødt" og "Slik & Snacks"
+     · de tre sandwich under "Burgere"
+   ============================================================ */
+test.describe('Chefens rettelser 7/10 på kortet', () => {
+  function vare(id, kat, navn, pris, ekstra) {
+    return Object.assign({ id, kategori_id: kat, navn, beskrivelse: null, pris,
+      fremhaevet: false, udsolgt: false, sortering: id, aktiv: true }, ekstra || {});
+  }
+  function efterChefen() {
+    const d = medRet();
+    d.menu_kategorier = [
+      { id: 10, afdeling: 'mad', navn: 'Andre retter', sortering: 2, aktiv: true },
+      { id: 11, afdeling: 'mad', navn: 'Burgere', sortering: 3, aktiv: true },
+      { id: 13, afdeling: 'mad', navn: 'Smørrebrød', sortering: 6, aktiv: true },
+      { id: 15, afdeling: 'is', navn: 'Kugleis', sortering: 10, aktiv: true },
+      { id: 16, afdeling: 'is', navn: 'Softice og vafler', sortering: 11, aktiv: true },
+      { id: 17, afdeling: 'drikke', navn: 'Kaffe og varme drikke', sortering: 20, aktiv: true },
+      { id: 20, afdeling: 'drikke', navn: 'Sodavand, juice og kakao', sortering: 23, aktiv: true },
+      { id: 21, afdeling: 'drikke', navn: 'Snacks og slik', sortering: 24, aktiv: true },
+      { id: 39, afdeling: 'mad', navn: 'Håndmadder', sortering: 7, aktiv: true },
+      { id: 63, afdeling: 'mad', navn: 'Sandwich', sortering: 4, aktiv: true },
+    ];
+    d.menu_varer = [
+      vare(1, 10, 'Hjemmelavet lun frikadelle', 25),
+      vare(2, 11, 'Cheeseburger', 85),
+      vare(3, 63, 'Frikadellesandwich', 75), vare(4, 63, 'Flæskestegssandwich', 75),
+      vare(5, 63, 'Bøfsandwich', 75), vare(6, 63, 'Sandwich', 75),
+      vare(10, 13, 'Hjemmelavet flæskesteg med surt', 55),
+      vare(11, 13, 'Fiskefilet med rejer og mayo', 65),
+      vare(12, 13, 'Leverpostej med surt', 55), vare(13, 13, 'Dyrlægens natmad', 55),
+      vare(14, 13, 'Ostemad', 55),
+      vare(15, 13, 'Rejemad', 95, { beskrivelse: 'Med mayo og citron — hel skive' }),
+      vare(16, 13, 'Tartarmad', 95),
+      vare(20, 39, 'Hjemmelavet flæskesteg med surt, håndmad', 27),
+      vare(21, 39, 'Leverpostej med surt, håndmad', 27), vare(22, 39, 'Ostemad, håndmad', 27),
+      vare(30, 15, '1 kugle', 35), vare(31, 15, 'Børnekop', 59),
+      vare(40, 16, 'Hjemmelavet koldskål', 35), vare(41, 16, 'Dagens frugtfad', 45),
+      vare(50, 17, 'Te', 25),
+      vare(51, 17, 'Lumumba, lille 3 cl', 75, { beskrivelse: 'Varm eller kold', valg: ['Varm', 'Kold'] }),
+      vare(52, 17, 'Lumumba, stor 6 cl', 145, { beskrivelse: 'Varm eller kold', valg: ['Varm', 'Kold'] }),
+      vare(53, 17, 'Irish coffee, lille 3 cl', 75), vare(54, 17, 'Irish coffee, stor 6 cl', 145),
+      vare(55, 17, 'Flødekager', 45), vare(56, 17, 'Småkagefad til 2 personer', 25),
+      vare(60, 20, 'Isvand', 25),
+      vare(61, 20, 'RTD, 1 stk. Breezer eller Smirnoff', 40),
+      vare(62, 20, 'RTD, 3 stk. Breezer eller Smirnoff', 100),
+      vare(63, 20, 'Drinks', 75),
+      vare(70, 21, 'Slik, 1 stk.', 10), vare(71, 21, 'Slikpind', 8), vare(72, 21, '1 stk. frugt', 8),
+      vare(73, 21, 'Hjemmelavet flæskesvær', 35),
+    ];
+    return d;
+  }
+  const afsnit = (page, kap, titel) => page.locator(`${kap} .mk-sek`,
+    { has: page.locator('.mk-sek-navn', { hasText: new RegExp('^' + titel + '$', 'i') }) });
+  const navne = (loc) => loc.locator('.mk-linje[data-vare]').evaluateAll(
+    (l) => l.map((e) => e.getAttribute('data-vare')));
+
+  test('rejemad og tartar står uden "Egen pris", "Kun smørrebrød" og "dagen før"', async ({ page }) => {
+    await åbn(page, efterChefen());
+    const mærker = await page.locator('#mk-kat .mk-boks-over').allTextContents();
+    expect(mærker.map((m) => m.trim().toLowerCase()), 'chefen: "Fjern Egen pris" og "Fjern Kun Smørrebrød"')
+      .not.toEqual(expect.arrayContaining(['egen pris']));
+    expect(mærker.map((m) => m.trim().toLowerCase())).not.toEqual(expect.arrayContaining(['kun smørrebrød']));
+    await expect(page.locator('#mk-kat'), 'chefen: "Tartar skal IKKE bestilles dagen før"')
+      .not.toContainText(/dagen før/i);
+    // Felterne står stadig — kun mærkaterne er væk
+    for (const kap of ['#kapitel-smoerrebroed', '#kapitel-haandmadder']) {
+      await expect(page.locator(`${kap} .mk-boks-titel`, { hasText: 'Rejemad' })).toHaveCount(1);
+      await expect(page.locator(`${kap} .mk-boks-titel`, { hasText: 'Tartar' })).toHaveCount(1);
+    }
+  });
+
+  test('fiskefilet med rejer står til 65 — og varianterne stadig uden pris', async ({ page }) => {
+    await åbn(page, efterChefen());
+    await expect(page.locator('#kapitel-smoerrebroed [data-vare="Fiskefilet med rejer og mayo"] .mk-pris'))
+      .toHaveText('65,-');
+    const varianter = afsnit(page, '#kapitel-smoerrebroed', 'Varianter');
+    await expect(varianter.locator('.mk-linje[data-vare]')).not.toHaveCount(0);
+    await expect(varianter.locator('.mk-pris'), 'én anden pris i listen viser ALLE priserne').toHaveCount(0);
+  });
+
+  test('Lumumba og Irish coffee står under Varmt & ekstra, ikke under Kage', async ({ page }) => {
+    await åbn(page, efterChefen());
+    const varmt = await navne(afsnit(page, '#kapitel-kaffe', 'Varmt & ekstra'));
+    expect(varmt).toEqual(expect.arrayContaining(['Lumumba, lille 3 cl', 'Lumumba, stor 6 cl',
+      'Irish coffee, lille 3 cl', 'Irish coffee, stor 6 cl']));
+    const kage = await navne(afsnit(page, '#kapitel-kaffe', 'Kage'));
+    expect(kage.filter((n) => /lumumba|irish/i.test(n))).toEqual([]);
+    expect(kage).toEqual(expect.arrayContaining(['Flødekager', 'Småkagefad til 2 personer']));
+  });
+
+  test('RTD står under både Kolde drikke og Bar', async ({ page }) => {
+    await åbn(page, efterChefen());
+    const rtd = ['RTD, 1 stk. Breezer eller Smirnoff', 'RTD, 3 stk. Breezer eller Smirnoff'];
+    expect(await navne(afsnit(page, '#kapitel-kaffe', 'Kolde drikke'))).toEqual(expect.arrayContaining(rtd));
+    expect(await navne(afsnit(page, '#kapitel-bar', 'Bar'))).toEqual(expect.arrayContaining(rtd));
+  });
+
+  test('dagens frugtfad står under Sødt og under Slik & snacks — efter frugten', async ({ page }) => {
+    await åbn(page, efterChefen());
+    expect(await navne(afsnit(page, '#afsnit-is', 'Sødt'))).toContain('Dagens frugtfad');
+    const slik = await navne(afsnit(page, '#kapitel-bar', 'Slik & snacks'));
+    expect(slik.slice(-3)).toEqual(['1 stk. frugt', 'Dagens frugtfad', 'Hjemmelavet flæskesvær']);
+  });
+
+  test('de tre sandwich står under Burgere & sandwiches — og intet er faldet ud', async ({ page }) => {
+    await åbn(page, efterChefen());
+    const b = await navne(afsnit(page, '#kapitel-burgere', 'Burgere & sandwiches'));
+    expect(b).toEqual(['Cheeseburger', 'Frikadellesandwich', 'Flæskestegssandwich', 'Bøfsandwich', 'Sandwich']);
+    expect(await navne(afsnit(page, '#afsnit-is', 'Is'))).toContain('Børnekop');
+    await expect(page.locator('#kapitel-mere'), 'en vare, kortene ikke fandt plads til').toHaveCount(0);
+  });
+});

@@ -133,15 +133,27 @@
            frem, og den rene liste ville blive til en priskolonne.
            ⚠️ Og `genbrug`, fordi de samme to varer også står på
            deres egne kort. Se noten ved frit() i menukort.js. */
-        { kilder: [{ kat: '*', genbrug: true,
-          navne: ['Hjemmelavet lun frikadelle', 'Hjemmelavet flæskesvær'] }] },
+        /* ⚠️ FISKEFILET MED REJER HAR SIN EGEN PRIS  (7/10). Chefen:
+           *"Fiskefilet med Rejer og Mayo +10,-kr."* — 65, hvor resten
+           koster 55. Den står her, i fortsættelsen med prisvarerne, og
+           IKKE i variantlisten: én anden pris dér, og `udenPris` slår
+           fra og viser ALLE priserne. Den tages ved navn (trin 1), før
+           kategoriens rest fordeles, så den kun står ét sted. */
+        { kilder: [{ kat: 'Smørrebrød', navne: ['Fiskefilet med rejer og mayo'] },
+          { kat: '*', genbrug: true,
+            navne: ['Hjemmelavet lun frikadelle', 'Hjemmelavet flæskesvær'] }] },
         /* Slukket hos ejeren i dag — men tænder han den i admin, står
            fyldet her ved smørrebrødet og ikke i "Mere fra lugen". */
         { titel: 'Vælg fyld', kilder: [{ kat: 'Vælg fyld til smørrebrødet' }] },
+        /* ⚠️ "EGEN PRIS" OG "BESTILLES DAGEN FØR" ER VÆK  (7/10). Chefen,
+           ordret: *"Rejemad og Tartar Fjern Egen pris begge steder"* og
+           *"Tartar skal IKKE bestilles dagen før."* Felterne står —
+           titel, pris og rejemadens brød — kun mærkatet og sætningen
+           er taget ud. */
         { boks: 'raekke', felter: [
           { over: 'Smørrebrød', titel: 'Alle varianter', pris: { ens: 'Smørrebrød' }, tekst: 'Gælder alle almindelige smørrebrød på listen.' },
-          { over: 'Egen pris', titel: 'Rejemad', pris: { vare: 'Rejemad' }, tekst: 'Fås både på rugbrød og franskbrød.' },
-          { over: 'Egen pris', titel: 'Tartar', pris: { vare: 'Tartarmad' }, tekst: 'Bestilles dagen før.' },
+          { titel: 'Rejemad', pris: { vare: 'Rejemad' }, tekst: 'Fås både på rugbrød og franskbrød.' },
+          { titel: 'Tartar', pris: { vare: 'Tartarmad' } },
           { over: 'Sig til ved lugen', titel: 'Glutenfrit brød', pris: { vare: 'Glutenfrit brød (tillæg)', plus: true }, tekst: 'Med eller uden smør — bare sig til.' },
         ] },
       ],
@@ -179,15 +191,21 @@
            "Ikke som håndmad" (rejemad og tartar) er taget ud. */
         { boks: 'raekke', felter: [
           { over: 'Håndmadder', titel: 'Alle varianter', pris: { ens: 'Håndmadder' }, tekst: 'Gælder alle almindelige håndmadder på listen.' },
-          /* ⚠️ DET ENDELIGE KORT FLYTTEDE BOKSENS INDHOLD  (2/10).
+          /* ⚠️ VENDT 7/10: "KUN SMØRREBRØD" ER TAGET AF IGEN. Chefen,
+             ordret: *"Rejemad & Tartarmad Fjern Kun Smørrebrød Begge
+             steder"* — og Mikkel: *"præcis som chefen skrev"*. Noten
+             herunder er grunden til, at mærkatet kom på; den står, så
+             den næste ved, hvad der blev vejet.
+
+             ⚠️ DET ENDELIGE KORT FLYTTEDE BOKSENS INDHOLD  (2/10).
              Den havde lun delle og flæskesvær; på det godkendte
              kort 4 er de to rykket op i variantlisten, og boksen
              siger nu rejemad og tartar med mærket "Kun smørrebrød"
              — altså hvad man IKKE kan få som håndmad. Det er en
              oplysning, ikke en vare: står den ikke, bestiller nogen
              en rejemad som håndmad og får nej ved lugen. */
-          { over: 'Kun smørrebrød', titel: 'Rejemad', pris: { vare: 'Rejemad' }, tekst: 'Fås både på rugbrød og franskbrød.' },
-          { over: 'Kun smørrebrød', titel: 'Tartar', pris: { vare: 'Tartarmad' }, tekst: 'Bestilles dagen før.' },
+          { titel: 'Rejemad', pris: { vare: 'Rejemad' }, tekst: 'Fås både på rugbrød og franskbrød.' },
+          { titel: 'Tartar', pris: { vare: 'Tartarmad' } },
           { over: 'Sig til ved lugen', titel: 'Glutenfrit brød', pris: { vare: 'Glutenfrit brød (tillæg)', plus: true }, tekst: 'Med eller uden smør — bare sig til.' },
         ] },
       ],
@@ -218,8 +236,16 @@
       venstre: [
         { titel: 'Kaffe', tabel: 'stor', kilder: [{ kat: 'Kaffe og varme drikke', medValg: 'Stor' },
           { kat: '*', navne: ['Espresso'] }] },
+        /* ⚠️ LILLE 3 CL OG STOR 6 CL ER TO VARER  (7/10). Chefen:
+           *"Lumumba varm el. Kold Lille 3 Cl. 75,-, Stor 6 Cl. 145,-"* og
+           det samme for Irish coffee. De står ved NAVN her — ellers
+           tager Kage-afsnittets kategori-rest dem. De gamle navne
+           bliver stående: siden går i luften, før eller efter SQL'en
+           er kørt, og begge dele skal se rigtige ud. */
         { titel: 'Varmt & ekstra', kilder: [
-          { kat: '*', navne: ['1 iskugle i kaffen', 'Ekstra shot kaffe', 'Sirup', 'Te', 'Lumumba, varm eller kold', 'Lumumba', 'Irish coffee', 'Irish coffee, stor'] },
+          { kat: '*', navne: ['1 iskugle i kaffen', 'Ekstra shot kaffe', 'Sirup', 'Te',
+            'Lumumba, lille 3 cl', 'Lumumba, stor 6 cl', 'Lumumba, varm eller kold', 'Lumumba',
+            'Irish coffee, lille 3 cl', 'Irish coffee, stor 6 cl', 'Irish coffee', 'Irish coffee, stor'] },
         ] },
         { titel: 'Kage', kilder: [
           { kat: '*', navne: ['Kage & desserter', 'Gammeldags æblekage', 'Flødekager'] },
@@ -242,11 +268,20 @@
       hop: 'Øl, vin & bar',
       venstre: [
         { titel: 'Øl', kilder: [{ kat: 'Øl' }] },
-        { titel: 'Bar', kilder: [{ kat: '*', navne: ['Drinks', 'Cocktail', 'Snaps, spiritus og shots', 'Snaps, sambuca og shots'] }] },
+        /* ⚠️ RTD STÅR OGSÅ HER  (7/10). Chefen skriver RTD under både
+           "Kolde drikke" og "Bar". Varen bor i Kolde drikke (sin
+           kategori); her er den `genbrug`, så den ikke forsvinder
+           derfra. Samme vare, samme pris, to steder — som kortet. */
+        { titel: 'Bar', kilder: [{ kat: '*', navne: ['Drinks', 'Cocktail', 'Snaps, spiritus og shots', 'Snaps, sambuca og shots'] },
+          { kat: '*', genbrug: true,
+            navne: ['RTD, 1 stk. Breezer eller Smirnoff', 'RTD, 3 stk. Breezer eller Smirnoff'] }] },
         /* Hjemmelavet flæskesvær står i "Tilkøb ud af huset" — kort 07 har
            den sidst under Slik & snacks, til 35 (Mikkels ønske 27/9). */
+        /* Dagens frugtfad bor under Sødt (Softice og vafler); chefen
+           skriver den også her, lige efter "1 stk. frugt" (7/10). */
         { titel: 'Slik & snacks', kilder: [{ kat: 'Snacks og slik' },
-          { kat: '*', navne: ['Hjemmelavet flæskesvær'], efter: true }] },
+          { kat: '*', navne: ['Hjemmelavet flæskesvær'], efter: true },
+          { kat: '*', genbrug: true, navne: ['Dagens frugtfad'], efter: '1 stk. frugt' }] },
       ],
       hoejre: [
         { titel: 'Vin, cava & champagne', kilder: [{ kat: 'Vin, cava og champagne' }] },
@@ -351,13 +386,10 @@
       'Alle varianter': 'All toppings',
       'Gælder alle almindelige smørrebrød på listen.': 'Applies to all regular smørrebrød on the list.',
       'Gælder alle almindelige håndmadder på listen.': 'Applies to all regular håndmadder on the list.',
-      'Egen pris': 'Special price',
-      'Kun smørrebrød': 'Smørrebrød only',
       'Hjemmelavet lun frikadelle': 'Frikadelle – homemade warm Danish meatball',
       'Rejemad': 'Prawn open sandwich',
       'Fås både på rugbrød og franskbrød.': 'Available on rye bread or white bread.',
       'Tartar': 'Steak tartare',
-      'Bestilles dagen før.': 'Order the day before.',
       'Sig til ved lugen': 'Just ask at the counter',
       'Glutenfrit brød': 'Gluten-free bread',
       'Med eller uden smør — bare sig til.': 'With or without butter — just ask.',

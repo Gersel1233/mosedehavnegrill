@@ -2253,15 +2253,22 @@ test.describe('Valg på en vare kan sættes i admin', () => {
 test.describe('Kortenes omdøbninger 30/9', () => {
   const fs = require('fs');
   const path = require('path');
-  const SQL = path.resolve(__dirname, '..', 'supabase/kortenes-tekster-30-9.sql');
+  /* ⚠️ ALLE FILER, DER OMDØBER MED ret(...)  (7/10). Den første udgave
+     læste kun 30/9-filen; chefens-rettelser-7-10.sql døber Lumumba,
+     Irish coffee og RTD om igen, og den ville være gået uden om
+     værnet. Listen er filerne, ikke navnene i dem. */
+  const SQL = ['supabase/kortenes-tekster-30-9.sql', 'supabase/chefens-rettelser-7-10.sql']
+    .map((f) => path.resolve(__dirname, '..', f));
 
   /* [gammelt navn, nyt navn] for hver linje, der faktisk skifter navn.
      `ret('X', null, ...)` rører kun beskrivelsen og hører ikke med. */
   function omdoebninger() {
-    const s = fs.readFileSync(SQL, 'utf8').replace(/^\s*--.*$/gm, '');
     const ud = [];
-    const m = s.matchAll(/pg_temp\.ret\(\s*'((?:[^']|'')+)'\s*,\s*'((?:[^']|'')+)'/g);
-    for (const t of m) ud.push([t[1].replace(/''/g, "'"), t[2].replace(/''/g, "'")]);
+    for (const fil of SQL) {
+      const s = fs.readFileSync(fil, 'utf8').replace(/^\s*--.*$/gm, '');
+      const m = s.matchAll(/pg_temp\.ret\(\s*'((?:[^']|'')+)'\s*,\s*'((?:[^']|'')+)'/g);
+      for (const t of m) ud.push([t[1].replace(/''/g, "'"), t[2].replace(/''/g, "'")]);
+    }
     return ud;
   }
 
@@ -2270,7 +2277,7 @@ test.describe('Kortenes omdøbninger 30/9', () => {
        mønsteret — eller får filen et nyt navn — ville nul
        omdøbninger melde grønt. Tallet er filens, ikke vores. */
     expect(omdoebninger().length,
-      'ingen omdøbninger læst ud af kortenes-tekster-30-9.sql')
+      'ingen omdøbninger læst ud af SQL-filerne')
       .toBeGreaterThanOrEqual(5);
   });
 

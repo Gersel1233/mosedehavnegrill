@@ -82,6 +82,10 @@
        SQL-filen og fælder den næste, der bliver glemt. */
     'lumumba': ['Varm', 'Kold'],
     'lumumba, varm eller kold': ['Varm', 'Kold'],
+    /* 7/10: chefens-rettelser-7-10.sql deler den i lille 3 cl og stor
+       6 cl. Varm eller kold er stadig valget. */
+    'lumumba, lille 3 cl': ['Varm', 'Kold'],
+    'lumumba, stor 6 cl': ['Varm', 'Kold'],
     'sodavand, juice, iste eller kakao – lille': DRIKKE,
     'sodavand, juice, iste eller kakao – stor': DRIKKE,
     'sodavand, juice, iste eller cacao – lille': DRIKKE,
