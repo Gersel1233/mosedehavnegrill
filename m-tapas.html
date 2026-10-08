@@ -36,7 +36,7 @@
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav har-film">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav har-film">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
@@ -191,6 +191,21 @@
       <label for="thow">Hvordan?</label>
       <select class="inp" id="thow"><option>To-go</option><option>Spis her</option></select>
     </div>
+    <!-- ⚠️ LEVERING PÅ TAPAS  (8/10). Mikkel: "ja levering på tapas også".
+         Siden har sagt "Vi kører det ud 79,-" siden 20/9 (Jims ord), men
+         formularen kunne ikke vælge det. Feltet er forsidens (#flevfelt):
+         en officiel adresse fra Dataforsyningen, og databasen kræver
+         serverens kvittering (js/adressefelt.js). Skjult, til Levering
+         er valgt — og Levering findes kun, når den er slået til i admin. -->
+    <div class="field" id="tlevfelt" hidden>
+      <label for="tadr">Hvor skal det leveres?</label>
+      <div class="adr-felt-hylster">
+        <input class="inp" id="tadr" autocomplete="off"
+               placeholder="Begynd at skrive vej og husnummer">
+      </div>
+      <p class="hint" id="tlev-hint"></p>
+      <p class="adr-status skjult" id="tlev-svar"></p>
+    </div>
     <div class="addon">
       <div><h4>Cava Brut Nature</h4><p>Anbefalet af vores vinmand · 150 kr. pr. flaske</p></div>
       <div class="step" data-step><button data-d="-">–</button><b>0</b><button data-d="+">+</button></div>
@@ -274,5 +289,6 @@ calc();})();
 <script src="js/skal/feltfejl.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>
 <script src="js/skal/billedplads.js?v=__V__"></script>
+<script src="js/adressefelt.js?v=__V__"></script>
 <script src="js/skal/tapas.js?v=__V__"></script>
 </body></html>

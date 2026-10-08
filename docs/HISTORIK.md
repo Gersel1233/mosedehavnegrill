@@ -7,6 +7,18 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LEVERING PÅ TAPAS** (8/10 — IKKE LIVE). Mikkel: *"ja levering på tapas også"*.
+Siden sagde "Vi kører det ud 79,-" (Jim 20/9), men formularen havde kun To-go og
+Spis her.
+- "Levering" i Hvordan? — kun når levering er slået til. Forsidens adressefelt
+  (officiel adresse + serverens kvittering), ejerens leveringslinje, fragten som
+  egen linje ("Levering", 79, emballage) og "Sidste levering" fra Åbningstider
+- Kvitteringen er forsidens (MosedeSkal.kvittering): aldrig bekræftet af sig selv
+- PRØVET I DATABASEN som gæst på produktionens rækker: med kvittering gik den
+  igennem; uden → levering_ikke_valideret; genbrugt → levering_validering_brugt;
+  forkert fragt → bestilling_pris_aendret
+- Summen skrev "kl. 14:00" (ældre fejl) — nu Butik.klokken
+
 **LEVERING SOM NYHED, FOTOS I MIDTEN, SIDERNE HÆNGER SAMMEN** (7/10, aften —
 IKKE LIVE). Mikkel: *"levering er stadig slet ikke godt nok og highlighted som en
 ny og fed ting og bliver heller ikke gjort godt nok i admin"*, *"der er nogen

@@ -658,3 +658,80 @@ test.describe('Billederne af fadet skifter', () => {
   });
 });
 
+
+/* ============================================================
+   LEVERING PÅ TAPAS  (8/10)
+   ------------------------------------------------------------
+   Mikkel: *"ja levering på tapas også"*. Siden sagde "Vi kører det ud
+   79,-" (Jims ord 20/9), men formularen havde kun To-go og Spis her.
+   Reglerne er forsidens: kun når levering er slået til, en adresse der
+   skal skrives, fragten som sin egen linje — og en levering bekræftes
+   aldrig af sig selv.
+   ⚠️ TALLENE KOMMER UDEFRA: gebyret og fadets pris er fiksturets.
+   ============================================================ */
+test.describe('Levering på tapas', () => {
+  function medLevering(paa) {
+    const d = data(true, false);
+    Object.assign(d.indstillinger, {
+      levering: paa, leverings_gebyr: 79, leverings_omraade: 'Greve og Tune',
+      leverings_postnr: [2670, 4030], auto_bekraeft: true,
+    });
+    return d;
+  }
+  async function udfyld(page) {
+    await page.locator('#tpers').fill('4');
+    await page.locator('#tnavn').fill('Sara Poulsen');
+    await page.locator('#ttlf').fill('28871343');
+    await page.locator('#tdato').selectOption('2026-08-09');
+  }
+
+  test('slået fra: Levering kan ikke vælges', async ({ page }) => {
+    await åbn(page, medLevering(false));
+    await expect(page.locator('#thow option[value="levering"]')).toHaveCount(0);
+    await expect(page.locator('#tlevfelt')).toBeHidden();
+  });
+
+  test('slået til: Levering folder adressen ud og lægger 79,- på summen', async ({ page }) => {
+    await åbn(page, medLevering(true));
+    await expect(page.locator('#tlevfelt')).toBeHidden();
+    await udfyld(page);
+    await expect(page.locator('#tsum b')).toHaveText('580 kr.');       // 4 × 145
+    await page.locator('#thow').selectOption('levering');
+    await expect(page.locator('#tlevfelt')).toBeVisible();
+    await expect(page.locator('#tlev-hint')).toContainText('Greve og Tune');
+    await expect(page.locator('#tsum b')).toHaveText('659 kr.');       // + 79
+    await expect(page.locator('#tsum')).toContainText('Levering 79,-');
+  });
+
+  test('uden adresse sendes intet — med adresse lander den med fragten', async ({ page }) => {
+    await åbn(page, medLevering(true));
+    await udfyld(page);
+    await page.locator('#thow').selectOption('levering');
+    await page.locator('#bestil-tapas button.g.solid.blk').click();
+    await expect(page.locator('#tsum')).toContainText('adressen');
+    expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
+
+    await page.locator('#tadr').fill('Havnevej 20L, 2670 Greve');
+    await page.locator('#bestil-tapas button.g.solid.blk').click();
+    await expect(page.locator('#bestil-tapas h3')).toContainText('Tak, Sara');
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.hvordan).toBe('levering');
+    expect(b.leverings_adresse).toBe('Havnevej 20L, 2670 Greve');
+    expect(b.linjer).toEqual([
+      { navn: 'Tapasfad, pr. person', antal: 4, pris: 145 },
+      { navn: 'Levering', antal: 1, pris: 79, emballage: true },
+    ]);
+    // Aldrig af sig selv — selv med auto_bekraeft slået til
+    await expect(page.locator('#bestil-tapas')).toContainText('ringer og bekræfter leveringen');
+  });
+
+  test('et postnummer, vi ikke kører til, sendes ikke', async ({ page }) => {
+    await åbn(page, medLevering(true));
+    await udfyld(page);
+    await page.locator('#thow').selectOption('levering');
+    await page.locator('#tadr').fill('Storegade 1, 8000 Aarhus');
+    await page.locator('#bestil-tapas button.g.solid.blk').click();
+    await expect(page.locator('#tsum')).toContainText('kører ikke fast');
+    expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
+  });
+});

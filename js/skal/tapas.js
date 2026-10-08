@@ -40,6 +40,10 @@
   var fad = null;      // varen fra menukortet
   var bobler = null;   // tilkøbet, hvis det findes i menukortet
   var ekstra = [];     // resten af fadets kategori — se findVarer()
+  /* Levering (8/10): adressekomponenten og dens svar — samme par som
+     forsidens (js/skal/bestil.js). Uden svar.klar sendes intet. */
+  var adresseKontrol = null;
+  var leveringsSvar = { klar: false, token: null, besked: '' };
 
   /* ⚠️ EN KNAP, DER PEGER PÅ ET SKJULT PANEL, GØR INGENTING — OG
      DET STOD LIVE HER (3/9).
@@ -220,7 +224,11 @@
     var vælger = find('#ttid');
     if (!vælger) return;
     var før = vælger.value;
-    var tider = R.tiderFor(data, valgtDag, varsel());
+    /* Levering spørger med sin spisemåde, så ejerens "Sidste levering"
+       (Åbningstider) gælder — som på forsiden. To-go og spis her står,
+       som de altid har stået. */
+    var tider = R.tiderFor(data, valgtDag, varsel(),
+      hvordanVal() === 'levering' ? 'levering' : undefined);
     tøm(vælger);
     tider.forEach(function (t) {
       var m = lav('option', null, 'kl. ' + Butik.klokken(t));   // punktum, husets ene form (5/9)
@@ -271,6 +279,35 @@
       her.value = 'spis_her';
       vælger.appendChild(her);
     }
+    /* ⚠️ LEVERING (8/10) — kun når ejeren har slået den til. Samme
+       kontakt som forsidens og smørrebrødets: en mulighed, der ikke
+       virker, er værre end ingen. */
+    if ((data.indstillinger || {}).levering === true) {
+      var lev = lav('option', null, 'Levering');
+      lev.value = 'levering';
+      vælger.appendChild(lev);
+    }
+  }
+
+  function hvordanVal() {
+    var h = find('#thow');
+    return h && h.value ? h.value : 'afhentning';
+  }
+
+  /* Adressen og dens linje står kun, når Levering er valgt. Linjen er
+     ejerens egne felter (Butik.leveringsTekst) — samme som forsidens. */
+  function visLevering() {
+    var felt = find('#tlevfelt');
+    if (!felt) return;
+    felt.hidden = hvordanVal() !== 'levering';
+    var hint = find('#tlev-hint');
+    if (hint && Butik.leveringsTekst) hint.textContent = Butik.leveringsTekst(data.indstillinger || {}).hint;
+  }
+
+  /* Fragten er reglens (R.levering): én gang pr. bestilling, kun ved
+     levering, og tom = ingen. Ingen kopi af tallet her. */
+  function fragt() {
+    return R.levering ? R.levering(data, hvordanVal()) : { pris: 0, ialt: 0 };
   }
 
   /* Cavaen står i designet med navn og pris. Findes den ikke i
@@ -396,8 +433,13 @@
     ex.forEach(function (x) {
       dele.push(x.n + ' × ' + x.v.navn + ' à ' + S.kroner(x.v.pris));
     });
-    if (hvordan) dele.push(hvordan.options[hvordan.selectedIndex].textContent);
-    if (tid && tid.value) dele.push('kl. ' + tid.value);
+    var lev = fragt();
+    if (hvordan) {
+      dele.push(lev.ialt ? 'Levering ' + S.kroner(lev.pris)
+        : hvordan.options[hvordan.selectedIndex].textContent);
+    }
+    // Punktum, husets ene klokkeslæt (Butik.klokken) — her stod "kl. 14:00" (8/10)
+    if (tid && tid.value) dele.push('kl. ' + Butik.klokken(tid.value));
 
     tøm(boks);
     /* Er prisen ikke sat i admin, står der "Pris følger" med fed
@@ -411,7 +453,8 @@
          på skærmen: sumboksen beholdt bare designets pladsholder,
          og formularen så helt rigtig ud. */
       var total = n * fad.pris + (b && bobler ? b * bobler.pris : 0)
-        + ex.reduce(function (s, x) { return s + x.n * x.v.pris; }, 0);
+        + ex.reduce(function (s, x) { return s + x.n * x.v.pris; }, 0)
+        + (lev.ialt || 0);
       boks.appendChild(lav('b', null, Butik.kroner(total, 'kr')));   /* én formaterer (5/9) */
     }
     boks.appendChild(document.createTextNode(dele.join(' · ')));
@@ -465,6 +508,23 @@
     // Reglen er Butik.tjek.telefon (28/9), ikke en kopi.
     var tlfFejl = Butik.tjek.telefon(tlf);
     if (tlfFejl) return brøl(tlfFejl, 'ttlf');
+    /* ⚠️ LEVERINGENS TRE SPØRGSMÅL — forsidens, i samme rækkefølge:
+       en adresse, en OFFICIEL adresse med serverens kvittering (uden
+       den afviser databasen alligevel), og ikke et postnummer, vi ved,
+       vi ikke kører til. */
+    var leveres = hvordanVal() === 'levering';
+    var adresse = leveres ? ((find('#tadr') || {}).value || '') : '';
+    if (leveres && adresse.trim().length < 5) {
+      return brøl('Skriv adressen, fadet skal køres til.', 'tadr');
+    }
+    if (leveres && adresseKontrol && !leveringsSvar.klar) {
+      return brøl(leveringsSvar.besked
+        || 'Vælg din adresse fra forslagene, så vi er sikre på, hvor fadet skal hen.', 'tadr');
+    }
+    if (leveres && R.leveringSvar && R.leveringSvar(data, adresse) === 'spoerg') {
+      return brøl('Vi kører ikke fast til den adresse. Ring til os, så aftaler vi det. '
+        + 'Eller vælg To-go.', 'tadr');
+    }
     if (!valgtDag || !tid || !tid.value) return brøl('Vælg en dag og et tidspunkt.');
 
     var linjer = [{ navn: fad.navn, antal: n, pris: fad.pris }];
@@ -472,6 +532,10 @@
     valgteEkstra().forEach(function (x) {
       linjer.push({ navn: x.v.navn, antal: x.n, pris: x.v.pris });
     });
+    /* Fragten som sin egen linje — samme navn og form som forsidens
+       (leveringsLinje), så databasens værn og køkkenets liste kender den. */
+    var lev = fragt();
+    if (lev.ialt) linjer.push({ navn: 'Levering', antal: 1, pris: lev.pris, emballage: true });
 
     var knap = find('button.g.solid.blk');
     /* ⚠️ HANDELSBETINGELSERNE, FØRSTE GANG PÅ ENHEDEN (14/9) — reglen
@@ -500,6 +564,10 @@
       hent_dato: valgtDag,
       hent_tid: tid.value,
       hvordan: hvordan ? hvordan.value : 'afhentning',
+      /* Kun ved levering; Butik.bestil sender ellers ingen adresse. Databasen
+         kræver kvitteringen og overskriver adressen med den validerede. */
+      leverings_adresse: leveres ? adresse : undefined,
+      leverings_token: leveres ? leveringsSvar.token : undefined,
       besked: besked,
       linjer: linjer,
     }).then(function (raekke) {
@@ -692,10 +760,34 @@
         visSum();
       });
     }
-    ['#ttid', '#thow'].forEach(function (v) {
-      var el = find(v);
-      if (el) el.addEventListener('change', visSum);
-    });
+    var tid = find('#ttid');
+    if (tid) tid.addEventListener('change', visSum);
+    var how = find('#thow');
+    if (how) {
+      how.addEventListener('change', function () {
+        visLevering();
+        visTider();   // levering har sin egen sidste tid
+        visSum();
+      });
+    }
+    visLevering();
+
+    /* Den officielle adresse — forsidens komponent med forsidens valg
+       (js/skal/bestil.js). Postnumrene spørges hos reglen, ikke læst her. */
+    var adr = find('#tadr');
+    var sky = window.MOSEDE_CLOUD || {};
+    if (adr && window.MosedeAdresse && sky.url) {
+      adresseKontrol = window.MosedeAdresse.tilslut(adr, {
+        status: find('#tlev-svar'),
+        lokation: Butik.LOKATION || 'mosede',
+        valideringUrl: sky.url + '/functions/v1/valider-levering',
+        postnumre: R.leveringsPostnr ? R.leveringsPostnr(data || {}) : [],
+        naarAendret: function (t) {
+          leveringsSvar = t;
+          if (fejlVises) visSum();
+        },
+      });
+    }
     var pers = find('#tpers');
     if (pers) pers.addEventListener('input', visSum);
 
