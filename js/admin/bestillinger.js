@@ -433,8 +433,11 @@
         virk: function () { visKilde = 'lugen'; tegnAlt(); } },
       /* ⚠️ LEVERINGERNE FOR SIG  (7/10). Mikkel: levering "bliver heller
          ikke gjort godt nok i admin". De stod blandet med to-go efter tid;
-         den, der skal køre, skal kunne se dagens ture alene. */
-      { id: 'levering', navn: '🚗 Levering', valgt: visKilde === 'levering',
+         den, der skal køre, skal kunne se dagens ture alene.
+         ⚠️ UDEN 🚗 (8/10): ingen emoji i filtrene — se prøven "filtrene
+         har ikke emoji i sig" (admin-design). Bilen står på kortene og på
+         tallet, ikke i filteret. */
+      { id: 'levering', navn: 'Levering', valgt: visKilde === 'levering',
         virk: function () { visKilde = 'levering'; tegnAlt(); } },
       { id: 'bordene', navn: 'Bordene', valgt: visKilde === 'bordene',
         virk: function () { visKilde = 'bordene'; tegnAlt(); } },
@@ -629,7 +632,7 @@
     }).length;
     if (ruten) {
       /* En knap, ikke et mærke (7/10): tallet er et spørgsmål — "hvilke?"
-         — og svaret er filteret "🚗 Levering" ovenfor. */
+         — og svaret er filteret "Levering" ovenfor. */
       var lev = lav('button', 'bestil-tal-pille lev',
         '🚗 ' + ruten + ' skal køres ud');
       lev.type = 'button';

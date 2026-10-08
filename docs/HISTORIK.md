@@ -7,6 +7,42 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LEVERINGENS TID: KØKKENET + KØRETUREN — OG PLATTEN VÆK FRA BORDENE** (8/10 —
+IKKE LIVE). Mikkel: *"der skal være noget in advance så de kan bestille til
+xx:xx så caféen kan nå det … nok sådan 30 min … Karlslunde 10-15 minutter …
+Køge 30 min, det samme med Tune og 20 min til Greve … det skal give mening"* og
+om platten ved bordene: *"nej de må ikke"*. "På vej"/"Leveret": *"nej"* — ikke
+bygget.
+- **Reglen** (`medKoeretur`, js/bestil-regler.js): en levering skal have
+  max(kategoriens varsel, køkkenets tid) + køreturen til adressens postnummer.
+  Før adressen er valgt, og for et postnummer uden tal, gælder den LÆNGSTE.
+  Kl. 13.00: to-go 13.30, Karlslunde 13.45, Greve 13.50 → 14.00, Køge/Tune
+  14.00. Linjen under tiden siger hvorfor ("ca. 45 min.: mindst 30 i køkkenet
+  og ca. 15 ud til Karlslunde"). Forsiden, smørrebrødet, bestil/ og tapas
+- **Admin**: Åbningstider → Levering har køkkenets tid og én rubrik pr.
+  postnummer; bestillingskortet siger "🚗 Kører senest kl. 13.30 · ca. 30 min.
+  ud til Køge" (samme regel som gæstens)
+- **Databasen**: `levering-tid-8-10.sql` (seed 30 / 2690 15 · 2670 20 · 4030 30
+  · 4600 30, kun hvis tallene ikke findes; værnet med SERVERENS postnummer).
+  Prøven 15/15, set fejle (7 uden lappen; "altid den længste" fælder nr. 2).
+  SQL-runden på friske databaser 1697/0 → 1713/0. er-vi-klar tjek 152
+- **Platten**: `chefens-rettelser-7-10.sql` afsnit 15 skriver bordets liste hel
+  (som den gælder i dag) minus Platter. Produktionskopien: 13 × JA, to gange
+- **Fanget undervejs**: postnummeret læses BAGFRA (et husnummer kan have fire
+  cifre); bestil/ tegnede ikke tiderne om ved skift hent/lever; vælgeren blev
+  stående på 14.00 efter Karlslunde (skud) — nu følger den tidligste med; uden
+  adressekomponent tegnede "change" listen om midt i et tryk (to
+  smørrebrødsprøver) — nu kun, når køreturen skifter; "🚗 Levering" i admins
+  filter brød "ingen emoji i filtrene" (telefonprøven)
+- Prøver: tests/levering-tid.spec.js (12), alle set fejle. 23 berørte filer:
+  computer 828 + mobil 836 bestået efter rettelserne
+- **Venter på ejeren**: køretid til Ishøj (2635), Solrød Strand (2680) og Lille
+  Skensved (4623) — de får 30 indtil da. Og: skal en levering stadig ringes op
+  før bekræftelse, eller bekræftes som to-go?
+- **Til live**: kør `chefens-rettelser-7-10.sql` og så `levering-tid-8-10.sql`
+  i SQL Editoren, FØR grenen flettes — ellers lover siden en tid, databasen
+  ikke kender (databasen er mildere: uden filen tager den imod)
+
 **LEVERING PÅ TAPAS** (8/10 — IKKE LIVE). Mikkel: *"ja levering på tapas også"*.
 Siden sagde "Vi kører det ud 79,-" (Jim 20/9), men formularen havde kun To-go og
 Spis her.

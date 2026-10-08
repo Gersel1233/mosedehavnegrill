@@ -1051,7 +1051,7 @@ test.describe('En levering er lovet et opkald', () => {
   /* ⚠️ ÉT TRYK, SÅ STÅR TUREN ALENE  (7/10). Mikkel: levering "bliver
      heller ikke gjort godt nok i admin". Tallet sagde HVOR MANGE, men
      ikke hvilke — leveringerne stod stadig blandet med afhentningerne.
-     Tallet er nu en knap, og filteret "🚗 Levering" holder kun dem. */
+     Tallet er nu en knap, og filteret "Levering" holder kun dem. */
   test('🚗-tallet viser leveringerne alene — afhentningen er væk', async ({ page }) => {
     const d = medLevering();
     d.bestillinger.push(b(3, I_DAG, '13:30', 'Mia Kjær', 'Rejemad', 1,
