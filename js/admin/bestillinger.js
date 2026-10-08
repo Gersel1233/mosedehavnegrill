@@ -873,6 +873,14 @@
         hvor.appendChild(lav('span', 'bestil-levering-ok',
           '✓ Kontrolleret hos Dataforsyningen'));
       }
+      /* Afgangstiden (8/10) — se Admin.leveringTekst. "op til", når
+         postnummeret ikke har sin egen køretid (så gælder den længste). */
+      if (lev.afgang) {
+        hvor.appendChild(lav('span', 'bestil-levering-afgang',
+          '🚗 Kører senest kl. ' + lev.afgang.kl + ' · '
+          + (lev.afgang.kendt ? 'ca. ' : 'op til ') + lev.afgang.koeretid + ' min. ud'
+          + (lev.afgang.kendt && lev.afgang.sted ? ' til ' + lev.afgang.sted : '')));
+      }
       levLinje.appendChild(hvor);
       if (lev.url) {
         var kort = document.createElement('a');

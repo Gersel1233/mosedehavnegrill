@@ -1324,7 +1324,32 @@
          noget, der er helt i orden. Fraværet af flueben er
          oplysning nok. */
       kontrolleret: !!String(b.leverings_token || '').trim(),
+      afgang: afgangFor(b, adr),
     };
+  }
+
+  /* ============================================================
+     HVORNÅR SKAL BILEN KØRE?  (8/10)
+     ------------------------------------------------------------
+     Gæsten har valgt, hvornår maden skal STÅ ved døren (hent_tid).
+     Køretiden til adressens postnummer er ejerens tal (Åbningstider →
+     Levering), og reglen er gæstens egen (R.leveringsTid) — så
+     køkkenet regner baglæns med præcis den tid, gæsten fik lovet.
+     Uden køretider findes linjen ikke.
+     ============================================================ */
+  function afgangFor(b, adr) {
+    var R = window.MosedeRegler;
+    if (!R || !R.leveringsTid || !R.postnrAf || !b.hent_tid) return null;
+    var a = R.postnrAf(adr);
+    var t = R.leveringsTid(Admin.data || {}, a ? a.postnr : null);
+    if (!t.koeretid) return null;
+    var p = String(b.hent_tid).split(':');
+    var min = Number(p[0]) * 60 + Number(p[1]) - t.koeretid;
+    if (!isFinite(min)) return null;
+    min = (min + 24 * 60) % (24 * 60);
+    var kl = ('0' + Math.floor(min / 60)).slice(-2) + ':' + ('0' + (min % 60)).slice(-2);
+    return { kl: Butik.klokken(kl), koeretid: t.koeretid, kendt: t.kendt,
+      sted: a ? (a.by || a.postnr) : null };
   }
 
   /* Den korte udgave: ét link, til en linje der har andet på sig

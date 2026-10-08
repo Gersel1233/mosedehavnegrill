@@ -2181,6 +2181,10 @@
            fra det forrige valg — og hun ville få nej på en dag,
            vælgeren sagde var ledig. */
         visDage();
+        /* ⚠️ OG TIDERNE (8/10). En levering skal have køkkenets tid +
+           køreturen; en afhentning ikke. Uden linjen her stod
+           afhentningens 13.30 i vælgeren, efter gæsten valgte levering. */
+        visTider();
         visStykker();
       });
       boks.appendChild(b);
@@ -2234,11 +2238,13 @@
           leveringsSvar = t;
           /* Noten ovenover skal følge med — se 16/9 nedenfor. */
           visAdresse();
+          nyLeveringsAdresse(t && t.klar ? t.adresse : '');
         },
       });
       felt.addEventListener('input', visAdresse);
     } else {
       felt.addEventListener('input', visAdresse);
+      felt.addEventListener('change', function () { nyLeveringsAdresse(felt.value); });
     }
   })();
 
@@ -2324,14 +2330,46 @@
         : 'Skriv postnummeret med, så kan vi sige med det samme, om vi kører derud.';
   }
 
+  /* ============================================================
+     LEVERINGENS TID  (8/10) — køkkenet + køreturen til adressens
+     postnummer (R.leveringsTid, js/bestil-regler.js). Reglen får
+     postnummeret her; tiderne tegnes om, kun når det skifter, og
+     linjen under vælgeren siger, hvad tiden består af.
+     ============================================================ */
+  function nyLeveringsAdresse(adresse) {
+    if (!R.saetLeveringsAdresse || !data) return;
+    var foer = R.leveringsTid(data).postnr;
+    R.saetLeveringsAdresse(data, adresse);
+    if (R.leveringsTid(data).postnr !== foer) visTider();
+  }
+  function visLevTid() {
+    var vaelg = $('bestil-tid');
+    if (!vaelg || !vaelg.parentNode) return;
+    var linje = vaelg.parentNode.querySelector('.lev-tid');
+    if (kurv.hvordan !== 'levering' || !R.leveringsTid) {
+      if (linje) linje.hidden = true;
+      return;
+    }
+    if (!linje) {
+      linje = document.createElement('p');
+      linje.className = 'hint lev-tid';
+      vaelg.parentNode.insertBefore(linje, vaelg.nextSibling);
+    }
+    linje.hidden = false;
+    linje.textContent = R.leveringsTidTekst(R.leveringsTid(data));
+  }
+
   function visTider() {
     var vaelg = $('bestil-tid');
     // Ved bordet findes tidsvælgeren ikke: gæsten sidder der nu.
     if (!vaelg) return;
     var foer = vaelg.value;
     tøm(vaelg);
+    visLevTid();
 
-    var tider = tiderFor(data, valgtDag);
+    /* Ved levering spørges der med spisemåden: køreturen og "Sidste
+       levering" skal med. Afhentning står, som den altid har stået. */
+    var tider = tiderFor(data, valgtDag, null, kurv.hvordan === 'levering' ? 'levering' : undefined);
     var ledige = [];
     tider.forEach(function (t) {
       /* ⚠️ EN FYLDT TID BLIVER STÅENDE OG SIGER HVORFOR. Uden

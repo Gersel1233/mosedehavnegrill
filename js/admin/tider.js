@@ -253,6 +253,51 @@
     if (akt && akt.id === 'levering-postnr') return;
     $('levering-postnr').value = Array.isArray(i.leverings_postnr)
       ? i.leverings_postnr.join(' ') : (i.leverings_postnr || '');
+    tegnKoeretider(i, akt);
+  }
+
+  /* ============================================================
+     LEVERINGENS TID  (8/10) — køkkenets minutter og én rubrik pr.
+     postnummer, med zonens navn ("2690 Karlslunde"), så personalet
+     ikke skal skrive et format. Rubrikkerne følger postnummerlisten
+     ovenfor; et tal for et postnummer, der er taget ud af listen,
+     bliver stående (der kan stå en levering på det endnu).
+     ⚠️ Røres ikke, mens nogen skriver i en af dem — takten tegner om.
+     ============================================================ */
+  function tegnKoeretider(i, akt) {
+    var vf = $('levering-varsel');
+    if (vf && !(akt && akt.id === 'levering-varsel')) {
+      vf.value = i.varsel_min_levering === undefined || i.varsel_min_levering === null
+        ? '' : String(i.varsel_min_levering);
+    }
+    var boks = $('levering-koeretid');
+    if (!boks || (akt && boks.contains(akt))) return;
+    var tider = (i.leverings_koeretid && typeof i.leverings_koeretid === 'object')
+      ? i.leverings_koeretid : {};
+    var navne = {};
+    ((i.leverings_zoner || {}).zoner || []).forEach(function (z) {
+      if (z && z.postnr) navne[String(z.postnr)] = z.navn;
+    });
+    var nr = (Array.isArray(i.leverings_postnr) ? i.leverings_postnr : [])
+      .map(String).concat(Object.keys(tider))
+      .filter(function (x, n, a) { return /^\d{4}$/.test(x) && a.indexOf(x) === n; })
+      .sort();
+    Admin.tøm(boks);
+    nr.forEach(function (p) {
+      var r = document.createElement('label');
+      r.className = 'koeretid';
+      r.appendChild(document.createTextNode(navne[p] || p));
+      var f = document.createElement('input');
+      f.type = 'text';
+      f.inputMode = 'numeric';
+      f.setAttribute('data-postnr', p);
+      f.placeholder = '—';
+      var v = tider[p];
+      f.value = v === undefined || v === null ? '' : String(v);
+      r.appendChild(f);
+      r.appendChild(document.createTextNode('min.'));
+      boks.appendChild(r);
+    });
   }
 
   /* ⚠️ TALLET OG OMRÅDET, IKKE SÆTNINGEN. leverings_pris er prosa
@@ -271,9 +316,36 @@
       pris = n;
     }
     var nr = ($('levering-postnr').value.match(/\d{4}/g) || []).map(Number);
+    /* Køkkenets tid og køretiderne (8/10). Tomt er tomt — ikke nul. */
+    var varsel = '';
+    var vraa = $('levering-varsel') ? $('levering-varsel').value.trim() : '';
+    if (vraa !== '') {
+      var vn = Number(vraa);
+      if (!isFinite(vn) || vn < 0 || vn > 600 || Math.round(vn) !== vn) {
+        return 'Køkkenets tid skal være et helt antal minutter mellem 0 og 600.';
+      }
+      varsel = vn;
+    }
+    var koer = {};
+    var koerFejl = null;
+    Array.prototype.forEach.call(document.querySelectorAll('#levering-koeretid [data-postnr]'), function (f) {
+      var t = f.value.trim();
+      if (t === '') return;
+      var n = Number(t);
+      if (!isFinite(n) || n < 0 || n > 180 || Math.round(n) !== n) {
+        koerFejl = 'Køretiden til ' + f.getAttribute('data-postnr') + ' skal være et helt antal minutter mellem 0 og 180.';
+      } else koer[f.getAttribute('data-postnr')] = n;
+    });
+    if (koerFejl) return koerFejl;
     return Butik.skrive.indstilling('leverings_gebyr', pris)
       .then(function () {
         return Butik.skrive.indstilling('leverings_postnr', nr);
+      })
+      .then(function () {
+        return $('levering-varsel') ? Butik.skrive.indstilling('varsel_min_levering', varsel) : null;
+      })
+      .then(function () {
+        return $('levering-koeretid') ? Butik.skrive.indstilling('leverings_koeretid', koer) : null;
       });
   }
 

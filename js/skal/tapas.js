@@ -304,6 +304,25 @@
     if (hint && Butik.leveringsTekst) hint.textContent = Butik.leveringsTekst(data.indstillinger || {}).hint;
   }
 
+  /* Leveringens tid under tidsvælgeren (8/10) — reglens tekst, som på
+     forsiden: køkkenet + køreturen til adressens postnummer. */
+  function visLevTid() {
+    var t = find('#ttid');
+    var felt = t && t.closest ? t.closest('.field') : null;
+    if (!felt) return;
+    var linje = felt.querySelector('.lev-tid');
+    if (hvordanVal() !== 'levering' || !R.leveringsTid) {
+      if (linje) linje.hidden = true;
+      return;
+    }
+    if (!linje) {
+      linje = lav('p', 'hint lev-tid');
+      felt.appendChild(linje);
+    }
+    linje.hidden = false;
+    linje.textContent = R.leveringsTidTekst(R.leveringsTid(data));
+  }
+
   /* Fragten er reglens (R.levering): én gang pr. bestilling, kun ved
      levering, og tom = ingen. Ingen kopi af tallet her. */
   function fragt() {
@@ -766,11 +785,13 @@
     if (how) {
       how.addEventListener('change', function () {
         visLevering();
-        visTider();   // levering har sin egen sidste tid
+        visTider();   // levering har sin egen sidste tid og sin køretur
+        visLevTid();
         visSum();
       });
     }
     visLevering();
+    visLevTid();
 
     /* Den officielle adresse — forsidens komponent med forsidens valg
        (js/skal/bestil.js). Postnumrene spørges hos reglen, ikke læst her. */
@@ -784,8 +805,21 @@
         postnumre: R.leveringsPostnr ? R.leveringsPostnr(data || {}) : [],
         naarAendret: function (t) {
           leveringsSvar = t;
+          /* Postnummeret til reglen — tiderne tegnes om, kun når det skifter. */
+          if (R.saetLeveringsAdresse) {
+            var foer = R.leveringsTid(data).postnr;
+            R.saetLeveringsAdresse(data, t && t.klar ? t.adresse : '');
+            if (R.leveringsTid(data).postnr !== foer) { visTider(); visLevTid(); visSum(); }
+          }
           if (fejlVises) visSum();
         },
+      });
+    } else if (adr && R.saetLeveringsAdresse) {
+      adr.addEventListener('change', function () {
+        R.saetLeveringsAdresse(data, adr.value);
+        visTider();
+        visLevTid();
+        visSum();
       });
     }
     var pers = find('#tpers');

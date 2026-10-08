@@ -851,6 +851,27 @@
               og kan vælge at hente selv.</p>
           </div>
         </div>
+        <!-- ⚠️ LEVERINGENS TID  (8/10). Mikkels ord: "der skal være noget in
+             advance så de kan bestille til xx:xx så caféen kan nå det … nok
+             sådan 30 min … Karlslunde 10-15 minutter … Køge 30 min, det
+             samme med Tune og 20 min til Greve". Gæsten vælger, hvornår
+             maden skal STÅ ved døren; den tidligste tid er køkkenets tid +
+             køreturen til adressens postnummer (js/bestil-regler.js), og
+             databasen regner det samme (levering-tid-8-10.sql). -->
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="levering-varsel">Køkkenets tid før en levering</label>
+            <input type="text" id="levering-varsel" inputmode="numeric" placeholder="fx 30">
+            <p class="hjaelp">Minutter. Tomt = som to-go. En kategori, der kræver
+              mere — smørrebrødets time, plattens døgn — vinder.</p>
+          </div>
+          <div class="felt">
+            <span class="felt-titel">Køretid ud til gæsten</span>
+            <div id="levering-koeretid" class="koeretider"></div>
+            <p class="hjaelp">Minutter, lagt oven i køkkenets tid. Et postnummer
+              uden tal får den længste køretid.</p>
+          </div>
+        </div>
         <!-- Den anden halvdel står et andet sted (7/10) — og siger det. -->
         <p class="hjaelp">Kontakten Til/Fra, området og teksten, gæsten læser, står
           under Bestillinger → Regler for bestilling.</p>
@@ -3529,6 +3550,11 @@
      et andet på hjemmesiden ville betyde, at ejeren leder efter 🍺
      i en liste, hvor øllet står med 🍽️. -->
 <script src="js/menu-emoji.js?v=__V__"></script>
+<!-- ⚠️ GÆSTENS EGNE REGLER (8/10). Leveringskortets afgangstid ("kører
+     senest kl. 12.40") regnes med den SAMME køretid, gæstens tidsvælger
+     bruger (R.leveringsTid). En kopi i admin ville en dag sige, at bilen
+     skulle køre senere, end gæsten fik lovet. -->
+<script src="js/bestil-regler.js?v=__V__"></script>
 <script src="js/admin/kerne.js?v=__V__"></script>
 <script src="js/admin/frisk.js?v=__V__"></script>
 <script src="js/admin/live.js?v=__V__"></script>

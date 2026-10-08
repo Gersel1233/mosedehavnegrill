@@ -2299,6 +2299,45 @@
      bestil-regler.js, som forsiden og bestil/ også spørger —
      to kopier af "kører vi derud?" ville betyde, at gæsten fik
      ja på den ene side og spørgsmål på den anden. */
+  /* ============================================================
+     LEVERINGENS TID UNDER TIDSVÆLGEREN  (8/10)
+     ------------------------------------------------------------
+     Tiderne i vælgeren regnes af reglen (køkkenet + køreturen, se
+     R.leveringsTid). Linjen her siger HVORFOR den tidligste tid er den,
+     den er — ellers ligner en levering, der først kan komme kl. 13.15,
+     en fejl. Teksten er reglens (R.leveringsTidTekst).
+     ============================================================ */
+  function visLevTid() {
+    var t = felt('tid');
+    if (!t || !t.parentNode) return;
+    var linje = t.parentNode.querySelector('.lev-tid');
+    if (hvordan() !== 'levering' || !R.leveringsTid) {
+      if (linje) linje.hidden = true;
+      return;
+    }
+    if (!linje) {
+      linje = lav('p', 'hint lev-tid');
+      t.parentNode.insertBefore(linje, t.nextSibling);
+    }
+    linje.hidden = false;
+    linje.textContent = R.leveringsTidTekst(R.leveringsTid(data));
+  }
+  /* Adressen er valgt (eller væk): reglen får postnummeret, og kun hvis
+     det SKIFTER, tegnes tiderne og listen om — ikke ved hvert tastetryk. */
+  function nyLeveringsAdresse(adresse) {
+    if (!R.saetLeveringsAdresse) return;
+    var foer = R.leveringsTid(data).postnr;
+    R.saetLeveringsAdresse(data, adresse);
+    if (R.leveringsTid(data).postnr === foer) return;
+    visTider();
+    visLevTid();
+    ryddedeKurven();
+    visVarer();
+    tegnFyld();
+    tegnStoerrelser();
+    visSum();
+  }
+
   /* ⚠️ ETIKETTEN SKAL FØLGE VALGET (4/9). MÅLT på et skud: gæsten
      havde trykket "Leveres" og skrevet sin adresse, og feltet
      lige nedenunder spurgte stadig "Hvornår henter I?". Et
@@ -3215,6 +3254,7 @@
           visSum();
           visLeveringsSvar();
           visTidLabel();
+          visLevTid();
           /* ⚠️ DAGENE SKAL TEGNES OM  (5/9). En dag kan være
              lukket for to-go og åben for spis her. Skiftede
              gæsten måde uden det her, stod de spærrede dage
@@ -3261,14 +3301,17 @@
         postnumre: R.leveringsPostnr ? R.leveringsPostnr(data || {}) : [],
         naarAendret: function (t) {
           leveringsSvar = t;
+          nyLeveringsAdresse(t && t.klar ? t.adresse : '');
           if (fejlVises) visSum();
         },
       });
     } else if (adr) {
       adr.addEventListener('input', visLeveringsSvar);
+      adr.addEventListener('change', function () { nyLeveringsAdresse(adr.value); });
       visLeveringsSvar();
     }
     visTidLabel();
+    visLevTid();
 
     /* ⚠️ "VI KØRER MADEN UD" FØRER HELT IND  (7/10). Heroens pille og
        nyhedsfeltet over formularen bærer [data-vaelg-levering]: et tryk vælger

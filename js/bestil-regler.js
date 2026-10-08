@@ -258,10 +258,111 @@
     var e = tiderneFor(d, katId);
     var n = Number(e.varsel_min);
     if (e.varsel_min !== undefined && e.varsel_min !== null && e.varsel_min !== ''
-        && isFinite(n) && n >= 0) return Math.round(n);
+        && isFinite(n) && n >= 0) return medKoeretur(d, Math.round(n), hvordan);
     var k = kanalVarsel(d, hvordan);
-    if (k !== null) return k;
-    return varselTimer(d) * 60;
+    if (k !== null) return medKoeretur(d, k, hvordan);
+    return medKoeretur(d, varselTimer(d) * 60, hvordan);
+  }
+
+  /* ============================================================
+     LEVERINGENS TID: KØKKENET + KØRETUREN  (8/10)
+     ------------------------------------------------------------
+     Mikkels ord: *"når levering er der, der skal være noget in
+     advance så de kan bestille til xx:xx så caféen kan nå det … nok
+     sådan 30 min … hvis de bor i Karlslunde er det typisk 10-15
+     minutter til kunden får maden, hvis det er Køge kan det godt være
+     30 min, det samme med Tune og 20 min til Greve … det skal give
+     mening"*.
+
+     Gæsten vælger, hvornår maden skal STÅ ved døren. Så skal køkkenet
+     have sin tid (varsel_min_levering; en kategori, der kræver mere,
+     vinder — smørrebrødets time, plattens døgn), og bilen sin
+     (leverings_koeretid: minutter pr. postnummer). De to lægges sammen.
+
+     ⚠️ ET POSTNUMMER UDEN TAL FÅR DEN LÆNGSTE KØRETID — og det samme,
+     før adressen er valgt. Hellere en tid for sent i vælgeren end en
+     levering, bilen ikke kan nå. Uden en eneste køretid er den 0.
+     ⚠️ KØKKENETS TID ER ET GULV for en levering: en kategori med et
+     kortere varsel end den løftes op til den. I dag har kun
+     smørrebrød, håndmadder og platter deres eget varsel, og alle er
+     længere end køkkenets 30.
+     ⚠️ ADRESSEN BOR IKKE I `d`. Formularen fortæller reglen, hvor maden
+     skal hen (saetLeveringsAdresse), og svaret gemmes VED SIDEN AF
+     data: øvetilstanden gemmer `d`, og en adresse i den ville stå der
+     ved næste besøg.
+     Databasen regner det samme (supabase/levering-tid-8-10.sql).
+     ============================================================ */
+  var leveringsAdr = typeof WeakMap === 'function' ? new WeakMap() : null;
+  /* Postnummer og by af en adresse. ⚠️ BAGFRA: Dataforsyningens adresse
+     slutter altid med ", 2690 Karlslunde", og et husnummer kan også have
+     fire cifre ("Strandvejen 1000, …"). Kun en håndskrevet adresse uden
+     komma falder tilbage på det første firecifrede tal. Admin's
+     afgangstid læser med den samme. */
+  function postnrAf(adresse) {
+    var s = String(adresse || '');
+    var m = s.match(/(?:^|,)\s*(\d{4})\s+([^,]+?)\s*$/) || s.match(/\b(\d{4})\b\s*([^,]*)/);
+    return m ? { postnr: m[1], by: String(m[2] || '').trim() } : null;
+  }
+  function saetLeveringsAdresse(d, adresse) {
+    if (!leveringsAdr || !d || typeof d !== 'object') return;
+    var a = postnrAf(adresse);
+    if (a) leveringsAdr.set(d, a);
+    else leveringsAdr.delete(d);
+  }
+  function minTal(v) {
+    var n = Number(v);
+    return (v !== undefined && v !== null && String(v).trim() !== '' && isFinite(n) && n >= 0)
+      ? Math.round(n) : null;
+  }
+  function koeretid(d, postnr) {
+    var t = (d.indstillinger || {}).leverings_koeretid;
+    var alle = [];
+    if (t && typeof t === 'object') {
+      Object.keys(t).forEach(function (k) { var n = minTal(t[k]); if (n !== null) alle.push(n); });
+    }
+    if (!alle.length) return 0;
+    var p = postnr !== undefined ? postnr
+      : ((leveringsAdr && leveringsAdr.get(d)) || {}).postnr;
+    var eget = p ? minTal(t[String(p)]) : null;
+    return eget !== null ? eget : Math.max.apply(null, alle);
+  }
+  /* Køkkenets tid før en levering: ejerens eget tal, ellers to-go'ens. */
+  function leveringsKoekken(d) {
+    var n = minTal((d.indstillinger || {}).varsel_min_levering);
+    if (n !== null) return n;
+    var k = kanalVarsel(d, 'levering');
+    return k !== null ? k : varselTimer(d) * 60;
+  }
+  function medKoeretur(d, minutter, hvordan) {
+    if (hvordan !== 'levering') return minutter;
+    return Math.max(minutter, leveringsKoekken(d)) + koeretid(d);
+  }
+  /* Teksten under tidsvælgeren — ÉN gang her, så forsiden, smørrebrødet,
+     bestil/ og tapas siger det samme med de samme tal. */
+  function leveringsTidTekst(l) {
+    if (!l) return '';
+    if (!l.koeretid) return 'Køkkenet skal have mindst ' + l.koekken + ' min., før maden kører.';
+    if (l.kendt) {
+      return 'Leveringen tager ca. ' + l.ialt + ' min.: mindst ' + l.koekken
+        + ' min. i køkkenet og ca. ' + l.koeretid + ' min. ud til ' + (l.by || l.postnr) + '.';
+    }
+    if (l.postnr) {
+      return 'Leveringen tager op til ' + l.ialt + ' min.: mindst ' + l.koekken
+        + ' min. i køkkenet og op til ' + l.koeretid + ' min. ud til jer.';
+    }
+    return 'Køkkenet skal have mindst ' + l.koekken + ' min., og køreturen tager op til '
+      + l.koeretid + ' min. Vælg adressen, så ser du de tidligste tider.';
+  }
+  /* Til teksten under tidsvælgeren og til admin's afgangstid. */
+  function leveringsTid(d, postnr) {
+    var a = (leveringsAdr && leveringsAdr.get(d)) || {};
+    var p = postnr !== undefined ? postnr : a.postnr;
+    var t = (d.indstillinger || {}).leverings_koeretid;
+    var kendt = !!(p && t && typeof t === 'object' && minTal(t[String(p)]) !== null);
+    var koer = koeretid(d, p);
+    var koek = leveringsKoekken(d);
+    return { koekken: koek, koeretid: koer, ialt: koek + koer, postnr: p || null,
+      by: postnr === undefined ? (a.by || null) : null, kendt: kendt };
   }
 
   /* Kan DEN kategori hentes på det tidspunkt? Svaret er et objekt
@@ -547,7 +648,7 @@
   function mindsteVarsel(d, katIds, hvordan) {
     if (!katIds || !katIds.length) {
       var k = kanalVarsel(d, hvordan);
-      return k === null ? varselTimer(d) * 60 : k;
+      return medKoeretur(d, k === null ? varselTimer(d) * 60 : k, hvordan);
     }
     var mindst = null;
     katIds.forEach(function (id) {
@@ -878,6 +979,10 @@
     levering: levering,
     leveringsGebyr: leveringsGebyr,
     leveringsPostnr: leveringsPostnr,
+    postnrAf: postnrAf,
+    saetLeveringsAdresse: saetLeveringsAdresse,
+    leveringsTid: leveringsTid,
+    leveringsTidTekst: leveringsTidTekst,
     leveringSvar: leveringSvar,
     mindsteVarsel: mindsteVarsel,
     varselFor: varselFor,

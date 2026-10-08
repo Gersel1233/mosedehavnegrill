@@ -4754,6 +4754,9 @@ body.personale .nyhed-knapper {
    85 % giver 3,92:1, og 12 px skrift skal have 4,5:1. 95 % måler
    4,57:1. Den slags ses ikke med øjet — den skal regnes. */
 .bestil-levering-ok { font-size: 12px; color: rgba(255, 255, 255, .95); }
+/* Bilens afgangstid (8/10) — samme røde bjælke, lidt mere vægt end fluebenet:
+   det er tallet, køkkenet planlægger efter. */
+.bestil-levering-afgang { font-size: 13px; font-weight: 700; color: #fff; }
 .bestil-levering-kort {
   margin-left: auto;
   flex: none;
@@ -9807,6 +9810,34 @@ body.personale button.bestil-tal-pille {
   cursor: pointer;
 }
 body.personale button.bestil-tal-pille:hover { background: rgba(214, 42, 58, .14); }
+
+/* ---- Leveringens køretider (8/10) — Åbningstider → Levering ----
+   Én rubrik pr. postnummer med zonens navn. Titlen er en etiket for en
+   GRUPPE af felter (ikke ét), derfor en span med etikettens udseende. */
+body.personale .felt-titel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  margin-bottom: 6px;
+}
+body.personale .koeretider {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 6px 14px;
+}
+body.personale label.koeretid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 500;
+}
+body.personale label.koeretid input {
+  width: 4.5em;
+  margin-left: auto;
+  text-align: right;
+}
 
 /* ---- De to grupper i listen ---- */
 body.personale .bestil-gruppe {
