@@ -402,7 +402,11 @@ select pg_temp.ret('Lun delle, steg eller leverpostej med brød og surt',
 
 /* ⚠️ 189 — MIKKEL 7/10: *"Kontrollér samtidig priserne på hjemmesiden:
    Platte 189,-, Juleplatte 199,-."* Chefens første besked og
-   korrekturen af kort 1 sagde 199; Mikkels afklaring er den seneste. */
+   korrekturen af kort 1 sagde 199; Mikkels afklaring er den seneste.
+   ⚠️ OG DET ER MED VILJE, AT KORTET OG SIDEN ER UENIGE  (Mikkel 8/10):
+   *"på hjemmesiden skal den almindelige Platte være 189,- … Det trykte
+   kort står fortsat med Platte 199,-"*. Juleplatten (199) er en anden
+   vare og kun på hjemmesiden — den skal ikke på tryksagen. */
 select pg_temp.pris('Platter', 'Platte', 189);
 /* ⚠️ "SKAL BESTILLES" BLIVER — den nye tekst lægges til. Chefens
    besked sagde ikke, at den skulle ud (Mikkel 7/10), og kort 1 skriver
@@ -416,7 +420,9 @@ select pg_temp.ny('Platter', 'Juleplatte', 199, 'Inkl. friskbagt brød og smør'
 --  12) SMØRREBRØD OG HÅNDMADDER
 --     "Hjemmelavet" foran — kun i de to kategorier (se noten øverst).
 --     ⚠️ Chefen nævner frikadellen under smørrebrød, men IKKE under
---     håndmadder. Den håndmad står urørt, til han har svaret.
+--     håndmadder. Den håndmad står urørt — Mikkel 8/10: *"Behold den som
+--     'Frikadelle med surt'. Chefen bad kun om 'Hjemmelavet' foran
+--     flæskesteg og roastbeef under håndmadder."*
 -- ------------------------------------------------------------
 select pg_temp.ret('Flæskesteg med surt', 'Hjemmelavet flæskesteg med surt', kategori => 'Smørrebrød');
 select pg_temp.ret('Frikadelle med surt', 'Hjemmelavet frikadelle med surt', kategori => 'Smørrebrød');
@@ -433,6 +439,21 @@ select pg_temp.en('Håndmadder', 'Hjemmelavet roastbeef med remoulade og løg, h
 /* Chefen: *"Fiskefilet med Rejer og Mayo +10,-kr."* — grundprisen er
    55, altså 65. Kun smørrebrødet; fyldet uden pris røres ikke. */
 select pg_temp.pris('Smørrebrød', 'Fiskefilet med rejer og mayo', 65);
+/* Og teksten under, som på det trykte kort (Mikkel 8/10: *"må der gerne
+   stå '+10,- i forhold til almindeligt smørrebrød', men selve prisen skal
+   være 65,-"*). ⚠️ Kun hvis varen ingen tekst har — har ejeren skrevet
+   noget selv, står det. Den engelske følger med; uden den ville den
+   engelske side vise den danske sætning (Butik.paaSprog falder tilbage). */
+update public.menu_varer mv
+   set beskrivelse = '+10,- i forhold til almindeligt smørrebrød'
+  from public.menu_kategorier mk
+ where mk.id = mv.kategori_id
+   and mk.lokation_id = 'mosede'
+   and btrim(mk.navn) = 'Smørrebrød'
+   and btrim(mv.navn) = 'Fiskefilet med rejer og mayo'
+   and nullif(btrim(mv.beskrivelse), '') is null;
+select pg_temp.en('Smørrebrød', 'Fiskefilet med rejer og mayo', 'Fish fillet with prawns & mayo',
+                  '+10,- compared with regular smørrebrød');
 
 /* Chefen: *"Tartar skal IKKE bestilles dagen før."* Teksten står tre
    steder i databasen: på varen og i smørrebrødets note. (Boksene på
@@ -717,6 +738,11 @@ select
                          where lokation_id = 'mosede' and noegle = 'leverings_pris'
                            and vaerdi::text like '%200%')
        then 'JA' else '** NEJ **' end                        as levering_uden_200_kr,
+  /* Fiskefileten med rejer: 65, og en tekst under (afsnit 12, Mikkel 8/10). */
+  case when (select pris from v where kat = 'Smørrebrød' and navn = 'Fiskefilet med rejer og mayo') = 65
+        and (select nullif(btrim(beskrivelse), '') from v
+              where kat = 'Smørrebrød' and navn = 'Fiskefilet med rejer og mayo') is not null
+       then 'JA' else '** NEJ **' end                        as fiskefilet_65_med_tekst,
   /* Platten står ikke på bordets liste (afsnit 15) — og listen findes,
      så bordet ikke falder tilbage på forsidens, hvor platten står. */
   case when not exists (select 1 from public.menu_kategorier

@@ -7,6 +7,25 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**JIMS BESKED 7/10 GENNEMGÅET IGEN — OG MIKKELS SVAR 8/10** (8/10 — IKKE LIVE).
+Mikkel: *"hvad med menukortene og siden ift … jims tidligere besked"*. Jims besked
+holdt punkt for punkt op mod produktionens rækker (læst 8/10 med anon-nøglen) med
+`chefens-rettelser-7-10.sql` kørt to gange lokalt, og mod menukortet og Bestil mad
+i øvetilstand med de samme data. Alt står, med Mikkels svar 8/10:
+- **Platte 189,- på hjemmesiden**, 199,- på det trykte kort — med vilje. Juleplatte
+  199,- er en anden vare og KUN på hjemmesiden (ikke på tryksagen)
+- **Fiskefilet med rejer og mayo 65,-** med teksten "+10,- i forhold til
+  almindeligt smørrebrød" (som trykkortet; engelsk med). Kun hvis varen ingen tekst
+  har. Ny rapportkolonne `fiskefilet_65_med_tekst`, set sige NEJ uden opdateringen
+- **"Frikadelle med surt" på håndmadder står urørt** — Jim bad kun om "Hjemmelavet"
+  foran flæskesteg og roastbeef
+- Isvand, kande 25,- og hvidløgsbrødet 45,- (de gamle priser)
+- MÅLT i produktionen 8/10: smørrebrød og håndmadder står til et DØGNS varsel, og
+  leveringsteksten siger igen "under 200 kr." — begge rettes af filen (afsnit 13, 14)
+- "98 skjult" i admin (Menukort → Skjult) = 32 fyld i den slukkede "Vælg fyld til
+  smørrebrødet", 11 ispinde og 55 gamle/udgåede varer. Efter filen: 95
+- Kortet som filer efter SQL'en (md/csv) sendt til Mikkel til de nye tryk
+
 **LEVERINGENS TID: KØKKENET + KØRETUREN — OG PLATTEN VÆK FRA BORDENE** (8/10 —
 IKKE LIVE). Mikkel: *"der skal være noget in advance så de kan bestille til
 xx:xx så caféen kan nå det … nok sådan 30 min … Karlslunde 10-15 minutter …
