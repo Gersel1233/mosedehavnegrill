@@ -2323,13 +2323,26 @@
     linje.textContent = R.leveringsTidTekst(R.leveringsTid(data));
   }
   /* Adressen er valgt (eller væk): reglen får postnummeret, og kun hvis
-     det SKIFTER, tegnes tiderne og listen om — ikke ved hvert tastetryk. */
+     det SKIFTER, tegnes tiderne og listen om — ikke ved hvert tastetryk.
+     ⚠️ STOD VÆLGEREN PÅ DEN TIDLIGSTE, BLIVER DEN PÅ DEN TIDLIGSTE. MÅLT
+     på et skud: før adressen er 14.00 den første tid (den længste
+     køretur); Karlslunde gør 13.45 mulig, men vælgeren blev stående på
+     14.00, som gæsten aldrig valgte — under en linje, der sagde "ca. 45
+     min.". En tid, gæsten selv har flyttet, røres ikke. Samme greb i
+     js/bestilling.js. */
+  function førsteLedige(v) {
+    var o = v ? v.querySelector('option:not([disabled])') : null;
+    return o ? o.value : null;
+  }
   function nyLeveringsAdresse(adresse) {
     if (!R.saetLeveringsAdresse) return;
     var foer = R.leveringsTid(data).postnr;
     R.saetLeveringsAdresse(data, adresse);
     if (R.leveringsTid(data).postnr === foer) return;
+    var v = felt('tid');
+    var tidligst = !!v && v.value !== '' && v.value === førsteLedige(v);
     visTider();
+    if (tidligst && førsteLedige(v) !== null) v.value = førsteLedige(v);
     visLevTid();
     ryddedeKurven();
     visVarer();

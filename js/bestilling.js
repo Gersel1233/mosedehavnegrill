@@ -2336,11 +2336,21 @@
      postnummeret her; tiderne tegnes om, kun når det skifter, og
      linjen under vælgeren siger, hvad tiden består af.
      ============================================================ */
+  /* ⚠️ Stod vælgeren på den tidligste tid, bliver den på den tidligste —
+     se nyLeveringsAdresse i js/skal/bestil.js (målt på et skud 8/10). */
+  function førsteLedige(v) {
+    var o = v ? v.querySelector('option:not([disabled])') : null;
+    return o ? o.value : null;
+  }
   function nyLeveringsAdresse(adresse) {
     if (!R.saetLeveringsAdresse || !data) return;
     var foer = R.leveringsTid(data).postnr;
     R.saetLeveringsAdresse(data, adresse);
-    if (R.leveringsTid(data).postnr !== foer) visTider();
+    if (R.leveringsTid(data).postnr === foer) return;
+    var v = $('bestil-tid');
+    var tidligst = !!v && v.value !== '' && v.value === førsteLedige(v);
+    visTider();
+    if (tidligst && førsteLedige(v) !== null) v.value = førsteLedige(v);
   }
   function visLevTid() {
     var vaelg = $('bestil-tid');

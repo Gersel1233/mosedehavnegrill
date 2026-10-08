@@ -9823,7 +9823,9 @@ body.personale .felt-titel {
 }
 body.personale .koeretider {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  /* 220 og ikke mindre: ved 190 brød "2690 Karlslunde" over to linjer
+     ved siden af sin rubrik (målt på et skud 8/10). */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 6px 14px;
 }
 body.personale label.koeretid {
@@ -9832,6 +9834,7 @@ body.personale label.koeretid {
   gap: 8px;
   margin: 0;
   font-weight: 500;
+  white-space: nowrap;
 }
 body.personale label.koeretid input {
   width: 4.5em;

@@ -161,12 +161,25 @@ test.describe('Leveringens tid — forsiden', () => {
 
     await vælgAdresse(page, KARLSLUNDE.adresse);
     await expect(førsteTid(page, '#tid')).toHaveText('kl. 13.45');   // 13.00 + 30 + 15
+    /* ⚠️ OG VÆLGEREN FØLGER MED. Gæsten rørte den ikke; 14.00 var bare den
+       første før adressen. Blev den stående, sagde linjen "ca. 45 min."
+       under en tid en time ude (målt på et skud). */
+    await expect(page.locator('#tid')).toHaveValue('13:45');
     await expect(page.locator('.lev-tid')).toContainText('ca. 45 min.');
     await expect(page.locator('.lev-tid')).toContainText('Karlslunde');
 
     await page.locator(TOGO).click();
     await expect(førsteTid(page, '#tid')).toHaveText('kl. 13.30');
     await expect(page.locator('.lev-tid')).toBeHidden();
+  });
+
+  test('en tid, gæsten selv har valgt, flytter adressen ikke', async ({ page }) => {
+    await forsiden(page, KARLSLUNDE);
+    await page.locator(LEVERING).click();
+    await page.locator('#tid').selectOption('15:00');
+    await vælgAdresse(page, KARLSLUNDE.adresse);
+    await expect(førsteTid(page, '#tid')).toHaveText('kl. 13.45');
+    await expect(page.locator('#tid')).toHaveValue('15:00');
   });
 
   test('Køge får sine 30 minutter ud', async ({ page }) => {
@@ -192,6 +205,7 @@ test.describe('Leveringens tid — bestil/ og tapas', () => {
     await page.locator('#bestil-adresse').fill('Karlslunde Strandvej 10, 2690 Karlslunde');
     await page.locator('#bestil-adresse').blur();
     await expect(førsteTid(page, '#bestil-tid')).toHaveText(/13\.45/);
+    await expect(tid).toHaveValue('13:45');
     await expect(page.locator('.lev-tid')).toContainText('ca. 15 min. ud til Karlslunde');
     await expect(tid).toBeVisible();
   });
