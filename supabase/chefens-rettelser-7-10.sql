@@ -527,6 +527,76 @@ update public.indstillinger
  where lokation_id = 'mosede' and noegle = 'leverings_pris'
    and vaerdi::text like '%200%';
 
+-- ------------------------------------------------------------
+--  15) PLATTEN SÆLGES IKKE VED BORDET  (8/10)
+--      Mikkel 8/10, om platten ved bordene: *"nej de må ikke"*.
+--      Bordet har intet varsel, og platten skal bestilles et døgn
+--      før (afsnit 13) — ved bordet ville den kunne bestilles nu.
+--      Samme greb som fluebenet "QR-koden ved bordene" i admin →
+--      Menukort: bordets liste (bestilbare_kategorier_bord) skrives
+--      HEL, som den gælder i dag, minus Platter.
+--      ⚠️ "SOM DEN GÆLDER I DAG" ER Butik.salgsKategorier (js/store.js):
+--      bordets egen liste, ellers forsidens, ellers smørrebrødets
+--      kategorier + bestilbare_kategorier. En tom bordliste ville være
+--      "intet ved bordene"; en liste uden de andre ville tage dem med.
+--      ⚠️ Kun hvis Platter står der — kan køres igen, og et flueben,
+--      ejeren har sat siden, røres ikke. Forsiden og smørrebrødet
+--      sælger platten som før.
+-- ------------------------------------------------------------
+create or replace function pg_temp.ids(j jsonb) returns bigint[]
+language sql as $$
+  select coalesce(array_agg((e.x #>> '{}')::bigint order by e.n), '{}'::bigint[])
+    from jsonb_array_elements(case when jsonb_typeof(j) = 'array' then j else '[]'::jsonb end)
+         with ordinality as e(x, n)
+   where (e.x #>> '{}') ~ '^[0-9]+$';
+$$;
+
+do $$
+declare
+  v_bord    jsonb;
+  v_forside jsonb;
+  v_liste   bigint[];
+  v_platter bigint[];
+begin
+  select array_agg(k.id) into v_platter
+    from public.menu_kategorier k
+   where k.lokation_id = 'mosede' and btrim(k.navn) = 'Platter';
+  if v_platter is null then return; end if;
+
+  select vaerdi into v_bord from public.indstillinger
+   where lokation_id = 'mosede' and noegle = 'bestilbare_kategorier_bord';
+  select vaerdi into v_forside from public.indstillinger
+   where lokation_id = 'mosede' and noegle = 'bestilbare_kategorier_forside';
+
+  if jsonb_typeof(v_bord) = 'array' then
+    v_liste := pg_temp.ids(v_bord);
+  elsif jsonb_typeof(v_forside) = 'array' then
+    v_liste := pg_temp.ids(v_forside);
+  else
+    /* Butik.smoerrebroed: de tændte kategorier med smørrebrød, håndmad
+       eller fyld i navnet — og så bestilbare_kategorier, uden dubletter. */
+    select coalesce(array_agg(k.id order by k.sortering, k.id), '{}'::bigint[]) into v_liste
+      from public.menu_kategorier k
+     where k.lokation_id = 'mosede' and k.aktiv is not false
+       and k.navn ~* '(smørrebrød|håndmad|fyld)';
+    v_liste := v_liste || array(
+      select a.id from unnest(pg_temp.ids((select vaerdi from public.indstillinger
+                                            where lokation_id = 'mosede'
+                                              and noegle = 'bestilbare_kategorier')))
+             with ordinality as a(id, n)
+       where a.id <> all (v_liste) order by a.n);
+  end if;
+
+  if not (v_liste && v_platter) then return; end if;
+
+  insert into public.indstillinger (lokation_id, noegle, vaerdi)
+  values ('mosede', 'bestilbare_kategorier_bord',
+          to_jsonb(array(select a.id from unnest(v_liste) with ordinality as a(id, n)
+                          where a.id <> all (v_platter) order by a.n)))
+  on conflict (lokation_id, noegle)
+  do update set vaerdi = excluded.vaerdi, aendret = now();
+end $$;
+
 commit;
 
 
@@ -647,6 +717,19 @@ select
                          where lokation_id = 'mosede' and noegle = 'leverings_pris'
                            and vaerdi::text like '%200%')
        then 'JA' else '** NEJ **' end                        as levering_uden_200_kr,
+  /* Platten står ikke på bordets liste (afsnit 15) — og listen findes,
+     så bordet ikke falder tilbage på forsidens, hvor platten står. */
+  case when not exists (select 1 from public.menu_kategorier
+                         where lokation_id = 'mosede' and btrim(navn) = 'Platter')
+         or ((select jsonb_typeof(vaerdi) from public.indstillinger
+               where lokation_id = 'mosede' and noegle = 'bestilbare_kategorier_bord') = 'array'
+             and not exists (
+               select 1 from public.menu_kategorier k
+                where k.lokation_id = 'mosede' and btrim(k.navn) = 'Platter'
+                  and k.id = any (pg_temp.ids((select vaerdi from public.indstillinger
+                                                where lokation_id = 'mosede'
+                                                  and noegle = 'bestilbare_kategorier_bord')))))
+       then 'JA' else '** NEJ **' end                        as platter_ikke_ved_bordet,
   (select count(*) from v where navn in ('Blandet salat', 'Hjemmelavet hvidløgsbrød med tomat & ost',
      'Morgen komplet', 'Hjemmelavet biksemad med spejlæg',
      'Lun delle, steg eller leverpostej med brød og surt', 'RTD', 'Isvand',

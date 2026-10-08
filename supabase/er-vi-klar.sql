@@ -1312,7 +1312,18 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and p.prosrc like '%bestilling_bremse_bord%'
        and p.prosrc like '%slettet is null%'),
    'En travl dag ved bordene kan lukke for al online-bestilling. '
-   || 'Kør supabase/bremse-uden-borde-26-9.sql.')
+   || 'Kør supabase/bremse-uden-borde-26-9.sql.'),
+
+  /* 8/10: en levering skal have køkkenets tid + køreturen til
+     adressens postnummer — siden regner det, og databasen skal afvise
+     det samme. Linjen siger ❌ igen, hvis gaestens-vaern-26-9.sql eller
+     tilvalg-og-tidsbegraensede-varer-1-10.sql køres EFTER
+     levering-tid-8-10.sql. */
+  (152, 'Bestillinger', 'En levering får køkkenets tid og køreturen til postnummeret',
+   (select coalesce(pg_get_functiondef(to_regproc('public.mosede_gaestens_regler'))
+                    like '%leverings_koeretid%', false)),
+   'En gammel fane kan bestille en levering til Køge om et kvarter. '
+   || 'Kør supabase/levering-tid-8-10.sql.')
 ),
 
 samlet as (

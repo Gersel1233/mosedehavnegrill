@@ -59,7 +59,25 @@ og derfra:
   → kortene-endelige-1-10.sql
   → engelsk-menukort-2-10.sql
   → chefens-rettelser-7-10.sql
+  → levering-tid-8-10.sql
 ```
+
+**⚠️ `levering-tid-8-10.sql` (8/10) — IKKE KØRT I PRODUKTIONEN. SKAL STÅ EFTER
+`tilvalg-og-tidsbegraensede-varer-1-10.sql`.** Mikkel 8/10: *"der skal være noget
+in advance så de kan bestille til xx:xx så caféen kan nå det … nok sådan 30 min …
+Karlslunde 10-15 minutter … Køge 30 min, det samme med Tune og 20 min til Greve"*.
+En levering får køkkenets tid (`varsel_min_levering`, 30) + køreturen til
+adressens postnummer (`leverings_koeretid`: 2690 15, 2670 20, 4030 30, 4600 30).
+En kategori, der kræver mere (smørrebrødets time, plattens døgn), vinder over
+køkkenets 30 — køreturen lægges oveni. Et postnummer uden tal (Ishøj, Solrød
+Strand, Lille Skensved indtil videre) får den længste. Postnummeret er
+**serverens** (kvitteringen fra `valider-levering`), ikke det, gæsten skrev.
+Siden regner det samme i `js/bestil-regler.js` (`medKoeretur`).
+De to tal sættes kun, hvis de ikke findes — ejeren retter dem i admin →
+Åbningstider → Levering. Funktionen er 1-10-filens tekst ord for ord med én lap,
+og produktionens tekst var byte for byte 1-10-filens (målt 1/10).
+Prøven er `proev-levering-tid-8-10.sql` — 15 af 15. Set fejle: uden lappen falder
+7 af de 15; et værn, der altid tog den længste køretid, fælder nr. 2.
 
 **⚠️ `chefens-rettelser-7-10.sql` (7/10) — IKKE KØRT I PRODUKTIONEN.** Mikkel:
 *"Rør ikke live endnu."* Chefens besked med rettelser pr. afsnit, det der kan
@@ -302,6 +320,7 @@ tavst — derfor listen:
 | `dagsregler.sql`, `lukkedag-vaern.sql` eller `dagsbesked-og-qr.sql` | `aabent-og-antal-vaern.sql` | åbningstiderne skrives ud af værnet (tjek 136) |
 | `bremse.sql` | `skraldespand.sql` og `bremse-uden-borde-26-9.sql` | bordene tæller med i de 40 i timen igen, så en travl dag ved bordene lukker for al online-bestilling (tjek 151) |
 | `gaestens-regler.sql`, `kanal-vaern.sql`, `levering-valideret.sql` eller `bord-plads.sql` | `gaestens-vaern-26-9.sql` | den gamle dør ("kun rollen anon") kommer tilbage, så en bruger, der har oprettet sig selv, slipper uden om gæstens regler — og linjens antal og bordets dato holder op med at blive tjekket (tjek 150) |
+| `gaestens-regler.sql`, `gaestens-vaern-26-9.sql` eller `tilvalg-og-tidsbegraensede-varer-1-10.sql` | `levering-tid-8-10.sql` | leveringens køretur forsvinder, så en gammel fane kan bestille en levering til Køge om et kvarter (tjek 152) |
 
 Og to rækkefølger inden i rækkefølgen: `bestilling-dato-vaern.sql` FØR
 `bestillingsnummer.sql`, og `dato-vaern-resten.sql` FØR `bordnummer.sql` — ellers
