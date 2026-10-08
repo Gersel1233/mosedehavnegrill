@@ -2322,8 +2322,15 @@
     linje.hidden = false;
     linje.textContent = R.leveringsTidTekst(R.leveringsTid(data));
   }
-  /* Adressen er valgt (eller væk): reglen får postnummeret, og kun hvis
-     det SKIFTER, tegnes tiderne og listen om — ikke ved hvert tastetryk.
+  /* Adressen er valgt (eller væk): reglen får postnummeret. Linjen under
+     tiden følger byen; tiderne og listen tegnes kun om, når KØRETUREN
+     skifter (en kategori kan nå eller ikke nå tiden med den).
+     ⚠️ IKKE VED HVERT SKIFT AF POSTNUMMER. Uden en adressekomponent
+     kommer svaret som "change" — altså når feltet MISTER fokus, og det
+     er netop i det tryk, gæsten lægger på Send eller på en fold. To
+     prøver faldt på det (skal-smoerrebroed: Send-trykket gik tabt, og
+     folden klappede i igen, fordi listen blev tegnet om midt i trykket),
+     selv om tiden var den samme før og efter.
      ⚠️ STOD VÆLGEREN PÅ DEN TIDLIGSTE, BLIVER DEN PÅ DEN TIDLIGSTE. MÅLT
      på et skud: før adressen er 14.00 den første tid (den længste
      køretur); Karlslunde gør 13.45 mulig, men vælgeren blev stående på
@@ -2336,14 +2343,16 @@
   }
   function nyLeveringsAdresse(adresse) {
     if (!R.saetLeveringsAdresse) return;
-    var foer = R.leveringsTid(data).postnr;
+    var foer = R.leveringsTid(data);
     R.saetLeveringsAdresse(data, adresse);
-    if (R.leveringsTid(data).postnr === foer) return;
+    var nu = R.leveringsTid(data);
+    if (nu.postnr === foer.postnr) return;
+    visLevTid();
+    if (nu.koeretid === foer.koeretid) return;
     var v = felt('tid');
     var tidligst = !!v && v.value !== '' && v.value === førsteLedige(v);
     visTider();
     if (tidligst && førsteLedige(v) !== null) v.value = førsteLedige(v);
-    visLevTid();
     ryddedeKurven();
     visVarer();
     tegnFyld();

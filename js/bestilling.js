@@ -2344,9 +2344,13 @@
   }
   function nyLeveringsAdresse(adresse) {
     if (!R.saetLeveringsAdresse || !data) return;
-    var foer = R.leveringsTid(data).postnr;
+    var foer = R.leveringsTid(data);
     R.saetLeveringsAdresse(data, adresse);
-    if (R.leveringsTid(data).postnr === foer) return;
+    var nu = R.leveringsTid(data);
+    if (nu.postnr === foer.postnr) return;
+    /* Kun når KØRETUREN skifter — se js/skal/bestil.js (to prøver faldt
+       på et omtegnet felt midt i et tryk). Ellers følger kun linjen byen. */
+    if (nu.koeretid === foer.koeretid) { visLevTid(); return; }
     var v = $('bestil-tid');
     var tidligst = !!v && v.value !== '' && v.value === førsteLedige(v);
     visTider();

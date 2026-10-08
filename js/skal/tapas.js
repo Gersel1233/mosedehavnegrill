@@ -797,6 +797,17 @@
        (js/skal/bestil.js). Postnumrene spørges hos reglen, ikke læst her. */
     var adr = find('#tadr');
     var sky = window.MOSEDE_CLOUD || {};
+    /* Reglen får postnummeret. Linjen under tiden følger byen; tiderne og
+       summen tegnes kun om, når KØRETUREN skifter — se nyLeveringsAdresse
+       i js/skal/bestil.js. */
+    function nyLeveringsAdresse(adresse) {
+      var foer = R.leveringsTid(data);
+      R.saetLeveringsAdresse(data, adresse);
+      var nu = R.leveringsTid(data);
+      if (nu.postnr === foer.postnr) return;
+      visLevTid();
+      if (nu.koeretid !== foer.koeretid) { visTider(); visSum(); }
+    }
     if (adr && window.MosedeAdresse && sky.url) {
       adresseKontrol = window.MosedeAdresse.tilslut(adr, {
         status: find('#tlev-svar'),
@@ -805,22 +816,12 @@
         postnumre: R.leveringsPostnr ? R.leveringsPostnr(data || {}) : [],
         naarAendret: function (t) {
           leveringsSvar = t;
-          /* Postnummeret til reglen — tiderne tegnes om, kun når det skifter. */
-          if (R.saetLeveringsAdresse) {
-            var foer = R.leveringsTid(data).postnr;
-            R.saetLeveringsAdresse(data, t && t.klar ? t.adresse : '');
-            if (R.leveringsTid(data).postnr !== foer) { visTider(); visLevTid(); visSum(); }
-          }
+          if (R.saetLeveringsAdresse) nyLeveringsAdresse(t && t.klar ? t.adresse : '');
           if (fejlVises) visSum();
         },
       });
     } else if (adr && R.saetLeveringsAdresse) {
-      adr.addEventListener('change', function () {
-        R.saetLeveringsAdresse(data, adr.value);
-        visTider();
-        visLevTid();
-        visSum();
-      });
+      adr.addEventListener('change', function () { nyLeveringsAdresse(adr.value); });
     }
     var pers = find('#tpers');
     if (pers) pers.addEventListener('input', visSum);
