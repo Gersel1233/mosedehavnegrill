@@ -62,7 +62,7 @@ og derfra:
   → levering-tid-8-10.sql
 ```
 
-**⚠️ `levering-tid-8-10.sql` (8/10) — IKKE KØRT I PRODUKTIONEN. SKAL STÅ EFTER
+**⚠️ `levering-tid-8-10.sql` (8/10) — KØRT I PRODUKTIONEN 8/10 kl. 12.52. SKAL STÅ EFTER
 `tilvalg-og-tidsbegraensede-varer-1-10.sql`.** Mikkel 8/10: *"der skal være noget
 in advance så de kan bestille til xx:xx så caféen kan nå det … nok sådan 30 min …
 Karlslunde 10-15 minutter … Køge 30 min, det samme med Tune og 20 min til Greve"*.
@@ -79,7 +79,7 @@ og produktionens tekst var byte for byte 1-10-filens (målt 1/10).
 Prøven er `proev-levering-tid-8-10.sql` — 15 af 15. Set fejle: uden lappen falder
 7 af de 15; et værn, der altid tog den længste køretid, fælder nr. 2.
 
-**⚠️ `chefens-rettelser-7-10.sql` (7/10) — IKKE KØRT I PRODUKTIONEN.** Mikkel:
+**⚠️ `chefens-rettelser-7-10.sql` (7/10) — KØRT I PRODUKTIONEN 8/10 kl. 12.52 (Mikkel).** Mikkel:
 *"Rør ikke live endnu."* Chefens besked med rettelser pr. afsnit, det der kan
 rettes nu: de tre sandwich tændt igen som egne varer under Burgere (chefen 7/10:
 frikadelle 80, flæskesteg 80, bøf 75 — og frikadelle og flæskesteg ud af den

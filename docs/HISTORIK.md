@@ -7,7 +7,25 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-**JIMS BESKED 7/10 GENNEMGÅET IGEN — OG MIKKELS SVAR 8/10** (8/10 — IKKE LIVE).
+**UDGIVET 8/10 KL. 14.22 — CHEFENS RETTELSER, LEVERINGEN OG KORTENE** (8/10).
+Mikkel: *"jaer alt skal ud nu og opdateres og live hele pisset"*.
+- **SQL** kørt af Mikkel i SQL Editoren 8/10 kl. 12.52: `chefens-rettelser-7-10.sql`
+  og så `levering-tid-8-10.sql`. ⚠️ Første forsøg fejlede med "unterminated
+  dollar-quoted string": Supabase fik kun 150 af 502 linjer (kopieret fra telefonens
+  forhåndsvisning). Intet kørte — en parsefejl stopper hele arket. Kørt igen fra
+  GitHubs rå fil. Produktionen læst bagefter med anon-nøglen: alle 36 af Jims linjer
+  stemmer, og menuen er række for række den lokale prøve (0 afvigelser)
+- **Den fulde runde** på cdf98bf: computer 2641 · mobil 898 + 861 + 902 bestået,
+  **0 fejlet**, 0 ustabile; 198 sprunget over (3 flere end 7/10: båndprøverne, der
+  kun gælder telefonen)
+- **Udgivet** som fast-forward til udgivelsesgrenen (29 commits); udrulning nr. 563
+  lykkedes med stemplet `v=cdf98bf1`. ⚠️ Domænet kan ikke nås fra sky-sessionen
+  (proxyen svarer 403), så stemplet er læst af udrulningen, ikke af siden
+- Bevidst: Platte 189,- på siden og 199,- på trykket; Juleplatte kun på siden.
+  "Morgenkomplet", "Hjemmelavet biksemad med 1 spejlæg" og "Ekstra spejlæg" er de
+  endelige kort (Mikkel 8/10 — de gamle korrekturbilleder af kort 1 og 2 er IKKE facit)
+
+**JIMS BESKED 7/10 GENNEMGÅET IGEN — OG MIKKELS SVAR 8/10** (8/10 — LIVE 8/10).
 Mikkel: *"hvad med menukortene og siden ift … jims tidligere besked"*. Jims besked
 holdt punkt for punkt op mod produktionens rækker (læst 8/10 med anon-nøglen) med
 `chefens-rettelser-7-10.sql` kørt to gange lokalt, og mod menukortet og Bestil mad
@@ -27,7 +45,7 @@ i øvetilstand med de samme data. Alt står, med Mikkels svar 8/10:
 - Kortet som filer efter SQL'en (md/csv) sendt til Mikkel til de nye tryk
 
 **LEVERINGENS TID: KØKKENET + KØRETUREN — OG PLATTEN VÆK FRA BORDENE** (8/10 —
-IKKE LIVE). Mikkel: *"der skal være noget in advance så de kan bestille til
+LIVE 8/10). Mikkel: *"der skal være noget in advance så de kan bestille til
 xx:xx så caféen kan nå det … nok sådan 30 min … Karlslunde 10-15 minutter …
 Køge 30 min, det samme med Tune og 20 min til Greve … det skal give mening"* og
 om platten ved bordene: *"nej de må ikke"*. "På vej"/"Leveret": *"nej"* — ikke
@@ -62,7 +80,7 @@ bygget.
   i SQL Editoren, FØR grenen flettes — ellers lover siden en tid, databasen
   ikke kender (databasen er mildere: uden filen tager den imod)
 
-**LEVERING PÅ TAPAS** (8/10 — IKKE LIVE). Mikkel: *"ja levering på tapas også"*.
+**LEVERING PÅ TAPAS** (8/10 — LIVE 8/10). Mikkel: *"ja levering på tapas også"*.
 Siden sagde "Vi kører det ud 79,-" (Jim 20/9), men formularen havde kun To-go og
 Spis her.
 - "Levering" i Hvordan? — kun når levering er slået til. Forsidens adressefelt
@@ -75,7 +93,7 @@ Spis her.
 - Summen skrev "kl. 14:00" (ældre fejl) — nu Butik.klokken
 
 **LEVERING SOM NYHED, FOTOS I MIDTEN, SIDERNE HÆNGER SAMMEN** (7/10, aften —
-IKKE LIVE). Mikkel: *"levering er stadig slet ikke godt nok og highlighted som en
+LIVE 8/10). Mikkel: *"levering er stadig slet ikke godt nok og highlighted som en
 ny og fed ting og bliver heller ikke gjort godt nok i admin"*, *"der er nogen
 billeder hvor retterne ikke er i centrum"* og *"det hele på siden skal hænge
 sammen og linke til hinanden"*.
@@ -101,7 +119,7 @@ sammen og linke til hinanden"*.
   egen sidste leveringstid/varsel (køretid); is til levering?
 
 **SMØRREBRØD, HÅNDMADDER OG PLATTER SOM BJÆLKER I BESTIL MAD** (7/10, aften —
-IKKE LIVE). Chefen: *"Hvorfor er frokost, Smørrebrød, og håndmadder ikke som en
+LIVE 8/10). Chefen: *"Hvorfor er frokost, Smørrebrød, og håndmadder ikke som en
 bjælke under Morgenmad i den lange sorte menu vælger boks … det kommer først frem
 nede i bunden"*. Mikkel: *"de skal også kunne bestilles helt normalt der."*
 - MÅLT: vælgeren står fra start en halv time ude; med 1 times / 1 døgns varsel
@@ -116,7 +134,7 @@ nede i bunden"*. Mikkel: *"de skal også kunne bestilles helt normalt der."*
 - Prøver: fire i skal-bestil vendt med chefens ord, set fejle; computer 1490 /
   0 fejlet (alle forsidens bestillingsfiler), mobil 164 / 0 (vælgerens filer)
 
-**MOBIL: KATEGORIBÅNDET OVER KORTET, IKKE OVEN PÅ** (7/10, aften — IKKE LIVE).
+**MOBIL: KATEGORIBÅNDET OVER KORTET, IKKE OVEN PÅ** (7/10, aften — LIVE 8/10).
 Mikkel: *"På mobil overlapper den vandrette kategori-navigation toppen af
 menukortet … dækker titel/logo."* Den eneste visuelle blocker før launch.
 - **Båndet er en hylde under 820 px**: fuld bredde, uigennemsigtig creme, kant
@@ -129,7 +147,7 @@ menukortet … dækker titel/logo."* Den eneste visuelle blocker før launch.
 - Prøve: "Båndet på telefonen ligger over kortene — aldrig oven på dem" (3), set
   fejle begge veje. Responsive filer: computer 344 / mobil 349, 0 fejlet
 
-**KORT 2 OG DATOVINDUET** (7/10, sidst på dagen — IKKE LIVE). Mikkel: *"Brug
+**KORT 2 OG DATOVINDUET** (7/10, sidst på dagen — LIVE 8/10). Mikkel: *"Brug
 [kort 2] som facit for, hvor 'Fisk & klassikere' skal ligge."*
 - **Fisk & klassikere** står øverst i kapitel 2 i kortets rækkefølge (Stjerneskud,
   Fish'n'chips, Fiskefilet med pommes, 8 indbagte rejer, Pariserbøf, biksemaden
@@ -140,7 +158,7 @@ menukortet … dækker titel/logo."* Den eneste visuelle blocker før launch.
   "Pølsemix med pommes" (vis_fra = vis_til = 2/10) stod på menukortet 7/10.
   Rettet i `menu()`; prøven "Varens datovindue gælder også menukortet" set fejle
 
-**DE SIDSTE AFKLARINGER** (7/10, eftermiddag — IKKE LIVE). Mikkel: *"Vi har
+**DE SIDSTE AFKLARINGER** (7/10, eftermiddag — LIVE 8/10). Mikkel: *"Vi har
 allerede afklaret flere af de punkter, du stadig har som åbne."*
 - **Morgenkomplet** i ét ord, og teksten siger "æg & bacon" (begge dele). Den
   skjulte "Æg & bacon"-vare er ude af filen — og slettes, hvis en ældre udgave
@@ -154,7 +172,7 @@ allerede afklaret flere af de punkter, du stadig har som åbne."*
 - **Fisk & klassikere** flyttes ikke uden den nyeste korrektur af kort 2
   (kom samme aften — se posten ovenfor)
 
-**KORT 1, KUNDEREJSEN OG VARSLET** (7/10, senere samme dag — IKKE LIVE).
+**KORT 1, KUNDEREJSEN OG VARSLET** (7/10, senere samme dag — LIVE 8/10).
 - **Frokost som kort 1** (korrekturen 7/10 er facit): kapitel 1 = Morgenmad |
   Frokost. Smørrebrød og Håndmadder øverst som henvisninger, Juleplatten efter
   platten. Fisk & klassikere står under Frokost, til kort 2 er set
@@ -167,7 +185,7 @@ allerede afklaret flere af de punkter, du stadig har som åbne."*
   "ring og spørg ved særlige ønsker". Databasens værn prøvet på staging
 - **Isvand, kande** er den eksisterende isvand (25), ikke en ny vare
 
-**CHEFENS RETTELSER 7/10 — BYGGET OG PRØVET, IKKE LIVE** (7/10). Chefens
+**CHEFENS RETTELSER 7/10 — BYGGET OG PRØVET, LIVE 8/10** (7/10). Chefens
 besked pr. afsnit (*"Vi kan ikke Lancere noget der ikke er helt korrekt …"*).
 Mikkel: *"Gå videre med de resterende varer nu … Opfind ikke en pris … Intet
 live endnu"* og *"små rettelser, ikke en kæmpe test"*.
