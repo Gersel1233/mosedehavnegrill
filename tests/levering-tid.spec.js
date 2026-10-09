@@ -252,7 +252,7 @@ test.describe('Leveringens tid — admin', () => {
     return d;
   }
   const afgang = (page, navn) => page.locator('.bestil-kort', { hasText: navn })
-    .locator('.bestil-levering-afgang');
+    .locator('.bestil-levering-afgang', { hasText: '🚗' });
 
   /* Bilen kører senest køreturen FØR den tid, gæsten valgte — med den
      SAMME køretid, gæsten fik lovet. */
@@ -264,6 +264,44 @@ test.describe('Leveringens tid — admin', () => {
     await expect(afgang(page, 'Lis Karlslunde')).toHaveText('🚗 Kører senest kl. 15.15 · ca. 15 min. ud til Karlslunde');
     // Ishøj har intet tal endnu: den længste, og det siges som "op til"
     await expect(afgang(page, 'Ib Ishøj')).toHaveText('🚗 Kører senest kl. 15.30 · op til 30 min. ud');
+  });
+
+  /* ⚠️ TRE TIDER, ÉN REGEL  (9/10). Mikkel: *"hvornår de vil have det
+     leveret … og hvornår det så skal laves, du ved 30 min til det skal
+     være ved døren"*. Tallene er hans: 30 i køkkenet, 30 ud til Køge. */
+  test('kortet siger også, hvornår køkkenet senest skal i gang', async ({ page }) => {
+    await åbnAdmin(page, { data: medLeveringer() });
+    await visFane(page, 'p-bestillinger');
+    const kort = page.locator('.bestil-kort', { hasText: 'Kim Køge' });
+    await expect(kort.locator('.bestil-levering-afgang').first())
+      .toHaveText('⏱ Køkkenet i gang senest kl. 13.00');            // 14.00 − 30 − 30
+    await expect(page.locator('.bestil-kort', { hasText: 'Lis Karlslunde' })
+      .locator('.bestil-levering-afgang').first())
+      .toHaveText('⏱ Køkkenet i gang senest kl. 14.45');            // 15.30 − 15 − 30
+  });
+
+  /* ⚠️ OVERBLIK SORTERER EFTER AFGANGEN. Stod Køge-leveringen kl. 14.00
+     på 14.00, kom den efter en afhentning 13.45 — men den skal ud ad
+     døren 13.30. */
+  test('Overblik: en levering står på sin afgang med de tre tider', async ({ page }) => {
+    const d = medLeveringer();
+    d.bestillinger.push({ ...levering(4, '13:45', 'Per Afhenter', null), hvordan: 'afhentning' });
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-overblik');
+    const navne = await page.locator('.vagt-raekke .vare-navn').allTextContents();
+    const i = (n) => navne.findIndex((x) => x.includes(n));
+    expect(i('Kim'), 'Køge-leveringen (afgang 13.30) står ikke før afhentningen 13.45')
+      .toBeLessThan(i('Per'));
+    // Rækken kan stå både under "snart" og i dagens forløb — tag den første
+    const kim = page.locator('.vagt-raekke', { hasText: 'Kim Køge' }).first();
+    await expect(kim.locator('.vagt-tid')).toContainText('afgang');
+    await expect(kim.locator('.vagt-tid')).toContainText('13.30');
+    await expect(kim.locator('.vagt-levering'))
+      .toHaveText('⏱ I gang senest 13.00 · 🚗 kører 13.30 · ved døren 14.00 · Køge');
+    // En afhentning har stadig "kl." og ingen leveringslinje
+    const per = page.locator('.vagt-raekke', { hasText: 'Per Afhenter' }).first();
+    await expect(per.locator('.vagt-tid')).toContainText('kl.');
+    await expect(per.locator('.vagt-levering')).toHaveCount(0);
   });
 
   test('uden køretider står der ingen afgangstid', async ({ page }) => {

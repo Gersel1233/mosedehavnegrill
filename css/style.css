@@ -3375,6 +3375,16 @@ body.personale .vagt-varer .maerke {
   font-size: 14px;
 }
 
+/* Leveringens tre tider på Overblik (9/10): "⏱ I gang senest 13.00 ·
+   🚗 kører 13.30 · ved døren 14.00 · Køge". Fed og i tekstfarven — det er
+   tal, køkkenet planlægger efter, ikke en bemærkning. */
+body.personale .vagt-levering {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 /* "kl. 17.30 · 📞 26204992" — dæmpet, men klikbar. */
 body.personale .vagt-kontakt {
   display: flex;

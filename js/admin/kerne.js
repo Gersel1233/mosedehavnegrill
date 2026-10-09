@@ -1344,12 +1344,24 @@
     var t = R.leveringsTid(Admin.data || {}, a ? a.postnr : null);
     if (!t.koeretid) return null;
     var p = String(b.hent_tid).split(':');
-    var min = Number(p[0]) * 60 + Number(p[1]) - t.koeretid;
+    var doer = Number(p[0]) * 60 + Number(p[1]);
+    var min = doer - t.koeretid;
     if (!isFinite(min)) return null;
     min = (min + 24 * 60) % (24 * 60);
-    var kl = ('0' + Math.floor(min / 60)).slice(-2) + ':' + ('0' + (min % 60)).slice(-2);
-    return { kl: Butik.klokken(kl), koeretid: t.koeretid, kendt: t.kendt,
-      sted: a ? (a.by || a.postnr) : null };
+    /* ⚠️ OG HVORNÅR KØKKENET SKAL I GANG  (9/10). Mikkel: *"giver det
+       mening med hvornår de vil have det leveret … og hvornår det så
+       skal laves, du ved 30 min til det skal være ved døren"*. Tre
+       tider, én regel: ved døren (gæstens valg), bilen kører (minus
+       køreturen), køkkenet i gang (minus køkkenets tid). Overblik og
+       Bestillinger spørger begge her. */
+    var start = (min - (t.koekken || 0) + 24 * 60) % (24 * 60);
+    return { kl: Butik.klokken(hhmm(min)), min: min,
+      start: Butik.klokken(hhmm(start)), startMin: start, koekken: t.koekken || 0,
+      doer: Butik.klokken(hhmm(doer)),
+      koeretid: t.koeretid, kendt: t.kendt, sted: a ? (a.by || a.postnr) : null };
+  }
+  function hhmm(m) {
+    return ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2);
   }
 
   /* Den korte udgave: ét link, til en linje der har andet på sig

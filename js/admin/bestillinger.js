@@ -885,6 +885,11 @@
       /* Afgangstiden (8/10) — se Admin.leveringTekst. "op til", når
          postnummeret ikke har sin egen køretid (så gælder den længste). */
       if (lev.afgang) {
+        /* Køkkenets tid FØRST — det er dét, der skal ske først (9/10). */
+        if (lev.afgang.koekken) {
+          hvor.appendChild(lav('span', 'bestil-levering-afgang',
+            '⏱ Køkkenet i gang senest kl. ' + lev.afgang.start));
+        }
         hvor.appendChild(lav('span', 'bestil-levering-afgang',
           '🚗 Kører senest kl. ' + lev.afgang.kl + ' · '
           + (lev.afgang.kendt ? 'ca. ' : 'op til ') + lev.afgang.koeretid + ' min. ud'

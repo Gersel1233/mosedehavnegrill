@@ -185,9 +185,18 @@
 
     iDagsBestillinger().forEach(function (b) {
       if (FAERDIG[b.status] || erBord(b)) return;
+      /* ⚠️ EN LEVERING STÅR PÅ SIN AFGANG, IKKE PÅ TIDEN VED DØREN
+         (9/10). Mikkel: *"hvornår de vil have det leveret … og hvornår
+         det så skal laves"*. En levering til Køge kl. 14.00 skal ud ad
+         døren 13.30 — stod den på 14.00, kom den efter en afhentning
+         13.45, og køkkenet lavede den i den forkerte rækkefølge.
+         Tiderne er Admin.leveringTekst's (samme regel som Bestillinger). */
+      var afg = (b.hvordan === 'levering' && Admin.leveringTekst)
+        ? (Admin.leveringTekst(b) || {}).afgang : null;
       ud.push({
-        min: tilMinutter(b.hent_tid),
-        tid: String(b.hent_tid || '').slice(0, 5).replace(':', '.'),
+        min: afg ? afg.min : tilMinutter(b.hent_tid),
+        tid: afg ? afg.kl : String(b.hent_tid || '').slice(0, 5).replace(':', '.'),
+        afgang: afg || null,
         navn: b.navn,
         hvad: linjeTekst(b),
         /* Leveringen skal ses her OGSÅ. En bestilling, der skal
@@ -289,10 +298,10 @@
      (ren tekst uden "kl."), og MÅLT på et skud stod "12.00"
      under et "kl. 17.30" i den samme liste — to udgaver af den
      samme akse, og den ene så ud som en eftertanke. */
-  function tidsAkse(tekst) {
+  function tidsAkse(tekst, etiket) {
     var tid = lav('div', 'vagt-tid');
     if (tekst) {
-      tid.appendChild(lav('span', 'vagt-tid-kl', 'kl.'));
+      tid.appendChild(lav('span', 'vagt-tid-kl', etiket || 'kl.'));
       tid.appendChild(lav('b', 'vagt-tid-tal', tekst));
     } else {
       tid.appendChild(lav('b', 'vagt-tid-tal', '\u2014'));
@@ -318,7 +327,7 @@
        egen form: "kl." over "16:00". Den er tidslinjens akse, og
        den skal kunne skimmes ned ad venstre kant uden at læse
        kortene. */
-    k.appendChild(tidsAkse(r.tid));
+    k.appendChild(tidsAkse(r.tid, r.afgang ? 'afgang' : 'kl.'));
 
     var midt = lav('div', 'vagt-midt');
     var linje = lav('div', 'bestil-hvem');
@@ -367,6 +376,13 @@
     if (overskredet) linje.appendChild(lav('span', 'maerke m-sen',
       r.booking ? 'Ikke kommet' : 'Overskredet'));
     midt.appendChild(linje);
+    /* Leveringens tre tider på én linje (9/10) — se dagensArbejde. */
+    if (r.afgang) {
+      midt.appendChild(lav('div', 'vagt-levering',
+        (r.afgang.koekken ? '⏱ I gang senest ' + r.afgang.start + ' · ' : '')
+        + '🚗 kører ' + r.afgang.kl + ' · ved døren ' + r.afgang.doer
+        + (r.afgang.kendt && r.afgang.sted ? ' · ' + r.afgang.sted : '')));
+    }
     /* ⚠️ ÉN VARE PR. LINJE, IKKE ÉN LANG SÆTNING. Se varelinjer(). */
     if (r.b) {
       midt.appendChild(varelinjer(r.b));
