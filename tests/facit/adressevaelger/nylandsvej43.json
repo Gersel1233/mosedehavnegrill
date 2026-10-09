@@ -1,0 +1,95 @@
+{
+    "status": "ok",
+    "adresse": {
+        "id_lokalid": "0a3f50ab-1317-32b8-e044-0003ba298018",
+        "adressebetegnelse": "Nylandsvej 43, 2690 Karlslunde",
+        "etagebetegnelse": null,
+        "doerbetegnelse": null,
+        "status": "3",
+        "virkningfra": "2000-02-05T20:34:38.000Z",
+        "virkningtil": null,
+        "registreringfra": "2018-05-03T16:58:34.000Z",
+        "registreringtil": null,
+        "husnummer": {
+            "id_lokalid": "0a3f5081-3dad-32b8-e044-0003ba298018",
+            "husnummertekst": "43",
+            "adgangsadressebetegnelse": "Nylandsvej 43, 2690 Karlslunde",
+            "vejnavn": "Nylandsvej",
+            "status": "3",
+            "virkningfra": "2021-08-13T11:59:22.073238+00:00",
+            "virkningtil": null,
+            "registreringfra": "2021-08-13T11:59:22.073238+00:00",
+            "registreringtil": null,
+            "adgangspunkt": {
+                "id_lokalid": "0a3f5081-3dad-32b8-e044-0003ba298018",
+                "status": "8",
+                "virkningfra": "2009-11-24T00:50:11+00:00",
+                "virkningtil": null,
+                "registreringfra": "2018-05-03T16:58:34+00:00",
+                "registreringtil": null,
+                "geometri": {
+                    "type": "Point",
+                    "crs": {
+                        "type": "name",
+                        "properties": {
+                            "name": "EPSG:25832"
+                        }
+                    },
+                    "coordinates": [
+                        703037.01,
+                        6163139.61
+                    ]
+                },
+                "koordinater": {
+                    "x": 703037.01,
+                    "y": 6163139.61
+                }
+            },
+            "postnummer": {
+                "id_lokalid": "c01c4b9c-5515-47e1-9990-9abd1839f5be",
+                "navn": "Karlslunde",
+                "postnr": "2690",
+                "status": "3",
+                "virkningfra": "2023-05-15T07:27:00.209323+00:00",
+                "virkningtil": null,
+                "registreringfra": "2023-05-15T07:27:00.209323+00:00",
+                "registreringtil": null
+            },
+            "navngivenvej": {
+                "id_lokalid": "6e049f02-e506-4724-8c5b-9b20e0959de2",
+                "vejnavn": "Nylandsvej",
+                "virkningfra": "2021-08-30T13:59:52.896394+00:00",
+                "virkningtil": null,
+                "registreringfra": "2021-08-30T13:59:52.896394+00:00",
+                "registreringtil": null
+            },
+            "navngivenvejkommunedel": {
+                "id_lokalid": "5c9ef47b-4eae-11e8-93fd-066cff24d637",
+                "kommune": "0253",
+                "vejkode": "5998",
+                "navngivenvej": "6e049f02-e506-4724-8c5b-9b20e0959de2",
+                "virkningfra": "2021-08-30T13:59:52.896394+00:00",
+                "virkningtil": null,
+                "registreringfra": "2021-08-30T13:59:52.896394+00:00",
+                "registreringtil": null
+            },
+            "navngivenvejpostnummer": {
+                "id_lokalid": "46ddc0e8-12b2-4bbd-9bc9-4bbe2ba65f6c",
+                "virkningfra": "2020-12-18T15:17:19.000774+00:00",
+                "virkningtil": null,
+                "registreringfra": "2020-12-18T15:17:19.000774+00:00",
+                "registreringtil": null
+            },
+            "supplerendebynavn": {
+                "id_lokalid": null,
+                "status": null,
+                "supplerendebynavn": null,
+                "navn": null,
+                "virkningfra": null,
+                "virkningtil": null,
+                "registreringfra": null,
+                "registreringtil": null
+            }
+        }
+    }
+}

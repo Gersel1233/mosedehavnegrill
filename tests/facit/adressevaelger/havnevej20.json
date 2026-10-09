@@ -1,0 +1,95 @@
+{
+    "status": "ok",
+    "adresse": {
+        "id_lokalid": "5d4b049b-1e0e-447f-abdf-62c79a92a5cc",
+        "adressebetegnelse": "Havnevej 20, 2670 Greve",
+        "etagebetegnelse": null,
+        "doerbetegnelse": null,
+        "status": "3",
+        "virkningfra": "2023-10-24T10:31:26.281Z",
+        "virkningtil": null,
+        "registreringfra": "2023-10-24T10:31:26.281Z",
+        "registreringtil": null,
+        "husnummer": {
+            "id_lokalid": "0a3f5081-281a-32b8-e044-0003ba298018",
+            "husnummertekst": "20",
+            "adgangsadressebetegnelse": "Havnevej 20, 2670 Greve",
+            "vejnavn": "Havnevej",
+            "status": "3",
+            "virkningfra": "2023-10-24T10:31:26.281516+00:00",
+            "virkningtil": null,
+            "registreringfra": "2023-10-24T10:31:26.281516+00:00",
+            "registreringtil": null,
+            "adgangspunkt": {
+                "id_lokalid": "0a3f5081-281a-32b8-e044-0003ba298018",
+                "status": "8",
+                "virkningfra": "2023-10-24T10:31:26.281516+00:00",
+                "virkningtil": null,
+                "registreringfra": "2023-10-24T10:31:26.281516+00:00",
+                "registreringtil": null,
+                "geometri": {
+                    "type": "Point",
+                    "crs": {
+                        "type": "name",
+                        "properties": {
+                            "name": "EPSG:25832"
+                        }
+                    },
+                    "coordinates": [
+                        707101.759178484,
+                        6162729.818197421
+                    ]
+                },
+                "koordinater": {
+                    "x": 707101.7591784844,
+                    "y": 6162729.818197421
+                }
+            },
+            "postnummer": {
+                "id_lokalid": "d39af5e3-c7e0-4a10-b768-9a5c188d1b51",
+                "navn": "Greve",
+                "postnr": "2670",
+                "status": "3",
+                "virkningfra": "2023-05-15T07:26:58.959236+00:00",
+                "virkningtil": null,
+                "registreringfra": "2023-05-15T07:26:58.959236+00:00",
+                "registreringtil": null
+            },
+            "navngivenvej": {
+                "id_lokalid": "8a2cc88f-8958-4397-9922-15330f8217a1",
+                "vejnavn": "Havnevej",
+                "virkningfra": "2023-11-27T09:59:41.223524+00:00",
+                "virkningtil": null,
+                "registreringfra": "2023-11-27T09:59:41.223524+00:00",
+                "registreringtil": null
+            },
+            "navngivenvejkommunedel": {
+                "id_lokalid": "5c9ef39c-4eae-11e8-93fd-066cff24d637",
+                "kommune": "0253",
+                "vejkode": "2738",
+                "navngivenvej": "8a2cc88f-8958-4397-9922-15330f8217a1",
+                "virkningfra": "2023-11-27T09:59:41.223524+00:00",
+                "virkningtil": null,
+                "registreringfra": "2023-11-27T09:59:41.223524+00:00",
+                "registreringtil": null
+            },
+            "navngivenvejpostnummer": {
+                "id_lokalid": "67926238-c6ce-4ee9-964a-c8125f7f5565",
+                "virkningfra": "2020-12-18T15:17:19.000774+00:00",
+                "virkningtil": null,
+                "registreringfra": "2020-12-18T15:17:19.000774+00:00",
+                "registreringtil": null
+            },
+            "supplerendebynavn": {
+                "id_lokalid": null,
+                "status": null,
+                "supplerendebynavn": null,
+                "navn": null,
+                "virkningfra": null,
+                "virkningtil": null,
+                "registreringfra": null,
+                "registreringtil": null
+            }
+        }
+    }
+}
