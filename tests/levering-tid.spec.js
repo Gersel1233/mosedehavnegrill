@@ -57,9 +57,11 @@ async function forsiden(page, svar, d) {
     return r.fulfill({ status: 200, contentType: 'application/json',
       body: JSON.stringify(Array.isArray(krop) ? krop : []) });
   });
-  await page.route('https://api.dataforsyningen.dk/**', (r) => r.fulfill({
+  /* Adressevælgers svarform, målt 9/10 (DAWA lukkede 1/10). */
+  await page.route('https://adressevaelger.dk/**', (r) => r.fulfill({
     status: 200, contentType: 'application/json',
-    body: JSON.stringify([{ tekst: svar.adresse, adresse: { id: 'id-' + svar.postnr } }]),
+    body: JSON.stringify({ status: 'ok', fund: [{ type: 'adresse', titel: svar.adresse,
+      id: 'id-' + svar.postnr }] }),
   }));
   await page.route(SKY + '/functions/v1/valider-levering', (r) => r.fulfill({
     status: 200, contentType: 'application/json',

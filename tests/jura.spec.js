@@ -370,15 +370,19 @@ test.describe('Adressetjenesten står i politikken', () => {
     /* Uden den her består prøven nedenfor den dag, opslaget
        forsvinder — og så ville politikken love noget, der ikke
        sker. Tallet er kodens, ikke vores. */
+    /* ⚠️ adressevaelger.dk fra 9/10: DAWA (api.dataforsyningen.dk)
+       lukkede 1/10 2026. Prøven fangede skiftet, som den skulle. */
     expect(vaertFraKoden(), 'js/adressefelt.js slår ikke længere adresser op')
-      .toBe('api.dataforsyningen.dk');
+      .toBe('adressevaelger.dk');
   });
 
   test('politikken nævner den ved navn', () => {
     const t = fs.readFileSync(path.join(ROD, 'persondatapolitik.html'), 'utf8')
       .replace(/<!--[\s\S]*?-->/g, '');
-    expect(t, 'politikken nævner ikke Dataforsyningen')
-      .toMatch(/Dataforsyningen/);
+    expect(t, 'politikken nævner ikke Adressevælger')
+      .toMatch(/Adressevælger/);
+    expect(t, 'politikken nævner stadig den lukkede tjeneste')
+      .not.toMatch(/Dataforsyningen/);
     /* Og den skal sige, hvad der sker — ikke bare nævne et navn i
        en liste. Gæsten skal kunne læse, at det er ADRESSEN, der
        bliver slået op. */
@@ -397,7 +401,7 @@ test.describe('Adressetjenesten står i politikken', () => {
       .replace(/<!--[\s\S]*?-->/g, '');
     const blok = t.slice(t.indexOf('class="hours rev d2"'));
     const raekker = blok.slice(0, blok.indexOf('</div>\n  <p'));
-    expect(raekker, 'Dataforsyningen står blandt de tre databehandlere')
-      .not.toMatch(/Dataforsyningen/);
+    expect(raekker, 'Adressevælger står blandt de tre databehandlere')
+      .not.toMatch(/Adressevælger|Klimadatastyrelsen/);
   });
 });

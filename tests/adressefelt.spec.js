@@ -10,13 +10,19 @@
    ⚠️ FELTET ER HØFLIGHED, IKKE SIKKERHED. Den rigtige spærring
       ligger i databasen (supabase/levering-valideret.sql), som
       OVERSKRIVER adressen med den, serveren har bekræftet hos
-      Dataforsyningen. De prøver står i proev-levering-valideret.sql.
+      adressetjenesten. De prøver står i proev-levering-valideret.sql.
       Her måles kun, hvad gæsten SER og kan komme til.
 
-   ⚠️ DAWA OG VALIDERINGEN ER MOCKET. Prøven må ikke afhænge af, at
-      Dataforsyningen svarer — og den må slet ikke skrive rigtige
-      kvitteringer. Svarformen er den MÅLTE fra 20/9:
-      [{ tekst, adresse: { id } }].
+   ⚠️ ADRESSETJENESTEN OG VALIDERINGEN ER MOCKET. Prøven må ikke
+      afhænge af, at tjenesten svarer — og den må slet ikke skrive
+      rigtige kvitteringer.
+   ⚠️⚠️ OG EN MOCK ER IKKE TJENESTEN (9/10). Indtil i dag efterlignede
+      filen DAWA — og bestod, mens DAWA var lukket (1/10) og ingen
+      gæst kunne bestille levering. Svarformen her er Adressevælgers,
+      MÅLT mod det levende API 9/10:
+      { status: "ok", fund: [{ type, id, titel, … }] }.
+      Serverens halvdel prøves mod gemte, målte svar i
+      tests/adressevaelger.spec.js.
    ============================================================ */
 
 const { test, expect } = require('@playwright/test');
@@ -65,24 +71,25 @@ async function åbnMedSky(page, valg) {
     });
   });
 
-  await page.route('https://api.dataforsyningen.dk/**', (r) => {
+  await page.route('https://adressevaelger.dk/**', (r) => {
     t.forslag++;
+    t.sidsteSoeg = r.request().url();
     const q = decodeURIComponent(r.request().url());
-    if (o.dawaNede) return r.abort('failed');
-    const svar = /Havn/i.test(q)
-      ? [{ tekst: 'Havnevej 20, 2670 Greve',
-           adresse: { id: '5d4b049b-1e0e-447f-abdf-62c79a92a5cc' } },
-         { tekst: 'Havnevej 22, 2670 Greve',
-           adresse: { id: '11111111-2222-3333-4444-555555555555' } }]
+    if (o.soegNede) return r.abort('failed');
+    const fund = /Havn/i.test(q)
+      ? [{ type: 'adresse', id: '5d4b049b-1e0e-447f-abdf-62c79a92a5cc',
+           titel: 'Havnevej 20, 2670 Greve' },
+         { type: 'adresse', id: '11111111-2222-3333-4444-555555555555',
+           titel: 'Havnevej 22, 2670 Greve' }]
       : [];
     return r.fulfill({ status: 200, contentType: 'application/json',
-      body: JSON.stringify(svar) });
+      body: JSON.stringify(adv(fund)) });
   });
 
   await page.route(SKY + '/functions/v1/valider-levering', async (r) => {
     t.valideringer++;
     const krop = JSON.parse(r.request().postData() || '{}');
-    t.sidsteId = krop.dawaId;
+    t.sidsteId = krop.adresseId;
     if (o.valideringNede) return r.abort('failed');
     return r.fulfill({
       status: 200, contentType: 'application/json',
@@ -100,6 +107,9 @@ async function åbnMedSky(page, valg) {
   await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
   return t;
 }
+
+/* Adressevælgers svarform, målt 9/10. */
+function adv(fund) { return { status: 'ok', beskrivelse: '', fund }; }
 
 function medLevering(ændringer) {
   const d = grunddata();
@@ -146,7 +156,7 @@ test.describe('Adressefeltet', () => {
     return page.locator('.adr-liste .adr-forslag');
   }
 
-  test('under tre tegn spørges Dataforsyningen slet ikke', async ({ page }) => {
+  test('under tre tegn spørges adressetjenesten slet ikke', async ({ page }) => {
     const t = await åbnMedSky(page);
     await skrivAdresse(page, 'Ha');
     await page.waitForTimeout(600);
@@ -160,7 +170,7 @@ test.describe('Adressefeltet', () => {
     await expect(forslag).toHaveCount(2);
     await forslag.first().click();
     await expect(page.locator('#fadr')).toHaveValue('Havnevej 20, 2670 Greve');
-    expect(t.sidsteId, 'serveren fik ikke DAWA-ID\'et')
+    expect(t.sidsteId, 'serveren fik ikke adressens ID')
       .toBe('5d4b049b-1e0e-447f-abdf-62c79a92a5cc');
     await expect(page.locator('#lev-svar')).toContainText('Vi leverer til denne adresse');
   });
@@ -170,10 +180,10 @@ test.describe('Adressefeltet', () => {
      til den forkerte dør. */
   test('et enkelt forslag vælges ikke af sig selv', async ({ page }) => {
     const t = await åbnMedSky(page);
-    await page.route('https://api.dataforsyningen.dk/**', (r) => r.fulfill({
+    await page.route('https://adressevaelger.dk/**', (r) => r.fulfill({
       status: 200, contentType: 'application/json',
-      body: JSON.stringify([{ tekst: 'Havnevej 20, 2670 Greve',
-        adresse: { id: '5d4b049b-1e0e-447f-abdf-62c79a92a5cc' } }]),
+      body: JSON.stringify(adv([{ type: 'adresse', titel: 'Havnevej 20, 2670 Greve',
+        id: '5d4b049b-1e0e-447f-abdf-62c79a92a5cc' }])),
     }));
     await skrivAdresse(page, 'Havnevej 20');
     await expect(page.locator('.adr-liste .adr-forslag')).toHaveCount(1);
@@ -230,16 +240,21 @@ test.describe('Adressefeltet', () => {
       .toContainText('Vi kunne ikke kontrollere leveringsadressen');
   });
 
-  /* ⚠️ AUTOCOMPLETE MÅ FEJLE BLØDT. Kan vi ikke foreslå noget, er
-     det ærgerligt — men siden må ikke gå i stykker, og gæsten må
-     ikke møde en teknisk fejl midt i en bestilling. */
-  test('svarer Dataforsyningen ikke, vælter siden ikke', async ({ page }) => {
+  /* ⚠️ AUTOCOMPLETE MÅ FEJLE BLØDT — MEN IKKE TAVST (9/10). Siden må
+     ikke gå i stykker, og gæsten må ikke møde en teknisk fejl. Men
+     da DAWA lukkede, lukkede listen sig bare: gæsten fik intet at
+     vide og ingen vej videre. Nu siger feltet det — og hvad hun så
+     kan gøre. Prøven bestod før med den tavse udgave; den kræver
+     nu sætningen. */
+  test('svarer adressetjenesten ikke, siger feltet det — uden at vælte', async ({ page }) => {
     const fejl = [];
     page.on('pageerror', (e) => fejl.push(e.message));
-    await åbnMedSky(page, { dawaNede: true });
+    await åbnMedSky(page, { soegNede: true });
     await skrivAdresse(page, 'Havnevej 20');
     await page.waitForTimeout(700);
     await expect(page.locator('.adr-liste')).toBeHidden();
+    await expect(page.locator('#lev-svar')).toContainText('Vi kan ikke slå adresser op lige nu');
+    await expect(page.locator('#lev-svar')).toContainText('ring til os');
     expect(fejl, 'en fejl fra autocomplete nåede ud i siden').toEqual([]);
   });
 
@@ -286,17 +301,15 @@ test.describe('Adressefeltet', () => {
    ============================================================ */
 test.describe('Adressen delt op', () => {
 
-  /* En DAWA-kulisse, der SENDER postnummeret med — som det
-     rigtige API gør. Den oprindelige kulisse gjorde ikke, og
-     derfor rører den hurtige afvisning ikke de gamle prøver. */
+  /* Et fund med postnummeret i titlen — som det rigtige API skriver
+     det ("Nylandsvej 43, 2690 Karlslunde"). Feltet læser det derfra. */
   async function medPostnr(page, postnr, id) {
-    await page.route('https://api.dataforsyningen.dk/**', (r) => r.fulfill({
+    await page.route('https://adressevaelger.dk/**', (r) => r.fulfill({
       status: 200, contentType: 'application/json',
-      body: JSON.stringify([{
-        tekst: 'Prøvevej 1, ' + postnr + ' Byen',
-        adresse: { id: id || '5d4b049b-1e0e-447f-abdf-62c79a92a5cc',
-                   postnr: String(postnr) },
-      }]),
+      body: JSON.stringify(adv([{
+        type: 'adresse', titel: 'Prøvevej 1, ' + postnr + ' Byen',
+        id: id || '5d4b049b-1e0e-447f-abdf-62c79a92a5cc',
+      }])),
     }));
   }
 
@@ -411,32 +424,102 @@ test.describe('Adressen delt op', () => {
 });
 
 /* ============================================================
-   KUN GÆLDENDE ADRESSER I FORSLAGENE  (21/9)
+   ADRESSEVÆLGER  (9. okt 2026)
    ------------------------------------------------------------
-   MÅLT mod det levende API: "Håndværkerbyen 17A" gav fem
-   forslag, og alle fem havde status 3 — henlagte. Serveren
-   afviste dem bagefter, så gæsten fik "Vi kunne ikke bekræfte
-   adressen" på noget, VI selv havde tilbudt hende.
+   DAWA lukkede 1/10. Afløseren svarer anderledes — målt 9/10:
+     · token er obligatorisk
+     · fundene er vej, vej-i-postnummer, husnummer eller adresse;
+       kun en ADRESSE kan vælges, de andre indsnævrer
+     · fundene er sorteret efter POSTNUMMER, ikke relevans
    ============================================================ */
-test.describe('Forslagene er gældende adresser', () => {
-  test('opslaget beder Dataforsyningen om status=1', async ({ page }) => {
-    /* ⚠️ PRØVEN LÆSER DEN RIGTIGE ADRESSE, koden kalder — ikke
-       koden selv. Et blik i kildeteksten ville bestå, også hvis
-       parameteren blev skrevet et sted, der aldrig sendes. */
-    let kaldt = '';
+test.describe('Adressevælger', () => {
+  async function skrivAdresse(page, tekst) {
+    await page.locator(LEVERING).click();
+    await page.locator('#fadr').fill(tekst);
+    return page.locator('.adr-liste .adr-forslag');
+  }
+
+  /* ⚠️ PRØVEN LÆSER DEN RIGTIGE ADRESSE, koden kalder — ikke koden
+     selv. Et blik i kildeteksten ville bestå, også hvis parameteren
+     blev skrevet et sted, der aldrig sendes. */
+  test('opslaget går til Adressevælger med nøgle — ikke demonøglen, ikke foreløbige', async ({ page }) => {
     const t = await åbnMedSky(page);
-    await page.route('https://api.dataforsyningen.dk/**', (r) => {
-      kaldt = r.request().url();
-      return r.fulfill({ status: 200, contentType: 'application/json',
-        body: JSON.stringify([{ tekst: 'Havnevej 20, 2670 Greve',
-          adresse: { id: '5d4b049b-1e0e-447f-abdf-62c79a92a5cc', postnr: '2670' } }]) });
+    await skrivAdresse(page, 'Havnevej');
+    await expect.poll(() => t.sidsteSoeg || '').toContain('adressevaelger.dk/adresser/soeg');
+    const u = new URL(t.sidsteSoeg);
+    expect(u.searchParams.get('tekst')).toBe('Havnevej');
+    expect((u.searchParams.get('token') || '').length,
+      'uden en nøgle på mindst 10 tegn svarer tjenesten 400').toBeGreaterThanOrEqual(10);
+    expect(u.searchParams.get('token'), 'den fælles demonøgle må ikke bruges i drift')
+      .not.toBe('adressevaelger123');
+    expect(u.searchParams.get('medtagForeloebige'),
+      'foreløbige adresser kan serveren ikke godkende').toBeNull();
+  });
+
+  /* ⚠️ TJENESTEN SORTERER EFTER POSTNUMMER. Målt 9/10: "Strandvejen
+     10" giver 40 fund fra 2100 og opefter; Køge (4600) er ikke blandt
+     de første seks. TALLET KOMMER UDEFRA: 4600 står i kulissens
+     leverings_postnr — ejerens liste — ikke i prøven. */
+  test('leveringens egne postnumre står øverst', async ({ page }) => {
+    const d = medLevering();
+    d.indstillinger.leverings_postnr = [2670, 2690, 4600];
+    await åbnMedSky(page, { data: d });
+    const fund = ['2100 København Ø', '3220 Tisvildeleje', '3740 Svaneke',
+      '4000 Roskilde', '4040 Jyllinge', '4180 Sorø', '4520 Svinninge',
+      '4600 Køge'].map((p, i) => ({ type: 'adresse', titel: 'Strandvejen 10, ' + p,
+      id: '00000000-0000-0000-0000-00000000000' + i }));
+    await page.route('https://adressevaelger.dk/**', (r) => r.fulfill({
+      status: 200, contentType: 'application/json', body: JSON.stringify(adv(fund)) }));
+    const forslag = await skrivAdresse(page, 'Strandvejen 10');
+    await expect(forslag).toHaveCount(6);
+    await expect(forslag.first()).toHaveText('Strandvejen 10, 4600 Køge');
+    // Resten står i tjenestens egen rækkefølge
+    await expect(forslag.nth(1)).toHaveText('Strandvejen 10, 2100 København Ø');
+  });
+
+  /* ⚠️ HUSNUMMERET SKAL STÅ LIGE EFTER VEJNAVNET. Målt 9/10:
+     "Nylandsvej 2690 Karlslunde 43" finder ikke nr. 43;
+     "Nylandsvej 43, 2690 Karlslunde" gør. Mikkels eksempel. */
+  test('en vej i et postnummer indsnævrer — markøren står klar til husnummeret', async ({ page }) => {
+    const t = await åbnMedSky(page);
+    await page.route('https://adressevaelger.dk/**', (r) => {
+      const q = new URL(r.request().url()).searchParams.get('tekst') || '';
+      const fund = /2690/.test(q)
+        ? [1, 2, 3, 43].map((n) => ({ type: 'adresse', titel: 'Nylandsvej ' + n + ', 2690 Karlslunde',
+            id: '0a3f50ab-1317-32b8-e044-0003ba2980' + String(10 + n) }))
+        : [{ type: 'navngivenvejpostnummer', id: '46ddc0e8-12b2-4bbd-9bc9-4bbe2ba65f6c',
+             titel: 'Nylandsvej 2690 Karlslunde', vejnavn: 'Nylandsvej', postnr: '2690',
+             postdistrikt: 'Karlslunde', antal_husnumre: 76 }];
+      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(adv(fund)) });
     });
-    await page.locator('[data-seg="how"] button:has-text("Levering")').click();
-    await page.locator('#fadr').fill('Havnevej');
-    await page.waitForTimeout(900);
-    expect(kaldt, 'Dataforsyningen blev ikke spurgt').toBeTruthy();
-    expect(decodeURIComponent(kaldt),
-      'forslagene henter også nedlagte adresser — dem kan gæsten ikke bestille til')
-      .toContain('status=1');
+    const forslag = await skrivAdresse(page, 'Nylandsvej');
+    await expect(forslag).toHaveCount(1);
+    await forslag.first().click();
+    await expect(page.locator('#fadr')).toHaveValue('Nylandsvej , 2690 Karlslunde');
+    expect(await page.locator('#fadr').evaluate((f) => f.selectionStart)).toBe('Nylandsvej '.length);
+    // Vejens adresser står klar — og intet er valgt eller sendt til serveren endnu
+    await expect(page.locator('.adr-liste .adr-forslag')).toHaveCount(4);
+    expect(t.valideringer, 'en vej blev sendt til serveren som en adresse').toBe(0);
+    await page.locator('.adr-liste .adr-forslag', { hasText: 'Nylandsvej 43' }).click();
+    await expect(page.locator('#fadr')).toHaveValue('Nylandsvej 43, 2690 Karlslunde');
+    await expect.poll(() => t.valideringer).toBe(1);
+  });
+
+  test('et husnummer med lejligheder viser etagerne i stedet for at blive valgt', async ({ page }) => {
+    const t = await åbnMedSky(page);
+    await page.route('https://adressevaelger.dk/**', (r) => {
+      const q = new URL(r.request().url()).searchParams.get('tekst') || '';
+      const fund = /2670 Greve/.test(q)
+        ? ['', ', st. 1', ', 1.'].map((e, i) => ({ type: 'adresse',
+            titel: 'Greve Strandvej 10' + e + ', 2670 Greve', id: '00000000-0000-0000-0000-0000000000a' + i }))
+        : [{ type: 'husnummer', id: '0a3f5081-2297-32b8-e044-0003ba298018',
+             titel: 'Greve Strandvej 10, 2670 Greve', vejnavn: 'Greve Strandvej', husnummer: '10' }];
+      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(adv(fund)) });
+    });
+    const forslag = await skrivAdresse(page, 'Greve Strandvej 10');
+    await forslag.first().click();
+    await expect(page.locator('.adr-liste .adr-forslag')).toHaveCount(3);
+    await expect(page.locator('.adr-liste .adr-forslag').nth(2)).toHaveText('Greve Strandvej 10, 1., 2670 Greve');
+    expect(t.valideringer).toBe(0);
   });
 });

@@ -183,7 +183,11 @@
        serveren slår bagefter op på adressens EGET id (valider-levering.ts linje
        184) — hverken navn eller telefonnummer er med. tests/jura.spec.js læser
        værtsnavnet ud af koden, så linjen her ikke kan blive forkert i stilhed. -->
-  <p class="fine"><b>Din adresse bliver slået op.</b> Skriver du en leveringsadresse, spørger siden <a href="https://dataforsyningen.dk" target="_blank" rel="noopener">Dataforsyningen</a> — statens egen adressetjeneste — om adressen findes, og om den ligger inden for det område, vi kører ud til. Det sker, mens du skriver, og igen når du sender bestillingen. Vi sender kun selve adressen, ikke dit navn og ikke dit telefonnummer. Dataforsyningen er en dansk myndighed, og opslaget forlader ikke EU.</p>
+  <!-- ⚠️ FRA DATAFORSYNINGEN TIL ADRESSEVÆLGER (9/10). Klimadatastyrelsen lukkede
+       DAWA (api.dataforsyningen.dk) 1/10 2026; afløseren er Adressevælger
+       (adressevaelger.dk). Sætningen "opslaget forlader ikke EU" er taget ud: den
+       var målt for den gamle tjeneste, og den nye er ikke målt. Intet uden belæg. -->
+  <p class="fine"><b>Din adresse bliver slået op.</b> Skriver du en leveringsadresse, spørger siden <a href="https://adressevaelger.dk" target="_blank" rel="noopener">Adressevælger</a> — Klimadatastyrelsens adressetjeneste — om adressen findes, og om den ligger inden for det område, vi kører ud til. Det sker, mens du skriver, og igen når du sender bestillingen. Vi sender kun selve adressen, ikke dit navn og ikke dit telefonnummer. Klimadatastyrelsen er en dansk myndighed.</p>
 
   <div class="rev d1"><div class="eyebrow">Din browser</div><h2>Cookies<br>— og det, der ikke er cookies</h2></div>
   <p class="sub"><b>Vi sætter ingen cookies.</b> Til gengæld ligger der tre ting i din egen browser, som aldrig forlader den:</p>

@@ -5,8 +5,8 @@
    kiggede efter det første firecifrede tal. "Aalborgvej 5, 2670"
    gik igennem, og køkkenet fik en adresse, ingen havde set på.
 
-   Nu foreslår feltet officielle adresser fra Dataforsyningen, og
-   gæsten skal VÆLGE en af dem. Valget sendes til serveren, som
+   Nu foreslår feltet officielle adresser fra statens adressetjeneste,
+   og gæsten skal VÆLGE en af dem. Valget sendes til serveren, som
    slår adressen op igen og udsteder en kvittering. Bestillingen
    bærer kvitteringen; databasen kræver den.
 
@@ -32,19 +32,43 @@
       og så "Mosede", kan det første svar nå frem sidst. Hver
       søgning får et nummer, og kun det nyeste tegnes.
 
-   MÅLT MOD DET LEVENDE API 20/9 2026:
+   ⚠️⚠️ DAWA LUKKEDE 1/10 2026 KL. 10 — OG FELTET SAGDE INGENTING.
+      Mikkel 9/10: *"den kan ikke finde … nylandsvej 43 i karlslunde,
+      de kommer ikke selv med"*. api.dataforsyningen.dk svarede ikke
+      mere, `catch` lukkede listen uden et ord, og gæsten stod med et
+      felt, der bare ikke foreslog noget. Afløseren er
+      Klimadatastyrelsens Adressevælger (adressevaelger.dk).
+
+   MÅLT MOD DET LEVENDE API 9/10 2026:
      · CORS: access-control-allow-origin: * — browseren må kalde
-     · fuzzy=  retter stavefejl: "Havnvej 20 Greve" → Havnevej
-       (uden fuzzy: nul forslag)
-     · svaret er [{ tekst, adresse: { id, … } }]
+     · token er obligatorisk (uden: 400; "abc": 400 "Ugyldigt token")
+     · svaret er { status: "ok", fund: [{ type, id, titel, … }] }
+     · type er vejnavn, navngivenvejpostnummer, husnummer eller
+       adresse — kun en ADRESSE kan vælges; de tre andre indsnævrer
+       søgningen, som Klimadatastyrelsens egen komponent gør
+     · ⚠️ fundene er sorteret efter POSTNUMMER, ikke efter relevans:
+       "Strandvejen 10" giver 40 fund fra 2100 og opefter, og Køge
+       kommer aldrig med i de første seks. Derfor spørges der om
+       flere, og leveringens egne postnumre lægges øverst.
+     · ingen stavekontrol: "Havnvej 20 Greve" giver nul fund
    ============================================================ */
 (function () {
   'use strict';
 
-  var DAWA = 'https://api.dataforsyningen.dk/adresser/autocomplete';
+  var ADV = 'https://adressevaelger.dk/adresser/soeg';
   var MINDST_TEGN = 3;      // under det er hver søgning støj
   var VENT_MS = 300;        // debounce
   var HOEJST = 6;           // forslag ad gangen
+  var HENT = 40;            // så mange spørges der om — se "sorteret efter postnummer"
+  /* ⚠️ NØGLEN. Obligatorisk, men Klimadatastyrelsen har endnu ingen
+     brugerstyring (deres FAQ 9/10). Indtil vores egen nøgle er udstedt
+     (support@kds.dk), bruges forretningens navn — ikke den fælles
+     demonøgle, der ikke må bruges i drift. Den er ikke hemmelig:
+     styrelsens egen komponent lægger den i browseren. Kommer nøglen,
+     sættes den i js/config.js som MOSEDE_CLOUD.adresseToken.
+     Samme værdi som TOKEN_STANDARD i supabase/funktioner/
+     valider-levering.ts. */
+  var TOKEN_STANDARD = 'mosedehavnecafe.dk';
 
   /* Husets egne ord. ⚠️ 'spoerg'-sætningen er ORDRET den samme som
      i js/bestilling.js og js/skal/bestil.js — to formuleringer af
@@ -59,6 +83,10 @@
     ikkeBekraeftet: 'Vi kunne ikke bekræfte adressen. Prøv at vælge den igen.',
     nede: 'Vi kunne ikke kontrollere leveringsadressen lige nu. Prøv igen.',
     ingen: 'Ingen adresser fundet. Prøv at skrive vej og husnummer.',
+    /* ⚠️ FELTET MÅ IKKE TIE  (9/10). Da DAWA lukkede, lukkede listen
+       sig bare — gæsten fik intet at vide og ingen vej videre. */
+    soegNede: 'Vi kan ikke slå adresser op lige nu. Prøv igen om lidt, '
+      + 'eller ring til os, så tager vi bestillingen i telefonen.',
     /* ⚠️ AFVIST PÅ POSTNUMMERET ALENE — uden at spørge serveren.
        Ejerens ord: *"det kan ske ud fra postnummeret og afvise af
        sig selv."* Ligger adressen i et postnummer, bilen aldrig
@@ -93,6 +121,8 @@
       return String(n).trim();
     }).filter(function (n) { return /^[0-9]{4}$/.test(n); });
     var meld = typeof o.naarAendret === 'function' ? o.naarAendret : function () {};
+    var adresseToken = String(o.adresseToken
+      || (window.MOSEDE_CLOUD && window.MOSEDE_CLOUD.adresseToken) || TOKEN_STANDARD);
 
     var listeId = 'adr-liste-' + (++loebenr);
     var liste = lav('ul', 'adr-liste skjult');
@@ -262,40 +292,93 @@
          på den henlagte, og Havnevej 20 kommer stadig. Værnet på
          serveren bliver stående — det er dét, der afgør. Her
          handler det om ikke at tilbyde noget, vi ikke kan holde. */
-      fetch(DAWA + '?q=' + encodeURIComponent(q) + '&per_side=' + HOEJST
-            + '&status=1&fuzzy=', {
+      fetch(ADV + '?tekst=' + encodeURIComponent(q) + '&maksimum=' + HENT
+            + '&token=' + encodeURIComponent(adresseToken), {
         signal: hentning ? hentning.signal : undefined,
         headers: { accept: 'application/json' },
       }).then(function (r) {
-        return r.ok ? r.json() : [];
+        return r.ok ? r.json() : null;
       }).then(function (d) {
         /* Et gammelt svar må ikke overhale et nyt. Se hovedet. */
         if (mit !== nyeste) return;
-        tegnForslag((Array.isArray(d) ? d : []).map(function (x) {
-          var a = (x && x.adresse) || {};
+        if (!d || d.status !== 'ok' || !Array.isArray(d.fund)) {
+          lukListen();
+          return tilstand('nede', ORD.soegNede);
+        }
+        var raekker = d.fund.map(function (x) {
+          var titel = String((x && x.titel) || '');
           return {
-            tekst: String((x && x.tekst) || ''),
-            id: String(a.id || ''),
-            /* ⚠️ KUN TIL DEN HURTIGE AFVISNING OG TIL AT VISE,
-               MENS SERVEREN SPØRGES. Det er SERVERENS svar, der
-               tegner den endelige opdeling — browserens felter er
-               aldrig autoritative. */
-            postnr: String(a.postnr || ''),
+            slags: String((x && x.type) || ''),
+            tekst: titel,
+            id: String((x && x.id) || ''),
+            /* ⚠️ KUN TIL RÆKKEFØLGEN OG DEN HURTIGE AFVISNING. Det er
+               SERVERENS svar, der tegner den endelige opdeling —
+               browserens felter er aldrig autoritative. */
+            postnr: String((x && x.postnr) || postnrAf(titel) || ''),
+            vejnavn: String((x && x.vejnavn) || ''),
+            by: String((x && x.postdistrikt) || ''),
           };
-        }).filter(function (x) { return x.tekst && x.id; }));
-      }).catch(function () {
-        /* ⚠️ AUTOCOMPLETE MÅ FEJLE BLØDT. Kan vi ikke foreslå noget,
-           er det ærgerligt — men den endelige kontrol ligger på
-           serveren og fejler hårdt. Gæsten skal ikke se en teknisk
-           fejl, fordi et forslag ikke kom. */
-        if (mit !== nyeste) return;
+        }).filter(function (x) {
+          return x.tekst && (x.slags !== 'adresse' || x.id);
+        });
+        /* ⚠️ LEVERINGENS POSTNUMRE ØVERST — stabilt, så tjenestens egen
+           rækkefølge står inden for hver gruppe. Uden det kom Køge
+           aldrig med på "Strandvejen 10" (se hovedet). */
+        if (postnumre.length) {
+          var her = [], andre = [];
+          raekker.forEach(function (x) {
+            (postnumre.indexOf(x.postnr) !== -1 ? her : andre).push(x);
+          });
+          raekker = her.concat(andre);
+        }
+        tegnForslag(raekker.slice(0, HOEJST));
+      }).catch(function (fejl) {
+        /* ⚠️ AUTOCOMPLETE MÅ FEJLE BLØDT — MEN IKKE TAVST (9/10). Den
+           endelige kontrol ligger på serveren og fejler hårdt; her skal
+           gæsten bare vide, at det ikke er hende, og hvad hun så kan.
+           En afbrudt søgning (hun skrev videre) er ikke en fejl. */
+        if (mit !== nyeste || (fejl && fejl.name === 'AbortError')) return;
         lukListen();
+        tilstand('nede', ORD.soegNede);
       });
+    }
+
+    /* Postnummeret står sidst i titlen: "Nylandsvej 43, 2690
+       Karlslunde", "Strandvejen 10, Pedersker, 3720 Aakirkeby". */
+    function postnrAf(titel) {
+      var m = String(titel || '').match(/(?:^|,)\s*(\d{4})\s+[^,]+$/);
+      return m ? m[1] : '';
     }
 
     function vaelg(i) {
       var r = forslag[i];
       if (!r) return;
+      /* ⚠️ EN VEJ ELLER ET HUSNUMMER ER IKKE EN ADRESSE. Vælger gæsten
+         "Nylandsvej 2690 Karlslunde", skal hun videre til husnumrene;
+         vælger hun "Greve Strandvej 10" med flere lejligheder, til
+         etagerne. Feltet får titlen og søger igen — som Klimadata-
+         styrelsens egen komponent gør. Intet er valgt endnu. */
+      if (r.slags !== 'adresse') {
+        var soegPaa = r.tekst;
+        lukListen();
+        tilstand('vaelg', ORD.vaelg);
+        felt.focus();
+        if (r.slags === 'navngivenvejpostnummer' && r.vejnavn && r.postnr) {
+          /* ⚠️ HUSNUMMERET SKAL STÅ LIGE EFTER VEJNAVNET. Målt 9/10:
+             "Nylandsvej 2690 Karlslunde 43" finder IKKE nr. 43, men
+             "Nylandsvej 43, 2690 Karlslunde" gør. Derfor sættes
+             markøren dér, hvor nummeret skal skrives — og listen viser
+             vejens adresser imens. */
+          felt.value = r.vejnavn + ' , ' + r.postnr + (r.by ? ' ' + r.by : '');
+          if (felt.setSelectionRange) {
+            felt.setSelectionRange(r.vejnavn.length + 1, r.vejnavn.length + 1);
+          }
+        } else {
+          felt.value = r.tekst + (r.slags === 'vejnavn' ? ' ' : '');
+        }
+        soeg(soegPaa);
+        return;
+      }
       felt.value = r.tekst;
       valgt = { id: r.id, tekst: r.tekst };
       token = null;
@@ -332,7 +415,9 @@
       fetch(valideringUrl, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ dawaId: valgt.id, lokation: lokation }),
+        /* dawaId med, så en server med den gamle udgave stadig forstår
+           kaldet. Det er det samme ID. */
+        body: JSON.stringify({ adresseId: valgt.id, dawaId: valgt.id, lokation: lokation }),
       }).then(function (r) {
         return r.json().catch(function () { return null; });
       }).then(function (s) {
