@@ -721,8 +721,10 @@ test.describe('Levering på tapas', () => {
       { navn: 'Tapasfad, pr. person', antal: 4, pris: 145 },
       { navn: 'Levering', antal: 1, pris: 79, emballage: true },
     ]);
-    // Aldrig af sig selv — selv med auto_bekraeft slået til
-    await expect(page.locator('#bestil-tapas')).toContainText('ringer og bekræfter leveringen');
+    /* ⚠️ VENDT 9/10: en levering bekræftes af sig selv som to-go, når
+       kontakten står til (Mikkel: "ja"). Her stod "aldrig af sig selv". */
+    await expect(page.locator('#bestil-tapas')).toContainText('Bestilt. Leveres');
+    await expect(page.locator('#bestil-tapas')).not.toContainText('Hentes');
   });
 
   test('et postnummer, vi ikke kører til, sendes ikke', async ({ page }) => {

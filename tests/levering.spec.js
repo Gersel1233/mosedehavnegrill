@@ -213,8 +213,12 @@ test.describe('Smørrebrød ud af huset: hentes eller leveres', () => {
      Reglen: har zonen svaret, er noten væk. Er der endnu intet
      postnummer, er "vi ringer og bekræfter" stadig det ærlige —
      og det er netop dér, gæsten ikke har fået et svar endnu. */
+  /* ⚠️ NOTEN LOVER ET OPKALD, SÅ DEN STÅR KUN, NÅR KONTAKTEN STÅR PÅ
+     OPKALD  (9/10). Bekræftes leveringen af sig selv (Mikkel: "ja"),
+     er der intet opkald at love. Prøven kører derfor med kontakten
+     FRA — dér gælder alt herunder som før. */
   test('zonen: noten forsvinder, når svaret er givet', async ({ page }) => {
-    await åbn(page, '/bestil/', { data: medSmoerrebroed({ levering: true }) });
+    await åbn(page, '/bestil/', { data: medSmoerrebroed({ levering: true, auto_bekraeft: false }) });
     await laegIKurv(page);
     await page.locator('#bestil-hvordan .type-knap', { hasText: 'I leverer' }).click();
 
@@ -266,12 +270,14 @@ test.describe('Smørrebrød ud af huset: hentes eller leveres', () => {
     await expect(kig.locator('.kvit-navn', { hasText: /^Hentes$/ })).toHaveCount(0);
   });
 
-  test('en levering bekræftes ALDRIG automatisk, heller ikke når kontakten står til',
+  /* ⚠️ VENDT 9/10 — MED VILJE. Her stod "en levering bekræftes ALDRIG
+     automatisk, heller ikke når kontakten står til" — fordi vi ikke
+     kunne love at køre til en adresse, ingen havde set på. Nu slår
+     serveren adressen op og siger ja til zonen, før der kan bestilles,
+     og Mikkel sagde *"ja"* til at bekræfte leveringer som to-go. Det,
+     prøven stadig vogter: der må ALDRIG stå "Hentes" på en levering. */
+  test('en levering bekræftes af sig selv, når kontakten står til — og siger Leveres',
     async ({ page }) => {
-    /* DEN VIGTIGSTE PRØVE I FILEN. auto_bekraeft er slået TIL som
-       standard, så en levering ville ellers få "Bestilt. Hentes
-       lørdag kl. 12" — et løfte om at køre til en adresse, ingen
-       har set på. */
     await åbn(page, '/bestil/', {
       data: medSmoerrebroed({ levering: true, auto_bekraeft: true }),
     });
@@ -285,6 +291,27 @@ test.describe('Smørrebrød ud af huset: hentes eller leveres', () => {
 
     const tak = page.locator('#bestil-tak');
     await expect(tak).toBeVisible();
+    await expect(tak).toContainText('Bestilt. Leveres');
+    await expect(tak).toContainText('du betaler, når maden kommer');
+    await expect(tak).not.toContainText('Hentes');
+    await expect(tak).not.toContainText('bekræfter, at vi kan køre');
+  });
+
+  test('står kontakten på opkald, lover en levering stadig et opkald', async ({ page }) => {
+    /* Modstykket: ejeren kan stadig vælge opkaldet i admin, og så skal
+       kvitteringen sige det — ellers venter gæsten på en levering,
+       ingen har bekræftet. */
+    await åbn(page, '/bestil/', {
+      data: medSmoerrebroed({ levering: true, auto_bekraeft: false }),
+    });
+    await laegIKurv(page);
+    await page.locator('#bestil-hvordan .type-knap', { hasText: 'I leverer' }).click();
+    await page.locator('#bestil-adresse').fill('Havnevej 20I, 2670 Greve');
+    await page.locator('#bestil-navn').fill('Test Testesen');
+    await page.locator('#bestil-telefon').fill('20304050');
+    await page.locator('#bestil-send').click();
+    await page.locator('#kig-send').click();
+    const tak = page.locator('#bestil-tak');
     await expect(tak).toContainText('bekræfter, at vi kan køre til adressen');
     await expect(tak).not.toContainText('Bestilt.');
   });

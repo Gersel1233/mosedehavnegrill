@@ -276,11 +276,27 @@ test.describe('Hentes eller leveres', () => {
     await expect(page.locator('#stid-label')).toContainText('leveres');
   });
 
-  test('en levering bekræftes ALDRIG af sig selv', async ({ page }) => {
-    /* Vi kan love, at maden bliver lavet. Vi kan ikke love, at den
-       kan køres til en adresse, vi ikke kender. */
+  /* ⚠️ VENDT 9/10 — MED VILJE. Her stod "en levering bekræftes ALDRIG af
+     sig selv: vi kan ikke love, at den kan køres til en adresse, vi
+     ikke kender". Nu slår serveren adressen op og siger ja til zonen
+     først, og Mikkel sagde *"ja"* til at bekræfte leveringer som to-go.
+     Står kontakten på opkald, lover kvitteringen stadig et opkald. */
+  test('en levering bekræftes af sig selv — og siger Leveres, ikke Hentes', async ({ page }) => {
     const d = medLevering();
     d.indstillinger.auto_bekraeft = true;
+    await åbn(page, d);
+    await page.locator('[data-toggles="#levfelt"] button', { hasText: 'Leveres' }).click();
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 1);
+    await udfyld(page);
+    await page.locator('#sadr').fill('Havnevej 20L, 2670 Greve');
+    await page.locator('#ssend').click();
+    await expect(page.locator('#bestil .hint').first()).toContainText('Bestilt. Leveres');
+    await expect(page.locator('#bestil .hint').first()).not.toContainText('Hentes');
+  });
+
+  test('står kontakten på opkald, lover en levering stadig et opkald', async ({ page }) => {
+    const d = medLevering();
+    d.indstillinger.auto_bekraeft = false;
     await åbn(page, d);
     await page.locator('[data-toggles="#levfelt"] button', { hasText: 'Leveres' }).click();
     await tælOp(page, 'Smørrebrød', 'Rejemad', 1);

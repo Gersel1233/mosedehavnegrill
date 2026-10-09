@@ -152,14 +152,20 @@
         + 'Sætter du den færdig nu, forsvinder den fra den dags overblik, '
         + 'og køkkenet laver den ikke.');
     }
-    if (b.hvordan === 'levering') {
+    /* ⚠️ KUN NÅR KONTAKTEN STÅR PÅ OPKALD  (9/10). Mikkel sagde *"ja"*
+       til, at leveringer bekræftes af sig selv som to-go: kvitteringen
+       siger "Bestilt. Leveres …", og adressen er slået op af serveren.
+       Så er der intet opkald at spørge om. Står auto_bekraeft på FRA,
+       lover kvitteringen stadig et opkald — og så spørger knappen. */
+    var ringer = ((Admin.data || {}).indstillinger || {}).auto_bekraeft === false;
+    if (b.hvordan === 'levering' && ringer) {
       var nr = String(b.telefon || '').trim();
       spg.push('\ud83d\ude97 ' + String(b.navn || 'Gæsten')
         + ' skal have maden LEVERET.\n\n'
         + (nr ? 'Har I ringet til ' + nr + ' og aftalt adresse og tid? '
               : 'Har I aftalt adresse og tid med gæsten? ')
-        + 'Kvitteringen lover hende et opkald — en levering bekræftes '
-        + 'aldrig af sig selv.');
+        + 'Kvitteringen lover et opkald, fordi bestillinger bekræftes '
+        + 'med et opkald (Bestillinger → Regler for bestilling).');
     }
     return spg.length ? spg.join('\n\n') : null;
   };

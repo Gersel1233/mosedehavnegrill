@@ -3046,11 +3046,15 @@
        er slået TIL som standard — derfor === false og ikke
        === true.
 
-       EN LEVERING BEKRÆFTES ALDRIG AF SIG SELV. Vi kan love, at
-       maden bliver lavet — det er køkkenets eget arbejde. Vi kan
-       IKKE love, at den kan køres til en adresse, vi ikke kender. */
+       ⚠️ OG LEVERINGEN OGSÅ  (9/10). Her stod "EN LEVERING BEKRÆFTES
+       ALDRIG AF SIG SELV — vi kan ikke love, at den kan køres til en
+       adresse, vi ikke kender". Det kan vi nu: serveren har slået
+       adressen op hos Adressevælger og sagt ja til zonen
+       (valider-levering), og databasen kræver kvitteringen. Mikkel
+       9/10, til "skal leveringer bekræftes af sig selv som to-go?":
+       *"ja"*. Står kontakten i admin på opkald, ringer vi stadig. */
     var leveres = b.hvordan === 'levering';
-    var auto = (data.indstillinger || {}).auto_bekraeft !== false && !leveres;
+    var auto = (data.indstillinger || {}).auto_bekraeft !== false;
     /* ⚠️ PUNKTUM, IKKE KOLON. Hele huset skriver "kl. 13.00"
        (js/bestilling.js, js/bord.js, bestil-regler.js); kun den
        her kvittering skrev 13:00 — MÅLT på et skud 4/9. To
@@ -3060,8 +3064,11 @@
       + Butik.klokken(b.hent_tid);
 
     var besked = auto
-      ? 'Bestilt. ' + (b.hvordan === 'spis_her' ? 'Spis her ' : 'Hentes ') + hvornår + '. '
-        + 'Der er ikke betalt noget – du betaler ved lugen.'
+      ? (leveres
+        ? 'Bestilt. Leveres ' + hvornår + '. '
+          + 'Der er ikke betalt noget – du betaler, når maden kommer.'
+        : 'Bestilt. ' + (b.hvordan === 'spis_her' ? 'Spis her ' : 'Hentes ') + hvornår + '. '
+          + 'Der er ikke betalt noget – du betaler ved lugen.')
       /* ⚠️ HELE SÆTNINGER (26/9). Her stod "Vi ringer og bekræfter.
          lørdag d. 27. september kl. 12.00." — et punktum, et lille
          bogstav og intet udsagnsord. Fundet i en gennemgang af koden. */

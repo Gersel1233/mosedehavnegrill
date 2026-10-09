@@ -2276,7 +2276,11 @@
       var adr = felt ? felt.value : '';
       var zonenHarSvaret = skalLeveres && adr.trim() && R && R.leveringSvar
         && R.leveringSvar(data, adr) !== 'ukendt';
-      note.textContent = (skalLeveres && !zonenHarSvaret)
+      /* ⚠️ Kun når kontakten står på opkald (9/10). Bekræftes
+         leveringen af sig selv, er der intet opkald at love — svaret
+         på adressen kommer i feltet. */
+      var ringer = (data.indstillinger || {}).auto_bekraeft === false;
+      note.textContent = (skalLeveres && !zonenHarSvaret && ringer)
         ? 'Vi ringer og bekræfter, at vi kan køre til adressen.'
         : '';
     }
@@ -3369,11 +3373,15 @@
        i Roskilde, ville den have lovet noget, ingen har lovet —
        og gæsten ville opdage det, når maden ikke kom.
 
-       Derfor er auto slået fra her, uanset hvad kontakten i admin
-       står på. Den dag ejeren melder en zone ind, kan reglen
-       løsnes — men ikke før. */
+       Derfor var auto slået fra her, uanset hvad kontakten i admin
+       stod på — "den dag ejeren melder en zone ind, kan reglen
+       løsnes". ⚠️ DEN ER LØSNET  (9/10): zonen er tegnet, serveren
+       slår adressen op og siger ja, før der kan bestilles, og
+       Mikkel sagde *"ja"* til, at leveringer bekræftes som to-go.
+       Står kontakten på opkald, ringer vi stadig. Samme regel som
+       kvitteringen i js/skal/bestil.js. */
     var leveres = b.hvordan === 'levering';
-    var auto = (data.indstillinger || {}).auto_bekraeft !== false && !leveres;
+    var auto = (data.indstillinger || {}).auto_bekraeft !== false;
 
     /* VED BORDET RINGER VI IKKE: et opkald til en telefon, der
        ligger på bordet foran gæsten, er ikke en bekræftelse.
@@ -3386,7 +3394,12 @@
         : 'Vi kommer forbi bord ' + b.bord_nummer + ' og bekræfter. '
           + 'Der er ikke betalt noget – du betaler ved lugen.';
     } else {
-      besked = auto
+      besked = auto && leveres
+        ? 'Bestilt. Leveres ' + dagNavn(data, b.hent_dato) + ' d. '
+          + dagDato(b.hent_dato) + ' kl. ' + Butik.klokken(b.hent_tid) + '. '
+          + 'Der er ikke betalt noget – du betaler, når maden kommer. '
+          + 'Kan køkkenet mod forventning ikke lave den, ringer vi til dig.'
+        : auto
         ? 'Bestilt. Hentes ' + dagNavn(data, b.hent_dato) + ' d. '
           + dagDato(b.hent_dato) + ' kl. ' + Butik.klokken(b.hent_tid) + '. '
           + 'Der er ikke betalt noget – du betaler når du henter. '

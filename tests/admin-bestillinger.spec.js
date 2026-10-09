@@ -1085,8 +1085,19 @@ test.describe('En levering er lovet et opkald', () => {
       .toHaveCount(2);
   });
 
-  test('Færdig på en levering spørger om opkaldet FØRST', async ({ page }) => {
-    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medLevering() });
+  /* ⚠️ KUN NÅR KONTAKTEN STÅR PÅ OPKALD  (9/10). Mikkel sagde *"ja"* til,
+     at leveringer bekræftes af sig selv som to-go — så lover
+     kvitteringen intet opkald, og Færdig spørger ikke (prøven under
+     den her). Står auto_bekraeft på FRA, lover kvitteringen stadig et
+     opkald, og så gælder alt herunder som før. */
+  function medOpkald() {
+    const d = medLevering();
+    d.indstillinger.auto_bekraeft = false;
+    return d;
+  }
+
+  test('Færdig på en levering spørger om opkaldet FØRST — når kontakten står på opkald', async ({ page }) => {
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medOpkald() });
     await visFane(page, 'p-bestillinger');
 
     /* ⚠️ DIALOGEN AFVISES, og så må status IKKE have flyttet sig.
@@ -1105,6 +1116,23 @@ test.describe('En levering er lovet et opkald', () => {
     const gemt = await gemteData(page);
     expect(gemt.bestillinger.find((x) => x.id === 1).status,
       'status flyttede sig, selv om spørgsmålet blev afvist').toBe('bekraeftet');
+  });
+
+  test('bekræftes leveringer af sig selv, spørger Færdig ikke om et opkald (9/10)', async ({ page }) => {
+    /* Kvitteringen siger "Bestilt. Leveres …" — der er intet opkald at
+       spørge om, og et spørgsmål uden grund er et, man lærer at klikke
+       væk. TALLET KOMMER UDEFRA: auto_bekraeft står ikke i kulissen, og
+       standarden er TIL (Admin læser !== false). */
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medLevering() });
+    await visFane(page, 'p-bestillinger');
+    let spurgt = null;
+    page.on('dialog', (d) => { spurgt = d.message(); return d.dismiss(); });
+    await page.locator('.bestil-kort', { hasText: 'Lone Hansen' })
+      .getByRole('button', { name: /Færdig/ }).click();
+    await page.waitForTimeout(500);
+    expect(spurgt, 'Færdig spurgte om et opkald, kvitteringen ikke har lovet').toBeNull();
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger.find((x) => x.id === 1).status).toBe('afhentet');
   });
 
   test('en almindelig afhentning spørger IKKE', async ({ page }) => {
@@ -1129,7 +1157,7 @@ test.describe('En levering er lovet et opkald', () => {
     /* De to skærme spørger begge Admin.spoergFoerst. Skrev de
        spørgsmålet hver for sig, ville de langsomt komme til at sige
        noget forskelligt om den samme bestilling. */
-    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medLevering() });
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medOpkald() });
     await visFane(page, 'p-overblik');
 
     let spurgt = null;
