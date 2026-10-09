@@ -7,6 +7,34 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**⚠️ DAWA LUKKEDE 1/10 — LEVERINGEN VAR DØD; NU PÅ ADRESSEVÆLGER** (9/10 — IKKE
+LIVE). Mikkel: *"den kan ikke finde … nylandsvej 43 i karlslunde, de kommer ikke
+selv med"*. Klimadatastyrelsen lukkede DAWA (api.dataforsyningen.dk) 1/10 kl. 10.
+Adressefeltet fik intet svar og lukkede listen uden et ord; serveren svarede fail
+closed. **Fra 1/10 kunne ingen gæst bestille levering** — og prøverne bestod hele
+vejen, fordi de efterlignede DAWA. Lærestreg: en mock er ikke tjenesten.
+- **Afløseren er Adressevælger** (adressevaelger.dk). MÅLT 9/10 (efter Mikkel åbnede
+  netværket): token obligatorisk (ingen brugerstyring endnu — forretningens navn
+  bruges, til Klimadatastyrelsen udsteder vores via support@kds.dk); fund er vejnavn
+  / vej-i-postnummer / husnummer / adresse; **sorteret efter postnummer, ikke
+  relevans**; status "3" = gældende; koordinater i UTM 32N. ID'erne er DAWA's (Havnevej
+  20 er 5d4b049b-… i begge) — databasen er urørt
+- **Feltet** (js/adressefelt.js): vej → vej-i-postnummer → husnummer indsnævrer;
+  markøren står klar til husnummeret ("Nylandsvej , 2690 Karlslunde"); leveringens
+  postnumre øverst; svarer tjenesten ikke, siger feltet det og peger på telefonen.
+  Prøvet mod den RIGTIGE tjeneste i browseren: Nylandsvej → Karlslunde → 43 → valgt
+- **Serveren** (supabase/funktioner/valider-levering.ts): opslag hos Adressevælger,
+  status "3", UTM→længde/bredde (Havnevej 20 rammer DAWA's gamle punkt under 1 cm).
+  ⚠️ **Skal lægges op i Supabase** (Edge Functions → valider-levering) — FØR siden
+- **Leveringer bekræftes af sig selv** (Mikkel: *"ja"*): "Bestilt. Leveres … du
+  betaler, når maden kommer"; Færdig spørger ikke om opkald. Står kontakten på
+  opkald, er alt som før. Afvis beder stadig om opkaldet
+- **Admin: tre tider pr. levering** (Mikkel: *"hvornår det så skal laves"*): ⏱ køkkenet
+  i gang senest · 🚗 bilen kører · ved døren. Overblik sorterer leveringer efter
+  AFGANGEN (Køge 14.00 skal ud 13.30 — stod før efter en afhentning 13.45)
+- Persondatapolitikken nævner Adressevælger; "forlader ikke EU" taget ud (ikke målt)
+- Alle nye prøver set fejle (serveren 2 veje, feltet 3, bekræftelsen 2, tiderne 2)
+
 **UDGIVET 8/10 KL. 14.22 — CHEFENS RETTELSER, LEVERINGEN OG KORTENE** (8/10).
 Mikkel: *"jaer alt skal ud nu og opdateres og live hele pisset"*.
 - **SQL** kørt af Mikkel i SQL Editoren 8/10 kl. 12.52: `chefens-rettelser-7-10.sql`
