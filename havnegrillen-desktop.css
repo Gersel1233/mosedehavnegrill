@@ -132,7 +132,9 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 #alt .row-card .ic{width:40px;height:40px}
 #alt .row-card .ic svg{width:20px;height:20px}
 #alt .linse{grid-column:3;grid-row:1}
-/* Slørets faste creme følger overskriften, der er lavere her. */
+/* Slørets faste creme følger overskriften, der er lavere her, og fotoet
+   viser båndet med himlen og skiltet (molen er et højt billede). */
+#alt .alt-bund img{object-position:50% 22%}
 #alt .alt-slor{background:linear-gradient(180deg,var(--cream2) 0,var(--cream2) 150px,rgba(247,237,225,.45) 330px,rgba(247,237,225,.45))}
 .newslist{grid-template-columns:1fr 1fr}
 .vals{grid-template-columns:repeat(3,1fr)}

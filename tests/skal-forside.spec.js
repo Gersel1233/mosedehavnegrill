@@ -787,6 +787,18 @@ test.describe('Forsidens kobling', () => {
     }
   });
 
+  /* ⚠️ BUNDEN ER ET FOTO MED BELÆG (10/10). Første udgave lagde
+     facade-1400.jpg under computerens kort — den AI-behandlede med det
+     forkerte skilt ("Grill & Kiosk"), som er forbudt som husets billede
+     (tests/udgivelse.spec.js, 8/9). Prøven læser HVER kilde, browseren
+     kan vælge (src og srcset), ikke kun den, den valgte. */
+  test('fotoet under «Hvad skal vi hjælpe med?» er ikke det AI-behandlede facadebillede', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const kilder = await page.$$eval('#alt .alt-bund img, #alt .alt-bund source', (a) => a.map((e) => (e.getAttribute('src') || '') + ' ' + (e.getAttribute('srcset') || '')));
+    expect(kilder.length, 'vagt: der er et foto under afsnittet').toBeGreaterThan(0);
+    for (const k of kilder) expect(k, 'facadebilledet er forbudt (AI, forkert skilt)').not.toMatch(/facade-/);
+  });
+
   /* ⚠️ PILEN ER FIGMAS LINSE (10/10). Figmas ikon er "drawn — never a font
      glyph" (33:25), og rækkerne havde "→" som tekst i en hvid cirkel. Nu
      er knappen LA2.1 Icon-only: krop 48, og pilen er Figmas egen sti
