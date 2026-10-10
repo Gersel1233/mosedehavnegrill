@@ -1581,21 +1581,35 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    gang, og dér får hvert kort sit eget trin.
    ⚠️ KUN VED no-preference. Selektoren vejer mere end reduced-motion-
    blokkens `.row-card.rev` (0,2,0); uden indpakningen ville kortene stå
-   forskudt og usynlige for den, der har slået animationer fra. */
+   forskudt og usynlige for den, der har slået animationer fra.
+
+   ⚠️ PÅ COMPUTEREN ER SIDEN KOLONNENS (10/10). Mikkels ord: *"… og
+   animationen fix"*. "På skift" er en liste, ikke et net: med tre
+   kolonner kom midterkortet fra højre og kortet under det fra venstre,
+   så kortene krydsede hinanden på vej ind. Nu kommer venstre kolonne
+   fra venstre, højre fra højre, og midten stiger op som husets `.rev`.
+   Telefonen har én kolonne og står, som kunden bad om.
+   ⚠️ FORSINKELSEN GÆLDER KUN INDGANGEN (`--d`). Stod den som én
+   transition-delay, ventede et hover og et tryk også op til et halvt
+   sekund. Og trykket er `scale`, ikke `transform`: `transform:none`
+   herunder vejer mere end `.row-card:active` og slugte det tavst. */
 @media (prefers-reduced-motion:no-preference){
   #alt{overflow-x:clip}
   #alt .rows>.row-card.rev:nth-of-type(odd){transform:translate3d(-48px,0,0)}
   #alt .rows>.row-card.rev:nth-of-type(even){transform:translate3d(48px,0,0)}
   /* Egen kurve, ikke --spring: den lægger ~90 % af vejen i de første
      100 ms, og så når en glidning på 48 px ikke at blive set (målt på skud). */
-  #alt .rows>.row-card.rev.in:nth-of-type(n){transform:none;transition:opacity .6s ease,transform .8s cubic-bezier(.33,1,.68,1)}
+  #alt .rows>.row-card.rev.in:nth-of-type(n){transform:none;transition:opacity .6s ease var(--d,0s),transform .8s cubic-bezier(.33,1,.68,1) var(--d,0s),translate .18s ease,scale .35s var(--spring)}
 }
 @media (prefers-reduced-motion:no-preference) and (min-width:821px){
-  #alt .rows>.row-card.rev.in:nth-of-type(2){transition-delay:.1s}
-  #alt .rows>.row-card.rev.in:nth-of-type(3){transition-delay:.2s}
-  #alt .rows>.row-card.rev.in:nth-of-type(4){transition-delay:.3s}
-  #alt .rows>.row-card.rev.in:nth-of-type(5){transition-delay:.4s}
-  #alt .rows>.row-card.rev.in:nth-of-type(n+6){transition-delay:.5s}
+  #alt .rows>.row-card.rev:nth-of-type(3n+1){transform:translate3d(-48px,0,0)}
+  #alt .rows>.row-card.rev:nth-of-type(3n+2){transform:translate3d(0,26px,0)}
+  #alt .rows>.row-card.rev:nth-of-type(3n){transform:translate3d(48px,0,0)}
+  #alt .rows>.row-card:nth-of-type(2){--d:.1s}
+  #alt .rows>.row-card:nth-of-type(3){--d:.2s}
+  #alt .rows>.row-card:nth-of-type(4){--d:.3s}
+  #alt .rows>.row-card:nth-of-type(5){--d:.4s}
+  #alt .rows>.row-card:nth-of-type(n+6){--d:.5s}
 }
 
 /* --- 4) TRIN I DE GENTAGNE LISTER ---
@@ -3169,9 +3183,8 @@ footer .smiley-linje{
    prøven måler mod naboen, ikke mod et tal. Glaskortene bliver — på creme
    er de lyse kort med en blød kant. */
 #alt{background:var(--cream2)}
-#alt>.rev:first-child{position:relative;isolation:isolate;background-color:rgba(255,255,255,.8);background-image:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 55%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-radius:26px;padding:18px 18px 16px;box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
-#alt .row-card{isolation:isolate;border-radius:24px;background-color:rgba(255,255,255,.62);background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.08) 60%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
-#alt>.rev:first-child::before,#alt .row-card::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1.2px;pointer-events:none;background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(255,255,255,.15) 35%,rgba(255,255,255,.1) 65%,rgba(255,255,255,.85));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+/* ⚠️ OG GLASSET FRA 13/9 ER VÆK (10/10) — se blokken
+   «HVAD SKAL VI HJÆLPE MED?» PÅ HUSETS GLAS længere nede. */
 /* ============================================================
    APPLES KLARE GLAS — ÉN OPSKRIFT TIL ALLE PILLER  (28/9, aften)
    ------------------------------------------------------------
@@ -3247,8 +3260,49 @@ footer .smiley-linje{
 .gr-pil{flex:none;width:18px;height:18px;color:rgba(36,26,23,.38)}
 /* Telefonen i en knap er husets tegn, ikke 📞 (27/9, persondatasiden). */
 .g>svg{width:18px;height:18px;flex:none}
-#alt .row-card .ic{background:rgba(255,255,255,.6);box-shadow:var(--kant-inde)}
-#alt .row-card .go{right:12px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.72);box-shadow:var(--skygge-let)}
+/* ============================================================
+   «HVAD SKAL VI HJÆLPE MED?» PÅ HUSETS GLAS — OG FIGMAS MÅL  (10/10)
+   ------------------------------------------------------------
+   Mikkels ord med et skærmbillede af afsnittet: *"udseende og Ui
+   mæssigt er de slet ikke med ift figmas UI sheets og resten af
+   udseendet og animationen fix"*. MÅLT FØR: afsnittet var det sidste
+   med glasset fra 13/9 — slør på 22 px bag kortene over FLAD creme,
+   en lysmaske i kanten, overskriften i sit eget kort og "→" som et
+   skrifttegn i en hvid cirkel. Resten af forsiden gik over til Apples
+   klare glas 28/9.
+
+   · OVERSKRIFTEN STÅR PÅ BUNDEN, som i alle de andre afsnit og i
+     Figmas eget tjenesteafsnit (A04, 86:64/86:65). Et kort om en
+     overskrift var glas om tekst over ingenting — Figmas nej to gange
+     (53:299 og §1.2).
+   · KORTENE ER HUSETS ENE OPSKRIFT (--glas-flade/--glas-skygge), den
+     samme som rækkerne øverst på forsiden. INTET SLØR: bag dem er der
+     kun ensfarvet creme, og sløret blev regnet om for hvert billede,
+     mens seks kort gled ind (husets grænse fra 31/8 og
+     tests/siden-staar-stille.spec.js).
+   · Hjørnet er Figmas radius/l (28, 143:16) — som Find os og
+     menukortet. Flisen har linsens mål (40, 116:888) og radius/s (14,
+     143:10); den røde tone er husets, så tegnet har noget at stå på.
+   · PILEN ER TEGNET: husets .gr-pil fra rækkerne øverst. Figmas ikon er
+     "drawn — never a font glyph" (33:25), og "→" var netop en glyf.
+   · Titlen er 20 på telefonen (så "Smørrebrød ud af huset" står på én
+     linje ved 390) og Figmas H3 på computeren (24/30, 105:955).
+   · Hover på computeren er Figmas: et løft og pilen, 180 ms (95:359).
+   ⚠️ Prøven "står på naboens creme" i skal-forside er VENDT med den grund.
+   ============================================================ */
+#alt .rows{gap:12px}
+#alt .row-card{gap:14px;padding:14px 16px 14px 14px;border-radius:28px;background:var(--glas-flade);box-shadow:var(--glas-skygge)}
+#alt .row-card .ic{width:40px;height:40px;border-radius:14px;background:rgba(214,42,58,.08)}
+#alt .row-card .ic svg{width:20px;height:20px}
+#alt .row-card .ic+div{flex:1;min-width:0}
+#alt .row-card h3{font-size:20px;line-height:1.2;text-wrap:balance}
+#alt .row-card p{margin-top:4px;text-wrap:pretty}
+#alt .row-card .gr-pil{transition:color .18s ease,translate .18s ease}
+#alt .row-card:active{scale:.98}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  #alt .row-card:hover{translate:0 -2px}
+  #alt .row-card:hover .gr-pil{color:var(--red-tekst);translate:3px 0}
+}
 
 /* Siden er nede (16/9): forsidens og smørrebrødssidens liste dæmpes
    og kan ikke trykkes, og linjen over den siger hvorfor og giver

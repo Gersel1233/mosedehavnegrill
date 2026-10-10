@@ -611,19 +611,41 @@ test.describe('Forsidens kobling', () => {
      man scroller ned". Startpositionen læses af den BEREGNEDE stil,
      og kortene sammenlignes med hinanden — ikke med et tal i arket.
      ============================================================ */
-  test('kortene under «Hvad skal vi hjælpe med?» starter på skift fra venstre og højre', async ({ page }) => {
+  /* ⚠️ VENDT PÅ COMPUTEREN 10/10 — Mikkels ord: "… og animationen fix".
+     "På skift" er en liste: i et net med tre kolonner kom midterkortet fra
+     højre og kortet under det fra venstre, så de krydsede hinanden på vej
+     ind. Nu kommer hver kolonne fra SIN side, og midten stiger op. Telefonen
+     har én kolonne og glider på skift som før (kundens ord 13/9).
+     Kolonnen læses af LAYOUTET (offsetLeft, som en transform ikke flytter),
+     ikke af arket — så prøven kan ikke spørge reglen om sig selv. */
+  test('kortene under «Hvad skal vi hjælpe med?» kommer ind fra hver sin side', async ({ page }) => {
     await åbn(page, '/index.html');
-    const x = await page.$$eval('#alt .rows > .row-card', (a) => a.slice(0, 4).map((e) => {
+    const k = await page.$$eval('#alt .rows > .row-card', (a) => a.map((e) => {
       if (e.classList.contains('in')) return null;
       const m = getComputedStyle(e).transform.match(/matrix\(([^)]+)\)/);
-      return m ? Number(m[1].split(',')[4]) : 0;
+      const t = m ? m[1].split(',').map(Number) : [1, 0, 0, 1, 0, 0];
+      return { x: t[4], y: t[5], venstre: e.offsetLeft };
     }));
-    expect(x.length, 'der skal være mindst fire kort').toBe(4);
-    expect(x.every((v) => v !== null), 'kortene var afsløret FØR rulning — prøven måler ingenting').toBe(true);
-    expect(x[0], 'kort 1 skal komme fra venstre (' + x.join(', ') + ')').toBeLessThan(-20);
-    expect(x[1], 'kort 2 skal komme fra højre (' + x.join(', ') + ')').toBeGreaterThan(20);
-    expect(x[2]).toBeLessThan(-20);
-    expect(x[3]).toBeGreaterThan(20);
+    expect(k.length, 'vagt: de seks kort').toBe(6);
+    expect(k.every((v) => v !== null), 'kortene var afsløret FØR rulning — prøven måler ingenting').toBe(true);
+    const kolonner = [...new Set(k.map((v) => v.venstre))].sort((a, b) => a - b);
+    const vis = k.map((v) => `${v.x},${v.y}@${v.venstre}`).join('  ');
+    if (kolonner.length === 1) {
+      k.forEach((v, i) => (i % 2
+        ? expect(v.x, `kort ${i + 1} skal komme fra højre (${vis})`).toBeGreaterThan(20)
+        : expect(v.x, `kort ${i + 1} skal komme fra venstre (${vis})`).toBeLessThan(-20)));
+    } else {
+      expect(kolonner.length, 'vagt: nettet har tre kolonner på computeren').toBe(3);
+      k.forEach((v, i) => {
+        const kol = kolonner.indexOf(v.venstre);
+        if (kol === 0) expect(v.x, `kort ${i + 1} står i venstre kolonne (${vis})`).toBeLessThan(-20);
+        else if (kol === 2) expect(v.x, `kort ${i + 1} står i højre kolonne (${vis})`).toBeGreaterThan(20);
+        else {
+          expect(Math.abs(v.x), `kort ${i + 1} står i midten og må ikke komme fra en side (${vis})`).toBeLessThan(1);
+          expect(v.y, `kort ${i + 1} skal stige op som husets .rev (${vis})`).toBeGreaterThan(10);
+        }
+      });
+    }
     // …og de lander: rul derned, og kortet står på sin plads.
     const kort = page.locator('#alt .rows > .row-card').first();
     await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
@@ -645,6 +667,47 @@ test.describe('Forsidens kobling', () => {
     }
   });
 
+  /* ⚠️ FORSINKELSEN ER INDGANGENS, IKKE KORTETS (10/10). Stod trinnet som
+     én transition-delay, ventede løftet ved hover og trykket også op til et
+     halvt sekund — hver gang, ikke kun første. Læst egenskab for egenskab. */
+  test('hover og tryk på «Hvad skal vi hjælpe med?» venter ikke på indgangens trin', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const r = await page.$$eval('#alt .rows > .row-card', (a) => a.map((e) => {
+      e.classList.add('in');
+      const cs = getComputedStyle(e);
+      const p = cs.transitionProperty.split(',').map((s) => s.trim());
+      const d = cs.transitionDelay.split(',').map((s) => parseFloat(s));
+      const af = (navn) => { const i = p.indexOf(navn); return i < 0 ? null : d[i % d.length]; };
+      return { translate: af('translate'), scale: af('scale'), alle: cs.transitionProperty + ' / ' + cs.transitionDelay };
+    }));
+    for (const [i, v] of r.entries()) {
+      expect(v.translate, `kort ${i + 1}: løftet har ingen overgang (${v.alle})`).not.toBeNull();
+      expect(v.scale, `kort ${i + 1}: trykket har ingen overgang (${v.alle})`).not.toBeNull();
+      expect(v.translate + v.scale, `kort ${i + 1}: hover/tryk venter (${v.alle})`).toBe(0);
+    }
+  });
+
+  /* ⚠️ TRYKKET VAR SLUGT (målt 10/10): `.row-card:active{transform:scale(.982)}`
+     tabte til indgangens `transform:none`, der vejer mere — kortet stod
+     stille under fingeren. Trykket er nu sin egen egenskab (scale). */
+  test('et tryk på et kort under «Hvad skal vi hjælpe med?» kan ses', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const kort = page.locator('#alt .rows > .row-card').nth(2);
+    await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await expect.poll(() => kort.evaluate((e) => getComputedStyle(e).transform + ' ' + getComputedStyle(e).opacity),
+      { timeout: 4000 }).toBe('none 1');
+    const b = await kort.boundingBox();
+    await page.mouse.move(b.x + 30, b.y + b.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(450);
+    const ned = await kort.evaluate((e) => {
+      const r = e.getBoundingClientRect(); return { w: r.width, s: getComputedStyle(e).scale };
+    });
+    await page.mouse.move(2, 2);   // væk fra kortet først, så slippet ikke er et klik
+    await page.mouse.up();
+    expect(ned.w, `kortet blev ikke mindre under trykket (scale ${ned.s})`).toBeLessThan(b.width - 2);
+  });
+
   /* ============================================================
      «HVAD SKAL VI HJÆLPE MED?» STÅR PÅ TERNET (13/9)
      Kundens ord: "ret kedelig, og der er meget hvidt i streg med
@@ -654,25 +717,25 @@ test.describe('Forsidens kobling', () => {
      ternet gennem kortets egen flade. Sløret gør det lysere; det
      regnes der ikke med, så tallet er det værste tilfælde.
      ============================================================ */
-  test('«Hvad skal vi hjælpe med?» står på naboens creme — med glaskort, der kan læses', async ({ page }) => {
+  test('«Hvad skal vi hjælpe med?» står på naboens creme — med husets glas, der kan læses', async ({ page }) => {
     await åbn(page, '/index.html');
     const m = await page.evaluate(() => {
       const cs = (e) => getComputedStyle(e);
-      const kort = [...document.querySelectorAll('#alt > .rev:first-child, #alt .rows > .row-card')];
+      const hoved = document.querySelector('#alt > .rev:first-child');
+      const facit = document.querySelector('.glasraekke');
       return {
         alt: cs(document.getElementById('alt')).backgroundImage,
-        selskab: cs(document.getElementById('selskab')).backgroundImage,
         altFarve: cs(document.getElementById('alt')).backgroundColor,
         selskabFarve: cs(document.getElementById('selskab')).backgroundColor,
-        kort: kort.map((e) => {
-          const kant = getComputedStyle(e, '::before');
-          return {
-            bg: cs(e).backgroundColor, bf: cs(e).backdropFilter || cs(e).webkitBackdropFilter || '',
-            kant: (kant.content !== 'none' && kant.content !== 'normal') ? (kant.maskImage || kant.webkitMaskImage || '') : '',
-          };
-        }),
-        tekst: [...document.querySelectorAll('#alt .eyebrow, #alt h2, #alt .sub, #alt .row-card h3, #alt .row-card p')]
-          .map((e) => ({ hvad: e.className || e.tagName, farve: cs(e).color, bund: cs(e.closest('.row-card, #alt > .rev')).backgroundColor })),
+        hoved: { bg: cs(hoved).backgroundColor, img: cs(hoved).backgroundImage, skygge: cs(hoved).boxShadow,
+          bf: cs(hoved).backdropFilter || cs(hoved).webkitBackdropFilter || 'none' },
+        facit: { img: cs(facit).backgroundImage, skygge: cs(facit).boxShadow },
+        kort: [...document.querySelectorAll('#alt .rows > .row-card')].map((e) => ({
+          img: cs(e).backgroundImage, skygge: cs(e).boxShadow,
+          bf: cs(e).backdropFilter || cs(e).webkitBackdropFilter || 'none',
+        })),
+        tekst: [...document.querySelectorAll('#alt h2, #alt .sub, #alt .row-card h3, #alt .row-card p')]
+          .map((e) => ({ hvad: e.className || e.tagName, farve: cs(e).color, paaKort: !!e.closest('.row-card') })),
       };
     });
     /* ⚠️ VENDT 14/9 OM EFTERMIDDAGEN — kundens ord: "hvad skal vi hjælpe
@@ -682,34 +745,60 @@ test.describe('Forsidens kobling', () => {
        også hvis naboen skiftede. */
     expect(m.alt, 'ternet står der stadig').not.toContain('repeating-linear-gradient');
     expect(m.altFarve, 'afsnittet har ikke naboens creme').toBe(m.selskabFarve);
-    expect(m.kort.length, 'vagt: overskriftskortet og de seks rækker').toBe(7);
-    const tal = (s) => s.match(/[\d.]+/g).map(Number);
-    /* ⚠️ LIQUID GLASS, IKKE MÆLKEGLAS (14/9): "felterne er slet ikke på
-       niveau med iOS liquid glass". Det er målt som tre ting: fladen er
-       gennemsigtig nok til, at ternet anes (under .9, over .55, så
-       teksten stadig bæres), sløret er kraftigt (mindst 16 px), og kanten
-       er en lys maske — ikke en flad streg. */
+    /* ⚠️ VENDT 10/10 — Mikkels ord: "udseende og Ui mæssigt er de slet ikke
+       med ift figmas UI sheets og resten af udseendet". Prøven fra 14/9
+       krævede slør (≥ 16 px), en lysmaske i kanten og overskriften i sit
+       eget glaskort. Men bag kortene er der kun flad creme: sløret kunne
+       ikke ses og blev regnet om for hvert billede, mens kortene gled ind
+       (husets grænse fra 31/8), og glas om en overskrift er Figmas nej
+       (53:299, §1.2). Nu måles:
+       · overskriften står på bunden — ingen flade, skygge eller slør
+       · rækkerne bærer HUSETS glas: samme flade og skygge som rækkerne
+         øverst på forsiden. Facit læses på samme side, så de to ikke kan
+         glide fra hinanden igen (samme greb som allergipillen 28/9)
+       · intet slør på rækkerne */
+    expect(m.hoved.bg, 'overskriften står i et kort').toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
+    expect(m.hoved.img, 'overskriften står i et kort').toBe('none');
+    expect(m.hoved.skygge, 'overskriften står i et kort').toBe('none');
+    expect(m.hoved.bf, 'glas om overskriften').toBe('none');
+    expect(m.kort.length, 'vagt: de seks rækker').toBe(6);
+    expect(m.facit.img, 'vagt: facit (rækkerne øverst) har husets glas').toContain('linear-gradient');
     for (const k of m.kort) {
-      const a = tal(k.bg)[3];
-      const slør = Number((k.bf.match(/blur\(([\d.]+)px\)/) || [0, 0])[1]);
-      expect(slør, 'kortet slører ikke ternet nok bag sig (' + k.bf + ')').toBeGreaterThanOrEqual(16);
-      expect(a, 'kortet skal være glas, ikke papir og ikke gennemsigtigt (' + k.bg + ')').toBeGreaterThanOrEqual(0.55);
-      expect(a, 'kortet er et mælkeglas — ternet kan ikke anes (' + k.bg + ')').toBeLessThan(0.9);
-      expect(k.kant, 'kortet mangler glassets lyse kant').toContain('linear-gradient');
+      expect(k.img, 'rækken har ikke husets glasflade').toBe(m.facit.img);
+      expect(k.skygge, 'rækken har ikke husets glasskygge').toBe(m.facit.skygge);
+      expect(k.bf, 'slør bag en række over flad creme').toBe('none');
     }
-    /* Teksten regnes mod afsnittets egen creme — der er intet tern
-       at finde det mørkeste sted i længere. */
+    /* Teksten regnes mod cremen gennem glassets SVAGESTE sted (den
+       laveste hvide i gradienten) — det værste tilfælde. */
+    const tal = (s) => s.match(/[\d.]+/g).map(Number);
     const over = (top, a, bund) => top.map((c, i) => c * a + bund[i] * (1 - a));
-    const moerkest = tal(m.altFarve).slice(0, 3);
+    const creme = tal(m.altFarve).slice(0, 3);
+    const svagest = Math.min(...(m.facit.img.match(/rgba\([^)]+\)/g) || []).map((f) => tal(f)[3]));
+    expect(svagest, 'vagt: glassets svageste hvide').toBeGreaterThan(0.3);
+    const glas = over([255, 255, 255], svagest, creme);
     const lum = (c) => { const [R, G, B] = c.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * R + 0.7152 * G + 0.0722 * B; };
     for (const t of m.tekst) {
-      const k = tal(t.bund);
-      const flade = over(k.slice(0, 3), k[3] ?? 1, moerkest);
+      const flade = t.paaKort ? glas : creme;
       const f = tal(t.farve);
       const skrift = over(f.slice(0, 3), f[3] ?? 1, flade);
       const [l1, l2] = [lum(flade), lum(skrift)].sort((x, y) => y - x);
       const kontrast = (l1 + 0.05) / (l2 + 0.05);
-      expect(kontrast, t.hvad + ' på det mørkeste sted i ternet').toBeGreaterThanOrEqual(4.5);
+      expect(kontrast, t.hvad + (t.paaKort ? ' på glassets svageste sted' : ' på cremen')).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  /* ⚠️ PILEN ER TEGNET (10/10). Figmas ikon er "drawn — never a font glyph"
+     (33:25), og rækkerne havde "→" som tekst i en hvid cirkel. Nu husets
+     egen pil fra rækkerne øverst — og sporet af glyffen må ikke komme igen. */
+  test('pilene under «Hvad skal vi hjælpe med?» er tegnede, ikke skrifttegn', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const r = await page.$$eval('#alt .rows > .row-card', (a) => a.map((e) => ({
+      tekst: e.textContent, pil: !!e.querySelector('svg.gr-pil path'),
+    })));
+    expect(r.length).toBe(6);
+    for (const k of r) {
+      expect(k.tekst, 'en pil som skrifttegn').not.toMatch(/[→›»>]/);
+      expect(k.pil, 'rækken mangler husets tegnede pil').toBe(true);
     }
   });
 
