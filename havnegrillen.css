@@ -1568,36 +1568,35 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .gal.rev.in,.tshot.rev.in,.hist-teaser.rev.in,.jura-blok.rev.in,.about .sub.rev.in{
   transform:none;transition:opacity .7s ease}
 
-/* --- 3b) «HVAD SKAL VI HJÆLPE MED?» — FIGMAS BEVÆGELSE (10/10) ---
+/* --- 3b) «HVAD SKAL VI HJÆLPE MED?» — FIGMAS AFDÆKNING (10/10) ---
    Historien: 13/9 bad kunden om, at kortene skulle "slide in one by one
-   fra hver deres side". 10/10, Mikkels ord: *"animationen er også shit og
-   matcher overhovedet ikke figma/UI sheetsnes standarder"*. Figmas
-   standard er skrevet i noterne på website-siden, og den siger nej til
-   glid: *"no wipes, no slides"* (79:324). Bevægelsen er nu Figmas:
-   · alt STIGER 24 px med opacitet, 700 ms, cubic-bezier(.2,.8,.2,1)
-     (79:327) — overskriften først, så kortene
-   · på computeren 60 ms mellem kolonnerne (71:182, "staggered by
-     column" 95:367); på telefonen kommer hvert kort, når det når frem
-   · bunden (havnens foto) toner ind med 2 % skala, der falder til ro,
-     500 ms (79:324)
-   · hover: kortet løftes 4 px med Contact M-skygge, og linsen fyldes
-     (72:315) — se blokken «HVAD SKAL VI HJÆLPE MED?» PÅ FIGMAS PLADE
-   ⚠️ FORSINKELSEN GÆLDER KUN INDGANGEN (`--d`). Stod den som én
-   transition-delay, ventede hover og tryk også. Og trykket er `scale`,
-   ikke `transform`: `transform:none` herunder vejer mere end
-   `.row-card:active` og slugte det tavst (målt 10/10).
+   fra hver deres side" (48 px på skift). 10/10, Mikkels ord: *"animationen
+   er også shit og matcher overhovedet ikke figma/UI sheetsnes
+   standarder"*. Figmas standard for kort står i noterne på klientsiderne:
+   *"Each project unmasks upward from its bottom edge as it crosses 30 % of
+   the viewport; staggered by column"* (95:367), og *"Images unmask upward
+   from their bottom edge (clip-path, 600 ms)"* (79:415). Så:
+   · kortet AFDÆKKES nedefra og op med clip-path, 600 ms, Figmas kurve
+     cubic-bezier(.2,.8,.2,1) (79:327) — det flytter sig ikke
+   · på computeren 60 ms mellem kolonnerne (71:182); på telefonen kommer
+     hvert kort, når det når frem
+   · havnens foto toner bare ind. ⚠️ INGEN SKALA: Figma har en 2 %
+     skala, der falder til ro (79:324), men kunden har sagt nej til
+     skalering 30/8 (*"hakkende og ik clean"*, gennemgang.spec.js)
+   · overskriften står stille — husets regel fra 27/9 ("alt glider op,
+     når man ruller" er skabelonens tegn), se TEKST GLIDER IKKE IND
+   ⚠️ SLUTTEN ER IKKE inset(0): clip-path klipper ALT uden for kassen, også
+   pladens skygge (9 · 18 · 44). Den ender med en negativ indrykning, der
+   rummer skyggen, og gennemgangen fanger det, hvis den bliver skåret.
+   ⚠️ FORSINKELSEN GÆLDER KUN INDGANGEN (`--d`), og trykket er `scale`:
+   et transform-tryk tabte til `transform:none` og blev slugt (målt 10/10).
    ⚠️ KUN VED no-preference: selektorerne vejer mere end reduced-motion-
    blokkens `.row-card.rev` (0,2,0). */
 @media (prefers-reduced-motion:no-preference){
-  #alt .alt-hoved.rev,#alt .rows>.row-card.rev{transform:translate3d(0,24px,0)}
-  #alt .alt-hoved.rev.in{transform:none;transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
-  #alt .rows>.row-card.rev.in{transform:none;transition:opacity .7s cubic-bezier(.2,.8,.2,1) var(--d,0s),transform .7s cubic-bezier(.2,.8,.2,1) var(--d,0s),translate .18s ease,box-shadow .18s ease,scale .35s var(--spring)}
-  /* Skalaen sidder på BILLEDET, ikke rammen: rammen klipper, så 2 % ikke
-     stikker ud over skærmen og giver sidelæns rulning (5/9-arret). */
+  #alt .rows>.row-card.rev{opacity:1;transform:none;clip-path:inset(100% 0 0 0 round 24px)}
+  #alt .rows>.row-card.rev.in{clip-path:inset(-40px -70px -80px -50px round 24px);transition:clip-path .6s cubic-bezier(.2,.8,.2,1) var(--d,0s),translate .18s ease,box-shadow .18s ease,scale .35s var(--spring)}
   #alt .alt-bund.rev{transform:none}
-  #alt .alt-bund.rev.in{transition:opacity .5s ease}
-  #alt .alt-bund.rev img{transform:scale(1.02)}
-  #alt .alt-bund.rev.in img{transform:none;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+  #alt .alt-bund.rev.in{transition:opacity .6s ease}
 }
 @media (prefers-reduced-motion:no-preference) and (min-width:821px){
   #alt .rows>.row-card:nth-of-type(3n+2){--d:.06s}

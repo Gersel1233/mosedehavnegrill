@@ -613,29 +613,43 @@ test.describe('Forsidens kobling', () => {
      ============================================================ */
   /* ⚠️ VENDT 10/10 — Mikkels ord: "animationen er også shit og matcher
      overhovedet ikke figma/UI sheetsnes standarder". Kundens "fra hver deres
-     side" (13/9) er væk: Figmas noter siger "no wipes, no slides" (79:324),
-     og alt stiger 12–24 px med opacitet (79:327, 71:182). Prøven kræver
-     derfor: ingen sideværts start, og en stigning i Figmas spænd — tallene
-     12 og 24 er arkets, ikke husets. */
-  test('kortene under «Hvad skal vi hjælpe med?» stiger op som Figmas — ingen glid fra siderne', async ({ page }) => {
+     side" (13/9) er væk. Figmas standard for kort: "Each project unmasks
+     upward from its bottom edge … staggered by column" (95:367) og
+     "Images unmask upward from their bottom edge (clip-path, 600 ms)"
+     (79:415). Prøven kræver: kortet flytter sig ikke (ingen glid, ingen
+     stigning) og er skjult af en afdækning nedefra. */
+  test('kortene under «Hvad skal vi hjælpe med?» afdækkes nedefra som Figmas — ingen glid', async ({ page }) => {
     await åbn(page, '/index.html');
     const k = await page.$$eval('#alt .rows > .row-card', (a) => a.map((e) => {
       if (e.classList.contains('in')) return null;
-      const m = getComputedStyle(e).transform.match(/matrix\(([^)]+)\)/);
-      const t = m ? m[1].split(',').map(Number) : [1, 0, 0, 1, 0, 0];
-      return { x: t[4], y: t[5] };
+      const cs = getComputedStyle(e);
+      return { t: cs.transform, klip: cs.clipPath };
     }));
     expect(k.length, 'vagt: de seks kort').toBe(6);
     expect(k.every((v) => v !== null), 'kortene var afsløret FØR rulning — prøven måler ingenting').toBe(true);
     for (const [i, v] of k.entries()) {
-      expect(v.x, `kort ${i + 1} glider ind fra siden (${v.x}, ${v.y})`).toBe(0);
-      expect(v.y, `kort ${i + 1} stiger ikke i Figmas spænd (${v.y})`).toBeGreaterThanOrEqual(12);
-      expect(v.y, `kort ${i + 1} stiger ikke i Figmas spænd (${v.y})`).toBeLessThanOrEqual(24);
-    }    // …og de lander: rul derned, og kortet står på sin plads.
+      expect(v.t, `kort ${i + 1} flytter sig på vej ind (${v.t})`).toBe('none');
+      expect(v.klip, `kort ${i + 1} afdækkes ikke nedefra (${v.klip})`).toMatch(/^inset\(100%/);
+    }
+    /* ⚠️ OG SLUTTEN SKÆRER IKKE SKYGGEN AF: clip-path klipper alt uden for
+       kassen. Skyggens rækkevidde læses af den BEREGNEDE box-shadow (ude-
+       fra), og afdækningens slutfelt skal rumme den på alle fire sider. */
     const kort = page.locator('#alt .rows > .row-card').first();
     await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
-    await expect.poll(() => kort.evaluate((e) => getComputedStyle(e).transform + ' ' + getComputedStyle(e).opacity),
-      { timeout: 4000 }).toBe('none 1');
+    // Læs, når afdækningen er færdig: en beregnet stil midt i en overgang er mellemtallet.
+    await expect.poll(() => kort.evaluate((e) => getComputedStyle(e).clipPath), { timeout: 4000 }).not.toMatch(/^inset\(\d/);
+    await page.waitForTimeout(700);
+    const m = await kort.evaluate((e) => {
+      const cs = getComputedStyle(e);
+      const tal = (cs.clipPath.match(/inset\(([^)]*?)(?: round|\))/) || [, ''])[1].split(/\s+/).map(parseFloat);
+      const [top, hoejre = top, bund = top, venstre = hoejre] = tal;
+      const sk = cs.boxShadow.replace(/rgba?\([^)]*\)/g, '').trim().split(/\s+/).map(parseFloat);
+      return { klip: cs.clipPath, top, hoejre, bund, venstre, x: sk[0], y: sk[1], blur: sk[2] };
+    });
+    expect(-m.top, `skyggen skæres af foroven (${m.klip})`).toBeGreaterThanOrEqual(m.blur - m.y);
+    expect(-m.hoejre, `skyggen skæres af til højre (${m.klip})`).toBeGreaterThanOrEqual(m.blur + m.x);
+    expect(-m.bund, `skyggen skæres af forneden (${m.klip})`).toBeGreaterThanOrEqual(m.blur + m.y);
+    expect(-m.venstre, `skyggen skæres af til venstre (${m.klip})`).toBeGreaterThanOrEqual(m.blur - m.x);
   });
 
   /* VENDT 10/10: "ét ad gangen" var et trin pr. kort (.1 s op til .5 s).
@@ -685,8 +699,10 @@ test.describe('Forsidens kobling', () => {
     await åbn(page, '/index.html');
     const kort = page.locator('#alt .rows > .row-card').nth(2);
     await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
-    await expect.poll(() => kort.evaluate((e) => getComputedStyle(e).transform + ' ' + getComputedStyle(e).opacity),
-      { timeout: 4000 }).toBe('none 1');
+    /* Tryk først, når kortet er afdækket: et kort, der stadig er klippet
+       væk, kan ikke rammes — og det kan gæsten heller ikke se. */
+    await expect(kort).toHaveClass(/\bin\b/);
+    await page.waitForTimeout(700);
     const b = await kort.boundingBox();
     await page.mouse.move(b.x + 30, b.y + b.height / 2);
     await page.mouse.down();
@@ -2230,12 +2246,18 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
        og currentSrc var tom. Kun det billede, browseren valgte. */
     const menuFoto = await page.locator('.menucard .menucard-foto')
       .evaluate((i) => i.currentSrc).catch(() => '');
+    /* Og «Hvad skal vi hjælpe med?» står på molen (10/10) — glasset skal
+       have noget at bryde (Figma 53:299). Samme regel som Find os: kun det
+       billede, browseren valgte, og først når gæsten når derned (målt
+       ovenfor: det kom ikke før rul). */
+    const altFoto = await page.locator('#alt .alt-bund img')
+      .evaluate((i) => i.currentSrc).catch(() => '');
     /* Knæk Cancer-logoet igen — se grunden ved den første påstand
        ovenfor. Det er et mærke i et kort øverst, ikke et foto. */
     const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u)
       && !/knaek-cancer\.png$/.test(u)
       && u !== tapasFoto && u !== findFoto && u !== histFoto && u !== bestFoto
-      && u !== menuFoto && isSrc.indexOf(u) === -1);
+      && u !== menuFoto && u !== altFoto && isSrc.indexOf(u) === -1);
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
 
     /* Loftet gælder stemningsgalleriets PULJE — tapasfotoet er ikke

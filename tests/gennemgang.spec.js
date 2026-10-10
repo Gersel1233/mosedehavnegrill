@@ -410,10 +410,20 @@ test.describe('Afsløringen har mere end én bevægelse', () => {
     await åbnSkal(page, '/index.html', { data: grunddata() });
     await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
 
+    /* ⚠️ AFDÆKNINGEN ER EN BEVÆGELSE (10/10). Kortene under «Hvad skal vi
+       hjælpe med?» var forsidens eneste vandrette (48 px på skift), og
+       Mikkel bad om Figmas standard i stedet: *"unmasks upward from its
+       bottom edge"* (95:367, 79:415). Den flytter ingenting — den
+       afdækker — så den måles af clip-path, ikke af transform. Kravet er
+       uændret: mindst to SLAGS bevægelse, og den lodrette er én af dem.
+       Kundens ord var "rigtig variation", ikke "vandret". */
     const m = await page.evaluate(() => {
       const skjulte = [...document.querySelectorAll('.rev')]
         .filter((e) => !e.classList.contains('in'));
-      const t = skjulte.map((e) => getComputedStyle(e).transform);
+      const t = skjulte.map((e) => {
+        const k = getComputedStyle(e).clipPath;
+        return /^inset\(\d/.test(k || '') ? 'afdækning' : getComputedStyle(e).transform;
+      });
       return { n: skjulte.length, unikke: [...new Set(t)] };
     });
     expect(m.n, 'der ER uafslørede afsnit at måle').toBeGreaterThan(8);
@@ -424,14 +434,15 @@ test.describe('Afsløringen har mere end én bevægelse', () => {
     /* Og de to skal være den lodrette OG den vandrette — to
        forskellige tal på den samme akse er ikke to bevægelser. */
     const akser = new Set(m.unikke.map((v) => {
+      if (v === 'afdækning') return 'afdækning';
       const d = (v.match(/matrix\(([^)]+)\)/) || [, ''])[1].split(',').map(Number);
       if (d.length < 6) return 'ingen';
       return (Math.abs(d[4]) > 1 ? 'x' : '') + (Math.abs(d[5]) > 1 ? 'y' : '') || 'ingen';
     }));
-    expect([...akser].sort().join(','),
-      'bevægelserne bruger ikke både den vandrette og den lodrette akse')
-      .toContain('x');
-    expect([...akser].sort().join(',')).toContain('y');
+    const slags = [...akser].sort().join(',');
+    expect(/x|afdækning/.test(slags),
+      'bevægelserne er kun lodrette — ingen vandret og ingen afdækning (' + slags + ')').toBe(true);
+    expect(slags).toContain('y');
   });
 
   /* ⚠️ INGEN SKALERING AF NOGET MED INDHOLD I — husets regel fra
