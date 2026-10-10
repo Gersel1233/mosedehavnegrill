@@ -636,8 +636,8 @@ test.describe('Forsidens kobling', () => {
        fra), og afdækningens slutfelt skal rumme den på alle fire sider. */
     const kort = page.locator('#alt .rows > .row-card').first();
     await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
-    // Læs, når afdækningen er færdig: en beregnet stil midt i en overgang er mellemtallet.
-    await expect.poll(() => kort.evaluate((e) => getComputedStyle(e).clipPath), { timeout: 4000 }).not.toMatch(/^inset\(\d/);
+    // Læs, når afdækningen er færdig (600 ms): midt i en overgang er den beregnede stil mellemtallet.
+    await expect(kort).toHaveClass(/\bin\b/);
     await page.waitForTimeout(700);
     const m = await kort.evaluate((e) => {
       const cs = getComputedStyle(e);
