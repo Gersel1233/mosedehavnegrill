@@ -7,8 +7,55 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-**⚠️ DAWA LUKKEDE 1/10 — LEVERINGEN VAR DØD; NU PÅ ADRESSEVÆLGER** (9/10 — IKKE
-LIVE). Mikkel: *"den kan ikke finde … nylandsvej 43 i karlslunde, de kommer ikke
+**«HVAD SKAL VI HJÆLPE MED?» ER FIGMAS PLADE, LINSE OG AFDÆKNING** (10/10).
+Mikkels ord med et skærmbillede: *"udseende og Ui mæssigt er de slet ikke med ift
+figmas UI sheets og resten af udseendet og animationen fix"* — og efter første runde:
+*"de stadig ikke liquid glass nok og animationen er også shit og matcher overhovedet
+ikke figma/UI sheetsnes standarder"*. Han sagde *"go"* på skuddene af anden runde.
+- **MÅLT FØR:** afsnittet var det sidste med glasset fra 13/9 — slør på 22 px bag
+  kortene over FLAD creme, en lysmaske i kanten, overskriften i sit eget glaskort og
+  "→" som skrifttegn i en hvid cirkel. Kortene gled 48 px ind fra hver sin side
+- **Første runde (forkastet):** husets klare glas fra 28/9 uden slør. Figma siger
+  selv hvorfor det ikke dur: *"DON'T — Pane over flat porcelain: grey tint"* (53:299)
+- **Værdierne er LÆST UD AF FIGMA-FILEN** med Plugin API'et (read-only), ikke skønnet:
+  · kortet er *LA31 Card / Layered plate* (105:982): Rim-glas (Tint/Rim hvid 6 %,
+    Edge/Specular 85 → 12 → 40 % i −45°, radius 24, skygge 9 · 18 · 44 i 24 %) om en
+    FAST kerne 6 px inde (radius 18). Teksten står kun på kernen (§1.2)
+  · knappen er *LA2.1 Icon-only*: krop 48, linse 40 (hvid 10 %, kant 90 → 5 → 30 %),
+    Figmas egen pilesti (44:189). Hover: løft 4 px, Contact L, linsen fyldes rød
+  · computeren: overskrift til venstre og linjen til højre over nettet (A04,
+    86:64/86:65); fliserne med H3 24/30 (105:955)
+- **Glasset har noget at bryde:** molen (`billeder/molen-1200.jpg`, Mikkels eget foto,
+  allerede i galleriet efter hans beslutning) under et slør af cremen; overskriften
+  står på fast creme. Lazy `<img>` som Find os. ⚠️ Facadebilledet blev brugt et øjeblik
+  og taget ud igen: det er AI-behandlet ("Grill & Kiosk") og forbudt siden 8/9 — ny prøve
+- **Bevægelsen er Figmas standard for kort:** *"unmasks upward from its bottom edge …
+  staggered by column"* (95:367; 79:415) — clip-path nedefra og op, 600 ms,
+  cubic-bezier(.2,.8,.2,1), 60 ms pr. kolonne. Slutfeltet rummer skyggen
+- **Tre af husets regler fangede anden runde** (de berørte filer, ikke gættet):
+  fotoets 2 % skala (kunden 30/8: *"hakkende og ik clean"*) — væk; forsiden havde kun
+  lodrette starter (kunden 9/9: *"rigtig variation"*) — afdækningen tæller nu som en
+  slags bevægelse; overskriften steg op, men tekst står stille (27/9) — død kode væk
+- Trykket var SLUGT: `.row-card:active{transform:scale(.982)}` tabte til indgangens
+  `transform:none`. Nu `scale`, og hover/tryk venter ikke på indgangens trin
+- ⚠️ Jeg skrev først, at Figma forbyder glid ("no wipes, no slides", 79:324). Den note
+  gælder skift af medier i case-afsnittet — Figma bruger selv vandret glid andre steder
+  (79:421). Rettet i arket
+- Prøver vendt med grunden (skal-forside: indgang, kolonnetrin, pladen, linsen;
+  gennemgang: variationen), nye set fejle (glid, afskåret skygge, flyttende kort,
+  kerne 5 px/halvgennemsigtig, foto foran, intet slør, forkert pilesti, facadebilledet).
+  Skyggeloftet 39 → 40 (Figmas to tal)
+- **Prøvet som udseende** (CLAUDE.md: skud + de berørte filer, ikke den fulde runde): 11
+  filer — skal-forside, typografi, siden-staar-stille, computer-spalte, gennemgang,
+  fullscreen-telefon, dobbelttryk, stribe, tre-veje, find-foto, udgivelse — **568
+  bestået, 21 sprunget over, 1 fejlet**: ankerhoppet til #bestil på computeren landede
+  1462 px nede (siden rullede slet ikke), kun under den samlede kørsel. Alene 30/30 på
+  både denne udgave og den live (ffde48d); hele filen 4 × med to arbejdere 24/24 på
+  begge. #bestil ligger OVER afsnittet, og intet i ændringen flytter layout. Vurderet
+  som maskinbelastning — ⚠️ ses den igen, er det ikke en tilfældighed
+
+**⚠️ DAWA LUKKEDE 1/10 — LEVERINGEN VAR DØD; NU PÅ ADRESSEVÆLGER** (9/10 — LIVE
+som ffde48d). Mikkel: *"den kan ikke finde … nylandsvej 43 i karlslunde, de kommer ikke
 selv med"*. Klimadatastyrelsen lukkede DAWA (api.dataforsyningen.dk) 1/10 kl. 10.
 Adressefeltet fik intet svar og lukkede listen uden et ord; serveren svarede fail
 closed. **Fra 1/10 kunne ingen gæst bestille levering** — og prøverne bestod hele
