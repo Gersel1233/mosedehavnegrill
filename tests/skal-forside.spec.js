@@ -611,59 +611,50 @@ test.describe('Forsidens kobling', () => {
      man scroller ned". Startpositionen læses af den BEREGNEDE stil,
      og kortene sammenlignes med hinanden — ikke med et tal i arket.
      ============================================================ */
-  /* ⚠️ VENDT PÅ COMPUTEREN 10/10 — Mikkels ord: "… og animationen fix".
-     "På skift" er en liste: i et net med tre kolonner kom midterkortet fra
-     højre og kortet under det fra venstre, så de krydsede hinanden på vej
-     ind. Nu kommer hver kolonne fra SIN side, og midten stiger op. Telefonen
-     har én kolonne og glider på skift som før (kundens ord 13/9).
-     Kolonnen læses af LAYOUTET (offsetLeft, som en transform ikke flytter),
-     ikke af arket — så prøven kan ikke spørge reglen om sig selv. */
-  test('kortene under «Hvad skal vi hjælpe med?» kommer ind fra hver sin side', async ({ page }) => {
+  /* ⚠️ VENDT 10/10 — Mikkels ord: "animationen er også shit og matcher
+     overhovedet ikke figma/UI sheetsnes standarder". Kundens "fra hver deres
+     side" (13/9) er væk: Figmas noter siger "no wipes, no slides" (79:324),
+     og alt stiger 12–24 px med opacitet (79:327, 71:182). Prøven kræver
+     derfor: ingen sideværts start, og en stigning i Figmas spænd — tallene
+     12 og 24 er arkets, ikke husets. */
+  test('kortene under «Hvad skal vi hjælpe med?» stiger op som Figmas — ingen glid fra siderne', async ({ page }) => {
     await åbn(page, '/index.html');
     const k = await page.$$eval('#alt .rows > .row-card', (a) => a.map((e) => {
       if (e.classList.contains('in')) return null;
       const m = getComputedStyle(e).transform.match(/matrix\(([^)]+)\)/);
       const t = m ? m[1].split(',').map(Number) : [1, 0, 0, 1, 0, 0];
-      return { x: t[4], y: t[5], venstre: e.offsetLeft };
+      return { x: t[4], y: t[5] };
     }));
     expect(k.length, 'vagt: de seks kort').toBe(6);
     expect(k.every((v) => v !== null), 'kortene var afsløret FØR rulning — prøven måler ingenting').toBe(true);
-    const kolonner = [...new Set(k.map((v) => v.venstre))].sort((a, b) => a - b);
-    const vis = k.map((v) => `${v.x},${v.y}@${v.venstre}`).join('  ');
-    if (kolonner.length === 1) {
-      k.forEach((v, i) => (i % 2
-        ? expect(v.x, `kort ${i + 1} skal komme fra højre (${vis})`).toBeGreaterThan(20)
-        : expect(v.x, `kort ${i + 1} skal komme fra venstre (${vis})`).toBeLessThan(-20)));
-    } else {
-      expect(kolonner.length, 'vagt: nettet har tre kolonner på computeren').toBe(3);
-      k.forEach((v, i) => {
-        const kol = kolonner.indexOf(v.venstre);
-        if (kol === 0) expect(v.x, `kort ${i + 1} står i venstre kolonne (${vis})`).toBeLessThan(-20);
-        else if (kol === 2) expect(v.x, `kort ${i + 1} står i højre kolonne (${vis})`).toBeGreaterThan(20);
-        else {
-          expect(Math.abs(v.x), `kort ${i + 1} står i midten og må ikke komme fra en side (${vis})`).toBeLessThan(1);
-          expect(v.y, `kort ${i + 1} skal stige op som husets .rev (${vis})`).toBeGreaterThan(10);
-        }
-      });
-    }
-    // …og de lander: rul derned, og kortet står på sin plads.
+    for (const [i, v] of k.entries()) {
+      expect(v.x, `kort ${i + 1} glider ind fra siden (${v.x}, ${v.y})`).toBe(0);
+      expect(v.y, `kort ${i + 1} stiger ikke i Figmas spænd (${v.y})`).toBeGreaterThanOrEqual(12);
+      expect(v.y, `kort ${i + 1} stiger ikke i Figmas spænd (${v.y})`).toBeLessThanOrEqual(24);
+    }    // …og de lander: rul derned, og kortet står på sin plads.
     const kort = page.locator('#alt .rows > .row-card').first();
     await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
     await expect.poll(() => kort.evaluate((e) => getComputedStyle(e).transform + ' ' + getComputedStyle(e).opacity),
       { timeout: 4000 }).toBe('none 1');
   });
 
-  test('på computeren kommer kortene ét ad gangen', async ({ page }) => {
+  /* VENDT 10/10: "ét ad gangen" var et trin pr. kort (.1 s op til .5 s).
+     Figmas er pr. KOLONNE, 60 ms (71:182, "staggered by column" 95:367) —
+     række to kommer, når den rulles frem. Kolonnen læses af layoutet
+     (offsetLeft), ikke af arket, og 60 ms er Figmas tal. */
+  test('på computeren kommer kolonnerne ét ad gangen — 60 ms imellem, som Figmas', async ({ page }) => {
     test.skip(!!test.info().project.use.isMobile, 'på telefonen kommer de i takt med rulningen');
     await åbn(page, '/index.html');
-    const d = await page.$$eval('#alt .rows > .row-card', (a) => {
-      a.forEach((e) => e.classList.add('in'));
-      return a.map((e) => parseFloat(getComputedStyle(e).transitionDelay));
-    });
-    expect(d.length).toBeGreaterThan(3);
-    for (let i = 1; i < Math.min(d.length, 6); i++) {
-      expect(d[i], 'kort ' + (i + 1) + ' kommer samtidig med kort ' + i + ' (' + d.join(', ') + ')')
-        .toBeGreaterThan(d[i - 1]);
+    const k = await page.$$eval('#alt .rows > .row-card', (a) => a.map((e) => {
+      e.classList.add('in');
+      return { d: parseFloat(getComputedStyle(e).transitionDelay), venstre: e.offsetLeft };
+    }));
+    const kolonner = [...new Set(k.map((v) => v.venstre))].sort((a, b) => a - b);
+    expect(kolonner.length, 'vagt: tre kolonner').toBe(3);
+    const vis = k.map((v) => `${v.d}s@${v.venstre}`).join('  ');
+    for (const v of k) {
+      const kol = kolonner.indexOf(v.venstre);
+      expect(v.d, `kolonne ${kol + 1} skal komme ${kol * 60} ms efter den første (${vis})`).toBeCloseTo(kol * 0.06, 3);
     }
   });
 
@@ -717,88 +708,100 @@ test.describe('Forsidens kobling', () => {
      ternet gennem kortets egen flade. Sløret gør det lysere; det
      regnes der ikke med, så tallet er det værste tilfælde.
      ============================================================ */
-  test('«Hvad skal vi hjælpe med?» står på naboens creme — med husets glas, der kan læses', async ({ page }) => {
+  test('«Hvad skal vi hjælpe med?» står på Figmas plade — glas med havnen bag sig, tekst på fast kerne', async ({ page }) => {
     await åbn(page, '/index.html');
+    /* Fotoet er lazy: rul derned og vent på det, så det, der måles, er det,
+       gæsten ser. */
+    await page.locator('#alt .rows').evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await expect.poll(() => page.locator('#alt .alt-bund img').evaluate((i) => i.complete && i.naturalWidth),
+      { timeout: 8000 }).toBeGreaterThan(0);
     const m = await page.evaluate(() => {
-      const cs = (e) => getComputedStyle(e);
-      const hoved = document.querySelector('#alt > .rev:first-child');
-      const facit = document.querySelector('.glasraekke');
+      const cs = (e, p) => getComputedStyle(e, p);
+      const hoved = document.querySelector('#alt .alt-hoved');
+      const r = (e) => e.getBoundingClientRect();
       return {
-        alt: cs(document.getElementById('alt')).backgroundImage,
         altFarve: cs(document.getElementById('alt')).backgroundColor,
         selskabFarve: cs(document.getElementById('selskab')).backgroundColor,
-        hoved: { bg: cs(hoved).backgroundColor, img: cs(hoved).backgroundImage, skygge: cs(hoved).boxShadow,
-          bf: cs(hoved).backdropFilter || cs(hoved).webkitBackdropFilter || 'none' },
-        facit: { img: cs(facit).backgroundImage, skygge: cs(facit).boxShadow },
-        kort: [...document.querySelectorAll('#alt .rows > .row-card')].map((e) => ({
-          img: cs(e).backgroundImage, skygge: cs(e).boxShadow,
-          bf: cs(e).backdropFilter || cs(e).webkitBackdropFilter || 'none',
-        })),
+        hoved: { bg: cs(hoved).backgroundColor, img: cs(hoved).backgroundImage, skygge: cs(hoved).boxShadow },
+        bund: (() => { const b = document.querySelector('#alt .alt-bund'); return { z: Number(cs(b).zIndex), pos: cs(b).position }; })(),
+        slorTop: (cs(document.querySelector('#alt .alt-slor')).backgroundImage.match(/rgba?\([^)]+\)/) || [''])[0],
+        kort: [...document.querySelectorAll('#alt .rows > .row-card')].map((e) => {
+          const k = e.querySelector('.kerne');
+          const a = r(e); const b = r(k);
+          return {
+            fyld: cs(e).backgroundColor, bf: cs(e).backdropFilter || cs(e).webkitBackdropFilter || 'none',
+            kant: cs(e, '::after').maskImage || cs(e, '::after').webkitMaskImage || 'none',
+            kantFarve: cs(e, '::after').backgroundImage,
+            radius: parseFloat(cs(e).borderTopLeftRadius), kerneRadius: parseFloat(cs(k).borderTopLeftRadius),
+            kerne: cs(k).backgroundColor,
+            inde: [b.left - a.left, b.top - a.top, a.right - b.right, a.bottom - b.bottom].map((v) => Math.round(v * 10) / 10),
+          };
+        }),
         tekst: [...document.querySelectorAll('#alt h2, #alt .sub, #alt .row-card h3, #alt .row-card p')]
-          .map((e) => ({ hvad: e.className || e.tagName, farve: cs(e).color, paaKort: !!e.closest('.row-card') })),
+          .map((e) => ({ hvad: e.className || e.tagName, farve: cs(e).color, kerne: !!e.closest('.kerne') })),
       };
     });
-    /* ⚠️ VENDT 14/9 OM EFTERMIDDAGEN — kundens ord: "hvad skal vi hjælpe
-       med baggrunden skal være den originale hvide/creme som ovenover".
-       Ternet er væk igen, og afsnittet står på naboens creme. Målt MOD
-       NABOEN: et spørgsmål til afsnittet om dets egen farve ville bestå,
-       også hvis naboen skiftede. */
-    expect(m.alt, 'ternet står der stadig').not.toContain('repeating-linear-gradient');
+    /* Afsnittets egen flade er stadig naboens creme (kundens ord 14/9:
+       "den originale hvide/creme som ovenover") — og sløret starter i den,
+       så overgangen fra selskabet ikke kan ses. Målt MOD NABOEN. */
     expect(m.altFarve, 'afsnittet har ikke naboens creme').toBe(m.selskabFarve);
-    /* ⚠️ VENDT 10/10 — Mikkels ord: "udseende og Ui mæssigt er de slet ikke
-       med ift figmas UI sheets og resten af udseendet". Prøven fra 14/9
-       krævede slør (≥ 16 px), en lysmaske i kanten og overskriften i sit
-       eget glaskort. Men bag kortene er der kun flad creme: sløret kunne
-       ikke ses og blev regnet om for hvert billede, mens kortene gled ind
-       (husets grænse fra 31/8), og glas om en overskrift er Figmas nej
-       (53:299, §1.2). Nu måles:
-       · overskriften står på bunden — ingen flade, skygge eller slør
-       · rækkerne bærer HUSETS glas: samme flade og skygge som rækkerne
-         øverst på forsiden. Facit læses på samme side, så de to ikke kan
-         glide fra hinanden igen (samme greb som allergipillen 28/9)
-       · intet slør på rækkerne */
+    const tal = (s) => s.match(/[\d.]+/g).map(Number);
+    expect(tal(m.slorTop).slice(0, 3), 'sløret starter ikke i naboens creme').toEqual(tal(m.selskabFarve).slice(0, 3));
+    /* ⚠️ VENDT IGEN 10/10 — Mikkels ord: "de stadig ikke liquid glass nok
+       … matcher overhovedet ikke figma/UI sheetsnes standarder". Første
+       udgave samme aften (husets klare glas, intet slør) gjorde glasset til
+       en flad hvid flade — Figmas eget nej, "Pane over flat porcelain:
+       grey tint" (53:299). Nu måles Figmas plade (LA31 Card / Layered
+       plate, 105:982), værdierne læst ud af filen:
+       · overskriften står på bunden, ikke i et kort
+       · der ER noget bag glasset: havnens foto, bagest
+       · pladen er klart glas (Tint/Rim 6 % — loftet .1) med slør, og
+         kanten er en lys maske (Edge/Specular)
+       · kernen er FAST og står 6 px inde hele vejen rundt, med et hjørne
+         der følger pladens (radius − 6). Målt på layoutet, ikke i arket. */
     expect(m.hoved.bg, 'overskriften står i et kort').toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
     expect(m.hoved.img, 'overskriften står i et kort').toBe('none');
     expect(m.hoved.skygge, 'overskriften står i et kort').toBe('none');
-    expect(m.hoved.bf, 'glas om overskriften').toBe('none');
-    expect(m.kort.length, 'vagt: de seks rækker').toBe(6);
-    expect(m.facit.img, 'vagt: facit (rækkerne øverst) har husets glas').toContain('linear-gradient');
-    for (const k of m.kort) {
-      expect(k.img, 'rækken har ikke husets glasflade').toBe(m.facit.img);
-      expect(k.skygge, 'rækken har ikke husets glasskygge').toBe(m.facit.skygge);
-      expect(k.bf, 'slør bag en række over flad creme').toBe('none');
+    expect(m.bund.pos, 'vagt: fotoet ligger under afsnittet').toBe('absolute');
+    expect(m.bund.z, 'fotoet ligger ikke bagest').toBeLessThan(0);
+    expect(m.kort.length, 'vagt: de seks kort').toBe(6);
+    for (const [i, k] of m.kort.entries()) {
+      const a = tal(k.fyld)[3] ?? 1;
+      expect(a, `kort ${i + 1}: pladen er ikke klart glas (${k.fyld})`).toBeLessThanOrEqual(0.1);
+      expect(k.bf, `kort ${i + 1}: pladen slører ikke havnen bag sig`).toMatch(/blur\(/);
+      expect(k.kant, `kort ${i + 1}: pladen mangler den lyse kant`).toContain('linear-gradient');
+      expect(k.kantFarve, `kort ${i + 1}: kanten er ikke lys`).toContain('rgba(255, 255, 255, 0.85)');
+      expect(tal(k.kerne)[3] ?? 1, `kort ${i + 1}: kernen er ikke fast (${k.kerne})`).toBe(1);
+      for (const v of k.inde) expect(v, `kort ${i + 1}: kernen står ikke 6 px inde (${k.inde.join(', ')})`).toBeCloseTo(6, 0);
+      expect(k.kerneRadius, `kort ${i + 1}: kernens hjørne følger ikke pladens`).toBeCloseTo(k.radius - 6, 0);
     }
-    /* Teksten regnes mod cremen gennem glassets SVAGESTE sted (den
-       laveste hvide i gradienten) — det værste tilfælde. */
-    const tal = (s) => s.match(/[\d.]+/g).map(Number);
-    const over = (top, a, bund) => top.map((c, i) => c * a + bund[i] * (1 - a));
+    /* Teksten: overskriften regnes mod den faste creme, kortenes mod den
+       faste kerne — begge er fladens egen farve, intet glas imellem. */
+    const kerne = tal(m.kort[0].kerne).slice(0, 3);
     const creme = tal(m.altFarve).slice(0, 3);
-    const svagest = Math.min(...(m.facit.img.match(/rgba\([^)]+\)/g) || []).map((f) => tal(f)[3]));
-    expect(svagest, 'vagt: glassets svageste hvide').toBeGreaterThan(0.3);
-    const glas = over([255, 255, 255], svagest, creme);
     const lum = (c) => { const [R, G, B] = c.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * R + 0.7152 * G + 0.0722 * B; };
     for (const t of m.tekst) {
-      const flade = t.paaKort ? glas : creme;
-      const f = tal(t.farve);
-      const skrift = over(f.slice(0, 3), f[3] ?? 1, flade);
-      const [l1, l2] = [lum(flade), lum(skrift)].sort((x, y) => y - x);
-      const kontrast = (l1 + 0.05) / (l2 + 0.05);
-      expect(kontrast, t.hvad + (t.paaKort ? ' på glassets svageste sted' : ' på cremen')).toBeGreaterThanOrEqual(4.5);
+      const flade = t.kerne ? kerne : creme;
+      const [l1, l2] = [lum(flade), lum(tal(t.farve).slice(0, 3))].sort((x, y) => y - x);
+      expect((l1 + 0.05) / (l2 + 0.05), t.hvad + (t.kerne ? ' på kernen' : ' på cremen')).toBeGreaterThanOrEqual(4.5);
     }
   });
 
-  /* ⚠️ PILEN ER TEGNET (10/10). Figmas ikon er "drawn — never a font glyph"
-     (33:25), og rækkerne havde "→" som tekst i en hvid cirkel. Nu husets
-     egen pil fra rækkerne øverst — og sporet af glyffen må ikke komme igen. */
-  test('pilene under «Hvad skal vi hjælpe med?» er tegnede, ikke skrifttegn', async ({ page }) => {
+  /* ⚠️ PILEN ER FIGMAS LINSE (10/10). Figmas ikon er "drawn — never a font
+     glyph" (33:25), og rækkerne havde "→" som tekst i en hvid cirkel. Nu
+     er knappen LA2.1 Icon-only: krop 48, og pilen er Figmas egen sti
+     (Arrow right, 44:189) — stien står her som facit fra filen. */
+  test('pilene under «Hvad skal vi hjælpe med?» er Figmas linse, ikke skrifttegn', async ({ page }) => {
     await åbn(page, '/index.html');
-    const r = await page.$$eval('#alt .rows > .row-card', (a) => a.map((e) => ({
-      tekst: e.textContent, pil: !!e.querySelector('svg.gr-pil path'),
-    })));
+    const r = await page.$$eval('#alt .rows > .row-card', (a) => a.map((e) => {
+      const l = e.querySelector('.linse'); const b = l && l.getBoundingClientRect();
+      return { tekst: e.textContent, sti: l && l.querySelector('path')?.getAttribute('d'), w: b && b.width, h: b && b.height };
+    }));
     expect(r.length).toBe(6);
     for (const k of r) {
       expect(k.tekst, 'en pil som skrifttegn').not.toMatch(/[→›»>]/);
-      expect(k.pil, 'rækken mangler husets tegnede pil').toBe(true);
+      expect(k.sti, 'pilen er ikke Figmas sti').toBe('M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6');
+      expect([k.w, k.h], 'linsens krop er ikke Figmas 48 × 48').toEqual([48, 48]);
     }
   });
 
@@ -838,9 +841,12 @@ test.describe('Forsidens kobling', () => {
 
   /* ⚠️ LIQUID GLASS PÅ DE HVIDE KORT (13/9) — kundens ord: "blive mere liquid
      glass som de andre". Den beregnede stil: gennemsigtig flade og linsekant. */
+  /* ⚠️ .row-card ER UDE AF LISTEN (10/10): kortene under «Hvad skal vi
+     hjælpe med?» er Figmas plade, hvis kant er en maske i −45° og ikke en
+     indre skygge. De har deres egen prøve: «… står på Figmas plade». */
   test('de hvide kort er glas som knapperne', async ({ page }) => {
     await åbn(page, '/index.html');
-    for (const sel of ['.menucard', '.row-card', '.talk']) {
+    for (const sel of ['.menucard', '.talk']) {
       const s = await page.locator(sel).first().evaluate((e) => {
         const c = getComputedStyle(e); return [c.backgroundColor, c.boxShadow];
       });

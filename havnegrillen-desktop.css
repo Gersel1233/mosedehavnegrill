@@ -115,23 +115,25 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 .week{width:min(100vw - 32px,1092px);padding-left:16px;padding-right:16px;scroll-padding-inline:16px}
 .rows{grid-template-columns:repeat(3,1fr)}
 .rows .row-card{align-items:flex-start}
-/* «HVAD SKAL VI HJÆLPE MED?» SOM FIGMAS A04 (10/10): overskriften til
-   venstre og linjen til højre over nettet, i nettets bredde — før stod
-   den i et kort på 700 over et net på 1060 og flugtede med ingenting.
-   Linjen står 12 px under overskriftens top (86:64 → 86:65).
-   Kortene er Figmas kort med retning (LA31 Card / Directional, 105:941):
-   flisen øverst, titel og linje i HELE kortets bredde under den, 20 px
-   luft og H3 (24/30, 105:955). MÅLT: som række ved siden af flisen havde
-   teksten 215 px, og "Smørrebrød ud af huset" brækkede i to.
-   ⚠️ align-content:start: kortene i en række er lige høje, og ved 900 px
-   stod flisen 8 px højere i kortet med to linjer end i naboen (målt). */
+/* «HVAD SKAL VI HJÆLPE MED?» SOM FIGMAS TJENESTER (10/10): overskriften
+   til venstre og linjen til højre over nettet, i nettets bredde (A04,
+   86:64/86:65; linjen 12 px under overskriftens top). Kortene er fliser
+   (Services B, 72:303): flisen og linsen øverst, titel og linje i HELE
+   kernens bredde under dem, Figmas H3 (24/30, 105:955). MÅLT: som række
+   ved siden af flisen havde teksten 215 px, og "Smørrebrød ud af huset"
+   brækkede. ⚠️ align-content:start: kortene i en række er lige høje, og
+   ellers stod flisen 8 px højere i kortet med to linjer end i naboen. */
 #alt>.alt-hoved{width:min(100vw - 64px,1060px);margin-left:50%;translate:-50% 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,38ch);column-gap:48px;align-items:start}
 #alt>.alt-hoved .sub{margin-top:21px}
 #alt .rows{gap:16px;margin-top:32px}
-#alt .row-card{display:grid;grid-template-columns:auto 1fr auto;align-items:center;align-content:start;gap:18px 16px;padding:20px}
-#alt .row-card .ic+div{grid-column:1/-1;grid-row:2}
+#alt .kerne{display:grid;grid-template-columns:auto 1fr auto;align-items:center;align-content:start;gap:18px 16px;height:100%;padding:16px 10px 20px 18px}
+#alt .row-card .ic+div{grid-column:1/-1;grid-row:2;padding-right:8px}
 #alt .row-card h3{font-size:24px;line-height:30px}
-#alt .row-card .gr-pil{grid-column:3;grid-row:1}
+#alt .row-card .ic{width:40px;height:40px}
+#alt .row-card .ic svg{width:20px;height:20px}
+#alt .linse{grid-column:3;grid-row:1}
+/* Slørets faste creme følger overskriften, der er lavere her. */
+#alt .alt-slor{background:linear-gradient(180deg,var(--cream2) 0,var(--cream2) 150px,rgba(247,237,225,.45) 330px,rgba(247,237,225,.45))}
 .newslist{grid-template-columns:1fr 1fr}
 .vals{grid-template-columns:repeat(3,1fr)}
 .hav .facts{width:min(100vw - 64px,980px);grid-template-columns:repeat(3,1fr)}

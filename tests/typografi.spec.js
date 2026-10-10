@@ -247,12 +247,17 @@ test.describe('Skalaen kan ikke skride tilbage', () => {
        givet til glaspillens kerne: en hvid ring og lyset i kernen.
        39 (28/9, aften): Apples klare glas på Facebook, smileyen og prisen
        (Mikkels valg af forslag 7) — lys kant øverst, hårfin omkreds og en
-       skygge, der falder lige ned. Én regel for alle tre rækker. */
+       skygge, der falder lige ned. Én regel for alle tre rækker.
+       40 (10/10): «Hvad skal vi hjælpe med?» er Figmas plade (LA31 Card /
+       Layered plate, 105:982) — Rim-skyggen 9 · 18 · 44 i 24 % er tilbage,
+       nu på kortene, og hover er Figmas næste trin (Contact L, 12 · 24 · 56).
+       Mikkels ord: "matcher overhovedet ikke figma/UI sheetsnes standarder".
+       Målt: 38 → 40 — de to er Figmas egne tal, ikke nye opfindelser. */
     const c = css();
     const sizes = new Set([...c.matchAll(/font-size:\s*([^;}]+)/g)].map((m) => m[1].trim()));
     const shadows = new Set([...c.matchAll(/box-shadow:\s*([^;}]+)/g)].map((m) => m[1].trim()));
     expect(sizes.size, 'flere skriftstørrelser end 30: ' + [...sizes].join(', ')).toBeLessThanOrEqual(30);
-    expect(shadows.size, 'flere skygger end 39').toBeLessThanOrEqual(39);
+    expect(shadows.size, 'flere skygger end 40').toBeLessThanOrEqual(40);
   });
 
   test('overskriften flyttede sig ikke — h1 står, hvor designet satte den', async ({ page }, info) => {
