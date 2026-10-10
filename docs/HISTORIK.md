@@ -34,6 +34,14 @@ vejen, fordi de efterlignede DAWA. Lærestreg: en mock er ikke tjenesten.
   AFGANGEN (Køge 14.00 skal ud 13.30 — stod før efter en afhentning 13.45)
 - Persondatapolitikken nævner Adressevælger; "forlader ikke EU" taget ud (ikke målt)
 - Alle nye prøver set fejle (serveren 2 veje, feltet 3, bekræftelsen 2, tiderne 2)
+- **Serveren lagt op af Mikkel 9/10** og prøvet i produktionen uden at skrive noget:
+  et ukendt ID → ADRESSE_IKKE_FUNDET; Nylandsvej 4, 6823 Ansager → UDEN_FOR_OMRAADET
+  (den gamle udgave kunne ikke have slået den op). Zonen regnet igennem for rigtige
+  adresser: Karlslunde, Greve, Køge, Ishøj, Solrød → ja; København → nej
+- **Fuld runde** (computer 2654 · mobil 902 + 865 + 907 bestået): én prøve faldt på
+  begge profiler — dens egen kulisse svarede "Havnevej 20", og feltet viste korrekt
+  serverens adresse, når svaret nåede frem først (travl maskine). Kulissen svarer nu
+  med Nylandsvej; filen 46/46 på begge profiler, prøven 10/10 gentaget
 
 **UDGIVET 8/10 KL. 14.22 — CHEFENS RETTELSER, LEVERINGEN OG KORTENE** (8/10).
 Mikkel: *"jaer alt skal ud nu og opdateres og live hele pisset"*.

@@ -481,7 +481,17 @@ test.describe('Adressevælger', () => {
      "Nylandsvej 2690 Karlslunde 43" finder ikke nr. 43;
      "Nylandsvej 43, 2690 Karlslunde" gør. Mikkels eksempel. */
   test('en vej i et postnummer indsnævrer — markøren står klar til husnummeret', async ({ page }) => {
-    const t = await åbnMedSky(page);
+    /* ⚠️ SERVERENS SVAR SKAL VÆRE NYLANDSVEJ  (9/10). Feltet viser den
+       adresse, SERVEREN bekræfter — det er hele pointen. Kulissens
+       standardsvar er Havnevej 20, og i den fulde runde (travl maskine)
+       nåede svaret frem, før prøven kiggede: feltet sagde så "Havnevej
+       20", helt korrekt. Fejlen var prøvens, og den faldt på begge
+       profiler. Nu svarer kulissen med den adresse, gæsten valgte. */
+    const t = await åbnMedSky(page, { svar: {
+      gyldig: true, leveres: true, token: 'TOKEN-43',
+      adresse: 'Nylandsvej 43, 2690 Karlslunde', vejnavn: 'Nylandsvej', husnr: '43',
+      postnr: '2690', by: 'Karlslunde',
+    } });
     await page.route('https://adressevaelger.dk/**', (r) => {
       const q = new URL(r.request().url()).searchParams.get('tekst') || '';
       const fund = /2690/.test(q)
@@ -501,8 +511,11 @@ test.describe('Adressevælger', () => {
     await expect(page.locator('.adr-liste .adr-forslag')).toHaveCount(4);
     expect(t.valideringer, 'en vej blev sendt til serveren som en adresse').toBe(0);
     await page.locator('.adr-liste .adr-forslag', { hasText: 'Nylandsvej 43' }).click();
-    await expect(page.locator('#fadr')).toHaveValue('Nylandsvej 43, 2690 Karlslunde');
     await expect.poll(() => t.valideringer).toBe(1);
+    expect(t.sidsteId, 'serveren fik ikke den valgte adresses ID')
+      .toBe('0a3f50ab-1317-32b8-e044-0003ba298053');
+    await expect(page.locator('#fadr')).toHaveValue('Nylandsvej 43, 2690 Karlslunde');
+    await expect(page.locator('#lev-svar')).toContainText('Vi leverer');
   });
 
   test('et husnummer med lejligheder viser etagerne i stedet for at blive valgt', async ({ page }) => {
