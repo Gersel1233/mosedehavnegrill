@@ -30,7 +30,7 @@ siden er generiske og elendige"*.
 - Prøver: `tests/historien.spec.js` — de fire gamle målte clip-path-tal og er vendt
   med grunden (kundens krav bag dem står); fem nye (teksten står, ingen clip-path, rul
   ned står, I dag i farver, årstallet dæmpes) + bjælken er sort — alle set fejle mod den
-  gamle udgave (9 af 9 + 1). Berørte filer: historien 64 bestod; topbjælken,
+  gamle udgave (9 af 9 + 1). Berørte filer: historien 65 bestod (1 sprunget over); topbjælken,
   gennemgang, hero-film, siden-staar-stille, fullscreen-telefon, typografi, menu-knap,
   tilbage, pladsholdere 332 bestod, 0 fejlede
 - ⚠️ GSAP, Lenis og react-bits er hentet til kladdemappen efter Mikkels ønske, IKKE lagt
