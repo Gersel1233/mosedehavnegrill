@@ -1568,35 +1568,33 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .gal.rev.in,.tshot.rev.in,.hist-teaser.rev.in,.jura-blok.rev.in,.about .sub.rev.in{
   transform:none;transition:opacity .7s ease}
 
-/* --- 3b) «HVAD SKAL VI HJÆLPE MED?» — FIGMAS AFDÆKNING (10/10) ---
-   Historien: 13/9 bad kunden om, at kortene skulle "slide in one by one
-   fra hver deres side" (48 px på skift). 10/10, Mikkels ord: *"animationen
-   er også shit og matcher overhovedet ikke figma/UI sheetsnes
-   standarder"*. Figmas standard for kort står i noterne på klientsiderne:
-   *"Each project unmasks upward from its bottom edge as it crosses 30 % of
-   the viewport; staggered by column"* (95:367), og *"Images unmask upward
-   from their bottom edge (clip-path, 600 ms)"* (79:415). Så:
-   · kortet AFDÆKKES nedefra og op med clip-path, 600 ms, Figmas kurve
-     cubic-bezier(.2,.8,.2,1) (79:327) — det flytter sig ikke
-   · på computeren 60 ms mellem kolonnerne (71:182); på telefonen kommer
-     hvert kort, når det når frem
-   · havnens foto toner bare ind. ⚠️ INGEN SKALA: Figma har en 2 %
-     skala, der falder til ro (79:324), men kunden har sagt nej til
-     skalering 30/8 (*"hakkende og ik clean"*, gennemgang.spec.js)
-   · overskriften står stille — husets regel fra 27/9 ("alt glider op,
-     når man ruller" er skabelonens tegn), se TEKST GLIDER IKKE IND
-   ⚠️ SLUTTEN ER IKKE inset(0): clip-path klipper ALT uden for kassen, også
-   pladens skygge (9 · 18 · 44). Den ender med en negativ indrykning, der
-   rummer skyggen, og gennemgangen fanger det, hvis den bliver skåret.
+/* --- 3b) «HVAD SKAL VI HJÆLPE MED?» — STILLE OG BILLIG BEVÆGELSE (11/10) ---
+   Historien: 13/9 gled kortene 48 px ind fra hver sin side (kundens ord).
+   10/10 blev de Figmas afdækning nedefra (clip-path). 11/10, Mikkels ord:
+   *"animationen er ikke god nok og laggy og sjusket"*.
+   ⚠️ ÅRSAGEN: clip-path kan ikke lægges på skærmkortet. Hvert billede af
+   afdækningen blev tegnet om, og hvert kort havde backdrop-filter, så sløret
+   blev regnet om seks gange pr. billede, mens man rullede. Og Safari klipper
+   ikke backdrop-filter med clip-path under en overgang: en firkantet
+   slørflade kan blinke uden for kortet. Det er "sjusket".
+   Nu flytter bevægelsen KUN det, skærmkortet klarer alene — transform og
+   opacitet — og pladerne har intet slør (se blokken PÅ FIGMAS PLADE):
+   · kortene stiger 12 px med opacitet, 600 ms, Figmas kurve
+     cubic-bezier(.2,.8,.2,1) (79:327), 60 ms pr. kolonne på computeren
+     (71:182); på telefonen kommer hvert kort, når det når frem
+   · havnens foto glider 24 px på plads, mens det toner ind — forsidens
+     vandrette bevægelse (kundens "rigtig variation", 9/9; gennemgang.spec.js).
+     ⚠️ INGEN SKALA (kunden 30/8: "hakkende og ik clean")
+   · overskriften står stille (27/9, TEKST GLIDER IKKE IND)
    ⚠️ FORSINKELSEN GÆLDER KUN INDGANGEN (`--d`), og trykket er `scale`:
    et transform-tryk tabte til `transform:none` og blev slugt (målt 10/10).
    ⚠️ KUN VED no-preference: selektorerne vejer mere end reduced-motion-
    blokkens `.row-card.rev` (0,2,0). */
 @media (prefers-reduced-motion:no-preference){
-  #alt .rows>.row-card.rev{opacity:1;transform:none;clip-path:inset(100% 0 0 0 round 24px)}
-  #alt .rows>.row-card.rev.in{clip-path:inset(-40px -70px -80px -50px round 24px);transition:clip-path .6s cubic-bezier(.2,.8,.2,1) var(--d,0s),translate .18s ease,box-shadow .18s ease,scale .35s var(--spring)}
-  #alt .alt-bund.rev{transform:none}
-  #alt .alt-bund.rev.in{transition:opacity .6s ease}
+  #alt .rows>.row-card.rev{transform:translate3d(0,12px,0)}
+  #alt .rows>.row-card.rev.in{transform:none;transition:opacity .6s cubic-bezier(.2,.8,.2,1) var(--d,0s),transform .6s cubic-bezier(.2,.8,.2,1) var(--d,0s),translate .18s ease,box-shadow .18s ease,scale .2s ease}
+  #alt .alt-bund.rev{transform:translate3d(-24px,0,0)}
+  #alt .alt-bund.rev.in{transform:none;transition:opacity .9s ease,transform 1.2s cubic-bezier(.2,.8,.2,1)}
 }
 @media (prefers-reduced-motion:no-preference) and (min-width:821px){
   #alt .rows>.row-card:nth-of-type(3n+2){--d:.06s}
@@ -3273,20 +3271,30 @@ footer .smiley-linje{
      og en linse på 40, 4 px inde, hvid 10 % med kanten 90 → 5 → 30 %.
      Pilen er Figmas egen sti (Arrow right, 44:189), 16 px, streg 1,5.
      Hover: "lens fills" (72:315) — med husets ene accent, den røde.
-   Glassets brydning (refr .45, dybde 14) findes ikke i CSS. Tættest på er
-   et let slør med mættet farve bag pladen — og så kanten og skyggen, som
-   er det, øjet læser som glas.
+   Glassets brydning (refr .45, dybde 14) findes ikke i CSS, og Rim har
+   ingen frost — så pladen er klar: havnen står skarpt gennem de 6 %, og
+   kanten og skyggen er det, øjet læser som glas (sløret er taget af 11/10,
+   se noten ved pladen).
    ⚠️ Prøven "står på naboens creme" i skal-forside er VENDT igen.
    ============================================================ */
-#alt{position:relative;isolation:isolate}
-#alt .alt-bund{position:absolute;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+/* ⚠️ overflow-x:clip, IKKE hidden: fotoet er 24 px bredere mod højre, så
+   det kan glide på plads uden at blotte en kant, og en transform tæller i
+   rullefladen (5/9-arret). hidden ville gøre afsnittet til sin egen
+   rullebeholder. */
+#alt{position:relative;isolation:isolate;overflow-x:clip}
+#alt .alt-bund{position:absolute;inset:0 -24px 0 0;z-index:-2;overflow:hidden;pointer-events:none}
 #alt .alt-bund img{display:block;width:100%;height:100%;object-fit:cover}
 /* Cremen er FAST bag overskriften — blæk på et foto kan ikke læses
    sikkert — og bliver til et slør, hvor kortene står, så havnen anes
    bag glasset. Toppen er naboens creme, så overgangen ikke ses. */
 #alt .alt-slor{position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--cream2) 0,var(--cream2) 190px,rgba(247,237,225,.5) 400px,rgba(247,237,225,.5))}
 #alt .rows{gap:12px}
-#alt .row-card{display:block;padding:6px;border-radius:24px;background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(3px) saturate(160%);backdrop-filter:blur(3px) saturate(160%);box-shadow:9px 18px 44px rgba(36,26,23,.24)}
+/* ⚠️ INTET SLØR PÅ PLADEN (11/10). Figmas Rim har frost 0 (LA3/Glass/Rim:
+   radius 0) — glasset er klart og bryder, det mattes ikke. Sløret på 3 px
+   kunne knap ses, men blev regnet om seks gange pr. billede under rul og
+   blinkede i Safari sammen med afdækningen. Glasset er kanten, de 6 %, og
+   havnen, der står skarpt igennem. */
+#alt .row-card{display:block;padding:6px;border-radius:24px;background:rgba(255,255,255,.06);box-shadow:9px 18px 44px rgba(36,26,23,.24)}
 #alt .row-card::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(255,255,255,.12) 45%,rgba(255,255,255,.4));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
 /* ⚠️ TELEFONEN: flisen er 36 og luften 10 (MÅLT ved 390: med 40/12 havde
    teksten 204 px, og "Smørrebrød ud af huset" brækkede). Linsen er
@@ -3302,7 +3310,17 @@ footer .smiley-linje{
 #alt .linse::before{background-color:rgba(255,255,255,.1);transition:background-color .18s ease}
 #alt .linse::after{padding:1px;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,255,255,.05) 50%,rgba(255,255,255,.3));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
 #alt .linse svg{position:relative;z-index:1;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:translate .18s ease}
-#alt .row-card:active{scale:.98}
+/* ⚠️ TRYKKET PÅ TELEFONEN ER EN KLASSE, IKKE :active (11/10). Mikkels ord:
+   *"tryk interaktionen også fixes ift på telefonen"*. iOS Safari viser kun
+   :active på et link, når siden lytter på touchstart — og det gør forsiden
+   ikke, så et tryk gav INGEN reaktion før sidehoppet. Og hvor :active slår
+   til (Android), trykker kortet sig ned, i det sekund en tommelfinger
+   begynder at RULLE på det. Nu sætter havnegrillen.js `.trykket` som iOS
+   selv: efter 60 ms, og ikke hvis fingeren flytter sig. Musen beholder
+   :active. Linsen fyldes som ved hover. */
+#alt .row-card.trykket{scale:.98}
+#alt .row-card.trykket .linse::before{background-color:var(--red)}
+@media (hover:hover) and (pointer:fine){#alt .row-card:active{scale:.98}}
 /* Hover er Figmas: løft 4 px, en tungere skygge (Contact L, næste trin i
    Figmas skygger) og linsen fyldes — 180 ms (95:359). */
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){

@@ -611,45 +611,35 @@ test.describe('Forsidens kobling', () => {
      man scroller ned". Startpositionen læses af den BEREGNEDE stil,
      og kortene sammenlignes med hinanden — ikke med et tal i arket.
      ============================================================ */
-  /* ⚠️ VENDT 10/10 — Mikkels ord: "animationen er også shit og matcher
-     overhovedet ikke figma/UI sheetsnes standarder". Kundens "fra hver deres
-     side" (13/9) er væk. Figmas standard for kort: "Each project unmasks
-     upward from its bottom edge … staggered by column" (95:367) og
-     "Images unmask upward from their bottom edge (clip-path, 600 ms)"
-     (79:415). Prøven kræver: kortet flytter sig ikke (ingen glid, ingen
-     stigning) og er skjult af en afdækning nedefra. */
-  test('kortene under «Hvad skal vi hjælpe med?» afdækkes nedefra som Figmas — ingen glid', async ({ page }) => {
+  /* ⚠️ VENDT TO GANGE. 13/9 gled kortene 48 px ind fra hver sin side (kundens
+     ord); 10/10 blev de Figmas afdækning med clip-path. 11/10, Mikkels ord:
+     "animationen er ikke god nok og laggy og sjusket". clip-path tegnes om
+     ved hvert billede, og kortene havde backdrop-filter oveni. Prøven kræver
+     nu det, skærmkortet klarer alene: kortet stiger (12–24 px, Figmas spænd
+     79:327/71:182) og toner ind, glider ikke fra siden, er ikke klippet, og
+     overgangen rører hverken clip-path eller filtre. */
+  test('kortene under «Hvad skal vi hjælpe med?» stiger stille op — kun transform og opacitet', async ({ page }) => {
     await åbn(page, '/index.html');
     const k = await page.$$eval('#alt .rows > .row-card', (a) => a.map((e) => {
       if (e.classList.contains('in')) return null;
       const cs = getComputedStyle(e);
-      return { t: cs.transform, klip: cs.clipPath };
+      const m = cs.transform.match(/matrix\(([^)]+)\)/);
+      const t = m ? m[1].split(',').map(Number) : [1, 0, 0, 1, 0, 0];
+      return { x: t[4], y: t[5], klip: cs.clipPath, op: Number(cs.opacity) };
     }));
     expect(k.length, 'vagt: de seks kort').toBe(6);
     expect(k.every((v) => v !== null), 'kortene var afsløret FØR rulning — prøven måler ingenting').toBe(true);
     for (const [i, v] of k.entries()) {
-      expect(v.t, `kort ${i + 1} flytter sig på vej ind (${v.t})`).toBe('none');
-      expect(v.klip, `kort ${i + 1} afdækkes ikke nedefra (${v.klip})`).toMatch(/^inset\(100%/);
+      expect(v.x, `kort ${i + 1} glider ind fra siden`).toBe(0);
+      expect(v.y, `kort ${i + 1} stiger ikke i Figmas spænd (${v.y})`).toBeGreaterThanOrEqual(12);
+      expect(v.y, `kort ${i + 1} stiger ikke i Figmas spænd (${v.y})`).toBeLessThanOrEqual(24);
+      expect(v.klip, `kort ${i + 1} er klippet — clip-path tegnes om ved hvert billede`).toBe('none');
+      expect(v.op, `kort ${i + 1} toner ikke ind`).toBe(0);
     }
-    /* ⚠️ OG SLUTTEN SKÆRER IKKE SKYGGEN AF: clip-path klipper alt uden for
-       kassen. Skyggens rækkevidde læses af den BEREGNEDE box-shadow (ude-
-       fra), og afdækningens slutfelt skal rumme den på alle fire sider. */
-    const kort = page.locator('#alt .rows > .row-card').first();
-    await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
-    // Læs, når afdækningen er færdig (600 ms): midt i en overgang er den beregnede stil mellemtallet.
-    await expect(kort).toHaveClass(/\bin\b/);
-    await page.waitForTimeout(700);
-    const m = await kort.evaluate((e) => {
-      const cs = getComputedStyle(e);
-      const tal = (cs.clipPath.match(/inset\(([^)]*?)(?: round|\))/) || [, ''])[1].split(/\s+/).map(parseFloat);
-      const [top, hoejre = top, bund = top, venstre = hoejre] = tal;
-      const sk = cs.boxShadow.replace(/rgba?\([^)]*\)/g, '').trim().split(/\s+/).map(parseFloat);
-      return { klip: cs.clipPath, top, hoejre, bund, venstre, x: sk[0], y: sk[1], blur: sk[2] };
+    const overgang = await page.locator('#alt .rows > .row-card').first().evaluate((e) => {
+      e.classList.add('in'); return getComputedStyle(e).transitionProperty;
     });
-    expect(-m.top, `skyggen skæres af foroven (${m.klip})`).toBeGreaterThanOrEqual(m.blur - m.y);
-    expect(-m.hoejre, `skyggen skæres af til højre (${m.klip})`).toBeGreaterThanOrEqual(m.blur + m.x);
-    expect(-m.bund, `skyggen skæres af forneden (${m.klip})`).toBeGreaterThanOrEqual(m.blur + m.y);
-    expect(-m.venstre, `skyggen skæres af til venstre (${m.klip})`).toBeGreaterThanOrEqual(m.blur - m.x);
+    expect(overgang, 'indgangen rører noget, skærmkortet ikke klarer alene').not.toMatch(/clip-path|filter|width|height|top|left/);
   });
 
   /* VENDT 10/10: "ét ad gangen" var et trin pr. kort (.1 s op til .5 s).
@@ -693,26 +683,61 @@ test.describe('Forsidens kobling', () => {
   });
 
   /* ⚠️ TRYKKET VAR SLUGT (målt 10/10): `.row-card:active{transform:scale(.982)}`
-     tabte til indgangens `transform:none`, der vejer mere — kortet stod
-     stille under fingeren. Trykket er nu sin egen egenskab (scale). */
+     tabte til indgangens `transform:none`. Og på en iPhone viste :active
+     slet intet (11/10, Mikkels ord: "tryk interaktionen også fixes ift på
+     telefonen") — iOS kræver en touchstart-lytter. Nu: musen har :active,
+     fingeren får `.trykket` fra havnegrillen.js. Prøven trykker med den
+     pegeenhed, profilen har, og måler kortets BREDDE (layoutet), ikke klassen. */
   test('et tryk på et kort under «Hvad skal vi hjælpe med?» kan ses', async ({ page }) => {
     await åbn(page, '/index.html');
     const kort = page.locator('#alt .rows > .row-card').nth(2);
     await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
-    /* Tryk først, når kortet er afdækket: et kort, der stadig er klippet
-       væk, kan ikke rammes — og det kan gæsten heller ikke se. */
     await expect(kort).toHaveClass(/\bin\b/);
     await page.waitForTimeout(700);
     const b = await kort.boundingBox();
-    await page.mouse.move(b.x + 30, b.y + b.height / 2);
-    await page.mouse.down();
-    await page.waitForTimeout(450);
-    const ned = await kort.evaluate((e) => {
-      const r = e.getBoundingClientRect(); return { w: r.width, s: getComputedStyle(e).scale };
-    });
-    await page.mouse.move(2, 2);   // væk fra kortet først, så slippet ikke er et klik
-    await page.mouse.up();
-    expect(ned.w, `kortet blev ikke mindre under trykket (scale ${ned.s})`).toBeLessThan(b.width - 2);
+    const bredde = () => kort.evaluate((e) => e.getBoundingClientRect().width);
+    if (test.info().project.use.isMobile) {
+      await kort.evaluate((e, p) => e.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', clientX: p.x, clientY: p.y })), { x: b.x + 30, y: b.y + b.height / 2 });
+      await page.waitForTimeout(320);
+      const ned = await bredde();
+      await kort.evaluate((e) => e.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerType: 'touch' })));
+      expect(ned, 'kortet blev ikke mindre under fingeren').toBeLessThan(b.width - 2);
+      await page.waitForTimeout(320);
+      expect(await bredde(), 'kortet blev stående trykket ned').toBeCloseTo(b.width, 0);
+    } else {
+      await page.mouse.move(b.x + 30, b.y + b.height / 2);
+      await page.mouse.down();
+      await page.waitForTimeout(450);
+      const ned = await bredde();
+      await page.mouse.move(2, 2);   // væk fra kortet først, så slippet ikke er et klik
+      await page.mouse.up();
+      expect(ned, 'kortet blev ikke mindre under trykket').toBeLessThan(b.width - 2);
+    }
+  });
+
+  /* ⚠️ EN TOMMELFINGER, DER RULLER, TRYKKER IKKE (11/10). Det var den anden
+     halvdel af det sjuskede: hvor :active slår til, trykkede kortet sig ned,
+     i det sekund en rulning startede på det. Fingeren flytter sig 20 px —
+     så skal kortet stå stille. */
+  test('en rulning, der starter på et kort, trykker det ikke ned', async ({ page }) => {
+    test.skip(!test.info().project.use.isMobile, 'gælder fingeren');
+    await åbn(page, '/index.html');
+    const kort = page.locator('#alt .rows > .row-card').nth(1);
+    await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await expect(kort).toHaveClass(/\bin\b/);
+    await page.waitForTimeout(700);
+    const b = await kort.boundingBox();
+    const r = await kort.evaluate(async (e, p) => {
+      const send = (type, dy) => e.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerType: 'touch', clientX: p.x, clientY: p.y + dy }));
+      send('pointerdown', 0);
+      await new Promise((ok) => setTimeout(ok, 20));
+      send('pointermove', -20);
+      await new Promise((ok) => setTimeout(ok, 300));
+      const w = e.getBoundingClientRect().width;
+      send('pointercancel', -20);
+      return { w, klasse: e.className };
+    }, { x: b.x + 30, y: b.y + b.height / 2 });
+    expect(r.w, 'kortet trykkede sig ned under en rulning (' + r.klasse + ')').toBeCloseTo(b.width, 0);
   });
 
   /* ============================================================
@@ -771,8 +796,8 @@ test.describe('Forsidens kobling', () => {
        plate, 105:982), værdierne læst ud af filen:
        · overskriften står på bunden, ikke i et kort
        · der ER noget bag glasset: havnens foto, bagest
-       · pladen er klart glas (Tint/Rim 6 % — loftet .1) med slør, og
-         kanten er en lys maske (Edge/Specular)
+       · pladen er klart glas (Tint/Rim 6 % — loftet .1) UDEN slør (Rim har
+         frost 0; 11/10), og kanten er en lys maske (Edge/Specular)
        · kernen er FAST og står 6 px inde hele vejen rundt, med et hjørne
          der følger pladens (radius − 6). Målt på layoutet, ikke i arket. */
     expect(m.hoved.bg, 'overskriften står i et kort').toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
@@ -784,7 +809,9 @@ test.describe('Forsidens kobling', () => {
     for (const [i, k] of m.kort.entries()) {
       const a = tal(k.fyld)[3] ?? 1;
       expect(a, `kort ${i + 1}: pladen er ikke klart glas (${k.fyld})`).toBeLessThanOrEqual(0.1);
-      expect(k.bf, `kort ${i + 1}: pladen slører ikke havnen bag sig`).toMatch(/blur\(/);
+      /* ⚠️ VENDT 11/10: Figmas Rim har frost 0, og sløret blev regnet om
+         seks gange pr. billede under rul ("laggy og sjusket"). */
+      expect(k.bf, `kort ${i + 1}: pladen har slør igen`).toBe('none');
       expect(k.kant, `kort ${i + 1}: pladen mangler den lyse kant`).toContain('linear-gradient');
       expect(k.kantFarve, `kort ${i + 1}: kanten er ikke lys`).toContain('rgba(255, 255, 255, 0.85)');
       expect(tal(k.kerne)[3] ?? 1, `kort ${i + 1}: kernen er ikke fast (${k.kerne})`).toBe(1);

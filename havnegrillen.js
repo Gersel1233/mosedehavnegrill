@@ -209,3 +209,27 @@ if(s.dataset.chips==='multi'){b.classList.toggle('on')}else{s.querySelectorAll('
 document.querySelectorAll('[data-toggles]').forEach(s=>s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
 s.querySelectorAll('button').forEach(o=>o.classList.remove('on'));b.classList.add('on');
 const t=document.querySelector(s.dataset.toggles);if(t)t.hidden=b.dataset.show!=='1'}));
+
+/* ⚠️ ET TRYK, DER KAN SES PÅ EN TELEFON  (11/10)
+   Mikkels ord: *"tryk interaktionen også fixes ift på telefonen"*.
+   iOS Safari viser kun :active på et link, når siden lytter på
+   touchstart, og forsiden gør det ikke — et tryk på kortene under
+   «Hvad skal vi hjælpe med?» gav INGEN reaktion før sidehoppet. Og hvor
+   :active slår til, trykker kortet sig ned, i det sekund en tommelfinger
+   begynder at RULLE på det.
+   Derfor som iOS selv: `.trykket` sættes efter 60 ms, og ikke hvis
+   fingeren flytter sig mere end 8 px eller siden ruller. Et hurtigt tryk
+   får klassen i 180 ms, så det kan ses, før siden skifter. Musen beholder
+   :active (havnegrillen.css). Lytterne er passive og på dokumentet — ét
+   sted, og et kort, der tegnes senere, er med af sig selv.
+   ⚠️ pageshow rydder: kommer gæsten tilbage fra siden bagved, må kortet
+   ikke stå trykket ned. */
+(()=>{const SEL='#alt .row-card';let k=null,x=0,y=0,t=0;
+const slip=()=>{clearTimeout(t);if(k)k.classList.remove('trykket');k=null};
+document.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;const m=e.target.closest&&e.target.closest(SEL);if(!m)return;
+  slip();k=m;x=e.clientX;y=e.clientY;t=setTimeout(()=>{if(k)k.classList.add('trykket')},60)},{passive:true});
+document.addEventListener('pointermove',e=>{if(k&&(Math.abs(e.clientX-x)>8||Math.abs(e.clientY-y)>8))slip()},{passive:true});
+document.addEventListener('pointerup',()=>{if(!k)return;const m=k;clearTimeout(t);k=null;m.classList.add('trykket');setTimeout(()=>m.classList.remove('trykket'),180)},{passive:true});
+document.addEventListener('pointercancel',slip,{passive:true});
+rulLyt.addEventListener('scroll',slip,{passive:true});
+addEventListener('pageshow',()=>{slip();document.querySelectorAll('.trykket').forEach(e=>e.classList.remove('trykket'))});})();
