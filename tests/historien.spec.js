@@ -714,6 +714,23 @@ test.describe('Historiens bevægelse', () => {
     expect(a, 'rul ned-stregen har en animation').toBe('none');
   });
 
+  /* ⚠️ DEN FASTE BJÆLKE ER SIDENS SORTE (11/10). `body.har-film
+     .topbar.stuck` (havnegrillen.css, 3/10) vejer 0,3,1 og slog historiens
+     egen regel: en creme stribe med blæk-ordmærke hen over biografen, set
+     på en optagelse. To tal udefra: sidens --nat og --salt. */
+  test('den faste bjælke er sidens sorte, ikke husets creme', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    await rul(page, 1600);
+    const bar = page.locator('.topbar');
+    await expect(bar).toHaveClass(/stuck/);
+    const m = await bar.evaluate((e) => ({ flade: getComputedStyle(e).backgroundColor,
+      glas: getComputedStyle(e).backdropFilter || 'none',
+      navn: getComputedStyle(e.querySelector('.ordmaerke')).color }));
+    expect(m.flade, 'bjælken er ikke sidens sorte').toBe('rgb(11, 9, 8)');
+    expect(m.glas, 'en fast flade skal ikke have glas bag sig (3/10)').toBe('none');
+    expect(m.navn, 'navnet står i blæk på sort').toBe('rgb(239, 231, 221)');
+  });
+
   /* Fortidens billeder er sort-hvide; "I dag" kommer i farver, når man
      når den (Figma 95:389, "monochrome → colour"). */
   test('"I dag" går fra sort-hvid til farver, når man når den', async ({ page }) => {
