@@ -401,7 +401,12 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
    tekst og stillbilleder at sløre — og den massive creme beholdes
    på film-siderne. Reglen hænger på :has(.hero.film), så den
    følger siden selv og ikke en liste, nogen skal huske at rette. */
-.topbar.stuck{background:rgba(253,247,239,.82);
+/* ⚠️ 94 %, IKKE 82 (11/10). Undersiderne har navnet i den faste bjælke nu, og
+   ved 82 % stod sidens egen overskrift og skinnede igennem bag det — samme
+   fejl som 13/9 ("skinnede sociale-striben igennem bag navnet"). Mikkels
+   ord: den skal "se ud som når man scroller ned på forsiden", og forsidens
+   er massiv creme. Sløret bliver (3/10) — det er nu en antydning, ikke tekst. */
+.topbar.stuck{background:rgba(253,247,239,.94);
   -webkit-backdrop-filter:blur(24px) saturate(180%);
   backdrop-filter:blur(24px) saturate(180%);
   box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
