@@ -7,7 +7,7 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-**BESTIL-PILLEN, KURVBJÆLKEN OG VALGENE ER FIGMAS** (11/10 — PÅ ARBEJDSGRENEN, venter på Mikkels ja).
+**BESTIL-PILLEN, KURVBJÆLKEN OG VALGENE ER FIGMAS** (11/10 — LIVE som 83f9e85 efter Mikkels "ja sæt det live").
 Mikkels ord: *"bestil knappen på telefon skal opdateres efter Figma sheetsne også
 lige som book bord tabs knapperne og dem men gøres endnu bedre og mere bestil knap
 egnet og bar bedre"*.
