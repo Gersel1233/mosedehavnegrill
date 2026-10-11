@@ -13612,3 +13612,52 @@ body:not(.personale) #hd .burger svg{width:18px;height:18px;flex:none;fill:curre
   body:not(.personale) .ark{left:50%;right:auto;bottom:24px;width:min(460px, 92vw);translate:-50% 0;border-radius:30px;transform:translateY(calc(100% + 48px))}
   body:not(.personale) .ark.aaben{transform:none}
 }
+
+/* ============================================================
+   DAGE OG TYPER ER FIGMAS CHIP  (11/10)
+   ------------------------------------------------------------
+   Mikkels ord: *"… lige som book bord tabs knapperne og dem men gøres
+   endnu bedre"*. MÅLT FØR: dagene på bord/ og bestil/ og typerne
+   (To-go/Spis her/Levering, forespørgslens typer, bordene ved bordet)
+   var firkanter på 62 px med navnet over datoen. Figmas valg er en
+   chip (LA31 Control / Chip, 103:571 — LÆST UD AF FILEN): 44 høj,
+   radius 22, luft 18, mellemrum 8, navnet i 14 og tallet ved siden af
+   i småt; hvilende med en tynd kant og ingen flade, valgt fyldt.
+   · Valgt er husets RØDE, ikke Figmas sorte: "Et valg er rødt, ikke
+     sort" (fullskaerm-gamle.spec.js) — og datoen helt hvid (11/9:
+     .88 gav 4,11:1). Reglen for det valgte står ovenfor og er urørt
+   · Navnet er 14/400 hvilende og 14/600 valgt (Figma: Regular →
+     Medium; husets knapper bærer 600). Datoen er 12 med tal i samme
+     bredde — tallet i Figmas chip er sat i mono, og huset har ingen
+   · Dagene og typerne deler stadig regel: "samme håndbevægelse"
+   ============================================================ */
+body:not(.personale) .dag,
+body:not(.personale) .type-knap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(36, 26, 23, .18);
+  background: transparent;
+  white-space: nowrap;
+}
+/* Typerne fylder rækken (flex 1 1 9.5rem ovenfor) — midt i fladen, ellers
+   hang "7 ude" i venstre side af en knap i fuld bredde ved bordet. Den
+   gamle midtstilling var grid (justify-items) og døde med inline-flex. */
+body:not(.personale) .type-knap { justify-content: center; }
+body:not(.personale) .dag:hover,
+body:not(.personale) .type-knap:hover { background: rgba(36, 26, 23, .05); border-color: rgba(36, 26, 23, .18); }
+body:not(.personale) .dag-navn,
+body:not(.personale) .type-navn { font-size: 14px; font-weight: 400; }
+body:not(.personale) .dag.valgt .dag-navn,
+body:not(.personale) .type-knap.valgt .type-navn { font-weight: 600; }
+body:not(.personale) .dag-dato,
+body:not(.personale) .type-note { font-size: 12px; font-variant-numeric: tabular-nums; }
+/* Det valgte er fyldt og fladt som Figmas — skyggen under det røde var
+   den eneste skygge i striben og løftede valget ud af rækken. */
+body:not(.personale) .dag.valgt,
+body:not(.personale) .type-knap.valgt { box-shadow: none; }
+body:not(.personale) .dag.fuld { background: transparent; }

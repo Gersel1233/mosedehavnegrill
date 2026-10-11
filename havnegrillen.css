@@ -116,7 +116,7 @@
 @font-face{font-family:"Host Grotesk";src:url("fonts/instrument-sans.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;unicode-range:U+0026}
 @font-face{font-family:"Bebas Neue";src:url("fonts/bebas-neue.woff2") format("woff2");font-weight:400;font-display:block}
 
-:root{--skygge-kort:0 18px 46px rgba(36,26,23,.1);--skygge-let:0 12px 30px rgba(36,26,23,.09);--kant-inde:inset 0 0 0 1px rgba(36,26,23,.07);--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1);--top-luft:58px;--pille-h:58px;--pille-bund:24px;--pille-plads:calc(var(--pille-bund) + var(--pille-h) + 16px)}
+:root{--skygge-kort:0 18px 46px rgba(36,26,23,.1);--skygge-let:0 12px 30px rgba(36,26,23,.09);--kant-inde:inset 0 0 0 1px rgba(36,26,23,.07);--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1);--top-luft:58px;--pille-h:56px;--pille-bund:24px;--pille-plads:calc(var(--pille-bund) + var(--pille-h) + 16px)}
 
 /* ============================================================
    DEN HVIDE BJÆLKE ØVERST PÅ TELEFONEN (5/9)
@@ -1381,8 +1381,34 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .legal .personale-link{display:inline-block;margin-top:8px;color:rgba(255,255,255,.62)}
 .legal .personale-link:hover{color:#fff}
 /* bestil-pille */
-.bestil{position:absolute;bottom:var(--pille-bund);left:16px;right:16px;z-index:58;height:var(--pille-h);padding:0 24px;border-radius:29px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(180deg,rgba(230,66,80,.94),rgba(184,26,40,.95));-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:inline-flex;align-items:center;gap:10px;overflow:hidden;white-space:nowrap;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s}
-.bestil svg{width:19px;height:19px;flex:none}
+.bestil{position:absolute;bottom:var(--pille-bund);left:var(--pad);right:var(--pad);z-index:58;height:var(--pille-h);padding:0 4px 0 22px;border-radius:28px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(180deg,rgba(230,66,80,.94),rgba(184,26,40,.95));-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:inline-flex;align-items:center;justify-content:space-between;gap:14px;overflow:hidden;white-space:nowrap;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s,scale .2s ease}
+/* ============================================================
+   PILLEN OG KURVBJÆLKEN ER FIGMAS MOBILE BAR  (11/10)
+   ------------------------------------------------------------
+   Mikkels ord: *"bestil knappen på telefon skal opdateres efter Figma
+   sheetsne … gøres endnu bedre og mere bestil knap egnet og bar
+   bedre"*. Formen er LÆST UD AF FIGMA-FILEN (LA31 Nav / Mobile bar,
+   98:278: "350 × 56 (390 − 2 × 20)"): 56 høj, 20 px fra kanten,
+   radius 28, teksten til venstre med 22 px luft og en knap på 48 med
+   en linse på 40 til højre, 4 px inde (LA32 Button, 116:871). Farven er
+   husets røde — det er siden ene knap til at bestille.
+   · LINSEN er Figmas "Primary on dark" vendt til rødt: lys linse på den
+     mørke flade, kant fra hvid til skygge i −45° (Edge/Specular on
+     light), tegnet i husets mørkerøde. Ikonet stod før løst foran
+     teksten; nu er det knappen, man trykker på — som i Figma
+   · TRYKKET: iOS viser ikke :active (se havnegrillen.js) — `.trykket`
+     sætter scale, og linsen bliver hvid
+   ⚠️ 56 OG IKKE 58: --pille-h bærer også footerens luft
+   (--pille-plads), så den følger med af sig selv.
+   ============================================================ */
+.pille-linse{position:relative;flex:none;width:48px;height:48px;display:grid;place-items:center;color:var(--red-tekst)}
+.pille-linse::before,.pille-linse::after{content:"";position:absolute;inset:4px;border-radius:50%;pointer-events:none}
+.pille-linse::before{background:rgba(253,247,239,.94);transition:background-color .18s ease}
+.pille-linse::after{padding:1px;background:linear-gradient(135deg,#fff,rgba(0,0,0,.04) 55%,rgba(0,0,0,.22));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.bestil .pille-linse svg,.kurvbar .pille-linse svg{position:relative;z-index:1;width:18px;height:18px;flex:none}
+.pille-linse .pil path{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.bestil.trykket,.kurvbar.trykket{scale:.97}
+.bestil.trykket .pille-linse::before,.kurvbar.trykket .pille-linse::before{background-color:#fff}
 .bestil:hover{color:#fff}
 .bestil:active{transform:scale(.975)}
 /* ⚠️ SKJULT ER visibility:hidden, IKKE KUN USYNLIG (12/9). Kundens ord med
@@ -1403,12 +1429,12 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
    glas, skygge, højde), så den ikke bliver en ny slags knap — og så
    stilvagtens loft over skygger og størrelser står, hvor det står. Den
    tager pillens plads, mens der ligger noget i kurven. */
-.kurvbar{position:fixed;bottom:var(--pille-bund);left:16px;right:16px;z-index:58;height:var(--pille-h);padding:0 24px;border-radius:29px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;background:linear-gradient(180deg,#e64250,#b81a28);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:flex;align-items:center;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums;transform:translateY(150%);opacity:0;pointer-events:none;visibility:hidden;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s linear .45s}
-.kurvbar.vis{transform:none;opacity:1;pointer-events:auto;visibility:visible;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s}
-.kurvbar svg{width:19px;height:19px;flex:none}
+.kurvbar{position:fixed;bottom:var(--pille-bund);left:var(--pad);right:var(--pad);z-index:58;height:var(--pille-h);padding:0 4px 0 22px;border-radius:28px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;background:linear-gradient(180deg,#e64250,#b81a28);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:flex;align-items:center;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums;transform:translateY(150%);opacity:0;pointer-events:none;visibility:hidden;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s linear .45s}
+.kurvbar.vis{transform:none;opacity:1;pointer-events:auto;visibility:visible;transition:transform .45s var(--spring),opacity .3s ease,visibility 0s,scale .2s ease}
 .kurvbar-sum{opacity:.86}
-.kurvbar-pil{margin-left:auto}
-.kurvbar-pil::after{content:" ↓"}
+/* "Se og send" står ved linsen, og pilen er Figmas tegnede (44:189, drejet
+   ned) i linsen — ikke et "↓" i skriften (33:25: "drawn — never a font glyph"). */
+.kurvbar-pil{margin-left:auto;font-weight:500;opacity:.92}
 /* ⚠️ BJÆLKEN ER HELT DÆKKENDE, ikke 94 % som pillen: den bærer beløbet,
    og på et skud (26/9) skinnede varelisten bag den igennem omkring
    "35,-". Glas er pynt; et beløb, der skal læses, er det ikke. */

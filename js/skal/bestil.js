@@ -2645,14 +2645,14 @@
     }
     var sum = sumIKurv();
     tøm(kurvbar);
-    /* Pillens egen pose — samme tegn for "bestilling" hele vejen.
-       Tegnet bor i ikoner.svg (27/9), som på siderne. Skallen kører
-       kun på sider i roden, så stien er relativ uden ../ */
-    kurvbar.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true">'
-      + '<use href="ikoner.svg#kurv"/></svg>');
     kurvbar.appendChild(lav('b', 'kurvbar-antal', n + ' i kurven'));
     if (sum) kurvbar.appendChild(lav('span', 'kurvbar-sum', '· ' + kroner(sum)));
     kurvbar.appendChild(lav('span', 'kurvbar-pil', 'Se og send'));
+    /* ⚠️ LINSEN ER PILLENS (11/10): Figmas Mobile bar har knappen til højre
+       (98:278), og pilen er Figmas egen sti (44:189) drejet nedad — mod
+       summen og Send. Før stod posen foran teksten og et "↓" i skriften. */
+    kurvbar.insertAdjacentHTML('beforeend', '<span class="pille-linse" aria-hidden="true">'
+      + '<svg class="pil" viewBox="0 0 16 16"><path d="M8 1V12.4M4.4 9.1L8 12.9L11.6 9.1"/></svg></span>');
     kurvbar.setAttribute('aria-label', n + ' i kurven' + (sum ? ', ' + kroner(sum) : '')
       + '. Gå til bestillingen.');
     var vis = n > 0 && !iSyne.knap && !iSyne.sum && !skriver;

@@ -222,9 +222,12 @@ const t=document.querySelector(s.dataset.toggles);if(t)t.hidden=b.dataset.show!=
    får klassen i 180 ms, så det kan ses, før siden skifter. Musen beholder
    :active (havnegrillen.css). Lytterne er passive og på dokumentet — ét
    sted, og et kort, der tegnes senere, er med af sig selv.
+   ⚠️ PILLEN OG KURVBJÆLKEN ER MED (11/10): samme iOS-fejl — et tryk på
+   "Bestil mad" gav intet at se, før siden gled ned. Kurvbjælken bygges af
+   js/skal/bestil.js, efter siden er tegnet; lytteren på dokumentet tager den.
    ⚠️ pageshow rydder: kommer gæsten tilbage fra siden bagved, må kortet
    ikke stå trykket ned. */
-(()=>{const SEL='#alt .row-card';let k=null,x=0,y=0,t=0;
+(()=>{const SEL='#alt .row-card, .bestil, .kurvbar';let k=null,x=0,y=0,t=0;
 const slip=()=>{clearTimeout(t);if(k)k.classList.remove('trykket');k=null};
 document.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;const m=e.target.closest&&e.target.closest(SEL);if(!m)return;
   slip();k=m;x=e.clientX;y=e.clientY;t=setTimeout(()=>{if(k)k.classList.add('trykket')},60)},{passive:true});
