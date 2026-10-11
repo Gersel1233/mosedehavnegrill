@@ -7,6 +7,36 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**BESTIL-PILLEN, KURVBJÆLKEN OG VALGENE ER FIGMAS** (11/10 — PÅ ARBEJDSGRENEN, venter på Mikkels ja).
+Mikkels ord: *"bestil knappen på telefon skal opdateres efter Figma sheetsne også
+lige som book bord tabs knapperne og dem men gøres endnu bedre og mere bestil knap
+egnet og bar bedre"*.
+- **MÅLT FØR:** pillen var 58 høj med radius 29, et kurveikon løst foran teksten og det
+  hele midt for; kurvbjælken havde ikonet først og et "↓" som skrifttegn. Dagene på
+  bord/ var firkanter på 62 px med navnet over datoen; typerne firkanter på 66
+  (Hentes/leveres) og 62 (bordene ved bordet)
+- **Pillen og kurvbjælken er Figmas Mobile bar** (98:278, LÆST UD AF FILEN:
+  "350 × 56 (390 − 2 × 20)"): 56 høj, radius 28, 20 fra kanten, teksten til venstre
+  med 22 px luft og en knap på 48 med en linse på 40 til højre, 4 inde (LA32 Button
+  "on dark", 116:871 — lys linse, kant fra hvid til skygge, tegnet i husets
+  mørkerøde). Kurvbjælkens pil er Figmas tegnede (44:189) i linsen — 33:25: *"drawn —
+  never a font glyph"*. Computeren har samme pille, 360 bred, midt for
+- **Trykket:** `.bestil` og `.kurvbar` er med i `.trykket`-modulet i havnegrillen.js
+  (iOS viser ikke `:active`); bjælken trykkes ned til 97 %, og linsen bliver hvid
+- **Dagene og typerne er Figmas chip** (103:571): 44 høj, radius 22, 18 luft, navn og
+  dato på én linje, tynd kant uden flade. Det valgte er husets røde (ikke Figmas
+  sorte). Typerne i fuld bredde står midt for — `justify-items` døde med inline-flex,
+  og "7 ude" hang til venstre ved bordet (set på skuddet)
+- ⚠️ `--pille-h` er 56 nu, og den bærer også footerens luft (`--pille-plads`)
+- ⚠️ bestil/ vælger dag med en rullemenu, ikke dage — kun bord/ har dagestriben
+- **Fanget af en gammel prøve:** min `.dag:hover` vejede det samme som `.dag.valgt`
+  (0,3,1) og stod længere nede — musen over den valgte dag gjorde den grå.
+  fullskaerm-gamle "Et valg er rødt" faldt på begge profiler; nu `:not(.valgt):hover`
+- Prøver: `tests/figma-bjaelke-og-valg.spec.js` (Figmas tal kommer udefra) — set fejle
+  7 af 7 mod den gamle udgave, og hver for sig: midtstillingen, "↓" i `::after`,
+  `.bestil` ude af trykmodulet. De berørte filer (11 stk.): 771 bestod, 2 fejlede
+  (hover-fejlen ovenfor), nu grønne
+
 **BEVÆGELSEN UDEN SLØR OG KLIP, ET TRYK DER KAN SES, OG ÉN TOPBJÆLKE** (11/10 — LIVE).
 Mikkels ord: *"ja det er godt men animationen er ikke god nok og laggy og sjusket det
 skal lige fixes også skal såda tryk interaktioen også fixes ift på telefonen og det
