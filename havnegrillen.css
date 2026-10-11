@@ -361,6 +361,23 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
   transition:opacity .45s ease,visibility .45s ease;
 }
 .topbar.stuck .ordmaerke,.topbar.solid .ordmaerke{opacity:1;visibility:visible}
+/* ⚠️ NAVNET STÅR ENS PÅ ALLE SIDER (11/10). Mikkels ord: *"det
+   mosedehavnecafe i toppen skifter ift skrifttype og placering imellem
+   tabsne … det skal se ud som når man scroller ned på forsiden"*. MÅLT:
+   forsiden havde navnet til venstre i 21/500, de ni undersider havde
+   intet navn, og bord/ og bestil/ havde det midt for i 17/400.
+   Undersiderne har nu SAMME ordmærke (.hjem), og bjælken gør, som
+   forsidens gør (kunden 9/9): øverst, over dugen, står pilen; når den
+   hvide bjælke sætter sig fast, er det navnet — på pilens plads, så det
+   står præcis, hvor forsidens står. Navnet er et link med data-tilbage,
+   så det går samme vej som pilen (js/tilbage.js).
+   ⚠️ display, IKKE visibility, her: navnet og pilen deler pladsen. Begge
+   er 40 høje, når bjælken klæber, så bjælken skifter ikke højde. Navnet
+   toner ind (@starting-style), som forsidens. */
+.topbar .ordmaerke.hjem{display:none;text-decoration:none}
+.topbar.stuck .ordmaerke.hjem{display:flex}
+.topbar.stuck:has(.ordmaerke.hjem) .g.icn[data-tilbage]{display:none}
+@starting-style{.topbar.stuck .ordmaerke.hjem{opacity:0}}
 .topbar .sp{margin-left:auto}
 /* Fast creme, ikke 80 % (13/9): over de mørke afsnit blev bjælken grumset grå, og på telefonen skinnede sociale-striben igennem bag navnet.
    ⚠️ OG DERFOR INTET GLAS BAG DEN (28/9). Sløringen blev stående, da fladen
@@ -435,7 +452,9 @@ body.har-film .topbar.stuck{background:var(--cream);
    (havnegrillen-desktop.css), og --top-luft er telefonens tal. */
 @media (max-width:820px){
   .topbar.stuck{--kompakt-top:max(calc(env(safe-area-inset-top) + 6px),12px);padding-top:var(--kompakt-top);padding-bottom:8px;margin-bottom:calc(var(--top-luft) - var(--kompakt-top) + 4px)}
-  .topbar.stuck:has(.ordmaerke){margin-bottom:calc(var(--top-luft) - var(--kompakt-top) + 14px)}
+  /* Forsidens ordmærke skrumper fra 50 til 40; undersidernes (.hjem) deler
+     pilens 40 og skal ikke betales for (de 10 px, h-selskaber hoppede). */
+  .topbar.stuck:has(.ordmaerke:not(.hjem)){margin-bottom:calc(var(--top-luft) - var(--kompakt-top) + 14px)}
   .topbar.stuck .ordmaerke{min-height:40px}
 }
 /* ⚠️ TOPBJÆLKENS KNAPPER STÅR PÅ TERNET, og ternet har BÅDE røde

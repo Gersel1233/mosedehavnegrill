@@ -278,3 +278,74 @@ test.describe('Tilbage-pilen og menuen kan ses', () => {
     expect(kontrast(mørk, 'rgb(11, 9, 8)'), 'pilen kan ikke ses på det sorte').toBeGreaterThan(4.5);
   });
 });
+
+/* ============================================================
+   NAVNET I DEN FASTE BJÆLKE ER ENS PÅ ALLE SIDER  (11/10)
+   ------------------------------------------------------------
+   Mikkels ord: *"det mosedehavnecafe i toppen skifter ift skrifttype
+   og placering imellem tabsne … det skal se ud som når man scroller
+   ned på forsiden"*. MÅLT FØR: forsiden 21/500 til venstre; de ni
+   undersider intet navn; bord/ og bestil/ 17/400 midt for efter en pil
+   og en anden Menu-knap.
+
+   ⚠️ FACIT ER FORSIDENS FASTE BJÆLKE, læst på samme kørsel — ikke tal
+   skrevet her. Og SIDERNE LÆSES AF FORSIDENS EGEN MENU (skuffen), så en
+   ny side i menuen er med af sig selv. bestil/ er med, fordi forsiden
+   linker dertil fra Bestil mad.
+   ============================================================ */
+test.describe('Den faste bjælke er forsidens på alle sider', () => {
+  async function bjaelken(page, sti) {
+    await åbnSkal(page, sti, { data: grunddata() });
+    await page.evaluate(() => document.getElementById('intro')?.remove());
+    await rul(page, 900);
+    await page.waitForTimeout(700);   // navnet toner ind (.45 s)
+    return page.evaluate(() => {
+      const navn = document.querySelector('#tb.stuck .ordmaerke, #hd.stuck .logo');
+      const knap = document.querySelector('#tb #burger, #hd #burger');
+      if (!navn || !knap) return null;
+      const cs = getComputedStyle(navn), kr = knap.getBoundingClientRect(), nr = navn.getBoundingClientRect();
+      const synlig = cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity) > 0.99;
+      return {
+        synlig, tekst: navn.textContent.trim(),
+        skrift: [cs.fontFamily.split(',')[0].replace(/"/g, ''), cs.fontSize, cs.fontWeight, cs.letterSpacing, cs.color].join(' '),
+        sted: [Math.round(nr.left), Math.round(nr.top), Math.round(nr.height)].join(','),
+        knap: [Math.round(kr.right), Math.round(kr.top), Math.round(kr.width), Math.round(kr.height),
+          getComputedStyle(knap, '::after').content, getComputedStyle(knap).backgroundColor].join(' '),
+      };
+    });
+  }
+
+  test('navn og Menu står ens på hver side i menuen', async ({ page }) => {
+    const html = fs.readFileSync(path.join(ROD, 'index.html'), 'utf8');
+    const skuffe = html.slice(html.indexOf('id="sheet"'), html.indexOf('id="sheet"') + 6000);
+    const sider = [...new Set([...skuffe.matchAll(/href="([^"#:]+)"/g)].map((m) => m[1]))]
+      .filter((h) => h !== 'index.html').map((h) => '/' + h).concat('/bestil/');
+    expect(sider.length, 'vagt: menuens sider').toBeGreaterThanOrEqual(9);
+    expect(sider, 'vagt: bord/ er i menuen').toContain('/bord/');
+
+    const facit = await bjaelken(page, '/index.html');
+    expect(facit, 'forsidens faste bjælke har intet navn eller ingen Menu').not.toBeNull();
+    expect(facit.synlig, 'forsidens navn kom ikke frem, da bjælken klæbede').toBe(true);
+    for (const sti of sider) {
+      const m = await bjaelken(page, sti);
+      expect(m, sti + ': ingen navn eller ingen Menu i den faste bjælke').not.toBeNull();
+      expect(m.synlig, sti + ': navnet vises ikke, når bjælken klæber').toBe(true);
+      expect(m.tekst, sti).toBe(facit.tekst);
+      expect(m.skrift, sti + ': navnet står i en anden skrift end forsidens').toBe(facit.skrift);
+      expect(m.sted, sti + ': navnet står et andet sted end forsidens').toBe(facit.sted);
+      expect(m.knap, sti + ': Menu-knappen er ikke forsidens').toBe(facit.knap);
+    }
+  });
+
+  /* Navnet er vejen tilbage, hvor pilen er væk: data-tilbage (js/tilbage.js). */
+  test('navnet i undersidens faste bjælke går et skridt tilbage', async ({ page, baseURL }) => {
+    await åbnSkal(page, '/m-menukort.html', { data: grunddata() });
+    await page.goto('/m-tapas.html', { waitUntil: 'domcontentloaded', referer: baseURL + '/m-menukort.html' });
+    await rul(page, 900);
+    const navn = page.locator('#tb.stuck .ordmaerke');
+    await expect(navn).toBeVisible();
+    await expect(page.locator('#tb .g.icn[data-tilbage]'), 'pilen står ved siden af navnet').toBeHidden();
+    await navn.click();
+    await expect(page).toHaveURL(/m-menukort\.html$/);
+  });
+});

@@ -66,10 +66,17 @@ test.describe('Toppen viger for hakket', () => {
      iPhone 13's inset. */
   const HAK = 47;
 
-  for (const [sti, bjaelke, indhold] of [
-    ['/ved-bordet/?bord=7', '.bord-top', 'h1'],
-    ['/bestil/', '#hd', '.smoer-hoved h1'],
-    ['/bord/', '#hd', '.smoer-hoved h1'],
+  /* ⚠️ VÆKSTEN ER IKKE ENS FOR ALLE (11/10). bestil/ og bord/ har forsidens
+     faste bjælke nu (Mikkels ord: "det skal se ud som når man scroller ned
+     på forsiden"), og forsidens luft foroven er max(hak + 6, 12)
+     (--kompakt-top, havnegrillen.css) — den vokser med hak − 6. Ved bordet
+     har sin egen bjælke og vokser med hele hakket. Kravet om, at indholdet
+     følger bjælken, er det samme for alle tre. */
+  const somForsiden = Math.max(HAK + 6, 12) - 12;
+  for (const [sti, bjaelke, indhold, vaekst] of [
+    ['/ved-bordet/?bord=7', '.bord-top', 'h1', HAK],
+    ['/bestil/', '#hd', '.smoer-hoved h1', somForsiden],
+    ['/bord/', '#hd', '.smoer-hoved h1', somForsiden],
   ]) {
     test(`${sti}: bjælken OG indholdet flytter sig med hakket`, async ({ page }, info) => {
       test.skip(info.project.name !== 'mobil', 'sikkerhedsområdet er telefonens');
@@ -97,7 +104,7 @@ test.describe('Toppen viger for hakket', () => {
       /* Bjælken vokser med hakket — ellers ligger mærket bag
          statuslinjen. */
       expect(med.bjaelke, 'bjælken voksede ikke med hakket')
-        .toBe(uden.bjaelke + HAK);
+        .toBe(uden.bjaelke + vaekst);
       /* ⚠️ OG LUFTEN MELLEM DEM ER UÆNDRET. To uafhængige tal:
          bjælkens højde mod indholdets top. Det er DEN, der faldt
          i målingen — bjælken voksede, indholdet blev stående. */

@@ -121,7 +121,9 @@ test.describe('Tilbage lander, hvor man var', () => {
     await expect(page.locator('#mk-kat .panel').nth(3)).toBeAttached({ timeout: 10000 });
     /* Gæsten kom fra menukortet — document.referrer siger det. */
     await page.goto('/m-tapas.html', { waitUntil: 'domcontentloaded', referer: baseURL + '/m-menukort.html' });
-    await page.locator('a[data-tilbage]').click();
+    /* :visible — navnet i den faste bjælke bærer også data-tilbage (11/10),
+       men øverst på siden er det pilen, der kan ses. */
+    await page.locator('a[data-tilbage]:visible').click();
     await expect(page).toHaveURL(/m-menukort\.html$/);
     /* Og det var ET SKRIDT TILBAGE, ikke et nyt: frem fører til tapas. */
     await page.goForward({ waitUntil: 'domcontentloaded' });
@@ -131,7 +133,7 @@ test.describe('Tilbage lander, hvor man var', () => {
   test('kom man udefra, fører pilen til forsiden', async ({ page }) => {
     await medLangsomSky(page, 50);
     await page.goto('/m-tapas.html', { waitUntil: 'domcontentloaded', referer: 'https://www.google.com/' });
-    await page.locator('a[data-tilbage]').click();
+    await page.locator('a[data-tilbage]:visible').click();
     await expect(page).toHaveURL(/index\.html$/);
   });
 

@@ -194,7 +194,14 @@ for (const side of GAMLE) {
       const c = getComputedStyle(e);
       return { bg: c.backgroundColor, efter: getComputedStyle(e, '::after').content };
     });
-    expect(alfa(s.bg), 'knappen er gennemsigtig: ' + s.bg).toBe(1);
+    /* ⚠️ VENDT 11/10. Prøven krævede en HELT hvid flade (14/9: "tre hvide
+       streger på ingenting"). Men forsidens knap blev glas 3/10 (Mikkels ord:
+       "selve menu tabben er heller ikke liquid glass", hvid 72 %), og prøven
+       fulgte aldrig med — den holdt de gamle sider på en ANDEN knap end
+       forsidens. 11/10: "det skal se ud som når man scroller ned på
+       forsiden". Kernen står: knappen må ikke blive gennemsigtig, og den
+       nøjagtige lighed med forsidens måles i topbjaelken.spec.js. */
+    expect(alfa(s.bg), 'knappen er gennemsigtig: ' + s.bg).toBeGreaterThanOrEqual(0.7);
     expect(s.efter).toBe('"Menu"');
 
     await page.evaluate(() => window.scrollTo({ top: 500, behavior: 'instant' }));

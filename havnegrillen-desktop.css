@@ -71,6 +71,13 @@ body{display:block;min-height:auto;padding:0;place-items:normal;background:var(-
 /* ---- topbjælken ------------------------------------------- */
 .topbar{padding:16px max(28px,calc((100% - 1140px)/2)) 12px}
 .topbar.stuck,.topbar.solid{padding-top:14px}
+/* ⚠️ OG NAVNET ER 40 HØJT, NÅR BJÆLKEN KLÆBER — PÅ COMPUTEREN OGSÅ (11/10).
+   Forsidens bjælke var 76 høj og undersidernes 66: ordmærket stod i 50,
+   pilen i 40. Mikkels ord: navnet "skifter ift … placering". Nu er begge
+   40, og forsiden betaler de 10 px med en margen, så siden ikke hopper,
+   når bjælken sætter sig fast (samme greb som telefonen). */
+.topbar.stuck .ordmaerke{min-height:40px}
+.topbar.stuck:has(.ordmaerke:not(.hjem)){margin-bottom:10px}
 .topbar .brandmark{width:60px}
 
 /* ---- grundspalten ----------------------------------------- */
