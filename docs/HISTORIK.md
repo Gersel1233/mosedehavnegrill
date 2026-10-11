@@ -7,7 +7,54 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-**«HVAD SKAL VI HJÆLPE MED?» ER FIGMAS PLADE, LINSE OG AFDÆKNING** (10/10).
+**BEVÆGELSEN UDEN SLØR OG KLIP, ET TRYK DER KAN SES, OG ÉN TOPBJÆLKE** (11/10 — LIVE).
+Mikkels ord: *"ja det er godt men animationen er ikke god nok og laggy og sjusket det
+skal lige fixes også skal såda tryk interaktioen også fixes ift på telefonen og det
+mosedehavnecafe i toppen skifter ift skrifttype og placering imellem tabsne det skal
+også fixes det skal se ud som når man scroller ned på forsiden"*.
+- **Animationen — årsagen:** afdækningen var `clip-path`, som ikke kan lægges på
+  skærmkortet (hvert billede tegnes om), og hvert af de seks kort havde
+  `backdrop-filter`, der blev regnet om under rul. Safari klipper ikke
+  `backdrop-filter` med `clip-path` under en overgang — en slørflade kan blinke uden
+  for kortet ("sjusket"). ⚠️ Den hovedløse browsers billedtid så ingenting (16,7 ms
+  jævnt): den måler hovedtråden, ikke skærmkortet
+- **Nu kun transform og opacitet:** kortene stiger 12 px, 600 ms, Figmas kurve, 60 ms
+  pr. kolonne; fotoet glider 24 px på plads (forsidens vandrette bevægelse, kundens
+  variation 9/9). Pladen har intet slør — Figmas Rim har frost 0. Afsnittet klipper
+  sidelæns med `overflow-x:clip`
+- **Trykket:** iOS Safari viser ikke `:active` på et link uden en touchstart-lytter, og
+  forsiden har ingen — et tryk gav INGEN reaktion før sidehoppet. Hvor `:active` slår
+  til, trykkede kortet sig ned, i det sekund en rulning startede. `havnegrillen.js`
+  sætter `.trykket` som iOS selv: efter 60 ms, ikke hvis fingeren flytter sig 8 px eller
+  siden ruller; et hurtigt tryk får 180 ms. Linsen fyldes rød. Musen har `:active`.
+  Kun #alt-kortene — ⚠️ rækkerne øverst (`.glasraekke`) har samme iOS-problem og er
+  ikke rørt
+- **Topbjælken — MÅLT FØR:** forsiden 21/500 til venstre; de ni undersider intet navn;
+  bord/ og bestil/ 17/400 midt for efter en pil, en hvid Menu-knap med tykke streger og
+  seks menupunkter på computeren
+- **Nu:** undersiderne har samme ordmærke (`.hjem`). Øverst over dugen står pilen; når
+  bjælken klæber, er det navnet på pilens plads — som forsiden (kunden 9/9). Navnet
+  bærer `data-tilbage`. bord/ og bestil/ er altid den faste bjælke: navnet til venstre,
+  forsidens glas-knap, ingen pil (navnet er vejen tilbage), skuffen som vindue på
+  computeren. Målt: navnet står x14 y12 h40 på telefonen og x150 y14 h40 på computeren
+  på alle sider; bjælken er 60 / 66. Forsidens ordmærke er 40 højt, når det klæber, og
+  betaler 10 px med en margen
+- **Hakket:** bord/ og bestil/ vokser som forsiden (`max(hak + 6, 12)` → `--hak-vaekst`),
+  og pladsen under bjælken med det samme tal (fullskaerm-gamle fangede 6 px)
+- **Undersidernes faste bjælke er 94 % creme** (var 82): sidens overskrift skinnede igennem
+  bag navnet — 13/9-fejlen. Sløret bliver (3/10). min-bestilling/ og ved-bordet/ er ikke i
+  menuen og er urørte
+- Prøver: indgangen (kun transform/opacitet), pladen uden slør, tryk med finger og mus,
+  "en rulning trykker ikke", bjælken ens på hver side i menuen (facit = forsidens faste
+  bjælke, siderne læst af skuffen), navnet går tilbage — alle set fejle. Vendt med
+  grunden: menu-knappens "helt hvid" (forsidens knap er glas siden 3/10), hakkets vækst
+- **Prøvet som udseende** (Mikkel: *"hvf 40 minutter dte bar Ui changes?"* — den fulde
+  runde blev stoppet ved 226/2771 uden fejl; CLAUDE.md: skud + berørte filer): 11 filer —
+  topbjaelken, topbjaelke, tilbage, menu-knap, fullskaerm-gamle, fullscreen-telefon,
+  skal-forside, gennemgang, siden-staar-stille, typografi, bord — **634 bestået, 24 sprunget
+  over, 0 fejlet**. Mikkel: *"ja fedt"* på skuddene
+
+**«HVAD SKAL VI HJÆLPE MED?» ER FIGMAS PLADE, LINSE OG AFDÆKNING** (10/10 — LIVE som 67275ab).
 Mikkels ord med et skærmbillede: *"udseende og Ui mæssigt er de slet ikke med ift
 figmas UI sheets og resten af udseendet og animationen fix"* — og efter første runde:
 *"de stadig ikke liquid glass nok og animationen er også shit og matcher overhovedet
