@@ -13648,8 +13648,11 @@ body:not(.personale) .type-knap {
    hang "7 ude" i venstre side af en knap i fuld bredde ved bordet. Den
    gamle midtstilling var grid (justify-items) og døde med inline-flex. */
 body:not(.personale) .type-knap { justify-content: center; }
-body:not(.personale) .dag:hover,
-body:not(.personale) .type-knap:hover { background: rgba(36, 26, 23, .05); border-color: rgba(36, 26, 23, .18); }
+/* ⚠️ KUN DET, DER IKKE ER VALGT. :hover vejer det samme som .valgt
+   (0,3,1), og reglen her står længere nede — musen over den valgte dag
+   gjorde den grå i stedet for rød (fullskaerm-gamle fangede det 11/10). */
+body:not(.personale) .dag:not(.valgt):hover,
+body:not(.personale) .type-knap:not(.valgt):hover { background: rgba(36, 26, 23, .05); border-color: rgba(36, 26, 23, .18); }
 body:not(.personale) .dag-navn,
 body:not(.personale) .type-navn { font-size: 14px; font-weight: 400; }
 body:not(.personale) .dag.valgt .dag-navn,
@@ -13660,4 +13663,4 @@ body:not(.personale) .type-note { font-size: 12px; font-variant-numeric: tabular
    den eneste skygge i striben og løftede valget ud af rækken. */
 body:not(.personale) .dag.valgt,
 body:not(.personale) .type-knap.valgt { box-shadow: none; }
-body:not(.personale) .dag.fuld { background: transparent; }
+body:not(.personale) .dag.fuld:not(.valgt) { background: transparent; }
