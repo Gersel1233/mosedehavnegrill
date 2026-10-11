@@ -723,6 +723,9 @@ test.describe('Historiens bevægelse', () => {
     await rul(page, 1600);
     const bar = page.locator('.topbar');
     await expect(bar).toHaveClass(/stuck/);
+    /* Bjælken toner sin flade ind, når den klæber — vent, til den står. */
+    await expect.poll(() => bar.evaluate((e) => getComputedStyle(e).backgroundColor), { timeout: 3000 })
+      .toMatch(/^rgb\(/);
     const m = await bar.evaluate((e) => ({ flade: getComputedStyle(e).backgroundColor,
       glas: getComputedStyle(e).backdropFilter || 'none',
       navn: getComputedStyle(e.querySelector('.ordmaerke')).color }));
