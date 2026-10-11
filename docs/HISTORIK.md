@@ -7,6 +7,35 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**HISTORIEN: TEKSTEN STÅR STILLE, BILLEDERNE KOMMER SOM I EN FILM** (11/10 — PÅ
+ARBEJDSGRENEN, venter på Mikkels ja). Mikkels ord: *"animationerne inde i historie
+siden er generiske og elendige"*.
+- **MÅLT FØR** (optaget på en iPhone 13-profil): hver overskrift, hvert afsnit og citat
+  steg 28 px op, 60 ms efter hinanden — det, han kaldte skabelonens tegn 27/9 ("alt
+  glider op, når man ruller"), og som forsiden blev renset for; historien blev glemt.
+  Årstallet gled 34 px ind fra venstre. To billeder blev tørret ind med `clip-path`
+  (samme klipning, der hakkede i #alt 10/10). "Rul ned" vippede i en uendelig løkke.
+  ⚠️ Og den faste bjælke var CREME over biografen siden 3/10: `body.har-film
+  .topbar.stuck` (0,3,1) slog historiens egen `.hist .topbar` (0,2,0)
+- **Figma** (LA3 Editorial, 79:312): *"chapters where the image holds still and the
+  story scrolls past it"*; 79:324: *"no wipes, no slides"*
+- **Nu:** tekst og årstal står stille. Billederne kommer på tre måder (kunden 14/9: "lad
+  1 af dem fade ind og de andre slide eller åbne"): letterbox (to sorte bjælker,
+  `scaleY`, som filmens `.hero-bjaelke`), op fra sort, og en panorering INDE i den faste
+  ramme. Kun transform og opacitet. "I dag" går fra sort-hvid til farver (`data-farve`,
+  Figma 95:389). Årstallet dæmpes til 35 %, når kapitlet er forbi — rullebundet på
+  kapitlets tidslinje (Figma 71:247), så det virker også med det faste årstal på
+  computeren. "Rul ned" står stille. Bjælken er sidens sorte, uden glas
+- Målt efter: alle syv billeder er fremme inden ca. 1,1 s (kravet er 1,4 s, 14/9)
+- Prøver: `tests/historien.spec.js` — de fire gamle målte clip-path-tal og er vendt
+  med grunden (kundens krav bag dem står); fem nye (teksten står, ingen clip-path, rul
+  ned står, I dag i farver, årstallet dæmpes) + bjælken er sort — alle set fejle mod den
+  gamle udgave (9 af 9 + 1). Berørte filer: historien 64 bestod; topbjælken,
+  gennemgang, hero-film, siden-staar-stille, fullscreen-telefon, typografi, menu-knap,
+  tilbage, pladsholdere 332 bestod, 0 fejlede
+- ⚠️ GSAP, Lenis og react-bits er hentet til kladdemappen efter Mikkels ønske, IKKE lagt
+  i repoet (alt i roden udgives). Ikke brugt her: CSS kører det på skærmkortet
+
 **BESTIL-PILLEN, KURVBJÆLKEN OG VALGENE ER FIGMAS** (11/10 — LIVE som 83f9e85 efter Mikkels "ja sæt det live").
 Mikkels ord: *"bestil knappen på telefon skal opdateres efter Figma sheetsne også
 lige som book bord tabs knapperne og dem men gøres endnu bedre og mere bestil knap
