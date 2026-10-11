@@ -11,7 +11,7 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 Mikkels ord: *"bestil knappen på telefon skal opdateres efter Figma sheetsne også
 lige som book bord tabs knapperne og dem men gøres endnu bedre og mere bestil knap
 egnet og bar bedre"*.
-- **MÅLT FØR:** pillen var 58 høj med radius 29, et kurveikon løst foran teksten og det
+- **MÅLT FØR:** pillen var 358 × 58 med radius 29, 16 fra kanten, et kurveikon løst foran teksten og det
   hele midt for; kurvbjælken havde ikonet først og et "↓" som skrifttegn. Dagene på
   bord/ var firkanter på 62 px med navnet over datoen; typerne firkanter på 66
   (Hentes/leveres) og 62 (bordene ved bordet)
