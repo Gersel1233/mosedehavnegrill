@@ -524,34 +524,62 @@ test.describe('Historien åbner med en film', () => {
 });
 
 /* ============================================================
-   FILMISK BEVÆGELSE PÅ HISTORIESIDEN  (14/9)
-   Kundens ord: "animationerne inde på siden når man scroller og med
+   FILMISK BEVÆGELSE PÅ HISTORIESIDEN  (14/9 — LAVET OM 11/10)
+   Kundens ord 14/9: "animationerne inde på siden når man scroller og med
    billederne — kan vi ikke gøre dem langt bedre og eventuelt mere
-   cinematiske?" Billedet åbner sig som et lærred, teksten kommer linje
-   for linje. To prøver, og de hører sammen: uden den anden ville en
-   regel, der bare skjulte alt, bestå den første.
+   cinematiske?" og "lad 1 af dem fade ind og de andre slide eller åbne".
+   Mikkels ord 11/10: "animationerne inde i historie siden er generiske og
+   elendige" — teksten steg op afsnit for afsnit (skabelonens tegn, 27/9),
+   og billederne blev tørret ind med clip-path.
+   ⚠️ PRØVERNE ER VENDT MED GRUNDEN: de målte clip-path-tal (26 %,
+   inset(0 100% 0 0)) og et mørke i ::after. Kundens krav bag dem står
+   stadig — et lærred, tre slags, naboer forskellige, straks og færdigt
+   inden 1,4 s, intet skjult med reduceret bevægelse — men målt på
+   letterboxens bjælker, billedets opacitet og panoreringen.
    ============================================================ */
+
+/* Billedets tilstand: opaciteten og forskydningen på BILLEDET inde i
+   rammen, og letterboxens to bjælker (::before og ::after). */
+function tilstand(e) {
+  const b = e.firstElementChild;
+  const s = getComputedStyle(b);
+  const bjaelke = (pseudo) => {
+    const p = getComputedStyle(e, pseudo);
+    if (p.display === 'none' || p.content === 'none') return 0;
+    const m = p.transform === 'none' ? [1, 0, 0, 1] : p.transform.match(/-?[\d.e-]+/g).map(Number);
+    return m[3] * parseFloat(p.height);          // synlig højde i px
+  };
+  const m = s.transform === 'none' ? null : s.transform.match(/-?[\d.e-]+/g).map(Number);
+  return { slags: e.dataset.ind, inde: e.classList.contains('inde'),
+    opacity: +s.opacity, dx: m ? m[4] : 0, filter: s.filter,
+    top: bjaelke('::before'), bund: bjaelke('::after'),
+    hoejde: e.getBoundingClientRect().height };
+}
+const fremme = (t) => t.opacity > 0.99 && Math.abs(t.dx) < 0.5 && t.top < 0.5 && t.bund < 0.5;
+
 test.describe('Historiens bevægelse', () => {
   test('et billede åbner sig som et lærred, når det kommer i syne', async ({ page }) => {
     await åbnSkal(page, '/historien.html', { data: grunddata() });
     const sidste = page.locator('.kap').last().locator('.h-foto');
     await expect(sidste, 'vagt: sidste kapitel skal have et billede').toHaveCount(1);
-    /* Før: en stribe midt i rammen — klippet sidder på BILLEDET (14/9),
-       ellers ser iagttageren først rammen, når striben når skærmen. */
-    expect(await sidste.evaluate((e) => getComputedStyle(e.firstElementChild).clipPath)).toContain('26%');
+    await expect(sidste, 'vagt: sidste billede er et lærred').toHaveAttribute('data-ind', 'aabn');
+    /* Før: to sorte bjælker på hver omkring en fjerdedel af rammen — og
+       billedet næsten mørkt imellem dem. */
+    const før = await sidste.evaluate(tilstand);
+    expect(før.top / før.hoejde, 'ingen bjælke foroven').toBeGreaterThan(0.2);
+    expect(før.bund / før.hoejde, 'ingen bjælke forneden').toBeGreaterThan(0.2);
+    expect(før.opacity, 'billedet er fremme, før det er i syne').toBeLessThan(0.2);
     expect(await sidste.evaluate((e) => getComputedStyle(e).clipPath), 'rammen er klippet').toBe('none');
     const højde = await rulleHøjde(page);
     for (let y = 0; y <= højde; y += 400) { await rul(page, y); await page.waitForTimeout(40); }
     /* Efter: hele rammen. */
-    await expect.poll(() => sidste.evaluate((e) => getComputedStyle(e.firstElementChild).clipPath), { timeout: 6000 })
-      .toMatch(/inset\(0(px)?\)|inset\(0(px)? 0(px)? 0(px)? 0(px)?\)/);
-    /* ⚠️ OG ÅRSTALLENE STÅR PÅ PLADS, NÅR DE ER KOMMET (14/9). Første
-       udgave lod dem hænge 34 px ude — en regel, der vejede det samme
-       som den, der skulle sætte dem på plads, og stod senere. Målt på et
-       skud: "943" med ettallet skåret af i telefonens kant. */
-    await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.kap-hoved')]
-      .filter((e) => getComputedStyle(e).transform !== 'none').length), { timeout: 6000 })
-      .toBe(0);
+    await expect.poll(() => sidste.evaluate((e) => {
+      const b = e.firstElementChild, p = getComputedStyle(e, '::before');
+      return +getComputedStyle(b).opacity > 0.99 && p.transform !== 'none' && /^matrix\(1, 0, 0, 0,/.test(p.transform);
+    }), { timeout: 6000 }).toBe(true);
+    /* ⚠️ OG ÅRSTALLENE STÅR PÅ PLADS (14/9: "943" med ettallet skåret af). */
+    expect(await page.evaluate(() => [...document.querySelectorAll('.kap-hoved')]
+      .filter((e) => getComputedStyle(e).transform !== 'none').length)).toBe(0);
   });
 
   test('med reduceret bevægelse står alt fremme med det samme', async ({ page }) => {
@@ -561,10 +589,16 @@ test.describe('Historiens bevægelse', () => {
        prøven måler ingenting (4/9-arret). */
     const skjult = await page.evaluate(() => {
       const ud = [];
-      document.querySelectorAll('.kap .ton, .kap .ton > *').forEach((e) => {
+      document.querySelectorAll('.kap .ton, .kap .ton > *, .kap .h-foto > *').forEach((e) => {
         const s = getComputedStyle(e);
         if (+s.opacity < 1) ud.push('opacity ' + s.opacity + ': ' + e.className);
-        if (s.clipPath && s.clipPath !== 'none') ud.push('clip ' + s.clipPath + ': ' + e.className);
+        if (s.transform !== 'none') ud.push('transform ' + s.transform + ': ' + e.className);
+        if (s.filter !== 'none') ud.push('filter ' + s.filter + ': ' + e.className);
+      });
+      document.querySelectorAll('.kap .h-foto').forEach((e) => {
+        for (const p of ['::before', '::after']) {
+          if (getComputedStyle(e, p).display !== 'none' && getComputedStyle(e, p).content !== 'none') ud.push('bjælke ' + p + ': ' + e.dataset.ind);
+        }
       });
       return ud;
     });
@@ -575,7 +609,7 @@ test.describe('Historiens bevægelse', () => {
     /* Kundens ord (14/9), da alle syv åbnede sig ens: "lad 1 af dem fade
        ind og de andre slide eller åbne, så det hele bare ikke er det
        samme". Slagsen står ved billedet (data-ind), og to naboer må ikke
-       være ens — ellers er det den samme bevægelse to gange i træk. */
+       være ens. */
     await åbnSkal(page, '/historien.html', { data: grunddata() });
     const fotos = page.locator('.kap .h-foto');
     await expect(fotos, 'vagt: syv billeder').toHaveCount(7);
@@ -585,55 +619,41 @@ test.describe('Historiens bevægelse', () => {
     for (let i = 1; i < slags.length; i++) {
       expect(slags[i], 'to naboer ens: ' + slags.join(', ')).not.toBe(slags[i - 1]);
     }
-    /* FØR: hver slags er skjult på sin EGEN måde. Ellers er attributten
-       pynt, og billederne gør stadig det samme. Kun dem, der ikke er
-       kommet i syne endnu, kan måles. */
-    const før = await fotos.evaluateAll((l) => l.filter((e) => !e.classList.contains('inde')).map((e) => {
-      const s = getComputedStyle(e);
-      /* ⚠️ De glidende klipper BILLEDET og ikke rammen — en helt lukket
-         ramme ser IntersectionObserver aldrig (målt 14/9). */
-      const b = e.firstElementChild;
-      const clip = e.dataset.ind !== 'fade' && b ? getComputedStyle(b).clipPath : s.clipPath;
-      return { slags: e.dataset.ind, opacity: s.opacity, clip, ramme: s.clipPath };
-    }));
+    /* FØR: hver slags er skjult på sin EGEN måde — ellers er attributten
+       pynt. Kun dem, der ikke er i syne endnu, kan måles. */
+    const før = await fotos.evaluateAll((l, fn) => {
+      const tilstand = new Function('return ' + fn)();
+      return l.filter((e) => !e.classList.contains('inde')).map(tilstand);
+    }, tilstand.toString());
     const set = new Set();
     for (const f of før) {
       set.add(f.slags.replace('-h', ''));
-      if (f.slags === 'fade') { expect(f.opacity, 'fade').toBe('0'); expect(f.clip, 'fade klipper ikke').toBe('none'); }
-      if (f.slags === 'aabn') { expect(f.clip, 'aabn').toContain('26%'); expect(f.ramme, 'lærredets ramme må ikke være klippet — så ser iagttageren den for sent').toBe('none'); }
-      if (f.slags.startsWith('glid')) expect(f.ramme, 'rammen må ikke være lukket — så ser iagttageren den aldrig').toBe('none');
-      if (f.slags === 'glid') expect(f.clip, 'glid fra venstre').toMatch(/inset\(0(px)? 100% 0(px)? 0(px)?\)/);
-      if (f.slags === 'glid-h') expect(f.clip, 'glid fra højre').toMatch(/inset\(0(px)? 0(px)? 0(px)? 100%\)/);
+      if (f.slags === 'fade') { expect(f.opacity, 'fade: op fra sort').toBe(0); expect(f.top + f.bund + Math.abs(f.dx), 'fade har kun opaciteten').toBe(0); }
+      if (f.slags === 'aabn') { expect(f.top, 'aabn: letterbox').toBeGreaterThan(0); expect(f.bund, 'aabn: letterbox').toBeGreaterThan(0); }
+      if (f.slags === 'glid') { expect(f.dx, 'glid: panorerer fra venstre').toBeLessThan(-5); expect(f.top + f.bund, 'en panorering har ingen bjælker').toBe(0); }
+      if (f.slags === 'glid-h') { expect(f.dx, 'glid-h: panorerer fra højre').toBeGreaterThan(5); expect(f.top + f.bund, 'en panorering har ingen bjælker').toBe(0); }
     }
     expect(set.size, 'vagt: alle tre slags kunne måles før rul: ' + [...set].join(', ')).toBe(3);
     /* EFTER: alle står helt fremme — en bevægelse, der aldrig slutter, er
        et billede, der mangler. */
     const højde = await rulleHøjde(page);
     for (let y = 0; y <= højde; y += 400) { await rul(page, y); await page.waitForTimeout(40); }
-    await expect.poll(() => fotos.evaluateAll((l) => l.filter((e) => {
-      const lukket = (c) => !(c === 'none' || /^inset\(0(px)?( 0(px)?){0,3}\)$/.test(c));
-      const s = getComputedStyle(e), b = e.firstElementChild;
-      return +s.opacity < 1 || lukket(s.clipPath) || (b && lukket(getComputedStyle(b).clipPath));
-    }).map((e) => e.dataset.ind)), { timeout: 8000 }).toEqual([]);
+    await expect.poll(() => fotos.evaluateAll((l, fn) => {
+      const tilstand = new Function('return ' + fn)();
+      return l.map(tilstand).filter((t) => !(t.opacity > 0.99 && Math.abs(t.dx) < 0.5 && t.top < 0.5 && t.bund < 0.5)).map((t) => t.slags);
+    }, tilstand.toString()), { timeout: 8000 }).toEqual([]);
   });
 
   /* ⚠️ BILLEDET KOMMER, NÅR MAN RULLER TIL DET — IKKE BAGEFTER (14/9).
      Kundens ord: "når man scroller med de andre billeder, er delayet ift.
-     når man scroller". MÅLT FØR: iagttageren ventede, til billedet stod
-     12 % oppe og var 8 % synligt, og lærredet brugte 1,7 s + et mørke,
-     der løftede sig over 2,35 s. Prøven lægger billedets top 6 % inde
-     over skærmens bund — dér, hvor man lige er rullet til det — og
-     kræver, at det begynder straks og står HELT fremme inden 1,4 s. */
+     når man scroller". Prøven lægger billedets top 6 % inde over skærmens
+     bund og kræver, at det begynder straks og står HELT fremme inden 1,4 s. */
   test('et billede, man ruller til, åbner med det samme og er fremme inden 1,4 s', async ({ page }) => {
     await åbnSkal(page, '/historien.html', { data: grunddata() });
     const foto = page.locator('.kap .h-foto').nth(3);
     await expect(foto, 'vagt: det fjerde billede er et lærred').toHaveAttribute('data-ind', 'aabn');
     await expect(foto, 'vagt: billedet var fremme, før der blev rullet').not.toHaveClass(/inde/);
-
-    /* ⚠️ ØJEBLIKKELIGT, IKKE rul(). Rulleroden kan have
-       scroll-behavior: smooth, og så er siden ikke nået frem, når
-       prøven kigger — det lignede en langsom iagttager og var rulningen.
-       Roden er den samme, som rul() vælger. */
+    /* ⚠️ ØJEBLIKKELIGT, IKKE rul() — scroll-behavior: smooth (14/9). */
     const pos = await foto.evaluate((e) => {
       const sc = document.getElementById('sc');
       const rod = (sc && getComputedStyle(sc).overflowY !== 'visible') ? sc : document.scrollingElement;
@@ -644,13 +664,83 @@ test.describe('Historiens bevægelse', () => {
     });
     await expect(foto, `billedet begyndte ikke, da det kom ind på skærmen (top ${pos.top} af ${pos.skaerm})`)
       .toHaveClass(/inde/, { timeout: 500 });
-
     const start = Date.now();
-    await expect.poll(() => foto.evaluate((e) => {
-      const lukket = !/^inset\(0(px)?( 0(px)?){0,3}\)$/.test(getComputedStyle(e.firstElementChild).clipPath);
-      const moerke = +getComputedStyle(e, '::after').opacity;
-      return lukket || moerke > 0.02;
-    }), { timeout: 1400, intervals: [50] }).toBe(false);
+    await expect.poll(() => foto.evaluate((e, fn) => {
+      const t = new Function('return ' + fn)()(e);
+      return t.opacity > 0.99 && t.top < 0.5 && t.bund < 0.5;
+    }, tilstand.toString()), { timeout: 1400, intervals: [50] }).toBe(true);
     expect(Date.now() - start, 'billedet var over 1,4 s om at komme frem').toBeLessThan(1500);
+  });
+
+  /* ⚠️ TEKST GLIDER IKKE IND (27/9 på forsiden — og 11/10 her). Mikkels
+     ord om det generiske: "alt glider op, når man ruller". Målt FØR rul, på
+     det, der endnu IKKE er i syne — ellers redder .inde det, og prøven
+     måler ingenting. Billederne er de eneste, der må bevæge sig. */
+  test('teksten og årstallene står stille — kun billederne bevæger sig', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const m = await page.evaluate(() => {
+      const tekst = [...document.querySelectorAll('.kap h2, .kap p, .kap-aar, .kap-navn, .kap-hoved, .h-slut h2, .h-slut p, .h-tilbage')]
+        .filter((e) => !e.closest('.inde') && !e.classList.contains('inde'));
+      return { n: tekst.length,
+        glider: tekst.filter((e) => getComputedStyle(e).opacity !== '1' || getComputedStyle(e).transform !== 'none')
+          .map((e) => e.tagName + '.' + e.className) };
+    });
+    expect(m.n, 'der ER tekst under folden at måle').toBeGreaterThan(10);
+    expect(m.glider, 'tekst, der venter på at glide ind').toEqual([]);
+  });
+
+  /* ⚠️ INGEN clip-path (11/10). En overgang på clip-path kan ikke lægges på
+     skærmkortet — billedet tegnes om i hvert billede, og i Safari klipper
+     den ikke det, der ligger ovenpå. Det var forsidens #alt, der hakkede
+     10/10; her var det to billeder, der blev tørret ind. */
+  test('billederne bevæger sig kun med transform og opacitet — ingen clip-path', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const klip = await page.evaluate(() => [...document.querySelectorAll('.kap .h-foto, .kap .h-foto *')]
+      .filter((e) => {
+        const s = getComputedStyle(e);
+        /* "all" er standarden, også uden en overgang — kun en med varighed tæller. */
+        const varer = s.transitionDuration.split(',').some((d) => parseFloat(d) > 0);
+        return (s.clipPath && s.clipPath !== 'none') || (varer && /clip-path|\ball\b/.test(s.transitionProperty));
+      })
+      .map((e) => e.tagName + '.' + e.className + ' ' + getComputedStyle(e).clipPath));
+    expect(klip, 'et billede bruger clip-path').toEqual([]);
+  });
+
+  /* "Rul ned" vippede op og ned i en uendelig løkke — skabelonens pil, og
+     den eneste ting på siden, der aldrig holdt op (11/10). */
+  test('"Rul ned" står stille', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const a = await page.locator('.h-rul i').evaluate((e) => getComputedStyle(e).animationName);
+    expect(a, 'rul ned-stregen har en animation').toBe('none');
+  });
+
+  /* Fortidens billeder er sort-hvide; "I dag" kommer i farver, når man
+     når den (Figma 95:389, "monochrome → colour"). */
+  test('"I dag" går fra sort-hvid til farver, når man når den', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const idag = page.locator('.kap').last().locator('.h-foto');
+    await expect(idag, 'vagt: sidste kapitel er I dag').toHaveAttribute('data-farve', '');
+    expect(await idag.evaluate((e) => getComputedStyle(e.firstElementChild).filter)).toBe('grayscale(1)');
+    const højde = await rulleHøjde(page);
+    for (let y = 0; y <= højde; y += 400) { await rul(page, y); await page.waitForTimeout(40); }
+    await expect.poll(() => idag.evaluate((e) => getComputedStyle(e.firstElementChild).filter), { timeout: 5000 }).toBe('none');
+  });
+
+  /* Årstallet dæmpes, når kapitlet er forbi (Figma 71:247: "dimming past
+     years") — rullebundet; Chromium kan det, så prøven kan måle det. */
+  test('et årstal, man er rullet forbi, er dæmpet — det næste er ikke', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const kap = page.locator('.kap');
+    await kap.nth(2).evaluate((e) => {
+      const sc = document.getElementById('sc');
+      const rod = (sc && getComputedStyle(sc).overflowY !== 'visible') ? sc : document.scrollingElement;
+      const top0 = rod === document.scrollingElement ? 0 : rod.getBoundingClientRect().top;
+      rod.scrollTo({ top: rod.scrollTop + e.getBoundingClientRect().top - top0, behavior: 'instant' });
+    });
+    await page.waitForTimeout(300);
+    const forbi = +(await kap.nth(0).locator('.kap-aar').evaluate((e) => getComputedStyle(e).opacity));
+    const nu = +(await kap.nth(2).locator('.kap-aar').evaluate((e) => getComputedStyle(e).opacity));
+    expect(forbi, '1710 er ikke dæmpet, selv om man er forbi').toBeLessThan(0.6);
+    expect(nu, 'det kapitel, man står i, er dæmpet').toBe(1);
   });
 });
