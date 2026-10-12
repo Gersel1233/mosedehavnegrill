@@ -356,18 +356,9 @@
     });
   }
 
-  function kortFortalt(tekst) {
-    var t = String(tekst || '').trim();
-    if (t.length <= 110) return t;
-    /* Første hele sætning, hvis den er kort nok til at stå alene. */
-    var punktum = t.search(/[.!?](\s|$)/);
-    if (punktum !== -1 && punktum + 1 <= 110) return t.slice(0, punktum + 1);
-    /* Ellers ved sidste ordgrænse før loftet — aldrig midt i et ord. */
-    var kort = t.slice(0, 110);
-    var mellemrum = kort.lastIndexOf(' ');
-    if (mellemrum > 40) kort = kort.slice(0, mellemrum);
-    return kort.replace(/[\s,;:–—-]+$/, '') + '…';
-  }
+  /* Reglen bor i Butik.kortFortalt (12/10) — admins forhåndsvisning
+     skal vise det samme som forsiden, så den står ét sted. */
+  function kortFortalt(tekst) { return Butik.kortFortalt(tekst); }
 
   // ----------------------------------------------------------
   //  DAGENS RET

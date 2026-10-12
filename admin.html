@@ -194,6 +194,13 @@
            kommer — en liste, man krydser af i døren, og det er
            dagens arbejde. Der må ikke ligge faner efter den
            sidste gruppe (se noten øverst). -->
+      <!-- ⚠️ ARRANGEMENTER HAR SIN EGEN FANE (12/10). Chefens ord: "Er der
+           lavet en gruppe på hjemmesiden, hvor vores event-arrangør kan gå
+           ind og lægge alle vores events ind?" Kalenderen er dagen
+           (lukkedage, bookinger, baglokalet); arrangementerne er havnens
+           program — og arrangøren ser kun den her og Tilmeldinger
+           (personale.js). js/admin/arrangementer.js. -->
+      <button role="tab" aria-selected="false" data-panel="p-arrangementer"><span class="fane-ikon" aria-hidden="true">🎉</span>Arrangementer</button>
       <button role="tab" aria-selected="false" data-panel="p-tilmeldinger"><span class="fane-ikon" aria-hidden="true">🎟️</span>
         Tilmeldinger <span class="badge skjult" id="tilmeld-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-bestillinger"><span class="fane-ikon" aria-hidden="true">🥪</span>
@@ -325,6 +332,17 @@
       <button type="button" data-gaa="p-dagensret">
         <span class="bb-ikon" aria-hidden="true">🍲</span>
         <span class="bb-navn">Dagens ret</span>
+      </button>
+      <!-- ⚠️ KUN FOR ARRANGØREN (12/10). De fire genveje ovenfor peger på
+           faner, hun ikke har — uden de her to stod hendes bundbjælke med
+           "Mere" alene. personale.js viser dem kun for rollen arrangoer. -->
+      <button type="button" data-gaa="p-arrangementer" data-kun-arrangoer hidden>
+        <span class="bb-ikon" aria-hidden="true">🎉</span>
+        <span class="bb-navn">Arrangementer</span>
+      </button>
+      <button type="button" data-gaa="p-tilmeldinger" data-kun-arrangoer hidden>
+        <span class="bb-ikon" aria-hidden="true">🎟️</span>
+        <span class="bb-navn">Tilmeldinger</span>
       </button>
       <button type="button" id="bb-mere" aria-expanded="false" aria-controls="fane-ark">
         <span class="bb-ikon" aria-hidden="true">•••</span>
@@ -3059,6 +3077,201 @@
          med alle efterårets. Samme lære som Køkken-kø: skærmen
          filtrerer, dataene deler sig ikke.
          ============================================================ -->
+    <!-- ==================================================
+         ARRANGEMENTER — ARBEJDSBORDET  (12/10)
+         ==================================================
+         Chefens ønske: en event-arrangør med eget login, der lægger alle
+         de kommende events ind. Mikkel 12/10: stederne kan omdøbes,
+         arrangøren må udgive selv, venteliste ja.
+         Ét sted for et arrangement — kalenderens formular laver kun
+         lukkedage nu; "Arrangement" dér fører hertil (kalender.js).
+         ================================================== -->
+    <div id="p-arrangementer" class="panel skjult">
+      <div class="kort" id="arr-liste-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Arrangementer</h2>
+          <span class="kort-note">det, der sker på havnen — og hvem der kommer</span>
+        </div>
+        <div class="arr-top">
+          <div class="adm-seg" role="group" aria-label="Vis" id="arr-filter">
+            <button type="button" data-vis="kommende" aria-pressed="true">Kommende <span class="arr-tal" data-tal="kommende"></span></button>
+            <button type="button" data-vis="kladder" aria-pressed="false">Kladder <span class="arr-tal" data-tal="kladder"></span></button>
+            <button type="button" data-vis="forbi" aria-pressed="false">Forbi <span class="arr-tal" data-tal="forbi"></span></button>
+          </div>
+          <input type="search" id="arr-soeg" placeholder="Søg i titlerne" aria-label="Søg i arrangementerne" autocomplete="off">
+          <button class="knap" id="arr-ny" type="button">+ Nyt arrangement</button>
+        </div>
+        <!-- Står kun, når databasen mangler arrangoer.sql: så kan der
+             stadig oprettes arrangementer, men uden sted, venteliste,
+             frist og aflysning — og det skal siges, ikke gættes. -->
+        <p class="hjaelp arr-mangler" id="arr-mangler-sql" hidden>
+          Sted, venteliste, frist og aflysning kommer, når
+          <strong>supabase/arrangoer.sql</strong> er kørt i Supabase.
+        </p>
+        <div id="arr-liste" class="arr-liste"></div>
+      </div>
+
+      <div class="kort arr-form" id="arr-form-kort" hidden>
+        <div class="kort-hoved">
+          <h2 class="h-panel" id="arr-form-titel">Nyt arrangement</h2>
+          <button class="knap sekundaer lille" id="arr-luk" type="button">Luk</button>
+        </div>
+        <div class="arr-gitter">
+          <div class="arr-felter">
+
+            <fieldset class="arr-afsnit">
+              <legend>Hvad</legend>
+              <div class="felt">
+                <label for="arr-titel">Titel <span class="hjaelp">(står på listen og på forsiden)</span></label>
+                <input type="text" id="arr-titel" maxlength="120" placeholder="Fredagsbar med Danni Syhler" autocomplete="off">
+              </div>
+              <div class="felt">
+                <span class="felt-etiket" id="arr-kategori-etiket">Slags</span>
+                <div class="adm-seg arr-valg" role="group" aria-labelledby="arr-kategori-etiket" id="arr-kategori">
+                  <button type="button" data-kat="musik" aria-pressed="false">Musik</button>
+                  <button type="button" data-kat="spisning" aria-pressed="false">Spisning</button>
+                  <button type="button" data-kat="fest" aria-pressed="false">Fest</button>
+                  <button type="button" data-kat="andet" aria-pressed="false">Andet</button>
+                </div>
+                <p class="hjaelp">Det, der står over titlen — og den knap, gæsterne filtrerer med.</p>
+              </div>
+              <div class="felt">
+                <label for="arr-beskrivelse">Hvad sker der?</label>
+                <textarea id="arr-beskrivelse" rows="4" maxlength="2000"
+                          placeholder="Danni spiller fra kl. 17. Happy hour på fadøl kl. 17–18."></textarea>
+                <p class="hjaelp">Forsiden viser den første sætning; kalendersiden det hele.</p>
+              </div>
+              <div class="felt-par">
+                <div class="felt">
+                  <label for="arr-pris">Pris <span class="hjaelp">(dine egne ord)</span></label>
+                  <input type="text" id="arr-pris" maxlength="120" placeholder="fx 145,- eller fri entré">
+                  <p class="hjaelp">Der er ingen betaling på hjemmesiden — der betales ved lugen.</p>
+                </div>
+                <div class="felt">
+                  <label for="arr-billede">Billede <span class="hjaelp">(valgfrit)</span></label>
+                  <input type="file" id="arr-billede" accept="image/*">
+                  <p class="hjaelp" id="arr-billede-status"></p>
+                  <div class="arr-billede-vis" id="arr-billede-vis" hidden>
+                    <img id="arr-billede-foto" alt="">
+                    <button class="knap lille" id="arr-billede-fjern" type="button">Fjern billedet</button>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="arr-afsnit">
+              <legend>Hvornår</legend>
+              <div class="felt-par">
+                <div class="felt felt-smal">
+                  <label for="arr-dato">Dato</label>
+                  <input type="date" id="arr-dato">
+                </div>
+                <div class="felt felt-smal">
+                  <label for="arr-start">Starter kl.</label>
+                  <input type="time" id="arr-start">
+                </div>
+                <div class="felt felt-smal">
+                  <label for="arr-slut">Slutter kl. <span class="hjaelp">(valgfrit)</span></label>
+                  <input type="time" id="arr-slut">
+                </div>
+              </div>
+              <!-- GENTAG — kun på et nyt arrangement. Hver dato bliver sin
+                   egen række, så én fredag kan aflyses uden de andre. -->
+              <div class="felt-par" id="arr-gentag-felt">
+                <div class="felt felt-smal">
+                  <label for="arr-gentag">Gentag</label>
+                  <select id="arr-gentag">
+                    <option value="">Kun den dag</option>
+                    <option value="7">Hver uge</option>
+                    <option value="14">Hver anden uge</option>
+                  </select>
+                </div>
+                <div class="felt felt-smal" id="arr-gentag-til-felt" hidden>
+                  <label for="arr-gentag-til">Til og med</label>
+                  <input type="date" id="arr-gentag-til">
+                </div>
+              </div>
+              <p class="hjaelp arr-gentag-liste" id="arr-gentag-liste" hidden></p>
+            </fieldset>
+
+            <fieldset class="arr-afsnit" id="arr-sted-afsnit">
+              <legend>Hvor på havnen</legend>
+              <div class="arr-steder adm-seg arr-valg" role="group" aria-label="Sted" id="arr-steder"></div>
+              <button class="knap-tekst" id="arr-ret-steder" type="button">Ret stederne</button>
+            </fieldset>
+
+            <fieldset class="arr-afsnit">
+              <legend>Hvordan kommer man med?</legend>
+              <div class="adm-seg arr-valg" role="group" aria-label="Hvordan kommer man med" id="arr-maade">
+                <button type="button" data-maade="kig" aria-pressed="true">Kig bare forbi</button>
+                <button type="button" data-maade="tilmelding" aria-pressed="false">Tilmelding</button>
+                <button type="button" data-maade="bord" aria-pressed="false">Book bord</button>
+              </div>
+              <p class="hjaelp" id="arr-maade-hjaelp"></p>
+              <div id="arr-tilmeld-felter" hidden>
+                <div class="felt-par">
+                  <div class="felt felt-smal">
+                    <label for="arr-pladser">Pladser i alt</label>
+                    <input type="number" id="arr-pladser" min="1" max="2000" inputmode="numeric" placeholder="ingen grænse">
+                  </div>
+                  <div class="felt felt-smal">
+                    <label for="arr-max">Højst pr. tilmelding</label>
+                    <input type="number" id="arr-max" min="1" max="100" inputmode="numeric" placeholder="20">
+                  </div>
+                  <div class="felt felt-smal" id="arr-frist-felt">
+                    <label for="arr-frist">Tilmeldingen lukker</label>
+                    <select id="arr-frist">
+                      <option value="">Når arrangementet slutter</option>
+                      <option value="0">Når det starter</option>
+                      <option value="1">1 time før</option>
+                      <option value="3">3 timer før</option>
+                      <option value="24">Dagen før (24 timer)</option>
+                      <option value="48">2 dage før</option>
+                    </select>
+                  </div>
+                </div>
+                <label class="afkryds" id="arr-venteliste-felt">
+                  <input type="checkbox" id="arr-venteliste">
+                  <span>Venteliste, når der er udsolgt <span class="hjaelp">— I ringer, når en plads bliver ledig</span></span>
+                </label>
+              </div>
+            </fieldset>
+          </div>
+
+          <aside class="arr-eksempel" aria-label="Sådan ser det ud">
+            <h3 class="arr-eksempel-titel">På kalendersiden</h3>
+            <div id="arr-forhaand" class="arr-forhaand"></div>
+            <h3 class="arr-eksempel-titel">På forsiden</h3>
+            <div id="arr-forhaand-forside" class="arr-forhaand-forside"></div>
+          </aside>
+        </div>
+
+        <div id="arr-advarsler" class="arr-advarsler" aria-live="polite"></div>
+        <div class="knap-raekke">
+          <button class="knap" id="arr-udgiv" type="button">Udgiv på hjemmesiden</button>
+          <button class="knap sekundaer" id="arr-kladde" type="button">Gem som kladde</button>
+        </div>
+      </div>
+
+      <!-- STEDERNE — Mikkel 12/10: "de kan lave navnene om". Et sted
+           slettes ikke, det skjules: et arrangement fra sidste år skal
+           stadig kunne sige, hvor det var. -->
+      <div class="kort" id="arr-steder-kort" hidden>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Stederne på havnen</h2>
+          <span class="kort-note">navnene står ved hvert arrangement</span>
+        </div>
+        <div id="arr-steder-liste"></div>
+        <div class="admin-raekke" id="arr-sted-ny">
+          <label class="felt">
+            <span>Nyt sted</span>
+            <input type="text" id="arr-sted-navn" maxlength="60" placeholder="fx Bådpladsen" autocomplete="off">
+          </label>
+          <button class="knap" id="arr-sted-tilfoej" type="button">Tilføj</button>
+        </div>
+      </div>
+    </div>
+
     <div id="p-tilmeldinger" class="panel skjult">
       <div class="kort">
         <div class="kort-hoved">
@@ -3075,7 +3288,7 @@
         <p class="hjaelp" id="tilmeld-hjaelp">
           Det her er <strong>listen, I krydser af i døren</strong> — hvem der
           kommer, og om der er plads. Selve arrangementet opretter I på
-          <strong>Kalender</strong>: dag, klokkeslæt, pladser, pris og billede.
+          <strong>Arrangementer</strong>: dag, sted, klokkeslæt, pladser, pris og billede.
           Det gælder også noget helt andet end musik — en quizaften, et
           torskegilde, en enkelt lørdag med noget særligt.
         </p>
@@ -3083,7 +3296,7 @@
           <button class="knap sekundaer lille" id="tilmeld-opret" type="button">
             + Opret et arrangement
           </button>
-          Sæt flueben ved <em>Gæsterne skal kunne reservere plads</em>, så står gæsterne her.
+          Vælg <em>Tilmelding</em> under «Hvordan kommer man med?», så står gæsterne her.
           Når dagen er gået, flytter arrangementet selv ned under
           <em>Tidligere på havnen</em> på forsiden.
         </p>
@@ -3149,6 +3362,13 @@
           <button class="knap" id="opret-tilmelding" type="button">Skriv dem på listen</button>
         </details>
 
+        <!-- Dørlisten ud af admin (12/10): på papir i døren, eller i et
+             regneark til arrangøren. Står kun, når der er en liste. -->
+        <div class="knap-raekke tilmeld-eksport" id="tilmeld-eksport" hidden>
+          <button class="knap sekundaer lille" id="tilmeld-print" type="button">🖨️ Print dørlisten</button>
+          <button class="knap sekundaer lille" id="tilmeld-csv" type="button">Hent som regneark</button>
+        </div>
+        <p class="arr-advarsel" id="tilmeld-besked" hidden></p>
         <div id="tilmeld-liste"></div>
       </div>
     </div>
@@ -3217,7 +3437,10 @@
           En <strong>ejer</strong> styrer hele forretningen: priser,
           åbningstider, indstillinger og hvem der har adgang. En
           <strong>medarbejder</strong> styrer dagen — bestillinger, borde,
-          køkkenet, forespørgsler, kalenderen og at melde en vare udsolgt.
+          køkkenet, forespørgsler, kalenderen og at melde en vare udsolgt. En
+          <strong>arrangør</strong> ser kun Arrangementer og Tilmeldinger — hun
+          lægger havnens events ind og udgiver dem, men kan ikke se bestillinger,
+          salg eller lukke caféen.
         </p>
 
         <div id="personale-liste"></div>
@@ -3239,6 +3462,7 @@
           <div class="adm-seg" role="group" aria-label="Rolle for den nye">
             <button type="button" data-nyrolle="medarbejder" aria-pressed="true">Medarbejder</button>
             <button type="button" data-nyrolle="ejer" aria-pressed="false">Ejer</button>
+            <button type="button" data-nyrolle="arrangoer" aria-pressed="false">Arrangør</button>
           </div>
           <button type="button" class="knap" id="pers-tilfoej">Giv adgang</button>
         </div>
@@ -3562,6 +3786,7 @@
 <script src="js/admin/tider.js?v=__V__"></script>
 <script src="js/admin/kalender.js?v=__V__"></script>
 <script src="js/admin/tilmeldinger.js?v=__V__"></script>
+<script src="js/admin/arrangementer.js?v=__V__"></script>
 <script src="js/admin/bestillinger.js?v=__V__"></script>
 <!-- Køkken-køen læser bestillingernes liste og skal derfor stå EFTER
      bestillinger.js — ellers melder den sig på efterHent, før listen

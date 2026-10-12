@@ -125,10 +125,19 @@
       /* ⚠️ RET STÅR FØR SLET, og den er stille (hvid), mens Slet
          er rød. Rækkefølgen er den samme som på varerækkerne:
          det, man gør tit, står først. */
-      var ret = lav('button', 'knap lille', 'Ret');
+      var ret = lav('button', 'knap lille', k.type === 'arrangement' ? 'Åbn' : 'Ret');
       ret.type = 'button';
-      ret.addEventListener('click', function () { redigér(k); });
+      ret.addEventListener('click', function () {
+        if (k.type === 'arrangement' && Admin.arrangementer) Admin.arrangementer.aabn(k.id);
+        else redigér(k);
+      });
       r.appendChild(ret);
+      /* Et arrangement slettes (eller aflyses) på Arrangementer, hvor
+         listen over tilmeldte står ved siden af. */
+      if (k.type === 'arrangement' && Admin.arrangementer) {
+        boks.appendChild(r);
+        return;
+      }
 
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
@@ -157,6 +166,14 @@
       knap.appendChild(lav('span', 'type-navn', t.navn));
       knap.appendChild(lav('span', 'type-note', t.note));
       knap.addEventListener('click', function () {
+        /* ⚠️ ET ARRANGEMENT HAR SIT EGET STED NU (12/10): fanen
+           Arrangementer (arrangementer.js). To formularer til den samme
+           række ville være to sæt regler, der langsomt kom til at sige
+           hvert sit. Datoen, der står her, tages med derhen. */
+        if (t.id === 'arrangement' && Admin.arrangementer) {
+          Admin.arrangementer.ny({ dato: $('kal-dato').value });
+          return;
+        }
         nyType = t.id;
         tegnTyper();
         visFelter();
@@ -2350,6 +2367,7 @@
      at opdage det. "Vis for gæsterne" slås til af samme grund: et
      arrangement, ingen kan se, er ikke det, knappen lovede. */
   Admin.opretArrangement = function () {
+    if (Admin.arrangementer) { Admin.arrangementer.ny(); return; }
     Admin.visFane('p-kalender');
     var type = document.querySelector('#kalender-typer [data-type="arrangement"]');
     if (type) type.click();

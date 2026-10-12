@@ -186,6 +186,108 @@
     });
   }
 
+
+  /* Kalenderens række, renset — ÉN gang, for både én og en serie. */
+  function renKalender(r) {
+    var ren = {
+      lokation_id: r.lokation_id || LOKATION,
+      type: r.type,
+      dato: r.dato,
+      slut_dato: r.slut_dato || null,
+      titel: String(r.titel || '').trim().slice(0, 120),
+      beskrivelse: String(r.beskrivelse || '').trim() ? String(r.beskrivelse).trim().slice(0, 2000) : null,
+      emoji: String(r.emoji || '').trim() ? String(r.emoji).trim().slice(0, 8) : null,
+      // Databasen kræver et klokkeslæt ved tidlig lukning og
+      // ingen ved de to andre. Sender vi et med alligevel,
+      // afvises rækken af en regel, brugeren ikke kan se.
+      lukker_kl: r.type === 'tidlig_lukning' ? (r.lukker_kl || null) : null,
+      offentlig: !!r.offentlig,
+    };
+
+    /* ⚠️ KOLONNER SENDES ALDRIG UBETINGET (30/8). vis_fra stod
+       som en fast linje på nyheder og væltede dem i
+       produktionen med PGRST204, mens noten lige over advarede
+       mod præcis det.
+
+       De fire her kommer med supabase/arrangementer.sql. Er den
+       ikke kørt, må rækken stadig kunne gemmes — ellers kan
+       ejeren ikke oprette et arrangement, før nogen har kørt en
+       fil, han ikke ved eksisterer. Admin sender dem kun, når
+       den HAR noget at sige om dem. */
+    if (r.tilmelding !== undefined) ren.tilmelding = !!r.tilmelding;
+    if (r.pladser !== undefined) ren.pladser = talEllerNull(r.pladser);
+    if (r.pris_tekst !== undefined) {
+      ren.pris_tekst = String(r.pris_tekst || '').trim()
+        ? String(r.pris_tekst).trim().slice(0, 120) : null;
+    }
+    if (r.start_kl !== undefined) ren.start_kl = r.start_kl || null;
+
+    /* Kategorien (31/8, supabase/arrangement-kategori.sql).
+       Kun de tre, siden har filterknapper til — alt andet
+       bliver null, så en tastet værdi ikke ender som en
+       kategori, ingen knap kan finde. */
+    if (r.kategori !== undefined) {
+      /* ⚠️ 'andet' MED (12/10). Admin har haft "Andet" siden 16/9, og
+         databasen tager imod det (arrangement-kategori.sql) — men listen
+         her kendte det ikke, så valget blev til null, og siden gættede
+         igen. Kortlægningen 12/10 fandt det; ingen prøve gemte "Andet". */
+      var lovlige = ['musik', 'spisning', 'fest', 'andet'];
+      ren.kategori = lovlige.indexOf(String(r.kategori)) !== -1
+        ? String(r.kategori) : null;
+    }
+
+    /* Kommer med supabase/arrangement-info.sql. Samme lov som de
+       fire ovenfor: kolonnen sendes kun, når nogen har rørt den
+       — ellers ville en rettelse af titlen tømme billedet. */
+    if (r.billede !== undefined) {
+      ren.billede = String(r.billede || '').trim() || null;
+    }
+
+    /* ARRANGØRENS FELTER (12/10, supabase/arrangoer.sql). Samme lov:
+       kun når admin har noget at sige om dem — er filen ikke kørt,
+       skal et arrangement stadig kunne gemmes. */
+    if (r.sted_id !== undefined) ren.sted_id = talEllerNull(r.sted_id);
+    if (r.aflyst !== undefined) ren.aflyst = !!r.aflyst;
+    if (r.aflyst_tekst !== undefined) {
+      ren.aflyst_tekst = String(r.aflyst_tekst || '').trim()
+        ? String(r.aflyst_tekst).trim().slice(0, 300) : null;
+    }
+    if (r.venteliste !== undefined) ren.venteliste = !!r.venteliste;
+    if (r.max_pr_tilmelding !== undefined) ren.max_pr_tilmelding = talEllerNull(r.max_pr_tilmelding);
+    if (r.tilmelding_lukker_timer !== undefined) {
+      ren.tilmelding_lukker_timer = talEllerNull(r.tilmelding_lukker_timer);
+    }
+    if (r.bord_booking !== undefined) ren.bord_booking = !!r.bord_booking;
+    if (r.serie !== undefined) ren.serie = r.serie || null;
+    if (r.slut_kl !== undefined) ren.slut_kl = r.slut_kl || null;
+    return ren;
+  }
+
+  /* Hvem er logget ind? Øvetilstandens svar på serverens oprettet_af. */
+  function mig() {
+    try { return sessionStorage.getItem('mosede_email') || ''; } catch (e) { return ''; }
+  }
+
+  /* Databasens regler for et arrangement, i øvetilstand (arrangoer.sql).
+     ⚠️ Øvetilstanden skal fejle som skyen — ellers tager den imod det,
+     produktionen afviser, og fejlen opdages først hos ejeren. */
+  function kalenderVaernLokalt(d, ren, id) {
+    var gammel = id ? (d.kalender || []).filter(function (k) { return String(k.id) === String(id); })[0] : null;
+    var samlet = Object.assign({}, gammel || {}, ren);
+    if (samlet.bord_booking && samlet.tilmelding) {
+      throw new Error('Et arrangement kan ikke både have tilmelding og "Book bord" — vælg én måde at komme med på.');
+    }
+    if (samlet.venteliste && !samlet.tilmelding) {
+      throw new Error('Venteliste kræver tilmelding.');
+    }
+    if (samlet.sted_id !== undefined && samlet.sted_id !== null) {
+      var steder = d.arrangement_steder || I.standardSteder();
+      if (!steder.some(function (x) { return String(x.id) === String(samlet.sted_id); })) {
+        throw new Error('Stedet findes ikke længere. Vælg et andet.');
+      }
+    }
+  }
+
   var skrive = {
     /* ---- FINDES KOLONNEN? SPØRG DATABASEN.  (7/9) ------------
 
@@ -258,64 +360,19 @@
        et arrangement, en lukkedag og en tidlig lukning er samme
        række med forskellig type. */
     kalender: function (r) {
-      var ren = {
-        lokation_id: r.lokation_id || LOKATION,
-        type: r.type,
-        dato: r.dato,
-        slut_dato: r.slut_dato || null,
-        titel: String(r.titel || '').trim().slice(0, 120),
-        beskrivelse: String(r.beskrivelse || '').trim() ? String(r.beskrivelse).trim().slice(0, 2000) : null,
-        emoji: String(r.emoji || '').trim() ? String(r.emoji).trim().slice(0, 8) : null,
-        // Databasen kræver et klokkeslæt ved tidlig lukning og
-        // ingen ved de to andre. Sender vi et med alligevel,
-        // afvises rækken af en regel, brugeren ikke kan se.
-        lukker_kl: r.type === 'tidlig_lukning' ? (r.lukker_kl || null) : null,
-        offentlig: !!r.offentlig,
-      };
-
-      /* ⚠️ KOLONNER SENDES ALDRIG UBETINGET (30/8). vis_fra stod
-         som en fast linje på nyheder og væltede dem i
-         produktionen med PGRST204, mens noten lige over advarede
-         mod præcis det.
-
-         De fire her kommer med supabase/arrangementer.sql. Er den
-         ikke kørt, må rækken stadig kunne gemmes — ellers kan
-         ejeren ikke oprette et arrangement, før nogen har kørt en
-         fil, han ikke ved eksisterer. Admin sender dem kun, når
-         den HAR noget at sige om dem. */
-      if (r.tilmelding !== undefined) ren.tilmelding = !!r.tilmelding;
-      if (r.pladser !== undefined) ren.pladser = talEllerNull(r.pladser);
-      if (r.pris_tekst !== undefined) {
-        ren.pris_tekst = String(r.pris_tekst || '').trim()
-          ? String(r.pris_tekst).trim().slice(0, 120) : null;
-      }
-      if (r.start_kl !== undefined) ren.start_kl = r.start_kl || null;
-
-      /* Kategorien (31/8, supabase/arrangement-kategori.sql).
-         Kun de tre, siden har filterknapper til — alt andet
-         bliver null, så en tastet værdi ikke ender som en
-         kategori, ingen knap kan finde. */
-      if (r.kategori !== undefined) {
-        var lovlige = ['musik', 'spisning', 'fest'];
-        ren.kategori = lovlige.indexOf(String(r.kategori)) !== -1
-          ? String(r.kategori) : null;
-      }
-
-      /* Kommer med supabase/arrangement-info.sql. Samme lov som de
-         fire ovenfor: kolonnen sendes kun, når nogen har rørt den
-         — ellers ville en rettelse af titlen tømme billedet. */
-      if (r.billede !== undefined) {
-        ren.billede = String(r.billede || '').trim() || null;
-      }
-
+      var ren = renKalender(r);
       if (!SKY) return lokalt(function (d) {
         d.kalender = d.kalender || [];
+        kalenderVaernLokalt(d, ren, r.id);
+        var hvem = mig();
         if (r.id) {
           d.kalender = d.kalender.map(function (k) {
-            return String(k.id) === String(r.id) ? Object.assign({}, k, ren) : k;
+            return String(k.id) === String(r.id)
+              ? Object.assign({}, k, ren, { aendret_af: hvem || k.aendret_af || null }) : k;
           });
         } else {
-          var ny = Object.assign({ id: næsteId(d.kalender) }, ren);
+          var ny = Object.assign({ id: næsteId(d.kalender), oprettet_af: hvem || null,
+            aendret_af: hvem || null }, ren);
           d.kalender.push(ny);
         }
       });
@@ -326,6 +383,65 @@
       }
       return skriv('POST', 'kalender', null, [ren]);
     },
+
+    /* GENTAG (12/10): "hver fredag til og med 19/12" er ti rækker — og de
+       skal lande SAMMEN. Ti kald efter hinanden kunne stoppe på syv, og
+       så står fredagsbaren i oktober og november, men ikke i december,
+       uden at nogen ved det. Én POST med en liste er én transaktion:
+       alle eller ingen. Hver række er sin egen bagefter (serie er kun et
+       mærke), så én fredag kan aflyses uden de andre. */
+    kalenderSerie: function (liste) {
+      var rene = (liste || []).map(renKalender);
+      if (!rene.length) return Promise.reject(new Error('Der er ingen datoer at lægge ind.'));
+      if (!SKY) return lokalt(function (d) {
+        d.kalender = d.kalender || [];
+        var hvem = mig();
+        rene.forEach(function (ren) {
+          kalenderVaernLokalt(d, ren, null);
+          d.kalender.push(Object.assign({ id: næsteId(d.kalender), oprettet_af: hvem || null,
+            aendret_af: hvem || null }, ren));
+        });
+      });
+      return skriv('POST', 'kalender', null, rene);
+    },
+
+    /* STEDERNE PÅ HAVNEN (12/10, supabase/arrangoer.sql). Mikkel: "de kan
+       lave navnene om". Et sted slettes aldrig — det skjules (aktiv), så
+       et arrangement fra sidste år stadig kan sige, hvor det var. */
+    sted: function (r) {
+      var ren = {};
+      if (r.navn !== undefined) ren.navn = String(r.navn || '').trim().slice(0, 60);
+      if (r.aktiv !== undefined) ren.aktiv = r.aktiv !== false;
+      if (r.sortering !== undefined) ren.sortering = Math.round(Number(r.sortering) || 0);
+      if (r.baglokale !== undefined) ren.baglokale = !!r.baglokale;
+      if (r.hele_stedet !== undefined) ren.hele_stedet = !!r.hele_stedet;
+      if (ren.navn !== undefined && !ren.navn) {
+        return Promise.reject(new Error('Stedet skal have et navn.'));
+      }
+      if (!SKY) return lokalt(function (d) {
+        d.arrangement_steder = (d.arrangement_steder || I.standardSteder()).slice();
+        /* Samme unikke indeks som databasen: to steder med samme navn
+           kan ingen skelne på hjemmesiden. */
+        if (ren.navn !== undefined && d.arrangement_steder.some(function (x) {
+          return String(x.id) !== String(r.id) && String(x.navn).trim().toLowerCase() === ren.navn.toLowerCase();
+        })) throw new Error('Der er allerede et sted, der hedder "' + ren.navn + '".');
+        if (r.id) {
+          d.arrangement_steder = d.arrangement_steder.map(function (x) {
+            return String(x.id) === String(r.id) ? Object.assign({}, x, ren) : x;
+          });
+        } else {
+          d.arrangement_steder.push(Object.assign({ id: næsteId(d.arrangement_steder),
+            lokation_id: LOKATION, aktiv: true, baglokale: false, hele_stedet: false,
+            sortering: d.arrangement_steder.length + 1 }, ren));
+        }
+      });
+      if (r.id) {
+        return skriv('PATCH', 'arrangement_steder', 'id=eq.' + encodeURIComponent(r.id), ren);
+      }
+      return skriv('POST', 'arrangement_steder', null,
+        [Object.assign({ lokation_id: LOKATION }, ren)]);
+    },
+
 
     /* Bordene. Numrene må ikke stå i koden — så er hver
        ommøblering på trædækket en kodeændring hos os. */
@@ -406,7 +522,10 @@
       var ren = {
         email: mail,
         lokation_id: r.lokation_id || LOKATION,
-        rolle: r.rolle === 'medarbejder' ? 'medarbejder' : 'ejer',
+        /* ⚠️ TRE ROLLER (12/10). Her stod "medarbejder, ellers ejer" — en
+           arrangør ville være blevet gemt som EJER. Ukendt er stadig
+           ejer, så en gammel skærm aldrig tager rettigheder fra nogen. */
+        rolle: r.rolle === 'medarbejder' || r.rolle === 'arrangoer' ? r.rolle : 'ejer',
         aktiv: r.aktiv !== false,
         navn: String(r.navn || '').trim().slice(0, 80) || null,
       };
@@ -662,6 +781,12 @@
 
     sletKalender: function (id) {
       if (!SKY) return lokalt(function (d) {
+        /* Samme værn som kalender_slet_vaern (12/10): et arrangement med
+           tilmeldte slettes ikke — det aflyses. */
+        var harTilmeldte = (d.reservationer || []).some(function (r) {
+          return String(r.kalender_id) === String(id) && !r.slettet && r.status !== 'afvist';
+        });
+        if (harTilmeldte) throw new Error('arrangement_har_tilmeldte');
         d.kalender = (d.kalender || []).filter(function (k) {
           return String(k.id) !== String(id);
         });
@@ -1251,7 +1376,22 @@
 
       if (!SKY) {
         return lokalt(function (d) {
-          d.reservationer = (d.reservationer || []).map(function (r) {
+          /* Samme regel som reservation_ret_vaern (12/10): rykker man en
+             op fra ventelisten, skal der være plads til den. */
+          var liste = d.reservationer || [];
+          var r0 = liste.filter(function (r) { return String(r.id) === String(id); })[0];
+          var taeller = function (r) { return !r.slettet && r.status !== 'afvist' && r.status !== 'venteliste'; };
+          if (r0 && status !== undefined && !taeller(r0) && taeller(Object.assign({}, r0, ren))) {
+            var arr = (d.kalender || []).filter(function (k) { return String(k.id) === String(r0.kalender_id); })[0];
+            if (arr && arr.pladser) {
+              var optaget = liste.reduce(function (sum, x) {
+                return String(x.kalender_id) === String(r0.kalender_id) && String(x.id) !== String(id) && taeller(x)
+                  ? sum + (Number(x.antal_personer) || 0) : sum;
+              }, 0);
+              if (optaget + (Number(r0.antal_personer) || 0) > arr.pladser) throw new Error('reservation_udsolgt');
+            }
+          }
+          d.reservationer = liste.map(function (r) {
             return String(r.id) === String(id) ? Object.assign({}, r, ren) : r;
           });
         });

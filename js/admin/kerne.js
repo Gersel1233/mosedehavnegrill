@@ -145,6 +145,23 @@
       return 'Kun ejeren kan ændre priser. Udsolgt og antal tilbage kan du stadig '
         + 'sætte — bed ejeren om at rette prisen.';
     }
+    /* ARRANGEMENTERNES NEJ (supabase/arrangoer.sql, 12/10). */
+    if (/arrangement_har_tilmeldte/.test(raa)) {
+      return 'Der er tilmeldte til det arrangement, så det kan ikke slettes. '
+        + 'Aflys det i stedet — så står listen over dem, der skal have besked, der stadig.';
+    }
+    if (/sted_findes_ikke/.test(raa)) {
+      return 'Stedet findes ikke længere. Vælg et andet sted på havnen.';
+    }
+    if (/kalender_bord_eller_tilmelding/.test(raa)) {
+      return 'Et arrangement kan ikke både have tilmelding og «Book bord». Vælg én måde at komme med på.';
+    }
+    if (/kalender_venteliste_kraever_tilmelding/.test(raa)) {
+      return 'Venteliste kræver tilmelding.';
+    }
+    if (/arrangement_steder_navn_unik/.test(raa)) {
+      return 'Der er allerede et sted med det navn.';
+    }
     if (/sidste_ejer_kan_ikke_fjernes/.test(raa)) {
       return 'Der skal altid være mindst én ejer, der kan logge ind. '
         + 'Gør en anden til ejer først.';

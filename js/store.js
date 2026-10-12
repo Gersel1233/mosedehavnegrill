@@ -946,7 +946,8 @@
       (d.kalender || []).forEach(function (k) {
         if (k.type !== 'arrangement' || !k.offentlig || !k.tilmelding) return;
         var optaget = (d.reservationer || []).reduce(function (sum, r) {
-          if (r.slettet || r.status === 'afvist') return sum;
+          /* Ventelisten er ikke en plads (arrangoer.sql, 12/10). */
+          if (r.slettet || r.status === 'afvist' || r.status === 'venteliste') return sum;
           if (String(r.kalender_id) !== String(k.id)) return sum;
           return sum + (Number(r.antal_personer) || 0);
         }, 0);
@@ -966,6 +967,112 @@
       });
       return ud;
     }).catch(function () { return {}; });
+  }
+
+  /* ============================================================
+     STEDERNE PÅ HAVNEN  (12/10, supabase/arrangoer.sql)
+     ------------------------------------------------------------
+     De fem, SQL-filen lægger ind, hvis forretningen ingen har.
+     Øvetilstanden får de samme, så admin kan prøves lokalt. I skyen
+     er tabellen sandheden — mangler den (filen er ikke kørt), er der
+     ingen steder, og feltet står ikke i admin.
+     ============================================================ */
+  function standardSteder() {
+    return [
+      ['Hele havnecaféen', false, true], ['Terrassen', false, false],
+      ['Indenfor', false, false], ['Baglokalet', true, false], ['Molen', false, false],
+    ].map(function (s, i) {
+      return { id: i + 1, lokation_id: LOKATION, navn: s[0], baglokale: s[1],
+        hele_stedet: s[2], sortering: i + 1, aktiv: true };
+    });
+  }
+
+  function steder(d) {
+    var liste = d && Array.isArray(d.arrangement_steder) ? d.arrangement_steder
+      : (SKY ? [] : standardSteder());
+    return liste.slice().sort(function (a, b) {
+      return (Number(a.sortering) || 0) - (Number(b.sortering) || 0) || Number(a.id) - Number(b.id);
+    });
+  }
+
+  /* Stedets NAVN ved et arrangement. Navnet slås op hver gang — så
+     følger arrangementet med, når nogen retter "Terrassen" til
+     "Træterrassen" (Mikkel 12/10: "de kan lave navnene om"). */
+  function stedNavn(d, k) {
+    if (!k || k.sted_id === null || k.sted_id === undefined) return '';
+    var s = steder(d).filter(function (x) { return String(x.id) === String(k.sted_id); })[0];
+    return s ? String(s.navn || '') : '';
+  }
+
+  /* ============================================================
+     KAN MAN MELDE SIG TIL?  (12/10)
+     ------------------------------------------------------------
+     ÉT svar til siden, kortet og formularen — og det samme svar,
+     bremsen i databasen giver (reservation_bremse). Siden er
+     høflighed; databasen er døren (LAERT-AF-SPIIS.md nr. 1).
+       'aflyst'  — arrangementet er aflyst
+       'frist'   — tilmeldingen er lukket (X timer før start)
+       'fuld'    — udsolgt, og ingen venteliste
+       'venteliste' — udsolgt, men man kan skrive sig på ventelisten
+       'aaben'   — der er plads (eller intet loft)
+       ''        — der er ingen tilmelding (kig forbi / book bord)
+     ============================================================ */
+  function fristUdloeber(k) {
+    if (!k || k.tilmelding_lukker_timer === null || k.tilmelding_lukker_timer === undefined) return null;
+    var start = (k.dato || '') + 'T' + String(k.start_kl || '00:00').slice(0, 5);
+    var ms = isoTilMs(start) - Number(k.tilmelding_lukker_timer) * 3600000;
+    return isFinite(ms) ? ms : null;
+  }
+
+  /* Dansk vægtid → millisekunder, uden at stole på browserens tidszone
+     (en gæst i udlandet ser den samme frist). */
+  function isoTilMs(lokal) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(lokal || '');
+    if (!m) return NaN;
+    var utc = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+    /* Find København-forskydningen på netop den dag (sommer/vinter). */
+    var dk = new Date(utc).toLocaleString('en-US', { timeZone: 'Europe/Copenhagen', hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    var p = /(\d{2})\/(\d{2})\/(\d{4}),? (\d{2}):(\d{2})/.exec(dk);
+    if (!p) return utc;
+    var somDk = Date.UTC(+p[3], +p[1] - 1, +p[2], +p[4] % 24, +p[5]);
+    return utc - (somDk - utc);
+  }
+
+  function tilmeldingStatus(k, plads) {
+    if (!k || k.type !== 'arrangement') return '';
+    if (k.aflyst) return 'aflyst';
+    if (!k.tilmelding) return '';
+    var frist = fristUdloeber(k);
+    if (frist !== null && Date.now() > frist) return 'frist';
+    var p = plads || {};
+    var loft = p.pladser !== undefined ? p.pladser : k.pladser;
+    if (loft && Number(p.optaget || 0) >= Number(loft)) {
+      return k.venteliste ? 'venteliste' : 'fuld';
+    }
+    return 'aaben';
+  }
+
+  /* FORSIDENS KORTE UDGAVE AF EN BESKRIVELSE (1/10, flyttet hertil 12/10).
+     Mikkels ord om fredagsbaren: "der skal være beskrivelse, men ikke
+     sådan så meget". Reglen boede i js/skal/forside.js; arrangørens
+     forhåndsvisning i admin skal vise PRÆCIS det, forsiden viser — så den
+     står ét sted, og begge spørger her. */
+  function kortFortalt(tekst) {
+    var t = String(tekst || '').trim();
+    if (t.length <= 110) return t;
+    /* Første hele sætning, hvis den er kort nok til at stå alene.
+       ⚠️ EN SÆTNING SLUTTER FØRST, NÅR DER KOMMER ET STORT BOGSTAV
+       (12/10). "Danni spiller fra kl. 17." blev til "Danni spiller fra
+       kl." — forkortelsen lignede et punktum. Set i arrangørens
+       forhåndsvisning; forsiden havde den samme fejl. */
+    var punktum = t.search(/[.!?](?=\s+[A-ZÆØÅ"«]|\s*$)/);
+    if (punktum !== -1 && punktum + 1 <= 110) return t.slice(0, punktum + 1);
+    /* Ellers ved sidste ordgrænse før loftet — aldrig midt i et ord. */
+    var kort = t.slice(0, 110);
+    var mellemrum = kort.lastIndexOf(' ');
+    if (mellemrum > 40) kort = kort.slice(0, mellemrum);
+    return kort.replace(/[\s,;:–—-]+$/, '') + '…';
   }
 
   function tidligLukning(d, iso) {
@@ -4397,6 +4504,34 @@
      sidste plads samtidig findes ikke i én browser. Det rigtige
      værn er reservation_bremse i supabase/arrangementer.sql.
      ============================================================ */
+  /* Gæstens ord for bremsens nej (12/10). Ét sted — øvetilstanden og
+     skyen skal sige det samme. */
+  var AFLYST_SVAR = 'Arrangementet er aflyst. Ring til os, hvis du har spørgsmål.';
+  var FRIST_SVAR = 'Tilmeldingen er lukket. Ring til os, så ser vi, om der er plads.';
+  function forMangeSvar(maks) {
+    return 'Er I flere end ' + maks + ', så ring, så finder vi ud af det sammen.';
+  }
+
+  /* ⚠️ KVITTERINGEN MÅ IKKE LOVE EN PLADS, DER BLEV TIL EN VENTELISTE
+     (12/10). Gæsten kan ikke læse reservationerne, så siden spørger med
+     sin egen reference (mosede_paa_venteliste i arrangoer.sql). Svarer
+     den ikke — filen er ikke kørt, eller nettet hikker — står siden ved
+     det, den selv regnede med, da hun trykkede. */
+  function spoergOmVenteliste(raekke, forventet) {
+    return fetch(cfg.url + '/rest/v1/rpc/mosede_paa_venteliste', {
+      method: 'POST',
+      headers: hoveder(),
+      body: JSON.stringify({ ref: raekke.reference }),
+    }).then(function (svar) {
+      if (!svar.ok) throw new Error('intet svar');
+      return svar.json();
+    }).then(function (ja) {
+      return Object.assign({}, raekke, { venteliste: ja === true || (ja === null && forventet) });
+    }).catch(function () {
+      return Object.assign({}, raekke, { venteliste: forventet });
+    });
+  }
+
   function reserverPlads(r) {
     var raekke = {
       reference: lavReference('RE'),
@@ -4430,6 +4565,11 @@
       if (!arr || !arr.offentlig) {
         return Promise.reject(new Error('Arrangementet findes ikke længere.'));
       }
+      /* Aflyst er aflyst — også i en fane, der har stået åben siden i
+         går (arrangoer.sql, 12/10). */
+      if (arr.aflyst) {
+        return Promise.reject(new Error(AFLYST_SVAR));
+      }
       if (!arr.tilmelding) {
         return Promise.reject(new Error('Der er ikke tilmelding til det arrangement. Kig bare forbi.'));
       }
@@ -4460,6 +4600,18 @@
         }
       }
 
+      /* FRISTEN og LOFTET PR. TILMELDING (12/10) — samme regler som
+         bremsen. Personalet, der tager en aftale i telefonen, må gerne
+         skrive flere end loftet: det er dem, der har sagt ja. */
+      var frist = fristUdloeber(arr);
+      if (frist !== null && Date.now() > frist) {
+        return Promise.reject(new Error(FRIST_SVAR));
+      }
+      var maks = arr.max_pr_tilmelding || 20;
+      if (!r.personale && raekke.antal_personer > maks) {
+        return Promise.reject(new Error(forMangeSvar(maks)));
+      }
+
       var dobbelt = d.reservationer.some(function (x) {
         return !x.slettet && x.status !== 'afvist'
           && String(x.kalender_id) === String(raekke.kalender_id)
@@ -4470,19 +4622,25 @@
           'Du er allerede tilmeldt det arrangement. Ring til os, hvis du vil ændre antallet.'));
       }
 
+      var paaVenteliste = false;
       if (arr.pladser) {
         var optaget = d.reservationer.reduce(function (sum, x) {
-          if (x.slettet || x.status === 'afvist') return sum;
+          if (x.slettet || x.status === 'afvist' || x.status === 'venteliste') return sum;
           if (String(x.kalender_id) !== String(raekke.kalender_id)) return sum;
           return sum + (Number(x.antal_personer) || 0);
         }, 0);
         if (optaget + raekke.antal_personer > arr.pladser) {
-          return Promise.reject(new Error(
-            'Der er ikke flere pladser. Ring til os. Nogle gange kan vi finde en stol.'));
+          /* Udsolgt med venteliste: gæsten kommer på den i stedet for et
+             nej (arrangoer.sql). */
+          if (arr.venteliste) paaVenteliste = true;
+          else {
+            return Promise.reject(new Error(
+              'Der er ikke flere pladser. Ring til os. Nogle gange kan vi finde en stol.'));
+          }
         }
       }
 
-      var gemt = { id: næsteId(d.reservationer), status: 'ny', intern_note: null,
+      var gemt = { id: næsteId(d.reservationer), status: paaVenteliste ? 'venteliste' : 'ny', intern_note: null,
         slettet: null, oprettet: new Date().toISOString() };
       for (var n in raekke) gemt[n] = raekke[n];
       /* Nummeret, som databasen giver det (sagsnummer.sql): ét
@@ -4496,7 +4654,7 @@
       }, 0) + 1;
       d.reservationer.unshift(gemt);
       gemLokalt(d);
-      return Promise.resolve(raekke);
+      return Promise.resolve(Object.assign({}, raekke, { venteliste: paaVenteliste }));
     }
 
     return fetch(cfg.url + '/rest/v1/reservationer', {
@@ -4504,8 +4662,11 @@
       headers: hoveder({ Prefer: 'return=minimal' }),
       body: JSON.stringify(raekke),
     }).then(function (r2) {
-      if (r2.ok) return raekke;
+      if (r2.ok) return spoergOmVenteliste(raekke, !!r.forventVenteliste);
       return r2.text().then(function (t) {
+        if (/reservation_aflyst/.test(t)) throw new Error(AFLYST_SVAR);
+        if (/reservation_frist/.test(t)) throw new Error(FRIST_SVAR);
+        if (/reservation_for_mange/.test(t)) throw new Error(forMangeSvar(r.max_pr_tilmelding || 20));
         if (/reservation_udsolgt/.test(t)) {
           throw new Error('Der er ikke flere pladser. Ring til os. Nogle '
             + 'gange kan vi finde en stol.');
@@ -4528,7 +4689,7 @@
             + 'minutter, eller ring til os.');
         }
         if (/reservation_antal_ok/.test(t)) {
-          throw new Error('Er I flere end tyve, så ring, så finder vi ud af det sammen.');
+          throw new Error(forMangeSvar(r.max_pr_tilmelding || 20));
         }
         if (/reservation_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/reservation_telefon_ok/.test(t)) throw new Error(TLF_AFVIST);
@@ -4921,7 +5082,7 @@
     lokalt: lokalt, læsLokalt: læsLokalt, nu: nu, næsteId: næsteId,
     pris: pris, skraldTabel: skraldTabel, skriv: skriv, status: status,
     talEllerNull: talEllerNull, tvilling: tvilling,
-    cfg: cfg, hoveder: hoveder,
+    cfg: cfg, hoveder: hoveder, standardSteder: standardSteder,
   };
 
   /* ============================================================
@@ -5617,6 +5778,11 @@
     bookBord: bookBord,
     lejLokale: lejLokale,
     reserverPlads: reserverPlads,
+    steder: steder,
+    stedNavn: stedNavn,
+    kortFortalt: kortFortalt,
+    tilmeldingStatus: tilmeldingStatus,
+    fristUdloeber: fristUdloeber,
     arrangementer: arrangementer,
     arrangementSlags: arrangementSlags,
     hentPladser: hentPladser,
@@ -5784,6 +5950,14 @@
               fejl && fejl.message || fejl);
             return [];
           }),
+        /* STEDERNE (12/10) — den tredje, der må mangle: uden dem står
+           et arrangement uden sted, som før arrangoer.sql. */
+        hentTabel('arrangement_steder', 'select=*' + MIT + '&order=sortering,id')
+          .catch(function (fejl) {
+            console.warn('arrangement_steder kunne ikke hentes — arrangementerne '
+              + 'står uden sted. Kør supabase/arrangoer.sql:', fejl && fejl.message || fejl);
+            return [];
+          }),
       ]).then(function (svar) {
         var ind = {};
         (svar[6] || []).forEach(function (r) { ind[r.noegle] = r.vaerdi; });
@@ -5813,6 +5987,7 @@
           indstillinger: ind,
           dagens_retter: svar[7] || [],
           dags_regler: svar[8] || [],
+          arrangement_steder: svar[9] || [],
         });
       }).then(function (d) {
         // Forbindelsen er der igen: personalet må gemme.

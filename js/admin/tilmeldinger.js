@@ -34,6 +34,7 @@
   var STATUS_NAVNE = {
     ny: 'Tilmeldt', bekraeftet: 'Kommet',
     afvist: 'Afvist', udeblevet: 'Udeblev',
+    venteliste: 'Venteliste',
   };
 
   var reservationer = [];
@@ -67,7 +68,17 @@
          (hent() → tegnAlt()), så listen kan være tom ved allerførste
          tegning — næste tegning har dem med. */
       return !!k.tilmelding || forArrangement(k.id).length > 0;
-    }).sort(function (a, b) { return a.dato < b.dato ? -1 : 1; });
+    }).sort(function (a, b) {
+      /* ⚠️ DE KOMMENDE FØRST (12/10). Ældste først betød, at et
+         overstået arrangement stod valgt fra start — og personalet i
+         døren til fredagens koncert så listen fra august. Kommende i
+         datoorden, så de overståede med det nyeste øverst. */
+      var i = Butik.nu().dato;
+      var fa = (a.slut_dato || a.dato) < i, fb = (b.slut_dato || b.dato) < i;
+      if (fa !== fb) return fa ? 1 : -1;
+      if (fa) return a.dato < b.dato ? 1 : -1;
+      return a.dato < b.dato ? -1 : 1;
+    });
   }
 
   function forArrangement(id) {
@@ -83,9 +94,16 @@
      om det samme arrangement. */
   function optaget(id) {
     return forArrangement(id).reduce(function (sum, r) {
-      if (r.status === 'afvist') return sum;
+      /* Ventelisten er ikke en plads, og en slettet række er ingen
+         (arrangoer.sql, 12/10) — samme regel som databasens tælling. */
+      if (r.status === 'afvist' || r.status === 'venteliste' || r.slettet) return sum;
       return sum + (Number(r.antal_personer) || 0);
     }, 0);
+  }
+  function paaVenteliste(id) {
+    return forArrangement(id).filter(function (r) {
+      return r.status === 'venteliste' && !r.slettet;
+    });
   }
 
   /* ⚠️ MÅNEDSNETTET SPØRGER DEN SAMME. Kalenderen viser
@@ -97,11 +115,23 @@
      ikke, når den læses — kun når nettet TEGNES. Samme
      rækkefølgeaftale som Admin.bordLoftFor og Admin.statusNavn. */
   Admin.pladserTaget = optaget;
+  /* Arbejdsbordet (arrangementer.js) spørger her — tilmeldingerne bor
+     ét sted. */
+  Admin.tilmeldteFor = forArrangement;
+  Admin.visTilmeldinger = function (id) {
+    valgt = String(id);
+    Admin.visFane('p-tilmeldinger');
+    tegnAlt();
+  };
 
   function pladsTekst(k) {
     var n = optaget(k.id);
-    if (!k.pladser) return n + (n === 1 ? ' tilmeldt' : ' tilmeldte');
-    return n + ' af ' + k.pladser + ' pladser';
+    var v = paaVenteliste(k.id).length;
+    var t = !k.pladser ? n + (n === 1 ? ' tilmeldt' : ' tilmeldte')
+      : n + ' af ' + k.pladser + ' pladser';
+    if (v) t += ' · ' + v + ' på venteliste';
+    if (k.aflyst) t = 'Aflyst · ' + t;
+    return t;
   }
 
   function tegnArrangementer() {
@@ -118,8 +148,8 @@
              spørgsmål var netop "hvad er den til, og hvordan opretter
              jeg de ting" — og svaret stod ikke, hvor fanen var tom. */
           p.textContent = 'Ingen arrangementer tager imod tilmeldinger endnu. '
-            + 'Opret et på fanen Kalender, sæt hak i "Vis det for gæsterne" '
-            + 'og i "Gæsterne skal kunne reservere plads".';
+            + 'Opret et på fanen Arrangementer, og vælg «Tilmelding» under '
+            + '«Hvordan kommer man med?».';
           return p;
         },
       }]);
@@ -184,6 +214,8 @@
          arrangement endnu, er der ingen dato og ingen pladser at
          skrive, og så skal der stå det, kortet ER. */
       if (tael) tael.textContent = 'Listen, I krydser af i døren';
+      if ($('tilmeld-eksport')) $('tilmeld-eksport').hidden = true;
+      if ($('tilmeld-besked')) $('tilmeld-besked').hidden = true;
       Admin.tegnRaekker(boks, []);
       return;
     }
@@ -191,14 +223,20 @@
     if (titel) titel.textContent = k.titel;
     if (tael) tael.textContent = Admin.pænDato(k.dato) + ' · ' + pladsTekst(k);
 
-    var mine = forArrangement(k.id).slice().sort(function (a, b) {
+    var RANG = { ny: 0, bekraeftet: 1, udeblevet: 1, venteliste: 2, afvist: 3 };
+    var mine = forArrangement(k.id).filter(function (r) { return !r.slettet; }).slice().sort(function (a, b) {
       /* Det, der ikke er afgjort, øverst — det er dét, der er
-         arbejde. Derefter i den rækkefølge, de meldte sig. */
-      var aa = a.status === 'ny' ? 0 : 1;
-      var bb = b.status === 'ny' ? 0 : 1;
+         arbejde. Ventelisten under dem, der har en plads (12/10), i
+         den rækkefølge de skrev sig på — den første er den, der skal
+         ringes til. Afviste sidst. */
+      var aa = RANG[a.status] !== undefined ? RANG[a.status] : 1;
+      var bb = RANG[b.status] !== undefined ? RANG[b.status] : 1;
       if (aa !== bb) return aa - bb;
       return (a.oprettet || '') < (b.oprettet || '') ? -1 : 1;
     });
+    visBesked(k);
+    var eksport = $('tilmeld-eksport');
+    if (eksport) eksport.hidden = !mine.length;
 
     if (!mine.length) {
       Admin.tegnRaekker(boks, [{
@@ -294,13 +332,25 @@
        afgøres i døren. Grøn med et hak, som bordenes ✓ Ankommet
        og bestillingernes ✓ Færdig: det er det tryk, der lukker
        sagen, og det er det, der trykkes ni gange ud af ti. */
-    if (r.status !== 'bekraeftet') {
+    if (r.status === 'venteliste') {
+      /* ⚠️ PÅ VENTELISTEN ER DET NÆSTE SKRIDT "RYK OP", ikke "Kommet"
+         (12/10). Databasen tjekker, at der er en plads
+         (reservation_ret_vaern) — og siger nej, hvis der ikke er. */
+      var op = lav('button', 'knap primaer', 'Ryk op — der er plads');
+      op.type = 'button';
+      op.addEventListener('click', function () {
+        if (!confirm('Ryk ' + r.navn + ' op fra ventelisten?\n\n'
+          + 'Ring til ' + r.telefon + ' og sig, at de har en plads.')) return;
+        saet(r, 'ny');
+      });
+      raekke.appendChild(op);
+    } else if (r.status !== 'bekraeftet') {
       var kom = lav('button', 'knap primaer gron', '✓ Kommet');
       kom.type = 'button';
       kom.addEventListener('click', function () { saet(r, 'bekraeftet'); });
       raekke.appendChild(kom);
     }
-    if (r.status !== 'udeblevet') {
+    if (r.status !== 'udeblevet' && r.status !== 'venteliste') {
       var ude = lav('button', 'knap', 'Udeblev');
       ude.type = 'button';
       ude.addEventListener('click', function () { saet(r, 'udeblevet'); });
@@ -350,8 +400,111 @@
       .then(function () {
         Admin.kvitter(r.navn + ': ' + (STATUS_NAVNE[status] || status) + '.');
       })
-      .catch(function (e) { Admin.brøl(Admin.forklarFejl(e)); });
+      .catch(function (e) {
+        if (/reservation_udsolgt/.test((e && e.message) || '')) {
+          return Admin.brøl('Der er ikke plads til ' + r.navn + ' endnu — der er '
+            + 'ikke givet nok pladser fri. Afvis en, der har meldt fra, eller sæt '
+            + 'flere pladser på arrangementet.');
+        }
+        Admin.brøl(Admin.forklarFejl(e));
+      });
   }
+
+  /* Det, personalet skal vide om arrangementet lige nu — øverst over
+     listen, ikke gemt i et mærke. */
+  function visBesked(k) {
+    var b = $('tilmeld-besked');
+    if (!b) return;
+    var tekst = '';
+    if (k.aflyst) {
+      tekst = 'Arrangementet er aflyst. Ring til dem på listen, der ikke har fået besked.';
+    } else if (k.pladser) {
+      var ledige = k.pladser - optaget(k.id);
+      var v = paaVenteliste(k.id);
+      if (ledige > 0 && v.length) {
+        tekst = ledige + (ledige === 1 ? ' plads er ledig' : ' pladser er ledige') + ', og '
+          + v.length + ' står på ventelisten. Ring til den første (' + v[0].navn + ', '
+          + v[0].antal_personer + ' pers.), og ryk dem op.';
+      }
+    }
+    b.textContent = tekst;
+    b.hidden = !tekst;
+  }
+
+  /* ---- DØRLISTEN UD AF ADMIN (12/10) ----------------------------- */
+  function valgtArr() {
+    return arrangementer().filter(function (x) { return String(x.id) === String(valgt); })[0];
+  }
+  function listen(k) {
+    return forArrangement(k.id).filter(function (r) {
+      return !r.slettet && r.status !== 'afvist';
+    }).sort(function (a, b) {
+      var va = a.status === 'venteliste' ? 1 : 0, vb = b.status === 'venteliste' ? 1 : 0;
+      if (va !== vb) return va - vb;
+      return String(a.navn || '').localeCompare(String(b.navn || ''), 'da');
+    });
+  }
+  function nummer(r) {
+    return r.nummer ? Butik.pæntNummer(r.nummer, 'reservation') : (r.reference || '');
+  }
+
+  /* Et regneark, Excel åbner med de danske bogstaver: semikolon og en
+     BOM foran. Kun det, døren skal bruge — ingen interne noter. */
+  function hentCsv() {
+    var k = valgtArr();
+    if (!k) return;
+    var felt = function (v) { return '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"'; };
+    var linjer = [['Nummer', 'Navn', 'Telefon', 'Antal', 'Status', 'Besked'].map(felt).join(';')];
+    listen(k).forEach(function (r) {
+      linjer.push([nummer(r), r.navn, r.telefon, r.antal_personer,
+        STATUS_NAVNE[r.status] || r.status, r.besked || ''].map(felt).join(';'));
+    });
+    var blob = new Blob(['\ufeff' + linjer.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'tilmeldte-' + String(k.titel || 'arrangement').toLowerCase()
+      .replace(/[^a-z0-9æøå]+/g, '-').replace(/^-|-$/g, '') + '-' + k.dato + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  /* Dørlisten på papir: et rent ark med afkrydsningsfelter — ikke
+     admin med menuer og knapper printet ud. */
+  function print() {
+    var k = valgtArr();
+    if (!k) return;
+    var esc = function (t) {
+      return String(t === null || t === undefined ? '' : t)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    };
+    var rk = listen(k);
+    var html = '<!doctype html><html lang="da"><meta charset="utf-8"><title>Dørliste</title>'
+      + '<style>body{font:14px/1.4 system-ui,sans-serif;margin:24px;color:#111}'
+      + 'h1{font-size:20px;margin:0}p{margin:4px 0 16px;color:#555}'
+      + 'table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:7px 6px;'
+      + 'border-bottom:1px solid #ccc;vertical-align:top}th{font-size:12px;color:#555}'
+      + '.k{width:22px}.k span{display:inline-block;width:14px;height:14px;border:1.5px solid #111}'
+      + 'tr.v td{color:#666}@media print{body{margin:0}}</style>'
+      + '<h1>' + esc(k.titel) + '</h1><p>' + esc(Admin.pænDato(k.dato))
+      + (k.start_kl ? ' · kl. ' + esc(String(k.start_kl).slice(0, 5)) : '') + ' · '
+      + esc(pladsTekst(k)) + '</p><table><tr><th></th><th>Navn</th><th>Antal</th>'
+      + '<th>Telefon</th><th>Nr.</th><th>Besked</th></tr>';
+    rk.forEach(function (r) {
+      html += '<tr' + (r.status === 'venteliste' ? ' class="v"' : '') + '><td class="k"><span></span></td><td>'
+        + esc(r.navn) + (r.status === 'venteliste' ? ' (venteliste)' : '') + '</td><td>'
+        + esc(r.antal_personer) + '</td><td>' + esc(r.telefon) + '</td><td>' + esc(nummer(r))
+        + '</td><td>' + esc(r.besked || '') + '</td></tr>';
+    });
+    html += '</table><script>window.onload=function(){window.print()}<\/script>';
+    var w = window.open('', '_blank');
+    if (!w) return Admin.brøl('Browseren blokerede printvinduet. Tillad pop-op for admin, og prøv igen.');
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  }
+  if ($('tilmeld-csv')) $('tilmeld-csv').addEventListener('click', hentCsv);
+  if ($('tilmeld-print')) $('tilmeld-print').addEventListener('click', print);
 
   function tegnAlt() {
     tegnArrangementer();
@@ -441,6 +594,7 @@
 
     var knap = $('opret-tilmelding');
     knap.disabled = true;
+    var blevVenteliste = false;
 
     Butik.reserverPlads({
       kalender_id: k.id,
@@ -448,7 +602,11 @@
       telefon: telefon,
       antal_personer: antal,
       besked: $('nyt-besked').value.trim() || null,
+      /* Personalet må skrive flere end loftet pr. tilmelding — det er
+         deres aftale (arrangoer.sql; øvetilstanden spørger her). */
+      personale: true,
     }).then(function (svar) {
+      blevVenteliste = !!(svar && svar.venteliste);
       return hent().then(function () {
         var ny = reservationer.filter(function (r) {
           return r.reference === svar.reference;
@@ -457,13 +615,16 @@
         /* Noten siger, hvor tilmeldingen kom fra. Uden den ligner
            den en, gæsten selv har lavet — og så leder nogen efter
            en kvittering, der aldrig er sendt. */
-        return Butik.skrive.reservationStatus(ny.id, 'ny',
+        /* ⚠️ KUN NOTEN, IKKE STATUS (12/10). Stod de på ventelisten,
+           ville 'ny' være at rykke dem op — og databasen siger nej,
+           når der ikke er plads. */
+        return Butik.skrive.reservationStatus(ny.id, undefined,
           'Taget i telefonen.').then(hent);
       });
     }).then(function () {
       ['nyt-navn', 'nyt-telefon', 'nyt-antal', 'nyt-besked']
         .forEach(function (id) { $(id).value = ''; });
-      Admin.kvitter(navn + ' står på listen.');
+      Admin.kvitter(blevVenteliste ? navn + ' står på ventelisten — der er udsolgt.' : navn + ' står på listen.');
     }).catch(function (e) {
       Admin.brøl(e.message || String(e));
     }).then(function () {
@@ -475,6 +636,7 @@
     $('opret-tilmelding').addEventListener('click', opretTilmelding);
   }
 
+  Admin.hentTilmeldinger = hent;
   Admin.efterHent.push(tegnAlt);
   Admin.tegnere.push(tegnAlt);
   Admin.vedLogin.push(hent);

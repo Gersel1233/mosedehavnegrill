@@ -51,7 +51,16 @@
      at læse. */
   var KUN_EJER = ['p-tider', 'p-kontakt', 'p-historik', 'p-salg', 'p-personale'];
 
-  function ejer() { return Admin.rolle !== 'medarbejder'; }
+  /* ⚠️ ARRANGØREN ER IKKE EJER (12/10). Reglen her var "alt, der ikke er
+     medarbejder, er ejer" — så en arrangør ville have fået priser, salg
+     og personale at se. Databasen ville stadig have sagt nej
+     (is_admin_for, arrangoer.sql), men en skærm fuld af felter, der ikke
+     kan gemmes, er et system, der ser i stykker ud. */
+  function arrangoer() { return Admin.rolle === 'arrangoer'; }
+  function ejer() { return Admin.rolle !== 'medarbejder' && !arrangoer(); }
+
+  /* Arrangøren ser to faner — havnens program og hvem der kommer. */
+  var ARRANGOERENS = ['p-arrangementer', 'p-tilmeldinger'];
 
   /* Kaldes efter login og hver gang rollen er hentet. Fanerne
      bliver i opmærkningen — de skjules, så en senere ændring af
@@ -62,6 +71,29 @@
         document.querySelectorAll('[data-panel="' + id + '"], [data-gaa="' + id + '"]'),
         function (knap) { knap.hidden = !ejer(); });
     });
+    /* ARRANGØREN: alt andet væk, og de to genveje i bundbjælken frem.
+       Kun det, rollen SELV skjulte, vises igen ved en anden rolle — et
+       mærke på knappen, så denne regel ikke kommer til at vise noget,
+       en anden regel har skjult. */
+    Array.prototype.forEach.call(document.querySelectorAll('[data-panel], [data-gaa]'), function (knap) {
+      if (knap.hasAttribute('data-kun-arrangoer')) { knap.hidden = !arrangoer(); return; }
+      var id = knap.getAttribute('data-panel') || knap.getAttribute('data-gaa');
+      if (arrangoer() && ARRANGOERENS.indexOf(id) === -1) {
+        knap.hidden = true;
+        knap.setAttribute('data-rolle-skjult', '');
+      } else if (knap.hasAttribute('data-rolle-skjult')) {
+        knap.removeAttribute('data-rolle-skjult');
+        knap.hidden = KUN_EJER.indexOf(id) !== -1 && !ejer();
+      }
+    });
+    /* Og gruppernes overskrifter uden en synlig fane under sig. */
+    Array.prototype.forEach.call(document.querySelectorAll('.faner .fane-gruppe'), function (g) {
+      var synlig = false;
+      for (var e = g.nextElementSibling; e && !e.classList.contains('fane-gruppe'); e = e.nextElementSibling) {
+        if (e.matches && e.matches('button[data-panel]') && !e.hidden) { synlig = true; break; }
+      }
+      g.hidden = !synlig;
+    });
     /* Står man PÅ en skjult fane, når rollen kommer, flyttes man
        væk. Ellers ser en medarbejder et panel, hun ikke kan
        gemme i — og tror, systemet er i stykker.
@@ -70,9 +102,12 @@
        en variabel i koden. Det er den samme tilstand, kerne.js'
        visFane sætter, og den ene, en prøve også kan se. */
     var åben = document.querySelector('.faner button[aria-selected="true"]');
-    if (!ejer() && åben && KUN_EJER.indexOf(åben.dataset.panel) !== -1) {
+    if (arrangoer()) {
+      if (!åben || ARRANGOERENS.indexOf(åben.dataset.panel) === -1) Admin.visFane('p-arrangementer');
+    } else if (!ejer() && åben && KUN_EJER.indexOf(åben.dataset.panel) !== -1) {
       Admin.visFane('p-overblik');
     }
+    document.body.classList.toggle('rolle-arrangoer', arrangoer());
     /* Kortet skjules OGSÅ — to lag, fordi fanen kan nås direkte
        med Admin.visFane fra et kort i overblikket. */
     var kort = $('personale-kort');
@@ -124,12 +159,12 @@
       var seg = lav('div', 'adm-seg');
       seg.setAttribute('role', 'group');
       seg.setAttribute('aria-label', 'Rolle for ' + (p.navn || p.email));
-      [['ejer', 'Ejer'], ['medarbejder', 'Medarbejder']].forEach(function (v) {
+      [['ejer', 'Ejer'], ['medarbejder', 'Medarbejder'], ['arrangoer', 'Arrangør']].forEach(function (v) {
         var b = lav('button', null, v[1]);
         b.type = 'button';
         b.setAttribute('data-rolle', v[0]);
         b.setAttribute('aria-pressed', p.rolle === v[0] ? 'true' : 'false');
-        if (sidste && v[0] === 'medarbejder') {
+        if (sidste && v[0] !== 'ejer') {
           b.disabled = true;
           b.title = 'Der skal være mindst én aktiv ejer.';
         }
