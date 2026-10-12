@@ -227,13 +227,23 @@ test.describe('Arbejdsbordet', () => {
   });
 
   /* ⚠️ EN REGEL UDEN SCOPE LAVER HELE ADMIN OM (CLAUDE.md). Arbejdsbordets
-     tekstknap delte klasse med "Glemt koden?" på login og tog dens luft og
-     farve. De 8 px er login-stilens egen regel (.knap-tekst), ikke målt
-     her. Og knappen under listen skal kunne rammes med en finger. */
-  test('arbejdsbordets tekstknap rører ikke "Glemt koden?"', async ({ page }) => {
+     tekstknap stod først som `body.personale .knap-tekst` — samme klasse
+     som "Glemt koden?" på login. Den knap er taget ud siden 4/10 (den står
+     i en kommentar i admin.html), men kommer den tilbage med én linje,
+     ville den få arbejdsbordets farve og miste sin luft. Prøven sætter
+     en tekstknap UDEN FOR arbejdsbordet og måler den: de 8 px er husets
+     egen .knap-tekst-regel, ikke noget, der måles her. Og knappen under
+     listen skal kunne rammes med en finger (44 px). */
+  test('arbejdsbordets tekstknap gælder kun arbejdsbordet', async ({ page }) => {
     await arbejdsbordet(page, med([arr()]));
-    const glemt = await page.locator('#glemt-kode').evaluate((e) => getComputedStyle(e).paddingTop);
-    expect(glemt, 'login-knappen fik arbejdsbordets regel').toBe('8px');
+    const uden = await page.evaluate(() => {
+      const b = document.createElement('button');
+      b.className = 'knap-tekst';
+      b.textContent = 'Glemt koden?';
+      document.body.appendChild(b);
+      return getComputedStyle(b).paddingTop;
+    });
+    expect(uden, 'en tekstknap uden for arbejdsbordet fik dets regel').toBe('8px');
     const h = (await page.locator('#arr-ret-steder-liste').boundingBox()).height;
     expect(h, 'for lille trykflade').toBeGreaterThanOrEqual(44);
   });
