@@ -99,11 +99,19 @@ test.describe('Et arrangement på en lukket dag', () => {
     d.kalender = [{ id: 2, lokation_id: 'mosede', type: 'lukkedag', dato: DAG, slut_dato: null,
       titel: 'Ferielukket', beskrivelse: null, emoji: null, lukker_kl: null, offentlig: true,
       oprettet: '2026-08-01T10:00:00Z' }];
+    /* ⚠️ VENDT 12/10: arrangementet lægges ind på arbejdsbordet nu
+       (fanen Arrangementer). Kravet er det samme — det SPØRGER, med
+       lukkedagens navn, og et nej gemmer ingenting. Bordet viser også
+       advarslen, før man trykker. */
     await kalenderen(page, d);
-    await udfyld(page, 'arrangement', 'Quiz');
+    await page.locator('#kalender-typer [data-type="arrangement"]').click();
+    await expect(page.locator('#arr-form-kort')).toBeVisible();
+    await page.locator('#arr-titel').fill('Quiz');
+    await page.locator('#arr-dato').fill(DAG);
+    await expect(page.locator('#arr-advarsler')).toContainText('Ferielukket');
     let tekst = '';
     page.once('dialog', (dlg) => { tekst = dlg.message(); dlg.dismiss(); });
-    await page.locator('#tilfoej-kalender').click();
+    await page.locator('#arr-udgiv').click();
     await expect.poll(() => tekst).toContain('Ferielukket');
     expect(await kalenderRaekker(page, 'arrangement')).toHaveLength(0);
   });

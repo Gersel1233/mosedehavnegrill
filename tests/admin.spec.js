@@ -314,37 +314,45 @@ test.describe('Kalenderen', () => {
     await page.locator('[data-type="tidlig_lukning"]').click();
     await expect(page.locator('#kal-tid-felt')).toBeVisible();
 
+    /* ⚠️ VENDT 12/10: et arrangement har sin egen fane nu
+       (arrangementer.js). "Arrangement" i kalenderen fører derhen — med
+       datoen, der stod i kalenderens felt. */
+    await page.locator('#kal-dato').fill('2026-09-20');
     await page.locator('[data-type="arrangement"]').click();
-    await expect(page.locator('#kal-offentlig-felt')).toBeVisible();
-    await expect(page.locator('#kal-tid-felt')).toBeHidden();
+    await expect(page.locator('#p-arrangementer')).not.toHaveClass(/skjult/);
+    await expect(page.locator('#arr-dato')).toHaveValue('2026-09-20');
   });
 
-  /* DEN VIGTIGSTE HER. Personalet skriver også ting til sig selv i
-     kalenderen, og de må ikke havne på hjemmesiden, fordi nogen
-     glemte at tænke over det. Standarden skal være "kun internt". */
+  /* DEN VIGTIGSTE HER. Personalet skriver også ting til sig selv, og de
+     må ikke havne på hjemmesiden, fordi nogen glemte at tænke over det.
+     ⚠️ VENDT 12/10 til arbejdsbordet: der er ingen flueben at glemme
+     længere — der er to knapper, og kun "Udgiv" lægger det på siden.
+     "Gem som kladde" står som Kladde og IKKE som kommende. */
   test('et arrangement er internt, indtil nogen siger andet', async ({ page }) => {
     await åbnKalender(page);
-    await page.locator('[data-type="arrangement"]').click();
-    await expect(page.locator('#kal-offentlig'),
-      'fluebenet er sat på forhånd — så ryger interne noter på siden').not.toBeChecked();
+    await visFane(page, 'p-arrangementer');
+    await page.locator('#arr-ny').click();
+    await page.locator('#arr-dato').fill('2026-09-01');
+    await page.locator('#arr-titel').fill('Bent har ferie');
+    await page.locator('#arr-kladde').click();
 
-    await page.locator('#kal-dato').fill('2026-09-01');
-    await page.locator('#kal-titel').fill('Bent har ferie');
-    await page.locator('#tilfoej-kalender').click();
-
+    await expect.poll(async () => ((await gemteData(page)).kalender || []).length).toBe(1);
     const d = await gemteData(page);
     expect(d.kalender[0].offentlig, 'et arrangement blev offentligt af sig selv').toBe(false);
-    await expect(page.locator('#kalender-liste')).toContainText('Kun internt');
+    await page.locator('#arr-filter [data-vis="kladder"]').click();
+    await expect(page.locator('#arr-liste')).toContainText('Bent har ferie');
+    await expect(page.locator('#arr-liste')).toContainText('står ikke på siden');
   });
 
   test('et arrangement kan sættes til at blive vist', async ({ page }) => {
     await åbnKalender(page);
-    await page.locator('[data-type="arrangement"]').click();
-    await page.locator('#kal-dato').fill('2026-09-01');
-    await page.locator('#kal-titel').fill('Havnefest');
-    await page.locator('#kal-offentlig').check();
-    await page.locator('#tilfoej-kalender').click();
+    await visFane(page, 'p-arrangementer');
+    await page.locator('#arr-ny').click();
+    await page.locator('#arr-dato').fill('2026-09-01');
+    await page.locator('#arr-titel').fill('Havnefest');
+    await page.locator('#arr-udgiv').click();
 
+    await expect.poll(async () => ((await gemteData(page)).kalender || []).length).toBe(1);
     const d = await gemteData(page);
     expect(d.kalender[0].offentlig).toBe(true);
     await expect(page.locator('#kalender-liste')).toContainText('Vises for gæsterne');

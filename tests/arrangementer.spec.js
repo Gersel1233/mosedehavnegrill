@@ -607,140 +607,113 @@ test.describe('Arrangementet kan rettes bagefter', () => {
     await expect(række).toContainText('40 pl.');
   });
 
-  /* ⚠️ HELE POINTEN. Uden den her kunne fluebenet ikke sættes
-     bagefter, og arrangementet var låst som "kig forbi" for
-     altid. */
+  /* ============================================================
+     ⚠️ VENDT 12/10 — ARRANGEMENTET RETTES PÅ SIN EGEN FANE NU.
+     Prøverne her målte kalenderens formular (#kal-…). Et arrangement
+     har sit eget arbejdsbord (js/admin/arrangementer.js, chefens ønske
+     om en arrangør), og kalenderens "Arrangement"/Ret fører derhen.
+     KRAVENE ER DE SAMME, felt for felt: tilmeldingen kan slås til
+     bagefter (30/8), en åben tilmelding kræver et klokkeslæt (9/9), et
+     "kig forbi" gør ikke, en rettelse er ÉN række, billedet tømmes ikke
+     af et andet gem, og at lukke uden at gemme ændrer ingenting.
+     ============================================================ */
+  async function arbejdsbordet(page, rækker) {
+    await åbnAdmin(page, { data: med(rækker || [KIG_FORBI], []) });
+    await visFane(page, 'p-arrangementer');
+    /* Musik på molen (12/9) er "forbi" set fra prøvens ur — eller
+       kommende; prøven finder rækken, hvor den står. */
+    for (const vis of ['kommende', 'forbi', 'kladder']) {
+      if (await page.locator('.arr-raekke', { hasText: 'Musik på molen' }).count()) break;
+      await page.locator(`#arr-filter [data-vis="${vis}"]`).click();
+    }
+  }
+  const retKnap = (page, titel) => page.locator('.arr-raekke', { hasText: titel || 'Musik på molen' })
+    .locator('button', { hasText: /^Ret$/ });
+
+  /* ⚠️ HELE POINTEN. Uden den her kunne tilmeldingen ikke slås til
+     bagefter, og arrangementet var låst som "kig forbi" for altid. */
   test('Ret åbner arrangementet, og tilmeldingen kan slås til', async ({ page }) => {
-    await kalenderFanen(page);
-    await page.locator('.admin-raekke', { hasText: 'Musik på molen' })
-      .locator('button', { hasText: 'Ret' }).click();
+    await arbejdsbordet(page);
+    await retKnap(page).click();
 
     // Formularen står med rækkens egne værdier.
-    await expect(page.locator('#kal-titel')).toHaveValue('Musik på molen');
-    await expect(page.locator('#kal-dato')).toHaveValue('2026-09-12');
-    await expect(page.locator('#tilfoej-kalender')).toHaveText('Gem ændringer');
-    /* ⚠️ OG OVERSKRIFTEN. Målt på et skud: kortet sagde "Læg noget
-       i kalenderen", mens felterne stod fyldt ud med en række,
-       man var ved at rette — og så tror man, man opretter en
-       dublet. */
-    await expect(page.locator('#kal-form-titel')).toContainText('Ret');
+    await expect(page.locator('#arr-titel')).toHaveValue('Musik på molen');
+    await expect(page.locator('#arr-dato')).toHaveValue('2026-09-12');
+    await expect(page.locator('#arr-udgiv')).toHaveText('Gem ændringer');
+    /* ⚠️ OG OVERSKRIFTEN — ellers tror man, man opretter en dublet. */
+    await expect(page.locator('#arr-form-titel')).toContainText('Ret');
 
-    await page.locator('#kal-tilmelding').check();
-    await page.fill('#kal-pladser', '40');
-    await page.fill('#kal-pris', '145,-');
-    /* ⚠️ KLOKKESLÆTTET ER NYT HER (9/9), og prøven er ikke svækket
-       af det: reglen, den vogter — at fluebenet KAN slås til
-       bagefter — er urørt. Formularen kræver bare også en tid nu,
-       fordi et arrangement med åben tilmelding og uden tid stod i
-       produktionen og tog imod reservationer. Se værnet i
-       js/admin/kalender.js og prøven lige nedenfor. */
-    await page.fill('#kal-start', '19:00');
-    await page.locator('#tilfoej-kalender').click();
-    await expect(page.locator('#kvittering')).toContainText('gemt');
+    await page.locator('#arr-maade [data-maade="tilmelding"]').click();
+    await page.fill('#arr-pladser', '40');
+    await page.fill('#arr-pris', '145,-');
+    await page.fill('#arr-start', '19:00');
+    await page.locator('#arr-udgiv').click();
+    await expect(page.locator('#kvittering')).toContainText('Gemt');
 
     const gemt = await gemteData(page);
-    /* ⚠️ ÉN RÆKKE, IKKE TO. Rettede vi ved at oprette en ny,
-       ville arrangementet stå to gange på hjemmesiden — og
-       reservationerne ville hænge på den forkerte. */
+    /* ⚠️ ÉN RÆKKE, IKKE TO — ellers står det to gange på siden, og
+       reservationerne hænger på den forkerte. */
     expect(gemt.kalender.length).toBe(1);
     expect(gemt.kalender[0].tilmelding).toBe(true);
     expect(gemt.kalender[0].pladser).toBe(40);
     expect(gemt.kalender[0].pris_tekst).toBe('145,-');
   });
 
-  /* ============================================================
-     EN TILMELDING UDEN ET KLOKKESLÆT  (9/9)
-     ------------------------------------------------------------
-     ⚠️ MÅLT I PRODUKTIONEN, ikke tænkt frem. Arrangementet den
-     17/9 stod med titlen «havne», 40 pladser, prisen 145 og ÅBEN
-     tilmelding — men uden start_kl, uden beskrivelse og uden
-     kategori. Det stod på forsidens musikbanner, og en gæst
-     kunne reservere en plads til en aften, siden ikke kunne
-     sige hvornår var.
-
-     Det er dagens ret-reglen fra 7/9 en etage op: kan man BOOKE
-     det, skal rækken bære den oplysning, bookingen skal bruges
-     med.
-
-     ⚠️ OG DE TO PRØVER HØRER SAMMEN. Uden modstykket nedenfor
-     ville en regel, der sagde nej til HVERT arrangement, bestå
-     den her — og så kunne ejeren ikke lægge et "kig forbi" op.
-     ============================================================ */
+  /* EN TILMELDING UDEN ET KLOKKESLÆT (9/9) — MÅLT I PRODUKTIONEN: «havne»
+     stod med 40 pladser og åben tilmelding uden start_kl. De to prøver
+     hører sammen: uden modstykket ville et nej til ALT bestå. */
   test('en åben tilmelding uden klokkeslæt bliver afvist', async ({ page }) => {
-    await kalenderFanen(page);
-    await page.locator('.admin-raekke', { hasText: 'Musik på molen' })
-      .locator('button', { hasText: 'Ret' }).click();
-
-    await page.locator('#kal-tilmelding').check();
-    await page.fill('#kal-pladser', '40');
-    await page.fill('#kal-pris', '145');
-    await page.fill('#kal-start', '');
-    await page.locator('#tilfoej-kalender').click();
+    await arbejdsbordet(page);
+    await retKnap(page).click();
+    await page.locator('#arr-maade [data-maade="tilmelding"]').click();
+    await page.fill('#arr-pladser', '40');
+    await page.fill('#arr-pris', '145');
+    await page.fill('#arr-start', '');
+    await page.locator('#arr-udgiv').click();
 
     await expect(page.locator('#fejl')).toContainText('klokkeslæt');
-
-    /* ⚠️ OG DET VIGTIGSTE: RÆKKEN MÅ IKKE VÆRE GEMT. En besked på
-       skærmen er ikke et værn, hvis skrivningen slap ud alligevel
-       — det er arret fra reservedataene 5/9, hvor en PATCH gik
-       igennem, mens skærmen sagde, der ikke kunne gemmes. */
+    /* ⚠️ OG RÆKKEN MÅ IKKE VÆRE GEMT — en besked er ikke et værn. */
     const gemt = await gemteData(page);
     expect(gemt.kalender[0].tilmelding,
       'arrangementet blev gemt med åben tilmelding og uden tid').toBeFalsy();
   });
 
-  /* Modstykket: et "kig forbi" har ingen tilmelding, og så er der
-     ingen booking, tiden skal bruges med. Det skal stadig kunne
-     lægges op uden et klokkeslæt. */
   test('et "kig forbi" må stadig gemmes uden klokkeslæt', async ({ page }) => {
-    await kalenderFanen(page);
-    await page.locator('.admin-raekke', { hasText: 'Musik på molen' })
-      .locator('button', { hasText: 'Ret' }).click();
+    await arbejdsbordet(page);
+    await retKnap(page).click();
+    await page.fill('#arr-titel', 'Musik på molen — uden tilmelding');
+    await page.locator('#arr-udgiv').click();
 
-    await page.fill('#kal-titel', 'Musik på molen — uden tilmelding');
-    await page.locator('#tilfoej-kalender').click();
-
-    await expect(page.locator('#kvittering')).toContainText('gemt');
+    await expect(page.locator('#kvittering')).toContainText('Gemt');
     const gemt = await gemteData(page);
     expect(gemt.kalender[0].titel).toContain('uden tilmelding');
   });
 
-  /* ⚠️ FELTERNE FANDTES SLET IKKE. Gæstesiden har vist
-     beskrivelsen og klokkeslættet, siden arrangementerne blev
-     bygget — ejeren kunne bare ikke skrive dem. */
   test('beskrivelse og klokkeslæt kan skrives og når hjemmesiden', async ({ page }) => {
-    await kalenderFanen(page);
-    await page.locator('.admin-raekke', { hasText: 'Musik på molen' })
-      .locator('button', { hasText: 'Ret' }).click();
-
-    await page.fill('#kal-start', '19:00');
-    await page.fill('#kal-beskrivelse', 'Ronni spiller på trædækket. Tag naboen med.');
-    await page.locator('#tilfoej-kalender').click();
-    await expect(page.locator('#kvittering')).toContainText('gemt');
+    await arbejdsbordet(page);
+    await retKnap(page).click();
+    await page.fill('#arr-start', '19:00');
+    await page.fill('#arr-beskrivelse', 'Ronni spiller på trædækket. Tag naboen med.');
+    await page.locator('#arr-udgiv').click();
+    await expect(page.locator('#kvittering')).toContainText('Gemt');
 
     const gemt = await gemteData(page);
     expect(gemt.kalender[0].start_kl).toBe('19:00');
     expect(gemt.kalender[0].beskrivelse).toContain('trædækket');
 
-    // Og det står på kalendersiden.
-    // ⚠️ ADMIN SKRIVER 19:00 (det er et <input type=time>), SIDEN
-    // SKRIVER 19.00. De to må gerne være forskellige: feltet er
-    // browserens format, teksten er husets. Se noten ved kortets
-    // tidsprøve (4/9).
+    // Og det står på kalendersiden (admin skriver 19:00, siden 19.00).
     await åbnKalender(page, { data: med(gemt.kalender, []) });
     await expect(page.locator('.evcard')).toContainText('19.00');
     await expect(page.locator('.evcard')).toContainText('trædækket');
   });
 
-  /* ⚠️ ET GEM AF NOGET ANDET MÅ IKKE TØMME BILLEDET. Samme lov
-     som bordets nøgle og nyhedernes vis_fra: en kolonne, der
-     sendes ubetinget, tager noget med sig, ingen bad om. */
+  /* ⚠️ ET GEM AF NOGET ANDET MÅ IKKE TØMME BILLEDET. */
   test('en rettelse af titlen rører ikke billedet', async ({ page }) => {
-    await kalenderFanen(page, [{ ...KIG_FORBI, billede: 'https://x/foto.jpg' }]);
-    await page.locator('.admin-raekke', { hasText: 'Musik på molen' })
-      .locator('button', { hasText: 'Ret' }).click();
-    await page.fill('#kal-titel', 'Musik på molen — anden runde');
-    await page.locator('#tilfoej-kalender').click();
-    await expect(page.locator('#kvittering')).toContainText('gemt');
+    await arbejdsbordet(page, [{ ...KIG_FORBI, billede: 'https://x/foto.jpg' }]);
+    await retKnap(page).click();
+    await page.fill('#arr-titel', 'Musik på molen — anden runde');
+    await page.locator('#arr-udgiv').click();
+    await expect(page.locator('#kvittering')).toContainText('Gemt');
 
     const gemt = await gemteData(page);
     expect(gemt.kalender[0].titel).toContain('anden runde');
@@ -748,15 +721,18 @@ test.describe('Arrangementet kan rettes bagefter', () => {
       .toBe('https://x/foto.jpg');
   });
 
-  test('Fortryd lader rækken være, som den var', async ({ page }) => {
-    await kalenderFanen(page);
-    await page.locator('.admin-raekke', { hasText: 'Musik på molen' })
-      .locator('button', { hasText: 'Ret' }).click();
-    await page.fill('#kal-titel', 'Noget helt andet');
-    await page.locator('#kal-fortryd').click();
+  /* Hed "Fortryd lader rækken være" — arbejdsbordets knap hedder Luk. */
+  test('Luk uden at gemme lader rækken være, som den var', async ({ page }) => {
+    await arbejdsbordet(page);
+    await retKnap(page).click();
+    await page.fill('#arr-titel', 'Noget helt andet');
+    await page.locator('#arr-luk').click();
+    await expect(page.locator('#arr-form-kort')).toBeHidden();
 
-    await expect(page.locator('#kal-titel')).toHaveValue('');
-    await expect(page.locator('#tilfoej-kalender')).toHaveText('Læg i kalenderen');
+    // Og et nyt arrangement starter tomt — ikke med den halve rettelse.
+    await page.locator('#arr-ny').click();
+    await expect(page.locator('#arr-titel')).toHaveValue('');
+    await expect(page.locator('#arr-udgiv')).toHaveText('Udgiv på hjemmesiden');
 
     const gemt = await gemteData(page);
     expect(gemt.kalender[0].titel).toBe('Musik på molen');
@@ -1016,31 +992,40 @@ test.describe('Arrangementets kategori', () => {
      antallet — og efter den fjerde kasse var navnet blevet en
      påstand, der ikke passede. Et prøvenavn, der lyver, er værre
      end ingen prøve: den næste tror, dækningen er der. */
-  test('admin gemmer den valgte kategori', async ({ page }) => {
+  /* ⚠️ VENDT 12/10: kategorien vælges på arbejdsbordet (knapper, ikke en
+     rullemenu) — kravet er det samme. Og "Andet" GEMMES nu: listen i
+     store-skriv.js kendte det ikke, så valget blev til null (fundet af
+     kortlægningen 12/10; ingen prøve havde gemt "Andet"). */
+  test('admin gemmer den valgte kategori — også Andet', async ({ page }) => {
     await åbnAdmin(page, { data: med([]) });
-    await visFane(page, 'p-kalender');
-
-    await page.locator('#kalender-typer button', { hasText: 'Arrangement' }).click();
-    await page.fill('#kal-dato', '2026-09-05');
-    await page.fill('#kal-titel', 'Fredagsmiddag');
-    await page.locator('#kal-offentlig').check();
-    await page.selectOption('#kal-kategori', 'spisning');
-    await page.locator('#tilfoej-kalender').click();
-    await expect(page.locator('#kvittering')).toContainText('Lagt i kalenderen');
-
+    await visFane(page, 'p-arrangementer');
+    for (const [titel, kat, dato] of [['Fredagsmiddag', 'spisning', '2026-09-05'], ['Loppemarked', 'andet', '2026-09-06']]) {
+      await page.locator('#arr-ny').click();
+      await page.fill('#arr-dato', dato);
+      await page.fill('#arr-titel', titel);
+      await page.locator(`#arr-kategori [data-kat="${kat}"]`).click();
+      await page.locator('#arr-udgiv').click();
+      await expect(page.locator('#kvittering')).toContainText('Udgivet');
+    }
     const gemt = await gemteData(page);
-    expect(gemt.kalender[0].kategori).toBe('spisning');
+    const af = (t) => gemt.kalender.filter((k) => k.titel === t)[0];
+    expect(af('Fredagsmiddag').kategori).toBe('spisning');
+    expect(af('Loppemarked').kategori, '"Andet" blev til null').toBe('andet');
+    expect(af('Fredagsmiddag').offentlig).toBe(true);
   });
 
   test('en rettelse kan sætte kategorien på et gammelt arrangement', async ({ page }) => {
     await åbnAdmin(page, { data: med([arr({ kategori: null })]) });
-    await visFane(page, 'p-kalender');
-
-    await page.locator('.admin-raekke', { hasText: 'Fællesspisning' })
-      .locator('button', { hasText: 'Ret' }).click();
-    await page.selectOption('#kal-kategori', 'fest');
-    await page.locator('#tilfoej-kalender').click();
-    await expect(page.locator('#kvittering')).toContainText('Ændringerne er gemt');
+    await visFane(page, 'p-arrangementer');
+    for (const vis of ['kommende', 'forbi', 'kladder']) {
+      if (await page.locator('.arr-raekke', { hasText: 'Fællesspisning' }).count()) break;
+      await page.locator(`#arr-filter [data-vis="${vis}"]`).click();
+    }
+    await page.locator('.arr-raekke', { hasText: 'Fællesspisning' })
+      .locator('button', { hasText: /^Ret$/ }).click();
+    await page.locator('#arr-kategori [data-kat="fest"]').click();
+    await page.locator('#arr-udgiv').click();
+    await expect(page.locator('#kvittering')).toContainText('Gemt');
 
     const gemt = await gemteData(page);
     expect(gemt.kalender[0].kategori).toBe('fest');

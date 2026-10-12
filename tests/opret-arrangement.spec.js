@@ -32,13 +32,17 @@ for (const [navn, fane, knap] of [
   ['Tilmeldinger', 'p-tilmeldinger', '#tilmeld-opret'],
   ['Nyheder', 'p-nyheder', '#nyhed-opret-arr'],
 ]) {
+  /* ⚠️ VENDT 12/10: knappen fører til arbejdsbordet (fanen
+     Arrangementer), ikke til kalenderens formular. Kravet er det samme:
+     det er et ARRANGEMENT, ikke en lukkedag, og den første knap er den,
+     der lægger det på siden — et arrangement, ingen kan se, er ikke det,
+     knappen lovede. */
   test('fra ' + navn + ' fører knappen hen til formularen', async ({ page }) => {
     await fraFanen(page, fane, knap);
-    await expect(page.locator('#p-kalender')).not.toHaveClass(/skjult/);
-    /* "Vis for gæsterne" er slået til: et arrangement, ingen kan se,
-       er ikke det, knappen lovede. */
-    await expect(page.locator('#kal-offentlig')).toBeChecked();
-    await expect(page.locator('#kal-titel')).toBeFocused();
+    await expect(page.locator('#p-arrangementer')).not.toHaveClass(/skjult/);
+    await expect(page.locator('#arr-form-kort')).toBeVisible();
+    await expect(page.locator('#arr-udgiv')).toHaveText('Udgiv på hjemmesiden');
+    await expect(page.locator('#arr-titel')).toBeFocused();
   });
 
   /* ⚠️ BEVISET ER RÆKKEN, IKKE FORMULAREN. Et flueben, der ser rigtigt
@@ -46,9 +50,9 @@ for (const [navn, fane, knap] of [
      lukkedag. */
   test('og det, der gemmes fra ' + navn + ', er et offentligt arrangement', async ({ page }) => {
     await fraFanen(page, fane, knap);
-    await page.locator('#kal-titel').fill('Livemusik på molen');
-    await page.locator('#kal-dato').fill(DAG);
-    await page.locator('#tilfoej-kalender').click();
+    await page.locator('#arr-titel').fill('Livemusik på molen');
+    await page.locator('#arr-dato').fill(DAG);
+    await page.locator('#arr-udgiv').click();
 
     await expect.poll(async () =>
       ((await gemteData(page)).kalender || []).filter((k) => k.dato === DAG).length)

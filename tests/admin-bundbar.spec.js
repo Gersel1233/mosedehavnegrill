@@ -56,7 +56,10 @@ test.describe('Bundbjælken på telefonen', () => {
     await fanen(page);
     const bar = page.locator('#bundbar');
     await expect(bar).toBeVisible();
-    await expect(bar.locator('button')).toHaveCount(5);
+    /* ⚠️ DE SYNLIGE (12/10). Arrangørens to genveje ligger i bjælken med
+       hidden og står kun frem for den rolle (personale.js) — for alle
+       andre er der stadig præcis fem pladser. */
+    await expect(bar.locator('button:visible')).toHaveCount(5);
 
     /* ⚠️ TALLET KOMMER UDEFRA. 390 er profilens bredde i
        playwright.config.js — ikke noget, elementet selv fortæller.
@@ -65,7 +68,7 @@ test.describe('Bundbjælken på telefonen', () => {
     const bredde = await bar.evaluate((e) => e.getBoundingClientRect().width);
     expect(bredde).toBeLessThanOrEqual(390);
 
-    const slots = await bar.locator('button').evaluateAll(
+    const slots = await bar.locator('button:visible').evaluateAll(
       (ks) => ks.map((k) => Math.round(k.getBoundingClientRect().width)));
     // Fem lige store pladser: ingen af dem må være dobbelt så bred.
     expect(Math.max(...slots) - Math.min(...slots)).toBeLessThanOrEqual(2);

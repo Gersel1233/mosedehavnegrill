@@ -583,7 +583,8 @@
     dd.forEach(function (iso) {
       var paa = Object.assign({}, k, { dato: iso });
       var hvornaar = dd.length > 1 ? langDato(iso) + ': ' : '';
-      if (Butik.lukketDen(d(), iso)) ud.push(hvornaar + 'Caféen er lukket den dag.');
+      var luk = Butik.lukketDen(d(), iso);
+      if (luk) ud.push(hvornaar + 'Caféen er lukket den dag' + (luk.titel ? ' («' + luk.titel + '»)' : '') + '.');
       var s = sted(k.sted_id);
       if (s && (s.baglokale || s.hele_stedet) && optagne.some(function (o) {
         return o.dato === iso && (o.slags === 'udlejning' || o.slags === 'baglokale');
@@ -614,7 +615,7 @@
     if (!k.dato) return 'Vælg en dato.';
     if (!retter && k.dato < iDag()) return 'Datoen er overstået. Vælg en dag fra i dag og frem.';
     if (k.tilmelding && !k.start_kl) {
-      return 'Skriv, hvornår det starter — gæsterne, der melder sig til, skal vide, hvornår de skal være der.';
+      return 'Skriv et klokkeslæt for, hvornår det starter — gæsterne, der melder sig til, skal vide, hvornår de skal være der.';
     }
     if (k.start_kl && k.slut_kl && minutter(k.slut_kl) <= minutter(k.start_kl)) {
       return 'Sluttiden skal ligge efter starttiden.';

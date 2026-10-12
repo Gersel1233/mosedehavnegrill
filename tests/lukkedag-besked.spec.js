@@ -152,11 +152,13 @@ test.describe('Feltet i admin', () => {
     await åbnAdmin(page, { ur: UR, data: data() });
     await visFane(page, 'p-kalender');
 
-    /* Modstykket først: på et arrangement er feltet en historie. */
+    /* Modstykket først: på et arrangement er feltet en historie. ⚠️ Det
+       står på arbejdsbordet nu (12/10) — "Arrangement" fører derhen. */
     await page.locator('#kalender-typer [data-type="arrangement"]').click();
-    await expect(page.locator('#kal-tekst-felt')).toBeVisible();
-    await expect(page.locator('#kal-tekst-etiket')).toContainText('Hvad sker der?');
+    await expect(page.locator('#arr-beskrivelse')).toBeVisible();
+    await expect(page.locator('label[for="arr-beskrivelse"]')).toContainText('Hvad sker der?');
 
+    await visFane(page, 'p-kalender');
     await page.locator('#kalender-typer [data-type="lukkedag"]').click();
     await expect(page.locator('#kal-tekst-felt')).toBeVisible();
     await expect(page.locator('#kal-tekst-etiket')).toContainText('Besked til gæsterne');
