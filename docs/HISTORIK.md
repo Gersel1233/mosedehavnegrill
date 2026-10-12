@@ -42,8 +42,8 @@ havnecaféen — men de kan lave navnene om", "arrangøren må godt udgive selv"
   forsidens korte udgave klippede ved «kl.»; telefonens tilmelding tog 100 mod databasens
   20; advarslen læste lukkedagens `titel`, men `d.lukkedage` kalder det `aarsag`;
   kalenderfilen escapede ikke semikolon (`'\;'` er bare `;` i en JS-streng)
-- **Prøver:** `tests/arrangoer.spec.js` (25 × 2 profiler) — alle set fejle i to runder med
-  fejlen genindført (19 + 6). De gamle kalenderprøver for arrangementer er vendt til
+- **Prøver:** `tests/arrangoer.spec.js` (27 × 2 profiler) — alle set fejle med fejlen
+  genindført (19 + 6 + 2). De gamle kalenderprøver for arrangementer er vendt til
   arbejdsbordet med grunden i noten ("VENDT 12/10"). Berørte filer: 406 bestod, 2 fejlede
   (lukkedagens navn — rettet), derefter grønne
 - **Den fulde runde (computer) fandt tre til, alle mine:** noten om den manglende SQL-fil
@@ -54,6 +54,13 @@ havnecaféen — men de kan lave navnene om", "arrangøren må godt udgive selv"
   gemt sig bag samme forveksling: `js/forespoergsel.js` (siderne bruger
   js/skal/forespoergsel.js) og `js/nyheder.js` (ingen side). Skrevet på listen med en note
   øverst i hver; ikke slettet
+- **Telefonens tre bidder** (på den rettede kode): 917 + 880 + 922 bestod, 1 fejlede —
+  "Ret stedernes navne" var 21 px høj (min). Og reglen `body.personale .knap-tekst` ramte
+  enhver tekstknap i admin, også "Glemt koden?", den dag den kommer tilbage. Nu scopet til
+  `#p-arrangementer` og 44 px. To nye prøver (scopet + trykfladen; billedet lagt op ad
+  arrangørens vej lander på rækken) — set fejle, trykfladen med netop 21 px
+- **FULD RUNDE I ALT:** computer 2.691 + telefon 2.719 bestod; de fire fejl, den fandt, er
+  rettet og deres prøver grønne på begge profiler
 - ⚠️ **TILBAGE:** kalenderformularens egne arrangementsfelter (`kal-offentlig`,
   `kal-tilmeld-felt` m.fl.) nås ikke længere for et arrangement, men «Note til dagen» er
   type `arrangement` internt — de skal ryddes med omtanke, ikke med et søg-og-slet
