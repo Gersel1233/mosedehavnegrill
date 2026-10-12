@@ -1253,13 +1253,19 @@
       rolleVælger = document.createElement('select');
       rolleVælger.id = 'kat-rolle-' + k.id;
       rolleVælger.className = 'kat-rolle';
-      [['', 'Almindelig kategori'],
-        ['smoerrebroed', 'Smørrebrød — bestillingen og cateringsiden'],
-        ['haandmadder', 'Håndmadder — bestillingen og cateringsiden'],
-        ['fyld', 'Fyld til smørrebrødet'],
-        ['tapas', 'Tapasfadet — tapassiden og forsiden'],
-        ['pindemad', 'Pindemad — cateringsiden'],
-        ['sliders', 'Sliders — cateringsiden']].forEach(function (p) {
+      /* Korte ord i vælgeren (en telefon klippede de lange), og linjen
+         under siger, hvor den så står — husets regel for .hjaelp: hvad
+         der sker ude på siden, ikke hvad feltet hedder. */
+      var ROLLE_VALG = [
+        ['', 'Almindelig kategori', 'Står på menukortet. Ingen anden side leder efter den.'],
+        ['smoerrebroed', 'Smørrebrød', 'Står på smørrebrødssiden og bestillingen, og giver cateringens smørrebrødspris.'],
+        ['haandmadder', 'Håndmadder', 'Står på smørrebrødssiden og bestillingen, og giver cateringens smørrebrødspris.'],
+        ['fyld', 'Fyld til smørrebrødet', 'Det, gæsten vælger som fyld på smørrebrødet.'],
+        ['tapas', 'Tapasfadet', 'Fadet på tapassiden og prisen på forsiden.'],
+        ['pindemad', 'Pindemad', 'Giver cateringens pris på platter og pindemad.'],
+        ['sliders', 'Sliders', 'Giver cateringens pris på sliders.'],
+      ];
+      ROLLE_VALG.forEach(function (p) {
         var o = document.createElement('option');
         o.value = p[0]; o.textContent = p[1];
         if (p[0] === (k.rolle || '')) o.selected = true;
@@ -1270,6 +1276,14 @@
       rl.setAttribute('for', rolleVælger.id);
       rolleLinje.appendChild(rl);
       rolleLinje.appendChild(rolleVælger);
+      var rolleHjaelp = lav('p', 'hjaelp kat-rolle-hjaelp');
+      var visRolle = function () {
+        var valgt = ROLLE_VALG.filter(function (p) { return p[0] === rolleVælger.value; })[0];
+        rolleHjaelp.textContent = valgt ? valgt[2] : '';
+      };
+      rolleVælger.addEventListener('change', visRolle);
+      visRolle();
+      rolleLinje.appendChild(rolleHjaelp);
     }
 
     /* NOTEN GÆLDER HELE KATEGORIEN. "På toastbrød eller rugbrød"

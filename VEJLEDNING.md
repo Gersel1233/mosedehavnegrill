@@ -389,6 +389,12 @@ Hele sortimentet. Fem tal øverst er også knapper:
   den gælder både hjemmesiden, lugen og QR-koden ved bordet:
   åbner I cateringens kategorier, kan en gæst ved bordet købe
   én slider
+- **"Bruges på siden som"** ved hver kategori fortæller hjemmesiden,
+  hvad kategorien ER: Smørrebrød, Håndmadder, Fyld, Tapasfadet,
+  Pindemad eller Sliders. Det er dét, bestillingen, tapassiden og
+  cateringens priser finder den på — **så navnet kan rettes frit**.
+  En almindelig kategori står bare på menukortet. En ny kategori får
+  valget gættet af navnet, når den oprettes
 - **"Hent regneark (CSV)"** nederst giver hele kortet som en fil
   til den, der skal trykke menukortet — alle varer, priser,
   beskrivelser og hvad der kan bestilles. Den ændrer ingenting

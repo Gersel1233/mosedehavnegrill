@@ -7,6 +7,29 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**MENUKORTET: KATEGORIEN HAR ET FAST MÆRKE, NAVNET ER BARE ET NAVN** (12/10 — LIVE efter
+Mikkels "yes fix til perfektion"; `supabase/kategori-rolle.sql` er IKKE KØRT). Mikkels
+spørgsmål: *"de blir proppet under de rigtige sektioner og nemt at finde rundt i?"*
+- **MÅLT FØR:** seks steder fandt deres varer på kategoriens NAVN — bestillingens smørrebrød,
+  håndmadder og fyld (`/smørrebrød|håndmad|fyld/`), tapassiden og forsidens tapaspris (varen
+  med «tapas» i navnet), menukortets tapasknap og cateringens fire «fra»-priser (`data-fra`).
+  Omdøbte ejeren «Smørrebrød», var 32 varer væk fra bestil/ uden en fejl
+- **Nu:** `menu_kategorier.rolle` (smoerrebroed/haandmadder/fyld/tapas/pindemad/sliders),
+  sat ÉN gang ud fra navnene af filen (målt i produktionen 12/10: præcis de seks kategorier
+  Smørrebrød, Håndmadder, Vælg fyld…, Tapasfad, Reception og pindemad, Sliders). Én regel:
+  `Butik.katRolle` og `Butik.tapasFad`. Admin: «Bruges på siden som» ved hver kategori med en
+  linje under, der siger, hvor den står. En ny kategori får mærket gættet af navnet én gang
+- ⚠️ **NAVNET ER RESERVE** før filen er kørt (ingen kolonne = som før), og for en familie, INGEN
+  kategori har et mærke i — et manglende mærke må aldrig tage en hel side med sig. Tapasfadet
+  findes også uden en tapaskategori (prøvernes fad står i «Til selskabet»)
+- **Tilbage på navnet med vilje:** menukortets reservefotos pr. kategori (`FOTOS` i
+  js/skal/menukort.js) — pynt, og et omdøbt navn mister kun standardfotoet
+- **Prøver:** `tests/kategori-rolle.spec.js` (8 × 2) set fejle — 7 med navnet som eneste nøgle,
+  modstykket med et strengt opslag. `supabase/proev-kategori-rolle.sql` 8/8, set fejle med fyld
+  som smørrebrød og uden værnet. `catering-frokost.spec.js` vendt til `data-rolle`. De berørte
+  siders filer (bestil, smørrebrød, tapas, catering, menukort, forside, ved bordet m.fl.): 1010
+  bestod på computeren; admin-filerne 354 bestod på begge
+
 **ARRANGØREN: HAVNENS PROGRAM FÅR SIT EGET ARBEJDSBORD** (12/10 — PÅ ARBEJDSGRENEN,
 venter på Mikkels ja, og `supabase/arrangoer.sql` er IKKE KØRT). Chefens ord: *"Er der
 lavet en gruppe på hjemmesiden, hvor vores event-arrangør kan gå ind og lægge alle vores

@@ -61,9 +61,19 @@ og derfra:
   → chefens-rettelser-7-10.sql
   → levering-tid-8-10.sql
   → arrangoer.sql
+  → kategori-rolle.sql
 ```
 
-**⚠️ `arrangoer.sql` (12/10) — IKKE KØRT ENDNU. SKAL STÅ SIDST (efter `gaestens-regler.sql`).**
+**⚠️ `kategori-rolle.sql` (12/10) — IKKE KØRT ENDNU.** Mikkel: *"fix til perfektion"*.
+Kategorien får et fast mærke (`rolle`: smørrebrød, håndmadder, fyld, tapas, pindemad,
+sliders), som vælges i admin («Bruges på siden som»), så bestillingens smørrebrød,
+tapassiden og cateringens priser ikke længere finder kategorien på navnet. Filen sætter
+mærkerne ÉN gang ud fra navnene og rører ikke et mærke, der er sat. Kan køres igen. Prøven
+er `proev-kategori-rolle.sql` (8 tjek). **Siden virker også, før filen er kørt** — så er
+navnet nøglen som før.
+
+**⚠️ `arrangoer.sql` (12/10) — KØRT I PRODUKTIONEN 12/10 (målt bagefter med anon-nøglen:
+kolonnerne, de fem steder og ventelistens opslag svarer). SKAL STÅ SIDST (efter `gaestens-regler.sql`).**
 Chefens ord: *"Er der lavet en gruppe på hjemmesiden, hvor vores event-arrangør kan gå ind
 og lægge alle vores events ind?"* Mikkel 12/10: stederne kan omdøbes, arrangøren må udgive
 selv, venteliste ja. Rollen `arrangoer` i `admin_adgang`; `is_admin_for()`/`is_admin()`
