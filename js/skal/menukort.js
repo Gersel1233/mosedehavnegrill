@@ -419,7 +419,12 @@
      antal personer og tilkøbet. Uden en pris eller udsolgt: ingen knap,
      som alt andet. Kendingen er KATEGORIENS navn, samme mønster som
      fotoet i FOTOS ovenfor. */
-  function erTapas(k) { return /tapas/i.test(String((k && k.navn) || '')); }
+  /* ⚠️ MÆRKET (12/10): Butik.katRolle — navnet er kun reserven, før
+     kategori-rolle.sql er kørt. */
+  function erTapas(k) {
+    if (Butik.katRolle) return Butik.katRolle(dataNu, k) === 'tapas';
+    return /tapas/i.test(String((k && k.navn) || ''));
+  }
 
   function bestilVej(k, v) {
     if (!dataNu || !window.Butik || !Butik.udvalg) return null;

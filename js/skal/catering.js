@@ -105,11 +105,16 @@
     if (Butik.reservedata && Butik.reservedata(d)) return;
     var kat = (d && d.menu_kategorier) || [];
     var varer = (d && d.menu_varer) || [];
-    Array.prototype.forEach.call(document.querySelectorAll('[data-fra]'), function (el) {
-      var m;
-      try { m = new RegExp(el.getAttribute('data-fra'), 'i'); } catch (e) { return; }
-      var ids = kat.filter(function (k) { return k.aktiv !== false && m.test(k.navn || ''); })
-        .map(function (k) { return k.id; });
+    /* ⚠️ MÆRKET, IKKE NAVNET (12/10). Hvert punkt hed `data-fra` med
+       et mønster på kategoriens navn; omdøbte ejeren «Sliders», mistede
+       punktet sin pris uden en lyd. Nu `data-rolle` — kategoriens mærke
+       fra admin (Butik.katRolle), og navnet kun som reserve, før
+       kategori-rolle.sql er kørt. */
+    Array.prototype.forEach.call(document.querySelectorAll('[data-rolle]'), function (el) {
+      var roller = String(el.getAttribute('data-rolle') || '').split(/\s+/).filter(Boolean);
+      var ids = kat.filter(function (k) {
+        return k.aktiv !== false && roller.indexOf(Butik.katRolle(d, k)) !== -1;
+      }).map(function (k) { return k.id; });
       var p = varer.filter(function (v) {
         return v.aktiv !== false && !v.udsolgt && ids.indexOf(v.kategori_id) >= 0;
       }).map(function (v) { return v.pris === null || v.pris === '' ? NaN : Number(v.pris); })

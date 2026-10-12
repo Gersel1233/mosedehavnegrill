@@ -2094,6 +2094,92 @@
      udvalg — forsiden, bestil/ og ved-bordet/ — og det er hele
      grunden til, at ændringen er tre linjer og ikke tre
      formularer. */
+  /* ============================================================
+     KATEGORIENS FASTE MÆRKE  (12. okt 2026)
+     ------------------------------------------------------------
+     Mikkels spørgsmål: *"de blir proppet under de rigtige sektioner
+     og nemt at finde rundt i?"* — og så: *"fix til perfektion"*.
+
+     MÅLT: seks steder fandt deres varer på kategoriens NAVN.
+     Bestillingens smørrebrød (/smørrebrød|håndmad|fyld/ herunder),
+     tapassiden, forsidens tapaspris og menukortets tapasknap (/tapas/),
+     og cateringens fire «fra»-priser (data-fra i h-catering.html).
+     Omdøbte ejeren «Smørrebrød» til fx «Smørrebrød fra lugen», var
+     32 varer væk fra bestil/ — uden en fejl nogen steder. Samme
+     fælde som «håndmad» 1/9 (24 varer usynlige).
+
+     NU har kategorien et mærke, ejeren vælger i admin («Bruges på
+     siden som»), og navnet er bare et navn. kategori-rolle.sql satte
+     mærkerne ÉN gang ud fra navnene, som de stod.
+
+     ⚠️ NAVNET ER RESERVEN, OG KUN FØR FILEN ER KØRT. Har kategorierne
+     kolonnen `rolle` (også tom), er det mærket, der gælder — ellers
+     ville en ny kategori, der tilfældigvis hedder «Tapas-snacks»,
+     stjæle tapassidens fad. Uden kolonnen gætter siden som før, så
+     intet ændrer sig, før databasen er klar.
+
+     ⚠️ RÆKKEFØLGEN I RESERVEN TÆLLER: «Vælg fyld til smørrebrødet»
+     har begge ord, og det er fyld. */
+  var ROLLER = ['smoerrebroed', 'haandmadder', 'fyld', 'tapas', 'pindemad', 'sliders'];
+  var ROLLE_AF_NAVN = [
+    ['fyld', /fyld/i], ['haandmadder', /håndmad/i], ['smoerrebroed', /smørrebrød/i],
+    ['tapas', /tapas/i], ['pindemad', /pindemad/i], ['sliders', /slider/i],
+  ];
+  /* ⚠️ OG ET MANGLENDE MÆRKE MÅ ALDRIG TAGE EN HEL SIDE MED SIG. Har
+     INGEN kategori et mærke i en familie (smørrebrød/håndmadder/fyld er
+     én), gætter navnet stadig for den familie — så en kategori, ingen
+     har mærket endnu, ikke forsvinder. Er familien mærket ét sted, er
+     det mærkerne, der gælder, og «Tapas-snacks» stjæler ikke fadet. */
+  var FAMILIE = { smoerrebroed: 's', haandmadder: 's', fyld: 's', tapas: 't', pindemad: 'p', sliders: 'l' };
+  function harRoller(d) {
+    return ((d && d.menu_kategorier) || []).some(function (k) {
+      return Object.prototype.hasOwnProperty.call(k, 'rolle');
+    });
+  }
+  function rolleAfNavn(navn) {
+    var n = String(navn || '');
+    for (var i = 0; i < ROLLE_AF_NAVN.length; i++) {
+      if (ROLLE_AF_NAVN[i][1].test(n)) return ROLLE_AF_NAVN[i][0];
+    }
+    return '';
+  }
+  function katRolle(d, k) {
+    if (!k) return '';
+    var med = harRoller(d);
+    if (med && ROLLER.indexOf(k.rolle) !== -1) return k.rolle;
+    var g = rolleAfNavn(k.navn);
+    if (!g || !med) return g;
+    var maerket = ((d && d.menu_kategorier) || []).some(function (c) {
+      return ROLLER.indexOf(c.rolle) !== -1 && FAMILIE[c.rolle] === FAMILIE[g];
+    });
+    return maerket ? '' : g;
+  }
+
+  /* TAPASFADET — én regel for tapassiden og forsidens pris. Varen i
+     tapaskategorien, der hedder noget med tapas; ellers den første i
+     kategorien (ejerens kort: «Tapasfad» står før «Kage»), så også en
+     omdøbt vare bliver fundet. Uden en tapaskategori og uden mærker
+     gælder det gamle: den første vare med «tapas» i navnet.
+     ⚠️ Kategoriens aktiv-flag tjekkes IKKE — det gjorde det gamle
+     opslag heller ikke, og cateringens kategorier er lukkede for
+     forsidens udvalg (se forside.js). */
+  function tapasFad(d) {
+    var varer = ((d && d.menu_varer) || []).filter(function (v) {
+      return v.aktiv !== false && !v.udsolgt;
+    });
+    var kats = ((d && d.menu_kategorier) || []).filter(function (k) {
+      return katRolle(d, k) === 'tapas';
+    }).map(function (k) { return k.id; });
+    var mine = varer.filter(function (v) { return kats.indexOf(v.kategori_id) !== -1; })
+      .sort(function (a, b) { return (Number(a.sortering) || 0) - (Number(b.sortering) || 0); });
+    /* Ingen tapaskategori? Så som før: den første vare med «tapas» i
+       navnet (prøvernes fad står i «Til selskabet»). */
+    if (!mine.length) {
+      return varer.filter(function (v) { return /tapas/i.test(v.navn || ''); })[0] || null;
+    }
+    return mine.filter(function (v) { return /tapas/i.test(v.navn || ''); })[0] || mine[0] || null;
+  }
+
   function smoerrebroed(d) {
     /* ⚠️ "håndmad" ER MED I REGEXEN  (1/9). Ejerens to kort
        sælger det SAMME 24 slags som hel skive (55) og som
@@ -2103,8 +2189,11 @@
        lister, ud af mindsteantallet — og HELT væk fra bestil/,
        som kun viser smørrebrødets kategorier. Målt: 24 varer
        usynlige uden en eneste fejl. */
+    /* ⚠️ MÆRKET, IKKE NAVNET (12/10) — se KATEGORIENS FASTE MÆRKE
+       ovenfor. Uden mærker er reserven det samme mønster, der stod her. */
     var kat = (d.menu_kategorier || []).filter(function (k) {
-      return k.aktiv !== false && /smørrebrød|håndmad|fyld/i.test(k.navn || '');
+      var r = katRolle(d, k);
+      return k.aktiv !== false && (r === 'smoerrebroed' || r === 'haandmadder' || r === 'fyld');
     });
     var ids = kat.map(function (k) { return k.id; });
 
@@ -2118,7 +2207,7 @@
 
        Kategorien er det stabile signal: "Vælg fyld til
        smørrebrødet" er fyld, uanset hvad der står i priskolonnen. */
-    var fyldIds = kat.filter(function (k) { return /fyld/i.test(k.navn || ''); })
+    var fyldIds = kat.filter(function (k) { return katRolle(d, k) === 'fyld'; })
       .map(function (k) { return k.id; });
 
     var varer = (d.menu_varer || []).filter(function (v) {
@@ -5082,7 +5171,7 @@
     lokalt: lokalt, læsLokalt: læsLokalt, nu: nu, næsteId: næsteId,
     pris: pris, skraldTabel: skraldTabel, skriv: skriv, status: status,
     talEllerNull: talEllerNull, tvilling: tvilling,
-    cfg: cfg, hoveder: hoveder, standardSteder: standardSteder,
+    cfg: cfg, hoveder: hoveder, standardSteder: standardSteder, ROLLER: ROLLER,
   };
 
   /* ============================================================
@@ -5860,6 +5949,11 @@
     menu: menu,
     menuAfsnit: menuAfsnit,
     smoerrebroed: smoerrebroed,
+    katRolle: katRolle,
+    harRoller: harRoller,
+    rolleAfNavn: rolleAfNavn,
+    tapasFad: tapasFad,
+    ROLLER: ROLLER,
     leveringsTekst: leveringsTekst,
     bestillingStatus: bestillingStatus,
     foelgAdresse: foelgAdresse,

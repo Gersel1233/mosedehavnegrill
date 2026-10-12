@@ -149,7 +149,10 @@
     var varer = (data.menu_varer || []).filter(function (v) {
       return v.aktiv !== false && !v.udsolgt;
     });
-    fad = varer.filter(function (v) { return /tapas/i.test(v.navn); })[0] || null;
+    /* ⚠️ KATEGORIENS MÆRKE, IKKE VARENS NAVN (12/10) — Butik.tapasFad,
+       samme regel som forsidens pris. Et omdøbt fad blev før væk. */
+    fad = Butik.tapasFad ? Butik.tapasFad(data)
+      : varer.filter(function (v) { return /tapas/i.test(v.navn); })[0] || null;
     /* ⚠️ FLASKEN FOERST, IKKE DET FOERSTE HIT (9/9). Ejerens kort
        har BAADE "Cava, glas" (69) og "Cava, flaske" (299), og
        listen kommer sorteret — saa glasset vandt, mens designets

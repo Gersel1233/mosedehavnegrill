@@ -847,6 +847,13 @@
         ren.dage = lovligDage ? k.dage : 'alle';
       }
 
+      /* KATEGORIENS MÆRKE (12/10, kategori-rolle.sql) — kun når admin
+         har noget at sige om det, ellers PGRST204 før filen er kørt.
+         Kun de seks, databasen kender; alt andet er "intet mærke". */
+      if (k.rolle !== undefined) {
+        ren.rolle = I.ROLLER.indexOf(k.rolle) !== -1 ? k.rolle : null;
+      }
+
       if (!SKY) {
         return lokalt(function (d) {
           d.menu_kategorier = d.menu_kategorier || [];

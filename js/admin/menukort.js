@@ -1240,6 +1240,38 @@
       vælger.appendChild(o);
     });
 
+    /* «BRUGES PÅ SIDEN SOM» — KATEGORIENS FASTE MÆRKE (12/10).
+       Mikkel: *"fix til perfektion"*. Bestillingens smørrebrød,
+       tapassiden og cateringens priser fandt kategorien på NAVNET, så
+       en omdøbning tog varerne med sig uden en fejl. Nu vælges det
+       her, én gang, og navnet kan rettes frit (Butik.katRolle).
+       Kun når databasen har kolonnen (kategori-rolle.sql) — ellers
+       ville hvert kategorigem fejle med PGRST204. */
+    var rolleVælger = null;
+    var rolleLinje = null;
+    if (Butik.harRoller && Butik.harRoller(Admin.data)) {
+      rolleVælger = document.createElement('select');
+      rolleVælger.id = 'kat-rolle-' + k.id;
+      rolleVælger.className = 'kat-rolle';
+      [['', 'Almindelig kategori'],
+        ['smoerrebroed', 'Smørrebrød — bestillingen og cateringsiden'],
+        ['haandmadder', 'Håndmadder — bestillingen og cateringsiden'],
+        ['fyld', 'Fyld til smørrebrødet'],
+        ['tapas', 'Tapasfadet — tapassiden og forsiden'],
+        ['pindemad', 'Pindemad — cateringsiden'],
+        ['sliders', 'Sliders — cateringsiden']].forEach(function (p) {
+        var o = document.createElement('option');
+        o.value = p[0]; o.textContent = p[1];
+        if (p[0] === (k.rolle || '')) o.selected = true;
+        rolleVælger.appendChild(o);
+      });
+      rolleLinje = lav('div', 'kat-dage-linje kat-rolle-linje');
+      var rl = lav('label', null, 'Bruges på siden som');
+      rl.setAttribute('for', rolleVælger.id);
+      rolleLinje.appendChild(rl);
+      rolleLinje.appendChild(rolleVælger);
+    }
+
     /* NOTEN GÆLDER HELE KATEGORIEN. "På toastbrød eller rugbrød"
        hører til alle tolv slags pindemad, ikke til hver linje —
        skrevet på hver vare ville den fylde tolv gange og sige det
@@ -1450,6 +1482,7 @@
       };
       // undefined = rør ikke kolonnen. Se noten i js/store-skriv.js.
       if (dage) ud.dage = dageVaerdi();
+      if (rolleVælger) ud.rolle = rolleVælger.value || null;
 
       /* ⚠️ HELE KORTET SKRIVES, IKKE KUN MIN RÆKKE. kategori_tider
          er ÉN indstilling med alle kategorier i; skrev vi kun
@@ -1486,6 +1519,7 @@
       dageLinje.appendChild(dage);
       h.appendChild(dageLinje);
     }
+    if (rolleLinje) h.appendChild(rolleLinje);
     h.appendChild(flytKnapper(k, alle, 'kategori'));
     h.appendChild(gem);
     h.appendChild(note);
@@ -1629,6 +1663,11 @@
         navn: navn.value, afdeling: vælger.value, sortering: højeste + 1,
       };
       if (dage) ud.dage = dageVaerdi();
+      /* ⚠️ EN NY KATEGORI FÅR SIT MÆRKE GÆTTET AF NAVNET — ÉN GANG (12/10).
+         «Smørrebrød til jul» skal stå på bestillingen fra første dag, ikke
+         først når nogen finder vælgeren. Bagefter er det mærket, der
+         gælder, og navnet kan rettes frit. */
+      if (Butik.harRoller && Butik.harRoller(Admin.data)) ud.rolle = Butik.rolleAfNavn(navn.value) || null;
       Admin.gem(Butik.skrive.kategori(ud), navn.value + ' er oprettet.');
     });
 

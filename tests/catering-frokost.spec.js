@@ -43,21 +43,24 @@ test.describe('Cateringens priser', () => {
 
   test('hvert punkt får menukortets laveste pris — med sin enhed', async ({ page }) => {
     await åbnSkal(page, '/h-catering.html', { data: medCatering() });
-    const pris = (m) => page.locator('.getlist .gl-pris[data-fra="' + m + '"]');
-    await expect(pris('^tapasfad')).toHaveText('179,- pr. person');
+    /* ⚠️ VENDT 12/10: punkterne peger på kategoriens MÆRKE (data-rolle),
+       ikke på et mønster i navnet (data-fra) — se kategori-rolle.spec.js.
+       Tallene og kravene er de samme. */
+    const pris = (m) => page.locator('.getlist .gl-pris[data-rolle="' + m + '"]');
+    await expect(pris('tapas')).toHaveText('179,- pr. person');
     /* Laveste AKTIVE pris: 40 og ikke den slukkede 5. "fra", fordi
        sliderne koster forskelligt. */
-    await expect(pris('^sliders')).toHaveText('sliders fra 40,- stk.');
+    await expect(pris('sliders')).toHaveText('sliders fra 40,- stk.');
     /* Grunddata har også hele skiver til en højere pris, så det er
        "fra" — som i produktionen (håndmad 27, hel skive 55). */
-    await expect(pris('^(smørrebrød|håndmadder)$')).toHaveText('fra 27,- stk.');
-    await expect(pris('^tapasfad')).toBeVisible();
+    await expect(pris('smoerrebroed haandmadder')).toHaveText('fra 27,- stk.');
+    await expect(pris('tapas')).toBeVisible();
   });
 
   test('uden en pris på kortet står punktet uden linje', async ({ page }) => {
     /* grunddata har ingen pindemad — linjen må ikke sige "fra 0,-". */
     await åbnSkal(page, '/h-catering.html', { data: medCatering() });
-    const pinde = page.locator('.getlist .gl-pris[data-fra="pindemad"]');
+    const pinde = page.locator('.getlist .gl-pris[data-rolle="pindemad"]');
     await expect(pinde, 'vagt: pladsen findes').toHaveCount(1);
     await expect(pinde).toBeHidden();
     await expect(pinde).toHaveText('');

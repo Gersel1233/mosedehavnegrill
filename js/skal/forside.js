@@ -983,12 +983,10 @@
        vise forældede reservepriser". */
     if (Butik.reservedata && Butik.reservedata(d)) { felt.style.display = 'none'; return; }
 
-    var fad = null;
-    (d.menu_varer || []).forEach(function (v) {
-      if (fad) return;
-      if (v.aktiv === false || v.udsolgt) return;
-      if (/tapas/i.test(v.navn) && v.pris !== null && v.pris !== undefined) fad = v;
-    });
+    /* Samme fad som tapassiden (Butik.tapasFad, 12/10) — før fandt de to
+       hver sit på varens navn. Uden en pris står der ingen. */
+    var fad = Butik.tapasFad ? Butik.tapasFad(d) : null;
+    if (fad && (fad.pris === null || fad.pris === undefined)) fad = null;
     if (!fad) return;
 
     var lille = find('small', felt);
