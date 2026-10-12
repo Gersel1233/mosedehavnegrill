@@ -5783,6 +5783,10 @@
     kortFortalt: kortFortalt,
     tilmeldingStatus: tilmeldingStatus,
     fristUdloeber: fristUdloeber,
+    /* Dansk vægtid ("2026-10-16T19:00") → millisekunder. Kalenderfilen og
+       Googles arrangementsdata skal have det rigtige øjeblik, uanset
+       hvilken tidszone gæstens telefon står i. */
+    dkTilMs: isoTilMs,
     arrangementer: arrangementer,
     arrangementSlags: arrangementSlags,
     hentPladser: hentPladser,

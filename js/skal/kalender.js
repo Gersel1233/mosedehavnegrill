@@ -90,6 +90,35 @@
   }
   var pladser = {};
   var valgt = null;
+  /* Hele datasættet — stederne og forretningens adresse bor i det. */
+  var dataNu = {};
+
+  /* ÉT SVAR PÅ "KAN MAN MELDE SIG TIL?" (12/10) — Butik.tilmeldingStatus,
+     det samme, admin og databasens bremse siger: aflyst · frist · fuld ·
+     venteliste · aaben · '' (ingen tilmelding). Kortet, laget og
+     formularen spørger her, så de ikke kan blive uenige. */
+  function status(k) { return Butik.tilmeldingStatus(k, pladser[k.id]); }
+  function kanMelde(k) { var s = status(k); return s === 'aaben' || s === 'venteliste'; }
+  function stedFor(k) { return Butik.stedNavn(dataNu, k); }
+  /* "18.00–22.00" — sluttiden med, når den findes (16/9: "vi skal have en
+     sluttidskolonne"; den stod i admin, men aldrig på siden). */
+  function tidTekst(k) {
+    if (!k.start_kl) return '';
+    return klokken(k) + (k.slut_kl ? '–' + Butik.klokken(k.slut_kl) : '');
+  }
+  /* "Tilmelding senest fredag 16. oktober kl. 16.00" — fristen i dansk tid. */
+  function fristTekst(k) {
+    var ms = Butik.fristUdloeber(k);
+    if (ms === null || !window.Intl) return '';
+    try {
+      var dele = {};
+      new Intl.DateTimeFormat('da-DK', { timeZone: 'Europe/Copenhagen', weekday: 'long',
+        day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', hour12: false })
+        .formatToParts(new Date(ms)).forEach(function (d) { dele[d.type] = d.value; });
+      return 'Tilmelding senest ' + dele.weekday + ' ' + dele.day + '. ' + dele.month
+        + ' kl. ' + dele.hour + '.' + dele.minute;
+    } catch (e) { return ''; }
+  }
 
   function lav(tag, klasse, tekst) {
     var el = document.createElement(tag);
@@ -153,16 +182,48 @@
      givet os, og på et "kig forbi"-arrangement ville det være et
      krav, der ikke findes. */
   function pladsTekst(k) {
-    if (!k.tilmelding) return '';
+    var s = status(k);
+    if (s === 'frist') return 'Tilmeldingen er lukket';
+    if (s === 'fuld') return 'Udsolgt';
+    if (s === 'venteliste') return 'Udsolgt — der er venteliste';
+    if (s !== 'aaben') return '';
     var p = pladser[k.id];
     if (!p || !p.pladser) return '';
     var tilbage = p.pladser - (p.optaget || 0);
-    if (tilbage <= 0) return 'Udsolgt';
     if (tilbage === 1) return '1 plads tilbage';
     return tilbage + ' pladser tilbage';
   }
+  function udsolgt(k) { return status(k) === 'fuld'; }
 
-  function udsolgt(k) { return pladsTekst(k) === 'Udsolgt'; }
+  /* Knappen på kortet og i laget — ÉN regel for, hvad den siger (12/10). */
+  function knapFor(k, iLaget) {
+    var s = status(k);
+    if (k.aflyst) {
+      return lav('span', 'evudsolgt', 'Aflyst' + (k.aflyst_tekst ? ': ' + k.aflyst_tekst : '')
+        + '. Ring, hvis I har spørgsmål');
+    }
+    if (k.bord_booking) {
+      /* Fredagsbaren: "Husk at bestille bord" (1/10) er en knap nu, der
+         lander på bordbookingen med dagen valgt (js/bord.js, ?dato=). */
+      var bk = lav('a', iLaget ? 'g solid blk' : 'g sm solid', 'Book bord');
+      bk.href = 'bord/?dato=' + encodeURIComponent(k.dato);
+      bk.setAttribute('data-pick', '');
+      return bk;
+    }
+    if (s === 'aaben' || s === 'venteliste') {
+      var ord = s === 'venteliste' ? 'Skriv jer på ventelisten'
+        : (iLaget ? 'Reservér plads til dette' : 'Reservér plads');
+      var knap = lav(iLaget ? 'button' : 'a', iLaget ? 'g solid blk' : 'g sm solid', ord);
+      if (iLaget) knap.type = 'button';
+      else knap.href = '#reserver';
+      knap.setAttribute('data-pick', '');
+      knap.setAttribute('data-kalender', String(k.id));
+      return knap;
+    }
+    if (s === 'frist') return lav('span', 'evudsolgt', 'Tilmeldingen er lukket. Ring, hvis I er i tvivl');
+    if (s === 'fuld') return lav('span', 'evudsolgt', 'Udsolgt. Ring, hvis I er i tvivl');
+    return lav('span', 'evfri', 'Kig bare forbi, ingen tilmelding');
+  }
 
   function tegnListe() {
     tøm(liste);
@@ -182,7 +243,7 @@
 
     arrangementer.forEach(function (k, i) {
       var slags = slagsFor(k);
-      var kort = lav('div', 'evcard rev' + (i ? ' d' + Math.min(i, 2) : ''));
+      var kort = lav('div', 'evcard rev' + (i ? ' d' + Math.min(i, 2) : '') + (k.aflyst ? ' aflyst' : ''));
       kort.setAttribute('data-kind', slags);
       kort.setAttribute('data-ev', String(i));
       kort.setAttribute('data-kalender', String(k.id));
@@ -208,7 +269,8 @@
       krop.appendChild(lav('h3', null, k.titel));
 
       var brød = [];
-      if (klokken(k)) brød.push('Kl. ' + klokken(k));
+      if (tidTekst(k)) brød.push('Kl. ' + tidTekst(k));
+      if (stedFor(k)) brød.push(stedFor(k));
       if (String(k.beskrivelse || '').trim()) brød.push(String(k.beskrivelse).trim());
       var plads = pladsTekst(k);
       if (plads) brød.push(plads);
@@ -217,18 +279,11 @@
       /* Knappen findes kun, hvor der ER noget at melde sig til.
          Et "kig forbi"-arrangement med en reservationsknap ville
          sende gæsten ned i en formular, der ikke kan bruges. */
-      if (k.tilmelding && !udsolgt(k)) {
-        var knap = lav('a', 'g sm solid', 'Reservér plads');
-        knap.href = '#reserver';
-        knap.setAttribute('data-pick', '');
-        knap.setAttribute('data-kalender', String(k.id));
+      var knap = knapFor(k, false);
+      if (knap.tagName === 'A' && knap.getAttribute('href') === '#reserver') {
         knap.addEventListener('click', function () { vælg(k.id); });
-        krop.appendChild(knap);
-      } else if (k.tilmelding && udsolgt(k)) {
-        krop.appendChild(lav('span', 'evudsolgt', 'Udsolgt. Ring, hvis I er i tvivl'));
-      } else {
-        krop.appendChild(lav('span', 'evfri', 'Kig bare forbi, ingen tilmelding'));
       }
+      krop.appendChild(knap);
 
       /* ⚠️ HELE KORTET KAN TRYKKES (30/8). Kundens ord: "man skal
          kunne trykke ind paa de individuelle og se og laese mere
@@ -310,7 +365,8 @@
     if (t) t.textContent = k.titel;
 
     var naar = [pænDag(k.dato)];
-    if (klokken(k)) naar.push('kl. ' + klokken(k));
+    if (tidTekst(k)) naar.push('kl. ' + tidTekst(k));
+    if (stedFor(k)) naar.push(stedFor(k));
     var h = id('ev-hvornaar');
     if (h) h.textContent = naar.join(' · ');
 
@@ -341,7 +397,11 @@
          person" stod over, og "40 pladser tilbage · 145,- pr.
          person" stod under. To gange det samme tal er ikke to
          oplysninger. */
-      if (!k.tilmelding) linjer.push('Kig bare forbi, ingen tilmelding');
+      if (!k.tilmelding && !k.bord_booking && !k.aflyst) linjer.push('Kig bare forbi, ingen tilmelding');
+      if (kanMelde(k)) {
+        var frist = fristTekst(k);
+        if (frist) linjer.push(frist);
+      }
       plads.textContent = linjer.join(' · ');
       plads.style.display = linjer.length ? '' : 'none';
     }
@@ -349,9 +409,8 @@
     var cta = id('ev-cta');
     if (cta) {
       tøm(cta);
-      if (k.tilmelding && !udsolgt(k)) {
-        var knap = lav('button', 'g solid blk', 'Reservér plads til dette');
-        knap.type = 'button';
+      var knap = knapFor(k, true);
+      if (knap.tagName === 'BUTTON') {
         knap.addEventListener('click', function () {
           vælg(k.id);
           lukLag();
@@ -359,10 +418,12 @@
           var mål = id('reserver');
           if (mål) mål.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
-        cta.appendChild(knap);
-      } else if (k.tilmelding) {
-        cta.appendChild(lav('p', 'hint', 'Udsolgt. Ring, hvis I er i tvivl.'));
       }
+      cta.appendChild(knap);
+      /* "Gem i min kalender" (12/10) — gæstens egen telefon minder om
+         det. Ingen sms og ingen udgift: "Din mad er klar" blev fjernet
+         15/9, fordi det var for dyrt i længden. */
+      if (!k.aflyst) cta.appendChild(kalenderLink(k, 'g'));
       var luk2 = lav('button', 'g', 'Tilbage');
       luk2.type = 'button';
       luk2.addEventListener('click', lukLag);
@@ -394,7 +455,7 @@
     var vælger = id('karr');
     if (!vælger) return;
     var med = arrangementer.filter(function (k) {
-      return k.tilmelding && !udsolgt(k);
+      return k.tilmelding && kanMelde(k);
     });
 
     if (!med.length) {
@@ -454,7 +515,7 @@
       var t = lav('span', 't');
       t.appendChild(lav('b', null, k.titel));
       var info = [];
-      if (klokken(k)) info.push('kl. ' + klokken(k));
+      if (tidTekst(k)) info.push('kl. ' + tidTekst(k));
       var p = pladsTekst(k);
       if (p) info.push(p);
       var pris = String(k.pris_tekst || '').trim();
@@ -512,11 +573,23 @@
       });
   }
 
+  var knapOrd = null;
   function vælg(kalenderId) {
     valgt = String(kalenderId);
     var vælger = id('karr');
     if (vælger) vælger.value = valgt;
     markerValg();
+    var k = arrangementer.filter(function (x) { return String(x.id) === valgt; })[0];
+    if (!k) return;
+    /* Loftet pr. tilmelding er arrangementets eget (12/10; tomt = 20). */
+    var antal = id('kantal');
+    if (antal) antal.max = String(k.max_pr_tilmelding || 20);
+    /* Og knappen siger, hvad der sker: en plads eller en venteliste. */
+    var knap = panel && panel.querySelector('button.g.solid.blk');
+    if (knap) {
+      if (knapOrd === null) knapOrd = knap.textContent;
+      knap.textContent = status(k) === 'venteliste' ? 'Skriv os på ventelisten' : knapOrd;
+    }
   }
 
   // ----------------------------------------------------------
@@ -632,12 +705,25 @@
        kan kende en allergi fra en almindelig besked. */
     besked = Butik.medAllergi(besked, allergi);
 
+    var valgtArr = arrangementer.filter(function (x) { return String(x.id) === String(vælger.value); })[0] || {};
+    var maks = valgtArr.max_pr_tilmelding || 20;
+    if (Number(antal) > maks) {
+      if (knap) knap.disabled = false;
+      return sigFejl('Er I flere end ' + maks + ', så ring, så finder vi ud af det sammen.', id('kantal'));
+    }
+    /* Hvad regner siden med? Databasen bestemmer, og kvitteringen spørger
+       bagefter (mosede_paa_venteliste) — det her er kun reserven. */
+    var pl = pladser[valgtArr.id] || {};
+    var forvent = status(valgtArr) === 'venteliste'
+      || (!!valgtArr.venteliste && !!pl.pladser && (pl.optaget || 0) + Number(antal) > pl.pladser);
     Butik.reserverPlads({
       kalender_id: vælger.value,
       navn: navn,
       telefon: tlf,
       antal_personer: antal,
       besked: besked || null,
+      max_pr_tilmelding: maks,
+      forventVenteliste: forvent,
     }).then(function (svar) {
       visTak(svar);
     }).catch(function (e) {
@@ -666,7 +752,7 @@
        det er stadig DATABASEN, der tæller — næste hentning
        overskriver tallet her. */
     var p = pladser[valgt];
-    if (p && p.pladser) {
+    if (p && p.pladser && !svar.venteliste) {
       p.optaget = (p.optaget || 0) + (Number(svar.antal_personer) || 0);
       tegnListe();
     }
@@ -685,6 +771,16 @@
        Samme lære som bordbookingen: bestilt er bestilt. */
     var besked = hvad + ' Vi siger til, hvis noget ændrer sig. '
       + 'Bliver I forhindret, så ring, så kan pladsen gå videre til en anden.';
+    /* ⚠️ VENTELISTE ER IKKE EN PLADS (12/10). Svaret kommer fra
+       databasen (mosede_paa_venteliste) — kvitteringen må aldrig love en
+       plads, der blev til en venteliste i samme sekund. Her ER der et
+       opkald: Mikkel 12/10, "venteliste ja", og ventelisten er netop, at
+       personalet ringer, når en plads bliver ledig. */
+    if (svar.venteliste) {
+      besked = (k ? 'Der er udsolgt til ' + k.titel + ' ' + pænDag(k.dato) + '. ' : '')
+        + 'I står på ventelisten — bliver der en plads, ringer vi til jer. '
+        + 'Kan I alligevel ikke, så ring, så vi kan give pladsen videre.';
+    }
     var fornavn = String(svar.navn || '').trim().split(/\s+/)[0] || '';
     /* ⚠️ MED STORT FORBOGSTAV — se noten i js/bord.js. */
     fornavn = fornavn
@@ -703,7 +799,7 @@
        sige i døren, og kodeboksen viser den som det store af sig
        selv. Der er altid ÉN ting at sige. */
     K.byg(panel, {
-      titel: 'Vi ses, ' + fornavn + '!',
+      titel: svar.venteliste ? 'I står på ventelisten, ' + fornavn : 'Vi ses, ' + fornavn + '!',
       besked: besked,
       /* ⚠️ KUN HER, IKKE PÅ EN BESTILLING. En bestilling kan slås
          op igen på min-bestilling/ med referencen; den her sag
@@ -711,7 +807,8 @@
          gæsten fanen, har hun kun det, hun selv gemte. */
       skaermbillede: true,
       kode: {
-        navn: 'Pladsnummer',
+        /* På ventelisten er nummeret ikke en plads — det er sagen. */
+        navn: svar.venteliste ? 'Jeres nummer' : 'Pladsnummer',
         reference: svar.reference, refNavn: 'Jeres reference',
         /* ⚠️ NUMMERET ER DET STORE, NÅR DET FINDES  (10/9).
            Kundens ord: referencen er rigtig, men nummeret skal
@@ -727,10 +824,17 @@
         },
       },
       linjer: [
-        { navn: 'Antal', vaerdi: (svar.antal_personer || 1) + ' pladser' },
+        { navn: 'Antal', vaerdi: (svar.antal_personer || 1) + (svar.venteliste ? ' personer' : ' pladser') },
       ],
-      fine: 'Sig referencen i døren, hvis vi spørger.',
+      fine: svar.venteliste ? 'Sig referencen, når vi ringer.' : 'Sig referencen i døren, hvis vi spørger.',
     });
+    /* "Gem i min kalender" — kun med en plads. En venteliste i kalenderen
+       ville ligne en aftale, der ikke er der. */
+    if (k && !svar.venteliste) {
+      var gem = kalenderLink(k, 'g');
+      gem.classList.add('kv-kalender');
+      panel.appendChild(gem);
+    }
   }
 
   // ----------------------------------------------------------
@@ -794,12 +898,112 @@
     }
   }
 
+  /* ============================================================
+     GEM I MIN KALENDER  (12/10)
+     ------------------------------------------------------------
+     En .ics-fil, telefonen selv lægger i kalenderen — og så minder den
+     gæsten om det. Ingen sms, ingen udgift (15/9). Tidspunktet er
+     regnet om til UTC (Butik.dkTilMs), så en telefon i en anden
+     tidszone viser det rigtige klokkeslæt. Uden et klokkeslæt er det
+     en heldagsbegivenhed — vi opfinder ikke en sluttid.
+     ============================================================ */
+  function adresse() {
+    var l = (dataNu.lokationer || [])[0] || {};
+    return [l.adresse, [l.postnr, l.by].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+  }
+  function utc(ms) { return new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
+  function icsTekst(t) {
+    return String(t || '').replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,')
+      .replace(/\r?\n/g, '\\n');
+  }
+  function kalenderfil(k) {
+    var linjer = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Mosede Havnecafe//Arrangementer//DA',
+      'CALSCALE:GREGORIAN', 'BEGIN:VEVENT', 'UID:arr-' + k.id + '@mosedehavnecafe.dk',
+      'DTSTAMP:' + utc(Date.now())];
+    if (k.start_kl) {
+      linjer.push('DTSTART:' + utc(Butik.dkTilMs(k.dato + 'T' + String(k.start_kl).slice(0, 5))));
+      if (k.slut_kl) {
+        linjer.push('DTEND:' + utc(Butik.dkTilMs((k.slut_dato || k.dato) + 'T' + String(k.slut_kl).slice(0, 5))));
+      }
+    } else {
+      var naeste = new Date(Date.UTC(+k.dato.slice(0, 4), +k.dato.slice(5, 7) - 1, +k.dato.slice(8, 10) + 1));
+      linjer.push('DTSTART;VALUE=DATE:' + k.dato.replace(/-/g, ''));
+      linjer.push('DTEND;VALUE=DATE:' + naeste.toISOString().slice(0, 10).replace(/-/g, ''));
+    }
+    linjer.push('SUMMARY:' + icsTekst(k.titel));
+    linjer.push('LOCATION:' + icsTekst(['Mosede Havnecafe', stedFor(k), adresse()].filter(Boolean).join(', ')));
+    if (k.beskrivelse) linjer.push('DESCRIPTION:' + icsTekst(k.beskrivelse));
+    linjer.push('URL:https://mosedehavnecafe.dk/h-kalender.html#arr-' + k.id);
+    linjer.push('END:VEVENT', 'END:VCALENDAR');
+    return linjer.join('\r\n');
+  }
+  function kalenderLink(k, klasse) {
+    var a = lav('a', klasse || 'evkal', 'Gem i kalender');
+    a.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(kalenderfil(k));
+    a.setAttribute('download', (String(k.titel || 'arrangement').replace(/[^\wæøåÆØÅ -]+/g, '').trim()
+      || 'arrangement') + '.ics');
+    a.setAttribute('data-pick', '');
+    return a;
+  }
+
+  /* ============================================================
+     GOOGLE SKAL KUNNE SE ARRANGEMENTERNE  (12/10)
+     ------------------------------------------------------------
+     schema.org Event for hvert offentligt, kommende arrangement — så
+     kan de stå i Googles søgning. Kun det, der står på siden: ingen
+     opfundne priser (prisen er fritekst og står ikke her), og et
+     aflyst arrangement siger EventCancelled i stedet for at forsvinde.
+     ============================================================ */
+  function dkIso(iso, kl) {
+    var ms = Butik.dkTilMs(iso + 'T' + kl);
+    var forskel = Math.round((Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10),
+      +kl.slice(0, 2), +kl.slice(3, 5)) - ms) / 60000);
+    var t = Math.abs(forskel);
+    return iso + 'T' + kl + (forskel >= 0 ? '+' : '-') + String(Math.floor(t / 60)).padStart(2, '0')
+      + ':' + String(t % 60).padStart(2, '0');
+  }
+  function skrivGoogle() {
+    var gammel = document.getElementById('arrangementer-ld');
+    if (gammel) gammel.parentNode.removeChild(gammel);
+    if (!arrangementer.length) return;
+    var l = (dataNu.lokationer || [])[0] || {};
+    var data = arrangementer.map(function (k) {
+      var e = {
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: k.titel,
+        startDate: k.start_kl ? dkIso(k.dato, String(k.start_kl).slice(0, 5)) : k.dato,
+        eventStatus: 'https://schema.org/' + (k.aflyst ? 'EventCancelled' : 'EventScheduled'),
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        location: {
+          '@type': 'Place',
+          name: ['Mosede Havnecafe', stedFor(k)].filter(Boolean).join(' — '),
+          address: { '@type': 'PostalAddress', streetAddress: l.adresse || '', postalCode: l.postnr || '',
+            addressLocality: l.by || '', addressCountry: 'DK' },
+        },
+        organizer: { '@type': 'Organization', name: 'Mosede Havnecafe', url: 'https://mosedehavnecafe.dk/' },
+        url: 'https://mosedehavnecafe.dk/h-kalender.html#arr-' + k.id,
+      };
+      if (k.start_kl && k.slut_kl) e.endDate = dkIso(k.slut_dato || k.dato, String(k.slut_kl).slice(0, 5));
+      else if (k.slut_dato && k.slut_dato !== k.dato) e.endDate = k.slut_dato;
+      if (k.beskrivelse) e.description = String(k.beskrivelse).slice(0, 500);
+      if (k.billede) e.image = [k.billede];
+      return e;
+    });
+    var s = document.createElement('script');
+    s.type = 'application/ld+json';
+    s.id = 'arrangementer-ld';
+    s.textContent = JSON.stringify(data);
+    document.head.appendChild(s);
+  }
+
   /* ⚠️ HVER DEL HAR SIN EGEN FANGST. Fejler pladstællingen, skal
      arrangementerne stadig stå på siden — se noten ved
      hentPladser i js/store.js. Én fejlende del må ikke vælte
      resten; det er husets dyreste lære (26/8, nødmenuen med to
      varer). */
   Butik.hent().then(function (d) {
+    dataNu = d || {};
     arrangementer = Butik.arrangementer(d);
     visTidligere(d);
     return Butik.hentPladser().catch(function () { return {}; });
@@ -807,6 +1011,8 @@
     pladser = p || {};
     tegnListe();
     tegnVælger();
+    /* Egen fangst: Googles data må ikke vælte listen. */
+    try { skrivGoogle(); } catch (e) { if (window.console) console.warn('arrangementsdata:', e); }
   }).catch(function (e) {
     if (window.console) console.warn('kalendersiden:', e);
     arrangementer = [];

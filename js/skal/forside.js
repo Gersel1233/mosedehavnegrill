@@ -283,12 +283,23 @@
     var i_dag = Butik.nu().dato;
     var næste = (d.kalender || [])
       .filter(function (k) {
-        return k.type === 'arrangement' && k.offentlig
+        /* ⚠️ IKKE ET AFLYST (12/10). Banneret er en appetitvækker; en
+           aflyst koncert øverst på forsiden ville sende folk ned på
+           havnen til ingenting. Kalendersiden siger det, der er aflyst. */
+        return k.type === 'arrangement' && k.offentlig && !k.aflyst
           && (k.slut_dato || k.dato) >= i_dag;
       })
-      .sort(function (a, b) { return a.dato < b.dato ? -1 : 1; })[0];
+      .sort(function (a, b) {
+        if (a.dato !== b.dato) return a.dato < b.dato ? -1 : 1;
+        return String(a.start_kl || '') < String(b.start_kl || '') ? -1 : 1;
+      })[0];
 
     if (!næste) return skjul(boks);
+
+    /* Linket peger på ARRANGEMENTET, ikke bare på siden (chefen 2/10:
+       "lad forsidens event linke videre til kalenderarrangementet"). */
+    var cta = find('.cta', boks);
+    if (cta) cta.setAttribute('href', 'h-kalender.html#arr-' + næste.id);
 
     visBannerTegn(boks, næste);
     skriv(find('h4', boks), næste.titel + ' · ' + pænDato(næste.dato, true));

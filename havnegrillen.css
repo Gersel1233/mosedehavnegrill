@@ -3930,3 +3930,9 @@ button.g:disabled:active{transform:none}
    de to prisvarer sidst i variantlisten (2/10). Ingen egen luft
    over, ellers ligner det et nyt afsnit, nogen glemte at navngive. */
 .mk-sek-fortsat{margin-top:-10px;padding-top:0}
+/* ⚠️ ET AFLYST ARRANGEMENT STÅR STADIG — MED ORDET  (12/10). Det
+   forsvinder ikke: en gæst, der har set det i går, skal kunne se, at det
+   er aflyst, i stedet for at lede efter det. Titlen streges over, og
+   resten blegner; ordet "Aflyst" står i knappens plads (kalender.js). */
+.evcard.aflyst h3{text-decoration:line-through;text-decoration-thickness:1.5px}
+.evcard.aflyst .kind,.evcard.aflyst p{opacity:.6}

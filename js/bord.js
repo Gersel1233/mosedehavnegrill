@@ -34,7 +34,14 @@
   }
 
   var data = null;
-  var valgtDag = null;
+  /* ⚠️ ET ARRANGEMENT MED "BOOK BORD" PEGER HERTIL MED DAGEN (12/10):
+     bord/?dato=2026-10-16. Dagen vælges kun, hvis den findes i striben
+     — visDage() falder tilbage på den første ellers, så et gammelt link
+     aldrig lander på en dag, der ikke kan bookes. */
+  var valgtDag = (function () {
+    var m = /[?&]dato=(\d{4}-\d{2}-\d{2})/.exec(window.location.search || '');
+    return m ? m[1] : null;
+  }());
 
   // ----------------------------------------------------------
   //  HVILKE DAGE OG TIDER KAN MAN SPØRGE OM?
