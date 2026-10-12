@@ -180,6 +180,8 @@
       b.setAttribute('aria-pressed', b.getAttribute('data-vis') === vis ? 'true' : 'false');
     });
     if ($('arr-mangler-sql')) $('arr-mangler-sql').hidden = nyeKolonner();
+    /* Uden arrangoer.sql findes tabellen med stederne ikke. */
+    if ($('arr-ret-steder-liste')) $('arr-ret-steder-liste').hidden = !nyeKolonner();
 
     var q = soeg.trim().toLowerCase();
     var vist = rk.filter(function (k) {
@@ -584,7 +586,12 @@
       var paa = Object.assign({}, k, { dato: iso });
       var hvornaar = dd.length > 1 ? langDato(iso) + ': ' : '';
       var luk = Butik.lukketDen(d(), iso);
-      if (luk) ud.push(hvornaar + 'Caféen er lukket den dag' + (luk.titel ? ' («' + luk.titel + '»)' : '') + '.');
+      /* ⚠️ `aarsag`, IKKE `titel`: d.lukkedage er kalenderens UDGAVE
+         (afledLukkedage i store.js), og dér hedder titlen den gamle
+         tabels ord. Første udgave læste `titel` og viste aldrig navnet —
+         kalender-lukning.spec.js fangede det. */
+      var lukNavn = luk && (luk.aarsag || luk.titel);
+      if (luk) ud.push(hvornaar + 'Caféen er lukket den dag' + (lukNavn ? ' («' + lukNavn + '»)' : '') + '.');
       var s = sted(k.sted_id);
       if (s && (s.baglokale || s.hele_stedet) && optagne.some(function (o) {
         return o.dato === iso && (o.slags === 'udlejning' || o.slags === 'baglokale');
@@ -770,14 +777,19 @@
     });
   }
 
-  if ($('arr-ret-steder')) {
-    $('arr-ret-steder').addEventListener('click', function () {
+  /* To veje ind: fra formularen ("Hvor på havnen") og under listen.
+     Første udgave havde kun den i formularen — prøven, der skulle
+     omdøbe et sted, kunne ikke finde knappen, før den lavede et
+     arrangement, den ikke ville lave. */
+  ['arr-ret-steder', 'arr-ret-steder-liste'].forEach(function (id) {
+    if (!$(id)) return;
+    $(id).addEventListener('click', function () {
       var kort = $('arr-steder-kort');
       kort.hidden = !kort.hidden;
       tegnStedListe();
       if (!kort.hidden && kort.scrollIntoView) kort.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  }
+  });
   if ($('arr-sted-tilfoej')) {
     $('arr-sted-tilfoej').addEventListener('click', function () {
       var navn = felt('arr-sted-navn').value.trim();

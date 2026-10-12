@@ -913,7 +913,9 @@
   }
   function utc(ms) { return new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
   function icsTekst(t) {
-    return String(t || '').replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,')
+    /* ⚠️ '\\;' OG IKKE '\;' — i en JS-streng er '\;' bare et semikolon,
+       og så klipper kalenderen titlen ved det første (RFC 5545). */
+    return String(t || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,')
       .replace(/\r?\n/g, '\\n');
   }
   function kalenderfil(k) {
