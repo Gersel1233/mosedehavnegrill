@@ -537,6 +537,28 @@ create trigger reservation_ret_vaern
   for each row execute function public.reservation_ret_vaern();
 
 
+/* KVITTERINGEN MÅ IKKE LOVE EN PLADS, DER BLEV TIL EN VENTELISTE.
+   Gæsten kan ikke læse reservationerne (det er hele gæstelisten), så
+   siden kan ikke selv se, hvad bremsen gjorde — og blev det fuldt i
+   samme sekund, står hun på ventelisten, mens browseren troede, der var
+   plads. Samme greb som mosede_sagsnummer(): kun med sin EGEN reference,
+   kun i en time, og kun et ja/nej — ingen navne, intet antal. */
+create or replace function public.mosede_paa_venteliste(ref text)
+returns boolean
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+  select r.status = 'venteliste' from public.reservationer r
+   where r.reference = ref and r.oprettet > now() - interval '1 hour'
+   limit 1;
+$$;
+
+revoke all on function public.mosede_paa_venteliste(text) from public;
+grant execute on function public.mosede_paa_venteliste(text) to anon, authenticated;
+
+
 -- ------------------------------------------------------------
 -- 5) BILLEDERNE — arrangøren må lægge arrangementets billede op.
 --    is_admin() siger nej til hende nu (punkt 1), og billederne

@@ -233,6 +233,14 @@ select pg_temp.svar('23. … rækken står som venteliste, og pladserne tæller 
   and (select p.optaget from public.arrangement_pladser p join public.kalender k on k.id = p.kalender_id
         where k.titel = 'Fuld med venteliste') = 4);
 
+/* Gæsten spørger med sin egen reference — og får kun et ja/nej. */
+select pg_temp.svar('23b. Kvitteringen kan se, at gæsten står på ventelisten',
+  public.mosede_paa_venteliste((select r.reference from public.reservationer r
+                                 where r.telefon = '20000013')) is true
+  and public.mosede_paa_venteliste((select r.reference from public.reservationer r
+                                     where r.telefon = '20000010')) is false
+  and public.mosede_paa_venteliste('RE-findes-ikke') is null);
+
 select pg_temp.svar('24. Visningen har stadig præcis fire kolonner (ingen navne ud)',
   (select count(*) from information_schema.columns
     where table_schema = 'public' and table_name = 'arrangement_pladser') = 4);
