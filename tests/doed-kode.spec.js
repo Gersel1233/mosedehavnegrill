@@ -32,8 +32,12 @@ const KENDTE = [
   'arrangementer.js',
   'baad.js',
   'baglokale.js',
+  /* De to sidste fandt prøven selv 12/10, da den holdt op med at
+     forveksle js/x.js med js/skal/x.js og js/admin/x.js. */
+  'forespoergsel.js',
   'intro.js',
   'menuside.js',
+  'nyheder.js',
   'smoerrebroed.js',
 ];
 
@@ -58,9 +62,14 @@ test('ingen NY fil i js/ er holdt op med at blive indlæst', () => {
   expect(html.length, 'ingen sider blev læst — prøven måler ingenting')
     .toBeGreaterThan(1000);
 
+  /* ⚠️ MED MAPPEN, IKKE KUN NAVNET (12/10). Prøven søgte på
+     "arrangementer.js" — og da admin.html fik js/admin/arrangementer.js
+     (arrangørens arbejdsbord), så den gamle, forældreløse
+     js/arrangementer.js ud, som om den blev indlæst igen. To filer med
+     samme navn i hver sin mappe er ikke den samme fil. */
   const forældreløse = fs.readdirSync('js')
     .filter((f) => f.endsWith('.js'))
-    .filter((f) => html.indexOf(f) === -1)
+    .filter((f) => html.indexOf('js/' + f) === -1)
     .sort();
 
   expect(forældreløse, 'listen over filer, ingen side indlæser, har '

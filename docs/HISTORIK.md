@@ -46,6 +46,14 @@ havnecaféen — men de kan lave navnene om", "arrangøren må godt udgive selv"
   fejlen genindført (19 + 6). De gamle kalenderprøver for arrangementer er vendt til
   arbejdsbordet med grunden i noten ("VENDT 12/10"). Berørte filer: 406 bestod, 2 fejlede
   (lukkedagens navn — rettet), derefter grønne
+- **Den fulde runde (computer) fandt tre til, alle mine:** noten om den manglende SQL-fil
+  stod med filnavnet på skærmen (husets regel 28/9: personalet "siger det til Lesreg");
+  datoboksen stod i 11,5 px (hele pixel i admin); og `tests/doed-kode.spec.js` søgte på
+  filnavnet alene, så js/admin/arrangementer.js fik den gamle js/arrangementer.js til at
+  se indlæst ud. Skærpet til stien — og så fandt den TO forældreløse filer mere, der har
+  gemt sig bag samme forveksling: `js/forespoergsel.js` (siderne bruger
+  js/skal/forespoergsel.js) og `js/nyheder.js` (ingen side). Skrevet på listen med en note
+  øverst i hver; ikke slettet
 - ⚠️ **TILBAGE:** kalenderformularens egne arrangementsfelter (`kal-offentlig`,
   `kal-tilmeld-felt` m.fl.) nås ikke længere for et arrangement, men «Note til dagen» er
   type `arrangement` internt — de skal ryddes med omtanke, ikke med et søg-og-slet

@@ -1,3 +1,17 @@
+/* ============================================================
+   ⚠️ INGEN SIDE INDLÆSER DEN HER FIL  (målt 12/10)
+   ------------------------------------------------------------
+   Der findes ingen nyhedsside. Nyhederne står på forsiden
+   (js/skal/forside.js); fanen i admin er js/admin/nyheder.js.
+   Den gemte sig for tests/doed-kode.spec.js, som søgte på
+   filnavnet alene — og en fil med SAMME NAVN i en anden mappe
+   bliver indlæst. Fundet, da prøven blev skærpet til at søge på
+   stien (12/10, arrangørens js/admin/arrangementer.js).
+
+   ⚠️ BYG IKKE VIDERE PÅ DEN. En rettelse her kommer ingen gæst
+   til gode. Den er ikke slettet: det afgøres for sig, ikke i
+   forbifarten.
+   ============================================================ */
 /* Nyhederne for gæsterne.
 
    Listen ER fanen i admin: personalet skriver en nyhed, sætter

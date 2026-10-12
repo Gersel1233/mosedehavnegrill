@@ -1,3 +1,18 @@
+/* ============================================================
+   ⚠️ INGEN SIDE INDLÆSER DEN HER FIL  (målt 12/10)
+   ------------------------------------------------------------
+   Siderne (h-selskaber, h-frokost og h-baglokale)
+   henter js/skal/forespoergsel.js — den her er den gamle formular
+   fra før gæstesiden blev skiftet ud 23/8.
+   Den gemte sig for tests/doed-kode.spec.js, som søgte på
+   filnavnet alene — og en fil med SAMME NAVN i en anden mappe
+   bliver indlæst. Fundet, da prøven blev skærpet til at søge på
+   stien (12/10, arrangørens js/admin/arrangementer.js).
+
+   ⚠️ BYG IKKE VIDERE PÅ DEN. En rettelse her kommer ingen gæst
+   til gode. Den er ikke slettet: det afgøres for sig, ikke i
+   forbifarten.
+   ============================================================ */
 /* ------------------------------------------------------------
    Forespørgselsformularen: catering, baglokale og selskab.
 
