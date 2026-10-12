@@ -201,6 +201,43 @@ test.describe('Arbejdsbordet', () => {
     expect((gemt.arrangement_steder || []).filter((s) => /molen/i.test(s.navn)).length).toBeLessThan(2);
   });
 
+  /* ⚠️ ET BILLEDE, DER KUN STÅR I FORHÅNDSVISNINGEN, ER IKKE GEMT.
+     Mikkel 12/10: "de kan poste billeder og det hele" — så prøven
+     lægger et op ad arrangørens vej og ser, at det lander på rækken.
+     Upload-koden er nyhedernes (Butik.skrive.nyhedBillede); det, der
+     måles her, er arbejdsbordets halvdel: at adressen bliver husket
+     og sendt med. */
+  test('et billede kan lægges op og gemmes med arrangementet', async ({ page }) => {
+    await arbejdsbordet(page, med([]));
+    await page.locator('#arr-ny').click();
+    await page.fill('#arr-titel', 'Fredagsbar');
+    await page.fill('#arr-dato', '2026-08-14');
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900">'
+      + '<rect width="1200" height="900" fill="#c83"/></svg>';
+    await page.locator('#arr-billede').setInputFiles({ name: 'molen.svg',
+      mimeType: 'image/svg+xml', buffer: Buffer.from(svg) });
+    await expect(page.locator('#arr-billede-status')).toContainText('lagt op');
+    // Arrangøren ser det på kortet, før der trykkes Udgiv.
+    await expect(page.locator('#arr-forhaand img.arr-kv-foto')).toHaveCount(1);
+
+    await page.locator('#arr-udgiv').click();
+    await expect(page.locator('#kvittering')).toContainText('Udgivet');
+    const k = (await gemteData(page)).kalender[0];
+    expect(k.billede, 'billedet blev ikke gemt med arrangementet').toMatch(/\/nyheder\/proeve-.*\.jpg$/);
+  });
+
+  /* ⚠️ EN REGEL UDEN SCOPE LAVER HELE ADMIN OM (CLAUDE.md). Arbejdsbordets
+     tekstknap delte klasse med "Glemt koden?" på login og tog dens luft og
+     farve. De 8 px er login-stilens egen regel (.knap-tekst), ikke målt
+     her. Og knappen under listen skal kunne rammes med en finger. */
+  test('arbejdsbordets tekstknap rører ikke "Glemt koden?"', async ({ page }) => {
+    await arbejdsbordet(page, med([arr()]));
+    const glemt = await page.locator('#glemt-kode').evaluate((e) => getComputedStyle(e).paddingTop);
+    expect(glemt, 'login-knappen fik arbejdsbordets regel').toBe('8px');
+    const h = (await page.locator('#arr-ret-steder-liste').boundingBox()).height;
+    expect(h, 'for lille trykflade').toBeGreaterThanOrEqual(44);
+  });
+
   /* ⚠️ VENTELISTE UDEN ET LOFT ER EN LISTE, INGEN KOMMER PÅ. */
   test('ventelisten kan kun slås til, når der er et antal pladser', async ({ page }) => {
     await arbejdsbordet(page, med([]));

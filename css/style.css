@@ -13749,9 +13749,19 @@ body.personale .felt-etiket { display: block; font-size: 14px; font-weight: 600;
 /* Valgene ombryder — fem steder står ikke på én linje på en telefon. */
 body.personale .adm-seg.arr-valg { display: flex; flex-wrap: wrap; border-radius: 22px; }
 body.personale .arr-gentag-liste { margin-top: 4px; }
-body.personale .knap-tekst {
-  margin-top: 8px;
-  padding: 0;
+/* ⚠️ KUN PÅ ARBEJDSBORDET. Første udgave stod som `body.personale
+   .knap-tekst` — og "Glemt koden?" på login er også .knap-tekst, så
+   den skiftede farve og mistede sin luft (fundet ved at læse reglen,
+   ikke af en prøve). Og 44 px høj: den fulde runde målte "Ret
+   stedernes navne" til 21 px på en telefon (admin-gennemgang: under
+   30 er for lille til en finger). */
+body.personale #p-arrangementer .knap-tekst {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0 2px;
   border: 0;
   background: none;
   color: var(--red-tekst);
