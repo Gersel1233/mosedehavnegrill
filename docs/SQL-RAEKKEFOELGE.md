@@ -60,7 +60,20 @@ og derfra:
   → engelsk-menukort-2-10.sql
   → chefens-rettelser-7-10.sql
   → levering-tid-8-10.sql
+  → arrangoer.sql
 ```
+
+**⚠️ `arrangoer.sql` (12/10) — IKKE KØRT ENDNU. SKAL STÅ SIDST (efter `gaestens-regler.sql`).**
+Chefens ord: *"Er der lavet en gruppe på hjemmesiden, hvor vores event-arrangør kan gå ind
+og lægge alle vores events ind?"* Mikkel 12/10: stederne kan omdøbes, arrangøren må udgive
+selv, venteliste ja. Rollen `arrangoer` i `admin_adgang`; `is_admin_for()`/`is_admin()`
+siger nej til den (alle tabellers politikker følger med), `kan_arrangere_for()` ja.
+Tabellen `arrangement_steder` (fem steder lægges ind, hvis der ingen er). Kalenderen får
+sted, aflyst, venteliste, max pr. tilmelding, frist, "book bord", serie og hvem der skrev.
+`reservation_bremse()` skrives om (aflyst, frist, max, venteliste, personalet uden om
+spambremsen, dansk dato), og et arrangement med tilmeldte kan ikke slettes.
+Prøven er `proev-arrangoer.sql`. **Admin og siden virker også, før filen er kørt** — de
+nye felter står først frem, når databasen har kolonnerne.
 
 **⚠️ `levering-tid-8-10.sql` (8/10) — KØRT I PRODUKTIONEN 8/10 kl. 12.52. SKAL STÅ EFTER
 `tilvalg-og-tidsbegraensede-varer-1-10.sql`.** Mikkel 8/10: *"der skal være noget
@@ -321,6 +334,7 @@ tavst — derfor listen:
 | `bremse.sql` | `skraldespand.sql` og `bremse-uden-borde-26-9.sql` | bordene tæller med i de 40 i timen igen, så en travl dag ved bordene lukker for al online-bestilling (tjek 151) |
 | `gaestens-regler.sql`, `kanal-vaern.sql`, `levering-valideret.sql` eller `bord-plads.sql` | `gaestens-vaern-26-9.sql` | den gamle dør ("kun rollen anon") kommer tilbage, så en bruger, der har oprettet sig selv, slipper uden om gæstens regler — og linjens antal og bordets dato holder op med at blive tjekket (tjek 150) |
 | `gaestens-regler.sql`, `gaestens-vaern-26-9.sql` eller `tilvalg-og-tidsbegraensede-varer-1-10.sql` | `levering-tid-8-10.sql` | leveringens køretur forsvinder, så en gammel fane kan bestille en levering til Køge om et kvarter (tjek 152) |
+| `gaestens-regler.sql` eller `arrangement-sluttid.sql` | `arrangoer.sql` | tilmeldingens bremse mister venteliste, frist, aflysning og max pr. tilmelding — et aflyst arrangement tager imod igen |
 
 Og to rækkefølger inden i rækkefølgen: `bestilling-dato-vaern.sql` FØR
 `bestillingsnummer.sql`, og `dato-vaern-resten.sql` FØR `bordnummer.sql` — ellers
