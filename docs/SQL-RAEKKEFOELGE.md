@@ -64,7 +64,7 @@ og derfra:
   → kategori-rolle.sql
 ```
 
-**⚠️ `kategori-rolle.sql` (12/10) — IKKE KØRT ENDNU.** Mikkel: *"fix til perfektion"*.
+**⚠️ `kategori-rolle.sql` (12/10) — KØRT I PRODUKTIONEN 12/10 (målt bagefter: kolonnen på alle 24 kategorier, mærke på præcis de seks).** Mikkel: *"fix til perfektion"*.
 Kategorien får et fast mærke (`rolle`: smørrebrød, håndmadder, fyld, tapas, pindemad,
 sliders), som vælges i admin («Bruges på siden som»), så bestillingens smørrebrød,
 tapassiden og cateringens priser ikke længere finder kategorien på navnet. Filen sætter

@@ -8,7 +8,7 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 ## Hvor vi er nu
 
 **MENUKORTET: KATEGORIEN HAR ET FAST MÆRKE, NAVNET ER BARE ET NAVN** (12/10 — LIVE efter
-Mikkels "yes fix til perfektion"; `supabase/kategori-rolle.sql` er IKKE KØRT). Mikkels
+Mikkels "yes fix til perfektion" som 88f6d1b; `supabase/kategori-rolle.sql` KØRT 12/10). Mikkels
 spørgsmål: *"de blir proppet under de rigtige sektioner og nemt at finde rundt i?"*
 - **MÅLT FØR:** seks steder fandt deres varer på kategoriens NAVN — bestillingens smørrebrød,
   håndmadder og fyld (`/smørrebrød|håndmad|fyld/`), tapassiden og forsidens tapaspris (varen
@@ -29,6 +29,9 @@ spørgsmål: *"de blir proppet under de rigtige sektioner og nemt at finde rundt
   som smørrebrød og uden værnet. `catering-frokost.spec.js` vendt til `data-rolle`. De berørte
   siders filer (bestil, smørrebrød, tapas, catering, menukort, forside, ved bordet m.fl.): 1010
   bestod på computeren; admin-filerne 354 bestod på begge
+- **Målt efter kørslen på det RIGTIGE kort** (menu_kategorier og menu_varer hentet med
+  anon-nøglen, kørt med og uden kolonnen): ens svar — smørrebrødets kategorier 39 og 13 (42
+  stykker), Tapasfad 179, cateringen fra 27,- / 179,- / 50,- / 40,-
 
 **ARRANGØREN: HAVNENS PROGRAM FÅR SIT EGET ARBEJDSBORD** (12/10 — PÅ ARBEJDSGRENEN,
 venter på Mikkels ja, og `supabase/arrangoer.sql` er IKKE KØRT). Chefens ord: *"Er der
