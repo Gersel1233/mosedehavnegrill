@@ -112,16 +112,43 @@ er to steder, der kan komme til at sige hver sit.
 
 Herunder lægger du ind i kalenderen:
 
-- **Arrangement** — noget der sker
+- **Arrangement** — noget der sker. Knappen åbner fanen
+  **🎉 Arrangementer** med dagen valgt (se nedenfor)
 - **Lukkedag** — der er lukket
 - **Lukker tidligt** — åbent, men kortere
 
-**⚠️ Skal gæsterne kunne reservere plads, SKAL du sætte hakket
-"Gæsterne skal kunne reservere plads".** Uden det står der "kig
-bare forbi" på hjemmesiden, og der er ingen knap. Listen siger,
-hvad der gælder: **🎟️ Tager imod · 40 pl.** eller **Kig forbi**.
+### 🎉 Arrangementer
 
-Alt kan rettes bagefter med **Ret** — også hakket.
+Havnens program — alt det, der står på kalendersiden og i «Hvad sker
+der» på forsiden. Listen er delt i **Kommende**, **Kladder** (står
+ikke på siden endnu) og **Forbi**.
+
+**+ Nyt arrangement**, og så:
+
+- **Hvornår** — dato, starttid, sluttid. **Gentag hver uge** til en
+  dato laver ét arrangement pr. uge — hver kan rettes og aflyses for sig
+- **Hvor på havnen** — Hele havnecaféen, Terrassen, Indenfor,
+  Baglokalet, Molen. Navnene kan rettes under **Ret stedernes navne**
+- **Hvordan kommer man med** — **Kig bare forbi** (ingen knap),
+  **Tilmelding** (pladser, højst pr. tilmelding, hvornår den lukker,
+  venteliste) eller **Book bord** (knappen sender gæsten til
+  bordbookingen med dagen valgt)
+
+Til højre står kortet, som gæsterne ser det. Rammer datoen en
+lukkedag, et udlejet baglokale eller et andet arrangement samme sted,
+står det med rødt, før du gemmer.
+
+**Udgiv** sætter det på hjemmesiden med det samme. **Gem som kladde**
+gemmer det uden at vise det.
+
+**⚠️ Skal det ikke ske alligevel, så tryk Aflys — ikke Slet.** Det
+bliver stående på siden med ordet «Aflyst», og listen over tilmeldte
+er der stadig, så I kan ringe rundt. Et arrangement med tilmeldte kan
+ikke slettes.
+
+**Arrangøren** får sit eget login (Personale → rollen **Arrangør**).
+Arrangøren ser kun Arrangementer og Tilmeldinger — ikke priser, salg eller
+bestillinger.
 
 ### 🍲 Dagens ret
 
@@ -137,6 +164,10 @@ ingen grænse.
 Hvem der kommer til et arrangement — listen, I krydser af i døren.
 **Én liste pr. arrangement**, ikke én lang: I står i døren til ét
 arrangement, ikke til efterårets fem.
+
+**Ventelisten** står nederst. Melder nogen fra (**Afvis**), bliver
+der plads: tryk **Ryk op — der er plads** på den første og ring til
+dem. Listen kan **printes** til døren eller hentes som **regneark**.
 
 ### 🥪 Bestillinger — dagens regnskab
 
@@ -617,7 +648,7 @@ er intet nummer at tælle op.
 | Det ser sådan ud | Det er som regel |
 |---|---|
 | Menukortet viser kun to varer | En tabel svarer ikke. Konsollen siger hvilken |
-| Der er ingen "Reservér plads"-knap | Hakket "Gæsterne skal kunne reservere plads" er ikke sat. Tryk **Ret** på arrangementet |
+| Der er ingen "Reservér plads"-knap | Arrangementet står som **Kig bare forbi**, eller tilmeldingen er lukket (fristen er gået). Tryk **Ret** under **🎉 Arrangementer** |
 | Printsiden er tom | Du er ikke logget ind i den fane. Log ud og ind med **"Husk mig"** |
 | En vare kan ikke bestilles | Den har ingen pris. Sæt den under **Menukort** |
 | Der kan ikke bestilles til en dag | Lukkedag, sæsonlukning, eller varslet. Se **Kalender** og **Åbningstider** |

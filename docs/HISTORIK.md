@@ -7,6 +7,49 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**ARRANGØREN: HAVNENS PROGRAM FÅR SIT EGET ARBEJDSBORD** (12/10 — PÅ ARBEJDSGRENEN,
+venter på Mikkels ja, og `supabase/arrangoer.sql` er IKKE KØRT). Chefens ord: *"Er der
+lavet en gruppe på hjemmesiden, hvor vores event-arrangør kan gå ind og lægge alle vores
+events ind på?"* Mikkels svar: stederne er "de 4 der eller alle sammen, sådan hele
+havnecaféen — men de kan lave navnene om", "arrangøren må godt udgive selv", "venteliste ja".
+- **MÅLT FØR:** arrangementerne blev lavet i kalenderens formular, hvor typen stod på
+  LUKKEDAG fra start, og listen blandede lukkedage, noter og det overståede. Slet tog
+  gæstelisten med i stilhed (`on delete cascade`). Én fredagsbar om ugen var ti gange
+  den samme formular. Rollen fandtes ikke: alt, der ikke var medarbejder, var ejer
+- **Databasen** (`supabase/arrangoer.sql`, prøve `proev-arrangoer.sql`, 40 tjek, set fejle
+  12 gange med tre værn fjernet): rollen `arrangoer` (`is_admin_for` udelukker den — alle
+  18 tabellers RLS følger med; `kan_arrangere_for` giver kalenderens arrangementer og
+  tilmeldingerne). Tabellen `arrangement_steder` (omdøbes, skjules, slettes aldrig).
+  Kalenderen fik sted, aflyst + grund, venteliste, max pr. tilmelding, frist, book bord,
+  serie, oprettet_af/aendret_af. `reservation_bremse` skrevet om (aflyst → frist → max →
+  pladser/venteliste). Et arrangement med tilmeldte kan ikke slettes. Ryk op fra
+  ventelisten kræver en plads (`reservation_ret_vaern`)
+- **Admin:** fanen 🎉 Arrangementer (`js/admin/arrangementer.js`) — Kommende/Kladder/Forbi,
+  søg, Ret/Kopiér/Tilmeldte/Aflys/Slet (låst med tilmeldte), gentag hver (anden) uge til
+  en dato (én POST: alle eller ingen), sted, tre måder at komme med på, forhåndsvisning
+  af kortet og forsiden, og advarsler: lukket dag (med navnet), baglokalet udlejet,
+  samme sted og tid. Tilmeldinger: venteliste, «Ryk op», dørliste til print og regneark.
+  Arrangøren ser kun de to faner (og to genveje i bundbjælken på telefonen)
+- **Siden:** sted og sluttid på kortet, «Aflyst» med streg og grund, «Book bord» fører til
+  bord/?dato=…, venteliste («Skriv jer på ventelisten» — kvitteringen siger det),
+  tilmeldingsfrist, «Gem i kalender» (.ics i UTC, ingen sms — «Din mad er klar» blev
+  fjernet 15/9 af samme grund), og schema.org Event til Google (aflyst = EventCancelled)
+- ⚠️ **ADMIN OG SIDEN VIRKER FØR FILEN ER KØRT.** De nye kolonner sendes kun, når databasen
+  har dem (`nyeKolonner()` spørger efter `aflyst`); sted, venteliste, frist og aflys står
+  først frem bagefter, og fanen siger det
+- **Fejl fundet undervejs og rettet:** Gem i Personale gjorde en arrangør til ejer;
+  `slut_kl` blev aldrig gemt fra kalenderen; kategorien «Andet» blev til null;
+  forsidens korte udgave klippede ved «kl.»; telefonens tilmelding tog 100 mod databasens
+  20; advarslen læste lukkedagens `titel`, men `d.lukkedage` kalder det `aarsag`;
+  kalenderfilen escapede ikke semikolon (`'\;'` er bare `;` i en JS-streng)
+- **Prøver:** `tests/arrangoer.spec.js` (25 × 2 profiler) — alle set fejle i to runder med
+  fejlen genindført (19 + 6). De gamle kalenderprøver for arrangementer er vendt til
+  arbejdsbordet med grunden i noten ("VENDT 12/10"). Berørte filer: 406 bestod, 2 fejlede
+  (lukkedagens navn — rettet), derefter grønne
+- ⚠️ **TILBAGE:** kalenderformularens egne arrangementsfelter (`kal-offentlig`,
+  `kal-tilmeld-felt` m.fl.) nås ikke længere for et arrangement, men «Note til dagen» er
+  type `arrangement` internt — de skal ryddes med omtanke, ikke med et søg-og-slet
+
 **HISTORIEN: TEKSTEN STÅR STILLE, BILLEDERNE KOMMER SOM I EN FILM** (11/10 — PÅ
 ARBEJDSGRENEN, venter på Mikkels ja). Mikkels ord: *"animationerne inde i historie
 siden er generiske og elendige"*.
