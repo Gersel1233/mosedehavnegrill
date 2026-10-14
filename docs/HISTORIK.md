@@ -7,6 +7,24 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LEVERING: GRATIS LEVERING FRA–TIL, SAT AF CHEFEN** (14/10). Mikkels ord: *"de kan slå
+prisen på levering fra og til så gratis … og de også kan ændre prisen … på lancerings
+dagen her fredag skal levering være gratis"*.
+- **MÅLT FØR:** gratis levering kunne kun laves ved at sætte gebyret til 0 — og huske at
+  sætte det tilbage. Og teksten til gæsten (`leverings_pris`) ville stadig have sagt 79 kr.
+- **Nu:** indstillingen `gratis_levering` = `{ fra, til }` (false = fra). Gælder
+  LEVERINGSDAGEN (den valgte dag), slår sig selv til og fra. Gebyret røres ikke. Én regel:
+  `Butik.gratisLevering` / `gratisLeveringTekst` (store.js); `R.levering(d, hvordan, dato)`
+  får dagen fra forsiden, smørrebrødet, bestil/ og tapassiden. Summen siger «levering
+  gratis»; forsiden siger «Gratis levering fredag 16. oktober» i forvejen og «… i dag» på
+  dagen, i stedet for prisen. Ingen SQL: databasen kræver ikke fragtlinjen, den tjekker kun
+  beløbet, når den står der
+- ⚠️ **ET HAK ALENE ER "GRATIS FRA NU"** — første udgave hang på kortets autogem og gemte
+  hakket i samme sekund. Nu: hakket viser datoerne, «Gem gratis levering» gemmer, hakket af
+  slår fra med det samme. Fundet af prøven «til og med før fra»
+- **Prøver:** `tests/gratis-levering.spec.js` (9) + tre i `skal-smoerrebroed.spec.js` — alle
+  set fejle, én genindført fejl ad gangen (11 af 11)
+
 **MENUKORTET: KATEGORIEN HAR ET FAST MÆRKE, NAVNET ER BARE ET NAVN** (12/10 — LIVE efter
 Mikkels "yes fix til perfektion" som 88f6d1b; `supabase/kategori-rolle.sql` KØRT 12/10). Mikkels
 spørgsmål: *"de blir proppet under de rigtige sektioner og nemt at finde rundt i?"*

@@ -419,6 +419,21 @@ Ugeplanen, sæsonlukning, og **hvornår køkkenet lukker**.
 - Er der lukket, kan der ikke bestilles — databasen afviser det
   også, hvis nogen prøver udenom
 
+**Levering** står også her (kortet «Levering»):
+
+- **Hvad koster leveringen?** — beløbet, der lægges på én gang pr.
+  levering. Ret tallet, og det gælder med det samme
+- **Gratis levering** — sæt hak, vælg **Fra** og **Til og med**, og tryk
+  **Gem gratis levering**. Den slår sig selv til og fra på de dage —
+  ingen skal huske at slukke den. Tomme datoer = gratis fra nu, til I
+  tager hakket af. **Hakket alene gemmer ingenting**; at tage det af
+  slår gratis levering fra med det samme
+- Det gælder **den dag, maden leveres** — en bestilling torsdag til
+  fredag er gratis, hvis fredag er gratis
+- Gæsterne ser det på forsiden: «Gratis levering fredag 16. oktober»
+  i forvejen, «Gratis levering i dag» på dagen, og i summen står
+  «levering gratis». Prisen ovenfor gælder igen bagefter
+
 ### 📰 Nyheder
 
 Korte beskeder på forsiden. **Tom fra-dato betyder altid** — så
