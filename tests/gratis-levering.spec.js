@@ -95,7 +95,7 @@ test.describe('Chefen slår den til og fra', () => {
     await page.locator('#levering-gratis').check();
     await page.locator('#levering-gratis-fra').fill(NAESTE_FREDAG);
     await page.locator('#levering-gratis-til').fill(NAESTE_FREDAG);
-    await page.locator('#gem-levering').click();
+    await page.locator('#levering-gratis-gem').click();
     await expect.poll(async () => JSON.stringify((await gemteData(page)).indstillinger.gratis_levering))
       .toBe(JSON.stringify({ fra: NAESTE_FREDAG, til: NAESTE_FREDAG }));
     const ind = (await gemteData(page)).indstillinger;
@@ -107,8 +107,8 @@ test.describe('Chefen slår den til og fra', () => {
   test('hakket af slår den fra igen', async ({ page }) => {
     await leveringen(page, { gratis_levering: { fra: null, til: null } });
     await expect(page.locator('#levering-gratis')).toBeChecked();
+    // At tage hakket af er altid sikkert — det gemmes med det samme.
     await page.locator('#levering-gratis').uncheck();
-    await page.locator('#gem-levering').click();
     await expect.poll(async () => (await gemteData(page)).indstillinger.gratis_levering).toBe(false);
   });
 
@@ -117,9 +117,23 @@ test.describe('Chefen slår den til og fra', () => {
     await page.locator('#levering-gratis').check();
     await page.locator('#levering-gratis-fra').fill(NAESTE_FREDAG);
     await page.locator('#levering-gratis-til').fill(IDAG);
-    await page.locator('#gem-levering').click();
+    await page.locator('#levering-gratis-gem').click();
     await expect(page.locator('#fejl')).toContainText('«Til og med» ligger før «Fra»');
     expect((await gemteData(page)).indstillinger.gratis_levering || false).toBe(false);
+  });
+
+  /* ⚠️ ET HAK ALENE ER "GRATIS FRA NU". Første udgave gemte det i samme
+     sekund — onsdag, mens chefen planlagde fredag. Også når et ANDET felt i
+     kortet gemmer sig selv bagefter (prisen), må hakket ikke komme med. */
+  test('et hak alene gør ikke leveringen gratis — først Gem', async ({ page }) => {
+    await leveringen(page);
+    await page.locator('#levering-gratis').check();
+    await expect(page.locator('#levering-gratis-status')).toContainText('Ikke gemt endnu');
+    await page.locator('#levering-gebyr').fill('79');
+    await page.locator('#levering-gebyr').blur();
+    await page.waitForTimeout(1600);
+    expect((await gemteData(page)).indstillinger.gratis_levering || false,
+      'leveringen blev gratis, før nogen trykkede Gem').toBe(false);
   });
 
   test('prisen kan stadig ændres', async ({ page }) => {

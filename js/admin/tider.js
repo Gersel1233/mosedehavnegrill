@@ -277,22 +277,65 @@
       ? tekst + '. Gæsten ser det på siden, og fragten lægges ikke på. Bagefter koster leveringen ' + bagefter + '.'
       : 'Perioden er forbi — leveringen koster ' + bagefter + ' igen. Tag hakket af, eller vælg nye datoer.';
   }
+  /* ⚠️ ET HAK ALENE ER "GRATIS FRA NU" — DERFOR GEMMES DET IKKE AF SIG
+     SELV (14/10). Første udgave hang på kortets autogem: hakket gemte i
+     samme sekund, og satte chefen det onsdag for at planlægge fredag, var
+     leveringen gratis med det samme, til datoerne var skrevet. Prøven
+     «til og med før fra» fandt det (den gemte halvdelen undervejs). Nu:
+     hakket viser datoerne, «Gem gratis levering» gemmer — og at tage
+     hakket af slår den fra med det samme, for det er altid sikkert.
+     `kladde` holder et halvt valg fast, når takten tegner om. */
+  var kladde = false;
   function tegnGratis(i, akt) {
     var hak = $('levering-gratis');
     if (!hak) return;
     var g = i.gratis_levering && typeof i.gratis_levering === 'object' ? i.gratis_levering : null;
-    var holdes = akt && $('levering-gratis-datoer') && $('levering-gratis-datoer').contains(akt);
-    if (akt !== hak && !holdes) {
+    if (!kladde) {
       hak.checked = !!i.gratis_levering;
       $('levering-gratis-fra').value = g && g.fra ? g.fra : '';
       $('levering-gratis-til').value = g && g.til ? g.til : '';
     }
     $('levering-gratis-datoer').hidden = !hak.checked;
-    gratisStatus(i);
+    $('levering-gratis-gem-raekke').hidden = !hak.checked;
+    if (kladde) {
+      $('levering-gratis-status').textContent = 'Ikke gemt endnu. Vælg dagene — eller lad dem stå tomme '
+        + 'for gratis levering fra nu, til I slår den fra — og tryk «Gem gratis levering».';
+    } else gratisStatus(i);
   }
-  if ($('levering-gratis')) {
+  function samlGratis() {
+    if (!$('levering-gratis').checked) return false;
+    var fra = $('levering-gratis-fra').value || null;
+    var til = $('levering-gratis-til').value || null;
+    if (fra && til && til < fra) return '«Til og med» ligger før «Fra».';
+    return { fra: fra, til: til };
+  }
+  var gratisBoks = $('levering-gratis') && $('levering-gratis').closest('.gratis-levering');
+  if (gratisBoks) {
+    /* Kortets autogem må ikke se felterne her — se noten ovenfor. */
+    ['change', 'input'].forEach(function (ev) {
+      gratisBoks.addEventListener(ev, function (e) { e.stopPropagation(); });
+    });
     $('levering-gratis').addEventListener('change', function () {
-      $('levering-gratis-datoer').hidden = !this.checked;
+      if (this.checked) {
+        kladde = true;
+        tegnGratis(Admin.data.indstillinger || {}, null);
+        return;
+      }
+      kladde = false;
+      Admin.gem(Butik.skrive.indstilling('gratis_levering', false),
+        'Gratis levering er slået fra. Leveringen koster det, der står ovenfor.');
+    });
+    ['levering-gratis-fra', 'levering-gratis-til'].forEach(function (id) {
+      $(id).addEventListener('input', function () {
+        kladde = true;
+        tegnGratis(Admin.data.indstillinger || {}, null);
+      });
+    });
+    $('levering-gratis-gem').addEventListener('click', function () {
+      var g = samlGratis();
+      if (typeof g === 'string') return Admin.brøl(g);
+      Admin.gem(Butik.skrive.indstilling('gratis_levering', g).then(function () { kladde = false; }),
+        g ? 'Gratis levering er gemt.' : 'Gratis levering er slået fra.');
     });
   }
 
@@ -377,21 +420,7 @@
       } else koer[f.getAttribute('data-postnr')] = n;
     });
     if (koerFejl) return koerFejl;
-    /* Gratis levering (14/10): false = slået fra; ellers { fra, til }. */
-    var gratis;
-    if ($('levering-gratis')) {
-      gratis = false;
-      if ($('levering-gratis').checked) {
-        var gFra = $('levering-gratis-fra').value || null;
-        var gTil = $('levering-gratis-til').value || null;
-        if (gFra && gTil && gTil < gFra) return '«Til og med» ligger før «Fra».';
-        gratis = { fra: gFra, til: gTil };
-      }
-    }
     return Butik.skrive.indstilling('leverings_gebyr', pris)
-      .then(function () {
-        return gratis === undefined ? null : Butik.skrive.indstilling('gratis_levering', gratis);
-      })
       .then(function () {
         return Butik.skrive.indstilling('leverings_postnr', nr);
       })
