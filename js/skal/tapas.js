@@ -329,7 +329,7 @@
   /* Fragten er reglens (R.levering): én gang pr. bestilling, kun ved
      levering, og tom = ingen. Ingen kopi af tallet her. */
   function fragt() {
-    return R.levering ? R.levering(data, hvordanVal()) : { pris: 0, ialt: 0 };
+    return R.levering ? R.levering(data, hvordanVal(), valgtDag) : { pris: 0, ialt: 0 };
   }
 
   /* Cavaen står i designet med navn og pris. Findes den ikke i
@@ -458,7 +458,8 @@
     var lev = fragt();
     if (hvordan) {
       dele.push(lev.ialt ? 'Levering ' + S.kroner(lev.pris)
-        : hvordan.options[hvordan.selectedIndex].textContent);
+        : lev.gratis ? 'Gratis levering'
+          : hvordan.options[hvordan.selectedIndex].textContent);
     }
     // Punktum, husets ene klokkeslæt (Butik.klokken) — her stod "kl. 14:00" (8/10)
     if (tid && tid.value) dele.push('kl. ' + Butik.klokken(tid.value));

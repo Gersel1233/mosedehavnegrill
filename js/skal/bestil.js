@@ -519,7 +519,7 @@
      præcis det, emballagen blev en synlig linje for (1/9). */
   function fragten() {
     if (!R.levering) return { antal: 0, pris: 0, ialt: 0 };
-    return R.levering(data, hvordan());
+    return R.levering(data, hvordan(), valgtDag);
   }
 
   function emballagen() {
@@ -2547,6 +2547,10 @@
     if (lev.ialt) {
       linjer.appendChild(lav('span', 'sum-emb',
         '  + levering ' + kroner(lev.pris)));
+    } else if (lev.gratis) {
+      /* Gratis levering (14/10): det skal STÅ — ellers ligner det, at
+         fragten er glemt. */
+      linjer.appendChild(lav('span', 'sum-emb sum-gratis', '  + levering gratis'));
     }
     note.appendChild(linjer);
 
@@ -2810,7 +2814,7 @@
 
   function leveringsLinje(linjer) {
     if (!R.levering) return linjer;
-    var l = R.levering(data, hvordan());
+    var l = R.levering(data, hvordan(), valgtDag);
     if (!l.ialt) return linjer;
     return linjer.concat([
       { navn: 'Levering', antal: 1, pris: l.pris, emballage: true }]);

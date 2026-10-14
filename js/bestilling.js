@@ -2478,7 +2478,7 @@
      præcis det, emballagen blev en synlig linje for (1/9). */
   function fragten() {
     if (!R.levering) return { antal: 0, pris: 0, ialt: 0 };
-    return R.levering(data, kurv.hvordan);
+    return R.levering(data, kurv.hvordan, valgtDag);
   }
 
   function emballagen() {
@@ -2533,7 +2533,7 @@
 
   function leveringsLinje(linjer) {
     if (!R.levering) return linjer;
-    var l = R.levering(data, kurv.hvordan);
+    var l = R.levering(data, kurv.hvordan, valgtDag);
     if (!l.ialt) return linjer;
     return linjer.concat([
       { navn: 'Levering', antal: 1, pris: l.pris, emballage: true }]);
@@ -2644,6 +2644,13 @@
       lr.appendChild(lt);
       lr.appendChild(lav('span', 'kurv-pris', window.MosedePris(lev.ialt)));
       boks.appendChild(lr);
+    } else if (lev.gratis) {
+      /* Gratis levering (14/10) står som en linje — ellers ligner det,
+         at fragten er glemt. */
+      var gr = lav('div', 'kurv-linje kurv-emballage kurv-gratis');
+      gr.appendChild(lav('span', 'kurv-navn', 'Levering'));
+      gr.appendChild(lav('span', 'kurv-pris', 'gratis'));
+      boks.appendChild(gr);
     }
 
     /* Ønskerne til fyld har ingen pris og er ikke en vare — men de

@@ -242,8 +242,15 @@
       /* En linje uden sit tal står ikke halvt ("Til ." / " pr. bestilling"). */
       Array.prototype.forEach.call(document.querySelectorAll(linje), function (el) { el.hidden = !tekst; });
     }
+    /* GRATIS LEVERING (14/10, Butik.gratisLevering): i dag → prislinjen
+       væk og "Gratis levering i dag" i stedet; en anden dag → prisen står,
+       og dagen står under den. */
+    var gratis = t.gratis || '';
+    var gratisNu = !!gratis && Butik.gratisLevering && Butik.gratisLevering(i);
+    if (gratisNu) pris = '';
     fyld('[data-lev-omraade]', t.omraade, '[data-lev-omraade-linje]');
     fyld('[data-lev-pris]', pris, '[data-lev-pris-linje]');
+    fyld('[data-lev-gratis]', gratis ? gratis + '.' : '', '[data-lev-gratis-linje]');
     Array.prototype.forEach.call(nav, function (el) { el.textContent = 'to-go, spis her eller levering'; });
   }
 

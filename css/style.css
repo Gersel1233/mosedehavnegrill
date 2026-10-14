@@ -12867,6 +12867,11 @@ body.personale .kat-dage-linje > label { font-size: 13px; font-weight: 600; colo
    hvor kategorien står. Ikke hele bredden på en computer. */
 body.personale .kat-rolle-linje .kat-rolle { max-width: 16rem; }
 body.personale .kat-rolle-linje .kat-rolle-hjaelp { flex-basis: 100%; margin: 0; }
+/* Gratis levering (14/10) — sit eget lille felt i leveringskortet. */
+body.personale .gratis-levering { margin: 14px 0 4px; padding: 12px 14px; border-radius: 14px;
+  background: var(--creme, #fbf6ee); border: 1px solid rgba(36, 26, 23, .08); }
+body.personale .gratis-levering .felt-par { margin-top: 8px; }
+body.personale .gratis-levering #levering-gratis-status { margin: 8px 0 0; }
 /* ⚠️ .kat-dage har `flex: none` fra sin egen regel (5/9) og kunne
    derfor ikke bryde om: målt på et skud løb "Søn" ud over kortets kant
    på en telefon. Inde i dagslinjen må den krympe og bryde. */

@@ -247,6 +247,7 @@
     $('emballage-navn').value = i.emballage_navn || '';
 
     if (!$('levering-gebyr')) return;
+    tegnGratis(i, akt);
     if (akt && akt.id === 'levering-gebyr') return;
     $('levering-gebyr').value = i.leverings_gebyr === undefined
       || i.leverings_gebyr === null ? '' : String(i.leverings_gebyr).replace('.', ',');
@@ -254,6 +255,45 @@
     $('levering-postnr').value = Array.isArray(i.leverings_postnr)
       ? i.leverings_postnr.join(' ') : (i.leverings_postnr || '');
     tegnKoeretider(i, akt);
+  }
+
+  /* ============================================================
+     GRATIS LEVERING  (14/10) — Mikkels ord: "på lanceringsdagen her
+     fredag skal levering være gratis". Hak + fra/til; statuslinjen
+     siger, hvad gæsten ser NU, og hvad leveringen koster bagefter —
+     så ingen skal gætte, om den er slået til.
+     ============================================================ */
+  function gratisStatus(i) {
+    var s = $('levering-gratis-status');
+    if (!s) return;
+    var gebyr = Number(String(i.leverings_gebyr === undefined || i.leverings_gebyr === null ? '' : i.leverings_gebyr).replace(',', '.'));
+    var bagefter = isFinite(gebyr) && gebyr > 0 ? Butik.kroner(gebyr, 'kr') : 'ingen fragt';
+    if (!i.gratis_levering) {
+      s.textContent = 'Slået fra. Leveringen koster ' + bagefter + '.';
+      return;
+    }
+    var tekst = Butik.gratisLeveringTekst ? Butik.gratisLeveringTekst(i) : '';
+    s.textContent = tekst
+      ? tekst + '. Gæsten ser det på siden, og fragten lægges ikke på. Bagefter koster leveringen ' + bagefter + '.'
+      : 'Perioden er forbi — leveringen koster ' + bagefter + ' igen. Tag hakket af, eller vælg nye datoer.';
+  }
+  function tegnGratis(i, akt) {
+    var hak = $('levering-gratis');
+    if (!hak) return;
+    var g = i.gratis_levering && typeof i.gratis_levering === 'object' ? i.gratis_levering : null;
+    var holdes = akt && $('levering-gratis-datoer') && $('levering-gratis-datoer').contains(akt);
+    if (akt !== hak && !holdes) {
+      hak.checked = !!i.gratis_levering;
+      $('levering-gratis-fra').value = g && g.fra ? g.fra : '';
+      $('levering-gratis-til').value = g && g.til ? g.til : '';
+    }
+    $('levering-gratis-datoer').hidden = !hak.checked;
+    gratisStatus(i);
+  }
+  if ($('levering-gratis')) {
+    $('levering-gratis').addEventListener('change', function () {
+      $('levering-gratis-datoer').hidden = !this.checked;
+    });
   }
 
   /* ============================================================
@@ -337,7 +377,21 @@
       } else koer[f.getAttribute('data-postnr')] = n;
     });
     if (koerFejl) return koerFejl;
+    /* Gratis levering (14/10): false = slået fra; ellers { fra, til }. */
+    var gratis;
+    if ($('levering-gratis')) {
+      gratis = false;
+      if ($('levering-gratis').checked) {
+        var gFra = $('levering-gratis-fra').value || null;
+        var gTil = $('levering-gratis-til').value || null;
+        if (gFra && gTil && gTil < gFra) return '«Til og med» ligger før «Fra».';
+        gratis = { fra: gFra, til: gTil };
+      }
+    }
     return Butik.skrive.indstilling('leverings_gebyr', pris)
+      .then(function () {
+        return gratis === undefined ? null : Butik.skrive.indstilling('gratis_levering', gratis);
+      })
       .then(function () {
         return Butik.skrive.indstilling('leverings_postnr', nr);
       })

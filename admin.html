@@ -869,6 +869,27 @@
               og kan vælge at hente selv.</p>
           </div>
         </div>
+        <!-- GRATIS LEVERING  (14/10). Mikkel: "på lanceringsdagen her fredag
+             skal levering være gratis". En periode, der slår sig selv til og
+             fra — prisen ovenfor røres ikke og gælder igen bagefter.
+             Reglen: Butik.gratisLevering (js/store.js). -->
+        <div class="gratis-levering">
+          <label class="afkryds">
+            <input type="checkbox" id="levering-gratis">
+            <span><b>Gratis levering</b> <span class="hjaelp">— fragten lægges ikke på, og siden siger det</span></span>
+          </label>
+          <div class="felt-par" id="levering-gratis-datoer">
+            <div class="felt felt-smal">
+              <label for="levering-gratis-fra">Fra <span class="hjaelp">(tom = fra nu)</span></label>
+              <input type="date" id="levering-gratis-fra">
+            </div>
+            <div class="felt felt-smal">
+              <label for="levering-gratis-til">Til og med <span class="hjaelp">(tom = til I slår den fra)</span></label>
+              <input type="date" id="levering-gratis-til">
+            </div>
+          </div>
+          <p class="hjaelp" id="levering-gratis-status" aria-live="polite"></p>
+        </div>
         <!-- ⚠️ LEVERINGENS TID  (8/10). Mikkels ord: "der skal være noget in
              advance så de kan bestille til xx:xx så caféen kan nå det … nok
              sådan 30 min … Karlslunde 10-15 minutter … Køge 30 min, det

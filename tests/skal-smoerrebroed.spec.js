@@ -396,6 +396,50 @@ test.describe('Fragten står i summen', () => {
     await expect(sum).toContainText('260,-');
   });
 
+  /* ============================================================
+     GRATIS LEVERING  (14/10)
+     Mikkels ord: "på lanceringsdagen her fredag skal levering være
+     gratis". Fragten lægges ikke på — og summen SIGER, at den er
+     gratis, ellers ligner det, at den er glemt. Modstykket: en
+     periode, der ikke rammer leveringsdagen, koster som før.
+     ============================================================ */
+  test('gratis levering: ingen fragt, og summen siger det', async ({ page }) => {
+    const d = medLevering();
+    d.indstillinger.emballage_pris = 10;
+    d.indstillinger.gratis_levering = { fra: null, til: null };
+    await åbn(page, d);
+    await page.locator('[data-toggles="#levfelt"] button', { hasText: 'Leveres' }).click();
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 4);
+    const sum = page.locator('#sumline');
+    await expect(sum).toContainText('levering gratis');
+    await expect(sum).not.toContainText('levering 79');
+    // 4 × 55 + 4 × 10 — de 79 er væk
+    await expect(sum).toContainText('260,-');
+  });
+
+  test('en gratis periode en anden dag koster som før', async ({ page }) => {
+    const d = medLevering();
+    d.indstillinger.gratis_levering = { fra: '2099-01-01', til: '2099-01-01' };
+    await åbn(page, d);
+    await page.locator('[data-toggles="#levfelt"] button', { hasText: 'Leveres' }).click();
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 4);
+    await expect(page.locator('#sumline')).toContainText('levering 79,-');
+  });
+
+  test('gratis levering kommer ikke med på bestillingen som en linje', async ({ page }) => {
+    const d = medLevering();
+    d.indstillinger.gratis_levering = { fra: null, til: null };
+    await åbn(page, d);
+    await page.locator('[data-toggles="#levfelt"] button', { hasText: 'Leveres' }).click();
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 1);
+    await udfyld(page);
+    await page.locator('#sadr').fill('Havnevej 20L, 2670 Greve');
+    await page.locator('#ssend').click();
+    await expect.poll(async () => ((await gemteData(page)).bestillinger || []).length).toBe(1);
+    const b = (await gemteData(page)).bestillinger[0];
+    expect((b.linjer || []).filter((l) => l.navn === 'Levering'), 'fragten kom med alligevel').toHaveLength(0);
+  });
+
   /* Og linjen følger med ind i bestillingen, så kassen kan se,
      hvad totalen består af. */
   test('den følger med som en linje på bestillingen', async ({ page }) => {

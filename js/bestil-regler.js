@@ -554,9 +554,17 @@
     return isFinite(n) && n > 0 ? n : 0;
   }
 
-  function levering(d, hvordan) {
+  /* ⚠️ GRATIS LEVERING (14/10) — Butik.gratisLevering, på LEVERINGSDAGEN
+     (`dato`, den dag gæsten har valgt; uden en dag: i dag). Så lægges
+     fragten ikke på, og `gratis` siger til kurven, at den skal sige det.
+     Gebyret er urørt og gælder igen bagefter (se noten i store.js). */
+  function levering(d, hvordan, dato) {
+    if (hvordan !== 'levering') return { antal: 0, pris: 0, ialt: 0 };
+    if (window.Butik && Butik.gratisLevering && Butik.gratisLevering(d.indstillinger, dato)) {
+      return { antal: 0, pris: 0, ialt: 0, gratis: true };
+    }
     var pris = leveringsGebyr(d);
-    if (!pris || hvordan !== 'levering') return { antal: 0, pris: 0, ialt: 0 };
+    if (!pris) return { antal: 0, pris: 0, ialt: 0 };
     return { antal: 1, pris: pris, ialt: pris };
   }
 

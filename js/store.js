@@ -2347,21 +2347,90 @@
      dét er husets egen lære om, at dækning forsvinder, når en
      fil holder op med at blive kørt. To kopier af sætningen ville
      langsomt sige hver sit om det samme område. */
+  /* ============================================================
+     GRATIS LEVERING  (14. okt 2026)
+     ------------------------------------------------------------
+     Mikkels ord: *"de kan slå prisen på levering fra og til, så
+     gratis … og de også kan ændre prisen … på lanceringsdagen her
+     fredag skal levering være gratis"*.
+
+     Indstillingen `gratis_levering` er { fra, til } (datoer, begge
+     valgfri); slået fra er den false. Den gælder LEVERINGSDAGEN, ikke
+     den dag, der trykkes send: en bestilling torsdag til fredag er
+     gratis. Fra/til gør, at den kan sættes i forvejen og slår sig selv
+     fra igen — ingen skal huske at slukke den lørdag morgen.
+
+     ⚠️ GEBYRET RØRES IKKE. leverings_gebyr står, hvor det stod, og
+     gælder igen, når perioden er forbi. Et gebyr sat til 0 og glemt
+     var netop den fælde, det her skal undgå — og leverings_pris
+     (prosaen) ville stadig have sagt 79 kr.
+     ============================================================ */
+  var DAGE_SMAA = ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'];
+  var MAANEDER_SMAA = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august',
+    'september', 'oktober', 'november', 'december'];
+  function dagOgDato(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+    if (!m) return '';
+    var t = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    return DAGE_SMAA[t.getUTCDay()] + ' ' + (+m[3]) + '. ' + MAANEDER_SMAA[+m[2] - 1];
+  }
+  function gratisPeriode(ind) {
+    var g = (ind || {}).gratis_levering;
+    if (!g) return null;
+    if (g === true) return { fra: null, til: null };
+    if (typeof g !== 'object') return null;
+    var dag = function (x) { return /^\d{4}-\d{2}-\d{2}$/.test(String(x || '')) ? String(x) : null; };
+    return { fra: dag(g.fra), til: dag(g.til) };
+  }
+  function gratisLevering(ind, dato) {
+    var p = gratisPeriode(ind);
+    if (!p) return false;
+    var iso = /^\d{4}-\d{2}-\d{2}$/.test(String(dato || '')) ? String(dato) : nu().dato;
+    if (p.fra && iso < p.fra) return false;
+    if (p.til && iso > p.til) return false;
+    return true;
+  }
+  /* Det, gæsten læser — og kun mens perioden ikke er forbi.
+     "Gratis levering i dag" · "… til og med søndag 18. oktober" ·
+     "… fredag 16. oktober" (i forvejen) · "… fra fredag 16. oktober". */
+  function gratisLeveringTekst(ind) {
+    var p = gratisPeriode(ind);
+    if (!p) return '';
+    var idag = nu().dato;
+    if (p.til && p.til < idag) return '';
+    if (!p.fra || p.fra <= idag) {
+      if (!p.til) return 'Gratis levering';
+      if (p.til === idag) return 'Gratis levering i dag';
+      return 'Gratis levering til og med ' + dagOgDato(p.til);
+    }
+    if (!p.til) return 'Gratis levering fra ' + dagOgDato(p.fra);
+    if (p.til === p.fra) return 'Gratis levering ' + dagOgDato(p.fra);
+    return 'Gratis levering ' + dagOgDato(p.fra) + ' til ' + dagOgDato(p.til);
+  }
+
   function leveringsTekst(ind, ogsaaAfhentning) {
     var i = ind || {};
     var omr = String(i.leverings_omraade || '').trim();
     var pris = String(i.leverings_pris || '').trim();
+    /* Gratis i dag: så er prisen ikke det, gæsten skal læse. Gratis en
+       anden dag: prisen står, og dagen står bagefter. */
+    var gratis = gratisLeveringTekst(i);
+    var gratisNu = gratis && gratisLevering(i);
     return {
       omraade: omr,
       pris: pris,
+      gratis: gratis,
       faktaFed: omr ? 'Vi leverer i ' + omr : 'Levering',
       /* Det fede står nu på sin egen linje over resten (27/9), så
          resten er hele sætninger — ikke " for 79 kr. — eller …". */
-      faktaResten: (pris ? ' Koster ' + pris.replace(/\.?$/, '.') : '')   // "150 kr." må ikke blive "150 kr.."
+      faktaResten: (gratisNu ? ' ' + gratis + '.'
+        : (pris ? ' Koster ' + pris.replace(/\.?$/, '.') : '')   // "150 kr." må ikke blive "150 kr.."
+          + (gratis ? ' ' + gratis + '.' : ''))
         + (ogsaaAfhentning ? ' Du kan også hente selv ved lugen.' : ' Eller hent selv ved lugen.'),
       hint: (omr ? 'Vi leverer i ' + omr + '. ' : '')
-        + (pris ? 'Levering koster ' + pris + '.'
-          : 'Vi ringer og aftaler prisen med jer.'),
+        + (gratisNu ? gratis + '.'
+          : (pris ? 'Levering koster ' + pris + '.'
+            : 'Vi ringer og aftaler prisen med jer.') + (gratis ? ' ' + gratis + '.' : '')),
     };
   }
 
@@ -5948,6 +6017,9 @@
     klokken: klokken,
     menu: menu,
     menuAfsnit: menuAfsnit,
+    gratisLevering: gratisLevering,
+    gratisLeveringTekst: gratisLeveringTekst,
+    dagOgDato: dagOgDato,
     smoerrebroed: smoerrebroed,
     katRolle: katRolle,
     harRoller: harRoller,
