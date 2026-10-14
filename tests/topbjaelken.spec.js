@@ -298,6 +298,13 @@ test.describe('Den faste bjælke er forsidens på alle sider', () => {
     await åbnSkal(page, sti, { data: grunddata() });
     await page.evaluate(() => document.getElementById('intro')?.remove());
     await rul(page, 900);
+    /* ⚠️ VENT PÅ AT BJÆLKEN KLÆBER, ikke på uret (14/10). Den faste
+       ventetid alene faldt én gang i en fuld runde på smørrebrødssiden
+       (en tung side på en presset maskine) og bestod alene på 12 s —
+       maskinens fejl, ikke sidens. Klæber den aldrig, svarer prøven
+       stadig null nedenfor og fejler, som den skal. */
+    await page.waitForFunction(() => document.querySelector('#tb.stuck, #hd.stuck'), null, { timeout: 5000 })
+      .catch(() => {});
     await page.waitForTimeout(700);   // navnet toner ind (.45 s)
     return page.evaluate(() => {
       const navn = document.querySelector('#tb.stuck .ordmaerke, #hd.stuck .logo');
