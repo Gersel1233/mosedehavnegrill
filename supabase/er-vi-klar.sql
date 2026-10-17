@@ -1323,7 +1323,18 @@ with tjek(nr, del, hvad, ok, retning) as (values
    (select coalesce(pg_get_functiondef(to_regproc('public.mosede_gaestens_regler'))
                     like '%leverings_koeretid%', false)),
    'En gammel fane kan bestille en levering til Køge om et kvarter. '
-   || 'Kør supabase/levering-tid-8-10.sql.')
+   || 'Kør supabase/levering-tid-8-10.sql.'),
+
+  /* 17/10: en stor levering får chefens trin i køkkenet
+     (levering_store) — siden regner det, og databasen skal afvise det
+     samme. Linjen siger ❌ igen, hvis levering-tid-8-10.sql eller en
+     ældre fil med mosede_gaestens_regler køres EFTER
+     levering-store-17-10.sql. */
+  (153, 'Bestillinger', 'En stor levering får chefens ekstra tid i køkkenet',
+   (select coalesce(pg_get_functiondef(to_regproc('public.mosede_gaestens_regler'))
+                    like '%levering_store%', false)),
+   'En gammel fane kan bestille 30 stk. til levering om en halv time. '
+   || 'Kør supabase/levering-store-17-10.sql.')
 ),
 
 samlet as (

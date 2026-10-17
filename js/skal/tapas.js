@@ -430,7 +430,34 @@
   // ----------------------------------------------------------
   var fejlVises = false;
 
+  /* Varerne på bestillingen — ÉT sted, for afsendelsen og for
+     leveringens tid herunder: tæller de to hver sine linjer, kan
+     køkkenet få 45 min. lovet af siden og 30 af databasen. */
+  function varelinjer(n, b) {
+    var linjer = [{ navn: fad.navn, antal: n, pris: fad.pris }];
+    if (b) linjer.push({ navn: bobler.navn, antal: b, pris: bobler.pris });
+    valgteEkstra().forEach(function (x) {
+      linjer.push({ navn: x.v.navn, antal: x.n, pris: x.v.pris });
+    });
+    return linjer;
+  }
+
+  /* STORE BESTILLINGER  (17/10) — se nyLeveringsStk i js/skal/bestil.js.
+     Et fad til 20 personer er 20 stk.; chefens trin afgør, hvor længe
+     køkkenet skal have. Tiderne tegnes kun om, når den tid skifter. */
+  function nyLeveringsStk() {
+    if (!R.saetLeveringsStk || !R.stkI || !data || !fad) return;
+    var n = antalPersoner();
+    var foer = R.leveringsTid(data);
+    R.saetLeveringsStk(data, n ? R.stkI(varelinjer(n, bobler ? antalBobler() : 0)) : 0);
+    var nu = R.leveringsTid(data);
+    if (nu.koekken === foer.koekken || hvordanVal() !== 'levering') return;
+    visLevTid();
+    visTider();
+  }
+
   function visSum() {
+    nyLeveringsStk();
     var boks = find('#tsum');
     if (!boks) return;
     fejlVises = false;
@@ -550,11 +577,7 @@
     }
     if (!valgtDag || !tid || !tid.value) return brøl('Vælg en dag og et tidspunkt.');
 
-    var linjer = [{ navn: fad.navn, antal: n, pris: fad.pris }];
-    if (b) linjer.push({ navn: bobler.navn, antal: b, pris: bobler.pris });
-    valgteEkstra().forEach(function (x) {
-      linjer.push({ navn: x.v.navn, antal: x.n, pris: x.v.pris });
-    });
+    var linjer = varelinjer(n, b);
     /* Fragten som sin egen linje — samme navn og form som forsidens
        (leveringsLinje), så databasens værn og køkkenets liste kender den. */
     var lev = fragt();

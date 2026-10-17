@@ -62,7 +62,21 @@ og derfra:
   → levering-tid-8-10.sql
   → arrangoer.sql
   → kategori-rolle.sql
+  → levering-store-17-10.sql
 ```
+
+**⚠️ `levering-store-17-10.sql` (17/10) — IKKE KØRT ENDNU. SKAL STÅ EFTER
+`levering-tid-8-10.sql`.** Mikkel 17/10: *"hvornår bør de så lave det? Hvor lang tid
+tager det med x antal … det må ikke kunne gå galt"* — og om tallene: *"Chefen sætter tal"*.
+Store bestillinger kan få mere tid i køkkenet før en levering: indstillingen
+`levering_store` er ejerens trin (`[{"fra": 15, "min": 45}, …]`), sat under admin →
+Åbningstider → Levering. Det højeste trin, bestillingen når, gælder, og aldrig under
+køkkenets tid; køreturen lægges oveni som før. Stk. er alle linjer undtagen fragt og
+emballage. **Filen sætter ingen trin** — uden dem er alt som før. Funktionen er
+8-10-filens tekst ord for ord med én lap (efter `v_levk := round(v_levk)`) og to
+variabler. Prøven er `proev-levering-store-17-10.sql` — 10 af 10. Set fejle: uden lappen
+falder nr. 2 og 5. **Siden virker også, før filen er kørt** — databasen er så mildere
+end siden (30 min. uanset antal), aldrig strengere.
 
 **⚠️ `kategori-rolle.sql` (12/10) — KØRT I PRODUKTIONEN 12/10 (målt bagefter: kolonnen på alle 24 kategorier, mærke på præcis de seks).** Mikkel: *"fix til perfektion"*.
 Kategorien får et fast mærke (`rolle`: smørrebrød, håndmadder, fyld, tapas, pindemad,
@@ -344,6 +358,7 @@ tavst — derfor listen:
 | `bremse.sql` | `skraldespand.sql` og `bremse-uden-borde-26-9.sql` | bordene tæller med i de 40 i timen igen, så en travl dag ved bordene lukker for al online-bestilling (tjek 151) |
 | `gaestens-regler.sql`, `kanal-vaern.sql`, `levering-valideret.sql` eller `bord-plads.sql` | `gaestens-vaern-26-9.sql` | den gamle dør ("kun rollen anon") kommer tilbage, så en bruger, der har oprettet sig selv, slipper uden om gæstens regler — og linjens antal og bordets dato holder op med at blive tjekket (tjek 150) |
 | `gaestens-regler.sql`, `gaestens-vaern-26-9.sql` eller `tilvalg-og-tidsbegraensede-varer-1-10.sql` | `levering-tid-8-10.sql` | leveringens køretur forsvinder, så en gammel fane kan bestille en levering til Køge om et kvarter (tjek 152) |
+| `gaestens-regler.sql`, `gaestens-vaern-26-9.sql`, `tilvalg-og-tidsbegraensede-varer-1-10.sql` eller `levering-tid-8-10.sql` | `levering-store-17-10.sql` | store bestillinger mister chefens ekstra tid i køkkenet, så en gammel fane kan bestille 30 stk. til levering om en halv time |
 | `gaestens-regler.sql` eller `arrangement-sluttid.sql` | `arrangoer.sql` | tilmeldingens bremse mister venteliste, frist, aflysning og max pr. tilmelding — et aflyst arrangement tager imod igen |
 
 Og to rækkefølger inden i rækkefølgen: `bestilling-dato-vaern.sql` FØR

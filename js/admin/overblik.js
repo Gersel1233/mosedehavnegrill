@@ -376,12 +376,12 @@
     if (overskredet) linje.appendChild(lav('span', 'maerke m-sen',
       r.booking ? 'Ikke kommet' : 'Overskredet'));
     midt.appendChild(linje);
-    /* Leveringens tre tider på én linje (9/10) — se dagensArbejde. */
-    if (r.afgang) {
-      midt.appendChild(lav('div', 'vagt-levering',
-        (r.afgang.koekken ? '⏱ I gang senest ' + r.afgang.start + ' · ' : '')
-        + '🚗 kører ' + r.afgang.kl + ' · ved døren ' + r.afgang.doer
-        + (r.afgang.kendt && r.afgang.sted ? ' · ' + r.afgang.sted : '')));
+    /* Leveringens tidsplan (17/10) — de tre tider med ord og hvad
+       klokken betyder lige nu, den samme som på Bestillinger-kortet
+       (Admin.leveringsPlan). Her stod de tre tider på én linje (9/10). */
+    if (r.afgang && r.b && Admin.leveringsPlan) {
+      var plan = Admin.leveringsPlan(r.b, true);
+      if (plan) midt.appendChild(plan);
     }
     /* ⚠️ ÉN VARE PR. LINJE, IKKE ÉN LANG SÆTNING. Se varelinjer(). */
     if (r.b) {
@@ -689,7 +689,9 @@
       aftryk: [r.tid, r.navn, r.hvad, r.maerke && r.maerke.tekst, r.ny, r.allergi,
         r.b ? r.b.status : '', erOverskredet(r, nu),
         r.b ? (r.b.besked || '') + '/' + (r.b.antal_personer || '') : '',
-        r.booking ? JSON.stringify(r.booking) : ''].join('|'),
+        r.booking ? JSON.stringify(r.booking) : '',
+        /* leveringens nu-linje skifter med uret (17/10) */
+        r.b && Admin.leveringsPlanAftryk ? Admin.leveringsPlanAftryk(r.b) : ''].join('|'),
       byg: function () { return vagtRaekke(r, nu); },
     };
   }

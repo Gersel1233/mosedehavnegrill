@@ -353,8 +353,13 @@
       vf.value = i.varsel_min_levering === undefined || i.varsel_min_levering === null
         ? '' : String(i.varsel_min_levering);
     }
+    var bf = $('levering-biler');
+    if (bf && !(akt && akt.id === 'levering-biler')) {
+      bf.value = i.leverings_biler === undefined || i.leverings_biler === null
+        ? '' : String(i.leverings_biler);
+    }
     var boks = $('levering-koeretid');
-    if (!boks || (akt && boks.contains(akt))) return;
+    if (!boks || (akt && boks.contains(akt))) { tegnStore(i, akt); return; }
     var tider = (i.leverings_koeretid && typeof i.leverings_koeretid === 'object')
       ? i.leverings_koeretid : {};
     var navne = {};
@@ -381,7 +386,150 @@
       r.appendChild(document.createTextNode('min.'));
       boks.appendChild(r);
     });
+    tegnStore(i, akt);
   }
+
+  /* ============================================================
+     STORE BESTILLINGER  (17/10) — tre rækker "Fra __ stk.: __ min.",
+     tomme til chefen udfylder dem (Mikkel: "Chefen sætter tal").
+     Reglen er R.koekkenTil i js/bestil-regler.js; her står kun
+     felterne og eksemplet.
+     ⚠️ Røres ikke, mens nogen skriver i en af dem — takten tegner om.
+     ============================================================ */
+  var STORE_RAEKKER = 3;
+  function tegnStore(i, akt) {
+    var boks = $('levering-store');
+    if (!boks) return;
+    if (!(akt && boks.contains(akt))) {
+      var trin = (window.MosedeRegler && MosedeRegler.storeTrin)
+        ? MosedeRegler.storeTrin({ indstillinger: i }) : [];
+      Admin.tøm(boks);
+      for (var n = 0; n < STORE_RAEKKER; n++) {
+        var t = trin[n] || {};
+        var r = Admin.lav('label', 'store-raekke');
+        r.appendChild(document.createTextNode('Fra'));
+        r.appendChild(storeFelt('fra', t.fra, 'fx ' + (15 * (n + 1))));
+        r.appendChild(document.createTextNode('stk.:'));
+        r.appendChild(storeFelt('min', t.min, 'min.'));
+        r.appendChild(document.createTextNode('min.'));
+        boks.appendChild(r);
+      }
+    }
+    visEksempel();
+  }
+  function storeFelt(slags, v, pladsholder) {
+    var f = document.createElement('input');
+    f.type = 'text';
+    f.inputMode = 'numeric';
+    f.setAttribute('data-store', slags);
+    f.setAttribute('aria-label', slags === 'fra' ? 'Fra antal stk.' : 'Minutter i køkkenet');
+    f.placeholder = pladsholder;
+    f.value = v === undefined || v === null ? '' : String(v);
+    return f;
+  }
+  /* Rækkerne, som de står i felterne lige nu — til gem og til
+     eksemplet. Et svar i tekst er en fejl, der skal siges. */
+  function storeAfFelterne(koekken) {
+    var ud = [];
+    var fejl = null;
+    Array.prototype.forEach.call(document.querySelectorAll('#levering-store .store-raekke'), function (r) {
+      if (fejl) return;
+      var fra = r.querySelector('[data-store="fra"]').value.trim();
+      var min = r.querySelector('[data-store="min"]').value.trim();
+      if (fra === '' && min === '') return;
+      if (fra === '' || min === '') {
+        fejl = 'Skriv både antal stk. og minutter i hver række under «Store bestillinger» — eller tøm rækken.';
+        return;
+      }
+      var a = Number(fra), m = Number(min);
+      if (!isFinite(a) || a < 2 || a > 500 || Math.round(a) !== a) {
+        fejl = '«Fra … stk.» skal være et helt tal mellem 2 og 500.';
+      } else if (!isFinite(m) || m < 0 || m > 600 || Math.round(m) !== m) {
+        fejl = 'Minutterne til store bestillinger skal være et helt tal mellem 0 og 600.';
+      } else if (m <= koekken) {
+        /* ⚠️ ET TRIN, DER IKKE GØR NOGET, ER EN FEJL AT SIGE HØJT. Chefen
+           skriver "fra 15 stk.: 30 min." og tror, store bestillinger har
+           fået mere tid — men 30 er køkkenets tid i forvejen. */
+        fejl = 'Fra ' + a + ' stk. skal køkkenet have mere end de ' + koekken
+          + ' min., det har i forvejen — ellers gør rækken ingenting.';
+      } else ud.push({ fra: a, min: m });
+    });
+    if (fejl) return fejl;
+    ud.sort(function (x, y) { return x.fra - y.fra; });
+    for (var k = 1; k < ud.length; k++) {
+      if (ud[k].fra === ud[k - 1].fra) return 'To rækker siger «fra ' + ud[k].fra + ' stk.» — slet den ene.';
+      if (ud[k].min < ud[k - 1].min) {
+        return 'Flere stk. skal have mindst lige så mange minutter: fra ' + ud[k].fra
+          + ' stk. står der ' + ud[k].min + ' min., men fra ' + ud[k - 1].fra + ' stk. ' + ud[k - 1].min + '.';
+      }
+    }
+    return ud;
+  }
+  /* Køkkenets tid, som feltet står lige nu (tomt = reglens egen). */
+  function koekkenIFeltet() {
+    var raa = $('levering-varsel') ? $('levering-varsel').value.trim() : '';
+    var n = Number(raa);
+    if (raa !== '' && isFinite(n) && n >= 0) return Math.round(n);
+    var R = window.MosedeRegler;
+    return R && R.koekkenTil ? R.koekkenTil({ indstillinger: Object.assign({},
+      (Admin.data || {}).indstillinger || {}, { levering_store: [] }) }, 0) : 30;
+  }
+  /* ⚠️ TALLENE SAGT SOM KLOKKESLÆT. "Fra 15 stk.: 45 min." er en regel;
+     "15 stk. til Karlslunde kl. 12.00 → køkkenet i gang 11.00" er det,
+     køkkenet skal gøre. Eksemplet regner med det, der står i felterne
+     lige nu, og med det korteste kendte postnummer. */
+  function visEksempel() {
+    var linje = $('levering-eksempel');
+    if (!linje) return;
+    var koekken = koekkenIFeltet();
+    var trin = storeAfFelterne(koekken);
+    Admin.tøm(linje);
+    if (typeof trin === 'string') { linje.textContent = trin; linje.classList.add('fejl'); return; }
+    linje.classList.remove('fejl');
+    var koer = null, by = null;
+    Array.prototype.forEach.call(document.querySelectorAll('#levering-koeretid [data-postnr]'), function (f) {
+      var n = Number(f.value.trim());
+      if (f.value.trim() === '' || !isFinite(n)) return;
+      if (koer === null || n < koer) {
+        koer = n;
+        by = (f.parentNode.firstChild && f.parentNode.firstChild.nodeValue) || f.getAttribute('data-postnr');
+      }
+    });
+    var doer = 12 * 60;
+    var start = function (min) {
+      var m = (((doer - (koer || 0) - min) % 1440) + 1440) % 1440;
+      return Butik.klokken(('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2));
+    };
+    linje.appendChild(Admin.lav('b', null, 'Sådan bliver det'));
+    linje.appendChild(document.createTextNode(' — en levering kl. 12.00'
+      + (koer !== null ? ' til ' + by + ' (' + koer + ' min. derud)' : '') + ':'));
+    var liste = Admin.lav('ul', 'store-tider');
+    /* Én linje pr. trin, sagt som et interval: "15–29 stk." er det,
+       en travl person læser rigtigt; "fra 15" lader det stå åbent,
+       om 30 også hører til. */
+    var grænser = [1].concat(trin.map(function (t) { return t.fra; }));
+    var minutter = [koekken].concat(trin.map(function (t) { return t.min; }));
+    grænser.forEach(function (fra, n) {
+      var til = n + 1 < grænser.length ? grænser[n + 1] - 1 : null;
+      var hvor = til === null ? (n === 0 ? 'Alle størrelser' : fra + ' stk. og op')
+        : (fra === til ? fra + ' stk.' : fra + '–' + til + ' stk.');
+      var li = Admin.lav('li', null, hvor + ': ');
+      li.appendChild(Admin.lav('b', null, 'køkkenet i gang ' + start(minutter[n])));
+      li.appendChild(document.createTextNode(' (' + minutter[n] + ' min.)'));
+      liste.appendChild(li);
+    });
+    linje.appendChild(liste);
+  }
+  (function () {
+    var kort = $('levering-store') && $('levering-store').closest('.kort');
+    if (!kort) return;
+    kort.addEventListener('input', function (e) {
+      var t = e.target;
+      if (t && (t.id === 'levering-varsel' || t.closest('#levering-store') || t.closest('#levering-koeretid'))) {
+        visEksempel();
+      }
+    });
+  }());
 
   /* ⚠️ TALLET OG OMRÅDET, IKKE SÆTNINGEN. leverings_pris er prosa
      til gæsten og rettes under Bestillinger → Regler for bestilling
@@ -420,6 +568,19 @@
       } else koer[f.getAttribute('data-postnr')] = n;
     });
     if (koerFejl) return koerFejl;
+    /* Store bestillinger (17/10): måles mod køkkenets tid, som den
+       gemmes nu — ikke som den stod. [] er "ingen trin" og gemmes. */
+    var store = $('levering-store') ? storeAfFelterne(varsel === '' ? koekkenIFeltet() : varsel) : null;
+    if (typeof store === 'string') return store;
+    var biler = '';
+    var braa = $('levering-biler') ? $('levering-biler').value.trim() : '';
+    if (braa !== '') {
+      var bn = Number(braa);
+      if (!isFinite(bn) || bn < 1 || bn > 20 || Math.round(bn) !== bn) {
+        return 'Antallet af biler skal være et helt tal fra 1 til 20.';
+      }
+      biler = bn;
+    }
     return Butik.skrive.indstilling('leverings_gebyr', pris)
       .then(function () {
         return Butik.skrive.indstilling('leverings_postnr', nr);
@@ -429,6 +590,12 @@
       })
       .then(function () {
         return $('levering-koeretid') ? Butik.skrive.indstilling('leverings_koeretid', koer) : null;
+      })
+      .then(function () {
+        return store ? Butik.skrive.indstilling('levering_store', store) : null;
+      })
+      .then(function () {
+        return $('levering-biler') ? Butik.skrive.indstilling('leverings_biler', biler) : null;
       });
   }
 

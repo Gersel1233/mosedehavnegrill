@@ -251,19 +251,26 @@ test.describe('Leveringens tid — admin', () => {
     ];
     return d;
   }
-  const afgang = (page, navn) => page.locator('.bestil-kort', { hasText: navn })
-    .locator('.bestil-levering-afgang', { hasText: '🚗' });
+  /* ⚠️ TIDERNE STÅR I KORTETS TIDSPLAN NU (17/10), ikke som to linjer
+     med småt i den røde bjælke ("🚗 Kører senest kl. 13.30 · ca. 30 min.
+     ud til Køge"). Mikkel: "det er sådan ret uoverskueligt". Tallene og
+     reglen er de samme; prøverne læser trinene (Admin.leveringsPlan). */
+  const trin = (page, navn, hvilket) => page.locator('.bestil-kort', { hasText: navn })
+    .locator('.lev-plan .' + hvilket);
 
   /* Bilen kører senest køreturen FØR den tid, gæsten valgte — med den
      SAMME køretid, gæsten fik lovet. */
   test('kortet siger, hvornår bilen senest skal køre', async ({ page }) => {
     await åbnAdmin(page, { data: medLeveringer() });
     await visFane(page, 'p-bestillinger');
-    await expect(afgang(page, 'Kim Køge')).toHaveText('🚗 Kører senest kl. 13.30 · ca. 30 min. ud til Køge');
+    await expect(trin(page, 'Kim Køge', 'lev-koer').locator('.lev-trin-kl')).toHaveText('13.30');
+    await expect(trin(page, 'Kim Køge', 'lev-koer').locator('.lev-trin-mer')).toHaveText('ca. 30 min. til Køge');
     // Det firecifrede husnummer (1000) er ikke postnummeret
-    await expect(afgang(page, 'Lis Karlslunde')).toHaveText('🚗 Kører senest kl. 15.15 · ca. 15 min. ud til Karlslunde');
+    await expect(trin(page, 'Lis Karlslunde', 'lev-koer').locator('.lev-trin-kl')).toHaveText('15.15');
+    await expect(trin(page, 'Lis Karlslunde', 'lev-koer').locator('.lev-trin-mer')).toHaveText('ca. 15 min. til Karlslunde');
     // Ishøj har intet tal endnu: den længste, og det siges som "op til"
-    await expect(afgang(page, 'Ib Ishøj')).toHaveText('🚗 Kører senest kl. 15.30 · op til 30 min. ud');
+    await expect(trin(page, 'Ib Ishøj', 'lev-koer').locator('.lev-trin-kl')).toHaveText('15.30');
+    await expect(trin(page, 'Ib Ishøj', 'lev-koer').locator('.lev-trin-mer')).toHaveText('op til 30 min. ud');
   });
 
   /* ⚠️ TRE TIDER, ÉN REGEL  (9/10). Mikkel: *"hvornår de vil have det
@@ -272,12 +279,14 @@ test.describe('Leveringens tid — admin', () => {
   test('kortet siger også, hvornår køkkenet senest skal i gang', async ({ page }) => {
     await åbnAdmin(page, { data: medLeveringer() });
     await visFane(page, 'p-bestillinger');
-    const kort = page.locator('.bestil-kort', { hasText: 'Kim Køge' });
-    await expect(kort.locator('.bestil-levering-afgang').first())
-      .toHaveText('⏱ Køkkenet i gang senest kl. 13.00');            // 14.00 − 30 − 30
-    await expect(page.locator('.bestil-kort', { hasText: 'Lis Karlslunde' })
-      .locator('.bestil-levering-afgang').first())
-      .toHaveText('⏱ Køkkenet i gang senest kl. 14.45');            // 15.30 − 15 − 30
+    await expect(trin(page, 'Kim Køge', 'lev-lav').locator('.lev-trin-kl'))
+      .toHaveText('13.00');                                          // 14.00 − 30 − 30
+    await expect(trin(page, 'Kim Køge', 'lev-lav').locator('.lev-trin-hvad')).toHaveText('Lav senest');
+    await expect(trin(page, 'Lis Karlslunde', 'lev-lav').locator('.lev-trin-kl'))
+      .toHaveText('14.45');                                          // 15.30 − 15 − 30
+    // Og gæstens egen tid står som det sidste trin, sagt som hendes
+    await expect(trin(page, 'Kim Køge', 'lev-doer')).toContainText('14.00');
+    await expect(trin(page, 'Kim Køge', 'lev-doer')).toContainText('gæstens tid');
   });
 
   /* ⚠️ OVERBLIK SORTERER EFTER AFGANGEN. Stod Køge-leveringen kl. 14.00
@@ -296,12 +305,16 @@ test.describe('Leveringens tid — admin', () => {
     const kim = page.locator('.vagt-raekke', { hasText: 'Kim Køge' }).first();
     await expect(kim.locator('.vagt-tid')).toContainText('afgang');
     await expect(kim.locator('.vagt-tid')).toContainText('13.30');
-    await expect(kim.locator('.vagt-levering'))
-      .toHaveText('⏱ I gang senest 13.00 · 🚗 kører 13.30 · ved døren 14.00 · Køge');
-    // En afhentning har stadig "kl." og ingen leveringslinje
+    // De tre tider som Bestillinger-kortets plan (17/10) — samme regel
+    const plan = kim.locator('.lev-plan');
+    await expect(plan.locator('.lev-lav .lev-trin-kl')).toHaveText('13.00');
+    await expect(plan.locator('.lev-koer .lev-trin-kl')).toHaveText('13.30');
+    await expect(plan.locator('.lev-doer .lev-trin-kl')).toHaveText('14.00');
+    await expect(plan.locator('.lev-koer .lev-trin-mer')).toHaveText('ca. 30 min. til Køge');
+    // En afhentning har stadig "kl." og ingen tidsplan
     const per = page.locator('.vagt-raekke', { hasText: 'Per Afhenter' }).first();
     await expect(per.locator('.vagt-tid')).toContainText('kl.');
-    await expect(per.locator('.vagt-levering')).toHaveCount(0);
+    await expect(per.locator('.lev-plan')).toHaveCount(0);
   });
 
   test('uden køretider står der ingen afgangstid', async ({ page }) => {
@@ -309,7 +322,7 @@ test.describe('Leveringens tid — admin', () => {
     await visFane(page, 'p-bestillinger');
     await expect(page.locator('.bestil-kort', { hasText: 'Kim Køge' }).locator('.bestil-levering'))
       .toHaveCount(1);
-    await expect(page.locator('.bestil-levering-afgang')).toHaveCount(0);
+    await expect(page.locator('.lev-plan')).toHaveCount(0);
   });
 
   test('Åbningstider → Levering: køkkenets tid og én køretid pr. postnummer gemmes', async ({ page }) => {

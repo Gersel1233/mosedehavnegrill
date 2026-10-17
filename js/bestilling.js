@@ -2720,7 +2720,24 @@
     visSum();
   }
 
+  /* STORE BESTILLINGER  (17/10) — kurvens stk. går til reglen, og
+     tiderne tegnes kun om på det tryk, der krydser chefens trin. Se
+     nyLeveringsStk i js/skal/bestil.js. */
+  function nyLeveringsStk() {
+    if (!R.saetLeveringsStk || !data) return;
+    var foer = R.leveringsTid(data);
+    R.saetLeveringsStk(data, antalIKurv());
+    var nu = R.leveringsTid(data);
+    if (nu.koekken === foer.koekken || kurv.hvordan !== 'levering') return;
+    visLevTid();
+    var v = $('bestil-tid');
+    var tidligst = !!v && v.value !== '' && v.value === førsteLedige(v);
+    visTider();
+    if (tidligst && førsteLedige(v) !== null) v.value = førsteLedige(v);
+  }
+
   function visSum() {
+    nyLeveringsStk();
     var n = antalIKurv();
     var pris = prisIKurv();
 

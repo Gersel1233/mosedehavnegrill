@@ -686,11 +686,23 @@
     var mangler = liste.filter(function (b) { return !erFaerdig(b); });
     var faerdige = liste.filter(erFaerdig);
 
-    /* Inden for hver gruppe: hentetiden. Personalet pakker i den
-       rækkefølge, poserne skal ud ad lugen. */
+    /* Inden for hver gruppe: hvornår den skal UD. Personalet pakker i
+       den rækkefølge, poserne skal ud ad lugen — og en levering skal
+       ud, når BILEN kører, ikke når den står ved døren (17/10, samme
+       regel som Overblik fik 9/10): Køge kl. 12.00 kører 11.30 og
+       stod efter en afhentning 11.45. */
+    function udMin(b) {
+      var l = b.hvordan === 'levering' && Admin.leveringTekst ? Admin.leveringTekst(b) : null;
+      if (l && l.afgang) return l.afgang.min;
+      var p = String(b.hent_tid || '').split(':');
+      return Number(p[0]) * 60 + Number(p[1] || 0);
+    }
     function efterTid(a, b) {
-      return String(a.hent_dato + a.hent_tid).localeCompare(
-        String(b.hent_dato + b.hent_tid));
+      if (a.hent_dato !== b.hent_dato) {
+        return String(a.hent_dato || '').localeCompare(String(b.hent_dato || ''));
+      }
+      return ((udMin(a) || 0) - (udMin(b) || 0))
+        || String(a.hent_tid || '').localeCompare(String(b.hent_tid || ''));
     }
     mangler.sort(efterTid);
     faerdige.sort(efterTid);
@@ -702,7 +714,10 @@
          hentes for sig og skal derfor med i hånden. */
       return {
         noegle: 'b-' + b.id,
-        aftryk: JSON.stringify([b, udeblivelser[nummerNoegle(b.telefon)] || 0]),
+        /* … og leveringens nu-linje (17/10): den skifter med uret,
+           ikke med dataene. */
+        aftryk: JSON.stringify([b, udeblivelser[nummerNoegle(b.telefon)] || 0,
+          Admin.leveringsPlanAftryk ? Admin.leveringsPlanAftryk(b) : '']),
         byg: function () { return bestillingKort(b); },
       };
     }
@@ -882,19 +897,8 @@
         hvor.appendChild(lav('span', 'bestil-levering-ok',
           '✓ Kontrolleret hos Dataforsyningen'));
       }
-      /* Afgangstiden (8/10) — se Admin.leveringTekst. "op til", når
-         postnummeret ikke har sin egen køretid (så gælder den længste). */
-      if (lev.afgang) {
-        /* Køkkenets tid FØRST — det er dét, der skal ske først (9/10). */
-        if (lev.afgang.koekken) {
-          hvor.appendChild(lav('span', 'bestil-levering-afgang',
-            '⏱ Køkkenet i gang senest kl. ' + lev.afgang.start));
-        }
-        hvor.appendChild(lav('span', 'bestil-levering-afgang',
-          '🚗 Kører senest kl. ' + lev.afgang.kl + ' · '
-          + (lev.afgang.kendt ? 'ca. ' : 'op til ') + lev.afgang.koeretid + ' min. ud'
-          + (lev.afgang.kendt && lev.afgang.sted ? ' til ' + lev.afgang.sted : '')));
-      }
+      /* Tiderne står ikke længere med småt i bjælken (17/10) — de er
+         kortets tidsplan lige under den. Se Admin.leveringsPlan. */
       levLinje.appendChild(hvor);
       if (lev.url) {
         var kort = document.createElement('a');
@@ -907,6 +911,11 @@
         levLinje.appendChild(kort);
       }
       k.appendChild(levLinje);
+      /* LEVERINGENS TIDSPLAN (17/10) — lav senest · kør senest · ved
+         døren, og hvad klokken betyder lige nu. Mikkel: "er det der,
+         det skal i gang sættes?" Svaret står her, med ord. */
+      var plan = Admin.leveringsPlan && Admin.leveringsPlan(b);
+      if (plan) k.appendChild(plan);
     } else if (type) top.appendChild(type);
     /* HVOR MANGE SIDDER DER — og er der mad nok til dem? (20/9)
        Mærket står kun, når gæsten HAR skrevet et tal; feltet er

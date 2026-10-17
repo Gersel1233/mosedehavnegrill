@@ -333,36 +333,99 @@
     var k = kanalVarsel(d, 'levering');
     return k !== null ? k : varselTimer(d) * 60;
   }
+
+  /* ============================================================
+     STORE BESTILLINGER TAGER LÆNGERE  (17/10)
+     ------------------------------------------------------------
+     Mikkels ord: *"hvornår bør de så lave det? Hvor lang tid tager
+     det med x antal"* — og på spørgsmålet om tallene: chefen sætter
+     dem. Køkkenets tid var ÉT tal, 30 min., om der var bestilt to
+     burgere eller 30 stk. smørrebrød til et firma.
+
+     `levering_store` er ejerens trin: [{ fra: 15, min: 45 }, …] — fra
+     så mange stk. skal køkkenet have så mange minutter. Det højeste
+     trin, bestillingen når, gælder, og aldrig under køkkenets
+     almindelige tid. Ingen trin = som før.
+
+     ⚠️ STK. ER ALT PÅ BESTILLINGEN UNDTAGEN FRAGT OG EMBALLAGE —
+     også drikkevarerne. Linjen ved ikke, hvilken kategori den kom
+     fra, og et trin for tidligt er en levering, der når frem; et for
+     sent er en, der ikke gør. Sådan står det også i admin.
+     ⚠️ SAMME REGEL TRE STEDER: gæstens tidsvælger (kurvens stk., som
+     siden sætter med saetLeveringsStk — ved siden af data, af samme
+     grund som adressen), admins starttid (bestillingens linjer) og
+     databasen (supabase/levering-store-17-10.sql).
+     ============================================================ */
+  function storeTrin(d) {
+    var t = (d.indstillinger || {}).levering_store;
+    if (!Array.isArray(t)) return [];
+    return t.map(function (x) {
+      return { fra: minTal(x && x.fra), min: minTal(x && x.min) };
+    }).filter(function (x) {
+      return x.fra !== null && x.fra > 0 && x.min !== null;
+    }).sort(function (a, b) { return a.fra - b.fra; });
+  }
+  function stkI(linjer) {
+    return (Array.isArray(linjer) ? linjer : []).reduce(function (s, l) {
+      if (!l || l.emballage) return s;
+      var n = Number(l.antal);
+      return s + (isFinite(n) && n > 0 ? Math.round(n) : 0);
+    }, 0);
+  }
+  var leveringsStk = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function saetLeveringsStk(d, n) {
+    if (!leveringsStk || !d || typeof d !== 'object') return;
+    var s = Number(n);
+    if (isFinite(s) && s > 0) leveringsStk.set(d, Math.round(s));
+    else leveringsStk.delete(d);
+  }
+  /* Køkkenets tid til SÅ mange stk. Uden stk.: kurvens, som siden har sat. */
+  function koekkenTil(d, stk) {
+    var k = leveringsKoekken(d);
+    var s = (stk !== undefined && stk !== null) ? Number(stk)
+      : ((leveringsStk && leveringsStk.get(d)) || 0);
+    storeTrin(d).forEach(function (t) { if (s >= t.fra && t.min > k) k = t.min; });
+    return k;
+  }
+
   function medKoeretur(d, minutter, hvordan) {
     if (hvordan !== 'levering') return minutter;
-    return Math.max(minutter, leveringsKoekken(d)) + koeretid(d);
+    return Math.max(minutter, koekkenTil(d)) + koeretid(d);
   }
   /* Teksten under tidsvælgeren — ÉN gang her, så forsiden, smørrebrødet,
-     bestil/ og tapas siger det samme med de samme tal. */
+     bestil/ og tapas siger det samme med de samme tal. En stor
+     bestilling siger, hvorfor køkkenet skal have mere end ellers. */
   function leveringsTidTekst(l) {
     if (!l) return '';
-    if (!l.koeretid) return 'Køkkenet skal have mindst ' + l.koekken + ' min., før maden kører.';
+    var koek = l.koekken + ' min. i køkkenet' + (l.stor ? ' til ' + l.stk + ' stk.' : '');
+    if (!l.koeretid) return 'Køkkenet skal have mindst ' + l.koekken + ' min.'
+      + (l.stor ? ' til ' + l.stk + ' stk.' : '') + ', før maden kører.';
     if (l.kendt) {
-      return 'Leveringen tager ca. ' + l.ialt + ' min.: mindst ' + l.koekken
-        + ' min. i køkkenet og ca. ' + l.koeretid + ' min. ud til ' + (l.by || l.postnr) + '.';
+      return 'Leveringen tager ca. ' + l.ialt + ' min.: mindst ' + koek
+        + ' og ca. ' + l.koeretid + ' min. ud til ' + (l.by || l.postnr) + '.';
     }
     if (l.postnr) {
-      return 'Leveringen tager op til ' + l.ialt + ' min.: mindst ' + l.koekken
-        + ' min. i køkkenet og op til ' + l.koeretid + ' min. ud til jer.';
+      return 'Leveringen tager op til ' + l.ialt + ' min.: mindst ' + koek
+        + ' og op til ' + l.koeretid + ' min. ud til jer.';
     }
-    return 'Køkkenet skal have mindst ' + l.koekken + ' min., og køreturen tager op til '
+    return 'Køkkenet skal have mindst ' + koek.replace(' i køkkenet', '')
+      + ', og køreturen tager op til '
       + l.koeretid + ' min. Vælg adressen, så ser du de tidligste tider.';
   }
-  /* Til teksten under tidsvælgeren og til admin's afgangstid. */
-  function leveringsTid(d, postnr) {
+  /* Til teksten under tidsvælgeren og til admin's tidsplan. `stk`
+     er bestillingens (admin); uden den gælder kurvens. */
+  function leveringsTid(d, postnr, stk) {
     var a = (leveringsAdr && leveringsAdr.get(d)) || {};
     var p = postnr !== undefined ? postnr : a.postnr;
     var t = (d.indstillinger || {}).leverings_koeretid;
     var kendt = !!(p && t && typeof t === 'object' && minTal(t[String(p)]) !== null);
     var koer = koeretid(d, p);
-    var koek = leveringsKoekken(d);
+    var s = (stk !== undefined && stk !== null) ? Number(stk)
+      : ((leveringsStk && leveringsStk.get(d)) || 0);
+    var koek = koekkenTil(d, s);
     return { koekken: koek, koeretid: koer, ialt: koek + koer, postnr: p || null,
-      by: postnr === undefined ? (a.by || null) : null, kendt: kendt };
+      by: postnr === undefined ? (a.by || null) : null, kendt: kendt,
+      stk: s, stor: koek > leveringsKoekken(d) };
   }
 
   /* Kan DEN kategori hentes på det tidspunkt? Svaret er et objekt
@@ -989,6 +1052,10 @@
     leveringsPostnr: leveringsPostnr,
     postnrAf: postnrAf,
     saetLeveringsAdresse: saetLeveringsAdresse,
+    saetLeveringsStk: saetLeveringsStk,
+    stkI: stkI,
+    storeTrin: storeTrin,
+    koekkenTil: koekkenTil,
     leveringsTid: leveringsTid,
     leveringsTidTekst: leveringsTidTekst,
     leveringSvar: leveringSvar,

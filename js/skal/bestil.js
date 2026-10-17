@@ -2360,6 +2360,30 @@
     visSum();
   }
 
+  /* STORE BESTILLINGER  (17/10) — kurvens stk. går til reglen
+     (R.saetLeveringsStk), så en levering på 30 stk. får chefens tid i
+     køkkenet og ikke de 30 min., to burgere får. Kaldes fra visSum,
+     som kører efter HVER ændring i kurven.
+     ⚠️ TIDERNE TEGNES KUN OM, NÅR KØKKENETS TID SKIFTER — på det tryk,
+     der krydser et trin, og ellers aldrig: en liste, der tegnes om
+     midt i en række tryk på +, er den slags, der fik to prøver til at
+     falde 8/10. Og som ved adressen: stod vælgeren på den tidligste
+     tid, følger den med til den nye tidligste. En tid, gæsten selv
+     har valgt, og som stadig kan nås, røres ikke — kan den ikke nås
+     mere, er den ikke i listen, og browseren tager den første. */
+  function nyLeveringsStk() {
+    if (!R.saetLeveringsStk || !data) return;
+    var foer = R.leveringsTid(data);
+    R.saetLeveringsStk(data, antalIKurv());
+    var nu = R.leveringsTid(data);
+    if (nu.koekken === foer.koekken || hvordan() !== 'levering') return;
+    visLevTid();
+    var v = felt('tid');
+    var tidligst = !!v && v.value !== '' && v.value === førsteLedige(v);
+    visTider();
+    if (tidligst && førsteLedige(v) !== null) v.value = førsteLedige(v);
+  }
+
   /* ⚠️ ETIKETTEN SKAL FØLGE VALGET (4/9). MÅLT på et skud: gæsten
      havde trykket "Leveres" og skrevet sin adresse, og feltet
      lige nedenunder spurgte stadig "Hvornår henter I?". Et
@@ -2454,6 +2478,9 @@
      opdages først ved lugen. Derfor siger linjen "+ det uden
      pris". */
   function visSum() {
+    /* Og leveringens tid følger antallet (17/10) — FØR knappen og
+       linjen, der læser tiden. */
+    nyLeveringsStk();
     /* ⚠️ MINDSTEANTALLET FØLGER KURVEN, ikke kun indlæsningen.
        Den skal sige "I mangler to", MENS hun tæller op. */
     visMinStk();

@@ -1358,7 +1358,12 @@
     var R = window.MosedeRegler;
     if (!R || !R.leveringsTid || !R.postnrAf || !b.hent_tid) return null;
     var a = R.postnrAf(adr);
-    var t = R.leveringsTid(Admin.data || {}, a ? a.postnr : null);
+    /* ⚠️ BESTILLINGENS EGNE STK. (17/10) — chefens trin for store
+       bestillinger gælder køkkenets tid her, som de gjaldt gæstens
+       tidligste tid. Ellers ville admin sige "i gang 11.00" om 30 stk.,
+       som gæsten fik lovet med 45 min. i køkkenet. */
+    var t = R.leveringsTid(Admin.data || {}, a ? a.postnr : null,
+      R.stkI ? R.stkI(b.linjer) : undefined);
     if (!t.koeretid) return null;
     var p = String(b.hent_tid).split(':');
     var doer = Number(p[0]) * 60 + Number(p[1]);
@@ -1374,11 +1379,151 @@
     var start = (min - (t.koekken || 0) + 24 * 60) % (24 * 60);
     return { kl: Butik.klokken(hhmm(min)), min: min,
       start: Butik.klokken(hhmm(start)), startMin: start, koekken: t.koekken || 0,
-      doer: Butik.klokken(hhmm(doer)),
+      doer: Butik.klokken(hhmm(doer)), doerMin: doer,
+      /* bilen er tilbage: ud og hjem igen, samme tur begge veje */
+      returMin: doer + t.koeretid,
+      stk: t.stk, stor: t.stor,
       koeretid: t.koeretid, kendt: t.kendt, sted: a ? (a.by || a.postnr) : null };
   }
   function hhmm(m) {
+    m = ((m % 1440) + 1440) % 1440;
     return ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2);
+  }
+
+  /* ============================================================
+     LEVERINGENS TIDSPLAN — MED NU  (17/10)
+     ------------------------------------------------------------
+     Mikkels ord: *"når der er blevet bestilt til for eksempel kl.
+     10 … er det så der, at kunden forventer, at det skal komme? Er
+     det der, det skal i gang sættes? … jeg føler, at det er sådan
+     ret uoverskueligt … det må ikke kunne gå galt"*.
+
+     MÅLT FØR (skud 17/10, fem bestillinger kl. 11.05): Firma A/S
+     til Køge kl. 12.00 skulle have været i gang kl. 11.00. Kortet
+     sagde "12.00" med stort og "⏱ Køkkenet i gang senest kl. 11.00"
+     med småt i en rød bjælke — og INTET sted stod der, at den
+     allerede var fem minutter for sent.
+
+     Nu: tre trin, sagt med ord — LAV SENEST · KØR SENEST · VED DØREN
+     (gæstens tid, den hun fik lovet) — og én linje, der siger, hvad
+     klokken betyder LIGE NU: start om …, i gang nu, for sent. Overblik,
+     Køkkenet og Bestillinger spørger alle her, så de ikke kan sige
+     hver sit.
+
+     ⚠️ "FOR SENT" ER KUN, NÅR BILEN SKULLE VÆRE KØRT. Der er ingen
+        "i gang"-knap (Mikkel 8/10: ingen ekstra trin på leveringen),
+        så skærmen kan ikke vide, om køkkenet er startet — at kalde en
+        levering forsinket kl. 11.01, mens maden står på panden, ville
+        lære personalet at overse det røde. Efter starttiden siger den
+        derfor "i gang nu — bilen kører om …"; først når afgangen er
+        passeret uden ✓ Færdig, er den rød. ✓ Færdig er "ud ad døren".
+     ⚠️ KUN I DAG. En levering i morgen har tider, ikke en status.
+     ============================================================ */
+  function varighed(min) {
+    min = Math.max(0, Math.round(min));
+    if (min < 60) return min + ' min.';
+    var t = Math.floor(min / 60), m = min % 60;
+    return t + ' t.' + (m ? ' ' + m + ' min.' : '');
+  }
+  function leveringsFase(b, afg) {
+    if (!b || !afg) return null;
+    if (b.status === 'afvist' || b.status === 'udeblevet') return null;
+    if (b.status === 'afhentet' || b.status === 'serveret') {
+      return { fase: 'koert', tekst: '✓ Kørt' };
+    }
+    var nu = Butik.nu();
+    if (b.hent_dato !== nu.dato) return null;
+    var m = nu.minutter;
+    if (m < afg.startMin - 15) {
+      return { fase: 'venter', tekst: 'Start kl. ' + afg.start + ' — om ' + varighed(afg.startMin - m) };
+    }
+    if (m < afg.startMin) return { fase: 'snart', tekst: 'Start om ' + varighed(afg.startMin - m) };
+    if (m < afg.min) {
+      return { fase: 'nu', tekst: 'Skal være i gang nu — bilen kører om ' + varighed(afg.min - m) };
+    }
+    return { fase: 'sen', tekst: '⚠ Skulle være kørt kl. ' + afg.kl + ' — '
+      + varighed(m - afg.min) + ' for sent. Ring til gæsten.' };
+  }
+
+  /* ⚠️ ÉN BIL  (17/10). Mikkel: *"Én bil / ét bud"*. En tur er fra
+     afgangen, til bilen er tilbage (køreturen ud og samme tur hjem).
+     Skal en levering køre, mens bilen er ude på en anden tur, siges det
+     på DEN, der kører sidst — det er den, der bliver forsinket.
+     `leverings_biler` (Åbningstider → Levering) er antallet af biler;
+     ikke sat = 1, Mikkels svar. Med to biler skal to ture være ude. */
+  function bilerIAlt() {
+    var n = Number(((Admin.data || {}).indstillinger || {}).leverings_biler);
+    return isFinite(n) && n >= 1 ? Math.round(n) : 1;
+  }
+  function bilOptaget(b, afg) {
+    if (!b || !afg || b.status === 'afvist' || b.status === 'udeblevet') return null;
+    var ude = [];
+    ((Admin.data || {}).bestillinger || []).forEach(function (x) {
+      if (x === b || x.id === b.id || x.slettet || x.hvordan !== 'levering') return;
+      if (x.hent_dato !== b.hent_dato || x.status === 'afvist' || x.status === 'udeblevet') return;
+      var l = leveringTekst(x);
+      var a = l && l.afgang;
+      if (!a) return;
+      /* Ude, når den her skal køre: kørt før (eller samtidig med) og
+         ikke tilbage endnu. Samtidig er begge veje — to ture på én bil. */
+      if (a.min <= afg.min && afg.min < a.returMin) ude.push({ b: x, a: a });
+    });
+    var biler = bilerIAlt();
+    if (ude.length < biler) return null;
+    ude.sort(function (p, q) { return p.a.returMin - q.a.returMin; });
+    var foerst = ude[0];
+    /* ⚠️ TUREN, IKKE KUNDENS NAVN. Med navnet stod "Lis Karlslunde" på
+       Ib Ishøjs kort — og et opslag på hendes navn ramte to kort (fanget
+       af levering-tid.spec.js 17/10). Sted og klokkeslæt er nok til at
+       finde turen i listen lige over. */
+    return {
+      biler: biler,
+      tekst: (biler === 1 ? '⚠ Bilen er ude' : '⚠ Alle ' + biler + ' biler er ude')
+        + ': turen til ' + (foerst.a.sted || 'en anden adresse')
+        + ' kører ' + foerst.a.kl
+        + ' og er tilbage ca. ' + Butik.klokken(hhmm(foerst.a.returMin)) + '.',
+    };
+  }
+
+  /* Tidsplanen som element. `kompakt` er Overbliks/Køkkenets række. */
+  function leveringsPlan(b, kompakt) {
+    var l = leveringTekst(b);
+    var afg = l && l.afgang;
+    if (!afg) return null;
+    var fase = leveringsFase(b, afg);
+    var plan = lav('div', 'lev-plan' + (kompakt ? ' lev-plan-kompakt' : ''));
+    if (fase) plan.setAttribute('data-fase', fase.fase);
+    var trin = lav('ol', 'lev-trin');
+    function et(klasse, hvad, kl, mer, aktiv) {
+      var li = lav('li', 'lev-trin-et ' + klasse + (aktiv ? ' aktiv' : ''));
+      li.appendChild(lav('span', 'lev-trin-hvad', hvad));
+      li.appendChild(lav('b', 'lev-trin-kl', kl));
+      if (mer) li.appendChild(lav('span', 'lev-trin-mer', mer));
+      trin.appendChild(li);
+    }
+    var f = fase ? fase.fase : '';
+    if (afg.koekken) {
+      et('lev-lav', 'Lav senest', afg.start, afg.koekken + ' min. i køkkenet'
+        + (afg.stor ? ' · ' + afg.stk + ' stk.' : ''), f === 'venter' || f === 'snart');
+    }
+    et('lev-koer', 'Kør senest', afg.kl, (afg.kendt ? 'ca. ' : 'op til ') + afg.koeretid + ' min.'
+      + (afg.kendt && afg.sted ? ' til ' + afg.sted : ' ud'), f === 'nu' || f === 'sen');
+    et('lev-doer', 'Ved døren', afg.doer, 'gæstens tid', false);
+    plan.appendChild(trin);
+    if (fase && fase.tekst) plan.appendChild(lav('p', 'lev-status', fase.tekst));
+    var bil = (!fase || fase.fase !== 'koert') ? bilOptaget(b, afg) : null;
+    if (bil) plan.appendChild(lav('p', 'lev-bil', bil.tekst));
+    return plan;
+  }
+  /* Til kortenes aftryk: tegnes kortet ikke om, når minuttet skifter,
+     står "start om 12 min." stille, til nogen trykker på noget. */
+  function leveringsPlanAftryk(b) {
+    var l = leveringTekst(b);
+    var afg = l && l.afgang;
+    if (!afg) return '';
+    var fase = leveringsFase(b, afg);
+    var bil = bilOptaget(b, afg);
+    return (fase ? fase.tekst : '') + '|' + (bil ? bil.tekst : '') + '|' + afg.start + afg.kl;
   }
 
   /* Den korte udgave: ét link, til en linje der har andet på sig
@@ -1630,6 +1775,10 @@
     gaesteMaerke: gaesteMaerke,
     kortUrl: kortUrl,
     leveringTekst: leveringTekst,
+    leveringsPlan: leveringsPlan,
+    leveringsPlanAftryk: leveringsPlanAftryk,
+    leveringsFase: leveringsFase,
+    bilOptaget: bilOptaget,
     leveringsLink: leveringsLink,
     kontakt: kontakt,
     sigTilLesreg: sigTilLesreg,

@@ -906,6 +906,11 @@
             <input type="text" id="levering-varsel" inputmode="numeric" placeholder="fx 30">
             <p class="hjaelp">Minutter. Tomt = som to-go. En kategori, der kræver
               mere — smørrebrødets time, plattens døgn — vinder.</p>
+            <!-- ÉN BIL (17/10). Mikkel: "Én bil / ét bud". Tomt = 1. -->
+            <label for="levering-biler">Biler, der kører ud</label>
+            <input type="text" id="levering-biler" inputmode="numeric" placeholder="1">
+            <p class="hjaelp">Admin siger til, når en levering skal køre, mens alle
+              biler er ude på en anden tur. Tomt = 1.</p>
           </div>
           <div class="felt">
             <span class="felt-titel">Køretid ud til gæsten</span>
@@ -913,6 +918,21 @@
             <p class="hjaelp">Minutter, lagt oven i køkkenets tid. Et postnummer
               uden tal får den længste køretid.</p>
           </div>
+        </div>
+        <!-- ⚠️ STORE BESTILLINGER  (17/10). Mikkels ord: "hvornår bør de så
+             lave det? Hvor lang tid tager det med x antal" — og om tallene:
+             "Chefen sætter tal". Tre rækker, tomme til chefen udfylder dem;
+             gæstens tidligste tid, admins starttid og databasen
+             (levering-store-17-10.sql) bruger dem alle tre. Linjen under
+             siger tallene som klokkeslæt — en travl chef skal kunne se, hvad
+             han har sat, uden at regne. -->
+        <div class="felt store-bestillinger">
+          <span class="felt-titel">Store bestillinger tager længere</span>
+          <div id="levering-store" class="store-trin"></div>
+          <p class="hjaelp">Fra så mange stk. skal køkkenet have så mange minutter.
+            Tæller alt på bestillingen undtagen fragt og emballage — også
+            drikkevarer. Tomt = køkkenets tid ovenfor, uanset antal.</p>
+          <p class="store-eksempel" id="levering-eksempel" aria-live="polite"></p>
         </div>
         <!-- Den anden halvdel står et andet sted (7/10) — og siger det. -->
         <p class="hjaelp">Kontakten Til/Fra, området og teksten, gæsten læser, står

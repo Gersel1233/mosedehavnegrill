@@ -3375,15 +3375,7 @@ body.personale .vagt-varer .maerke {
   font-size: 14px;
 }
 
-/* Leveringens tre tider på Overblik (9/10): "⏱ I gang senest 13.00 ·
-   🚗 kører 13.30 · ved døren 14.00 · Køge". Fed og i tekstfarven — det er
-   tal, køkkenet planlægger efter, ikke en bemærkning. */
-body.personale .vagt-levering {
-  margin-top: 6px;
-  font-size: 14px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
+/* Leveringens tre tider står nu i .lev-plan (17/10) — se nederst. */
 
 /* "kl. 17.30 · 📞 26204992" — dæmpet, men klikbar. */
 body.personale .vagt-kontakt {
@@ -4764,9 +4756,6 @@ body.personale .nyhed-knapper {
    85 % giver 3,92:1, og 12 px skrift skal have 4,5:1. 95 % måler
    4,57:1. Den slags ses ikke med øjet — den skal regnes. */
 .bestil-levering-ok { font-size: 12px; color: rgba(255, 255, 255, .95); }
-/* Bilens afgangstid (8/10) — samme røde bjælke, lidt mere vægt end fluebenet:
-   det er tallet, køkkenet planlægger efter. */
-.bestil-levering-afgang { font-size: 13px; font-weight: 700; color: #fff; }
 .bestil-levering-kort {
   margin-left: auto;
   flex: none;
@@ -13837,3 +13826,128 @@ body.personale .arr-sted-raekke.skjult-sted input { color: var(--muted); text-de
 
 /* ---- Tilmeldinger: dørlisten ud af admin ------------------------ */
 body.personale .tilmeld-eksport { margin: 4px 0 12px; }
+
+/* ============================================================
+   LEVERINGENS TIDSPLAN  (17/10)
+   ------------------------------------------------------------
+   Mikkel: "er det der, det skal i gang sættes? … det skal være
+   ret nemt inden i admin … det må ikke kunne gå galt". Tre trin
+   med ord — lav senest · kør senest · ved døren — og én linje,
+   der siger, hvad klokken betyder nu. Admin.leveringsPlan bygger
+   den; Bestillinger, Overblik og Køkkenet viser den samme.
+
+   Farven er FASEN, ikke pynt: rolig, mens der er tid; ravgul, når
+   køkkenet skal i gang; rød først, når bilen skulle være kørt. Et
+   rødt kort hele formiddagen ville lære personalet at overse det.
+   Kontrasten er regnet: #6b4a12 på ravgul ≈ 7:1, hvid på --red
+   4,94:1 (fed 14 px), --red-dyb på --scoop over 6:1.
+   ============================================================ */
+body.personale .lev-plan {
+  margin: 0 0 12px;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: var(--paper);
+}
+body.personale .lev-trin {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+body.personale .lev-trin-et {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  min-width: 0;
+}
+/* pilen mellem trinene — rækkefølgen ER informationen */
+body.personale .lev-trin-et + .lev-trin-et::before {
+  content: "→";
+  position: absolute;
+  left: -9px;
+  top: 22px;
+  color: var(--muted);
+  font-size: 13px;
+}
+body.personale .lev-trin-hvad {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+body.personale .lev-trin-kl {
+  font-size: 22px;
+  line-height: 1.15;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--sea);
+}
+body.personale .lev-trin-mer {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+body.personale .lev-trin-et.aktiv { background: var(--sand2); }
+body.personale .lev-trin-et.aktiv .lev-trin-hvad { color: var(--sea); }
+
+body.personale .lev-status,
+body.personale .lev-bil {
+  margin: 8px 0 0;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+body.personale .lev-plan[data-fase="venter"] .lev-status { background: var(--sand2); color: var(--sea3); font-weight: 600; }
+body.personale .lev-plan[data-fase="snart"] .lev-status  { background: rgba(214, 158, 42, .20); color: #6b4a12; }
+body.personale .lev-plan[data-fase="nu"] .lev-status     { background: rgba(214, 158, 42, .34); color: #5a3c0c; }
+body.personale .lev-plan[data-fase="sen"] .lev-status    { background: var(--red); color: #fff; }
+body.personale .lev-plan[data-fase="koert"] .lev-status  { background: rgba(46, 125, 50, .12); color: #1f5a24; font-weight: 600; }
+body.personale .lev-plan[data-fase="sen"] { border-color: var(--red); }
+body.personale .lev-plan[data-fase="koert"] .lev-trin-kl { color: var(--muted); }
+body.personale .lev-bil { background: var(--scoop); color: var(--red-dyb); }
+
+/* Overbliks og Køkkenets række: samme plan, mindre. */
+body.personale .lev-plan-kompakt { margin: 8px 0 4px; padding: 6px 8px 8px; }
+body.personale .lev-plan-kompakt .lev-trin-kl { font-size: 17px; }
+body.personale .lev-plan-kompakt .lev-trin-et { padding: 4px 6px; }
+body.personale .lev-plan-kompakt .lev-trin-et + .lev-trin-et::before { top: 17px; }
+body.personale .lev-plan-kompakt .lev-status,
+body.personale .lev-plan-kompakt .lev-bil { margin-top: 6px; padding: 5px 8px; font-size: 13px; }
+
+/* ---- Åbningstider → Levering: store bestillinger --------------- */
+body.personale .store-bestillinger { margin: 14px 0 4px; }
+body.personale .store-trin { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+body.personale label.store-raekke {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--sea);
+}
+body.personale label.store-raekke input { width: 4.5em; text-align: right; font-variant-numeric: tabular-nums; }
+body.personale .store-eksempel {
+  margin: 8px 0 0;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--sand2);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--sea);
+}
+body.personale .store-eksempel:empty { display: none; }
+body.personale .store-eksempel.fejl { background: rgba(214, 42, 58, .08); color: var(--red-dyb); }
+body.personale .store-tider { margin: 4px 0 0; padding-left: 18px; font-variant-numeric: tabular-nums; }
+body.personale .store-tider li { margin: 1px 0; }
+body.personale label[for="levering-biler"] { display: block; margin-top: 14px; }
