@@ -7,6 +7,45 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LEVERING: KØKKENETS TID EFTER ANTAL OG EN TIDSPLAN MED NU** (17/10 — IKKE LIVE ENDNU,
+venter på Mikkels ja + `supabase/levering-store-17-10.sql`). Mikkels ord: *"når der er
+blevet bestilt til for eksempel kl. 10, er det så der, at kunden forventer, at det skal
+komme? Er det der, det skal i gang sættes? … Hvor lang tid tager det med x antal … det
+skal være ret nemt inden i admin … det må ikke kunne gå galt"*. Hans svar på de to
+spørgsmål: *"Chefen sætter tal"* og *"Én bil / ét bud"*.
+- **Svaret på spørgsmålet:** gæstens klokkeslæt er når maden STÅR VED DØREN («Bestilt.
+  Leveres fredag d. … kl. 12.00»). Admin regner baglæns: køkkenet i gang = døren −
+  køreturen − køkkenets tid
+- **MÅLT FØR (skud, fem bestillinger kl. 11.05):** Firma A/S til Køge kl. 12.00 skulle
+  være i gang 11.00 — kortet sagde «12.00» med stort og «⏱ Køkkenet i gang senest kl.
+  11.00» med småt i den røde bjælke, og intet sted stod der, at den var for sent.
+  Køkkenets tid var 30 min. til 2 burgere og til 30 stk. Overblik sorterede efter
+  afgang, Bestillinger efter døren. To ture samtidig på én bil sagde ingenting
+- **Store bestillinger** (`levering_store` = `[{fra, min}]`, Åbningstider → Levering,
+  tomme til chefen udfylder dem): det højeste trin, bestillingen når, aldrig under
+  køkkenets tid; stk. = alt undtagen fragt/emballage. ÉN regel (`koekkenTil`,
+  bestil-regler.js) for gæstens tidligste tid (forsiden, smørrebrødet, bestil/, tapas —
+  kurvens stk. gives videre fra visSum, tiderne tegnes kun om, når et trin krydses),
+  admins starttid og databasen (`levering-store-17-10.sql`, prøve 10/10, set fejle:
+  nr. 2 og 5; SQL-runden 65 filer, intet faldt; er-vi-klar tjek 153). Eksemplet under
+  felterne siger trinene som klokkeslæt. Et trin, der ikke giver mere tid, gemmes ikke
+- **Tidsplanen** (`Admin.leveringsPlan`, kerne.js): LAV SENEST · KØR SENEST · VED DØREN
+  (gæstens tid) + en nu-linje: start om … / i gang nu — bilen kører om … / rød først
+  når AFGANGEN er passeret uden ✓ Færdig (der er ingen «i gang»-knap, så skærmen kan
+  ikke vide, om køkkenet er startet) / ✓ Kørt. Kun i dag. Samme plan på Bestillinger,
+  Overblik og Køkkenet; aftrykket tager nu-linjen med, så den skifter med uret
+- **Én bil** (`leverings_biler`, tomt = 1): en tur er afgang → tilbage (køreturen begge
+  veje). Skal en levering køre, mens alle biler er ude, siges det på DEN, der kører sidst.
+  ⚠️ Teksten nævner turen, ikke kundens navn — med navnet ramte et opslag på «Lis
+  Karlslunde» to kort (fanget af levering-tid.spec.js)
+- **Mangler på Bestillinger** sorteres efter hvornår maden skal UD (bilens afgang)
+- **Prøver:** `tests/levering-plan.spec.js` (15) — ALLE set fejle, én genindført fejl ad
+  gangen (13 forskellige fejl). `levering-tid.spec.js` læser planen i stedet for de gamle
+  linjer (14/14). Computer + mobil grønne på de tre leveringsfiler
+- ⚠️ **Til live:** kør `levering-store-17-10.sql` i SQL Editoren (FØR eller lige efter —
+  uden den er databasen mildere end siden, aldrig strengere). Chefen skal selv sætte
+  trinene; uden dem er alt som før
+
 **LEVERING: GRATIS LEVERING FRA–TIL, SAT AF CHEFEN** (14/10). Mikkels ord: *"de kan slå
 prisen på levering fra og til så gratis … og de også kan ændre prisen … på lancerings
 dagen her fredag skal levering være gratis"*.

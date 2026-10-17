@@ -185,6 +185,29 @@ en, gæsten ikke har set.
 
 ⚠️ Er der **allergi** i beskeden, får kortet en rød ramme.
 
+**🚗 En levering har en tidsplan** lige under den røde bjælke. Klokkeslættet,
+gæsten valgte, er **når maden står ved døren** — det er det, hun har fået
+lovet. Planen regner baglæns derfra:
+
+- **Lav senest** — hvornår køkkenet skal i gang. Der står også, hvor mange
+  minutter køkkenet har, og ved en stor bestilling hvor mange stk.
+- **Kør senest** — hvornår bilen skal køre, og hvor langt der er derud
+- **Ved døren** — gæstens tid
+
+Linjen under siger, **hvad klokken betyder lige nu**: «Start kl. 12.10 — om
+1 t. 5 min.» (god tid), «Start om 10 min.» (gul), «Skal være i gang nu —
+bilen kører om 25 min.» (mørkere gul) og først når bilen skulle være kørt:
+**rød** «Skulle være kørt kl. 11.30 — 5 min. for sent. Ring til gæsten.»
+Tryk **✓ Færdig**, når maden er ude ad døren — så står der «✓ Kørt».
+
+**Én bil:** skal en levering køre, mens bilen er ude på en anden tur, står
+der fx «⚠ Bilen er ude: turen til Køge kører 11.30 og er tilbage ca. 12.30.»
+Så ring til gæsten — eller tag begge på samme tur, hvis de ligger på vejen.
+
+Leveringerne står i den rækkefølge, maden skal **ud**: en levering til Køge
+kl. 12.00 skal køre 11.30 og står derfor før en afhentning kl. 11.45. Den
+samme plan står på **Overblik** og **Køkkenet**.
+
 **Hvor mange kan I have klar kl. 12.00?** Under *Regler for
 bestilling* står feltet **"Hvor mange kan I have klar pr.
 kvarter?"**. Gæsterne vælger tid i kvarterer (12.00, 12.15, 12.30 …).
@@ -433,6 +456,19 @@ Ugeplanen, sæsonlukning, og **hvornår køkkenet lukker**.
 - Gæsterne ser det på forsiden: «Gratis levering fredag 16. oktober»
   i forvejen, «Gratis levering i dag» på dagen, og i summen står
   «levering gratis». Prisen ovenfor gælder igen bagefter
+- **Køkkenets tid før en levering** — minutterne, køkkenet skal have.
+  **Køretid ud til gæsten** — minutter pr. postnummer. Gæsten kan tidligst
+  bestille køkkenets tid + køreturen ud, og admin regner tidsplanen med de
+  samme tal
+- **Store bestillinger tager længere** — fx «Fra 15 stk.: 45 min.» og «Fra
+  30 stk.: 60 min.». Tæller alt på bestillingen undtagen fragt og emballage —
+  også drikkevarer. Tomme rækker = køkkenets tid uanset antal. Linjen under
+  viser tallene som klokkeslæt: «1–14 stk.: køkkenet i gang 11.15» osv., så
+  I kan se, hvad I har sat. En række, der ikke giver køkkenet mere tid end
+  i forvejen, gemmes ikke — skærmen siger hvorfor
+- **Biler, der kører ud** — tomt = 1. Admin siger til, når en levering skal
+  køre, mens alle biler er ude
+- Trykker I **Gem levering**, gælder det med det samme — også for gæsterne
 
 ### 📰 Nyheder
 
