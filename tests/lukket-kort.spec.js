@@ -238,6 +238,12 @@ test.describe('Kalenderen i admin', () => {
     await åbnAdmin(page, { ur: UR, data: data([]) });
     await visFane(page, 'p-kalender');
     await expect(page.locator('#ferie-liste')).toContainText('Ingen ferie eller lukkedage lagt ind.');
+    /* ⚠️ Formularen STARTER på lukkedag. Uden et andet valg først
+       bestod prøven også med en knap, der ikke valgte noget (set
+       18/10) — så man står på «Lukker tidligt», som man gør efter
+       den forrige indtastning. */
+    await page.locator('#kalender-typer [data-type="tidlig_lukning"]').click();
+    await expect(page.locator('#kalender-typer [data-type="lukkedag"]')).toHaveAttribute('aria-pressed', 'false');
     await page.locator('#ferie-ny').click();
     await expect(page.locator('#kalender-typer [data-type="lukkedag"]')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('#kal-dato')).toBeFocused();
