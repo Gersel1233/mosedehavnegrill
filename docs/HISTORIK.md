@@ -7,6 +7,44 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**«VI HOLDER LUKKET» — FERIEKORTET** (18/10). Mikkel sendte et skud af søsterkundens
+lukkekort (efterårsferie) og skrev: *"at de har efterårsferie, og så at man ligesom ikke
+har kunne bestille, men man kan skrive, og så linken til mail … Det skal være nemt
+tilgængeligt. De skal vide præcis, hvordan man gør … præcis sådan her, hvis ikke bedre"*.
+Skuddet blev kun brugt som forlæg for udseendet — intet hentet fra det andet repo.
+- **MÅLT FØR (skud, efterårsferie lagt ind, telefon og computer):** en pille «Lukket i
+  dag · Efterårsferie» i heroen og et mørkt bånd med beskeden. Ingen periode, intet om
+  hvornår der var åbent igen, intet om forudbestilling, ingen vej til at skrive. I admin
+  lå lukningen i kalenderformularen nederst, og ingen kunne se, hvad gæsten ville møde
+- **Gæsterne** (`js/lukket.js`, `css/lukket.css` — arket står alene, fordi det bruges
+  af to grundark og admin): forsiden, /bestil/, /bord/, smørrebrød og tapas. Periode,
+  hvorfor, beskeden, **«Vi er tilbage mandag d. …»** (regnet: første dag ugeplanen har
+  åbent og ingen lukning dækker; to lukninger dør om dør er én), forudbestilling fra
+  den dag (kun når bestillingen er åben, og som link til formularen), forespørgsler som
+  altid, **Skriv til os** (mailto fra `kontakt_email`; tom = ingen knap, samme regel
+  som kontakt.js) og **Kontakt os**. En ferie på flere dage varsles 7 dage før («Vi
+  holder snart lukket … Bestil som altid frem til lukningen»); én dag kun på dagen.
+  Sæsonlukningen får samme kort («For sæsonen», «Vi åbner igen …»)
+- **Båndet viger:** dagsbesked.js viser ikke længere lukkedagens besked dér, hvor
+  kortet står (den stod ellers to gange). Dagens egen besked står stadig i båndet, og
+  QR-siden ved bordet (intet kort) har stadig lukkedagens besked i båndet.
+  `lukkedag-besked.spec.js` er vendt med en note — kravet fra 16/9 er uændret
+- **Admin, Kalender:** kortet **Ferie og lukkedage** øverst — hver lukning med periode,
+  hvornår gæsterne ser kortet (grøn = nu), hvornår man er tilbage, og **Ret**. Én
+  knap, **Hold lukket**, vælger typen og stiller markøren i datoen. Feltet hedder
+  «Hvorfor? (fx Efterårsferie)», og **Sådan ser gæsterne det** står under felterne,
+  bygget af den SAMME `byg()` som hjemmesiden
+- **Produktionen har ingen lukninger** (anon-læsning 18/10) — kortet ses først, når
+  personalet lægger en ind. Ingen SQL: kilden er kalenderens `lukkedag`-rækker, som
+  databasen allerede afviser bestillinger på
+- **Prøver:** `lukket-kort.spec.js` (26) — 17 fejl genindført én ad gangen, og hver fik
+  sine prøver til at falde (kortet væk: 14; «tilbage» uden ugeplan: 2; ingen
+  sammenlægning, ét månedsformat, forudbestilling trods lukket bestilling, innerHTML,
+  varsel 6 og 8 dage, én dag varslet, ingen slutdato, ingen sæson, knappen uden type,
+  forhåndsvisning uden input / for alle typer, fortiden på listen: 1 hver; mail uden
+  admins adresse: 2; båndet dobbelt: 3). «Hold lukket» bestod først med en knap, der
+  intet valgte — formularen starter på lukkedag; prøven vælger nu en anden type først
+
 **LEVERING: KØKKENETS TID EFTER ANTAL OG EN TIDSPLAN MED NU** (17/10 — LIVE 18/10, Mikkel:
 *"Ja live"*, som 086b4fc. `supabase/levering-store-17-10.sql` KØRT 18/10 af Mikkel — ikke målt
 bagefter, Supabase-forbindelsen var nede; er-vi-klar.sql tjek 153 siger det). Mikkels ord: *"når der er

@@ -117,6 +117,38 @@ Herunder lægger du ind i kalenderen:
 - **Lukkedag** — der er lukket
 - **Lukker tidligt** — åbent, men kortere
 
+#### 🌴 Ferie og lukkedage — «Vi holder lukket»
+
+Øverst på **Kalender** står kortet **Ferie og lukkedage**. Sådan holder I lukket:
+
+1. Tryk **Hold lukket**
+2. Vælg den **første** lukkede dag og den **sidste** (til og med). Én dag? Lad
+   «til og med» stå tom
+3. Skriv **hvorfor** — fx *Efterårsferie* — og vælg gerne en emoji (🍂)
+4. Vil I sige mere, så skriv det i **Besked til gæsterne**. Skriv **ikke**
+   «vi er tilbage …» — det regner siden selv ud
+5. Se **Sådan ser gæsterne det** lige under felterne — det er præcis det kort,
+   gæsten får. Tryk så **Læg i kalenderen**
+
+Det sker af sig selv:
+
+- Forsiden, bestillingssiderne (smørrebrød, tapas, /bestil/) og bordbookingen
+  viser kortet **«Vi holder lukket»** med datoerne, hvorfor, **«Vi er tilbage
+  mandag d. …»**, at man kan **forudbestille** fra den dag, at forespørgsler kan
+  sendes som altid, og to knapper: **Skriv til os** (mail) og **Kontakt os**
+- En ferie på flere dage står der **en uge før** («Vi holder snart lukket … Bestil
+  som altid frem til lukningen»). En enkelt lukket dag står kun på dagen
+- **Ingen kan bestille eller booke til de lukkede dage**
+- «Vi er tilbage» er den første dag, ugeplanen har åbent — har I lukket om
+  mandagen, siger kortet tirsdag
+- Bagefter forsvinder kortet. Ingen skal huske at slukke noget
+- Mailknappen bruger adressen under **Indstillinger → Kontakt**. Er den tom,
+  er der ingen mailknap
+- Er bestillingen slået fra, nævner kortet ikke forudbestilling
+
+Listen i kortet viser hver lukning, og **hvornår gæsterne ser den**. Grøn tekst
+= det står på hjemmesiden nu. **Ret** åbner lukningen i formularen.
+
 ### 🎉 Arrangementer
 
 Havnens program — alt det, der står på kalendersiden og i «Hvad sker
