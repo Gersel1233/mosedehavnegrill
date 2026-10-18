@@ -56,17 +56,36 @@ function data(x) {
 }
 
 /* De fire flader, gæsten kan møde en lukket dag på. QR-siden
-   bærer bordet i adressen. */
+   bærer bordet i adressen.
+
+   ⚠️ VENDT 18/10 — reglen er den samme, stedet er nyt. Mikkel bad om
+   et rigtigt «Vi holder lukket»-kort (js/lukket.js) med periode,
+   «vi er tilbage …», mail og forudbestilling. På forsiden,
+   bestillingssiden og bordbookingen står beskeden nu I KORTET, og
+   båndet viger (ellers stod den to gange). QR-siden ved bordet har
+   intet kort — dér står den stadig i båndet. Kravet fra 16/9 er
+   uændret: beskeden står på alle fire flader. */
 const SIDER = [
-  ['forsiden', '/index.html'],
-  ['bestillingssiden', '/bestil/'],
-  ['bordbookingen', '/bord/'],
-  ['QR-koden ved bordet', '/ved-bordet/?bord=7'],
+  ['forsiden', '/index.html', 'kort'],
+  ['bestillingssiden', '/bestil/', 'kort'],
+  ['bordbookingen', '/bord/', 'kort'],
+  ['QR-koden ved bordet', '/ved-bordet/?bord=7', 'bånd'],
 ];
 
-for (const [navn, sti] of SIDER) {
+for (const [navn, sti, hvor] of SIDER) {
   test(`lukkedagens besked står på ${navn}`, async ({ page }) => {
     await åbn(page, sti, { ur: UR, data: data({ kalender: [lukkedag()] }) });
+    if (hvor === 'kort') {
+      const kort = page.locator('#lukket-kort');
+      await expect(kort).toBeVisible();
+      await expect(kort.locator('.lukket-hvorfor')).toHaveText('Lukket for privat selskab.');
+      await expect(kort.locator('.lukket-besked')).toContainText('tilbage i morgen');
+      /* Datoen kommer udefra: uret står på fredag den 7. august. */
+      await expect(kort.locator('.lukket-titel')).toContainText('7. august');
+      /* …og båndet siger det ikke en gang til. */
+      await expect(page.locator('#dagsbesked')).toBeHidden();
+      return;
+    }
     await expect(page.locator('#dagsbesked')).toBeVisible();
     await expect(page.locator('#dagsbesked-titel'))
       .toHaveText('Lukket for privat selskab');
@@ -105,8 +124,10 @@ test('beskeden står også midt i en lukkeperiode', async ({ page }) => {
     ur: UR,
     data: data({ kalender: [lukkedag({ dato: '2026-08-05', slut_dato: '2026-08-09' })] }),
   });
-  await expect(page.locator('#dagsbesked-titel'))
-    .toHaveText('Lukket for privat selskab');
+  const kort = page.locator('#lukket-kort');
+  await expect(kort.locator('.lukket-hvorfor')).toHaveText('Lukket for privat selskab.');
+  await expect(kort.locator('.lukket-besked')).toContainText('tilbage i morgen');
+  await expect(kort.locator('.lukket-titel')).toHaveText('5.–9. august');
 });
 
 /* ⚠️ RÆKKEFØLGEN. Dagens egen besked er skrevet om netop den dag
@@ -163,8 +184,8 @@ test.describe('Feltet i admin', () => {
     await expect(page.locator('#kal-tekst-felt')).toBeVisible();
     await expect(page.locator('#kal-tekst-etiket')).toContainText('Besked til gæsterne');
     /* Hjælpelinjen skal sige, HVOR den står — ellers tror man, det
-       er personalets egen note. */
-    await expect(page.locator('#kal-tekst-hjaelp')).toContainText('hjemmesiden');
+       er personalets egen note. (18/10: den står i kortet på forsiden.) */
+    await expect(page.locator('#kal-tekst-hjaelp')).toContainText('forsiden');
   });
 
   test('beskeden gemmes på lukkedagen', async ({ page }) => {
