@@ -97,9 +97,38 @@ for (const [navn, sti, bestil] of SIDER) {
 
 /* ⚠️ MODSTYKKET. En åben dag uden en lukning i sigte har intet kort —
    ellers ville et kort, der altid stod der, bestå alt ovenfor. */
-test('en almindelig dag har intet kort', async ({ page }) => {
-  await åbnSkal(page, '/index.html', { ur: UR, data: medBånd(data([])) });
+test('en almindelig dag har intet kort — og ingen pille i heroen', async ({ page }) => {
+  await åbnSkal(page, '/index.html', {
+    ur: UR, data: medBånd(data([], { levering: true, leverings_omraade: 'Greve og Tune', leverings_gebyr: 79 })),
+  });
   await intetKort(page);
+  await expect(page.locator('[data-lukket-pil]')).toBeHidden();
+  /* …og leveringsnyheden står, som den plejer — reglen, der lader den
+     vige, må ikke tage den, når der ingen lukning er. */
+  await expect(page.locator('.hero-nyhed')).toBeVisible();
+});
+
+/* ============================================================
+   PILLEN I HEROEN  (18/10)
+   Heroen fylder hele skærmen, og kortet står under den. Uden pillen
+   så gæsten kun «Lukket i dag» — og ugen før en ferie «Åbent nu».
+   ============================================================ */
+test('heroen siger, hvornår vi er tilbage, og peger ned til kortet', async ({ page }) => {
+  await åbnSkal(page, '/index.html', {
+    ur: UR, data: data([lukning()], { levering: true, leverings_omraade: 'Greve og Tune', leverings_gebyr: 79 }),
+  });
+  const pil = page.locator('[data-lukket-pil]');
+  await expect(pil).toBeVisible();
+  await expect(pil).toHaveAttribute('href', '#lukket-kort');
+  await expect(pil.locator('b')).toHaveText('Lukket');
+  await expect(pil).toContainText('Tilbage mandag d. 10. august');
+  /* Én pille i heroen: leveringsnyheden viger, mens lukningen står. */
+  await expect(page.locator('.hero-nyhed')).toBeHidden();
+  await pil.click();
+  await expect.poll(() => page.evaluate(() => {
+    const r = document.getElementById('lukket-kort').getBoundingClientRect();
+    return r.top >= 0 && r.top < window.innerHeight / 2;
+  })).toBe(true);
 });
 
 /* ============================================================
@@ -186,6 +215,10 @@ test('en ferie varsles en uge før — og man kan bestille frem til den', async 
   await expect(k).toContainText('Indtil da har vi åbent som altid.');
   await expect(k.locator('.lukket-bestil')).toContainText('Bestil som altid frem til lukningen');
   await expect(k.locator('.lukket-bestil')).toContainText('mandag d. 17. august');
+  /* Heroen siger «Åbent nu» i dag — pillen er det, der viser ferien. */
+  const pil = page.locator('[data-lukket-pil]');
+  await expect(pil.locator('b')).toHaveText('Snart lukket');
+  await expect(pil).toContainText('14.–16. august');
 });
 
 test('en ferie mere end en uge ude står ikke endnu', async ({ page }) => {

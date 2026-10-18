@@ -231,6 +231,34 @@
     return kort;
   }
 
+  /* Pillen i forsidens hero (18/10), der peger ned til kortet. Heroen
+     fylder hele skærmen — uden pillen var kortet ude af syne, og ugen
+     før en ferie sagde heroen bare «Åbent nu». Det vigtigste står på
+     den: hvornår vi er tilbage (eller hvornår ferien er). */
+  function pil(info) {
+    var a = document.querySelector('[data-lukket-pil]');
+    if (!a) return;
+    while (a.firstChild) a.removeChild(a.firstChild);
+    if (!info) { a.hidden = true; return; }
+    var maerke, tekst;
+    if (info.slags === 'saeson') {
+      maerke = 'Lukket';
+      tekst = info.aabnerIgen ? 'Vi åbner igen ' + info.aabnerIgen : 'for sæsonen';
+    } else if (info.slags === 'snart') {
+      maerke = 'Snart lukket';
+      tekst = periode(info.fra, info.til);
+    } else {
+      maerke = 'Lukket';
+      tekst = info.tilbage ? 'Tilbage ' + dagOgDato(info.tilbage) : periode(info.fra, info.til);
+    }
+    a.appendChild(lav('b', null, maerke));
+    a.appendChild(document.createTextNode(tekst));
+    var i = lav('i', null, '↓');
+    i.setAttribute('aria-hidden', 'true');
+    a.appendChild(i);
+    a.hidden = false;
+  }
+
   /* Siden: et tomt <section id="lukket-kort" hidden> med data-
      attributterne, og et kald, når data er hjemme. Kaldes det to
      gange (forsiden har to scripts, der henter), tegnes det om. */
@@ -241,6 +269,7 @@
       var iDag = (window.Butik && Butik.nu) ? Butik.nu().dato : new Date().toISOString().slice(0, 10);
       var info = find(d, iDag);
       while (rod.firstChild) rod.removeChild(rod.firstChild);
+      pil(info);
       if (!info) { rod.hidden = true; return; }
       var i = (d && d.indstillinger) || {};
       var fast = (window.MOSEDE && window.MOSEDE.email) || 'kontakt@mosedehavnecafe.dk';
@@ -255,8 +284,11 @@
       }));
       rod.hidden = false;
     } catch (e) {
-      /* Et kort, der ikke kan tegnes, må ikke tage siden med sig. */
+      /* Et kort, der ikke kan tegnes, må ikke tage siden med sig —
+         og pillen må ikke pege ned til ingenting. */
       rod.hidden = true;
+      var p = document.querySelector('[data-lukket-pil]');
+      if (p) p.hidden = true;
       if (window.console) console.warn('Lukkekortet kunne ikke tegnes:', e);
     }
   }
