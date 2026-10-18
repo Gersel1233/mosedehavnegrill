@@ -7,7 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-**«VI HOLDER LUKKET» — FERIEKORTET** (18/10). Mikkel sendte et skud af søsterkundens
+**«VI HOLDER LUKKET» — FERIEKORTET** (18/10 — LIVE 18/10, Mikkel: *"Ja live"*, som 6d6642c;
+stemplet målt på mosedehavnecafe.dk. Fuld runde i halvdele: computer 2755 · telefon 938 + 900 +
+941 bestået, 0 fejlet efter facitlisten; 202 sprunget over, de 4 nye siden cdf98bf er
+telefonprøver. Live-tjek med curl — Chromium i skyen stoler ikke på proxyens CA, og TLS
+slås ikke fra: kortet og pillen står i den levende markup, js/lukket.js er HEAD, og den
+kørt mod produktionens data (anon-læsning) giver intet kort i dag og «snart lukket, tilbage
+2/11» for en tænkt ferie 26/10–1/11. Håndbogen har afsnittet «Ferie og lukkedage»). Mikkel sendte et skud af søsterkundens
 lukkekort (efterårsferie) og skrev: *"at de har efterårsferie, og så at man ligesom ikke
 har kunne bestille, men man kan skrive, og så linken til mail … Det skal være nemt
 tilgængeligt. De skal vide præcis, hvordan man gør … præcis sådan her, hvis ikke bedre"*.
