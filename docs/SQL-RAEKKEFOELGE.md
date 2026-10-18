@@ -65,7 +65,8 @@ og derfra:
   → levering-store-17-10.sql
 ```
 
-**⚠️ `levering-store-17-10.sql` (17/10) — IKKE KØRT ENDNU. SKAL STÅ EFTER
+**⚠️ `levering-store-17-10.sql` (17/10) — KØRT I PRODUKTIONEN 18/10 (Mikkel: *"kørt"*; ikke
+målt bagefter — Supabase-forbindelsen var nede i sessionen). SKAL STÅ EFTER
 `levering-tid-8-10.sql`.** Mikkel 17/10: *"hvornår bør de så lave det? Hvor lang tid
 tager det med x antal … det må ikke kunne gå galt"* — og om tallene: *"Chefen sætter tal"*.
 Store bestillinger kan få mere tid i køkkenet før en levering: indstillingen

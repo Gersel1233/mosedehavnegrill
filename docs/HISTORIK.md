@@ -8,8 +8,8 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 ## Hvor vi er nu
 
 **LEVERING: KØKKENETS TID EFTER ANTAL OG EN TIDSPLAN MED NU** (17/10 — LIVE 18/10, Mikkel:
-*"Ja live"*. `supabase/levering-store-17-10.sql` er IKKE kørt endnu — uden den er databasen
-mildere end siden, aldrig strengere). Mikkels ord: *"når der er
+*"Ja live"*, som 086b4fc. `supabase/levering-store-17-10.sql` KØRT 18/10 af Mikkel — ikke målt
+bagefter, Supabase-forbindelsen var nede; er-vi-klar.sql tjek 153 siger det). Mikkels ord: *"når der er
 blevet bestilt til for eksempel kl. 10, er det så der, at kunden forventer, at det skal
 komme? Er det der, det skal i gang sættes? … Hvor lang tid tager det med x antal … det
 skal være ret nemt inden i admin … det må ikke kunne gå galt"*. Hans svar på de to
