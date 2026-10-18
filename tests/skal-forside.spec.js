@@ -1259,12 +1259,19 @@ test.describe('Forsidens kobling', () => {
        så også bedre og mere showcase af det". Den står efter menukortet
        og før historien, så dagens ret → ugens retter → bestillingen er
        urørt, som han bad om 7/9. */
-    expect(ider).toEqual(['dagsbesked', 'nyheder', 'idag', 'ugen', 'bestil',
+    /* ⚠️ OG «VI HOLDER LUKKET» (18/10) — Mikkels bestilling: en ferie
+       skal vises "præcis sådan her … nemt tilgængeligt", med hvornår vi
+       er tilbage, at man kan skrive, og linket til mail. Kortet står
+       ØVERST, før dagens besked og bestillingen: en gæst, der vil
+       bestille til lørdag, skal vide det, før hun begynder. Skjult, når
+       der ingen lukning er (js/lukket.js) — se nedenfor. */
+    expect(ider).toEqual(['lukket-kort', 'dagsbesked', 'nyheder', 'idag', 'ugen', 'bestil',
       'menu', 'isen', 'omos', 'selskab', 'alt', 'find']);
 
     // Og på en dag uden en besked ser siden ud som designet:
     // afsnittet er der, men det fylder ingenting.
     await expect(page.locator('#dagsbesked')).toBeHidden();
+    await expect(page.locator('#lukket-kort')).toBeHidden();
 
     // Den flydende pille og heroens overskrift er designets egne
     await expect(page.locator('#bestil-pill')).toHaveCount(1);
