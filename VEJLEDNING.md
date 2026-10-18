@@ -136,6 +136,8 @@ Det sker af sig selv:
   viser kortet **«Vi holder lukket»** med datoerne, hvorfor, **«Vi er tilbage
   mandag d. …»**, at man kan **forudbestille** fra den dag, at forespørgsler kan
   sendes som altid, og to knapper: **Skriv til os** (mail) og **Kontakt os**
+- Øverst på forsiden står en rød pille, **«LUKKET · Tilbage mandag d. …»**, der fører
+  ned til kortet
 - En ferie på flere dage står der **en uge før** («Vi holder snart lukket … Bestil
   som altid frem til lukningen»). En enkelt lukket dag står kun på dagen
 - **Ingen kan bestille eller booke til de lukkede dage**

@@ -25,6 +25,11 @@ Skuddet blev kun brugt som forlæg for udseendet — intet hentet fra det andet 
   som kontakt.js) og **Kontakt os**. En ferie på flere dage varsles 7 dage før («Vi
   holder snart lukket … Bestil som altid frem til lukningen»); én dag kun på dagen.
   Sæsonlukningen får samme kort («For sæsonen», «Vi åbner igen …»)
+- **Pillen i heroen:** forsidens hero fylder hele skærmen, og kortet står under den — målt
+  på skud så gæsten kun «Lukket i dag · Efterårsferie», og ugen før en ferie «Åbent nu».
+  Nu står «LUKKET · Tilbage mandag d. …» / «SNART LUKKET · 12.–18. oktober» som glaspille
+  under knapperne (`[data-lukket-pil]`, samme form som leveringsnyheden, der viger imens),
+  og et tryk lander på kortet
 - **Båndet viger:** dagsbesked.js viser ikke længere lukkedagens besked dér, hvor
   kortet står (den stod ellers to gange). Dagens egen besked står stadig i båndet, og
   QR-siden ved bordet (intet kort) har stadig lukkedagens besked i båndet.
@@ -37,12 +42,13 @@ Skuddet blev kun brugt som forlæg for udseendet — intet hentet fra det andet 
 - **Produktionen har ingen lukninger** (anon-læsning 18/10) — kortet ses først, når
   personalet lægger en ind. Ingen SQL: kilden er kalenderens `lukkedag`-rækker, som
   databasen allerede afviser bestillinger på
-- **Prøver:** `lukket-kort.spec.js` (26) — 17 fejl genindført én ad gangen, og hver fik
+- **Prøver:** `lukket-kort.spec.js` (27) — 20 fejl genindført én ad gangen, og hver fik
   sine prøver til at falde (kortet væk: 14; «tilbage» uden ugeplan: 2; ingen
   sammenlægning, ét månedsformat, forudbestilling trods lukket bestilling, innerHTML,
   varsel 6 og 8 dage, én dag varslet, ingen slutdato, ingen sæson, knappen uden type,
   forhåndsvisning uden input / for alle typer, fortiden på listen: 1 hver; mail uden
-  admins adresse: 2; båndet dobbelt: 3). «Hold lukket» bestod først med en knap, der
+  admins adresse: 2; båndet dobbelt: 3; pillen tavs: 2; nyheden bliver / altid væk: 1
+  hver). «Hold lukket» bestod først med en knap, der
   intet valgte — formularen starter på lukkedag; prøven vælger nu en anden type først
 
 **LEVERING: KØKKENETS TID EFTER ANTAL OG EN TIDSPLAN MED NU** (17/10 — LIVE 18/10, Mikkel:
