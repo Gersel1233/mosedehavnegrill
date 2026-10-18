@@ -13,6 +13,7 @@
 <meta name="theme-color" content="#fdf7ef">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/style.css?v=__V__">
+<link rel="stylesheet" href="css/lukket.css?v=__V__">
 </head>
 <body class="personale">
 
@@ -985,6 +986,29 @@
          ================================================== -->
     <div id="p-kalender" class="panel skjult">
 
+      <!-- ============ FERIE OG LUKKEDAGE  (18/10) ============
+           Mikkel: "det skal være nemt tilgængeligt. De skal vide
+           præcis, hvordan man gør". En lukning lå i kalenderformularen
+           nederst på fanen, under en tekst om arrangementer, og ingen
+           kunne se, hvad gæsten ville møde. Nu står lukningerne øverst
+           med det, gæsten ser, og ÉN knap. js/admin/kalender.js
+           (tegnFerie) fylder listen. -->
+      <div class="kort ferie-kort" id="ferie-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Ferie og lukkedage</h2>
+          <span class="kort-note">hjemmesiden viser det af sig selv</span>
+        </div>
+        <p class="hjaelp">Læg en lukning ind med fra og til og med. Så viser forsiden og
+          bestillingssiderne kortet <b>«Vi holder lukket»</b> — en uge før en ferie og
+          alle dagene — med «Vi er tilbage …», en knap til at skrive til jer, og at man
+          kan forudbestille fra den dag. Ingen kan bestille til de lukkede dage. Bagefter
+          forsvinder kortet af sig selv.</p>
+        <div id="ferie-liste" class="ferie-liste"></div>
+        <div class="knap-raekke">
+          <button class="knap" id="ferie-ny" type="button">Hold lukket</button>
+        </div>
+      </div>
+
       <!-- ============ MÅNEDEN ============================
            Kundens ord (24/8): "kalenderen skal være en kalender".
            Den var en LISTE over arrangementer og lukkedage — og
@@ -1101,7 +1125,7 @@
 
         <div class="felt-par">
           <div class="felt">
-            <label for="kal-titel">Overskrift <span class="hjaelp">(står på listen)</span></label>
+            <label for="kal-titel"><span id="kal-titel-etiket">Overskrift </span><span class="hjaelp" id="kal-titel-hjaelp">(står på listen)</span></label>
             <input type="text" id="kal-titel" maxlength="120" placeholder="Juleaften">
           </div>
           <div class="felt felt-smal">
@@ -1208,6 +1232,14 @@
             Listen på kalendersiden viser den første linje; gæsten
             får det hele, når hun trykker på arrangementet.
           </p>
+        </div>
+
+        <!-- SÅDAN SER GÆSTERNE DET (18/10) — den samme byg() som
+             hjemmesiden (js/lukket.js), mens man skriver. -->
+        <div class="felt" id="kal-lukket-forhaand" hidden>
+          <span class="felt-titel">Sådan ser gæsterne det</span>
+          <section class="lukket-kort kal-lukket-vis" id="kal-lukket-vis" aria-label="Forhåndsvisning"></section>
+          <p class="hjaelp" id="kal-lukket-hvornaar"></p>
         </div>
 
         <!-- SLÅET FRA SOM UDGANGSPUNKT, og det er med vilje.
@@ -3832,6 +3864,7 @@
 <script src="js/admin/live.js?v=__V__"></script>
 <script src="js/admin/overblik.js?v=__V__"></script>
 <script src="js/admin/tider.js?v=__V__"></script>
+<script src="js/lukket.js?v=__V__"></script>
 <script src="js/admin/kalender.js?v=__V__"></script>
 <script src="js/admin/tilmeldinger.js?v=__V__"></script>
 <script src="js/admin/arrangementer.js?v=__V__"></script>

@@ -297,15 +297,21 @@
     }
     if ($('kal-tekst-hjaelp')) {
       $('kal-tekst-hjaelp').textContent = erLuk
-        ? 'Står på hjemmesiden alle dagene — også på bestillingssiden, '
-          + 'bordbookingen og QR-koden ved bordet. Overskriften ovenfor '
-          + 'er beskedens overskrift.'
+        ? 'Står i kortet «Vi holder lukket» på forsiden, bestillingssiderne '
+          + 'og bordbookingen (og som besked ved QR-koden ved bordet). '
+          + 'Skriv ikke «vi er tilbage …» — det regner siden selv ud.'
         : 'Listen på kalendersiden viser den første linje; gæsten '
           + 'får det hele, når hun trykker på arrangementet.';
     }
+    /* Overskriften er "hvorfor" på en lukning (18/10): den står i
+       kortet som «Efterårsferie.». */
+    if ($('kal-titel-etiket')) $('kal-titel-etiket').textContent = erLuk ? 'Hvorfor? ' : 'Overskrift ';
+    if ($('kal-titel-hjaelp')) $('kal-titel-hjaelp').textContent = erLuk ? '(fx Efterårsferie)' : '(står på listen)';
+    if ($('kal-titel')) $('kal-titel').placeholder = erLuk ? 'Efterårsferie' : 'Juleaften';
+    if ($('kal-emoji')) $('kal-emoji').placeholder = erLuk ? '🌴' : '🎄';
     if ($('kal-beskrivelse')) {
       $('kal-beskrivelse').placeholder = erLuk
-        ? 'Fx "Vi holder lukket for et privat selskab — vi er tilbage i morgen kl. 11."'
+        ? 'Fx "Tak for en dejlig sæson — vi glæder os til at se jer igen."'
         : 'Langborde, én ret og fælles snak. Tag naboen med.';
     }
     if ($('kal-kategori-felt')) {
@@ -314,8 +320,151 @@
     if ($('kal-billede')) {
       $('kal-billede').closest('.felt').hidden = !maaBillede();
     }
+    visForhaand();
   }
   $('kal-offentlig').addEventListener('change', visTilmelding);
+
+  /* ============================================================
+     SÅDAN SER GÆSTERNE DET  (18/10)
+     ------------------------------------------------------------
+     Mikkel: *"De skal vide præcis, hvordan man gør"*. En lukning blev
+     lagt ind i blinde: ingen kunne se, hvad gæsten ville møde, eller
+     hvornår. Nu står gæstens kort under felterne, mens man skriver —
+     bygget af den SAMME byg() som hjemmesiden (js/lukket.js), så
+     forhåndsvisningen ikke kan sige noget andet end siden.
+     ⚠️ «Vi er tilbage» regnes uden den lukning, der rettes: kortes en
+     ferie af, må den gamle række ikke holde datoen fast.
+     ============================================================ */
+  function dagePlus(iso, n) {
+    var t = new Date(String(iso).slice(0, 10) + 'T12:00:00Z');
+    t.setUTCDate(t.getUTCDate() + n);
+    return t.toISOString().slice(0, 10);
+  }
+  function lukDataUden(udenId) {
+    var d = Admin.data || {};
+    return {
+      aabningstider: d.aabningstider || [],
+      lukkedage: (d.kalender || []).filter(function (k) {
+        return k.type === 'lukkedag' && !k.slettet && (udenId === undefined || udenId === null || k.id !== udenId);
+      }).map(function (k) { return { dato: k.dato, slut_dato: k.slut_dato || null }; }),
+    };
+  }
+  function lukValg() {
+    var i = (Admin.data || {}).indstillinger || {};
+    var fast = (window.MOSEDE && window.MOSEDE.email) || 'kontakt@mosedehavnecafe.dk';
+    return { ikoner: 'ikoner.svg', kontakt: '#', bestil: '#',
+      email: i.kontakt_email === undefined || i.kontakt_email === null ? fast : i.kontakt_email,
+      bestilling: i.bestilling_aaben !== false };
+  }
+  function hvornaarSes(fra, til) {
+    var L = window.MosedeLukket;
+    var flere = til && til !== fra;
+    var visFra = flere ? dagePlus(fra, -7) : fra;
+    var nu = Butik.nu().dato;
+    if (visFra <= nu) return { nu: true, tekst: 'Gæsterne ser kortet nu' };
+    return { nu: false, tekst: 'Gæsterne ser kortet fra ' + L.dagOgDato(visFra) };
+  }
+  function visForhaand() {
+    var boks = $('kal-lukket-forhaand');
+    if (!boks) return;
+    var L = window.MosedeLukket;
+    var vis = nyType === 'lukkedag' && !!L;
+    boks.hidden = !vis;
+    if (!vis) return;
+    var rod = $('kal-lukket-vis');
+    var linje = $('kal-lukket-hvornaar');
+    Admin.tøm(rod);
+    var fra = $('kal-dato').value;
+    var til = $('kal-slut').value || fra;
+    if (!fra) {
+      rod.appendChild(lav('p', 'hjaelp', 'Vælg den første lukkede dag, så står kortet her.'));
+      if (linje) linje.textContent = '';
+      return;
+    }
+    if (til < fra) til = fra;
+    rod.appendChild(L.byg({
+      slags: 'nu', fra: fra, til: til,
+      titel: $('kal-titel').value.trim(),
+      besked: $('kal-beskrivelse') ? $('kal-beskrivelse').value.trim() : '',
+      emoji: $('kal-emoji').value.trim(),
+      tilbage: L.tilbage(lukDataUden(retter ? retter.id : null), til),
+    }, lukValg()));
+    if (linje) {
+      var h = hvornaarSes(fra, til);
+      linje.textContent = (til !== fra
+        ? 'Står på forsiden og bestillingssiderne fra ' + L.dagOgDato(dagePlus(fra, -7))
+          + ' (en uge før) til og med ' + L.dagOgDato(til) + '.'
+        : 'Står på forsiden og bestillingssiderne ' + L.dagOgDato(fra) + '.')
+        + (h.nu ? ' Det betyder: med det samme, når I gemmer.' : '')
+        + ' Ingen kan bestille til de lukkede dage.';
+    }
+  }
+  ['kal-dato', 'kal-slut', 'kal-titel', 'kal-emoji', 'kal-beskrivelse'].forEach(function (id) {
+    if ($(id)) $(id).addEventListener('input', visForhaand);
+  });
+
+  /* ============================================================
+     FERIE OG LUKKEDAGE ØVERST  (18/10) — kommende og igangværende
+     lukninger, hvornår gæsterne ser dem, og ÉN knap. «Ret» går
+     til den samme formular som før (redigér).
+     ============================================================ */
+  function tegnFerie() {
+    var boks = $('ferie-liste');
+    var L = window.MosedeLukket;
+    if (!boks || !L) return;
+    Admin.tøm(boks);
+    var d = Admin.data || {};
+    var nu = Butik.nu().dato;
+    var saeson = (d.indstillinger || {}).saeson || {};
+    if (saeson.lukket) {
+      var s = lav('div', 'ferie-raekke');
+      s.appendChild(lav('span', 'ferie-emoji', '❄️'));
+      var sh = lav('div', 'ferie-hvad');
+      sh.appendChild(lav('b', null, 'Lukket for sæsonen'));
+      sh.appendChild(lav('p', 'ferie-status nu', 'Gæsterne ser kortet nu · slås fra under Åbningstider'));
+      s.appendChild(sh);
+      boks.appendChild(s);
+    }
+    var liste = (d.kalender || []).filter(function (k) {
+      return k.type === 'lukkedag' && !k.slettet && (k.slut_dato || k.dato) >= nu;
+    }).sort(function (a, b) { return a.dato < b.dato ? -1 : a.dato > b.dato ? 1 : 0; });
+    if (!liste.length && !saeson.lukket) {
+      boks.appendChild(lav('p', 'hjaelp ferie-tom', 'Ingen ferie eller lukkedage lagt ind.'));
+      return;
+    }
+    liste.forEach(function (k) {
+      var til = k.slut_dato || k.dato;
+      var r = lav('div', 'ferie-raekke');
+      r.setAttribute('data-ferie', k.id);
+      r.appendChild(lav('span', 'ferie-emoji', k.emoji || '🚫'));
+      var hv = lav('div', 'ferie-hvad');
+      hv.appendChild(lav('b', null, k.titel || 'Lukket'));
+      hv.appendChild(lav('span', 'ferie-periode', L.periode(k.dato, til)));
+      var h = hvornaarSes(k.dato, til);
+      var tilbage = L.tilbage(lukDataUden(null), til);
+      hv.appendChild(lav('p', 'ferie-status' + (h.nu ? ' nu' : ''),
+        h.tekst + (tilbage ? ' · tilbage ' + L.dagOgDato(tilbage) : '')));
+      r.appendChild(hv);
+      var ret = lav('button', 'knap lille sekundaer', 'Ret');
+      ret.type = 'button';
+      ret.addEventListener('click', function () { redigér(k); });
+      r.appendChild(ret);
+      boks.appendChild(r);
+    });
+  }
+  if ($('ferie-ny')) {
+    $('ferie-ny').addEventListener('click', function () {
+      ryd();
+      nyType = 'lukkedag';
+      tegnTyper();
+      visFelter();
+      if ($('kal-form-titel')) $('kal-form-titel').textContent = 'Hold lukket';
+      var f = $('kal-dato');
+      if (f && f.scrollIntoView) f.scrollIntoView({ block: 'center' });
+      if (f) f.focus();
+      Admin.kvitter('Vælg den første og den sidste lukkede dag, og skriv hvorfor — fx «Efterårsferie».');
+    });
+  }
   $('kal-tilmelding').addEventListener('change', visTilmelding);
 
   /* ============================================================
@@ -2438,6 +2587,7 @@
   tegnTyper();
   visFelter();
   Admin.tegnere.push(tegnKalender);
+  Admin.tegnere.push(tegnFerie);
   Admin.tegnere.push(tegnMaaned);
   /* Nettet lever af FANERNES lister, og de kommer ind efter
      login, ikke sammen med Butik.hent(). Uden den her stod

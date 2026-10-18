@@ -13951,3 +13951,45 @@ body.personale .store-eksempel.fejl { background: rgba(214, 42, 58, .08); color:
 body.personale .store-tider { margin: 4px 0 0; padding-left: 18px; font-variant-numeric: tabular-nums; }
 body.personale .store-tider li { margin: 1px 0; }
 body.personale label[for="levering-biler"] { display: block; margin-top: 14px; }
+
+/* ============================================================
+   KALENDER → FERIE OG LUKKEDAGE  (18/10)
+   ------------------------------------------------------------
+   Kortet øverst på fanen: hver lukning på én række med hvornår
+   gæsterne ser den, og «Ret». Den grønne status er «det står på
+   siden nu» — det, personalet skal kunne se med et blik.
+   ============================================================ */
+body.personale .ferie-liste { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 4px; }
+body.personale .ferie-raekke {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: var(--paper);
+}
+body.personale .ferie-emoji {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--sand2);
+  font-size: 20px;
+  line-height: 1;
+}
+body.personale .ferie-hvad { flex: 1 1 auto; min-width: 0; }
+body.personale .ferie-hvad b { font-size: 16px; color: var(--sea); }
+body.personale .ferie-periode { display: block; font-size: 15px; color: var(--sea); }
+body.personale .ferie-status { margin: 3px 0 0; font-size: 13px; line-height: 1.35; color: var(--muted); }
+body.personale .ferie-status.nu { color: #1f5a24; font-weight: 700; }
+body.personale .ferie-raekke .knap { flex: 0 0 auto; }
+body.personale .ferie-tom { margin: 8px 0; }
+
+/* Forhåndsvisningen i formularen er gæstens kort i mindre luft —
+   og knapperne må ikke sende personalet ud af admin midt i en
+   indtastning. */
+body.personale .kal-lukket-vis { padding: 6px 0 2px; }
+body.personale .kal-lukket-vis a { pointer-events: none; }

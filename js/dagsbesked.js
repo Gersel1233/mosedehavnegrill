@@ -97,7 +97,11 @@
          Er der begge, vinder dagens egen: den er skrevet senere og
          om mindre. Rækkefølgen skal ligge ÉT sted — ellers svarer
          forsiden og QR-koden hver sit på den samme dag. */
-      if (!tekst) {
+      /* ⚠️ MEN IKKE TO GANGE (18/10). På en side med lukkekortet
+         (js/lukket.js) står lukningens besked i kortet — med perioden,
+         «vi er tilbage» og knapperne. Båndet her ville sige den samme
+         sætning en gang til lige under. Dagens EGEN besked står stadig. */
+      if (!tekst && !document.getElementById('lukket-kort')) {
         var luk = lukkedagen(d, idag);
         if (luk && String(luk.besked || '').trim()) {
           tekst = String(luk.besked).trim();

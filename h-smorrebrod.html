@@ -36,12 +36,15 @@
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/lukket.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
 <div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage" data-tilbage><svg viewBox="0 0 24 24"><use href="ikoner.svg#tilbage"/></svg></a><a class="ordmaerke hjem" href="index.html" data-tilbage>Mosede Havnecafe</a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><use href="ikoner.svg#menu"/></svg></button></div>
 <div class="phead"><h1>Smørrebrød<br>ud af huset</h1><p class="sub">Hele skiver og håndmadder til møder, fødselsdage og receptioner. Hent selv, eller få det leveret.</p></div>
+<!-- VI HOLDER LUKKET (18/10) — js/lukket.js; tomt og skjult uden en lukning. -->
+<section class="lukket-kort" id="lukket-kort" hidden aria-label="Vi holder lukket"
+  data-ikoner="ikoner.svg" data-kontakt="index.html#find" data-bestil="#bestil"></section>
 <!-- ============ FORRETNINGENS EGNE FOTOS ==================
      Kundens ord (29/8): galleriet skal ligge her og INTET andet
      sted, og det skal stilles op og se ud som det gjorde på
@@ -402,5 +405,6 @@
 <script src="js/menu-emoji.js?v=__V__"></script>
 <script src="js/adressefelt.js?v=__V__"></script>
 <script src="js/skal/feltfejl.js?v=__V__"></script>
+<script src="js/lukket.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>
 </body></html>

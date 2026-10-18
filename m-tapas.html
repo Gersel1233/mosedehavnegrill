@@ -36,7 +36,7 @@
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav har-film">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/lukket.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><script src="js/tilbage.js?v=__V__"></script></head><body class="hav har-film">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
 <div class="screen" id="sc">
@@ -48,6 +48,9 @@
   
   <p class="sub">Et overdådigt fad til hyggeaftener og gæster.</p>
 </div>
+<!-- VI HOLDER LUKKET (18/10) — js/lukket.js; tomt og skjult uden en lukning. -->
+<section class="lukket-kort" id="lukket-kort" hidden aria-label="Vi holder lukket"
+  data-ikoner="ikoner.svg" data-kontakt="index.html#find" data-bestil="#bestil-tapas"></section>
 <!-- ⚠️ BILLEDERNE SKIFTER MELLEM HINANDEN  (11/9). Kundens ord med
      et skud af forlæggets tapasside: *"lav siden så billederne er
      som her og skifter mellem hinanden"*. Puljen er ejerens EGNE
@@ -290,5 +293,6 @@ calc();})();
 <script src="js/skal/bestil.js?v=__V__"></script>
 <script src="js/skal/billedplads.js?v=__V__"></script>
 <script src="js/adressefelt.js?v=__V__"></script>
+<script src="js/lukket.js?v=__V__"></script>
 <script src="js/skal/tapas.js?v=__V__"></script>
 </body></html>

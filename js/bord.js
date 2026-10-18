@@ -506,6 +506,8 @@
     /* Personalets besked for dagen — samme tegning som forsiden,
        så den ser ens ud, hvor gæsten end møder den (16/9). */
     if (window.MosedeDagsbesked) MosedeDagsbesked.vis(d);
+    /* Lukkekortet (18/10) — js/lukket.js. */
+    if (window.MosedeLukket) MosedeLukket.vis(d);
     visDage();
     visTider();
 

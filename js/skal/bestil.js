@@ -3505,6 +3505,10 @@
   var bygget = false;
 
   Butik.hent().then(function (d) {
+    /* Lukkekortet (18/10) — js/lukket.js. Smørrebrødssiden har
+       intet andet script, der kalder det; på forsiden tegnes det
+       bare om med de samme data. */
+    if (window.MosedeLukket) MosedeLukket.vis(d);
     /* ⚠️ TIDERNE HENTES FØR byg(). Kom de bagefter, ville
        vælgeren stå tegnet uden dem i det sekund, gæsten ser
        den — og et fyldt kl. 12.00 ville se ledigt ud, lige

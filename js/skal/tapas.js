@@ -905,6 +905,8 @@
   }
 
   Butik.hent().then(function (d) {
+    /* Lukkekortet (18/10) — js/lukket.js. */
+    if (window.MosedeLukket) MosedeLukket.vis(d);
     byg(d);
     skrivVarsel();
     fyldPladser(d);

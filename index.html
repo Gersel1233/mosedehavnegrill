@@ -60,7 +60,7 @@
      havnegrillen.css. -->
 <meta name="theme-color" content="#0b0706" data-fast="#fdf7ef">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><!-- ⚠️ FILMEN ER ÅBNINGEN — OG KLASSEN SÆTTES, FØR SIDEN TEGNES (11/9).
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="css/lukket.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><!-- ⚠️ FILMEN ER ÅBNINGEN — OG KLASSEN SÆTTES, FØR SIDEN TEGNES (11/9).
      Bølge-introen er afløst af heroens film (kundens beslutning:
      "fade ind premium ligesom apples hjemmeside og blive til den
      statiske end frame hvor teksten så kommer"). Heroens tekst skal
@@ -200,6 +200,18 @@
     <a class="hero-nyhed" href="#bestil" data-vaelg-levering data-levering-nyhed hidden><b>Nyhed</b>Vi kører maden ud<i aria-hidden="true">→</i></a>
   </div>
 </div>
+
+<!-- ============ VI HOLDER LUKKET  (18/10) ============
+     Mikkel: "at de har efterårsferie, og så at man ligesom ikke har
+     kunne bestille, men man kan skrive, og så linken til mail …
+     det skal være nemt tilgængeligt". Kortet står lige under heroen,
+     FØR bestillingen: en gæst, der vil bestille til lørdag, skal vide
+     det, før hun begynder. Tomt og skjult, til js/lukket.js finder en
+     lukning i Kalenderen (eller sæsonlukket) — så findes det ikke.
+     Under en lukning siger kortet også beskeden, og båndet nedenfor
+     springer lukningens besked over (js/dagsbesked.js). -->
+<section class="lukket-kort" id="lukket-kort" hidden aria-label="Vi holder lukket"
+  data-ikoner="ikoner.svg" data-kontakt="#find" data-bestil="#bestil"></section>
 
 <!-- ============ DAGENS BESKED ============
      Personalet skriver den på Kalender-fanen ved den enkelte dag.
@@ -1131,6 +1143,7 @@
 <script src="js/skal/billedplads.js?v=__V__"></script>
 <script src="js/skal/tidligere.js?v=__V__"></script>
 <script src="js/dagsbesked.js?v=__V__"></script>
+<script src="js/lukket.js?v=__V__"></script>
 <script src="js/skal/forside.js?v=__V__"></script>
 <script src="js/adressefelt.js?v=__V__"></script>
 <script src="js/isbygger.js?v=__V__"></script>

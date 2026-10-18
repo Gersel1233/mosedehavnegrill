@@ -31,7 +31,7 @@
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../css/style.css?v=__V__"><link rel="stylesheet" href="../css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="../css/kvittering.css?v=__V__">
+<link rel="stylesheet" href="../css/style.css?v=__V__"><link rel="stylesheet" href="../css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="../css/lukket.css?v=__V__"><link rel="stylesheet" href="../css/kvittering.css?v=__V__">
 
 <!-- JSON-LD. Se noten i index.html om hvorfor den er skrevet ind i
      siden og ikke bygget af JavaScript.
@@ -160,6 +160,11 @@
        trædækket til kl. 16" hører til, FØR man vælger dag og tid —
        ikke i en sætning, koden selv fandt på. Tom og skjult, til
        der er noget at sige; js/dagsbesked.js fylder den ud. -->
+  <!-- VI HOLDER LUKKET (18/10) — js/lukket.js. Står FØR formularen, af
+       samme grund som beskeden nedenfor. Tomt og skjult uden en lukning. -->
+  <section class="lukket-kort" id="lukket-kort" hidden aria-label="Vi holder lukket"
+    data-ikoner="../ikoner.svg" data-kontakt="../index.html#find" data-bestil="../index.html#bestil"></section>
+
   <section class="dagsbesked" id="dagsbesked" hidden>
     <div class="dagsbesked-ind">
       <div class="dagsbesked-dag" id="dagsbesked-dag"></div>
@@ -336,6 +341,7 @@
 <script src="../js/skal/kontakt.js?v=__V__"></script>
 <script src="../js/faelles.js?v=__V__"></script>
 <script src="../js/dagsbesked.js?v=__V__"></script>
+<script src="../js/lukket.js?v=__V__"></script>
 <script src="../js/bord.js?v=__V__"></script>
 
 </body>

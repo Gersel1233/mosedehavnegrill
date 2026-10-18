@@ -233,6 +233,8 @@
   // ----------------------------------------------------------
   function visDagsbesked(d) {
     if (window.MosedeDagsbesked) MosedeDagsbesked.vis(d);
+    /* Og lukkekortet (18/10) — js/lukket.js. */
+    if (window.MosedeLukket) MosedeLukket.vis(d);
   }
 
   // ----------------------------------------------------------
