@@ -7,6 +7,18 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**OVERGANGEN TIL «FIND OS»** (20/10 — live, udseende efter et skud). Mikkel, med et skud
+fra en bred skærm: *"den her overgang … er ikke god"*. **MÅLT FØR:** «Hvad skal vi hjælpe
+med?» står på havnens foto under et slør, der toner op fra creme foroven — men forneden stod
+fotoet i fuld styrke helt ned til «Find os», hvor et andet, mørkt foto begynder: to travle
+fotos kant i kant med en hård streg. Alle forsidens andre overgange er flad creme → mørkt
+foto (Bestil mad, Historien). Nu toner sløret til creme over de nederste 120 px (telefon) /
+140 px (computer — `havnegrillen-desktop.css` har sit eget slør, og det var dét, der først
+slog rettelsen på computeren). Prøven i `skal-forside.spec.js` læser afsnittets nederste
+pixels (kortene skjult — deres skygge rækker ned i de 32 px på telefonen) mod naboens creme:
+1,7 / 1,3 i snit; set fejle med hvert slør genindført (59 telefon, 71 computer).
+skal-forside + find-foto: 301 bestået, 0 fejlet.
+
 **«VI HOLDER LUKKET» — FERIEKORTET** (18/10 — LIVE 18/10, Mikkel: *"Ja live"*, som 6d6642c;
 stemplet målt på mosedehavnecafe.dk. Fuld runde i halvdele: computer 2755 · telefon 938 + 900 +
 941 bestået, 0 fejlet efter facitlisten; 202 sprunget over, de 4 nye siden cdf98bf er
