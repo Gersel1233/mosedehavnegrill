@@ -3344,8 +3344,14 @@ footer .smiley-linje{
 #alt .alt-bund img{display:block;width:100%;height:100%;object-fit:cover}
 /* Cremen er FAST bag overskriften — blæk på et foto kan ikke læses
    sikkert — og bliver til et slør, hvor kortene står, så havnen anes
-   bag glasset. Toppen er naboens creme, så overgangen ikke ses. */
-#alt .alt-slor{position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--cream2) 0,var(--cream2) 190px,rgba(247,237,225,.5) 400px,rgba(247,237,225,.5))}
+   bag glasset. Toppen er naboens creme, så overgangen ikke ses.
+   ⚠️ OG BUNDEN ER CREME IGEN (20/10). Mikkels ord, med et skud: "den her
+   overgang … er ikke god". Fotoet stod i fuld styrke helt ned til «Find
+   os», og dér begynder et ANDET foto, mørkt — to travle fotos kant i kant
+   med en hård streg imellem. Alle forsidens andre overgange går fra flad
+   creme til mørkt foto (Bestil mad, Historien) og ser rene ud; nu gør
+   den her også. Fotoet er en rude bag kortene, med creme over og under. */
+#alt .alt-slor{position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--cream2) 0,var(--cream2) 190px,rgba(247,237,225,.5) 400px,rgba(247,237,225,.5) calc(100% - 120px),var(--cream2) 100%)}
 #alt .rows{gap:12px}
 /* ⚠️ INTET SLØR PÅ PLADEN (11/10). Figmas Rim har frost 0 (LA3/Glass/Rim:
    radius 0) — glasset er klart og bryder, det mattes ikke. Sløret på 3 px

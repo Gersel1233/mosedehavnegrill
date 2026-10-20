@@ -142,7 +142,9 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 /* Slørets faste creme følger overskriften, der er lavere her, og fotoet
    viser båndet med himlen og skiltet (molen er et højt billede). */
 #alt .alt-bund img{object-position:50% 22%}
-#alt .alt-slor{background:linear-gradient(180deg,var(--cream2) 0,var(--cream2) 150px,rgba(247,237,225,.45) 330px,rgba(247,237,225,.45))}
+/* Bunden toner til creme igen (20/10) — se noten ved #alt .alt-slor i
+   havnegrillen.css: ellers stod to fotos kant i kant mod «Find os». */
+#alt .alt-slor{background:linear-gradient(180deg,var(--cream2) 0,var(--cream2) 150px,rgba(247,237,225,.45) 330px,rgba(247,237,225,.45) calc(100% - 140px),var(--cream2) 100%)}
 .newslist{grid-template-columns:1fr 1fr}
 .vals{grid-template-columns:repeat(3,1fr)}
 .hav .facts{width:min(100vw - 64px,980px);grid-template-columns:repeat(3,1fr)}

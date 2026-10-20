@@ -830,6 +830,62 @@ test.describe('Forsidens kobling', () => {
     }
   });
 
+  /* ============================================================
+     «HVAD SKAL VI HJÆLPE MED?» SLUTTER I CREME  (20/10)
+     Mikkels ord, med et skud: "den her overgang … er ikke god". Fotoet
+     bag kortene stod i fuld styrke helt ned til «Find os», og dér
+     begynder et ANDET foto, mørkt — to travle fotos kant i kant med en
+     hård streg imellem. Nu toner sløret tilbage til creme forneden, som
+     det gør foroven, og overgangen er husets creme → mørkt foto.
+     ⚠️ PRØVEN LÆSER PIXLERNE, ikke gradienten: den nederste stribe af
+     afsnittet tages som skærmbillede og holdes op mod NABOENS creme
+     (#selskab) — tallet kommer udefra. En gradient, der siger creme,
+     men som en anden regel slår (det skete: computerens ark havde sit
+     eget slør), består ikke.
+     ============================================================ */
+  test('«Hvad skal vi hjælpe med?» slutter i creme — ikke foto mod foto ved «Find os»', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#alt .rows').evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await expect.poll(() => page.locator('#alt .alt-bund img').evaluate((i) => i.complete && i.naturalWidth),
+      { timeout: 8000 }).toBeGreaterThan(0);
+    /* Afsnittets bund midt på skærmen: ingen topbjælke eller flydende
+       bestilknap over det, der måles. */
+    await page.evaluate(() => {
+      const r = document.getElementById('alt').getBoundingClientRect();
+      window.scrollBy(0, r.bottom - window.innerHeight / 2);
+    });
+    await page.waitForTimeout(1300);   /* fotoets glid (rev, 1,2 s) er færdigt */
+    /* Kun baggrunden måles: kortenes skygge rækker ned i de 32 px under
+       dem på telefonen (målt 20/10: 16 i snit med kortene, under 2 uden) — og en
+       skygge er ikke et foto. */
+    await page.addStyleTag({ content: '#alt .rows, #alt .alt-hoved { visibility: hidden !important; }' });
+    const { bund, bredde, creme } = await page.evaluate(() => ({
+      bund: document.getElementById('alt').getBoundingClientRect().bottom,
+      bredde: document.documentElement.clientWidth,
+      creme: getComputedStyle(document.getElementById('selskab')).backgroundColor,
+    }));
+    const png = await page.screenshot({ clip: { x: 0, y: Math.floor(bund) - 4, width: bredde, height: 3 } });
+    const afvig = await page.evaluate(async ({ b64, creme }) => {
+      const img = new Image();
+      img.src = 'data:image/png;base64,' + b64;
+      await img.decode();
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const x = c.getContext('2d');
+      x.drawImage(img, 0, 0);
+      const d = x.getImageData(0, 0, c.width, c.height).data;
+      const [r, g, b] = creme.match(/\d+/g).map(Number);
+      let stoerst = 0, sum = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        const a = Math.max(Math.abs(d[i] - r), Math.abs(d[i + 1] - g), Math.abs(d[i + 2] - b));
+        stoerst = Math.max(stoerst, a); sum += a;
+      }
+      return { stoerst, snit: sum / (d.length / 4) };
+    }, { b64: png.toString('base64'), creme });
+    expect(afvig.snit, 'afsnittets bund er ikke naboens creme i snit (' + JSON.stringify(afvig) + ')').toBeLessThan(4);
+    expect(afvig.stoerst, 'en del af afsnittets bund viser fotoet (' + JSON.stringify(afvig) + ')').toBeLessThan(14);
+  });
+
   /* ⚠️ BUNDEN ER ET FOTO MED BELÆG (10/10). Første udgave lagde
      facade-1400.jpg under computerens kort — den AI-behandlede med det
      forkerte skilt ("Grill & Kiosk"), som er forbudt som husets billede
