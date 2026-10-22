@@ -1,0 +1,157 @@
+/* ============================================================
+   MOSEDE /ny/ — PRØVEN PÅ ET NYT UDTRYK  (22/10)
+   ------------------------------------------------------------
+   Mikkels ord: siden "skal være bedre ift at ramme temaet bedre
+   og med de ternede tema imellem nogle sectioner". Det er et LAG
+   oven på forsidens egne ark; ingen regel her rører andre sider
+   end ny/index.html (alt er scopet til body.ny-side).
+
+   Tre greb:
+   1) DUGEN. Den røde tern er husets — borddugene på terrassen —
+      og den står nu som en dugkant mellem afsnittene, i stedet
+      for at være gemt i heroen og i "I dag"-mærket.
+   2) TAVLEN. Dagens ret står på en kridttavle, som den gør ved
+      en havnecafé, med dugen som kant foroven.
+   3) PAPIRET. Bestillingen står på lyst papir og ikke på det
+      mørke glas over fotoet — det er en formular, der skal
+      læses, ikke en stemning. På en computer får den to spalter.
+   ============================================================ */
+
+body.ny-side{
+  --tern:rgba(214,42,58,.58);
+  --tavle:#1f2624;
+  --kridt:#f3efe6;
+}
+
+/* ---------- 1) dugen mellem afsnittene ---------- */
+/* Tern = to striber oven på hinanden; hvor de krydser, bliver det
+   mørkere rødt, som en rigtig vævet dug. Takkerne foroven og forneden
+   er en maske, så det ligner en kant og ikke en bjælke. */
+.ny-side .dug{position:relative;height:46px;margin:0;
+  background-color:#fff;
+  background-image:linear-gradient(90deg,var(--tern) 50%,transparent 0),linear-gradient(var(--tern) 50%,transparent 0);
+  background-size:22px 22px;background-position:center;
+  -webkit-mask:radial-gradient(circle at 50% 0,transparent 5.5px,#000 6px) top/14px 50% repeat-x,radial-gradient(circle at 50% 100%,transparent 5.5px,#000 6px) bottom/14px 50% repeat-x;
+          mask:radial-gradient(circle at 50% 0,transparent 5.5px,#000 6px) top/14px 50% repeat-x,radial-gradient(circle at 50% 100%,transparent 5.5px,#000 6px) bottom/14px 50% repeat-x}
+.ny-side .dug::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.18),transparent 40%,rgba(36,26,23,.1))}
+
+/* ---------- topbjælken: genveje på en computer ---------- */
+.ny-side .ny-nav,.ny-side .ny-bord{display:none}
+@media (min-width:821px){
+  .ny-side .topbar{gap:6px}
+  .ny-side .topbar .ordmaerke{opacity:1;visibility:visible;color:#fff;text-shadow:0 1px 12px rgba(0,0,0,.35)}
+  .ny-side .topbar.stuck .ordmaerke,.ny-side .topbar.solid .ordmaerke{color:var(--ink);text-shadow:none}
+  .ny-side .ny-nav{display:flex;align-items:center;gap:2px;margin-right:8px;padding:4px;border-radius:999px;
+    background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);
+    box-shadow:inset 0 1px .5px rgba(255,255,255,.45),inset 0 0 0 .5px rgba(255,255,255,.3)}
+  .ny-side .ny-nav a{padding:9px 14px;border-radius:999px;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;text-decoration:none;transition:background .2s ease}
+  .ny-side .ny-nav a:hover{background:rgba(255,255,255,.18)}
+  .ny-side .topbar.stuck .ny-nav,.ny-side .topbar.solid .ny-nav{background:rgba(36,26,23,.05);box-shadow:inset 0 0 0 .5px rgba(36,26,23,.08)}
+  .ny-side .topbar.stuck .ny-nav a,.ny-side .topbar.solid .ny-nav a{color:var(--ink)}
+  .ny-side .topbar.stuck .ny-nav a:hover,.ny-side .topbar.solid .ny-nav a:hover{background:rgba(36,26,23,.06)}
+  .ny-side .ny-bord{display:inline-flex;align-items:center;height:40px;padding:0 16px;margin-right:6px;border-radius:999px;
+    font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;text-decoration:none;background:var(--red);
+    box-shadow:inset 0 1px .5px rgba(255,255,255,.4),0 8px 20px rgba(214,42,58,.3)}
+  .ny-side .ny-bord:hover{background:var(--red-d)}
+}
+
+/* ---------- heroen: dagens ret står på billedet ---------- */
+.ny-side .ny-idag{display:flex;align-items:center;gap:12px;width:100%;max-width:440px;margin-top:4px;padding:12px 14px 12px 12px;border-radius:20px;
+  color:#fff;text-decoration:none;text-align:left;
+  background:rgba(20,14,12,.34);-webkit-backdrop-filter:blur(20px) saturate(160%);backdrop-filter:blur(20px) saturate(160%);
+  box-shadow:inset 0 1px .5px rgba(255,255,255,.35),inset 0 0 0 .5px rgba(255,255,255,.22),0 14px 34px rgba(0,0,0,.28)}
+.ny-side .ny-idag[hidden]{display:none}
+.ny-side .ny-idag .k{flex:none;display:grid;place-items:center;width:54px;height:54px;border-radius:14px;
+  background-color:#fff;background-image:linear-gradient(90deg,rgba(214,42,58,.7) 50%,transparent 0),linear-gradient(rgba(214,42,58,.7) 50%,transparent 0);background-size:13.5px 13.5px;
+  box-shadow:inset 0 0 0 .5px rgba(0,0,0,.15)}
+/* ordet står på en hvid seddel oven på ternet — direkte på ternet kan det ikke læses */
+.ny-side .ny-idag .k span{padding:4px 6px;border-radius:6px;background:#fff;color:var(--red-tekst);
+  font:700 10px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.ny-side .ny-idag .t{flex:1;min-width:0;display:grid;gap:3px}
+.ny-side .ny-idag .t small{font:500 12.5px/1.2 "Host Grotesk",system-ui,sans-serif;color:rgba(255,255,255,.78)}
+.ny-side .ny-idag .t b{font:600 17px/1.25 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.01em;text-wrap:balance}
+.ny-side .ny-idag em{flex:none;font:600 16px/1 "Host Grotesk",system-ui,sans-serif;font-style:normal;font-variant-numeric:tabular-nums;color:#ffe3cf}
+.ny-side .ny-idag i{flex:none;font-style:normal;opacity:.8;transition:transform .3s var(--spring)}
+.ny-side .ny-idag:hover i{transform:translateX(3px)}
+
+/* ---------- 2) tavlen: dagens ret ---------- */
+.ny-side #idag{padding-top:40px}
+body.ny-side #idag .today{border-radius:22px;overflow:hidden;color:var(--kridt);
+  background-color:var(--tavle);
+  background-image:
+    radial-gradient(120% 90% at 30% 20%,rgba(255,255,255,.07),transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E");
+  box-shadow:inset 0 0 0 8px #6b4a32,inset 0 0 0 9px rgba(0,0,0,.35),inset 0 0 40px rgba(0,0,0,.45),0 22px 48px rgba(36,26,23,.22)}
+body.ny-side #idag .today .idag-blok{margin:8px 8px 0;border-radius:14px 14px 0 0;padding:11px 16px;
+  background-color:#fff;background-image:linear-gradient(90deg,var(--tern) 50%,transparent 0),linear-gradient(var(--tern) 50%,transparent 0);background-size:18px 18px;color:#fff}
+body.ny-side #idag .today .idag-blok{display:flex;justify-content:flex-start}
+body.ny-side #idag .today .idag-blok .idag-ord{font-size:12px;color:var(--red-tekst);background:#fff;padding:6px 10px;border-radius:7px;box-shadow:0 2px 6px rgba(36,26,23,.2)}
+body.ny-side #idag .today .in{padding:20px 26px 26px}
+body.ny-side #idag .today .lbl{color:rgba(243,239,230,.72)}
+body.ny-side #idag .today h3{color:var(--kridt);font-size:34px;line-height:1.08;text-shadow:0 0 1px rgba(255,255,255,.55),0 0 14px rgba(255,255,255,.08)}
+body.ny-side #idag .today p{color:rgba(243,239,230,.84);font-size:15px}
+body.ny-side #idag .today .price{color:var(--kridt);background:none;box-shadow:inset 0 0 0 1.5px rgba(243,239,230,.55);border-radius:999px;padding:9px 14px}
+body.ny-side #idag .today .rest{color:var(--kridt);background:rgba(243,239,230,.12)}
+body.ny-side #idag .today .rest.faa{color:#ffc2c8;background:rgba(214,42,58,.28)}
+
+/* ugen: kortene som små menusedler med dugkant; de tomme dage er stille */
+body.ny-side .week .day{background:#fffdf9;box-shadow:0 1px 0 rgba(36,26,23,.06),0 10px 24px rgba(36,26,23,.08);border:0;position:relative;overflow:hidden;padding-top:22px}
+body.ny-side .week .day::before{content:"";position:absolute;left:0;right:0;top:0;height:7px;
+  background-color:#fff;background-image:linear-gradient(90deg,var(--tern) 50%,transparent 0),linear-gradient(var(--tern) 50%,transparent 0);background-size:7px 7px}
+body.ny-side .week .day.nu{box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.5),0 12px 28px rgba(214,42,58,.14)}
+body.ny-side .week .day.closed{background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
+body.ny-side .week .day.closed::before{opacity:.4}
+body.ny-side .week .day-mere{align-self:center;padding:0 8px}
+body.ny-side .week .day-mere p{color:var(--muted)}
+
+/* ---------- 3) papiret: bestil mad ---------- */
+.ny-side #bestil.papir{background:linear-gradient(180deg,var(--cream2),var(--cream) 260px)}
+.ny-side #bestil.papir .best-bg,.ny-side #bestil.papir .best-slor{display:none}
+.ny-side #bestil.papir .eyebrow{color:var(--red-tekst)}
+body.ny-side #bestil.papir .panel{position:relative;background:#fffdf9;-webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:0 1px 0 rgba(36,26,23,.06),0 24px 60px -18px rgba(36,26,23,.22),inset 0 0 0 1px rgba(36,26,23,.05);overflow:hidden;padding-top:30px}
+body.ny-side #bestil.papir .panel::before{content:"";position:absolute;left:0;right:0;top:0;height:12px;
+  background-color:#fff;background-image:linear-gradient(90deg,var(--tern) 50%,transparent 0),linear-gradient(var(--tern) 50%,transparent 0);background-size:12px 12px}
+
+/* leveringsnyheden var tegnet til det mørke glas (hvid tekst); på papiret er den et hvidt kort med rød kant */
+body.ny-side #bestil.papir .lev-nyhed{background:#fff;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.35),0 14px 34px -14px rgba(214,42,58,.3);-webkit-backdrop-filter:none;backdrop-filter:none}
+body.ny-side #bestil.papir .lev-nyhed-tekst p{color:var(--ink2)}
+body.ny-side #bestil.papir .lev-nyhed-tekst .lev-nyhed-titel,body.ny-side #bestil.papir .lev-nyhed-tekst .lev-gratis{color:var(--ink)}
+body.ny-side #bestil.papir .lev-nyhed-knap{color:#fff;background:var(--red);box-shadow:0 8px 20px -6px rgba(214,42,58,.5)}
+body.ny-side #bestil.papir .lev-nyhed-knap:hover{background:var(--red-d)}
+body.ny-side #bestil.papir .lev-nyhed-knap:focus-visible{outline-color:var(--red)}
+
+@media (min-width:1024px){
+  /* to spalter: overskriften og leveringsnyheden til venstre, formularen til højre */
+  body.ny-side #bestil.papir{--g:max(28px,calc((100% - 1120px)/2));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,600px);
+    grid-template-areas:"hoved panel" "lev panel" "foto panel";grid-template-rows:auto auto 1fr;column-gap:64px;align-items:start}
+  body.ny-side #bestil.papir > .rev:not(.panel):not(.lev-nyhed){grid-area:hoved}
+  body.ny-side #bestil.papir > .lev-nyhed{grid-area:lev;margin-top:22px}
+  body.ny-side #bestil.papir > .panel{grid-area:panel;margin-top:0}
+  body.ny-side #bestil.papir h2{font-size:56px;letter-spacing:-.035em}
+  /* lugens foto som et indrammet billede i venstre spalte — samme foto, nu ikke en baggrund */
+  body.ny-side #bestil.papir .best-bg{display:block;grid-area:foto;position:sticky;top:110px;inset:auto;width:auto;height:auto;z-index:auto;margin-top:28px;border-radius:22px;overflow:hidden;
+    box-shadow:0 20px 50px -20px rgba(36,26,23,.4)}
+  body.ny-side #bestil.papir .best-bg img{position:static;width:100%;height:auto;aspect-ratio:4/5;object-position:50% 40%}
+}
+
+/* ---------- striben i bunden: Facebook, smiley, pris ---------- */
+.ny-side .ny-strib{padding:30px 0 10px;background:var(--cream2)}
+@media (min-width:821px){
+  .ny-side .ny-strib{display:grid;grid-template-columns:repeat(2,minmax(0,440px));justify-content:center;gap:0 14px;padding:44px var(--g) 24px}
+  .ny-side .ny-strib > :not(.glasraekke){grid-column:1/-1}
+  .ny-side .ny-strib > .glasraekke{margin:10px 0 0 !important}
+}
+
+/* fra 560 px står "I dag"-ternet som en kant i venstre side af tavlen, ikke foroven */
+@media (min-width:560px){
+  body.ny-side #idag .today{grid-template-columns:96px minmax(0,1fr)}
+  body.ny-side #idag .today .idag-blok{margin:8px 0 8px 8px;border-radius:14px 0 0 14px;justify-content:center;align-items:center;padding:0}
+  body.ny-side #idag .today .idag-blok .idag-ord{white-space:nowrap}
+  body.ny-side #idag .today .in{padding:24px 28px 26px}
+}
+@media (min-width:821px){
+  /* tavlen følger overskriftens spalte, ikke det smallere kortmål */
+  body.ny-side #idag .today{max-width:none}
+}

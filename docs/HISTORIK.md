@@ -7,6 +7,20 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ — PRØVEN PÅ ET NYT UDTRYK** (22/10 — kun på mosedehavnecafe.dk/ny/, `noindex`;
+forsiden er urørt). Mikkel: *"den skal være bedre ift at ramme temaet bedre og med de ternede
+tema imellem nogle sectioner"* og *"lav den på /ny tingen"*. `ny/index.html` er en kopi af
+forsiden med `<base href="../">`, så alle adresser regnes fra roden og ingen fil er kopieret;
+`ny/mosede-ny.js` retter de to ting, base bryder (SVG'ens egne #-henvisninger og #-links, der
+bygges efter indlæsning). `ny/mosede-ny.css` lægger: rød tern som dugkant mellem afsnittene,
+dagens ret på en kridttavle, et glaskort med dagens ret i heroen (læser tavlen/ugen — finder
+intet på), bestillingen på lyst papir (klassen `glasafsnit` er taget af i kopien; to spalter
+på computer med lugens foto), genveje + «Book bord» i bjælken på computer, og Facebook/smiley/
+pris samlet nederst. Rækkefølge: dagens ret → bestil → menukort → is → nyheder → selskab →
+historien → «hvad skal vi hjælpe med» → find os. ⚠️ Kopien følger IKKE med, når forsiden
+rettes — den er en prøve. Prøverunden er ikke kørt (node_modules mangler i sky-sessionen);
+set på skud i 390 og 1440 px, ingen JS-fejl.
+
 **OVERGANGEN TIL «FIND OS»** (20/10 — live, udseende efter et skud). Mikkel, med et skud
 fra en bred skærm: *"den her overgang … er ikke god"*. **MÅLT FØR:** «Hvad skal vi hjælpe
 med?» står på havnens foto under et slør, der toner op fra creme foroven — men forneden stod

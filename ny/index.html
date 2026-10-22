@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="da"><head><meta charset="utf-8"><base href="../"><meta name="robots" content="noindex, nofollow"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mosede Havnecafe — smørrebrød og is på Mosede Havn i Greve</title>
+
+
+<!-- ⚠️ CANONICAL OG DELEFELTER KOM FOERST 30/8, sammen med
+     domaeneskiftet. MAALT foer: de ni designsider havde
+     HVERKEN canonical eller og:-felter — nul af hver. De gamle
+     sider havde dem og pegede paa github.io-adressen, saa Google
+     blev ved med at vise den gamle verden, og et link delt i en
+     sms eller paa Facebook kom uden baade titel og billede.
+
+     Adressen er domaenets, ikke sidens egen: en canonical, der
+     peger paa github.io, fortaeller Google, at DEN er den
+     rigtige. Skifter domaenet igen, skal alle ni rettes. -->
+<meta name="description" content="Is, smørrebrød og mad på Mosede Havn i Greve. Se dagens ret, bestil mad ud af huset, og find åbningstiderne.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mosede Havnecafe">
+<meta property="og:locale" content="da_DK">
+<meta property="og:title" content="Mosede Havnecafe">
+<meta property="og:description" content="Is, smørrebrød og mad på Mosede Havn i Greve. Se dagens ret, bestil mad ud af huset, og find åbningstiderne.">
+<meta property="og:url" content="https://mosedehavnecafe.dk/">
+<!-- ⚠️ DELEBILLEDET ER FORRETNINGENS EGET FOTO (8/9). Her stod
+     billeder/facade-1400.jpg paa ALLE TOLV sider og i JSON-LD'en
+     — altsaa det billede, Facebook, Messenger, iMessage og Google
+     viser, hver gang nogen deler linket. Og skiltet i den siger
+     "MOSEDE HAVN - Grill & Kiosk", mens forretningen hedder
+     "Grill & ishus"; "STEFF ADLNDS / SOVAR OOF STORCE" og
+     "PACAN-CHERSEPSRIDD" staar der ogsaa. Det er genereret eller
+     AI-behandlet, og et skilt med et forkert navn er en paastand
+     om forretningen — samme kategori som et opdigtet tal.
+
+     Nu er det en 1,91:1-udsnit af hans egen stemning-terrasse.jpg:
+     de roed/hvid-ternede borddug, doeraabningen med vandet og
+     masterne, lanternerne. INGEN mennesker i den — et delebillede
+     med fremmede ansigter er personoplysninger i en markedsfoering,
+     og det er ikke vores at give videre. tests/udgivelse.spec.js
+     holder fast i, at ingen side peger paa facade-billedet, og at
+     den fil, den PEGER paa, findes paa disken. -->
+<meta property="og:image" content="https://mosedehavnecafe.dk/billeder/del-terrasse-800.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- ⚠️ GAESTENS EGEN APP (30/8). Manifestet laa KUN paa
+     admin.html, saa personalet kunne laegge personalesiden paa
+     hjemmeskaermen — men gaesten kunne ikke laegge FORRETNINGEN
+     der. Det er dén, der staar nede ved vandet med telefonen.
+
+     ⚠️ TO MANIFESTER, IKKE ÉT. Personalets hedder "Personale",
+     starter i admin og er noindex; gaestens hedder
+     "Havnecafeen" og starter paa forsiden. Ét faelles ville
+     laegge admin paa gaestens hjemmeskaerm — eller omvendt. -->
+<link rel="manifest" href="gaest.webmanifest">
+<link rel="apple-touch-icon" href="ikoner/ikon-192.png">
+<!-- ⚠️ MØRK OVER FILMEN, CREME NÅR BJÆLKEN STÅR FAST (11/9). Feltet ved
+     kameraet er Safaris, ikke sidens, og det farves af theme-color på
+     ældre iPhones. havnegrillen.js skifter til data-fast, når bjælken
+     sætter sig fast. ⚠️ Den nye Safari (iOS 26) LÆSER DEN IKKE — målt på
+     kundens skud: feltet var creme, mens der stod rød her. Dér er det
+     sidens egen baggrund, der farver det — se "feltet ved kameraet" i
+     havnegrillen.css. -->
+<meta name="theme-color" content="#0b0706" data-fast="#fdf7ef">
+<meta name="apple-mobile-web-app-title" content="Havnecafeen">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="css/lukket.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><link rel="stylesheet" href="ny/mosede-ny.css?v=__V__"><!-- ⚠️ FILMEN ER ÅBNINGEN — OG KLASSEN SÆTTES, FØR SIDEN TEGNES (11/9).
+     Bølge-introen er afløst af heroens film (kundens beslutning:
+     "fade ind premium ligesom apples hjemmeside og blive til den
+     statiske end frame hvor teksten så kommer"). Heroens tekst skal
+     vente på filmen, og sattes klassen først af scriptet nederst i
+     body, ville teksten blinke frem og forsvinde igen. Et direkte
+     link og reduceret bevægelse får ingen åbning: slutbilledet og
+     teksten står med det samme. Og teksten kan aldrig blive hængende
+     skjult — se "værn" i havnegrillen.css og js/skal/hero-film.js. -->
+<!-- ⚠️ FILMEN ER ÅBNINGEN — IKKE VED TILBAGE, IKKE INDEFRA (26/9). Samme regel
+     som loaderen (js/loader.js): den vises, når gæsten KOMMER til huset. Før
+     spillede den forfra, hver gang man gik tilbage til forsiden eller trykkede
+     på "Forside" — og bjælken og pillen var skjult imens. -->
+<script>(function(){try{if(!location.hash&&!(function(){var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];return !!n&&n.type==='back_forward'})()&&!(document.referrer.indexOf(location.origin+'/')===0)&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))document.documentElement.classList.add('film-aabner')}catch(e){}})();</script>
+<!-- ⚠️ DET FØRSTE, SAFARI TEGNER, ER MØRKT UNDER ÅBNINGEN (11/9). Set
+     i iOS 26-simulatoren: mellem trykket og siden stod skærmen HVID,
+     fordi siden intet havde tegnet endnu. Her i head, så det gælder fra
+     første billede — og kun under åbningen: bagefter maler kroppen og
+     .screen deres egen farve som før. -->
+<style>html.film-aabner{background:#0b0706}</style>
+<script src="js/tilbage.js?v=__V__"></script></head><body class="hav har-film ny-side">
+<script src="js/loader.js?v=__V__"></script>
+<div class="device">
+<div class="screen" id="sc">
+<!-- ⚠️ STRIBEN ER DET FØRSTE, GÆSTEN SER — OG DEN FANDTES IKKE
+     (28/8).
+
+     Beskeder-fanen har haft et felt "Dagens besked" med et
+     flueben, og det gemte pænt. MÅLT: teksten stod ikke ét sted
+     på hjemmesiden. Personalet kunne skrive "vi holder ferie i
+     uge 34", slå den til, og ingen gæst ville nogensinde se den.
+
+     ⚠️ DEN ER IKKE DEN SAMME SOM #dagsbesked NEDENFOR. De to
+     ligner hinanden i navnet og er to forskellige ting:
+
+       · #dagsbesked  hører til EN DAG. Den sættes på
+                      Kalender-fanen ved datoen og handler om nu:
+                      "vi lukker 15 på grund af et selskab".
+       · striben her  har ingen dato. Den står, til nogen slår
+                      den fra: "vi holder ferie i uge 34".
+
+     Derfor er den en STRIBE og ikke et afsnit. En besked, der kan
+     stå i tre uger, må ikke fylde som en nyhed hver gang — men
+     den skal stå ØVERST, før heroen, for en gæst, der er ved at
+     bestille mad til på lørdag, skal vide det, før hun begynder.
+
+     Kundens ord (28/8): "en lille stripe øverst". -->
+<div class="topstribe" id="topstribe" hidden>
+  <p id="topstribe-tekst"></p>
+</div>
+
+<!-- ⚠️ ORDMÆRKET AFLØSTE DEN LILLE KRANS I BJÆLKEN (8/9).
+     Kundens ord med et skud af hjørnet: *"logoet heroppe er også
+     forkert — måske skriv Mosede Havnecafe i stedet, med header,
+     skift det pænere."*
+
+     Det er hans egen beslutning, og den er ANDEN halvdel af den
+     fra 3/9: dengang stod her ordret, at briefens topbjælke har
+     `.mini` PLUS navnet som tekst, at vores aldrig har haft et
+     ordmærke, og at det skulle SPØRGES om, før det blev bygget.
+     Nu er der spurgt, og svaret er "i stedet" — ikke "ved siden
+     af".
+
+     ⚠️ OG DET LØSER DET, MÅLINGEN 3/9 ALLEREDE HAVDE FUNDET: en
+     krans under 60 px er en grå udtværing, hvor ringteksten
+     "MOSEDE HAVNECAFE" ikke kan læses. Bjælkens var 50. Navnet
+     står som TEKST nu, altså læsbart — og den fulde krans med
+     ringteksten bliver i heroen 100 px længere nede, hvor den ER
+     stor nok. Identiteten flytter; den forsvinder ikke.
+
+     ⚠️ IKKE ET LINK. Vi ER på forsiden; et link til den side, man
+     står på, er en knap, der ikke gør noget. På bord/ og bestil/
+     er det samme ordmærke stadig vejen hjem. -->
+<div class="topbar" id="tb"><span class="ordmaerke">Mosede Havnecafe</span><span class="sp"></span><nav class="ny-nav" aria-label="Genveje"><a href="#idag">Dagens ret</a><a href="m-menukort.html">Menukort</a><a href="#isen">Is</a><a href="#selskab">Selskab</a><a href="#find">Find os</a></nav><a class="ny-bord" href="bord/">Book bord</a><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><use href="ikoner.svg#menu"/></svg></button></div>
+
+<div class="hero film">
+  <!-- ⚠️ HEROENS FILM  (11/9). Kundens ord: headerens baggrund "som
+       lige nu er det ternede" skal være filmen fra Desktop/header — én
+       til computer (16:9) og én i 9:16 til iPhone — og bagefter skal
+       slutbilledet stå. Havnen i solnedgang, og maden dukker op på et
+       ternet bord; ternet lever videre i dugen.
+
+       ⚠️ ÉN REGEL AFGØR FORMATET: data-hoej-naar. Filmen og
+       slutbilledet vælges af den SAMME, så de aldrig kan være hver sit
+       format. Filerne ligger i film/ og IKKE i billeder/: forsidens
+       fartprøve forbyder med vilje billeder fra billeder/ før rul, og
+       heroen skal netop hentes med det samme.
+
+       ⚠️ FILMEN ER ÅBNINGEN (11/9, samme aften) — bølge-introen er
+       afløst af den. Filmen blændes ind, spiller til ende og bliver
+       til slutbilledet, og kransen, overskriften og knapperne kommer
+       i det sidste sekund. Et tryk, et rul eller en tast springer
+       over. Ingen lyd og ingen kontroller; js/skal/hero-film.js
+       starter den. Reduceret bevægelse, et direkte link, en fejl
+       eller en iPhone på strømbesparelse giver slutbilledet og
+       teksten med det samme. -->
+  <div class="hero-film" data-hevc aria-hidden="true" data-bred="film/hero-16x9" data-hoej="film/hero-9x16" data-hoej-naar="(orientation: portrait)" data-v="__V__">
+    <video muted playsinline preload="auto" disablepictureinpicture></video>
+    <!-- ⚠️ FILMENS FØRSTE BILLEDE STÅR MED DET SAMME (11/9). Kundens ord
+         fra sin telefon: "den er sort i lidt for lang tid". Filmen er
+         1,6 MB og skal hentes, før den kan spille; indtil da var heroen
+         sort. Og fra 13/9 åbner billedet også lærredet (havnegrillen.css). Billedet her er filmens første billede (235 kB), og
+         browseren vælger det, mens siden LÆSES — før et eneste script.
+         ⚠️ `media` ER DEN SAMME REGEL SOM data-hoej-naar ovenfor, skrevet
+         to steder, fordi valget skal ske, før scriptet kører. En prøve
+         holder de to ens. -->
+    <picture><source media="(orientation: portrait)" srcset="film/hero-9x16-start.jpg?v=__V__"><img class="hero-start" src="film/hero-16x9-start.jpg?v=__V__" alt="" decoding="async" fetchpriority="high" onload="this.classList.add('klar')"></picture>
+    <img class="hero-slut" alt="" decoding="async">
+    <i class="hero-bjaelke top"></i><i class="hero-bjaelke bund"></i><i class="hero-korn"></i>
+  </div>
+  <!-- Et tryk hvor som helst har altid sprunget filmen over; nu SIGER
+       siden det — stille. Linjen under løber med filmens egen resttid.
+       Knappen findes kun under åbningen (havnegrillen.css). -->
+  <button class="hero-spring" type="button"><span class="tryk">Tryk for at springe over</span><span class="klik">Klik for at springe over</span><i aria-hidden="true"></i></button>
+  <!-- ⚠️ FILMENS SCRIPT STÅR HER OG ER ASYNC (13/9). Kundens ord: "den
+       tøver før den begynder". Det stod som det SIDSTE af seksten
+       scripts nederst, så filmen fik først sin adresse — og browseren
+       begyndte først at hente den — når hele siden og alle de andre
+       scripts var hentet og kørt. Her kører det, så snart det selv er
+       hentet; alt det, det rører (rammen, filmen, knappen ovenfor), er
+       læst på det tidspunkt. -->
+  <script async src="js/skal/hero-film.js?v=__V__"></script>
+  <div class="hero-badge"><svg class="crest" viewBox="0 0 300 300" role="img" aria-label="Mosede Havnecafe"><defs><path id="ta2" d="M38.65 109.5A118.5 118.5 0 0 1 261.35 109.5"/><g id="ta2j" fill="none" stroke="#d62a3a" stroke-width="5.4" stroke-linecap="butt"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/><g transform="translate(41 0) scale(-1 1)"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/></g></g></defs><circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="8"/><circle cx="150" cy="150" r="113" fill="none" stroke="#2a5f8f" stroke-width="3.4"/><text class="ct" text-anchor="middle"><textPath href="#ta2" startOffset="50%">MOSEDE HAVNECAFE</textPath></text><g fill="#fff" stroke="#d62a3a" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="150" cy="96" r="19"/><circle cx="133" cy="124" r="19"/><circle cx="167" cy="124" r="19"/><path d="M124 139h52l-26 66z"/></g><g fill="none" stroke="#d62a3a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><path d="M131 155h38M138 172h24M144 188h12"/></g><use href="#ta2j" transform="translate(51 152)"/><use href="#ta2j" transform="translate(207 152)"/><text class="est" x="150" y="236" text-anchor="middle">EST. 2025</text></svg></div>
+  <div class="hero-in">
+    <!-- ⚠️ ISEN STÅR FØRST (15/9). Ejerens ord: "på titlen vil han
+         have noget andet end grillmad" — og isen er husets stolthed.
+         Valgt af Mikkel: "Is, smørrebrød og mad direkte ved havnen". -->
+    <h1><em>Is</em>, smørrebrød og mad direkte ved havnen</h1>
+    <span class="status"><svg class="lanterne" viewBox="0 0 24 24" aria-hidden="true"><use href="ikoner.svg#lanterne-slukket"/></svg>Lukket lige nu · åbner 10.00</span>
+    <div class="hero-cta">
+      <a class="g solid" href="#bestil">Bestil mad<span class="sheen"></span></a>
+      <a class="g ghost" href="#selskab">Selskab &amp; catering</a>
+    </div>
+    <!-- ⚠️ LEVERINGEN SOM NYHED  (7/10). Mikkel: "levering er stadig slet
+         ikke godt nok og highlighted som en ny og fed ting". Skjult, til
+         js/skal/kontakt.js har set, at levering er slået til i admin — og
+         et tryk vælger Levering i Bestil mad (js/skal/bestil.js). -->
+    <!-- «VI HOLDER LUKKET» (18/10): peger ned til kortet under heroen.
+         Skjult, til js/lukket.js finder en lukning; leveringsnyheden
+         nedenfor viger, mens den står (havnegrillen.css). -->
+    <a class="hero-lukket" href="#lukket-kort" data-lukket-pil hidden></a>
+    <a class="hero-nyhed" href="#bestil" data-vaelg-levering data-levering-nyhed hidden><b>Nyhed</b>Vi kører maden ud<i aria-hidden="true">→</i></a>
+  </div>
+</div>
+
+<!-- ============ VI HOLDER LUKKET  (18/10) ============
+     Mikkel: "at de har efterårsferie, og så at man ligesom ikke har
+     kunne bestille, men man kan skrive, og så linken til mail …
+     det skal være nemt tilgængeligt". Kortet står lige under heroen,
+     FØR bestillingen: en gæst, der vil bestille til lørdag, skal vide
+     det, før hun begynder. Tomt og skjult, til js/lukket.js finder en
+     lukning i Kalenderen (eller sæsonlukket) — så findes det ikke.
+     Under en lukning siger kortet også beskeden, og båndet nedenfor
+     springer lukningens besked over (js/dagsbesked.js). -->
+<section class="lukket-kort" id="lukket-kort" hidden aria-label="Vi holder lukket"
+  data-ikoner="ikoner.svg" data-kontakt="#find" data-bestil="#bestil"></section>
+
+<!-- ============ DAGENS BESKED ============
+     Personalet skriver den på Kalender-fanen ved den enkelte dag.
+     Den står HER, øverst, fordi den handler om NU: "i dag er der
+     kun mad ud af huset", "vi lukker 15 på grund af et selskab".
+     Står den længere nede, læser man den efter at have valgt sin
+     mad — og så er beskeden kommet for sent.
+
+     ⚠️ Den er tom og skjult, til databasen har noget at sige.
+     js/skal/forside.js fylder den ud; er der ingen besked på
+     dagen, findes afsnittet ikke. Et banner uden indhold er en
+     side, der ser i stykker ud. -->
+<section class="dagsbesked" id="dagsbesked" hidden>
+  <div class="dagsbesked-ind">
+    <div class="dagsbesked-dag" id="dagsbesked-dag"></div>
+    <h2 id="dagsbesked-titel"></h2>
+    <p id="dagsbesked-tekst"></p>
+  </div>
+</section>
+
+<section id="idag" style="padding-bottom:6px">
+  <!-- Pladsholder uden dato, ret og pris (25/9) — visDagensRet i
+       forside.js skriver dagens dato og ret ind eller skjuler afsnittet. -->
+  <!-- ⚠️ OVERSKRIFTEN SAGDE "I DAG" TRE GANGE (4/10). Over kortet stod
+       "Søndag d. 4. oktober" (manchetten, som visDagensRet skriver),
+       så "Dagens ret i dag", og så "I dag" på det ternede bånd —
+       tre linjer om det samme inden for hundrede pixels. Datoen er
+       den præcise, båndet er mærket, og overskriften er navnet. -->
+  <div class="rev"><div class="eyebrow red">Dagens ret</div><h2>Dagens ret</h2></div>
+  <!-- ⚠️ TRE TING KOM TIL 7/9 PÅ KUNDENS SKÆRMBILLEDE, og de er
+       hans beslutning om sit eget kort, ikke en pyntetilføjelse:
+       "I dag"-blokken i venstre kant, prisen som en pille, og
+       PORTIONERNE, der er tilbage. Forlægget er et skærmbillede;
+       formen er billedets, farverne er havnens — samme
+       fremgangsmåde som personalesidens skabelon 24/8 og
+       Overblik 1/9.
+
+       ⚠️ PORTIONSTALLET ER DATABASENS, ikke et menneskes.
+       dagens_retter.antal_tilbage tælles ned af en bremse ved
+       hver bestilling (supabase/dagens-retter.sql), og ved nul
+       sætter retten sig selv udsolgt. Har ejeren ikke sat et
+       antal, findes pillen ikke — vi finder ikke på et tal. -->
+  <div class="today rev d1">
+    <!-- ⚠️ DAMPEN ER TAGET UD (3/10). Den kom af ønsket om noget
+     "levende og steaming" (se havnegrillen.css), men tre tynde
+     bølgestreger ved siden af "I dag" læses ikke som damp — de
+     læses som ingenting. Mikkel: "den der smoke ting på dagensret
+     ser pisse generisk ud". Ordet står nu alene på det ternede,
+     og det er tydeligere end et tegn, ingen kan tyde. -->
+<div class="idag-blok" aria-hidden="true"><span class="idag-ord">I dag</span></div>
+    <div class="in">
+    <div class="lbl">Fra grillen · 11.30–14.00</div>
+    <h3>Henter dagens ret …</h3>
+    <p></p>
+    <div class="row"><span class="price"></span><span class="rest" hidden></span><a class="g solid" href="#bestil">Bestil dagens ret<span class="sheen"></span></a></div>
+  </div></div>
+</section>
+
+<section id="ugen" style="padding-top:6px">
+  <div class="rev"><div class="eyebrow red">Ugen der kommer</div><h2>Dagens retter</h2></div>
+  <div class="week rev d1">
+    <!-- Pladsholder (25/9): designets syv dage stod med datoer fra 23.-29.
+         august og opdigtede retter med priser. visUgen i forside.js
+         bygger ugen af ejerens dagens retter; den her ene dag er bare
+         skabelonen, den leder efter. -->
+    <div class="day closed"><div class="dw">Ugen der kommer</div><div class="dd"></div><h4>Henter ugens retter …</h4><p></p></div>
+  </div>
+</section>
+
+<div class="dug dug--a" aria-hidden="true"></div>
+<!-- ⚠️ BESTILLINGEN STÅR PÅ LUGEN (12/9). Kundens ord: "den måde det
+     begynder at se ud med find os … kan vi få det til at være sådan som ved
+     find os udseendemæssigt — start med bestil". Fotoet er ejerens EGET
+     (stemning-luge.jpg: lugen under skiltet "MOSEDE HAVN - Grill & ishus"),
+     ikke et genereret. Klassen .glasafsnit er udseendet og kan gives til det
+     næste afsnit; formularen og dens motor er urørte. -->
+<section id="bestil" class="papir">
+  <div class="best-bg" aria-hidden="true"><img src="billeder/bestil-luge.jpg?v=__V__" alt="" loading="lazy" decoding="async" width="900" height="1200"></div>
+  <span class="best-slor" aria-hidden="true"></span>
+  <div class="rev"><div class="eyebrow">Bestil online</div><h2>Bestil mad</h2>
+  <p class="sub">Vælg dag, tid og retter. Bestillingen lander direkte i køkkenet.</p></div>
+  <!-- ⚠️ LEVERINGEN STÅR, FØR GÆSTEN HAR VALGT DEN  (7/10). Område og pris
+       stod kun under adressefeltet — altså først EFTER et tryk på Levering.
+       Teksten er ejerens egne felter (js/skal/kontakt.js); intet her er
+       skrevet i hånden ud over ordene omkring dem. -->
+  <div class="lev-nyhed rev" data-levering-nyhed hidden>
+    <span class="lev-nyhed-ikon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg></span>
+    <div class="lev-nyhed-tekst">
+      <p class="lev-nyhed-titel"><b>Nyhed</b>Vi kører maden ud</p>
+      <p data-lev-omraade-linje>Til <span data-lev-omraade></span>.</p>
+      <p data-lev-pris-linje><span data-lev-pris></span> pr. bestilling — uanset størrelse.</p>
+      <p class="lev-gratis" data-lev-gratis-linje hidden><b data-lev-gratis></b></p>
+      <p>I betaler, når maden kommer.</p>
+    </div>
+    <button type="button" class="lev-nyhed-knap" data-vaelg-levering>Vælg levering</button>
+  </div>
+  <div class="panel rev d1">
+    <!-- ⚠️ ØVERST, IKKE NEDERST  (20/9). Ejerne: "Dåse eller flaske
+         sodavand skal fjernes, og kun kunne bestilles ved Take Away."
+         Kundens svar på hvordan: "i stedet for i bunden så i toppen —
+         lad take away eller spis her stå som så enten unlocker
+         sodavand eller holder det skjult."
+
+         Valget styrer nu, HVAD der kan købes (Butik.udvalg spørger
+         ikke_saelges med spisemåden). Et valg, der styrer listen, kan
+         ikke stå under listen: gæsten ville vælge sin mad og først
+         bagefter få at vide, at noget af den ikke kunne fås.
+
+         ⚠️ Feltet findes kun, når forretningen har slået "spis her"
+         til — js/skal/bestil.js skjuler hele .field'en ellers. -->
+    <div class="field"><label>Hvordan vil I spise?</label>
+      <div class="seg2" data-seg="how">
+        <button class="on"><svg viewBox="0 0 24 24"><use href="ikoner.svg#to-go"/></svg>To-go</button>
+        <button><svg viewBox="0 0 24 24"><use href="ikoner.svg#spis-her"/></svg>Spis her</button>
+        <!-- ⚠️ LEVERING KOM TIL 20/9. Ejernes punkt nummer ét:
+             "Leverings muligheden mangler." Den fandtes kun på
+             smørrebrødssiden og i bestil/ — så en burger, en is
+             eller grillmad kunne slet ikke bestilles til levering,
+             selv om indstillingen var slået TIL, gebyret sat til 79
+             og de syv postnumre skrevet.
+
+             ⚠️ Knappen forsvinder af sig selv, hvis forretningen
+             slår levering fra: js/skal/bestil.js skjuler hver knap,
+             hvis måde ikke er slået til. En knap, der ikke virker,
+             er værre end ingen knap. -->
+        <button><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg>Levering</button>
+      </div>
+    </div>
+
+    <!-- ⚠️ HVOR MANGE SPISER MED  (26/9). Mikkels spørgsmål: "hvad hvis
+         man bestiller 10 ting men kun er 1 person der sidder og spiser".
+         Ti ting til én er helt normalt (en familie bestiller til hele
+         bordet) — det, køkkenet skal kunne se, er det modsatte: fire
+         personer og mad til to. Admin.gaesteMaerke viser det.
+
+         ⚠️ FRIVILLIGT, som ved bordet (ved-bordet/index.html). Et
+         påkrævet felt koster et tryk på hver bestilling for en
+         oplysning, der er rar at have. Feltet står kun ved "Spis
+         her" — js/skal/bestil.js viser og skjuler det. -->
+    <div class="field" id="fpersfelt" hidden>
+      <label for="fpers">Hvor mange spiser med? (valgfrit)</label>
+      <input class="inp" id="fpers" type="number" inputmode="numeric"
+             min="1" max="60" step="1"
+             placeholder="Så ved køkkenet, hvor mange der skal dækkes op til">
+    </div>
+
+    <!-- ⚠️ ADRESSEN ER OFFICIEL, IKKE FRI TEKST  (20/9).
+         Feltet foreslår adresser fra Dataforsyningen, og gæsten skal
+         VÆLGE en. Valget sendes til serveren, som slår adressen op
+         igen og udsteder en kvittering — og databasen kræver
+         kvitteringen og OVERSKRIVER adressen med den, den bekræftede
+         (supabase/levering-valideret.sql).
+
+         Feltet her er altså høflighed: det viser svaret, før hun
+         binder sig. Sikkerheden ligger i databasen. -->
+    <div class="field" id="flevfelt" hidden>
+      <label for="fadr">Hvor skal det leveres?</label>
+      <div class="adr-felt-hylster">
+        <input class="inp" id="fadr" autocomplete="off"
+               placeholder="Begynd at skrive vej og husnummer">
+      </div>
+      <p class="hint" id="lev-hint"></p>
+      <p class="adr-status skjult" id="lev-svar"></p>
+    </div>
+    <div class="field"><label for="dato">Dato</label>
+      <select class="inp" id="dato"><option>Henter datoer …</option></select>
+      <p class="hint"></p>
+    </div>
+    <!-- ⚠️ TIDSPUNKTET STÅR LIGE UNDER DATOEN  (26/9, Mikkels ja på et
+         skærmbillede). Det stod efter hele varelisten og isbyggeren — men
+         klokkeslættet BESTEMMER listen (morgenmad 10-12.30, grillen først
+         fra frokost), så gæsten valgte mad, rullede ned, valgte en tid og
+         fik varer taget ud af kurven. Nu vælges dag og tid først, og listen
+         viser kun det, der kan fås. -->
+    <div class="field"><label for="tid">Tidspunkt</label><select class="inp" id="tid"><option>kl. 11:30</option><option>kl. 12:00</option><option selected>kl. 17:30</option><option>kl. 18:00</option></select></div>
+    <div class="field"><label>Vælg jeres retter</label>
+      <div class="item hi"><div><h4>Dagens ret</h4><span class="tag">Henter …</span></div>
+        <div class="step" data-step><button data-d="-">–</button><b>2</b><button data-d="+">+</button></div></div>
+      <div class="item"><h4>Grill fra pladen</h4><span class="add">+ tilføj</span></div>
+      <div class="item"><h4>Smørrebrød</h4><span class="add">+ tilføj</span></div>
+      <div class="item"><h4>Is og desserter</h4><span class="add">+ tilføj</span></div>
+      <div class="item"><h4>Drikkevarer</h4><span class="add">+ tilføj</span></div>
+      <div class="item"><h4>Tilbehør</h4><span class="add">+ tilføj</span></div>
+    </div>
+    <div class="field two-col"><div><label for="navn">Navn</label><input class="inp" id="navn" autocomplete="name" placeholder="Dit fulde navn"></div><div><label for="tlf">Telefonnummer</label><input class="inp" id="tlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
+    <div class="field">
+      <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9).
+
+           Den stod som en pladsholder i beskedfeltet, altså
+           inviterede vi til en HELBREDSOPLYSNING uden at spørge
+           om lov — og køkkenet skulle finde den midt i en
+           sætning.
+
+           ⚠️ FLUEBENET FINDES KUN, NÅR DER ER SKREVET NOGET.
+           Kan man ikke sende uden at sige ja til at få gemt en
+           helbredsoplysning, er samtykket ikke frivilligt — og så
+           er det ugyldigt. Reglen er Butik.allergiMangler. -->
+      <label for="allergi">Allergi (valgfrit)</label>
+      <input class="inp" id="allergi" type="text" placeholder="Fx nødder, gluten eller laktose">
+      <label class="allergi-ja skjult" id="allergi-samtykke-linje">
+        <input type="checkbox" id="allergi-samtykke">
+        <span>Ja, køkkenet må gemme det her, så de kan tage hensyn.
+          Det slettes sammen med bestillingen.</span>
+      </label>
+    </div>
+  <div class="field"><label for="besked">Besked (valgfrit)</label><textarea class="inp" id="besked" placeholder="Fx særlige ønsker"></textarea></div>
+  <!-- ⚠️ HVAD KAN IKKE BESTILLES LIGE NU, OG HVORFOR (30/8).
+       Kundens ord: "morgenmad kun 10-12.30 og derefter alt
+       andet." En kategori, der bare forsvinder fra listen, ligner
+       en fejl paa siden — og gaesten leder efter morgenmaden i
+       stedet for at vaelge et andet tidspunkt.
+       js/skal/bestil.js fylder linjen. -->
+  <p class="hint" id="lukkede" hidden></p>
+  <!-- ⚠️ GUL OG ROED, NAAR DER ER TRAVLT MED AT NAA DET (30/8).
+       Kundens ord: "hvis de er taet paa, blinker en gul eller
+       roed." Det, der er taet paa, er SIDSTE BESTILLING — koekkenet
+       lukker 20.00, og sidste ordre er 19.30. -->
+  <p class="hint" id="sidste-kald" hidden></p>
+    <div class="note" id="sumline">2 × dagens ret · To-go · kl. 17:30</div>
+    <div class="field"><button class="g solid blk">Send bestilling<span class="sheen"></span></button>
+      <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at lave og udlevere bestillingen. Se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
+      <p class="fine">I betaler ved lugen.</p></div>
+  </div>
+</section>
+
+<section id="menu">
+  <div class="mid rev"><h2>Menukort</h2>
+  <p class="sub" style="max-width:32ch">Dagens retter, grillen, smørrebrødet, isen og drikkevarerne, samlet ét sted.</p></div>
+  <div class="menucard rev d1">
+    <!-- ⚠️ KUNDENS EGNE KORT PÅ DUGEN (27/9). Mikkels ord: "delen på
+         forsiden med se hele menukortet … er lidt kedelig, kan du ikke bruge
+         higgsfield". Billedet er Higgsfield (GPT Image 2.5), men KORTENE er
+         husets egne trykte (01, 03 og 05 fra vaerktoej/kortene.py) givet som
+         reference, og dugen er den samme røde tern som på tapasfotoet —
+         intet opfundet sted, ingen fremmed havn. ⚠️ Modellen har tegnet
+         teksten om: enkelte ord og priser er skæve, hvis man zoomer. I 350
+         px kan de ikke læses; priserne står i menukortet lige bag knappen.
+         Under folden, derfor lazy; bredde og højde står, så intet hopper. -->
+    <img class="menucard-foto" src="billeder/menukort-bord-800.jpg"
+         srcset="billeder/menukort-bord-800.jpg 800w, billeder/menukort-bord-1400.jpg 1400w"
+         sizes="(min-width: 1024px) 560px, 100vw" width="800" height="597"
+         loading="lazy" decoding="async"
+         alt="Mosede Havnecafés trykte menukort på en rødternet dug">
+    <!-- ⚠️ EMOJI, IKKE STREG-IKONER (31/8, kundens skærmbillede:
+         "prop emojier på menukort-tingen"). Fliserne er pynt og
+         siger det samme som knappen — derfor aria-hidden på hele
+         rækken, så en skærmlæser ikke siger "gryde burger salat
+         sodavand Se hele menukortet". -->
+    <div class="tiles" aria-hidden="true">
+      <span class="tile-emoji">🍲</span>
+      <span class="tile-emoji">🍔</span>
+      <span class="tile-emoji">🥗</span>
+      <span class="tile-emoji">🥤</span>
+    </div>
+    <a class="g solid blk" href="m-menukort.html"><span aria-hidden="true">📖 </span>Se hele menukortet<span class="sheen"></span></a>
+    <p class="glaspille"><span aria-hidden="true">🥜</span>Allergi? Spørg personalet ift. allergener. Vi hjælper gerne.</p>
+  </div>
+  <div class="tapasec rev d2">
+    <!-- data-tegn og data-flade står HER og ikke i JavaScript: tegnet
+         hører til den plads, det udfylder, og den, der flytter
+         pladsen, tager tegnet med. Se visFotos() i js/skal/forside.js. -->
+    <image-slot id="tapas-forside" data-fil="billeder/tapas-1.jpg" data-alt="Tapasfad med oste, salami, oliven, brød og vindruer på et ternet bord ved havnen" placeholder="Foto af tapasfadet" shape="rect"
+                data-tegn="🧀" data-flade="ost"></image-slot>
+    <div class="body">
+      <span class="nyt glaspille">Nyhed</span>
+      <h3>Havnens tapas</h3>
+      <p>Fem slags ost, serranoskinke, chorizo, paté, hummus og oliven med baguette, dip og frugt.</p>
+      <div class="bits"><span>5 slags ost</span><span>Charcuteri</span><span>Dip og oliven</span><span>Baguette og smør</span></div>
+      <div class="foot"><div class="pris" style="display:none"><small>pr. person</small></div><a class="g solid" href="m-tapas.html">Se og bestil tapas<span class="sheen"></span></a></div>
+    </div>
+  </div>
+  </section>
+
+
+<div class="dug dug--b" aria-hidden="true"></div>
+<!-- ============ ISEN ============
+     ⚠️ ISEN HAR SIT EGET AFSNIT (15/9). Ejerens ord: "is er en kæmpe
+     stolthed — så også bedre og mere showcase af det, f.eks. der til
+     sidst med isen på historien". ÉN ting (isen) og ÉN handling: bestil
+     den — eller se kortet, når den ikke kan bestilles på forsiden.
+     ⚠️ INGEN PRISER I HTML'EN. Rækkerne skrives af visIs() i
+     js/skal/forside.js fra menukortet; står der intet, findes listen
+     ikke, og knappen peger på menukortet.
+     ⚠️ FOTOENE ER LAZY — de står tæt på tapasfotoet, og fartprøven
+     kender dem. De er menukortets egne stemningsbilleder, og
+     alt-teksten siger kun, hvad de viser. -->
+<section id="isen" class="isafsnit">
+  <div class="mid rev"><h2>Is ved vandet</h2>
+  <p class="sub" style="max-width:32ch">Softice, kugleis og vafler fra lugen, med bådene lige bag ved.</p>
+  <!-- ============================================================
+       EJERENS EGEN TEKST TIL "IS VED VANDET"  (21/9)
+       ------------------------------------------------------------
+       ⚠️ ORDRET FRA JIM GJERMANDSENS BESKED 20/9, under hans egen
+       overskrift "Is ved vandet": *"Køb din is på havnen, nyd den
+       ved vandkanten, på gåturen ved havnen, eller køb den med hjem
+       i en Thermo box med løse vafler og Toppings."*
+
+       Thermoboksen og de løse vafler er varer på kortet
+       (Thermobox 80,-, løs vaffel 7,-, glutenfri 10,-) — teksten
+       lover altså ikke noget, der ikke kan købes.
+       ============================================================ -->
+  <p class="sub rev d1" style="max-width:46ch">Køb din is på havnen og nyd den ved
+    vandkanten eller på gåturen. Du kan også tage den med hjem i en thermoboks
+    med løse vafler og toppings.</p></div>
+  <div class="is-vitrine rev d1">
+    <!-- ISENS BAAND ER FJERNET  (25/9). Her stod et ternet roedt baand
+         med en tegnet is og ordet "Ishuset" i kursiv, bygget 24/9 som en
+         kopi af dagens rets baand. Mikkels ord med et skaermbillede af
+         det: *"det lige praecis saadan noget her claude lignende der skal
+         vaek ogsaa"*. Kortet begynder nu paa fotoerne. Laeg det ikke
+         tilbage uden at spoerge — og dagens rets "I dag"-baand har samme
+         form, men er IKKE fjernet: det blev ikke vist, og det er bygget
+         paa hans eget oenske om en markoer (se docs/HISTORIK.md 25/9). -->
+    <div class="is-fotos">
+      <img src="billeder/havn-softice.jpg?v=__V__" loading="lazy" decoding="async" width="720" height="1080"
+           alt="En softice i vaffel med chokoladesauce og drys på et træbord ved vandet, med bådene i havnen bag ved">
+      <img src="billeder/menu-kugleis.jpg?v=__V__" loading="lazy" decoding="async" width="720" height="1080"
+           alt="En bubblewaffle med is, chokolade og hakkede nødder holdt op foran havnen">
+    </div>
+    <div class="is-kort">
+      <ul class="is-priser" data-is-priser hidden></ul>
+      <a class="g solid blk" href="m-menukort.html" data-is-knap><span aria-hidden="true">🍦 </span><span data-is-ord>Se iskortet</span><span class="sheen"></span></a>
+      <!-- ============================================================
+           GENVEJ TIL ISEN I MENUKORTET  (21/9)
+           ------------------------------------------------------------
+           Ejerens ord: isen er det, de er stolte af, og den lå langt
+           nede i menukortet — "Mad" fylder femten kategorier, før
+           "Is og dessert" begynder.
+
+           ⚠️ DEN VISES KUN, NÅR KNAPPEN OVENOVER SIGER "BESTIL IS".
+           Kan isen ikke bestilles, peger knappen selv på
+           menukortet, og så ville de to linjer sige det samme to
+           gange. js/skal/forside.js styrer det.
+
+           ⚠️ OG HOPPET VIRKER KUN, FORDI menukortet HÅNDTERER
+           HASHEN EFTER OPTEGNINGEN. Kortet tegnes af JavaScript,
+           så #afsnit-is findes ikke, når browseren selv prøver at
+           rulle — se noten i js/skal/menukort.js. Uden den ville
+           linket her lande i toppen og ligne noget i stykker. -->
+      <a class="is-kortlink skjult" href="m-menukort.html#afsnit-is" data-is-kortlink>Se hele is-menukortet <span aria-hidden="true">→</span></a>
+      <p class="fine">Kom forbi lugen. Isen er altid til rådighed.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ISVOGNEN OG ISFRYSEREN  (21/9)
+       ------------------------------------------------------------
+       ⚠️ EJERENS EGNE ORD, Jim Gjermandsen 20/9: *"Book vores
+       isvogn med div tilkøbs muligheder. Eller lej vores isfryser
+       med tilbehør etc. Alt er muligt, kontakt os med dine
+       ønsker."*
+
+       ⚠️ INGEN PRIS. Han oplyser ingen, og et gæt på en udlejning
+       er værre end ingen pris: gæsten tror, hun ved, hvad det
+       koster. Derfor fører linjen hen, hvor man kan spørge —
+       ikke til et tal, vi har fundet på.
+
+       ⚠️ OG DEN STÅR I ISAFSNITTET, ikke som sit eget afsnit.
+       Ejernes eget punkt fra 20/9 om siden: jo flere ting, der
+       kræver teknik, jo mere er der at komme igennem for gæsten.
+       To linjer under isen er nok til, at den, der leder efter
+       det, finder det.
+       ============================================================ -->
+  <div class="mid rev d2">
+    <p class="sub" style="max-width:48ch">Book vores isvogn til festen,
+      eller lej isfryseren med tilbehør.
+      <a href="h-selskaber.html">Skriv til os med jeres ønsker</a>.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     RÆKKEFØLGEN ER FLYTTET  (7/9) — KUNDENS EGEN BESLUTNING
+     ============================================================
+     Mikkels ord: "lige under facebook tingen skal nyheder
+     sectionen komme, derefter den section skal dagens ret og
+     dagens retter komme, også komme bestillingen og den
+     opstilling vi har naturligt derefter."
+
+     Før stod NYHEDER langt nede, efter menukortet, og de tre
+     madafsnit lå som dagens ret → bestil → ugens retter, altså
+     med bestillingen KLEMT IND MELLEM to afsnit, der handler om
+     det samme. Nu læses siden forfra: her sker der noget →
+     her er maden i dag og resten af ugen → og her bestiller I.
+
+     ⚠️ DE 6 PX ER IKKE PYNT, OG DE PASSER NU. #idag har
+     padding-bottom:6px og #ugen padding-top:6px; de har hidtil
+     klæbet til BESTILLINGEN på hver sin side, hvilket var den
+     forkerte parring. De hugger hinanden nu — dagens ret og
+     ugens retter er ét koncept, og designets egen luft siger
+     det. Målt: sømmen mellem dem er 12 px, mellem ugens retter
+     og bestillingen 64.
+
+     ⚠️ OG DET ER ET AFSNIT MERE ØVERST, DER KAN SKJULE SIG.
+     Er der ingen nyheder, findes afsnittet ikke (skjul() i
+     js/skal/forside.js), og så støder Facebook-kortet direkte op
+     mod dagens ret som før. Derfor må der ikke skrives luft ind
+     mellem de to i HTML'en — den ville blive stående på en dag
+     uden nyheder.
+     ============================================================ -->
+<section class="nyheder" id="nyheder">
+  <div class="mid rev"><h2>Nyheder</h2></div>
+    <div class="newslist">
+    <!-- ⚠️ EN BOKS, IKKE ET LINK (16/9). Kortet var et <a href="#nyheder">
+         — altså et link til det afsnit, det selv står i. havnegrillen.js
+         binder et rullehop på hvert a[href^="#"], så et tryk på en nyhed
+         hoppede hen til nyhederne: et spring, der føles som en fejl. Der
+         findes ingen nyhedsside at gå til, og "Læs mere" er væk af samme
+         grund. En boks lover ingenting og holder det. -->
+    <!-- Pladsholder uden dato (25/9): forside.js kloner kortet og fylder
+         det med ejerens nyheder — eller rydder det, når der ingen er. -->
+    <div class="nw rev d1"><image-slot id="nyhed-1" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when"></div><h3>Henter nyheder …</h3><p></p></div></div>
+  </div>
+</section>
+
+<div class="dug dug--c" aria-hidden="true"></div>
+<section class="selskab" id="selskab">
+  <div class="mid rev"><div class="eyebrow red">Selskab &amp; catering</div><h2>Lad os holde jeres<br>næste arrangement</h2>
+  <p class="sub" style="max-width:32ch">Fester på havnen er det, vi er allermest stolte af.</p></div>
+  <div class="rev d1"><h3>Vi gør os umage hver gang</h3>
+  <div class="feats">
+    <div class="feat"><svg viewBox="0 0 24 24"><use href="ikoner.svg#catering"/></svg><span><b>Hjemmelavet fra bunden</b></span></div>
+    <div class="feat"><svg viewBox="0 0 24 24"><use href="ikoner.svg#folk"/></svg><span><b>Folk der kender havnen</b></span></div>
+    <div class="feat"><svg viewBox="0 0 24 24"><use href="ikoner.svg#hjerte"/></svg><span><b>Store som små selskaber, op til 40 i baglokalet</b></span></div>
+  </div>
+  <!-- ⚠️ SMØRREBRØDSFOTOENE ER PÅ SMØRREBRØDSSIDEN (29/8) — "det
+       skal være inde på smørbrød ud af huset fanen kun". De tre
+       fotos ER smørrebrød, og under en selskabsoverskrift lovede
+       de, at et selskab ser sådan ud.
+
+       STEMNINGSGALLERIET HERUNDER ER NOGET ANDET (29/8, kundens
+       egen bestilling med seks fotos fra havnen og spiis som
+       forlæg): billeder af STEDET og stemningen — jul i
+       baglokalet, terrassen, livemusik på dækket — der skifter
+       roligt mellem hinanden, flise for flise.
+
+       ÉN PULJE, TRE FLISER, GLIDENDE SKIFT (29/8, kundens ord:
+       "smoothly skifter billed ... forskellige"). Alle ejerens
+       syv fotos ligger i puljen (data-filer), og fliserne skiftes
+       til at blænde over til det næste, én ad gangen — så der
+       hele tiden sker noget roligt et sted, og alle fotos kommer
+       forbi. Fotoene kom via GitHub-upload 29/8, komprimeret fra
+       2-3 MB PNG til ~100-200 kB JPEG; ansigterne var sløret af
+       kunden selv FØR upload. IKKE smørrebrødsfotoene — de er
+       forvist til smørrebrødssiden ved kundens egen ordre.
+
+       ⚠️ ADMIN-FOTOS LÆGGER SIG FORREST I PULJEN
+       (foto_stemning_1-6 på Forside-fanen): de er det første,
+       gæsten ser, og de ruller med i skiftet. Uden noget som
+       helst skjuler galleriet sig (style.display) — et afsnit
+       uden noget at vise findes ikke. Alt-teksterne bor i
+       js/skal/forside.js SAMMEN med rotationen: teksten skal
+       følge fotoet, ikke flisen, når fotoene vandrer. -->
+  <div class="stemning" id="stemning" style="display:none" role="img" aria-label="Billeder fra havnen: fester i baglokalet, terrassen, livemusik og maden"
+       data-filer="billeder/stemning-jul.jpg billeder/stemning-terrasse.jpg billeder/stemning-luge.jpg billeder/stemning-musik.jpg billeder/stemning-baglokale.jpg billeder/molen-1200.jpg">
+    <div class="stem-flis stor"></div>
+    <div class="stem-flis"></div>
+    <div class="stem-flis"></div>
+  </div>
+
+  <!-- ⚠️ STJERNELINJEN ER FJERNET (12/9). Mikkels ord: "fjern de
+       ting der med stjerne — alt skal overensstemmes med hvad der
+       bliver sagt og lovet". 4,8 var designbundtets tal fra 21/8, og
+       huset har en ordret regel om aldrig at bruge opdigtede
+       anmeldelser. Kommer der en rigtig score, er det et link til
+       Google — ikke et tal, vi skriver af. -->
+  </div>
+  <!-- ⚠️ DE TRE KORT ER DESIGNETS EGNE, KOPIERET 1:1 FRA
+         h-selskaber.html (3/9, kundens ønske: "det her skal vi
+         have ud på forsiden"). Ikke tegnet om, ikke omskrevet —
+         de samme .fact-kort med de samme ikoner, så de to steder
+         ikke kan skride fra hinanden.
+
+         ⚠️ TELEFONNUMMERET STÅR SOM TEKST HER, som på
+         selskabssiden. Kortet lige nedenunder har det som et
+         rigtigt tel:-link — ét trykbart nummer pr. afsnit er
+         nok, og to ens links side om side læses som to
+         forskellige numre. -->
+    <div class="facts rev d1">
+      <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#hjerte"/></svg><span><b>Vi skræddersyr menuen</b> Smørrebrød, grill fra pladen, tapas eller en blanding.</span></div>
+      <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#tid"/></svg><span><b>Svar inden for et døgn</b> Med et forslag og en pris.</span></div>
+      <div class="fact"><svg viewBox="0 0 24 24"><use href="ikoner.svg#telefon"/></svg><span><b>Hellere tale sammen?</b> Ring 28 87 13 43. Vi tager gerne snakken først.</span></div>
+    </div>
+
+    <div class="talk rev d2">
+    <h3>Skal vi tage snakken?</h3>
+    <p>Skriv til os om jeres arrangement: dato, antal og ønsker.</p>
+    <!-- ⚠️ KNAPPEN ÅBNER EN FORUDFYLDT MAIL — DEN LINKER IKKE VIDERE.
+
+           Kundens ord 3/9: "den her knap skal ikke føre til den
+           anden side som vi har nu; knappen skal bare gøre præcis
+           det der på billed 3, men så med booking@". Den pegede
+           på h-selskaber.html før.
+
+           Samme mekanik som selskabssidens egen tilbud-knap:
+           data-post + data-emne + data-brev, hvor
+           js/skal/kontakt.js bytter adressen, hvis ejeren har
+           skrevet en anden i admin → Kontakt. href er reserven,
+           så knappen virker uden JavaScript.
+
+           ⚠️ EN MAIL LANDER IKKE I ADMIN. Formularen på
+           h-selskaber.html skriver i tabellen forespoergsler, så
+           intet går tabt; en mail ligger i en indbakke. Det er
+           kundens beslutning for netop den her knap — og
+           selskabssidens formular er URØRT, hvad en prøve
+           holder fast i. -->
+      <a class="g solid blk" data-post="booking"
+         data-emne="Forespørgsel om selskab"
+         data-brev="Hej Mosede Havnecafe&#10;&#10;Vi vil gerne høre om et selskab hos jer.&#10;&#10;Anledning:&#10;Dato:&#10;Antal personer:&#10;Hos jer eller ud af huset:&#10;Ønsker til maden:&#10;&#10;Venlig hilsen&#10;"
+         href="mailto:booking@mosedehavnecafe.dk?subject=Foresp%C3%B8rgsel%20om%20selskab&body=Hej%20Mosede%20Havnecafe%0A%0AVi%20vil%20gerne%20h%C3%B8re%20om%20et%20selskab%20hos%20jer.%0A%0AAnledning%3A%0ADato%3A%0AAntal%20personer%3A%0AHos%20jer%20eller%20ud%20af%20huset%3A%0A%C3%98nsker%20til%20maden%3A%0A%0AVenlig%20hilsen%0A">Book jeres selskab<span class="sheen"></span></a>
+    <p class="ring">…eller ring til os på <a href="tel:+4528871343">28 87 13 43</a></p>
+  </div>
+</section>
+<!-- ============================================================
+     DEN MØRKE SEKTION ER HISTORIENS ALENE  (4/9)
+     ------------------------------------------------------------
+     Kundens ord: *"efter skal vi have taget den der brune section
+     vi har med ting — det skal kun være til deres historie man kan
+     læse om."*
+
+     Sektionen var tre ting på én gang: "Hvem er vi?" med en
+     manchet, historien om ankeret, og tre værdikort (udsigten,
+     15 år, grillmad og is). Husets egen regel siden 23/8 er ÉN
+     ting pr. afsnit — og et afsnit, der siger tre, læses som en
+     indholdsfortegnelse.
+
+     ⚠️ OG DE TO TAL, DER RØG MED, VAR DESIGNBUNDTETS EGNE.
+     "I 15 år har vi lavet mad til havnens gæster" og kortet "15
+     år på havnen" kom fra bundtet 21/8 sammen med "4,8 · 312
+     anmeldelser" — ingen har bekræftet dem. De står ikke på
+     historiesiden, netop fordi vi ikke ved det. Nu står de heller
+     ikke på forsiden.
+
+     ⚠️ MANCHETTEN ER HISTORIESIDENS EGEN, ORD FOR ORD. Skrev vi
+     en ny her, ville de to sider langsomt sige hver sit om den
+     samme havn — og gæsten går imellem dem i ét klik. Samme regel
+     som varslet, tegnene og adresserne.
+
+     ⚠️ DE TRE KORT ER KAPITLERNE, IKKE VÆRDIER, og de er IKKE
+     links. Sektionens ene handling er knappen; tre kort, der
+     førte samme sted hen, ville være fire veje til den samme
+     side. Hvert kort svarer til et kapitel på historiesiden og
+     siger kun det, der står der.
+     ============================================================ -->
+<!-- ⚠️ HISTORIEN STÅR PÅ ET LUFTFOTO AF HAVNEN (12/9). Kundens ord:
+     "det her skal være billedet, hvor tingene står ovenpå … den måde
+     find os tingene ligger ovenpå det billede i baggrunden er perfekt,
+     samme case her". Samme lag som Find os: et <img loading="lazy">
+     (ikke en CSS-baggrund — forsidens fartprøve forbyder et foto før
+     rul), telefonen det høje billede og computeren det brede, og et
+     slør med én ensartet farve, så kontrasten kan regnes ud.
+     ⚠️ FOTOET ER GENERERET, IKKE ET ARKIVFOTO — det er kundens eget
+     valg. Det er dekorativt (alt="" og aria-hidden) og har med vilje
+     ingen billedtekst: et årstal eller "Mosede Havn dengang" under
+     det ville være en påstand om et foto, der ikke findes. -->
+<section class="about" id="omos">
+  <picture class="hist-bg" aria-hidden="true">
+    <source media="(min-width:821px)" srcset="billeder/historie-bred.jpg?v=__V__">
+    <img src="billeder/historie-hoej.jpg?v=__V__" alt="" loading="lazy" decoding="async" width="941" height="1672">
+  </picture>
+  <span class="hist-slor" aria-hidden="true"></span>
+  <div class="rev"><div class="eyebrow">Historien</div><h2>Fiskerne, havnen<br>og ankeret</h2>
+  <p class="lead">Et anker, som overleveringen knytter til et søslag i 1710. En
+    fiskerihavn, fiskerne selv byggede i 1929. Og en grill med vaffelis, der har
+    stået her, så længe folk kan huske. Det er den havn, vi laver mad i.</p></div>
+
+  <!-- HISTORIEN (31/8, kundens ord: "i den mørke info-section
+       skal vi have noget historie med cafeen, hvor der er en knap,
+       hvor man kan læse om havnegrillen og dens historie").
+
+       ⚠️ TEASEREN LOVER KUN DET, SIDEN HOLDER. Ankeret er den
+       stærkeste sætning, vi har — og den ENESTE, der er værd at
+       stå her, fordi den får folk til at trykke. Alt andet om
+       historien står på siden selv, hvor der også er plads til at
+       skrive, hvor den kommer fra. -->
+  <div class="hist-teaser rev d2">
+    <div class="hist-teaser-tegn" aria-hidden="true">⚓</div>
+    <div>
+      <!-- ⚠️ VENDT 14/9 efter kundens faktadokument: ankerets ophav er
+           lokal overlevering, og "lå på bunden i 270 år" står ingen
+           steder i kilderne. Teaseren lover det, der ER dokumenteret. -->
+      <h4>Fiskerne byggede havnen i 1929</h4>
+      <p>En ø i Køge Bugt med en træbro til land. Ankeret på havnen knyttes i
+        overleveringen til slaget i Køge Bugt i 1710.</p>
+      <a class="hist-teaser-knap" href="historien.html">Læs historien om Mosede Havn
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><use href="ikoner.svg#videre"/></svg></a>
+    </div>
+  </div>
+  <div class="vals">
+    <div class="val rev d1"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#anker"/></svg></div><div><h4>1929 · Havnen</h4><p>Lokale fiskere samlede pengene og byggede en ø-havn med en træbro til land.</p></div></div>
+    <div class="val rev d1"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#is"/></svg></div><div><h4>Dengang · Ishuset</h4><p>Træterrasse, blomsterkasser og skilte med gammeldags vaffelis, og sejlbådene lige bagved.</p></div></div>
+    <div class="val rev d2"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#baad"/></svg></div><div><h4>1943 · Overfarten</h4><p>Fiskere fra havnen sejlede jødiske flygtninge over til Sverige.</p></div></div>
+  </div>
+</section>
+<section id="alt">
+  <!-- ⚠️ GLASSET HAR NOGET AT BRYDE (10/10). Figmas eget nej: "Pane over
+       flat porcelain: grey tint" (53:299) — glas over flad creme bliver
+       gråt. Bunden er havnens eget dagfoto, svagt under cremen; overskriften
+       står på fast creme. <img loading="lazy">, ikke en CSS-baggrund:
+       forsidens fartprøve forbyder et foto, før gæsten har rullet (samme
+       greb som Find os).
+       ⚠️ MOLEN, IKKE FACADEN: facade-*.jpg er AI-behandlet — skiltet siger
+       "Grill & Kiosk" — og er forbudt som husets billede (8/9,
+       tests/udgivelse.spec.js). Molen er Mikkels eget foto og står
+       allerede i galleriet efter hans beslutning; skiltet siger det rigtige.
+       Telefonen og computeren deler filen; computeren viser båndet med
+       himlen og skiltet. -->
+  <picture class="alt-bund rev" aria-hidden="true">
+    <img src="billeder/molen-1200.jpg?v=__V__" alt="" loading="lazy" decoding="async" width="1200" height="1612">
+  </picture>
+  <span class="alt-slor" aria-hidden="true"></span>
+  <div class="rev alt-hoved"><h2>Hvad skal vi<br>hjælpe med?</h2>
+  <p class="sub">Hver ting har sin egen side med priser, tider og bestilling.</p></div>
+  <div class="rows">
+    <!-- ⚠️ BORDBOOKING STOD IKKE ÉT STED PÅ DE NI NYE SIDER (29/8).
+         Kundens spørgsmål: "hvorhenne booker jeg bord?" — og
+         svaret var, at det kunne man ikke finde ud af. bord/ har
+         været i luften siden fase 4, men da menukortsiden blev
+         skrevet om 24/8, forsvandt dens "Book spisning"-knap, og
+         ingen af designsiderne havde et link. Kun de GAMLE siders
+         topmenu førte derhen. En side, ingen kan finde, findes
+         ikke.
+
+         Rækken står ØVERST: at sikre sig en plads er det mest
+         hverdagsagtige af de syv ærinder — resten er noget, man
+         planlægger. -->
+    <a class="row-card rev" href="bord/"><div class="kerne"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#bord"/></svg></div><div><h3>Book et bord</h3><p>Vælg dag og tid, så står bordet klar.</p></div><span class="linse" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6"/></svg></span></div></a>
+    <a class="row-card rev" href="h-smorrebrod.html"><div class="kerne"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#smoerrebroed"/></svg></div><div><h3>Smørrebrød ud af huset</h3><p>Til fødselsdage, møder og selskaber.</p></div><span class="linse" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6"/></svg></span></div></a>
+    <!-- ⚠️ OG LEVERINGEN HELLER IKKE (7/10), af samme grund: den står i
+         heroen og over Bestil mad på den SAMME side. En række mere var en
+         tredje vej til det samme ærinde — og alle rækkerne her fører til
+         en egen side ("Hver ting har sin egen side"). Fanget af prøverne
+         på de seks rækker. -->
+    <!-- ⚠️ SELSKABER STÅR IKKE HER (13/9). Kundens ord: "der hvor de 7
+         ting er, der skal selskab helt væk — fordi de allerede er på
+         forsiden med link". Afsnittet #selskab ovenfor ER selskabet, med
+         sin egen knap; en række mere var to veje til det samme ærinde
+         på den samme side. Skuffemenuen har stadig Selskaber. -->
+    <a class="row-card rev d1" href="h-baglokale.html"><div class="kerne"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#baglokale"/></svg></div><div><h3>Udleje af baglokalet</h3><p>Et lokale til jer selv. Spørg om en dato.</p></div><span class="linse" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6"/></svg></span></div></a>
+    <a class="row-card rev d2" href="h-catering.html"><div class="kerne"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#catering"/></svg></div><div><h3>Catering</h3><p>Mad til jeres arrangement.</p></div><span class="linse" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6"/></svg></span></div></a>
+    <a class="row-card rev d2" href="h-frokost.html"><div class="kerne"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg></div><div><h3>Frokostordning</h3><p>Fast frokost til kontoret. Vi kører den ud.</p></div><span class="linse" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6"/></svg></span></div></a>
+    <a class="row-card rev d3" href="h-kalender.html"><div class="kerne"><div class="ic"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kalender"/></svg></div><div><h3>Kalender og arrangementer</h3><p>Se hvad der sker på havnen.</p></div><span class="linse" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M1 8H12.4M9.1 4.4L12.9 8L9.1 11.6"/></svg></span></div></a>
+  </div>
+</section>
+<div class="dug dug--d" aria-hidden="true"></div>
+<!-- ============================================================
+     BUNDEN ER TO KORT  (9/9)
+     ------------------------------------------------------------
+     Kundens ord med et skærmbillede af spiis' egen bund:
+     *"få bundne til at se sådan her ud istedet."*
+
+     ⚠️ FORLÆGGET ER ET SKÆRMBILLEDE, IKKE KODE. Der er hverken
+     læst i eller kopieret fra spiis' repo — det må ikke røres.
+     Formen er billedets, farverne og tallene er havnens. Samme
+     fremgangsmåde som personalesidens skabelon 24/8,
+     bestillingskortet 31/8, Overblik 1/9 og kalenderen 3/9.
+
+     ⚠️ MÅLT FØRST: afsnittet var ÉN lang stribe hårstregsrækker
+     — otte i træk, hvor *"Søndag (i dag) 10–20"* og *"Om din
+     booking · Skriv til os"* så præcis ens ud. Der var ingen
+     kasse om nogen af dem, og de to spørgsmål (hvornår har I
+     åbent · hvordan får jeg fat i jer) stod som ÉN liste med en
+     lille etiket imellem. Nu er de to KORT, som resten af huset
+     bruger: hvidt papir, husets skygge, et tegn i en rund
+     firkant, og hver sit spørgsmål i overskriften.
+
+     ⚠️ OVERSKRIFTEN ER AFSNITTETS JOB, IKKE ADRESSEN. Den var
+     vejnavnet og postnummeret selv — altså stod adressen som h2 i
+     et afsnit, hvis handling er at komme derhen, og "Find os"
+     var kun et eyebrow. (Husnummeret er med vilje IKKE skrevet
+     her: husets prøve måler HVERT "Havnevej <nr>" på siden, også
+     inde i en kommentar, og et citat af et gammelt husnummer
+     ville fælde den dag, nummeret skifter — og det gjorde det
+     9/9.) Adressen står stadig ÉN gang, men i det
+     kort, rute-knappen står i, hvor den er svaret på *"hvor
+     skal jeg køre hen"*. Prøven i kontakt-post.spec.js er
+     VENDT med den grund; dens vigtige halvdel — ét husnummer i
+     afsnittet og ikke to — er urørt og målt som før.
+     ============================================================ -->
+<!-- ⚠️ FIND OS STÅR PÅ HAVNEN (11/9). Kundens ord: billedet "skal
+     bruges som baggrundsbillede nede ved find os som baggrund og gør
+     det lidt mørkere". Baggrunden er et <img loading="lazy"> og IKKE
+     en CSS-baggrund: en baggrund i stilarket hentes, i det sekund
+     siden tegnes, og forsidens fartprøve forbyder et foto, før gæsten
+     har rullet. Telefonen får hele det høje billede, computeren et
+     bredt udsnit — ingen af dem henter den andens. Sløret er sit eget
+     lag med én ensartet farve, så prøven kan regne kontrasten ud mod
+     det lyseste, et foto kan være. -->
+<section id="find" class="find-foto">
+  <picture class="find-bg" aria-hidden="true">
+    <source media="(min-width:821px)" srcset="billeder/find-bred.jpg?v=__V__">
+    <img src="billeder/find-hoej.jpg?v=__V__" alt="" loading="lazy" decoding="async" width="941" height="1672">
+  </picture>
+  <span class="find-slor" aria-hidden="true"></span>
+  <div class="rev findhoved"><div class="eyebrow">Find os</div><h2>Åbningstider &amp; kontakt</h2></div>
+  <div class="findgrid">
+
+    <!-- ⚠️ STATUSLINJEN ER HEROENS EGEN REGEL, LÆST ÉN GANG MERE.
+         `Butik.pilleTekst` er ÉT sted (28/8), og fire skærme
+         spørger den nu. Det er IKKE de to "åbent" i den samme
+         etiket, som blev rettet 1/9 — det er den samme regel
+         læst i to kort otte skærme fra hinanden, præcis som
+         `Admin.statusNavn` bruges af to faner. Kortet hedder
+         "Åbningstider", og *"er der åbent NU"* er dét
+         spørgsmål; en gæst, der skal regne det ud af syv
+         rækker, læser dem ikke.
+
+         ⚠️ OG DEN LYVER IKKE, NÅR DATABASEN ER NEDE.
+         `Butik.status` læser `_offline` (5/9) og svarer
+         *"Ring og hør, om vi har åbent"* — reserven 10-20 er en
+         åbningstid, ingen har sat. -->
+    <div class="findkort rev d1">
+      <div class="fk-hoved">
+        <span class="fk-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="ikoner.svg#tid"/></svg></span>
+        <div><h3>Åbningstider</h3><p class="fk-under" data-find-sidste>Sådan har vi åbent ved lugen.</p></div>
+      </div>
+      <p class="fk-status" data-find-status hidden><svg class="lanterne" viewBox="0 0 24 24" aria-hidden="true"><use href="ikoner.svg#lanterne-slukket"/></svg><span data-find-status-tekst></span></p>
+      <div class="hours" id="find-tider">
+        <div><span>Mandag – torsdag</span><span>10–20</span></div>
+        <div><span>Fredag</span><span>10–21</span></div>
+        <div><span>Lørdag</span><span>10–21</span></div>
+        <div class="now"><span>Søndag (i dag)</span><span>10–20</span></div>
+        <div><span>Ishuset i højsæson</span><span>til 22</span></div>
+      </div>
+    </div>
+
+    <!-- ⚠️ KONTAKTEN GÅR GENNEM DEN SAMME `data-post`-KANAL SOM
+         FOOTEREN (31/8), så en rettet adresse i admin slår
+         igennem begge steder — og en NEDLAGT adresse tager sin
+         række med sig (`data-post-raekke`): en etiket uden et
+         link er et spørgsmål uden et svar. -->
+    <div class="findkort rev d2">
+      <div class="fk-hoved">
+        <span class="fk-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="ikoner.svg#find-os"/></svg></span>
+        <div><h3>Her finder du os</h3><p class="fk-under">Nede ved vandet på Mosede Havn.</p></div>
+      </div>
+      <p class="fk-adresse">Mosede Havnecafe<br>Havnevej 20I<br>2670 Greve</p>
+      <!-- ⚠️ VIS RUTE (8/9). Kundens ord: "vi mangler også at få
+           fixet en rute ting og gør alt det her langt langt bedre."
+
+           MÅLT FØRST: der var NUL rute-links på hele hjemmesiden,
+           og "Find os" er hele afsnittets løfte. MOSEDE.ruteUrl()
+           har ligget i js/oplysninger.js hele tiden, og filens eget
+           hoved påstod, at "Vis rute" blev bygget af den — ingen side
+           spurgte den. Samme mønster som Admin.pæntNavn (6/9).
+
+           ⚠️ ADRESSEN STÅR I HREF'EN, og js/skal/kontakt.js bytter
+           den kun ud, hvis ejeren har rettet sin egen i admin. Samme
+           regel som mailadresserne: er databasen nede, virker ruten
+           stadig — og en gæst på vej ned til havnen er den sidste,
+           der skal møde et dødt link.
+
+           ⚠️ HVID OG IKKE RØD. Sidens ene røde handling er den
+           flydende pille ("Bestil mad"). En rute er noget, man bruger,
+           når man ALLEREDE har besluttet sig — samme "second
+           option"-sprog som Ring og Send en mail fik 30/8. -->
+      <a class="g blk rute-knap" data-rute target="_blank" rel="noopener"
+         href="https://www.google.com/maps/dir/?api=1&amp;destination=Mosede%20Havnecafe%2C%20Havnevej%2020I%2C%202670%20Greve">Vis rute til havnen <span aria-hidden="true">&rarr;</span><span class="sheen"></span></a>
+      <!-- ⚠️ DER LOVES IKKE "JERES EGET KORT". Linket åbner Google
+           Maps — på en iPhone appen, hvis den er der, ellers Safari.
+           Apple Kort åbner den IKKE, og en linje, der lovede det,
+           ville være en påstand om noget, vi ikke styrer. -->
+      <p class="fine rute-note">Åbner ruten i Google Maps.</p>
+      <div class="hours" id="find-kontakt">
+        <div><span>Ring til os</span><span><a href="tel:+4528871343">28 87 13 43</a></span></div>
+        <div data-post-raekke><span>Selskaber &amp; catering</span><span><a href="mailto:booking@mosedehavnecafe.dk" data-post="selskab">Skriv til os</a></span></div>
+        <div data-post-raekke><span>Om din booking</span><span><a href="mailto:booking@mosedehavnecafe.dk" data-post="booking">Skriv til os</a></span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="ny-strib">
+<!-- ⚠️ DE RIGTIGE LOGOER (13/9). Kundens ord: "sociale medie logoerne skal være
+     de rigtige logoer". Facebook, Instagram og TikTok er mærkernes egne former fra
+     Simple Icons (CC0) i deres egne farver — fill står inline, så husets røde
+     currentColor ikke tager dem. Ligger i siden; intet hentes udefra. -->
+<div class="social">
+  <a href="#" data-social="facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path style="fill:#0866FF" d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg>Facebook</a>
+  <a href="#" data-social="instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="ig-farve" cx="30%" cy="107%" r="150%"><stop offset="0" stop-color="#fdf497"/><stop offset=".05" stop-color="#fdf497"/><stop offset=".45" stop-color="#fd5949"/><stop offset=".6" stop-color="#d6249f"/><stop offset=".9" stop-color="#285aeb"/></radialGradient></defs><path style="fill:url(#ig-farve)" d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></svg>Instagram</a>
+  <a href="#" data-social="tiktok"><svg viewBox="0 0 24 24" aria-hidden="true"><path style="fill:#000" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>TikTok</a>
+  <a href="h-kalender.html"><svg viewBox="0 0 24 24"><use href="ikoner.svg#musik"/></svg>Musik på havnen</a>
+  <a href="#" data-social="google"><svg viewBox="0 0 24 24"><use href="ikoner.svg#stjerne"/></svg>Anmeldelser</a>
+</div>
+
+<div class="music rev">
+  <div class="bic"><div class="eq"><i></i><i></i><i></i><i></i></div></div>
+  <!-- ⚠️ PLADSHOLDEREN SIGER INGEN DATO OG INGEN KUNSTNER  (25/9). Her stod
+       designets "Musik på molen · lørdag d. 29. august · Ronni & de Salte"
+       — og en læser uden JavaScript (en ekstern kontrol, en link-
+       forhåndsvisning) læste det som husets næste arrangement en måned
+       efter. js/skal/forside.js (visMusik) skriver kalenderens næste
+       arrangement ind eller skjuler boksen. Se tests/pladsholdere.spec.js. -->
+  <div><h4>Henter næste arrangement …</h4><p>Kalenderen indlæses.</p><a class="cta" href="h-kalender.html">Se kalenderen →</a></div>
+</div>
+
+<!-- ⚠️ FACEBOOK, SMILEYEN OG PRISEN ER APPLES KLARE GLAS (28/9, aften).
+     Mikkels valg af seks forslag fra Higgsfield (nr. 7): klart glas som i
+     iOS — ingen farvet kerne, farven sidder i tegnet — et tegn til venstre,
+     titel og en dæmpet linje under, og en lille pil. Før var de en kopi af
+     allergipillen med farvet kerne; *"de får vand-agtige … det skal
+     virkelig bare være iOS 18 Apple liquid glass"*. HELE rækken er linket.
+     js/skal/kontakt.js sætter adressen på a[data-social] og tager den af
+     siden, når der ingen adresse er (klassen .promo er det, den leder efter).
+     Logoet er det samme som i striben lige over. -->
+<a class="promo fb glasraekke rev" href="#" data-social="facebook" style="margin:10px var(--pad) 0"><span class="gr-tegn" aria-hidden="true"><svg viewBox="0 0 24 24"><path style="fill:#0866FF" d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg></span><span class="gr-tekst"><b>Følg os på Facebook</b><span>Dagens ret og nyt fra lugen</span></span><svg class="gr-pil" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+<!-- SMILEY-RAPPORTEN ØVERST (13/9). Kundens ord: "læg lige Fødevarestyrelsens
+     smiley oppe i toppen under facebook tingen". Linket er ejerens eget (31/8) og
+     står også i bunden. ⚠️ Et tegn og ikke Fødevarestyrelsens eget mærke: et
+     efterlignet myndighedsmærke er værre end et tegn — og kortet siger ikke,
+     HVILKEN smiley, for den skifter ved næste kontrol; rapporten siger det. -->
+<a class="smiley-kort glasraekke rev" href="https://www.findsmiley.dk/app/1480560" target="_blank" rel="noopener" style="margin:10px var(--pad) 0"><span class="gr-tegn" aria-hidden="true">😊</span><span class="gr-tekst"><b>Se vores smiley-rapport</b><span>Kontrolleret af Fødevarestyrelsen</span></span><svg class="gr-pil" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+<!-- GREVE-PRISEN ØVERST (25/9). Mikkels ord: *"greve iværksætter prisen op
+     øverst med facebook og smileyen og det liquid glass"*. Samme kort og samme
+     glas som smileyen lige over (klassen er smiley-kortets — én regel for
+     udseendet, ikke en kopi), og samme ordlyd og link som i bunden, hvor den
+     også bliver stående, ligesom smileyen gør.
+     ⚠️ "INDSTILLET TIL" — IKKE "VINDER AF". Grunden og papiret står ved
+     linjen i bunden (21/9). Prisen uddeles 8. oktober; vinder de, er det
+     den her linje OG den i bunden, der skal skrives om. -->
+<a class="smiley-kort pris-kort glasraekke rev" href="https://erhvervscentret.greve.dk/gba" target="_blank" rel="noopener" style="margin:10px var(--pad) 0"><span class="gr-tegn" aria-hidden="true">🏅</span><span class="gr-tekst"><b>Indstillet til Greve Iværksætterpris 2026</b><span>og Greve Erhvervspris, 8. oktober</span></span><svg class="gr-pil" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+<!-- VI STØTTER KNÆK CANCER  (1/10). Chefens besked: *"Vi Støtter Knæk Cancer,
+     Støt Brysterne, og samler ind lørdag d. 3/10 med forskellige aktiviteter og
+     tilbud."* Samme kort og samme glas som de tre over (klassen er
+     smiley-kortets — én regel for udseendet, ikke en kopi).
+
+     ⚠️ LOGOET ER MIKKELS EGET AT BRUGE. Først stod der 🎀, fordi cancer.dk
+     ikke har offentligt materiale at hente og et varemærke brugt uden lov er
+     en dårlig historie for en cafe, der gør noget godt. Han leverede filen
+     selv 1/10 ("Den-velkendte-sljfe.avif") og bad om den — så er det hans
+     aftale med Kræftens Bekæmpelse, ikke en fil, vi har hentet ned.
+
+     ⚠️ OG DEN ER LAVET OM TIL PNG. Kildefilen var AVIF, som en ældre iPhone
+     ikke kan vise, og baggrunden var lys grå og ikke gennemsigtig — lagt
+     direkte i det hvide glas havde den givet en grå firkant. Begge dele er
+     målt. Billedet er beskåret til selve knuden og vejer 19 kB.
+
+     ⚠️ INGEN DATO I KORTET. Det står fast her og forsvinder ikke af sig selv;
+     "lørdag 3. oktober" ville være forkert den 4. Lørdagen står i KALENDEREN,
+     som rydder op efter sig. Kortet siger kun det, der bliver ved at være
+     sandt: at de støtter.
+
+     ⚠️ OG DET SLUKKER SIG SELV EFTER OKTOBER. Her stod først en påmindelse
+     om at tage det ned — og en note er ikke et tjek. data-vis-til er feltets
+     egen sidste dag (til og med), og js/skal/forside.js skjuler det dagen
+     efter. Skal kampagnen med igen næste år, er det ét tal, der rettes. -->
+<!-- ⚠️ KORTET PEGER PÅ KALENDEREN NU, IKKE UD AF HUSET (2/10).
+     Chefen: "Lad forsidens event/nyhed linke videre til
+     kalenderarrangementet" og "lav ikke en ny permanent underside
+     om Knæk Cancer". Kalenderen ER i forvejen sidens sted for
+     arrangementer, så den fortæller resten — og gæsten bliver på
+     havnens egen side i stedet for at blive sendt til cancer.dk,
+     før hun har set, hvad caféen selv laver.
+     #arr-33 er arrangementets eget anker (js/skal/kalender.js).
+     Findes det ikke, lander hun øverst på kalenderen. -->
+<a class="smiley-kort knaek-kort glasraekke rev" data-vis-til="2026-10-31" href="h-kalender.html#arr-33" style="margin:10px var(--pad) 0"><span class="gr-tegn" aria-hidden="true"><img class="knaek-logo" src="billeder/knaek-cancer.png" width="136" height="72" alt="" loading="lazy" decoding="async"></span><span class="gr-tekst"><b>Vi støtter Knæk Cancer</b><span>Se hvad vi laver i kalenderen</span></span><svg class="gr-pil" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+<footer>
+  <h3>Vi ses ved lugen.</h3>
+  <div class="fcols">
+    <div><b>Kontakt</b><a href="tel:+4528871343">+45 28 87 13 43</a><a href="mailto:booking@mosedehavnecafe.dk" data-post="selskab">Selskaber &amp; catering</a><a href="mailto:booking@mosedehavnecafe.dk" data-post="booking">Om din booking</a></div>
+    <div><b>Havnen</b><a href="#bestil">Bestil mad</a><a href="m-menukort.html">Menukort</a><a href="h-selskaber.html">Selskaber</a><a href="h-catering.html">Catering</a></div>
+  </div>
+  <!-- SMILEY-RAPPORTEN (31/8). Linket er EJERENS EGET, oplyst af
+       Mikkel: seneste kontrol 26-02-2026, glad smiley. Det stod paa
+       "Ejeren skal bekraefte"-listen som tomt — nu er det bekraeftet
+       og staar derfor FAST i HTML'en som adressen og telefonen. -->
+  <a class="smiley-linje" href="https://www.findsmiley.dk/app/1480560" target="_blank" rel="noopener"><span aria-hidden="true">😊</span> Kontrolleret af Fødevarestyrelsen · se smiley-rapporten</a>
+  <!-- ============================================================
+       GREVE-PRISERNE  (21/9)
+       ------------------------------------------------------------
+       ⚠️ EJERENS EGEN OPLYSNING, OG NU MED PAPIR PÅ. Jim
+       Gjermandsen 20/9: *"Reklame for at vi er indstillet til
+       Greve iværksætter pris, samt Greve Erhvervspris."*
+
+       Og 21/9 sendte han beviset — Greve Business Awards' eget
+       badge, ordret: *"Tillykke! Mosede Havnegrill & Ishus er
+       indstillet til GREVE IVÆRKSÆTTERPRIS 2026 … Prisen uddeles
+       til Greve Business Awards d. 8. oktober 2026 i Portalen."*
+
+       ⚠️ "INDSTILLET TIL" — IKKE "VINDER AF". En nominering, der
+       bliver til en sejr på vejen fra en besked til en
+       hjemmeside, er den slags, ingen opdager, før nogen spørger
+       til pokalen.
+
+       ⚠️ OG NU MED LINK. Her stod indtil i dag "uden link, fordi
+       vi ingen kilde har". Det er ikke længere sandt: begge
+       priser er bekræftet på erhvervscentret.greve.dk/gba, som
+       også har datoen. En kommentar, der er blevet forkert, får
+       den næste til at fjerne linket i god tro.
+
+       ⚠️ BADGET BRUGES IKKE SOM BILLEDE. Der står "Mosede
+       Havnegrill & Ishus" på det — netop det navn, ejerne vil
+       væk fra. Teksten med link giver samme troværdighed uden at
+       sætte det gamle navn synligt tilbage på siden.
+
+       ⚠️ KUN IVÆRKSÆTTERPRISEN HAR ET DOKUMENT. Erhvervsprisen
+       står på ejerens ord alene; begge priser findes, men hvis
+       nogen spørger, er det værd at vide hvilken af de to der er
+       papir på.
+       ============================================================ -->
+  <a class="smiley-linje" href="https://erhvervscentret.greve.dk/gba" target="_blank" rel="noopener"><span aria-hidden="true">🏅</span><span>Indstillet
+    til Greve Iværksætterpris 2026 og Greve Erhvervspris · Greve Business Awards, 8. oktober</span></a>
+  <div class="legal">© 2026 Mosede Havnecafe<br>Havnevej 20I · 2670 Greve<br><a class="jura-link" href="persondatapolitik.html">Persondata og cookies</a><span class="jura-skel" aria-hidden="true"> · </span><a class="jura-link" href="handelsbetingelser.html">Handelsbetingelser</a><br><a class="personale-link" href="admin.html" rel="nofollow">Personale</a><br>Lavet af <a class="lavet-af" href="https://lesreg.dk" target="_blank" rel="noopener">Lesreg</a></div>
+</footer>
+</div>
+<a class="bestil" id="bestil-pill" href="#bestil">Bestil mad<span class="pille-linse" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="ikoner.svg#kurv"/></svg></span><span class="sheen"></span></a>
+<div class="sheet" id="sheet"><div class="sheet-in">
+  <div class="grab"></div>
+  <nav><a class="on" href="ny/">Forside</a><a href="m-menukort.html">Menukort<span>hele kortet</span></a><a href="#isen">Is ved vandet<span>havnens stolthed</span></a><a href="m-tapas.html">Tapas<span>hele fadet</span></a><a href="#bestil">Bestil mad<span data-lev-nav>to-go eller spis her</span></a><a href="bord/">Book et bord<span>dag og tid</span></a><a href="h-smorrebrod.html">Smørrebrød ud af huset</a><a href="h-selskaber.html">Selskaber</a><a href="h-baglokale.html">Udleje af baglokalet<span>40 pers.</span></a><a href="h-catering.html">Catering</a><a href="h-frokost.html">Frokostordning<span>levering</span></a><a href="#nyheder">Nyheder</a><a href="h-kalender.html">Kalender og musik</a>
+    <div class="sep"></div>
+    <a href="#find">Find os og åbningstider</a>
+    <a href="tel:+4528871343">Ring til os<span>28 87 13 43</span></a>
+  </nav>
+  <div class="sheet-cta"><a class="g solid blk" href="#bestil">Bestil mad<span class="sheen"></span></a><a class="g" href="m-menukort.html">Menukort</a><button class="g" id="lukmenu">Luk</button></div>
+</div></div>
+</div>
+<script src="image-slot.js?v=__V__"></script>
+<script src="havnegrillen.js?v=__V__"></script>
+<script src="js/config.js?v=__V__"></script>
+<script src="js/store.js?v=__V__"></script>
+<!-- ⚠️ STRUKTURERET DATA TIL GOOGLE. js/oplysninger.js er den ENE
+     kilde til navn, adresse og telefon; js/skal/seo.js bygger
+     Restaurant-mærket af den plus åbningstiderne fra databasen.
+     Målt 5/9: designsiderne havde NUL struktureret data. -->
+<script src="js/oplysninger.js?v=__V__"></script>
+<script src="js/skal/seo.js?v=__V__"></script>
+<script src="js/skal/kontakt.js?v=__V__"></script>
+<script src="js/bestil-regler.js?v=__V__"></script>
+<script src="js/skal/kvittering.js?v=__V__"></script>
+<!-- Den ENE liste over kategoriernes tegn. Menukortet og bordsiden
+     spørger den samme fil — to lister over det samme sortiment
+     ville skride fra hinanden uden at nogen kunne se det. -->
+<script src="js/menu-emoji.js?v=__V__"></script>
+<script src="js/skal/billedplads.js?v=__V__"></script>
+<script src="js/skal/tidligere.js?v=__V__"></script>
+<script src="js/dagsbesked.js?v=__V__"></script>
+<script src="js/lukket.js?v=__V__"></script>
+<script src="js/skal/forside.js?v=__V__"></script>
+<script src="js/adressefelt.js?v=__V__"></script>
+<script src="js/isbygger.js?v=__V__"></script>
+<script src="js/skal/feltfejl.js?v=__V__"></script>
+<script src="js/skal/bestil.js?v=__V__"></script>
+<script src="ny/mosede-ny.js?v=__V__"></script>
+</body></html>
