@@ -75,37 +75,6 @@ body.ny-side{
 .ny-side .ny-idag i{flex:none;font-style:normal;opacity:.8;transition:transform .3s var(--spring)}
 .ny-side .ny-idag:hover i{transform:translateX(3px)}
 
-/* ---------- 3) papiret: bestil mad ---------- */
-.ny-side #bestil.papir{background:linear-gradient(180deg,var(--cream2),var(--cream) 260px)}
-.ny-side #bestil.papir .best-bg,.ny-side #bestil.papir .best-slor{display:none}
-.ny-side #bestil.papir .eyebrow{color:var(--red-tekst)}
-body.ny-side #bestil.papir .panel{position:relative;background:#fffdf9;-webkit-backdrop-filter:none;backdrop-filter:none;
-  box-shadow:0 1px 0 rgba(36,26,23,.06),0 24px 60px -18px rgba(36,26,23,.22),inset 0 0 0 1px rgba(36,26,23,.05);overflow:hidden;padding-top:30px}
-body.ny-side #bestil.papir .panel::before{content:"";position:absolute;left:0;right:0;top:0;height:12px;
-  background-color:#fff;background-image:linear-gradient(90deg,var(--tern) 50%,transparent 0),linear-gradient(var(--tern) 50%,transparent 0);background-size:12px 12px}
-
-/* leveringsnyheden var tegnet til det mørke glas (hvid tekst); på papiret er den et hvidt kort med rød kant */
-body.ny-side #bestil.papir .lev-nyhed{background:#fff;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.35),0 14px 34px -14px rgba(214,42,58,.3);-webkit-backdrop-filter:none;backdrop-filter:none}
-body.ny-side #bestil.papir .lev-nyhed-tekst p{color:var(--ink2)}
-body.ny-side #bestil.papir .lev-nyhed-tekst .lev-nyhed-titel,body.ny-side #bestil.papir .lev-nyhed-tekst .lev-gratis{color:var(--ink)}
-body.ny-side #bestil.papir .lev-nyhed-knap{color:#fff;background:var(--red);box-shadow:0 8px 20px -6px rgba(214,42,58,.5)}
-body.ny-side #bestil.papir .lev-nyhed-knap:hover{background:var(--red-d)}
-body.ny-side #bestil.papir .lev-nyhed-knap:focus-visible{outline-color:var(--red)}
-
-@media (min-width:1024px){
-  /* to spalter: overskriften og leveringsnyheden til venstre, formularen til højre */
-  body.ny-side #bestil.papir{--g:max(28px,calc((100% - 1120px)/2));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,600px);
-    grid-template-areas:"hoved panel" "lev panel" "foto panel";grid-template-rows:auto auto 1fr;column-gap:64px;align-items:start}
-  body.ny-side #bestil.papir > .rev:not(.panel):not(.lev-nyhed){grid-area:hoved}
-  body.ny-side #bestil.papir > .lev-nyhed{grid-area:lev;margin-top:22px}
-  body.ny-side #bestil.papir > .panel{grid-area:panel;margin-top:0}
-  body.ny-side #bestil.papir h2{font-size:56px;letter-spacing:-.035em}
-  /* lugens foto som et indrammet billede i venstre spalte — samme foto, nu ikke en baggrund */
-  body.ny-side #bestil.papir .best-bg{display:block;grid-area:foto;position:sticky;top:110px;inset:auto;width:auto;height:auto;z-index:auto;margin-top:28px;border-radius:22px;overflow:hidden;
-    box-shadow:0 20px 50px -20px rgba(36,26,23,.4)}
-  body.ny-side #bestil.papir .best-bg img{position:static;width:100%;height:auto;aspect-ratio:4/5;object-position:50% 40%}
-}
-
 /* ---------- striben i bunden: Facebook, smiley, pris ---------- */
 .ny-side .ny-strib{padding:30px 0 10px;background:var(--cream2)}
 @media (min-width:821px){
@@ -115,168 +84,263 @@ body.ny-side #bestil.papir .lev-nyhed-knap:focus-visible{outline-color:var(--red
 }
 
 /* ============================================================
-   AFSNIT 1, ANDEN UDGAVE (22/10)
-   Mikkels ord: "gør som med dagens ret man kan se en uge frem hvor man
-   scroller til højre", "alle knapper tekst sådan iconer skal være langt
-   bedre" og "gøre noget klogt ift section 1 da der er så meget".
+   AFSNIT 1 I HUSETS TRYKTE STIL  (22/10, tredje udgave)
+   ------------------------------------------------------------
+   Mikkels ord: *"det slet ikke cafe agtig … de vil gerne være kendt
+   for at lave gode smørrebrød"*. Forlægget er husets egne trykte
+   menukort (billeder/menukort-bord-1400.jpg) — samme greb, som
+   menukortet fik 26/9: rødt hoved med spærret linje og kransen,
+   Bebas-overskrifter, en kursiv linje, den ternede kant med bølger,
+   ◆ + rubrik + dobbelt rød streg, røde priser i Bebas og bokse med
+   ternet top. Papir, ikke app.
    ============================================================ */
-
-/* forsidens egne to afsnit står i DOM'en (forside.js skriver i dem), men
-   ugen nedenfor afløser dem på /ny/ */
+body.ny-side{--nk-creme:#fbf6ec;--nk-pink:#f5c7cb;--nk-blaa:#2a5f8f}
 body.ny-side #idag,body.ny-side #ugen{display:none !important}
 
-/* ---------- ugen: syv små tavler på en række ---------- */
-.ny-side .ny-uge{padding-top:44px;padding-bottom:40px;overflow:hidden}
-.ny-side .ny-uge-hoved{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
-.ny-side .ny-uge-hoved h2{letter-spacing:-.03em}
-.ny-side .ny-uge-hoved .sub{margin-top:6px;color:var(--ink2)}
+/* ---------- kortet ---------- */
+.ny-side .nk{position:relative;border-radius:28px;overflow:hidden;background:var(--nk-creme);isolation:isolate;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 24px 60px rgba(36,26,23,.16),0 4px 14px rgba(36,26,23,.08)}
+.ny-side .nk-hoved{position:relative;padding:24px 20px 20px;padding-right:112px;background:var(--red);color:var(--nk-creme);overflow:hidden}
+.ny-side .nk-hoved::before,.ny-side .nk-hoved::after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.16);pointer-events:none}
+.ny-side .nk-hoved::before{width:420px;height:420px;right:-210px;top:-150px}
+.ny-side .nk-hoved::after{width:360px;height:360px;right:-90px;bottom:-300px}
+.ny-side .nk-over{display:flex;align-items:center;gap:14px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;text-transform:uppercase;color:var(--nk-creme)}
+.ny-side .nk-over i{flex:1;max-width:220px;height:1px;background:rgba(255,255,255,.45)}
+.ny-side .nk-titel{margin:12px 0 0;font:400 clamp(44px,12vw,104px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:var(--nk-creme)}
+.ny-side .nk-slogan{margin:12px 0 0;max-width:34ch;font:italic 400 16px/1.4 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.01em;color:var(--nk-creme)}
+.ny-side .nk-logo{position:absolute;top:18px;right:16px;width:82px;height:82px;border-radius:50%;box-shadow:0 10px 26px rgba(80,8,16,.35)}
+.ny-side .nk-logo svg{display:block;width:100%;height:100%}
+/* den ternede kant med bølger: creme halvcirkler, der skyder op i ternene */
+.ny-side .nk-kant,.ny-side .nk-dag-kant{height:40px;margin-top:-1px;background:
+  radial-gradient(circle at 50% 100%,var(--nk-creme) 11.5px,transparent 12px) 0 100%/24px 18px repeat-x,
+  linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/24px 100%,
+  linear-gradient(0deg,transparent 50%,rgba(216,41,59,.5) 0) 0 0/100% 24px,#fff}
+.ny-side .nk-krop{padding:20px 20px 24px}
+.ny-side .nk-kursiv{font:italic 400 14.5px/1.45 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.005em;color:var(--muted)}
+
+/* ◆ + rubrik + dobbelt rød streg */
+.ny-side .nk-rubrik{display:flex;align-items:center;gap:10px;margin:0;font:400 27px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+.ny-side .nk-rubrik > span{flex:none;font-size:15px;color:var(--nk-blaa);transform:translateY(-2px)}
+.ny-side .nk-rubrik::after{content:"";flex:1;min-width:24px;height:4px;margin-left:6px;border-top:1.5px solid var(--red);border-bottom:1.5px solid var(--red);opacity:.85}
+.ny-side .nk-rubrik--stor{font-size:clamp(44px,12vw,64px);line-height:.9}
+.ny-side .nk-rubrik--stor > span{font-size:20px}
+
+.ny-side .nk-pris{font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--red);font-variant-numeric:tabular-nums}
+.ny-side .nk-pris--lille{font-size:21px}
+.ny-side .nk-knap{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 22px;border:0;border-radius:999px;cursor:pointer;text-decoration:none;
+  font:600 16px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;background:linear-gradient(180deg,#e2404f,var(--red-d));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 24px -10px rgba(180,31,46,.7);transition:transform .2s var(--spring)}
+.ny-side .nk-knap:active{transform:scale(.97)}
+.ny-side .nk-knap--lys{color:var(--red-d);background:transparent;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.45)}
+.ny-side .nk-knap--lille{height:40px;padding:0 16px;font-size:14.5px}
+.ny-side .nk-henter{list-style:none;color:var(--muted);font-style:italic}
+
+/* ---------- smørrebrødet ---------- */
+.ny-side .nk-afsnit{padding-top:40px;padding-bottom:40px}
+.ny-side .nk-fotos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 24px}
+.ny-side .nk-foto{position:relative;margin:0;border-radius:20px;overflow:hidden;aspect-ratio:4/3;background:var(--cream2);
+  box-shadow:0 14px 30px -12px rgba(36,26,23,.35)}
+.ny-side .nk-foto--stor{grid-column:1/-1;aspect-ratio:4/3.4}
+.ny-side .nk-foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 55%}
+.ny-side .nk-foto::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+.ny-side .nk-liste{list-style:none;margin:14px 0 0;padding:0}
+.ny-side .nk-liste li{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px;padding:9px 0;border-bottom:1px solid rgba(36,26,23,.1);break-inside:avoid}
+.ny-side .nk-liste li.nk-skjult{display:none}
+.ny-side .nk-liste.vis-alle li.nk-skjult{display:flex}
+.ny-side .nk-navn{font:500 16px/1.3 "Host Grotesk",system-ui,sans-serif;color:var(--ink)}
+.ny-side .nk-prik{flex:1;min-width:20px;border-bottom:2px dotted rgba(36,26,23,.26);transform:translateY(-4px)}
+.ny-side .nk-liste small{flex-basis:100%;font-size:13px}
+.ny-side .nk-flere{margin-top:12px;padding:6px 0;border:0;background:none;cursor:pointer;font:600 15px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d);text-decoration:underline;text-underline-offset:4px}
+.ny-side .nk-flere[hidden]{display:none}
+.ny-side .nk-bokse{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:22px}
+.ny-side .nk-boks{position:relative;display:grid;align-content:start;gap:4px;padding:20px 14px 14px;border-radius:16px;background:#fff;overflow:hidden;
+  box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.3)}
+.ny-side .nk-boks::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;
+  background:linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/8px 100%,linear-gradient(0deg,transparent 50%,rgba(216,41,59,.5) 0) 0 0/100% 8px,#fff}
+.ny-side .nk-boks small{font:400 12px/1 "Bebas Neue",sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--nk-blaa)}
+.ny-side .nk-boks b{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+.ny-side .nk-boks .nk-pris{font-size:34px;margin-top:4px}
+.ny-side .nk-boks p{margin:2px 0 0;font-size:12.5px;line-height:1.35}
+.ny-side .nk-knapper{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.ny-side .nk-knapper .nk-knap{flex:1 1 220px}
+@media (min-width:821px){
+  body.ny-side .nk-afsnit{--g:max(28px,calc((100% - 1120px)/2))}
+  .ny-side .nk-hoved{padding:34px 40px 30px;padding-right:180px}
+  .ny-side .nk-logo{width:118px;height:118px;top:26px;right:34px}
+  .ny-side .nk-slogan{font-size:18px;max-width:44ch}
+  .ny-side .nk--smoer .nk-krop{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:44px;padding:36px 40px 40px;align-items:start}
+  .ny-side .nk--smoer .nk-fotos{position:sticky;top:110px;margin:0}
+  .ny-side .nk-liste{columns:2;column-gap:28px}
+  .ny-side .nk-bokse{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+}
+
+/* ---------- dagens ret: ugen som små trykte kort ---------- */
+.ny-side .nk-afsnit--uge{overflow:hidden}
+.ny-side .nk-afsnit-hoved{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.ny-side .nk-afsnit-hoved > div{flex:1;min-width:0}
+.ny-side .nk-afsnit-linje{margin:10px 0 0;font:italic 400 16px/1.4 "Host Grotesk",system-ui,sans-serif;color:var(--ink2)}
 .ny-side .ny-uge-pile{display:none;gap:8px}
-.ny-side .ny-uge-pile button{width:46px;height:46px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink);
-  background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08),0 8px 18px rgba(36,26,23,.1);transition:transform .2s var(--spring)}
-.ny-side .ny-uge-pile button:active{transform:scale(.94)}
+.ny-side .ny-uge-pile button{width:46px;height:46px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--red-d);
+  background:#fff;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.3)}
 .ny-side .ny-uge-pile svg{width:20px;height:20px}
-.ny-side .ny-uge-raekke{display:flex;gap:12px;margin:22px calc(-1 * var(--pad)) 0;padding:6px var(--pad) 18px;
+.ny-side .ny-uge-raekke{display:flex;align-items:stretch;gap:14px;margin:22px calc(-1 * var(--pad)) 0;padding:6px var(--pad) 22px;
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 var(--pad);scrollbar-width:none;outline:none}
 .ny-side .ny-uge-raekke::-webkit-scrollbar{display:none}
-.ny-side .ny-dag{position:relative;flex:none;width:min(80vw,320px);min-height:300px;scroll-snap-align:start;display:flex;flex-direction:column;
-  padding:22px 22px 20px;border-radius:22px;color:var(--kridt);
-  background-color:var(--tavle);
-  background-image:radial-gradient(120% 80% at 25% 10%,rgba(255,255,255,.08),transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E");
-  box-shadow:inset 0 0 0 7px #6e4c33,inset 0 0 0 8px rgba(0,0,0,.4),inset 0 0 36px rgba(0,0,0,.4),0 18px 36px -14px rgba(36,26,23,.45)}
-.ny-side .ny-dag--henter{align-items:center;justify-content:center;color:rgba(243,239,230,.7)}
-/* i dag: dugen hænger ned over tavlens kant */
-.ny-side .ny-dag.er-idag{padding-top:34px}
-.ny-side .ny-dag.er-idag::before{content:"";position:absolute;left:7px;right:7px;top:7px;height:14px;border-radius:15px 15px 0 0;
-  background-color:#fff;background-image:linear-gradient(90deg,var(--tern) 50%,transparent 0),linear-gradient(var(--tern) 50%,transparent 0);background-size:14px 14px}
-.ny-side .ny-dag-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1.5px dashed rgba(243,239,230,.22)}
-.ny-side .ny-dag-navn{font:700 13px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--kridt)}
-.ny-side .ny-dag.er-idag .ny-dag-navn{padding:6px 10px;margin:-6px 0;border-radius:8px;background:var(--red);color:#fff}
-.ny-side .ny-dag-dato{font:500 14px/1 "Host Grotesk",system-ui,sans-serif;color:rgba(243,239,230,.66)}
-.ny-side .ny-dag-midt{flex:1;padding-top:16px}
-.ny-side .ny-dag h3{font:600 27px/1.1 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.025em;color:var(--kridt);text-wrap:balance;
-  text-shadow:0 0 1px rgba(255,255,255,.5),0 0 12px rgba(255,255,255,.06)}
-.ny-side .ny-dag p{margin:8px 0 0;font-size:15px;line-height:1.45;color:rgba(243,239,230,.8)}
-.ny-side .ny-dag.er-tom h3{font-size:22px;color:rgba(243,239,230,.62);text-shadow:none}
-.ny-side .ny-dag.er-tom p{color:rgba(243,239,230,.55);font-size:14px}
-.ny-side .ny-dag.er-lukket{filter:saturate(.6)}
-.ny-side .ny-dag-bund{display:grid;gap:14px;margin-top:18px}
-.ny-side .ny-dag-info{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
-.ny-side .ny-dag-pris{font:600 20px/1 "Host Grotesk",system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--kridt);
-  padding:8px 13px;border-radius:999px;box-shadow:inset 0 0 0 1.5px rgba(243,239,230,.5)}
-.ny-side .ny-dag-maerke{font:600 13px/1 "Host Grotesk",system-ui,sans-serif;padding:7px 11px;border-radius:999px;color:var(--kridt);background:rgba(243,239,230,.12)}
-.ny-side .ny-dag-maerke.er-udsolgt{color:#fff;background:var(--red)}
-.ny-side .ny-dag-tid{display:inline-flex;align-items:center;gap:6px;font:500 13.5px/1 "Host Grotesk",system-ui,sans-serif;color:rgba(243,239,230,.7)}
-.ny-side .ny-dag-tid::before{content:"";width:7px;height:7px;border-radius:50%;background:#6fd08c;box-shadow:0 0 0 3px rgba(111,208,140,.18)}
-.ny-side .ny-dag.er-lukket .ny-dag-tid::before{background:rgba(243,239,230,.4);box-shadow:none}
-.ny-side .ny-dag-knap{height:50px;border:0;border-radius:15px;cursor:pointer;font:600 16px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;
-  background:linear-gradient(180deg,#e43a4a,var(--red-d));box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 22px -8px rgba(214,42,58,.7);transition:transform .2s var(--spring)}
-.ny-side .ny-dag-knap:active{transform:scale(.97)}
-.ny-side .ny-uge-prik{display:flex;justify-content:center;gap:7px;margin-top:2px}
+.ny-side .nk-dag{flex:none;width:min(74vw,280px);scroll-snap-align:start;display:flex;flex-direction:column;border-radius:22px;overflow:hidden;background:var(--nk-creme);
+  box-shadow:0 18px 36px -16px rgba(36,26,23,.35),0 2px 6px rgba(36,26,23,.06)}
+.ny-side .nk-dag.er-idag{width:min(84vw,330px)}
+.ny-side .nk-dag-hoved{position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:16px 18px 12px;background:var(--red);color:var(--nk-creme);overflow:hidden}
+.ny-side .nk-dag-hoved::after{content:"";position:absolute;width:220px;height:220px;right:-110px;top:-120px;border-radius:50%;border:1px solid rgba(255,255,255,.18)}
+.ny-side .nk-dag-hoved b{font:400 34px/.9 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase}
+.ny-side .nk-dag.er-idag .nk-dag-hoved b{font-size:42px}
+.ny-side .nk-dag-hoved span{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--nk-pink);white-space:nowrap}
+.ny-side .nk-dag-kant{height:26px;background:
+  radial-gradient(circle at 50% 100%,var(--nk-creme) 7.5px,transparent 8px) 0 100%/16px 12px repeat-x,
+  linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/16px 100%,
+  linear-gradient(0deg,transparent 50%,rgba(216,41,59,.5) 0) 0 0/100% 16px,#fff}
+.ny-side .nk-dag-krop{flex:1;display:flex;flex-direction:column;gap:8px;padding:12px 18px 18px}
+.ny-side .nk-dag h3{font:600 20px/1.2 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.015em;color:var(--ink);text-wrap:balance}
+.ny-side .nk-dag.er-idag h3{font-size:23px}
+.ny-side .nk-dag .nk-kursiv{margin:0}
+.ny-side .nk-dag-tid{margin:0;font:500 13px/1.2 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+.ny-side .nk-dag-fod{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:auto;padding-top:12px;border-top:1.5px dashed rgba(36,26,23,.14)}
+.ny-side .nk-dag-fod .nk-pris{font-size:32px}
+.ny-side .nk-dag-fod .nk-knap{margin-left:auto}
+.ny-side .nk-maerke{font:600 12.5px/1 "Host Grotesk",system-ui,sans-serif;padding:6px 10px;border-radius:999px;color:var(--red-d);background:rgba(214,42,58,.1)}
+.ny-side .nk-maerke.er-udsolgt{color:#fff;background:var(--red)}
+/* de tomme og lukkede dage er papir uden rødt hoved — stille, så dem med en ret står frem */
+.ny-side .nk-dag.er-tom .nk-dag-hoved{background:#efe3d4;color:var(--ink2)}
+.ny-side .nk-dag.er-tom .nk-dag-hoved span{color:var(--muted)}
+.ny-side .nk-dag.er-tom .nk-dag-hoved::after{border-color:rgba(36,26,23,.08)}
+.ny-side .nk-dag.er-tom .nk-dag-kant{opacity:.45}
+.ny-side .nk-dag.er-tom h3{font-size:18px;color:var(--ink2)}
+.ny-side .nk-dag--tom{width:min(100%,560px);flex:1 1 auto}
+.ny-side .nk-dag--tom .nk-dag-hoved{background:var(--red);color:var(--nk-creme)}
+.ny-side .nk-dag--tom .nk-knap{align-self:flex-start;margin-top:8px}
+.ny-side .ny-uge-raekke.er-tom{scroll-snap-type:none}
+.ny-side .ny-uge-prik{display:flex;justify-content:center;gap:7px}
 .ny-side .ny-uge-prik i{width:7px;height:7px;border-radius:4px;background:rgba(36,26,23,.18);transition:width .3s var(--spring),background .3s ease}
 .ny-side .ny-uge-prik i.on{width:22px;background:var(--red)}
 @media (min-width:821px){
-  body.ny-side .ny-uge{--g:max(28px,calc((100% - 1120px)/2))}
   .ny-side .ny-uge-pile{display:flex}
-  .ny-side .ny-uge-raekke{margin:24px calc(-1 * var(--g)) 0;padding:6px var(--g) 22px;scroll-padding:0 var(--g);gap:16px}
-  .ny-side .ny-dag{width:330px;min-height:320px}
+  /* rækken løber ud til skærmens kanter; kortene starter i spalten */
+  .ny-side .ny-uge-raekke{--kant:max(28px,calc(50vw - 560px));margin:26px calc(-1 * var(--kant)) 0;padding:6px var(--kant) 26px;scroll-padding:0 var(--kant);gap:18px}
+  .ny-side .nk-dag{width:280px}
+  .ny-side .nk-dag.er-idag{width:340px}
   .ny-side .ny-uge-prik{display:none}
 }
 
-/* ---------- bestillingen: tre trin ---------- */
-body.ny-side #bestil.papir .panel{overflow:clip}
-.ny-side .ny-trin{display:flex;align-items:flex-start;gap:14px;margin:30px 0 4px;padding-top:26px;border-top:1.5px dashed rgba(36,26,23,.12)}
-.ny-side .ny-trin[data-trin="1"]{margin-top:4px;padding-top:0;border-top:0}
-.ny-side .ny-trin-nr{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;
-  font:700 15px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;background:var(--red);box-shadow:0 6px 14px -4px rgba(214,42,58,.6)}
-.ny-side .ny-trin h3{font:600 21px/1.15 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.02em;color:var(--ink)}
-.ny-side .ny-trin p{margin:4px 0 0;font-size:14px;line-height:1.4;color:var(--muted)}
-.ny-side #bestil .field > label{font:600 14px/1.2 "Host Grotesk",system-ui,sans-serif;color:var(--ink);letter-spacing:0}
+/* ---------- bestil mad: samme kort ---------- */
+.ny-side #bestil.papir{background:none}
+.ny-side #bestil.papir .best-bg,.ny-side #bestil.papir .best-slor,
+.ny-side #bestil.papir > .rev:not(.panel):not(.lev-nyhed){display:none}
+body.ny-side #bestil.papir .panel{position:relative;margin-top:16px;padding:0 18px 24px;border-radius:28px;overflow:clip;background:var(--nk-creme);
+  -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 24px 60px rgba(36,26,23,.16),0 4px 14px rgba(36,26,23,.08)}
+body.ny-side #bestil.papir .panel > .nk-hoved,body.ny-side #bestil.papir .panel > .nk-kant{margin-left:-18px;margin-right:-18px}
+body.ny-side #bestil.papir .lev-nyhed{margin-top:0;background:#fff;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.35);-webkit-backdrop-filter:none;backdrop-filter:none;padding:14px 16px;gap:10px 14px}
+body.ny-side #bestil.papir .lev-nyhed-tekst p{color:var(--ink2);font-size:13.5px}
+body.ny-side #bestil.papir .lev-nyhed-tekst .lev-nyhed-titel,body.ny-side #bestil.papir .lev-nyhed-tekst .lev-gratis{color:var(--ink);font-size:16px}
+body.ny-side #bestil.papir .lev-nyhed-knap{color:#fff;background:var(--red)}
+.ny-side .ny-trin{margin:30px 0 0}
+.ny-side .ny-trin[data-trin="1"]{margin-top:10px}
+.ny-side .ny-trin .nk-rubrik > span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;font-size:19px;color:var(--nk-creme);background:var(--red);transform:none}
+.ny-side .ny-trin p{margin:8px 0 0;font:italic 400 14.5px/1.4 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+.ny-side #bestil .field > label:not(.vilkaar-ja):not(.allergi-ja),.ny-side #bestil .two-col > div > label{font:400 17px/1 "Bebas Neue",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--nk-blaa)}
 
-/* hvordan: tre store, tydelige kort med en linje under */
+/* hvordan: tre kort med ikon og en linje under */
 body.ny-side #bestil .seg2{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:10px}
-body.ny-side #bestil .seg2 button{height:auto;min-height:92px;flex-direction:column;gap:5px;padding:14px 8px 12px;border-radius:18px;
-  background:#fff;color:var(--ink);font-size:15px;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1),0 2px 6px rgba(36,26,23,.04);transition:box-shadow .2s ease,background .2s ease,transform .2s var(--spring)}
+body.ny-side #bestil .seg2 button{height:auto;min-height:92px;flex-direction:column;gap:5px;padding:14px 6px 12px;border-radius:18px;
+  background:#fff;color:var(--ink);font-size:15px;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
 body.ny-side #bestil .seg2 button svg{width:26px;height:26px;opacity:1;color:var(--ink2)}
-body.ny-side #bestil .seg2 button::after{content:attr(data-under);font:500 12px/1.2 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
-body.ny-side #bestil .seg2 button.on{background:#fff4f2;color:var(--red-d);box-shadow:inset 0 0 0 2px var(--red),0 10px 22px -10px rgba(214,42,58,.5)}
+body.ny-side #bestil .seg2 button::after{content:attr(data-under);font:italic 400 12.5px/1.2 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+body.ny-side #bestil .seg2 button.on{background:#fff;color:var(--red-d);box-shadow:inset 0 0 0 2px var(--red),0 10px 22px -12px rgba(214,42,58,.6)}
 body.ny-side #bestil .seg2 button.on svg{color:var(--red)}
-body.ny-side #bestil .seg2 button.on::after{color:var(--red-d)}
 
-/* dato og tid: chips i stedet for rullelister (listen står skjult bagved) */
+/* dato og tid som chips (listen står skjult bagved) */
 .ny-side .ny-chipfelt{position:relative}
 .ny-side .ny-chipfelt select.inp{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
-.ny-side .ny-chips{display:flex;gap:8px;margin:10px calc(-1 * var(--panel-pad,18px)) 0;padding:2px var(--panel-pad,18px) 8px;overflow-x:auto;scrollbar-width:none;scroll-padding:0 var(--panel-pad,18px)}
+.ny-side .ny-chips{display:flex;gap:8px;margin:10px -18px 0;padding:2px 18px 8px;overflow-x:auto;scrollbar-width:none;scroll-padding:0 18px}
 .ny-side .ny-chips::-webkit-scrollbar{display:none}
-.ny-side .ny-chip{flex:none;display:grid;justify-items:center;align-content:center;gap:4px;min-width:72px;height:62px;padding:0 12px;border:0;border-radius:16px;cursor:pointer;
-  background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(36,26,23,.1);transition:background .2s ease,box-shadow .2s ease,transform .2s var(--spring)}
-.ny-side .ny-chip b{font:600 15px/1 "Host Grotesk",system-ui,sans-serif}
-.ny-side .ny-chip small{font:500 12px/1 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+.ny-side .ny-chip{flex:none;display:grid;justify-items:center;align-content:center;gap:5px;min-width:72px;height:64px;padding:0 12px;border:0;border-radius:16px;cursor:pointer;
+  background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(36,26,23,.1);transition:transform .2s var(--spring)}
+.ny-side .ny-chip b{font:400 21px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;text-transform:uppercase}
+.ny-side .ny-chip small{font:italic 400 12.5px/1 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
 .ny-side .ny-chip:active{transform:scale(.95)}
-.ny-side .ny-chip.on{background:var(--ink);color:#fff;box-shadow:0 8px 18px -8px rgba(36,26,23,.6)}
-.ny-side .ny-chip.on small{color:rgba(255,255,255,.75)}
+.ny-side .ny-chip.on{background:var(--red);color:var(--nk-creme);box-shadow:0 10px 20px -10px rgba(180,31,46,.8)}
+.ny-side .ny-chip.on small{color:var(--nk-pink)}
 .ny-side .ny-chip:disabled{opacity:.4;cursor:not-allowed;background:transparent}
 .ny-side .ny-chip:disabled b{text-decoration:line-through}
 .ny-side .ny-chips--tid{display:grid;grid-template-rows:repeat(2,auto);grid-auto-flow:column;grid-auto-columns:max-content}
-.ny-side .ny-chips--tid .ny-chip{height:44px;min-width:70px;font-variant-numeric:tabular-nums}
+.ny-side .ny-chips--tid .ny-chip{height:44px;min-width:70px}
 
-/* leveringsnyheden: kortere på papiret */
-body.ny-side #bestil.papir .lev-nyhed{padding:14px 16px;gap:10px 14px}
-body.ny-side #bestil.papir .lev-nyhed-tekst p{font-size:13.5px}
-body.ny-side #bestil.papir .lev-nyhed-tekst .lev-nyhed-titel{font-size:16px}
-
-/* ---------- kategorierne: bar + fliser ---------- */
-.ny-side .ny-katbar{position:sticky;top:var(--ny-top,72px);z-index:5;display:flex;gap:8px;margin:10px calc(-1 * var(--panel-pad,18px)) 0;
-  padding:10px var(--panel-pad,18px);overflow-x:auto;scrollbar-width:none;background:rgba(255,253,249,.94);
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 rgba(36,26,23,.06)}
+/* kategori-baren */
+.ny-side .ny-katbar{position:sticky;top:var(--ny-top,72px);z-index:5;display:flex;gap:8px;margin:12px -18px 0;padding:10px 18px;overflow-x:auto;scrollbar-width:none;
+  background:rgba(251,246,236,.96);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 rgba(36,26,23,.08)}
 .ny-side .ny-katbar::-webkit-scrollbar{display:none}
-.ny-side .ny-katchip{flex:none;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 15px 0 12px;border:0;border-radius:999px;cursor:pointer;
-  font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:var(--ink);background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1);white-space:nowrap}
-.ny-side .ny-katchip:first-child{padding-left:15px}
-.ny-side .ny-katchip-tegn{font-size:18px;line-height:1}
+.ny-side .ny-katchip{flex:none;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px 0 5px;border:0;border-radius:999px;cursor:pointer;white-space:nowrap;
+  font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:var(--ink);background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
+.ny-side .ny-katchip:first-child{padding-left:16px}
+.ny-side .ny-katchip:not(:has(.ny-katchip-foto,.ny-katchip-tegn)){padding-left:16px}
+.ny-side .ny-katchip-foto{width:34px;height:34px;border-radius:50%;background:center 60%/cover no-repeat var(--cream2)}
+.ny-side .ny-katchip-tegn{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;font-size:17px;background:var(--cream2)}
 .ny-side .ny-katchip b{min-width:20px;height:20px;padding:0 6px;border-radius:10px;display:grid;place-items:center;font-size:12px;color:#fff;background:var(--red)}
-.ny-side .ny-katchip.on{color:#fff;background:var(--ink);box-shadow:0 8px 18px -8px rgba(36,26,23,.6)}
-.ny-side .ny-katchip.on b{background:#fff;color:var(--red-d)}
+.ny-side .ny-katchip.on{color:var(--nk-creme);background:var(--red);box-shadow:0 8px 18px -8px rgba(180,31,46,.8)}
+.ny-side .ny-katchip.on b{background:var(--nk-creme);color:var(--red-d)}
 
-/* intet valgt: kategorierne som fliser, to og to */
-.ny-side [data-liste].ny-oversigt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+/* fliserne: husets egne fotos, ikke emojier */
+.ny-side [data-liste].ny-oversigt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .ny-side [data-liste].ny-oversigt > *{grid-column:1/-1}
 .ny-side [data-liste].ny-oversigt > .item[data-kategori],.ny-side [data-liste].ny-oversigt > .ny-isflise{grid-column:auto}
 .ny-side [data-liste].ny-oversigt > .isbyg-blok{display:none}
 .ny-side [data-liste] > .item[data-kategori],.ny-side .ny-isflise{position:relative;cursor:pointer}
-.ny-side [data-liste].ny-oversigt > .item[data-kategori],.ny-side [data-liste].ny-oversigt > .ny-isflise{
-  display:grid;justify-items:start;align-content:start;gap:8px;min-height:118px;margin:0;padding:14px;border:0;border-radius:18px;text-align:left;
-  background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08),0 6px 16px -10px rgba(36,26,23,.3);font:inherit;color:var(--ink);transition:transform .2s var(--spring)}
-.ny-side [data-liste].ny-oversigt > .item[data-kategori]:active,.ny-side [data-liste].ny-oversigt > .ny-isflise:active{transform:scale(.97)}
-.ny-side [data-liste].ny-oversigt .kat-tegn{width:46px;height:46px;border-radius:14px;font-size:25px}
-.ny-side [data-liste].ny-oversigt > * h4{font-size:15.5px;line-height:1.2}
-.ny-side [data-liste].ny-oversigt .add{margin:auto 0 0;font-size:13px}
-.ny-side [data-liste].ny-oversigt .kat-valgt:not(.skjul){position:absolute;top:12px;right:12px;margin:0}
 .ny-side .ny-isflise{display:none}
-.ny-side .ny-isflise .kat-tegn{display:grid;place-items:center;background:rgba(255,139,118,.3)}
-.ny-side .ny-isflise .add{color:var(--red-tekst);font-weight:600}
-.ny-side [data-liste].ny-oversigt > .ny-isflise{background:linear-gradient(160deg,#fff,#fff1ee)}
+.ny-side [data-liste].ny-oversigt > .item[data-kategori],.ny-side [data-liste].ny-oversigt > .ny-isflise{
+  display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:118px;margin:0;padding:14px;border:0;border-radius:18px;text-align:left;overflow:hidden;
+  background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08),0 8px 18px -12px rgba(36,26,23,.35);font:inherit;color:var(--ink);transition:transform .2s var(--spring)}
+.ny-side [data-liste].ny-oversigt > :is(.item[data-kategori],.ny-isflise):active{transform:scale(.97)}
+.ny-side [data-liste].ny-oversigt > .har-foto{padding-top:0}
+.ny-side [data-liste].ny-oversigt .ny-katfoto{display:block;align-self:stretch;margin:0 -14px 6px;aspect-ratio:4/3;background:center 62%/cover no-repeat var(--cream2)}
+.ny-side [data-liste].ny-oversigt > .har-foto .kat-tegn{display:none}
+.ny-side [data-liste].ny-oversigt .kat-tegn{width:46px;height:46px;border-radius:14px;font-size:24px}
+.ny-side [data-liste].ny-oversigt > :is(.item[data-kategori],.ny-isflise) h4{font:400 21px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+.ny-side [data-liste].ny-oversigt .add{margin:auto 0 0;font:italic 400 13px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d)}
+.ny-side [data-liste].ny-oversigt .kat-valgt:not(.skjul){position:absolute;top:10px;right:10px;margin:0;color:#fff;background:var(--red)}
+.ny-side [data-liste] > .item[data-kategori]:not(.ny-oversigt *) .ny-katfoto{display:none}
 
-/* én kategori valgt: kun den og dens retter */
+/* én kategori valgt: kun den og dens retter, som et afsnit på kortet */
 .ny-side [data-liste].ny-fokus > .item[data-kategori]:not(.ny-aaben),
-.ny-side [data-liste].ny-fokus > .isbyg-blok,
-.ny-side [data-liste].ny-fokus > .dagens-blok,
-.ny-side [data-liste].ny-isfokus > .item[data-kategori],
-.ny-side [data-liste].ny-isfokus > .dagens-blok{display:none}
-.ny-side [data-liste].ny-fokus > .item.ny-aaben{background:transparent;box-shadow:none;padding:6px 0 2px;margin-top:6px}
-.ny-side [data-liste].ny-fokus > .item.ny-aaben h4{font-size:19px;letter-spacing:-.015em}
-.ny-side [data-liste].ny-fokus > .item.ny-aaben .add{padding:8px 12px;border-radius:999px;background:var(--cream2);color:var(--ink2)}
-.ny-side [data-liste] > .item:not([data-kategori]){background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08)}
+.ny-side [data-liste].ny-fokus > .isbyg-blok,.ny-side [data-liste].ny-fokus > .dagens-blok,
+.ny-side [data-liste].ny-isfokus > .item[data-kategori],.ny-side [data-liste].ny-isfokus > .dagens-blok{display:none}
+.ny-side [data-liste].ny-fokus > .item.ny-aaben{display:flex;align-items:center;gap:12px;background:transparent;box-shadow:none;padding:14px 0 6px;margin-top:4px}
+.ny-side [data-liste].ny-fokus > .item.ny-aaben .ny-katfoto{display:block;flex:none;width:52px;height:52px;border-radius:50%;background:center 62%/cover no-repeat var(--cream2);box-shadow:0 0 0 3px #fff,0 6px 14px -6px rgba(36,26,23,.4)}
+.ny-side [data-liste].ny-fokus > .item.ny-aaben.har-foto .kat-tegn{display:none}
+.ny-side [data-liste].ny-fokus > .item.ny-aaben h4{font:400 30px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+.ny-side [data-liste].ny-fokus > .item.ny-aaben .add{padding:8px 12px;border-radius:999px;background:#fff;color:var(--ink2);box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
+/* retterne: som linjer på kortet — navn, kursiv beskrivelse, rød pris i Bebas */
+.ny-side [data-liste] > .item:not([data-kategori]),.ny-side [data-liste] .dagens-blok .item{gap:12px;padding:12px 12px 12px 16px;background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08)}
+.ny-side [data-liste] .item-tegn{display:none}
+.ny-side [data-liste] .item h4{font-size:16px}
+.ny-side [data-liste] .item .tag{margin-top:4px;padding:0;background:none;border-radius:0;font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:none;color:var(--red)}
+.ny-side [data-liste] .item .vare-desc{font-style:italic}
+.ny-side [data-liste] .step:has(> button[data-d="-"]:disabled) > :not([data-d="+"]){display:none}
+.ny-side [data-liste] .step button{width:38px;height:38px}
+
+/* send: husets røde */
+body.ny-side #bestil .panel button.g.solid.blk:not(:disabled){background:linear-gradient(180deg,#e2404f,var(--red-d));color:#fff}
+body.ny-side #bestil .panel button.g.solid.blk:disabled{background:#e4d3c8;color:var(--ink2)}
 
 /* trin 3: beskeden folder sig ud, når man vil skrive en */
 .ny-side .ny-foldet{display:none}
-.ny-side .ny-beskedknap{display:inline-flex;margin-top:14px;padding:10px 0;border:0;background:none;cursor:pointer;font:600 14.5px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-tekst)}
+.ny-side .ny-beskedknap{display:inline-flex;margin-top:14px;padding:10px 0;border:0;background:none;cursor:pointer;font:600 14.5px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d)}
 .ny-side .ny-beskedknap[hidden]{display:none}
 
-/* retterne: står der 0, er der kun et "+" — minus og nul kommer, når man har lagt noget i.
-   Det giver navnet plads til at stå på én linje i stedet for tre. */
-.ny-side [data-liste] .step:has(> button[data-d="-"]:disabled) > :not([data-d="+"]){display:none}
-.ny-side [data-liste] .step button{width:36px;height:36px}
-.ny-side [data-liste] > .item:not([data-kategori]),.ny-side [data-liste] .dagens-blok .item{gap:12px;padding:12px 12px 12px 14px}
-.ny-side [data-liste] .item h4{font-size:15.5px}
-.ny-side [data-liste] .item .tag{margin-top:5px;font-size:12px;letter-spacing:.02em}
+@media (min-width:821px){
+  body.ny-side #bestil.papir{--g:max(28px,calc((100% - 860px)/2))}
+  body.ny-side #bestil.papir .panel{max-width:none;padding:0 36px 36px}
+  body.ny-side #bestil.papir .panel > .nk-hoved,body.ny-side #bestil.papir .panel > .nk-kant{margin-left:-36px;margin-right:-36px}
+  .ny-side .ny-chips,.ny-side .ny-katbar{margin-left:-36px;margin-right:-36px;padding-left:36px;padding-right:36px}
+  .ny-side [data-liste].ny-oversigt{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body.ny-side #bestil.papir .lev-nyhed{max-width:none}
+}
+.ny-side .nk-afsnit-hoved,.ny-side .nk-afsnit-hoved > div{max-width:none;width:auto}
+.ny-side .nk-afsnit-hoved > .ny-uge-pile{flex:none}

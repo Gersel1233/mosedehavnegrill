@@ -41,6 +41,27 @@
     el.setAttribute('href', her() + el.getAttribute('href'));
   });
 
+  /* Kransen fra heroen går igen i de trykte korts hjørne, som på papiret */
+  (function () {
+    var krans = document.querySelector('.hero-badge svg');
+    if (!krans) return;
+    document.querySelectorAll('.nk-logo').forEach(function (plads) {
+      var kopi = krans.cloneNode(true);
+      kopi.removeAttribute('role'); kopi.removeAttribute('aria-label');
+      plads.appendChild(kopi);
+    });
+  })();
+
+  /* "Bestil smørrebrød" o.l.: åbner kategorien i bestillingen og hopper derned */
+  var vælgKategori = null;
+  document.addEventListener('click', function (ev) {
+    var k = ev.target.closest && ev.target.closest('[data-ny-kat]');
+    if (!k) return;
+    var navn = k.getAttribute('data-ny-kat');
+    if (vælgKategori) vælgKategori(navn);
+    else rulTil(document.querySelector('#bestil .panel'), 16);
+  });
+
   /* ⚠️ Et link til #bestil ville gå til ROD-forsiden. havnegrillen.js tager
      de links, der fandtes ved indlæsning; dem, der bygges bagefter, tager vi. */
   document.addEventListener('click', function (ev) {
@@ -89,62 +110,150 @@
     rulTil(document.querySelector('#bestil .panel'), 16);
   }
 
+  /* Hver dag er et lille trykt menukort: rødt hoved med dagen, den ternede
+     kant og retten på papiret. Er der ingen retter lagt op i hele ugen, står
+     der ét kort, der siger det — ikke syv ens "kommer snart". */
   function tegnUge(d) {
     var række = document.getElementById('nyUge');
     var prikker = document.getElementById('nyUgePrik');
     if (!række || !window.Butik || !Butik.nu || !R.ugedagFor) return;
     var iDag = Butik.nu().dato;
     var husk = række.scrollLeft;
+    var dage = [];
+    for (var n = 0; n < 7; n++) dage.push(dagenI(d, Butik.isoPlus(iDag, n)));
     række.textContent = '';
     if (prikker) prikker.textContent = '';
-    for (var i = 0; i < 7; i++) {
-      var iso = Butik.isoPlus(iDag, i);
-      var dag = dagenI(d, iso);
-      var ret = dag.retter[0];
-      var kort = lav('article', 'ny-dag' + (i === 0 ? ' er-idag' : '') + (dag.lukket ? ' er-lukket' : '') + (!ret ? ' er-tom' : ''));
-      var top = lav('div', 'ny-dag-top');
-      top.appendChild(lav('span', 'ny-dag-navn', i === 0 ? 'I dag' : i === 1 ? 'I morgen' : ugedag(iso)));
-      top.appendChild(lav('span', 'ny-dag-dato', (i < 2 ? ugedag(iso).toLowerCase() + ' ' : '') + kortDato(iso)));
-      kort.appendChild(top);
-
-      var midt = lav('div', 'ny-dag-midt');
+    var nogen = dage.some(function (x) { return x.retter.length; });
+    række.classList.toggle('er-tom', !nogen);
+    var linje = document.querySelector('#dagens .nk-afsnit-linje');
+    if (linje) linje.textContent = nogen ? 'En ret fra køkkenet hver dag — swipe og se ugen.' : 'En ret fra køkkenet hver dag.';
+    if (!nogen) {
+      var tom = lav('article', 'nk-dag nk-dag--tom');
+      var th = lav('header', 'nk-dag-hoved');
+      th.appendChild(lav('b', null, 'Ugens retter'));
+      tom.appendChild(th);
+      tom.appendChild(lav('div', 'nk-dag-kant'));
+      var tk = lav('div', 'nk-dag-krop');
+      tk.appendChild(lav('h3', null, 'Køkkenet har ikke skrevet ugens retter endnu'));
+      tk.appendChild(lav('p', 'nk-kursiv', 'De står her, så snart de er lagt op. Indtil da: smørrebrødet og hele menukortet.'));
+      var mk = lav('a', 'nk-knap nk-knap--lys', 'Se hele menukortet →');
+      mk.setAttribute('href', 'm-menukort.html');
+      tk.appendChild(mk);
+      tom.appendChild(tk);
+      række.appendChild(tom);
+      return;
+    }
+    dage.forEach(function (dag, i) {
+      var iso = dag.iso, ret = dag.retter[0];
+      var kort = lav('article', 'nk-dag' + (i === 0 ? ' er-idag' : '') + (dag.lukket ? ' er-lukket' : '') + (!ret ? ' er-tom' : ''));
+      var hoved = lav('header', 'nk-dag-hoved');
+      hoved.appendChild(lav('b', null, i === 0 ? 'I dag' : i === 1 ? 'I morgen' : ugedag(iso)));
+      hoved.appendChild(lav('span', null, (i < 2 ? ugedag(iso) + ' · ' : '') + kortDato(iso)));
+      kort.appendChild(hoved);
+      kort.appendChild(lav('div', 'nk-dag-kant'));
+      var krop = lav('div', 'nk-dag-krop');
       if (ret) {
-        midt.appendChild(lav('h3', null, ret.navn));
+        krop.appendChild(lav('h3', null, ret.navn));
         var linjer = [];
         if (ret.beskrivelse) linjer.push(ret.beskrivelse);
         dag.retter.slice(1).forEach(function (r) { linjer.push('Eller: ' + r.navn); });
-        if (linjer.length) midt.appendChild(lav('p', null, linjer.join(' ')));
+        if (linjer.length) krop.appendChild(lav('p', 'nk-kursiv', linjer.join(' ')));
       } else if (dag.lukket) {
-        midt.appendChild(lav('h3', null, 'Lukket'));
-        midt.appendChild(lav('p', null, 'Vi holder lukket den dag.'));
+        krop.appendChild(lav('h3', null, 'Lukket'));
+        krop.appendChild(lav('p', 'nk-kursiv', 'Vi holder lukket den dag.'));
       } else if (dag.ingen) {
-        midt.appendChild(lav('h3', null, 'Ingen dagens ret'));
-        midt.appendChild(lav('p', null, 'Vælg frit fra menukortet.'));
+        krop.appendChild(lav('h3', null, 'Ingen dagens ret'));
+        krop.appendChild(lav('p', 'nk-kursiv', 'Vælg frit fra menukortet.'));
       } else {
-        midt.appendChild(lav('h3', null, 'Kommer snart'));
-        midt.appendChild(lav('p', null, 'Køkkenet skriver retten her, så snart den er klar.'));
+        krop.appendChild(lav('h3', null, 'Kommer snart'));
+        krop.appendChild(lav('p', 'nk-kursiv', 'Retten skrives her, når køkkenet har lagt den op.'));
       }
-      kort.appendChild(midt);
-
-      var bund = lav('div', 'ny-dag-bund');
-      var info = lav('div', 'ny-dag-info');
-      if (ret && ret.pris !== null && ret.pris !== undefined) info.appendChild(lav('span', 'ny-dag-pris', Butik.kroner(ret.pris)));
-      if (ret && ret.udsolgt) info.appendChild(lav('span', 'ny-dag-maerke er-udsolgt', 'Udsolgt'));
-      else if (ret && typeof ret.antal_tilbage === 'number') info.appendChild(lav('span', 'ny-dag-maerke', ret.antal_tilbage + ' tilbage'));
-      if (dag.plan) info.appendChild(lav('span', 'ny-dag-tid', 'Åbent ' + kl(dag.plan.aabner) + '–' + kl(dag.plan.lukker)));
-      bund.appendChild(info);
+      var fod = lav('div', 'nk-dag-fod');
+      if (ret && ret.pris !== null && ret.pris !== undefined) fod.appendChild(lav('span', 'nk-pris', Butik.kroner(ret.pris)));
+      if (ret && ret.udsolgt) fod.appendChild(lav('span', 'nk-maerke er-udsolgt', 'Udsolgt'));
+      else if (ret && typeof ret.antal_tilbage === 'number') fod.appendChild(lav('span', 'nk-maerke', ret.antal_tilbage + ' tilbage'));
       if (ret && !ret.udsolgt && kanVælges(iso)) {
-        var knap = lav('button', 'ny-dag-knap', i === 0 ? 'Bestil dagens ret' : 'Bestil til ' + ugedag(iso).toLowerCase());
+        var knap = lav('button', 'nk-knap nk-knap--lille', 'Bestil');
         knap.type = 'button';
+        knap.setAttribute('aria-label', 'Bestil ' + ret.navn + ' til ' + ugedag(iso).toLowerCase());
         knap.addEventListener('click', vælgDato.bind(null, iso));
-        bund.appendChild(knap);
+        fod.appendChild(knap);
       }
-      kort.appendChild(bund);
+      if (dag.plan) {
+        var tid = lav('p', 'nk-dag-tid', 'Åbent ' + kl(dag.plan.aabner) + '–' + kl(dag.plan.lukker));
+        krop.appendChild(tid);
+      }
+      if (fod.children.length) krop.appendChild(fod);
+      kort.appendChild(krop);
       række.appendChild(kort);
       if (prikker) prikker.appendChild(lav('i', i === 0 ? 'on' : ''));
-    }
+    });
     række.scrollLeft = husk;
     prikPå();
+  }
+
+  /* ============================================================
+     SMØRREBRØDET — listen og priserne fra menukortet i databasen
+     ------------------------------------------------------------
+     Som på det trykte kort: varianterne som en liste, og priserne i
+     bokse. "Alle varianter" er den pris, de fleste står til; en
+     variant med sin egen, højere pris (rejemad, tartar) får sin egen
+     boks. Intet tal står i HTML'en.
+     ============================================================ */
+  function aktive(d, kat) {
+    return (d.menu_varer || []).filter(function (v) { return v.kategori_id === kat.id && v.aktiv !== false; })
+      .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0) || a.id - b.id; });
+  }
+  function tegnSmoer(d) {
+    var liste = document.getElementById('nySmoerListe');
+    var bokse = document.getElementById('nySmoerBokse');
+    var flere = document.getElementById('nySmoerFlere');
+    if (!liste) return;
+    var kats = (d.menu_kategorier || []).filter(function (k) { return k.aktiv !== false; });
+    var smoer = kats.filter(function (k) { return /^smørrebrød$/i.test(String(k.navn).trim()); })[0];
+    var hånd = kats.filter(function (k) { return /^håndmad/i.test(String(k.navn).trim()); })[0];
+    var varer = smoer ? aktive(d, smoer) : [];
+    if (!varer.length) { var afs = document.getElementById('smoerrebroed'); if (afs) afs.hidden = true; return; }
+    var tæl = {};
+    varer.forEach(function (v) { if (v.pris != null) tæl[v.pris] = (tæl[v.pris] || 0) + 1; });
+    var basis = Object.keys(tæl).sort(function (a, b) { return tæl[b] - tæl[a]; })[0];
+    basis = basis === undefined ? null : Number(basis);
+    var egne = varer.filter(function (v) { return v.pris != null && basis != null && v.pris >= basis + 25; }).slice(0, 2);
+    liste.textContent = '';
+    varer.filter(function (v) { return egne.indexOf(v) === -1; }).forEach(function (v, i) {
+      var li = lav('li', i >= 10 ? 'nk-skjult' : '');
+      li.appendChild(lav('span', 'nk-navn', v.navn));
+      if (v.pris != null && v.pris !== basis) {
+        li.appendChild(lav('i', 'nk-prik'));
+        li.appendChild(lav('span', 'nk-pris nk-pris--lille', Butik.kroner(v.pris)));
+      }
+      if (v.beskrivelse && v.pris === basis) li.appendChild(lav('small', 'nk-kursiv', v.beskrivelse));
+      liste.appendChild(li);
+    });
+    var skjulte = liste.querySelectorAll('.nk-skjult').length;
+    if (flere) {
+      flere.hidden = !skjulte;
+      flere.textContent = 'Se alle ' + liste.children.length + ' varianter';
+      flere.onclick = function () { liste.classList.add('vis-alle'); flere.hidden = true; };
+    }
+    if (bokse) {
+      bokse.textContent = '';
+      var boks = function (over, navn, pris, under) {
+        var b = lav('div', 'nk-boks');
+        b.appendChild(lav('small', null, over));
+        b.appendChild(lav('b', null, navn));
+        if (pris) b.appendChild(lav('span', 'nk-pris', pris));
+        if (under) b.appendChild(lav('p', 'nk-kursiv', under));
+        bokse.appendChild(b);
+      };
+      if (basis != null) boks('Smørrebrød', 'Alle varianter', Butik.kroner(basis), 'Gælder alle almindelige smørrebrød på listen.');
+      egne.forEach(function (v) { boks('Egen pris', v.navn, Butik.kroner(v.pris), v.beskrivelse || ''); });
+      var hv = hånd ? aktive(d, hånd).filter(function (v) { return v.pris != null; }) : [];
+      if (hv.length) {
+        var min = Math.min.apply(null, hv.map(function (v) { return v.pris; }));
+        boks('Den lille', 'Håndmadder', 'fra ' + Butik.kroner(min), hv.length + ' slags at vælge imellem.');
+      }
+    }
   }
 
   function prikPå() {
@@ -204,6 +313,7 @@
   function tegnAlt(d) {
     if (!d || !window.Butik) return;
     try { tegnUge(d); } catch (e) { console.error(e); }
+    try { tegnSmoer(d); } catch (e) { console.error(e); }
     try { tegnHero(d); } catch (e) { console.error(e); }
   }
   document.addEventListener('ny-data', function (e) { tegnAlt(e.detail); });
@@ -298,6 +408,38 @@
     });
     vagt.observe(panel, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-liste'] });
   })();
+  /* Kategoriernes fotos — husets egne, de samme som menukortet viser.
+     ⚠️ En kopi af FOTOS i js/skal/menukort.js (den er lukket inde i sin fil).
+     Går /ny/ live, skal de to samles ét sted. Ingen match = intet foto. */
+  var FOTOS = [
+    [/håndmad/, 'billeder/smoer-havn.jpg'],
+    [/fyld/, null],
+    [/smørrebrød/, 'billeder/smoer-bakke.jpg'],
+    [/fra pladen/, 'billeder/menu-pladen.jpg'],
+    [/burger/, 'billeder/havn-burgere.jpg'],
+    [/pølse/, 'billeder/havn-poelser.jpg'],
+    [/^retter$/, 'billeder/havn-retter.jpg'],
+    [/tapas/, 'billeder/tapas-1.jpg'],
+    [/platte/, 'billeder/havn-platter.jpg'],
+    [/slider/, 'billeder/havn-sliders.jpg'],
+    [/kugle|ishorn/, 'billeder/havn-kugleis.jpg'],
+    [/softice/, 'billeder/havn-softice.jpg'],
+    [/^morgenmad$/, 'billeder/havn-morgenmad.jpg'],
+    [/kaffe/, 'billeder/havn-kaffe.jpg'],
+    [/^øl$/, 'billeder/havn-oel.jpg'],
+    [/^vin\b|cava|champagne/, 'billeder/havn-vin.jpg'],
+    [/sodavand/, 'billeder/havn-sodavand.jpg'],
+    [/^andre retter$/, 'billeder/menu-andre-retter.jpg'],
+    [/^sandwich$/, 'billeder/menu-sandwich.jpg'],
+    [/snacks/, 'billeder/menu-snacks.jpg'],
+    [/pindemad/, 'billeder/menu-pindemad.jpg'],
+  ];
+  function fotoFor(navn) {
+    var n = String(navn || '').toLowerCase().trim();
+    for (var i = 0; i < FOTOS.length; i++) if (FOTOS[i][0].test(n)) return FOTOS[i][1];
+    return null;
+  }
+
   function kategorier(panel) {
     var liste = panel.querySelector('[data-liste]');
     var bar = lav('div', 'ny-katbar');
@@ -308,7 +450,8 @@
     var isFokus = false;
     var isFlise = lav('button', 'ny-isflise');
     isFlise.type = 'button';
-    isFlise.innerHTML = '<span class="kat-tegn" aria-hidden="true">🍦</span><h4>Is &amp; sødt</h4><span class="add">Byg din is</span>';
+    isFlise.innerHTML = '<span class="ny-katfoto" aria-hidden="true" style="background-image:url(&quot;billeder/havn-kugleis.jpg&quot;)"></span><h4>Is &amp; sødt</h4><span class="add">Byg din is</span>';
+    isFlise.classList.add('har-foto');
     isFlise.addEventListener('click', function () { vælg('is'); });
 
     function rækker() { return [].slice.call(liste.querySelectorAll(':scope > .item[data-kategori]')); }
@@ -333,12 +476,25 @@
       opdater();
       rulTil(bar, 6);
     }
+    vælgKategori = function (navn) {
+      var r = rækker().filter(function (x) { return x.getAttribute('data-kategori').toLowerCase() === String(navn).toLowerCase(); })[0];
+      if (r) vælg(r.getAttribute('data-kategori'));
+      else rulTil(panel, 16);
+    };
     function opdater() {
       var is = liste.querySelector(':scope > .isbyg-blok');
       if (is && isFlise.nextSibling !== is) liste.insertBefore(isFlise, is);
       if (!is && isFlise.parentNode) isFlise.parentNode.removeChild(isFlise);
       var valgt = null;
       rækker().forEach(function (r) {
+        var foto = fotoFor(r.getAttribute('data-kategori'));
+        if (foto && !r.querySelector(':scope > .ny-katfoto')) {
+          var f = lav('span', 'ny-katfoto');
+          f.setAttribute('aria-hidden', 'true');
+          f.style.backgroundImage = 'url("' + foto + '")';
+          r.insertBefore(f, r.firstChild);
+          r.classList.add('har-foto');
+        }
         var å = åben(r);
         r.classList.toggle('ny-aaben', å);
         if (å) valgt = r.getAttribute('data-kategori');
@@ -358,12 +514,17 @@
       if (spor === bar.getAttribute('data-spor')) return;
       bar.setAttribute('data-spor', spor);
       bar.textContent = '';
-      function chip(navn, tegn, tal, på, nøgle) {
+      function chip(navn, tegn, tal, på, nøgle, foto) {
         var k = lav('button', 'ny-katchip' + (på ? ' on' : ''));
         k.type = 'button';
         k.setAttribute('role', 'tab');
         k.setAttribute('aria-selected', på ? 'true' : 'false');
-        if (tegn) k.appendChild(lav('span', 'ny-katchip-tegn', tegn)).setAttribute('aria-hidden', 'true');
+        if (foto) {
+          var fi = lav('span', 'ny-katchip-foto');
+          fi.setAttribute('aria-hidden', 'true');
+          fi.style.backgroundImage = 'url("' + foto + '")';
+          k.appendChild(fi);
+        } else if (tegn) k.appendChild(lav('span', 'ny-katchip-tegn', tegn)).setAttribute('aria-hidden', 'true');
         k.appendChild(lav('span', null, navn));
         if (tal) k.appendChild(lav('b', null, tal));
         k.addEventListener('click', function () { vælg(nøgle); });
@@ -372,13 +533,13 @@
       }
       var på = chip('Alle', null, '', !valgt && !isVist, null);
       [].forEach.call(liste.children, function (el) {
-        if (el === isFlise) { var k = chip('Is & sødt', '🍦', '', isVist, 'is'); if (isVist) på = k; return; }
+        if (el === isFlise) { var k = chip('Is & sødt', '🍦', '', isVist, 'is', 'billeder/havn-kugleis.jpg'); if (isVist) på = k; return; }
         if (!el.matches || !el.matches('.item[data-kategori]')) return;
         var navn = el.getAttribute('data-kategori');
         var tegn = el.querySelector('.kat-tegn');
         var tal = el.querySelector('[data-kat-valgt]');
         var talTekst = tal && !tal.classList.contains('skjul') ? tal.textContent.replace(/\D+/g, '') : '';
-        var c = chip(navn, tegn ? tegn.textContent : null, talTekst, navn === valgt, navn);
+        var c = chip(navn, tegn ? tegn.textContent : null, talTekst, navn === valgt, navn, fotoFor(navn));
         if (navn === valgt) på = c;
       });
       var r = bar.getBoundingClientRect(), v = på.getBoundingClientRect();

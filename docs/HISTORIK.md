@@ -7,6 +7,17 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ AFSNIT 1, TREDJE UDGAVE — HUSETS TRYKTE STIL** (22/10 — kun /ny/). Mikkel: *"det slet
+ikke cafe agtig … de vil gerne være kendt for at lave gode smørrebrød og ja cafe"*. Afsnit 1
+taler nu de trykte menukorts sprog (samme greb som menukortet 26/9): rødt hoved med kransen,
+Bebas, kursiv linje, ternet kant med bølger, ◆-rubrikker, røde priser. Smørrebrødet står
+FØRST med husets egne fotos (smoer-havn/-bakke/-molen); sloganet er kortets eget
+(vaerktoej/kortene.py), varianter og priser læses af menukortet i databasen — "Alle varianter"
+er den pris, flest står til, og en variant 25,- eller mere over får sin egen boks. Dagens ret er
+små trykte kort pr. dag; er hele ugen tom, står der ÉT kort, der siger det. Bestillingen er
+samme kort; kategorierne har husets fotos (⚠️ kopi af FOTOS fra js/skal/menukort.js — skal
+samles, hvis /ny/ går live), retterne står som linjer med rød Bebas-pris. Motoren er urørt.
+
 **/ny/ AFSNIT 1, ANDEN UDGAVE** (22/10 — kun /ny/). Mikkel: *"slet ikke godt nok … gør som med
 dagens ret man kan se en uge frem hvor man scroller til højre"*, *"alle knapper tekst sådan iconer
 skal være langt bedre"* og *"gøre noget klogt ift section 1 da der er så meget"*. Nu: `#dagens` er

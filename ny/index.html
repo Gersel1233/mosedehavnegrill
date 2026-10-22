@@ -132,7 +132,7 @@
      ⚠️ IKKE ET LINK. Vi ER på forsiden; et link til den side, man
      står på, er en knap, der ikke gør noget. På bord/ og bestil/
      er det samme ordmærke stadig vejen hjem. -->
-<div class="topbar" id="tb"><span class="ordmaerke">Mosede Havnecafe</span><span class="sp"></span><nav class="ny-nav" aria-label="Genveje"><a href="#dagens">Dagens ret</a><a href="m-menukort.html">Menukort</a><a href="#isen">Is</a><a href="#selskab">Selskab</a><a href="#find">Find os</a></nav><a class="ny-bord" href="bord/">Book bord</a><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><use href="ikoner.svg#menu"/></svg></button></div>
+<div class="topbar" id="tb"><span class="ordmaerke">Mosede Havnecafe</span><span class="sp"></span><nav class="ny-nav" aria-label="Genveje"><a href="#smoerrebroed">Smørrebrød</a><a href="#dagens">Dagens ret</a><a href="m-menukort.html">Menukort</a><a href="#isen">Is</a><a href="#selskab">Selskab</a><a href="#find">Find os</a></nav><a class="ny-bord" href="bord/">Book bord</a><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><use href="ikoner.svg#menu"/></svg></button></div>
 
 <div class="hero film">
   <!-- ⚠️ HEROENS FILM  (11/9). Kundens ord: headerens baggrund "som
@@ -241,13 +241,51 @@
      #idag og #ugen nedenfor bliver stående (forside.js skriver i dem), men
      vises ikke på /ny/. -->
 <div class="dug dug--top" aria-hidden="true"></div>
-<section id="dagens" class="ny-uge" aria-labelledby="dagens-titel">
-  <div class="ny-uge-hoved">
-    <div><div class="eyebrow red">Fra køkkenet</div><h2 id="dagens-titel">Dagens ret</h2>
-    <p class="sub">En ny ret hver dag. Swipe for at se ugen.</p></div>
+<!-- /ny/ AFSNIT 1, TREDJE UDGAVE (22/10). Mikkel: "det slet ikke cafe agtig
+     … de vil gerne være kendt for at lave gode smørrebrød og ja cafe". Afsnittet
+     taler nu husets EGET sprog: de trykte menukort (billeder/menukort-bord-1400.jpg)
+     — rødt hoved, Bebas, kursiv linje, ternet kant med bølger, ◆-rubrikker,
+     prikkede linjer og røde priser. Smørrebrødet står først med husets egne fotos;
+     sloganet er kortets eget (vaerktoej/kortene.py), og listen og priserne
+     kommer fra menukortet i databasen (ny/mosede-ny.js) — ingen tal i HTML'en. -->
+<section id="smoerrebroed" class="nk-afsnit" aria-labelledby="smoer-titel">
+  <article class="nk nk--smoer">
+    <header class="nk-hoved">
+      <div class="nk-over">Mosede Havnecafé<i></i></div>
+      <h2 class="nk-titel" id="smoer-titel">Smørrebrød</h2>
+      <p class="nk-slogan">Friskbagt rugbrød, smurt når du bestiller. Glutenfrit brød, med eller uden smør — bare sig til.</p>
+      <span class="nk-logo" aria-hidden="true"></span>
+    </header>
+    <div class="nk-kant" aria-hidden="true"></div>
+    <div class="nk-krop">
+      <div class="nk-fotos">
+        <figure class="nk-foto nk-foto--stor"><img src="billeder/smoer-havn.jpg" width="900" height="1200" loading="lazy" decoding="async" alt="Et fad med smørrebrød på en rødternet dug ved havnen"></figure>
+        <figure class="nk-foto"><img src="billeder/smoer-bakke.jpg" width="900" height="1200" loading="lazy" decoding="async" alt="En bakke smørrebrød med æg, rejer, roastbeef og sild"></figure>
+        <figure class="nk-foto"><img src="billeder/smoer-molen.jpg" width="900" height="600" loading="lazy" decoding="async" alt="Smørrebrød og en fadøl på molen"></figure>
+      </div>
+      <div class="nk-tekst">
+        <h3 class="nk-rubrik"><span aria-hidden="true">◆</span>Varianter</h3>
+        <ul class="nk-liste" id="nySmoerListe"><li class="nk-henter">Henter menukortet …</li></ul>
+        <button type="button" class="nk-flere" id="nySmoerFlere" hidden></button>
+        <div class="nk-bokse" id="nySmoerBokse"></div>
+        <div class="nk-knapper">
+          <button type="button" class="nk-knap" data-ny-kat="Smørrebrød">Bestil smørrebrød</button>
+          <a class="nk-knap nk-knap--lys" href="h-smorrebrod.html">Smørrebrød ud af huset →</a>
+        </div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<section id="dagens" class="nk-afsnit nk-afsnit--uge" aria-labelledby="dagens-titel">
+  <div class="nk-afsnit-hoved">
+    <div>
+      <h2 class="nk-rubrik nk-rubrik--stor" id="dagens-titel"><span aria-hidden="true">◆</span>Dagens ret</h2>
+      <p class="nk-afsnit-linje">En ret fra køkkenet hver dag — swipe og se ugen.</p>
+    </div>
     <div class="ny-uge-pile" aria-hidden="true"><button type="button" data-pil="-1" tabindex="-1"><svg viewBox="0 0 24 24"><use href="ikoner.svg#tilbage"/></svg></button><button type="button" data-pil="1" tabindex="-1"><svg viewBox="0 0 24 24"><use href="ikoner.svg#videre"/></svg></button></div>
   </div>
-  <div class="ny-uge-raekke" id="nyUge" tabindex="0" aria-label="De næste syv dage"><div class="ny-dag ny-dag--henter"><p>Henter ugens retter …</p></div></div>
+  <div class="ny-uge-raekke" id="nyUge" tabindex="0" aria-label="De næste syv dage"><p class="nk-henter">Henter ugens retter …</p></div>
   <div class="ny-uge-prik" id="nyUgePrik" aria-hidden="true"></div>
 </section>
 <section id="idag" style="padding-bottom:6px">
@@ -327,7 +365,14 @@
     <button type="button" class="lev-nyhed-knap" data-vaelg-levering>Vælg levering</button>
   </div>
   <div class="panel rev d1">
-    <div class="ny-trin" data-trin="1"><span class="ny-trin-nr">1</span><div><h3>Hvornår og hvordan?</h3><p>Vælg, hvordan I vil have maden, og hvornår.</p></div></div>
+    <header class="nk-hoved nk-hoved--bestil">
+      <div class="nk-over">Mosede Havnecafé<i></i></div>
+      <h2 class="nk-titel">Bestil mad</h2>
+      <p class="nk-slogan">Vælg dag, tid og retter — bestillingen lander direkte i køkkenet. I betaler ved lugen.</p>
+      <span class="nk-logo" aria-hidden="true"></span>
+    </header>
+    <div class="nk-kant" aria-hidden="true"></div>
+    <div class="ny-trin" data-trin="1"><h3 class="nk-rubrik"><span aria-hidden="true">1</span>Hvornår og hvordan</h3></div>
     <!-- ⚠️ ØVERST, IKKE NEDERST  (20/9). Ejerne: "Dåse eller flaske
          sodavand skal fjernes, og kun kunne bestilles ved Take Away."
          Kundens svar på hvordan: "i stedet for i bunden så i toppen —
@@ -406,7 +451,7 @@
          fik varer taget ud af kurven. Nu vælges dag og tid først, og listen
          viser kun det, der kan fås. -->
     <div class="field"><label for="tid">Tidspunkt</label><select class="inp" id="tid"><option>kl. 11:30</option><option>kl. 12:00</option><option selected>kl. 17:30</option><option>kl. 18:00</option></select></div>
-    <div class="ny-trin" data-trin="2"><span class="ny-trin-nr">2</span><div><h3>Hvad skal I have?</h3><p>Vælg en kategori — det, I lægger i kurven, bliver liggende.</p></div></div>
+    <div class="ny-trin" data-trin="2"><h3 class="nk-rubrik"><span aria-hidden="true">2</span>Hvad skal I have</h3><p>Vælg en kategori. Det, I lægger i kurven, bliver liggende, når I skifter.</p></div>
     <div class="field"><label>Vælg jeres retter</label>
       <div class="item hi"><div><h4>Dagens ret</h4><span class="tag">Henter …</span></div>
         <div class="step" data-step><button data-d="-">–</button><b>2</b><button data-d="+">+</button></div></div>
@@ -416,7 +461,7 @@
       <div class="item"><h4>Drikkevarer</h4><span class="add">+ tilføj</span></div>
       <div class="item"><h4>Tilbehør</h4><span class="add">+ tilføj</span></div>
     </div>
-    <div class="ny-trin" data-trin="3"><span class="ny-trin-nr">3</span><div><h3>Hvem bestiller?</h3><p>Så vi kan kalde jer op ved lugen.</p></div></div>
+    <div class="ny-trin" data-trin="3"><h3 class="nk-rubrik"><span aria-hidden="true">3</span>Hvem bestiller</h3></div>
     <div class="field two-col"><div><label for="navn">Navn</label><input class="inp" id="navn" autocomplete="name" placeholder="Dit fulde navn"></div><div><label for="tlf">Telefonnummer</label><input class="inp" id="tlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
     <div class="field">
       <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9).
