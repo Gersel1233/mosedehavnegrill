@@ -7,6 +7,16 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ AFSNIT 1, ANDEN UDGAVE** (22/10 — kun /ny/). Mikkel: *"slet ikke godt nok … gør som med
+dagens ret man kan se en uge frem hvor man scroller til højre"*, *"alle knapper tekst sådan iconer
+skal være langt bedre"* og *"gøre noget klogt ift section 1 da der er så meget"*. Nu: `#dagens` er
+syv små tavler fra i dag, man swiper i (tegnet af `ny/mosede-ny.js` fra den SAMME `Butik.hent()`,
+som `ny/ny-data.js` lytter med på — ingen ekstra hentning); "Bestil til fredag" sætter `#dato` og
+sender `change`. Bestillingen har tre trin; dato og tid er chips oven på de skjulte `<select>`;
+retterne vises én kategori ad gangen med en klæbende kategori-bar, og står der 0, er der kun et
+"+". ⚠️ Laget TRYKKER på bestil.js' egne rækker og felter — motoren er urørt. Målt i Chromium:
+ugen sætter datoen, 2 × pølsemix gav kurven "2 i kurven · 200,-", isens fold åbner, ingen JS-fejl.
+
 **/ny/ — PRØVEN PÅ ET NYT UDTRYK** (22/10 — kun på mosedehavnecafe.dk/ny/, `noindex`;
 forsiden er urørt). Mikkel: *"den skal være bedre ift at ramme temaet bedre og med de ternede
 tema imellem nogle sectioner"* og *"lav den på /ny tingen"*. `ny/index.html` er en kopi af

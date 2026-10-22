@@ -75,36 +75,6 @@ body.ny-side{
 .ny-side .ny-idag i{flex:none;font-style:normal;opacity:.8;transition:transform .3s var(--spring)}
 .ny-side .ny-idag:hover i{transform:translateX(3px)}
 
-/* ---------- 2) tavlen: dagens ret ---------- */
-.ny-side #idag{padding-top:40px}
-body.ny-side #idag .today{border-radius:22px;overflow:hidden;color:var(--kridt);
-  background-color:var(--tavle);
-  background-image:
-    radial-gradient(120% 90% at 30% 20%,rgba(255,255,255,.07),transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E");
-  box-shadow:inset 0 0 0 8px #6b4a32,inset 0 0 0 9px rgba(0,0,0,.35),inset 0 0 40px rgba(0,0,0,.45),0 22px 48px rgba(36,26,23,.22)}
-body.ny-side #idag .today .idag-blok{margin:8px 8px 0;border-radius:14px 14px 0 0;padding:11px 16px;
-  background-color:#fff;background-image:linear-gradient(90deg,var(--tern) 50%,transparent 0),linear-gradient(var(--tern) 50%,transparent 0);background-size:18px 18px;color:#fff}
-body.ny-side #idag .today .idag-blok{display:flex;justify-content:flex-start}
-body.ny-side #idag .today .idag-blok .idag-ord{font-size:12px;color:var(--red-tekst);background:#fff;padding:6px 10px;border-radius:7px;box-shadow:0 2px 6px rgba(36,26,23,.2)}
-body.ny-side #idag .today .in{padding:20px 26px 26px}
-body.ny-side #idag .today .lbl{color:rgba(243,239,230,.72)}
-body.ny-side #idag .today h3{color:var(--kridt);font-size:34px;line-height:1.08;text-shadow:0 0 1px rgba(255,255,255,.55),0 0 14px rgba(255,255,255,.08)}
-body.ny-side #idag .today p{color:rgba(243,239,230,.84);font-size:15px}
-body.ny-side #idag .today .price{color:var(--kridt);background:none;box-shadow:inset 0 0 0 1.5px rgba(243,239,230,.55);border-radius:999px;padding:9px 14px}
-body.ny-side #idag .today .rest{color:var(--kridt);background:rgba(243,239,230,.12)}
-body.ny-side #idag .today .rest.faa{color:#ffc2c8;background:rgba(214,42,58,.28)}
-
-/* ugen: kortene som små menusedler med dugkant; de tomme dage er stille */
-body.ny-side .week .day{background:#fffdf9;box-shadow:0 1px 0 rgba(36,26,23,.06),0 10px 24px rgba(36,26,23,.08);border:0;position:relative;overflow:hidden;padding-top:22px}
-body.ny-side .week .day::before{content:"";position:absolute;left:0;right:0;top:0;height:7px;
-  background-color:#fff;background-image:linear-gradient(90deg,var(--tern) 50%,transparent 0),linear-gradient(var(--tern) 50%,transparent 0);background-size:7px 7px}
-body.ny-side .week .day.nu{box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.5),0 12px 28px rgba(214,42,58,.14)}
-body.ny-side .week .day.closed{background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
-body.ny-side .week .day.closed::before{opacity:.4}
-body.ny-side .week .day-mere{align-self:center;padding:0 8px}
-body.ny-side .week .day-mere p{color:var(--muted)}
-
 /* ---------- 3) papiret: bestil mad ---------- */
 .ny-side #bestil.papir{background:linear-gradient(180deg,var(--cream2),var(--cream) 260px)}
 .ny-side #bestil.papir .best-bg,.ny-side #bestil.papir .best-slor{display:none}
@@ -144,14 +114,169 @@ body.ny-side #bestil.papir .lev-nyhed-knap:focus-visible{outline-color:var(--red
   .ny-side .ny-strib > .glasraekke{margin:10px 0 0 !important}
 }
 
-/* fra 560 px står "I dag"-ternet som en kant i venstre side af tavlen, ikke foroven */
-@media (min-width:560px){
-  body.ny-side #idag .today{grid-template-columns:96px minmax(0,1fr)}
-  body.ny-side #idag .today .idag-blok{margin:8px 0 8px 8px;border-radius:14px 0 0 14px;justify-content:center;align-items:center;padding:0}
-  body.ny-side #idag .today .idag-blok .idag-ord{white-space:nowrap}
-  body.ny-side #idag .today .in{padding:24px 28px 26px}
-}
+/* ============================================================
+   AFSNIT 1, ANDEN UDGAVE (22/10)
+   Mikkels ord: "gør som med dagens ret man kan se en uge frem hvor man
+   scroller til højre", "alle knapper tekst sådan iconer skal være langt
+   bedre" og "gøre noget klogt ift section 1 da der er så meget".
+   ============================================================ */
+
+/* forsidens egne to afsnit står i DOM'en (forside.js skriver i dem), men
+   ugen nedenfor afløser dem på /ny/ */
+body.ny-side #idag,body.ny-side #ugen{display:none !important}
+
+/* ---------- ugen: syv små tavler på en række ---------- */
+.ny-side .ny-uge{padding-top:44px;padding-bottom:40px;overflow:hidden}
+.ny-side .ny-uge-hoved{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.ny-side .ny-uge-hoved h2{letter-spacing:-.03em}
+.ny-side .ny-uge-hoved .sub{margin-top:6px;color:var(--ink2)}
+.ny-side .ny-uge-pile{display:none;gap:8px}
+.ny-side .ny-uge-pile button{width:46px;height:46px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink);
+  background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08),0 8px 18px rgba(36,26,23,.1);transition:transform .2s var(--spring)}
+.ny-side .ny-uge-pile button:active{transform:scale(.94)}
+.ny-side .ny-uge-pile svg{width:20px;height:20px}
+.ny-side .ny-uge-raekke{display:flex;gap:12px;margin:22px calc(-1 * var(--pad)) 0;padding:6px var(--pad) 18px;
+  overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 var(--pad);scrollbar-width:none;outline:none}
+.ny-side .ny-uge-raekke::-webkit-scrollbar{display:none}
+.ny-side .ny-dag{position:relative;flex:none;width:min(80vw,320px);min-height:300px;scroll-snap-align:start;display:flex;flex-direction:column;
+  padding:22px 22px 20px;border-radius:22px;color:var(--kridt);
+  background-color:var(--tavle);
+  background-image:radial-gradient(120% 80% at 25% 10%,rgba(255,255,255,.08),transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E");
+  box-shadow:inset 0 0 0 7px #6e4c33,inset 0 0 0 8px rgba(0,0,0,.4),inset 0 0 36px rgba(0,0,0,.4),0 18px 36px -14px rgba(36,26,23,.45)}
+.ny-side .ny-dag--henter{align-items:center;justify-content:center;color:rgba(243,239,230,.7)}
+/* i dag: dugen hænger ned over tavlens kant */
+.ny-side .ny-dag.er-idag{padding-top:34px}
+.ny-side .ny-dag.er-idag::before{content:"";position:absolute;left:7px;right:7px;top:7px;height:14px;border-radius:15px 15px 0 0;
+  background-color:#fff;background-image:linear-gradient(90deg,var(--tern) 50%,transparent 0),linear-gradient(var(--tern) 50%,transparent 0);background-size:14px 14px}
+.ny-side .ny-dag-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1.5px dashed rgba(243,239,230,.22)}
+.ny-side .ny-dag-navn{font:700 13px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--kridt)}
+.ny-side .ny-dag.er-idag .ny-dag-navn{padding:6px 10px;margin:-6px 0;border-radius:8px;background:var(--red);color:#fff}
+.ny-side .ny-dag-dato{font:500 14px/1 "Host Grotesk",system-ui,sans-serif;color:rgba(243,239,230,.66)}
+.ny-side .ny-dag-midt{flex:1;padding-top:16px}
+.ny-side .ny-dag h3{font:600 27px/1.1 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.025em;color:var(--kridt);text-wrap:balance;
+  text-shadow:0 0 1px rgba(255,255,255,.5),0 0 12px rgba(255,255,255,.06)}
+.ny-side .ny-dag p{margin:8px 0 0;font-size:15px;line-height:1.45;color:rgba(243,239,230,.8)}
+.ny-side .ny-dag.er-tom h3{font-size:22px;color:rgba(243,239,230,.62);text-shadow:none}
+.ny-side .ny-dag.er-tom p{color:rgba(243,239,230,.55);font-size:14px}
+.ny-side .ny-dag.er-lukket{filter:saturate(.6)}
+.ny-side .ny-dag-bund{display:grid;gap:14px;margin-top:18px}
+.ny-side .ny-dag-info{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.ny-side .ny-dag-pris{font:600 20px/1 "Host Grotesk",system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--kridt);
+  padding:8px 13px;border-radius:999px;box-shadow:inset 0 0 0 1.5px rgba(243,239,230,.5)}
+.ny-side .ny-dag-maerke{font:600 13px/1 "Host Grotesk",system-ui,sans-serif;padding:7px 11px;border-radius:999px;color:var(--kridt);background:rgba(243,239,230,.12)}
+.ny-side .ny-dag-maerke.er-udsolgt{color:#fff;background:var(--red)}
+.ny-side .ny-dag-tid{display:inline-flex;align-items:center;gap:6px;font:500 13.5px/1 "Host Grotesk",system-ui,sans-serif;color:rgba(243,239,230,.7)}
+.ny-side .ny-dag-tid::before{content:"";width:7px;height:7px;border-radius:50%;background:#6fd08c;box-shadow:0 0 0 3px rgba(111,208,140,.18)}
+.ny-side .ny-dag.er-lukket .ny-dag-tid::before{background:rgba(243,239,230,.4);box-shadow:none}
+.ny-side .ny-dag-knap{height:50px;border:0;border-radius:15px;cursor:pointer;font:600 16px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;
+  background:linear-gradient(180deg,#e43a4a,var(--red-d));box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 22px -8px rgba(214,42,58,.7);transition:transform .2s var(--spring)}
+.ny-side .ny-dag-knap:active{transform:scale(.97)}
+.ny-side .ny-uge-prik{display:flex;justify-content:center;gap:7px;margin-top:2px}
+.ny-side .ny-uge-prik i{width:7px;height:7px;border-radius:4px;background:rgba(36,26,23,.18);transition:width .3s var(--spring),background .3s ease}
+.ny-side .ny-uge-prik i.on{width:22px;background:var(--red)}
 @media (min-width:821px){
-  /* tavlen følger overskriftens spalte, ikke det smallere kortmål */
-  body.ny-side #idag .today{max-width:none}
+  body.ny-side .ny-uge{--g:max(28px,calc((100% - 1120px)/2))}
+  .ny-side .ny-uge-pile{display:flex}
+  .ny-side .ny-uge-raekke{margin:24px calc(-1 * var(--g)) 0;padding:6px var(--g) 22px;scroll-padding:0 var(--g);gap:16px}
+  .ny-side .ny-dag{width:330px;min-height:320px}
+  .ny-side .ny-uge-prik{display:none}
 }
+
+/* ---------- bestillingen: tre trin ---------- */
+body.ny-side #bestil.papir .panel{overflow:clip}
+.ny-side .ny-trin{display:flex;align-items:flex-start;gap:14px;margin:30px 0 4px;padding-top:26px;border-top:1.5px dashed rgba(36,26,23,.12)}
+.ny-side .ny-trin[data-trin="1"]{margin-top:4px;padding-top:0;border-top:0}
+.ny-side .ny-trin-nr{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;
+  font:700 15px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;background:var(--red);box-shadow:0 6px 14px -4px rgba(214,42,58,.6)}
+.ny-side .ny-trin h3{font:600 21px/1.15 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.02em;color:var(--ink)}
+.ny-side .ny-trin p{margin:4px 0 0;font-size:14px;line-height:1.4;color:var(--muted)}
+.ny-side #bestil .field > label{font:600 14px/1.2 "Host Grotesk",system-ui,sans-serif;color:var(--ink);letter-spacing:0}
+
+/* hvordan: tre store, tydelige kort med en linje under */
+body.ny-side #bestil .seg2{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:10px}
+body.ny-side #bestil .seg2 button{height:auto;min-height:92px;flex-direction:column;gap:5px;padding:14px 8px 12px;border-radius:18px;
+  background:#fff;color:var(--ink);font-size:15px;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1),0 2px 6px rgba(36,26,23,.04);transition:box-shadow .2s ease,background .2s ease,transform .2s var(--spring)}
+body.ny-side #bestil .seg2 button svg{width:26px;height:26px;opacity:1;color:var(--ink2)}
+body.ny-side #bestil .seg2 button::after{content:attr(data-under);font:500 12px/1.2 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+body.ny-side #bestil .seg2 button.on{background:#fff4f2;color:var(--red-d);box-shadow:inset 0 0 0 2px var(--red),0 10px 22px -10px rgba(214,42,58,.5)}
+body.ny-side #bestil .seg2 button.on svg{color:var(--red)}
+body.ny-side #bestil .seg2 button.on::after{color:var(--red-d)}
+
+/* dato og tid: chips i stedet for rullelister (listen står skjult bagved) */
+.ny-side .ny-chipfelt{position:relative}
+.ny-side .ny-chipfelt select.inp{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
+.ny-side .ny-chips{display:flex;gap:8px;margin:10px calc(-1 * var(--panel-pad,18px)) 0;padding:2px var(--panel-pad,18px) 8px;overflow-x:auto;scrollbar-width:none;scroll-padding:0 var(--panel-pad,18px)}
+.ny-side .ny-chips::-webkit-scrollbar{display:none}
+.ny-side .ny-chip{flex:none;display:grid;justify-items:center;align-content:center;gap:4px;min-width:72px;height:62px;padding:0 12px;border:0;border-radius:16px;cursor:pointer;
+  background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(36,26,23,.1);transition:background .2s ease,box-shadow .2s ease,transform .2s var(--spring)}
+.ny-side .ny-chip b{font:600 15px/1 "Host Grotesk",system-ui,sans-serif}
+.ny-side .ny-chip small{font:500 12px/1 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+.ny-side .ny-chip:active{transform:scale(.95)}
+.ny-side .ny-chip.on{background:var(--ink);color:#fff;box-shadow:0 8px 18px -8px rgba(36,26,23,.6)}
+.ny-side .ny-chip.on small{color:rgba(255,255,255,.75)}
+.ny-side .ny-chip:disabled{opacity:.4;cursor:not-allowed;background:transparent}
+.ny-side .ny-chip:disabled b{text-decoration:line-through}
+.ny-side .ny-chips--tid{display:grid;grid-template-rows:repeat(2,auto);grid-auto-flow:column;grid-auto-columns:max-content}
+.ny-side .ny-chips--tid .ny-chip{height:44px;min-width:70px;font-variant-numeric:tabular-nums}
+
+/* leveringsnyheden: kortere på papiret */
+body.ny-side #bestil.papir .lev-nyhed{padding:14px 16px;gap:10px 14px}
+body.ny-side #bestil.papir .lev-nyhed-tekst p{font-size:13.5px}
+body.ny-side #bestil.papir .lev-nyhed-tekst .lev-nyhed-titel{font-size:16px}
+
+/* ---------- kategorierne: bar + fliser ---------- */
+.ny-side .ny-katbar{position:sticky;top:var(--ny-top,72px);z-index:5;display:flex;gap:8px;margin:10px calc(-1 * var(--panel-pad,18px)) 0;
+  padding:10px var(--panel-pad,18px);overflow-x:auto;scrollbar-width:none;background:rgba(255,253,249,.94);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 rgba(36,26,23,.06)}
+.ny-side .ny-katbar::-webkit-scrollbar{display:none}
+.ny-side .ny-katchip{flex:none;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 15px 0 12px;border:0;border-radius:999px;cursor:pointer;
+  font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:var(--ink);background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1);white-space:nowrap}
+.ny-side .ny-katchip:first-child{padding-left:15px}
+.ny-side .ny-katchip-tegn{font-size:18px;line-height:1}
+.ny-side .ny-katchip b{min-width:20px;height:20px;padding:0 6px;border-radius:10px;display:grid;place-items:center;font-size:12px;color:#fff;background:var(--red)}
+.ny-side .ny-katchip.on{color:#fff;background:var(--ink);box-shadow:0 8px 18px -8px rgba(36,26,23,.6)}
+.ny-side .ny-katchip.on b{background:#fff;color:var(--red-d)}
+
+/* intet valgt: kategorierne som fliser, to og to */
+.ny-side [data-liste].ny-oversigt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.ny-side [data-liste].ny-oversigt > *{grid-column:1/-1}
+.ny-side [data-liste].ny-oversigt > .item[data-kategori],.ny-side [data-liste].ny-oversigt > .ny-isflise{grid-column:auto}
+.ny-side [data-liste].ny-oversigt > .isbyg-blok{display:none}
+.ny-side [data-liste] > .item[data-kategori],.ny-side .ny-isflise{position:relative;cursor:pointer}
+.ny-side [data-liste].ny-oversigt > .item[data-kategori],.ny-side [data-liste].ny-oversigt > .ny-isflise{
+  display:grid;justify-items:start;align-content:start;gap:8px;min-height:118px;margin:0;padding:14px;border:0;border-radius:18px;text-align:left;
+  background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08),0 6px 16px -10px rgba(36,26,23,.3);font:inherit;color:var(--ink);transition:transform .2s var(--spring)}
+.ny-side [data-liste].ny-oversigt > .item[data-kategori]:active,.ny-side [data-liste].ny-oversigt > .ny-isflise:active{transform:scale(.97)}
+.ny-side [data-liste].ny-oversigt .kat-tegn{width:46px;height:46px;border-radius:14px;font-size:25px}
+.ny-side [data-liste].ny-oversigt > * h4{font-size:15.5px;line-height:1.2}
+.ny-side [data-liste].ny-oversigt .add{margin:auto 0 0;font-size:13px}
+.ny-side [data-liste].ny-oversigt .kat-valgt:not(.skjul){position:absolute;top:12px;right:12px;margin:0}
+.ny-side .ny-isflise{display:none}
+.ny-side .ny-isflise .kat-tegn{display:grid;place-items:center;background:rgba(255,139,118,.3)}
+.ny-side .ny-isflise .add{color:var(--red-tekst);font-weight:600}
+.ny-side [data-liste].ny-oversigt > .ny-isflise{background:linear-gradient(160deg,#fff,#fff1ee)}
+
+/* én kategori valgt: kun den og dens retter */
+.ny-side [data-liste].ny-fokus > .item[data-kategori]:not(.ny-aaben),
+.ny-side [data-liste].ny-fokus > .isbyg-blok,
+.ny-side [data-liste].ny-fokus > .dagens-blok,
+.ny-side [data-liste].ny-isfokus > .item[data-kategori],
+.ny-side [data-liste].ny-isfokus > .dagens-blok{display:none}
+.ny-side [data-liste].ny-fokus > .item.ny-aaben{background:transparent;box-shadow:none;padding:6px 0 2px;margin-top:6px}
+.ny-side [data-liste].ny-fokus > .item.ny-aaben h4{font-size:19px;letter-spacing:-.015em}
+.ny-side [data-liste].ny-fokus > .item.ny-aaben .add{padding:8px 12px;border-radius:999px;background:var(--cream2);color:var(--ink2)}
+.ny-side [data-liste] > .item:not([data-kategori]){background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08)}
+
+/* trin 3: beskeden folder sig ud, når man vil skrive en */
+.ny-side .ny-foldet{display:none}
+.ny-side .ny-beskedknap{display:inline-flex;margin-top:14px;padding:10px 0;border:0;background:none;cursor:pointer;font:600 14.5px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-tekst)}
+.ny-side .ny-beskedknap[hidden]{display:none}
+
+/* retterne: står der 0, er der kun et "+" — minus og nul kommer, når man har lagt noget i.
+   Det giver navnet plads til at stå på én linje i stedet for tre. */
+.ny-side [data-liste] .step:has(> button[data-d="-"]:disabled) > :not([data-d="+"]){display:none}
+.ny-side [data-liste] .step button{width:36px;height:36px}
+.ny-side [data-liste] > .item:not([data-kategori]),.ny-side [data-liste] .dagens-blok .item{gap:12px;padding:12px 12px 12px 14px}
+.ny-side [data-liste] .item h4{font-size:15.5px}
+.ny-side [data-liste] .item .tag{margin-top:5px;font-size:12px;letter-spacing:.02em}

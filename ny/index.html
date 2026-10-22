@@ -132,7 +132,7 @@
      ⚠️ IKKE ET LINK. Vi ER på forsiden; et link til den side, man
      står på, er en knap, der ikke gør noget. På bord/ og bestil/
      er det samme ordmærke stadig vejen hjem. -->
-<div class="topbar" id="tb"><span class="ordmaerke">Mosede Havnecafe</span><span class="sp"></span><nav class="ny-nav" aria-label="Genveje"><a href="#idag">Dagens ret</a><a href="m-menukort.html">Menukort</a><a href="#isen">Is</a><a href="#selskab">Selskab</a><a href="#find">Find os</a></nav><a class="ny-bord" href="bord/">Book bord</a><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><use href="ikoner.svg#menu"/></svg></button></div>
+<div class="topbar" id="tb"><span class="ordmaerke">Mosede Havnecafe</span><span class="sp"></span><nav class="ny-nav" aria-label="Genveje"><a href="#dagens">Dagens ret</a><a href="m-menukort.html">Menukort</a><a href="#isen">Is</a><a href="#selskab">Selskab</a><a href="#find">Find os</a></nav><a class="ny-bord" href="bord/">Book bord</a><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><use href="ikoner.svg#menu"/></svg></button></div>
 
 <div class="hero film">
   <!-- ⚠️ HEROENS FILM  (11/9). Kundens ord: headerens baggrund "som
@@ -235,6 +235,21 @@
   </div>
 </section>
 
+<!-- /ny/: UGEN SOM ÉN RÆKKE KORT (22/10). Mikkels ord: "gør som med dagens
+     ret man kan se en uge frem hvor man scroller til højre". Syv kort fra i
+     dag; ny/mosede-ny.js tegner dem af den samme data, forside.js henter.
+     #idag og #ugen nedenfor bliver stående (forside.js skriver i dem), men
+     vises ikke på /ny/. -->
+<div class="dug dug--top" aria-hidden="true"></div>
+<section id="dagens" class="ny-uge" aria-labelledby="dagens-titel">
+  <div class="ny-uge-hoved">
+    <div><div class="eyebrow red">Fra køkkenet</div><h2 id="dagens-titel">Dagens ret</h2>
+    <p class="sub">En ny ret hver dag. Swipe for at se ugen.</p></div>
+    <div class="ny-uge-pile" aria-hidden="true"><button type="button" data-pil="-1" tabindex="-1"><svg viewBox="0 0 24 24"><use href="ikoner.svg#tilbage"/></svg></button><button type="button" data-pil="1" tabindex="-1"><svg viewBox="0 0 24 24"><use href="ikoner.svg#videre"/></svg></button></div>
+  </div>
+  <div class="ny-uge-raekke" id="nyUge" tabindex="0" aria-label="De næste syv dage"><div class="ny-dag ny-dag--henter"><p>Henter ugens retter …</p></div></div>
+  <div class="ny-uge-prik" id="nyUgePrik" aria-hidden="true"></div>
+</section>
 <section id="idag" style="padding-bottom:6px">
   <!-- Pladsholder uden dato, ret og pris (25/9) — visDagensRet i
        forside.js skriver dagens dato og ret ind eller skjuler afsnittet. -->
@@ -312,6 +327,7 @@
     <button type="button" class="lev-nyhed-knap" data-vaelg-levering>Vælg levering</button>
   </div>
   <div class="panel rev d1">
+    <div class="ny-trin" data-trin="1"><span class="ny-trin-nr">1</span><div><h3>Hvornår og hvordan?</h3><p>Vælg, hvordan I vil have maden, og hvornår.</p></div></div>
     <!-- ⚠️ ØVERST, IKKE NEDERST  (20/9). Ejerne: "Dåse eller flaske
          sodavand skal fjernes, og kun kunne bestilles ved Take Away."
          Kundens svar på hvordan: "i stedet for i bunden så i toppen —
@@ -327,8 +343,8 @@
          til — js/skal/bestil.js skjuler hele .field'en ellers. -->
     <div class="field"><label>Hvordan vil I spise?</label>
       <div class="seg2" data-seg="how">
-        <button class="on"><svg viewBox="0 0 24 24"><use href="ikoner.svg#to-go"/></svg>To-go</button>
-        <button><svg viewBox="0 0 24 24"><use href="ikoner.svg#spis-her"/></svg>Spis her</button>
+        <button class="on" data-under="Hent ved lugen"><svg viewBox="0 0 24 24"><use href="ikoner.svg#to-go"/></svg>To-go</button>
+        <button data-under="Ved bordene"><svg viewBox="0 0 24 24"><use href="ikoner.svg#spis-her"/></svg>Spis her</button>
         <!-- ⚠️ LEVERING KOM TIL 20/9. Ejernes punkt nummer ét:
              "Leverings muligheden mangler." Den fandtes kun på
              smørrebrødssiden og i bestil/ — så en burger, en is
@@ -340,7 +356,7 @@
              slår levering fra: js/skal/bestil.js skjuler hver knap,
              hvis måde ikke er slået til. En knap, der ikke virker,
              er værre end ingen knap. -->
-        <button><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg>Levering</button>
+        <button data-under="Vi kører ud"><svg viewBox="0 0 24 24"><use href="ikoner.svg#levering"/></svg>Levering</button>
       </div>
     </div>
 
@@ -390,6 +406,7 @@
          fik varer taget ud af kurven. Nu vælges dag og tid først, og listen
          viser kun det, der kan fås. -->
     <div class="field"><label for="tid">Tidspunkt</label><select class="inp" id="tid"><option>kl. 11:30</option><option>kl. 12:00</option><option selected>kl. 17:30</option><option>kl. 18:00</option></select></div>
+    <div class="ny-trin" data-trin="2"><span class="ny-trin-nr">2</span><div><h3>Hvad skal I have?</h3><p>Vælg en kategori — det, I lægger i kurven, bliver liggende.</p></div></div>
     <div class="field"><label>Vælg jeres retter</label>
       <div class="item hi"><div><h4>Dagens ret</h4><span class="tag">Henter …</span></div>
         <div class="step" data-step><button data-d="-">–</button><b>2</b><button data-d="+">+</button></div></div>
@@ -399,6 +416,7 @@
       <div class="item"><h4>Drikkevarer</h4><span class="add">+ tilføj</span></div>
       <div class="item"><h4>Tilbehør</h4><span class="add">+ tilføj</span></div>
     </div>
+    <div class="ny-trin" data-trin="3"><span class="ny-trin-nr">3</span><div><h3>Hvem bestiller?</h3><p>Så vi kan kalde jer op ved lugen.</p></div></div>
     <div class="field two-col"><div><label for="navn">Navn</label><input class="inp" id="navn" autocomplete="name" placeholder="Dit fulde navn"></div><div><label for="tlf">Telefonnummer</label><input class="inp" id="tlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
     <div class="field">
       <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9).
@@ -1136,6 +1154,7 @@
 <script src="havnegrillen.js?v=__V__"></script>
 <script src="js/config.js?v=__V__"></script>
 <script src="js/store.js?v=__V__"></script>
+<script src="ny/ny-data.js?v=__V__"></script>
 <!-- ⚠️ STRUKTURERET DATA TIL GOOGLE. js/oplysninger.js er den ENE
      kilde til navn, adresse og telefon; js/skal/seo.js bygger
      Restaurant-mærket af den plus åbningstiderne fra databasen.
