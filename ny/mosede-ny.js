@@ -53,7 +53,6 @@
   })();
 
   /* "Bestil smørrebrød" o.l.: åbner kategorien i bestillingen og hopper derned */
-  var vælgKategori = null;
   document.addEventListener('click', function (ev) {
     var k = ev.target.closest && ev.target.closest('[data-ny-kat]');
     if (!k) return;
@@ -388,26 +387,14 @@
   chips(document.getElementById('tid'), 'tid');
 
   /* ============================================================
-     BESTILLINGEN — én kategori ad gangen
+     BESTILLINGEN — den originale liste, med husets fotos
      ------------------------------------------------------------
-     Listen var sytten rækker høj, før man nåede navnet. Nu: en bar med
-     kategorierne øverst, og listen viser enten alle kategorier som fliser
-     (intet valgt) eller kun den valgte med dens retter. Baren TRYKKER på
-     rækkerne — bestil.js åbner og lukker, som den altid har gjort.
+     Mikkels ord: *"selve bestil mad konceptet skal være det originale
+     gamle men med nye design og smartere"*. Kategorierne folder sig ud
+     på stedet, som de altid har gjort (bestil.js); det, der kommer til,
+     er fotoet på rækken og knapperne "Bestil smørrebrød" o.l., der åbner
+     den rigtige kategori og ruller hen til den.
      ============================================================ */
-  /* ⚠️ [data-liste] sættes af bestil.js, først når dataen er landet —
-     derfor venter vi på den i stedet for at lede én gang. */
-  (function () {
-    var panel = document.querySelector('#bestil .panel');
-    if (!panel) return;
-    if (panel.querySelector('[data-liste]')) return kategorier(panel);
-    var vagt = new MutationObserver(function () {
-      if (!panel.querySelector('[data-liste]')) return;
-      vagt.disconnect();
-      kategorier(panel);
-    });
-    vagt.observe(panel, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-liste'] });
-  })();
   /* Kategoriernes fotos — husets egne, de samme som menukortet viser.
      ⚠️ En kopi af FOTOS i js/skal/menukort.js (den er lukket inde i sin fil).
      Går /ny/ live, skal de to samles ét sted. Ingen match = intet foto. */
@@ -440,119 +427,54 @@
     return null;
   }
 
+  var vælgKategori = null;
+  /* ⚠️ [data-liste] sættes af bestil.js, først når dataen er landet */
+  (function () {
+    var panel = document.querySelector('#bestil .panel');
+    if (!panel) return;
+    if (panel.querySelector('[data-liste]')) return kategorier(panel);
+    var vagt = new MutationObserver(function () {
+      if (!panel.querySelector('[data-liste]')) return;
+      vagt.disconnect();
+      kategorier(panel);
+    });
+    vagt.observe(panel, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-liste'] });
+  })();
   function kategorier(panel) {
     var liste = panel.querySelector('[data-liste]');
-    var bar = lav('div', 'ny-katbar');
-    bar.setAttribute('role', 'tablist');
-    bar.setAttribute('aria-label', 'Kategorier');
-    var mærkat = liste.querySelector(':scope > label');
-    liste.insertBefore(bar, mærkat ? mærkat.nextSibling : liste.firstChild);
-    var isFokus = false;
-    var isFlise = lav('button', 'ny-isflise');
-    isFlise.type = 'button';
-    isFlise.innerHTML = '<span class="ny-katfoto" aria-hidden="true" style="background-image:url(&quot;billeder/havn-kugleis.jpg&quot;)"></span><h4>Is &amp; sødt</h4><span class="add">Byg din is</span>';
-    isFlise.classList.add('har-foto');
-    isFlise.addEventListener('click', function () { vælg('is'); });
-
     function rækker() { return [].slice.call(liste.querySelectorAll(':scope > .item[data-kategori]')); }
     function åben(r) { var a = r.querySelector('[data-add]'); return !!a && /^–/.test(a.textContent.trim()); }
-    function række(navn) { return rækker().filter(function (r) { return r.getAttribute('data-kategori') === navn; })[0]; }
-    function lukAlle(undtagen) {
-      for (var n = 0; n < 20; n++) {
-        var å = rækker().filter(function (r) { return åben(r) && r.getAttribute('data-kategori') !== undtagen; })[0];
-        if (!å) return;
-        å.click();
-      }
-    }
-    function vælg(navn) {
-      if (navn === 'is') { lukAlle(null); isFokus = true; }
-      else if (!navn) { lukAlle(null); isFokus = false; }
-      else {
-        isFokus = false;
-        lukAlle(navn);
-        var r = række(navn);
-        if (r && !åben(r)) r.click();
-      }
-      opdater();
-      rulTil(bar, 6);
-    }
-    vælgKategori = function (navn) {
-      var r = rækker().filter(function (x) { return x.getAttribute('data-kategori').toLowerCase() === String(navn).toLowerCase(); })[0];
-      if (r) vælg(r.getAttribute('data-kategori'));
-      else rulTil(panel, 16);
-    };
-    function opdater() {
-      var is = liste.querySelector(':scope > .isbyg-blok');
-      if (is && isFlise.nextSibling !== is) liste.insertBefore(isFlise, is);
-      if (!is && isFlise.parentNode) isFlise.parentNode.removeChild(isFlise);
-      var valgt = null;
+    function fotos() {
       rækker().forEach(function (r) {
+        r.classList.toggle('ny-aaben', åben(r));
         var foto = fotoFor(r.getAttribute('data-kategori'));
-        if (foto && !r.querySelector(':scope > .ny-katfoto')) {
-          var f = lav('span', 'ny-katfoto');
-          f.setAttribute('aria-hidden', 'true');
-          f.style.backgroundImage = 'url("' + foto + '")';
-          r.insertBefore(f, r.firstChild);
-          r.classList.add('har-foto');
-        }
-        var å = åben(r);
-        r.classList.toggle('ny-aaben', å);
-        if (å) valgt = r.getAttribute('data-kategori');
+        if (!foto || r.querySelector(':scope > .ny-katfoto')) return;
+        var f = lav('span', 'ny-katfoto');
+        f.setAttribute('aria-hidden', 'true');
+        f.style.backgroundImage = 'url("' + foto + '")';
+        r.insertBefore(f, r.firstChild);
+        r.classList.add('har-foto');
       });
-      if (valgt) isFokus = false;
-      var isVist = isFokus && !!is;
-      liste.classList.toggle('ny-fokus', !!valgt);
-      liste.classList.toggle('ny-isfokus', isVist);
-      liste.classList.toggle('ny-oversigt', !valgt && !isVist);
-
-      /* baren: "Alle" + kategorierne i listens egen rækkefølge, isen på sin plads.
-         Den tegnes kun om, når der er sket noget, den viser. */
-      var spor = [valgt, isVist].concat([].map.call(liste.querySelectorAll(':scope > .item[data-kategori], :scope > .ny-isflise'), function (el) {
-        var t = el.querySelector('[data-kat-valgt]');
-        return (el.getAttribute('data-kategori') || 'is') + ':' + (t && !t.classList.contains('skjul') ? t.textContent : '');
-      })).join('|');
-      if (spor === bar.getAttribute('data-spor')) return;
-      bar.setAttribute('data-spor', spor);
-      bar.textContent = '';
-      function chip(navn, tegn, tal, på, nøgle, foto) {
-        var k = lav('button', 'ny-katchip' + (på ? ' on' : ''));
-        k.type = 'button';
-        k.setAttribute('role', 'tab');
-        k.setAttribute('aria-selected', på ? 'true' : 'false');
-        if (foto) {
-          var fi = lav('span', 'ny-katchip-foto');
-          fi.setAttribute('aria-hidden', 'true');
-          fi.style.backgroundImage = 'url("' + foto + '")';
-          k.appendChild(fi);
-        } else if (tegn) k.appendChild(lav('span', 'ny-katchip-tegn', tegn)).setAttribute('aria-hidden', 'true');
-        k.appendChild(lav('span', null, navn));
-        if (tal) k.appendChild(lav('b', null, tal));
-        k.addEventListener('click', function () { vælg(nøgle); });
-        bar.appendChild(k);
-        return k;
+      var is = liste.querySelector(':scope > .isbyg-blok');
+      if (is && !is.classList.contains('har-foto')) {
+        is.classList.add('har-foto');
+        var hoved = is.querySelector('.isbyg-blok-hoved, header, h4');
+        var f2 = lav('span', 'ny-katfoto ny-katfoto--is');
+        f2.setAttribute('aria-hidden', 'true');
+        f2.style.backgroundImage = 'url("billeder/havn-kugleis.jpg")';
+        if (hoved) hoved.insertBefore(f2, hoved.firstChild);
       }
-      var på = chip('Alle', null, '', !valgt && !isVist, null);
-      [].forEach.call(liste.children, function (el) {
-        if (el === isFlise) { var k = chip('Is & sødt', '🍦', '', isVist, 'is', 'billeder/havn-kugleis.jpg'); if (isVist) på = k; return; }
-        if (!el.matches || !el.matches('.item[data-kategori]')) return;
-        var navn = el.getAttribute('data-kategori');
-        var tegn = el.querySelector('.kat-tegn');
-        var tal = el.querySelector('[data-kat-valgt]');
-        var talTekst = tal && !tal.classList.contains('skjul') ? tal.textContent.replace(/\D+/g, '') : '';
-        var c = chip(navn, tegn ? tegn.textContent : null, talTekst, navn === valgt, navn, fotoFor(navn));
-        if (navn === valgt) på = c;
-      });
-      var r = bar.getBoundingClientRect(), v = på.getBoundingClientRect();
-      if (v.left < r.left || v.right > r.right) bar.scrollLeft += v.left - r.left - 16;
     }
     var ramme = 0;
-    /* ⚠️ baren står selv i listen — dens egne ændringer må ikke vække den igen */
-    new MutationObserver(function (poster) {
-      var andet = poster.some(function (m) { return m.target !== bar && !bar.contains(m.target); });
-      if (!andet) return;
-      cancelAnimationFrame(ramme); ramme = requestAnimationFrame(opdater);
-    }).observe(liste, { childList: true, subtree: true, characterData: true });
-    opdater();
+    new MutationObserver(function () { cancelAnimationFrame(ramme); ramme = requestAnimationFrame(fotos); })
+      .observe(liste, { childList: true, subtree: true, characterData: true });
+    fotos();
+    vælgKategori = function (navn) {
+      var r = rækker().filter(function (x) { return x.getAttribute('data-kategori').toLowerCase() === String(navn).toLowerCase(); })[0];
+      if (r && !åben(r)) r.click();
+      r = rækker().filter(function (x) { return x.getAttribute('data-kategori').toLowerCase() === String(navn).toLowerCase(); })[0];
+      rulTil(r || panel, 16);
+    };
   }
 
   /* ============================================================
@@ -569,169 +491,5 @@
     knap.addEventListener('click', function () { vis(true); besked.focus(); });
     vis(!!besked.value);
     besked.addEventListener('input', function () { if (besked.value) vis(true); });
-  })();
-
-
-  /* ============================================================
-     BESTILLINGEN PÅ TELEFONEN — to ark i stedet for én lang formular
-     ------------------------------------------------------------
-     Mikkels ord: *"du skal tage i betragtning at folk bruger
-     telefonen"*. Siden viser maden; HVORNÅR er én linje, der åbner et
-     ark nedefra, og navn, nummer og Send ligger i KASSEN, som
-     kurv-bjælken og "Til kassen" åbner.
-
-     ⚠️ FELTERNE FLYTTES, DE KOPIERES IKKE. Arkene er <dialog>-elementer
-     INDE i panelet, så bestil.js' egne opslag (felt('dato'), find(…,
-     panel), #sumline, Send) rammer de samme knuder som før. En fejl på
-     et felt i et lukket ark (fx en manglende adresse) åbner det ark —
-     ellers ville markøren sætte sig i et felt, ingen kan se.
-     ============================================================ */
-  (function () {
-    var panel = document.querySelector('#bestil .panel');
-    var linje = document.getElementById('nyHvornaar');
-    if (!panel || !linje || typeof HTMLDialogElement !== 'function') return;
-    var dato = document.getElementById('dato'), tid = document.getElementById('tid');
-    var seg = panel.querySelector('[data-seg="how"]');
-    var send = panel.querySelector('button.g.solid.blk');
-    if (!dato || !tid || !send) return;
-
-    function ark(id, titel, knapTekst) {
-      var d = lav('dialog', 'ny-ark');
-      d.id = id;
-      d.setAttribute('aria-labelledby', id + '-titel');
-      var hoved = lav('header', 'ny-ark-hoved');
-      var h = lav('h2', null, titel); h.id = id + '-titel';
-      hoved.appendChild(h);
-      var luk = lav('button', 'ny-ark-luk');
-      luk.type = 'button';
-      luk.setAttribute('aria-label', 'Luk');
-      luk.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><use href="ikoner.svg#luk"/></svg>';
-      luk.addEventListener('click', function () { d.close(); });
-      hoved.appendChild(luk);
-      d.appendChild(hoved);
-      d.appendChild(lav('div', 'nk-kant ny-ark-kant'));
-      var krop = lav('div', 'ny-ark-krop');
-      d.appendChild(krop);
-      if (knapTekst) {
-        var fod = lav('div', 'ny-ark-fod');
-        var ok = lav('button', 'nk-knap', knapTekst);
-        ok.type = 'button';
-        ok.addEventListener('click', function () { d.close(); });
-        fod.appendChild(ok);
-        d.appendChild(fod);
-      }
-      /* et tryk uden for arket lukker det */
-      d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
-      d.addEventListener('close', function () { document.documentElement.classList.remove('ny-ark-aaben'); });
-      panel.appendChild(d);
-      return { el: d, krop: krop };
-    }
-    function åbn(a) {
-      [hvornår, kasse].forEach(function (x) { if (x.el.open && x !== a) x.el.close(); });
-      if (!a.el.open) a.el.showModal();
-      document.documentElement.classList.add('ny-ark-aaben');
-      a.el.querySelector('.ny-ark-krop').scrollTop = 0;
-    }
-    function felt(el) { return el && el.closest ? el.closest('.field') : null; }
-
-    var hvornår = ark('nyArkHvornaar', 'Hvornår og hvordan', 'Færdig');
-    [felt(seg), document.getElementById('fpersfelt'), document.getElementById('flevfelt'), felt(dato), felt(tid)]
-      .forEach(function (f) { if (f) hvornår.krop.appendChild(f); });
-
-    var kasse = ark('nyArkKasse', 'Din bestilling', null);
-    /* alt efter madlisten hører til kassen: navn, allergi, besked, summen og Send */
-    var start = panel.querySelector('.ny-trin[data-trin="3"]');
-    var flyt = [];
-    for (var n = start; n; n = n.nextElementSibling) if (n.tagName !== 'DIALOG') flyt.push(n);
-    var genvej = lav('button', 'ny-hvornaar ny-hvornaar--kasse');
-    genvej.type = 'button';
-    genvej.innerHTML = linje.innerHTML;
-    genvej.addEventListener('click', function () { åbn(hvornår); });
-    kasse.krop.appendChild(genvej);
-    var kvit = document.getElementById('sumline');
-    if (kvit) kasse.krop.appendChild(kvit);
-    flyt.forEach(function (f) { if (f !== kvit) kasse.krop.appendChild(f); });
-
-    /* "Til kassen" efter maden */
-    var tilKassen = lav('button', 'nk-knap ny-tilkassen', 'Til kassen');
-    tilKassen.type = 'button';
-    tilKassen.addEventListener('click', function () { åbn(kasse); });
-    panel.insertBefore(tilKassen, hvornår.el);
-
-    linje.addEventListener('click', function () { åbn(hvornår); });
-    /* kurv-bjælken nederst åbner kassen i stedet for at rulle ned til den */
-    document.addEventListener('click', function (e) {
-      var k = e.target.closest && e.target.closest('.kurvbar');
-      if (!k) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      åbn(kasse);
-    }, true);
-    /* "Vælg levering" i nyheden: bestil.js vælger levering, vi viser adressen */
-    document.querySelectorAll('[data-vaelg-levering]').forEach(function (b) {
-      b.addEventListener('click', function () { setTimeout(function () { åbn(hvornår); }, 60); });
-    });
-
-    /* en fejl på et felt i et lukket ark åbner arket */
-    new MutationObserver(function (poster) {
-      poster.forEach(function (m) {
-        if (m.target.getAttribute('aria-invalid') !== 'true') return;
-        var d = m.target.closest('dialog');
-        if (!d || d.open) return;
-        åbn(d === hvornår.el ? hvornår : kasse);
-        setTimeout(function () { try { m.target.focus(); } catch (e) {} }, 50);
-      });
-    }).observe(panel, { subtree: true, attributes: true, attributeFilter: ['aria-invalid'] });
-
-    /* linjen: hvordan · hvilken dag · hvornår */
-    function resume() {
-      var på = seg ? seg.querySelector('button.on') : null;
-      var segVist = seg && felt(seg) && felt(seg).style.display !== 'none';
-      var hvordan = på && segVist ? på.textContent.trim() : 'Afhentning';
-      var under = på && segVist ? på.getAttribute('data-under') : 'Ved lugen';
-      var adr = document.getElementById('fadr');
-      if (hvordan === 'Levering' && adr && adr.value.trim()) under = 'Til ' + adr.value.trim();
-      var iso = dato.value, dagTekst = '';
-      if (/^\d{4}-\d{2}-\d{2}$/.test(iso) && window.Butik && R.ugedagFor) {
-        var iDag = Butik.nu().dato;
-        dagTekst = iso === iDag ? 'I dag' : iso === Butik.isoPlus(iDag, 1) ? 'I morgen' : ugedag(iso);
-        dagTekst += ' ' + kortDato(iso);
-      }
-      var o = tid.options[tid.selectedIndex];
-      var tidTekst = o && !/henter/i.test(o.textContent) ? o.textContent.trim() : '';
-      var ikon = på ? på.querySelector('use') : null;
-      [linje, genvej].forEach(function (l) {
-        l.querySelector('b').textContent = hvordan + (under ? ' · ' + under.toLowerCase() : '');
-        l.querySelector('small').textContent = [dagTekst, tidTekst].filter(Boolean).join(' · ') || 'Vælg dag og tid';
-        var u = l.querySelector('.ny-hvornaar-tegn use');
-        if (u && ikon) u.setAttribute('href', ikon.getAttribute('href'));
-      });
-    }
-    var vent;
-    function snart() { clearTimeout(vent); vent = setTimeout(resume, 40); }
-    panel.addEventListener('click', snart);
-    panel.addEventListener('change', snart);
-    panel.addEventListener('input', snart);
-    new MutationObserver(snart).observe(dato, { childList: true });
-    new MutationObserver(snart).observe(tid, { childList: true });
-    resume();
-
-    /* "Til kassen" siger, hvad der er i kurven — tallet er kurv-bjælkens, bestil.js regner det */
-    function kasseKnap() {
-      var kb = document.querySelector('.kurvbar');
-      var antal = kb ? (kb.querySelector('.kurvbar-antal') || {}).textContent : '';
-      var sum = kb ? (kb.querySelector('.kurvbar-sum') || {}).textContent : '';
-      var tom = !antal || !document.body.classList.contains('har-kurv');
-      tilKassen.disabled = tom;
-      tilKassen.textContent = tom ? 'Vælg noget fra kortet' : 'Til kassen · ' + antal + ' ' + (sum || '');
-    }
-    new MutationObserver(function () { kasseKnap(); }).observe(document.body, { attributes: true, attributeFilter: ['class'], childList: true });
-    var kbVagt = new MutationObserver(kasseKnap);
-    (function find() {
-      var kb = document.querySelector('.kurvbar');
-      if (kb) kbVagt.observe(kb, { childList: true, subtree: true, characterData: true });
-      else setTimeout(find, 600);
-    })();
-    kasseKnap();
   })();
 })();

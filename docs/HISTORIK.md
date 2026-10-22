@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ BESTILLINGEN: DEN ORIGINALE FORM I NYT DESIGN** (22/10 — kun /ny/). Mikkel: *"selve bestil
+mad konceptet skal være det originale gamle men med nye design og smartere"*. Arkene og
+fliserne/kategori-baren er taget af igen: formularen står oppefra og ned som på forsiden (hvordan,
+dag, tid, retterne, der folder sig ud på stedet, navn, Send), og kurv-bjælken ruller ned til
+summen som altid. Tilbage er designet (det trykte kort, ◆-rubrikker, røde Bebas-priser), dato og
+tid som chips, husets foto på hver kategorirække, et rent "+" ved 0 og beskeden foldet ind.
+"Bestil smørrebrød" åbner rækken og ruller hen til den. Målt i Chromium: 2 × flæskesteg via
+"Vælg kl. 17.00" gav "2 stk. · i alt 130,-", ingen JS-fejl. Ingen bestilling sendt.
+
 **/ny/ BESTILLINGEN PÅ TELEFONEN** (22/10 — kun /ny/). Mikkel: designet er okay, men bestillingen
 skal være noget andet end den gamle formular — *"du skal tage i betragtning at folk bruger
 telefonen"*. Nu: én linje "To-go · i dag · kl. 13.00 — Skift" åbner et ark nedefra med hvordan,
