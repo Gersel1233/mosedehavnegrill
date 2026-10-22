@@ -361,6 +361,7 @@
         k.appendChild(lav('b', null, t[0]));
         if (t[1]) k.appendChild(lav('small', null, t[1]));
         k.disabled = o.disabled;
+        if (slags === 'tid' && !o.disabled && !række.querySelector('.er-foerst')) k.classList.add('er-foerst');
         var på = o.value === sel.value;
         k.setAttribute('aria-checked', på ? 'true' : 'false');
         if (på) { k.classList.add('on'); valgt = k; }
@@ -444,6 +445,100 @@
     var liste = panel.querySelector('[data-liste]');
     function rækker() { return [].slice.call(liste.querySelectorAll(':scope > .item[data-kategori]')); }
     function åben(r) { var a = r.querySelector('[data-add]'); return !!a && /^–/.test(a.textContent.trim()); }
+    function række(navn) { return rækker().filter(function (x) { return x.getAttribute('data-kategori').toLowerCase() === String(navn).toLowerCase(); })[0]; }
+    var selv = false;   /* vores egne tryk må ikke udløse harmonikaen */
+    function tryk(r) { selv = true; try { r.click(); } finally { selv = false; } }
+
+    /* ---------- SØG: hele menuen på én gang ----------
+       Reglen er husets egen (Butik.soegPasser: æ/ø/å foldet og én
+       tastefejl tilgivet) — den samme, menukortet søger med. Mens der
+       søges, er alle kategorier foldet ud og kun de retter, der passer,
+       vises; tømmes feltet, lukkes de, der var lukkede før. */
+    var søgFelt = lav('div', 'ny-soeg');
+    søgFelt.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+    var søg = lav('input', 'inp');
+    søg.type = 'search';
+    søg.placeholder = 'Søg i menuen — fx rejer, burger, softice';
+    søg.setAttribute('aria-label', 'Søg i menuen');
+    søg.setAttribute('enterkeyhint', 'search');
+    søgFelt.appendChild(søg);
+    var ryd = lav('button', 'ny-soeg-ryd', '×');
+    ryd.type = 'button';
+    ryd.setAttribute('aria-label', 'Ryd søgningen');
+    søgFelt.appendChild(ryd);
+    var mærkat = liste.querySelector(':scope > label');
+    liste.insertBefore(søgFelt, mærkat ? mærkat.nextSibling : liste.firstChild);
+    var ingen = lav('p', 'ny-soeg-ingen');
+    ingen.hidden = true;
+    liste.appendChild(ingen);
+
+    var q = '', varÅbne = null;
+    function passer(el) { return window.Butik && Butik.soegPasser ? Butik.soegPasser(el.textContent, q) : el.textContent.toLowerCase().indexOf(q.toLowerCase()) !== -1; }
+    function filtrer() {
+      var søger = q.length >= 2;
+      liste.classList.toggle('ny-soeger', søger);
+      var fundet = 0;
+      [].forEach.call(liste.children, function (el) {
+        el.classList.remove('ny-match');
+        if (!søger || el === søgFelt || el === ingen || el.tagName === 'LABEL') return;
+        if (el.matches('.item[data-kategori], .venter-note')) return;
+        var ja = passer(el);
+        if (el.classList.contains('isbyg-blok')) ja = ja || Butik.soegPasser('is softice vaffel kugle bæger isboks dessert pandekage churros sødt', q);
+        if (ja) { el.classList.add('ny-match'); fundet++; }
+      });
+      ingen.hidden = !søger || fundet > 0;
+      ingen.textContent = 'Intet på menuen hedder "' + q + '". Prøv et andet ord — eller ring til os.';
+      if (ingen.parentNode !== liste || liste.lastElementChild !== ingen) liste.appendChild(ingen);
+    }
+    function nySøgning() {
+      var før = q.length >= 2;
+      q = søg.value.trim();
+      var nu = q.length >= 2;
+      ryd.hidden = !søg.value;
+      if (nu && !før) {
+        varÅbne = rækker().filter(åben).map(function (r) { return r.getAttribute('data-kategori'); });
+        rækker().map(function (r) { return r.getAttribute('data-kategori'); }).forEach(function (navn) {
+          var r = række(navn);
+          if (r && !åben(r)) tryk(r);
+        });
+      } else if (!nu && før && varÅbne) {
+        rækker().map(function (r) { return r.getAttribute('data-kategori'); }).forEach(function (navn) {
+          var r = række(navn);
+          if (r && åben(r) && varÅbne.indexOf(navn) === -1) tryk(r);
+        });
+        varÅbne = null;
+      }
+      filtrer();
+    }
+    var vent;
+    søg.addEventListener('input', function () { clearTimeout(vent); vent = setTimeout(nySøgning, 180); });
+    søg.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); søg.blur(); } });
+    ryd.hidden = true;
+    ryd.addEventListener('click', function () { søg.value = ''; nySøgning(); søg.focus(); });
+
+    /* ---------- HARMONIKA: én kategori åben ad gangen ----------
+       På en telefon blev listen meterlang, når tre kategorier stod åbne.
+       Åbner gæsten en, lukker de andre — det, der er lagt i kurven,
+       bliver liggende og står som "N valgt" på rækken — og siden ruller,
+       så den åbne kategori står øverst. */
+    liste.addEventListener('click', function (e) {
+      if (selv || q.length >= 2) return;
+      var r = e.target.closest && e.target.closest('.item[data-kategori]');
+      /* ⚠️ bestil.js har allerede tegnet listen om, når trykket når hertil —
+         rækken er taget ud af DOM'en, så vi spørger om navnet, ikke om forælderen */
+      if (!r) return;
+      var navn = r.getAttribute('data-kategori');
+      setTimeout(function () {
+        var nu = række(navn);
+        if (!nu || !åben(nu)) return;
+        rækker().filter(function (x) { return åben(x) && x.getAttribute('data-kategori') !== navn; }).forEach(function (x) {
+          var y = række(x.getAttribute('data-kategori'));
+          if (y && åben(y)) tryk(y);
+        });
+        rulTil(række(navn), 12);
+      }, 0);
+    });
+
     function fotos() {
       rækker().forEach(function (r) {
         r.classList.toggle('ny-aaben', åben(r));
@@ -458,22 +553,30 @@
       var is = liste.querySelector(':scope > .isbyg-blok');
       if (is && !is.classList.contains('har-foto')) {
         is.classList.add('har-foto');
-        var hoved = is.querySelector('.isbyg-blok-hoved, header, h4');
+        var hoved = is.querySelector('.isbyg-blok-hoved');
         var f2 = lav('span', 'ny-katfoto ny-katfoto--is');
         f2.setAttribute('aria-hidden', 'true');
         f2.style.backgroundImage = 'url("billeder/havn-kugleis.jpg")';
         if (hoved) hoved.insertBefore(f2, hoved.firstChild);
       }
+      if (q.length >= 2) filtrer();
     }
     var ramme = 0;
-    new MutationObserver(function () { cancelAnimationFrame(ramme); ramme = requestAnimationFrame(fotos); })
-      .observe(liste, { childList: true, subtree: true, characterData: true });
+    new MutationObserver(function (poster) {
+      var andet = poster.some(function (m) { return !søgFelt.contains(m.target) && m.target !== ingen; });
+      if (!andet) return;
+      cancelAnimationFrame(ramme); ramme = requestAnimationFrame(fotos);
+    }).observe(liste, { childList: true, subtree: true, characterData: true });
     fotos();
     vælgKategori = function (navn) {
-      var r = rækker().filter(function (x) { return x.getAttribute('data-kategori').toLowerCase() === String(navn).toLowerCase(); })[0];
-      if (r && !åben(r)) r.click();
-      r = rækker().filter(function (x) { return x.getAttribute('data-kategori').toLowerCase() === String(navn).toLowerCase(); })[0];
-      rulTil(r || panel, 16);
+      if (søg.value) { søg.value = ''; nySøgning(); }
+      var r = række(navn);
+      if (r && !åben(r)) {
+        tryk(r);
+        rækker().filter(function (x) { return åben(x) && x.getAttribute('data-kategori').toLowerCase() !== String(navn).toLowerCase(); })
+          .forEach(function (x) { var y = række(x.getAttribute('data-kategori')); if (y && åben(y)) tryk(y); });
+      }
+      rulTil(række(navn) || panel, 12);
     };
   }
 

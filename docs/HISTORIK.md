@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ BESTILLINGEN, SMARTERE** (22/10 — kun /ny/). Mikkel: *"smartere"*. Inden for den originale
+form: (1) SØG i hele menuen over kategorierne — husets egen regel, `Butik.soegPasser` (æ/ø/å
+foldet, én tastefejl tilgivet); mens der søges, er alle kategorier foldet ud, og kun det, der
+passer, står; tømmes feltet, lukkes de, der var lukkede. (2) HARMONIKA: åbnes en kategori,
+lukker de andre (kurven er urørt, "N valgt" står på rækken), og siden ruller hen til den. ⚠️
+bestil.js har tegnet listen om, før trykket bobler op — rækken er ude af DOM'en, så navnet læses
+af det trykkede element, ikke af forælderen. (3) Den første ledige tid har mærket "Først".
+Målt: "rejer" → 8 retter, "remolade" (stavefejl) → 12, Burgere lukker, når Pølser åbnes.
+
 **/ny/ BESTILLINGEN: DEN ORIGINALE FORM I NYT DESIGN** (22/10 — kun /ny/). Mikkel: *"selve bestil
 mad konceptet skal være det originale gamle men med nye design og smartere"*. Arkene og
 fliserne/kategori-baren er taget af igen: formularen står oppefra og ned som på forsiden (hvordan,
