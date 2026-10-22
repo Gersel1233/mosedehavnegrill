@@ -372,7 +372,14 @@
       <span class="nk-logo" aria-hidden="true"></span>
     </header>
     <div class="nk-kant" aria-hidden="true"></div>
-    <div class="ny-trin" data-trin="1"><h3 class="nk-rubrik"><span aria-hidden="true">1</span>Hvornår og hvordan</h3></div>
+    <!-- /ny/ PÅ TELEFONEN (22/10): "Hvornår" er én linje, der åbner et ark; maden er
+         siden; navn, nummer og Send ligger i kassen. ny/mosede-ny.js flytter
+         felterne ind i de to ark — de bliver i panelet, så bestil.js finder dem. -->
+    <button type="button" class="ny-hvornaar" id="nyHvornaar" aria-haspopup="dialog">
+      <span class="ny-hvornaar-tegn" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="ikoner.svg#to-go"/></svg></span>
+      <span class="ny-hvornaar-tekst"><b>To-go</b><small>Henter …</small></span>
+      <span class="ny-hvornaar-skift">Skift</span>
+    </button>
     <!-- ⚠️ ØVERST, IKKE NEDERST  (20/9). Ejerne: "Dåse eller flaske
          sodavand skal fjernes, og kun kunne bestilles ved Take Away."
          Kundens svar på hvordan: "i stedet for i bunden så i toppen —
@@ -451,7 +458,7 @@
          fik varer taget ud af kurven. Nu vælges dag og tid først, og listen
          viser kun det, der kan fås. -->
     <div class="field"><label for="tid">Tidspunkt</label><select class="inp" id="tid"><option>kl. 11:30</option><option>kl. 12:00</option><option selected>kl. 17:30</option><option>kl. 18:00</option></select></div>
-    <div class="ny-trin" data-trin="2"><h3 class="nk-rubrik"><span aria-hidden="true">2</span>Hvad skal I have</h3><p>Vælg en kategori. Det, I lægger i kurven, bliver liggende, når I skifter.</p></div>
+    <div class="ny-trin" data-trin="2"><h3 class="nk-rubrik"><span aria-hidden="true">◆</span>Vælg maden</h3></div>
     <div class="field"><label>Vælg jeres retter</label>
       <div class="item hi"><div><h4>Dagens ret</h4><span class="tag">Henter …</span></div>
         <div class="step" data-step><button data-d="-">–</button><b>2</b><button data-d="+">+</button></div></div>
@@ -461,7 +468,7 @@
       <div class="item"><h4>Drikkevarer</h4><span class="add">+ tilføj</span></div>
       <div class="item"><h4>Tilbehør</h4><span class="add">+ tilføj</span></div>
     </div>
-    <div class="ny-trin" data-trin="3"><h3 class="nk-rubrik"><span aria-hidden="true">3</span>Hvem bestiller</h3></div>
+    <div class="ny-trin" data-trin="3"><h3 class="nk-rubrik"><span aria-hidden="true">◆</span>Hvem bestiller</h3></div>
     <div class="field two-col"><div><label for="navn">Navn</label><input class="inp" id="navn" autocomplete="name" placeholder="Dit fulde navn"></div><div><label for="tlf">Telefonnummer</label><input class="inp" id="tlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="12 34 56 78"></div></div>
     <div class="field">
       <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9).

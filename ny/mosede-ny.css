@@ -344,3 +344,57 @@ body.ny-side #bestil .panel button.g.solid.blk:disabled{background:#e4d3c8;color
 }
 .ny-side .nk-afsnit-hoved,.ny-side .nk-afsnit-hoved > div{max-width:none;width:auto}
 .ny-side .nk-afsnit-hoved > .ny-uge-pile{flex:none}
+
+/* ============================================================
+   BESTILLINGEN PÅ TELEFONEN — linjen, arkene og kassen (22/10)
+   ============================================================ */
+.ny-side .ny-hvornaar{display:flex;align-items:center;gap:14px;width:100%;margin:18px 0 6px;padding:14px 14px 14px 12px;border:0;border-radius:20px;cursor:pointer;text-align:left;
+  background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.3),0 10px 24px -16px rgba(36,26,23,.5);font:inherit;transition:transform .2s var(--spring)}
+.ny-side .ny-hvornaar:active{transform:scale(.985)}
+.ny-side .ny-hvornaar-tegn{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:14px;color:#fff;background:var(--red)}
+.ny-side .ny-hvornaar-tegn svg{width:26px;height:26px}
+.ny-side .ny-hvornaar-tekst{flex:1;min-width:0;display:grid;gap:4px}
+.ny-side .ny-hvornaar-tekst b{font:600 16px/1.25 "Host Grotesk",system-ui,sans-serif}
+.ny-side .ny-hvornaar-tekst small{font:italic 400 14px/1.3 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+.ny-side .ny-hvornaar-skift{flex:none;padding:9px 14px;border-radius:999px;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d);background:rgba(214,42,58,.1)}
+.ny-side .ny-tilkassen{display:flex;width:100%;height:58px;margin-top:22px;font-size:17px}
+.ny-side .ny-tilkassen:disabled{cursor:default;color:var(--muted);background:#efe3d4;box-shadow:none}
+/* kurv-bjælken skal ikke stå oven på "Til kassen" — kun når knappen er rullet væk */
+
+/* arkene: nedefra på telefonen, i midten på en computer */
+.ny-side dialog.ny-ark{position:fixed;inset:auto 0 0 0;margin:0;width:100%;max-width:100%;max-height:92svh;padding:0;border:0;border-radius:26px 26px 0 0;
+  display:none;flex-direction:column;overflow:hidden;color:var(--ink);background:var(--nk-creme);box-shadow:0 -20px 60px rgba(20,14,12,.35)}
+.ny-side dialog.ny-ark[open]{display:flex;animation:ny-ark-op .38s cubic-bezier(.2,.9,.24,1)}
+.ny-side dialog.ny-ark::backdrop{background:rgba(20,14,12,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+@keyframes ny-ark-op{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.ny-side dialog.ny-ark[open]{animation:none}}
+html.ny-ark-aaben{overflow:hidden}
+.ny-side .ny-ark-hoved{position:relative;flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 18px 14px;background:var(--red);color:var(--nk-creme)}
+.ny-side .ny-ark-hoved::before{content:"";position:absolute;left:50%;top:7px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:rgba(255,255,255,.45)}
+.ny-side .ny-ark-hoved h2{margin:0;font:400 34px/.9 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:var(--nk-creme)}
+.ny-side .ny-ark-luk{flex:none;display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:50%;cursor:pointer;color:var(--nk-creme);background:rgba(255,255,255,.18)}
+.ny-side .ny-ark-luk svg{width:20px;height:20px}
+.ny-side .ny-ark-kant{flex:none;height:26px;background:
+  radial-gradient(circle at 50% 100%,var(--nk-creme) 7.5px,transparent 8px) 0 100%/16px 12px repeat-x,
+  linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/16px 100%,
+  linear-gradient(0deg,transparent 50%,rgba(216,41,59,.5) 0) 0 0/100% 16px,#fff}
+.ny-side .ny-ark-krop{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:4px 18px 20px;-webkit-overflow-scrolling:touch}
+.ny-side .ny-ark-krop > .field:first-child{margin-top:8px}
+.ny-side .ny-ark-fod{flex:none;padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px));background:var(--nk-creme);box-shadow:0 -1px 0 rgba(36,26,23,.08)}
+.ny-side .ny-ark-fod .nk-knap{width:100%;height:56px;font-size:17px}
+.ny-side .ny-ark .ny-chips{margin-left:-18px;margin-right:-18px;padding-left:18px;padding-right:18px}
+.ny-side .ny-ark .ny-hvornaar--kasse{margin-top:10px}
+.ny-side #nyArkKasse .ny-ark-krop{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.ny-side #nyArkKasse .ny-trin{margin-top:22px}
+.ny-side #nyArkKasse #sumline{margin-top:14px}
+@media (min-width:821px){
+  .ny-side dialog.ny-ark{inset:0;margin:auto;width:min(580px,92vw);max-height:86vh;border-radius:26px;box-shadow:0 40px 90px rgba(20,14,12,.45)}
+  .ny-side .ny-ark-hoved::before{display:none}
+  .ny-side .ny-ark-krop{padding:6px 28px 26px}
+  .ny-side .ny-ark-fod{padding:14px 28px 20px}
+  .ny-side .ny-ark .ny-chips{margin-left:-28px;margin-right:-28px;padding-left:28px;padding-right:28px}
+}
+/* rubrikkerne i bestillingen er ◆ som på kortet, ikke numre — trinene er nu linjen, maden og kassen */
+.ny-side .ny-trin .nk-rubrik > span{display:inline;width:auto;height:auto;border-radius:0;font-size:15px;color:var(--nk-blaa);background:none;transform:translateY(-2px)}
+/* "Vælg jeres retter" siger det samme som rubrikken lige over */
+.ny-side #bestil [data-liste] > label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}

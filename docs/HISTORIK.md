@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ BESTILLINGEN PÅ TELEFONEN** (22/10 — kun /ny/). Mikkel: designet er okay, men bestillingen
+skal være noget andet end den gamle formular — *"du skal tage i betragtning at folk bruger
+telefonen"*. Nu: én linje "To-go · i dag · kl. 13.00 — Skift" åbner et ark nedefra med hvordan,
+dag og tid; siden er maden; "Til kassen" og kurv-bjælken åbner kassen med kvitteringen, navn,
+nummer, allergi og Send. ⚠️ Arkene er <dialog> INDE i panelet, og felterne er FLYTTET dertil, ikke
+kopieret — bestil.js finder dem som før. Et felt, der får aria-invalid i et lukket ark, åbner arket.
+Målt i Chromium: dagen skiftes i arket, linjen følger med, kurv-bjælken åbner kassen, Send uden
+navn sætter fejlen og markøren i Navn inde i kassen. Ingen bestilling sendt.
+
 **/ny/ AFSNIT 1, TREDJE UDGAVE — HUSETS TRYKTE STIL** (22/10 — kun /ny/). Mikkel: *"det slet
 ikke cafe agtig … de vil gerne være kendt for at lave gode smørrebrød og ja cafe"*. Afsnit 1
 taler nu de trykte menukorts sprog (samme greb som menukortet 26/9): rødt hoved med kransen,

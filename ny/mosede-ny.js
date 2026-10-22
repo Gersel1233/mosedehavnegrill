@@ -570,4 +570,168 @@
     vis(!!besked.value);
     besked.addEventListener('input', function () { if (besked.value) vis(true); });
   })();
+
+
+  /* ============================================================
+     BESTILLINGEN PÅ TELEFONEN — to ark i stedet for én lang formular
+     ------------------------------------------------------------
+     Mikkels ord: *"du skal tage i betragtning at folk bruger
+     telefonen"*. Siden viser maden; HVORNÅR er én linje, der åbner et
+     ark nedefra, og navn, nummer og Send ligger i KASSEN, som
+     kurv-bjælken og "Til kassen" åbner.
+
+     ⚠️ FELTERNE FLYTTES, DE KOPIERES IKKE. Arkene er <dialog>-elementer
+     INDE i panelet, så bestil.js' egne opslag (felt('dato'), find(…,
+     panel), #sumline, Send) rammer de samme knuder som før. En fejl på
+     et felt i et lukket ark (fx en manglende adresse) åbner det ark —
+     ellers ville markøren sætte sig i et felt, ingen kan se.
+     ============================================================ */
+  (function () {
+    var panel = document.querySelector('#bestil .panel');
+    var linje = document.getElementById('nyHvornaar');
+    if (!panel || !linje || typeof HTMLDialogElement !== 'function') return;
+    var dato = document.getElementById('dato'), tid = document.getElementById('tid');
+    var seg = panel.querySelector('[data-seg="how"]');
+    var send = panel.querySelector('button.g.solid.blk');
+    if (!dato || !tid || !send) return;
+
+    function ark(id, titel, knapTekst) {
+      var d = lav('dialog', 'ny-ark');
+      d.id = id;
+      d.setAttribute('aria-labelledby', id + '-titel');
+      var hoved = lav('header', 'ny-ark-hoved');
+      var h = lav('h2', null, titel); h.id = id + '-titel';
+      hoved.appendChild(h);
+      var luk = lav('button', 'ny-ark-luk');
+      luk.type = 'button';
+      luk.setAttribute('aria-label', 'Luk');
+      luk.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><use href="ikoner.svg#luk"/></svg>';
+      luk.addEventListener('click', function () { d.close(); });
+      hoved.appendChild(luk);
+      d.appendChild(hoved);
+      d.appendChild(lav('div', 'nk-kant ny-ark-kant'));
+      var krop = lav('div', 'ny-ark-krop');
+      d.appendChild(krop);
+      if (knapTekst) {
+        var fod = lav('div', 'ny-ark-fod');
+        var ok = lav('button', 'nk-knap', knapTekst);
+        ok.type = 'button';
+        ok.addEventListener('click', function () { d.close(); });
+        fod.appendChild(ok);
+        d.appendChild(fod);
+      }
+      /* et tryk uden for arket lukker det */
+      d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+      d.addEventListener('close', function () { document.documentElement.classList.remove('ny-ark-aaben'); });
+      panel.appendChild(d);
+      return { el: d, krop: krop };
+    }
+    function åbn(a) {
+      [hvornår, kasse].forEach(function (x) { if (x.el.open && x !== a) x.el.close(); });
+      if (!a.el.open) a.el.showModal();
+      document.documentElement.classList.add('ny-ark-aaben');
+      a.el.querySelector('.ny-ark-krop').scrollTop = 0;
+    }
+    function felt(el) { return el && el.closest ? el.closest('.field') : null; }
+
+    var hvornår = ark('nyArkHvornaar', 'Hvornår og hvordan', 'Færdig');
+    [felt(seg), document.getElementById('fpersfelt'), document.getElementById('flevfelt'), felt(dato), felt(tid)]
+      .forEach(function (f) { if (f) hvornår.krop.appendChild(f); });
+
+    var kasse = ark('nyArkKasse', 'Din bestilling', null);
+    /* alt efter madlisten hører til kassen: navn, allergi, besked, summen og Send */
+    var start = panel.querySelector('.ny-trin[data-trin="3"]');
+    var flyt = [];
+    for (var n = start; n; n = n.nextElementSibling) if (n.tagName !== 'DIALOG') flyt.push(n);
+    var genvej = lav('button', 'ny-hvornaar ny-hvornaar--kasse');
+    genvej.type = 'button';
+    genvej.innerHTML = linje.innerHTML;
+    genvej.addEventListener('click', function () { åbn(hvornår); });
+    kasse.krop.appendChild(genvej);
+    var kvit = document.getElementById('sumline');
+    if (kvit) kasse.krop.appendChild(kvit);
+    flyt.forEach(function (f) { if (f !== kvit) kasse.krop.appendChild(f); });
+
+    /* "Til kassen" efter maden */
+    var tilKassen = lav('button', 'nk-knap ny-tilkassen', 'Til kassen');
+    tilKassen.type = 'button';
+    tilKassen.addEventListener('click', function () { åbn(kasse); });
+    panel.insertBefore(tilKassen, hvornår.el);
+
+    linje.addEventListener('click', function () { åbn(hvornår); });
+    /* kurv-bjælken nederst åbner kassen i stedet for at rulle ned til den */
+    document.addEventListener('click', function (e) {
+      var k = e.target.closest && e.target.closest('.kurvbar');
+      if (!k) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      åbn(kasse);
+    }, true);
+    /* "Vælg levering" i nyheden: bestil.js vælger levering, vi viser adressen */
+    document.querySelectorAll('[data-vaelg-levering]').forEach(function (b) {
+      b.addEventListener('click', function () { setTimeout(function () { åbn(hvornår); }, 60); });
+    });
+
+    /* en fejl på et felt i et lukket ark åbner arket */
+    new MutationObserver(function (poster) {
+      poster.forEach(function (m) {
+        if (m.target.getAttribute('aria-invalid') !== 'true') return;
+        var d = m.target.closest('dialog');
+        if (!d || d.open) return;
+        åbn(d === hvornår.el ? hvornår : kasse);
+        setTimeout(function () { try { m.target.focus(); } catch (e) {} }, 50);
+      });
+    }).observe(panel, { subtree: true, attributes: true, attributeFilter: ['aria-invalid'] });
+
+    /* linjen: hvordan · hvilken dag · hvornår */
+    function resume() {
+      var på = seg ? seg.querySelector('button.on') : null;
+      var segVist = seg && felt(seg) && felt(seg).style.display !== 'none';
+      var hvordan = på && segVist ? på.textContent.trim() : 'Afhentning';
+      var under = på && segVist ? på.getAttribute('data-under') : 'Ved lugen';
+      var adr = document.getElementById('fadr');
+      if (hvordan === 'Levering' && adr && adr.value.trim()) under = 'Til ' + adr.value.trim();
+      var iso = dato.value, dagTekst = '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(iso) && window.Butik && R.ugedagFor) {
+        var iDag = Butik.nu().dato;
+        dagTekst = iso === iDag ? 'I dag' : iso === Butik.isoPlus(iDag, 1) ? 'I morgen' : ugedag(iso);
+        dagTekst += ' ' + kortDato(iso);
+      }
+      var o = tid.options[tid.selectedIndex];
+      var tidTekst = o && !/henter/i.test(o.textContent) ? o.textContent.trim() : '';
+      var ikon = på ? på.querySelector('use') : null;
+      [linje, genvej].forEach(function (l) {
+        l.querySelector('b').textContent = hvordan + (under ? ' · ' + under.toLowerCase() : '');
+        l.querySelector('small').textContent = [dagTekst, tidTekst].filter(Boolean).join(' · ') || 'Vælg dag og tid';
+        var u = l.querySelector('.ny-hvornaar-tegn use');
+        if (u && ikon) u.setAttribute('href', ikon.getAttribute('href'));
+      });
+    }
+    var vent;
+    function snart() { clearTimeout(vent); vent = setTimeout(resume, 40); }
+    panel.addEventListener('click', snart);
+    panel.addEventListener('change', snart);
+    panel.addEventListener('input', snart);
+    new MutationObserver(snart).observe(dato, { childList: true });
+    new MutationObserver(snart).observe(tid, { childList: true });
+    resume();
+
+    /* "Til kassen" siger, hvad der er i kurven — tallet er kurv-bjælkens, bestil.js regner det */
+    function kasseKnap() {
+      var kb = document.querySelector('.kurvbar');
+      var antal = kb ? (kb.querySelector('.kurvbar-antal') || {}).textContent : '';
+      var sum = kb ? (kb.querySelector('.kurvbar-sum') || {}).textContent : '';
+      var tom = !antal || !document.body.classList.contains('har-kurv');
+      tilKassen.disabled = tom;
+      tilKassen.textContent = tom ? 'Vælg noget fra kortet' : 'Til kassen · ' + antal + ' ' + (sum || '');
+    }
+    new MutationObserver(function () { kasseKnap(); }).observe(document.body, { attributes: true, attributeFilter: ['class'], childList: true });
+    var kbVagt = new MutationObserver(kasseKnap);
+    (function find() {
+      var kb = document.querySelector('.kurvbar');
+      if (kb) kbVagt.observe(kb, { childList: true, subtree: true, characterData: true });
+      else setTimeout(find, 600);
+    })();
+    kasseKnap();
+  })();
 })();
