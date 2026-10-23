@@ -8,7 +8,8 @@
   var NY = {
     '/': '/ny/', '/index.html': '/ny/', '/bord/': '/ny/bord/', '/historien.html': '/ny/historien.html',
     '/h-smorrebrod.html': '/ny/h-smorrebrod.html', '/smoerrebroed-ud-af-huset/': '/ny/h-smorrebrod.html',
-    '/h-baglokale.html': '/ny/h-baglokale.html', '/baglokale/': '/ny/h-baglokale.html'
+    '/h-baglokale.html': '/ny/h-baglokale.html', '/baglokale/': '/ny/h-baglokale.html',
+    '/h-catering.html': '/ny/h-catering.html', '/catering/': '/ny/h-catering.html'
   };
   function ret(a) {
     var href = a.getAttribute('href');

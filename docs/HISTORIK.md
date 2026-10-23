@@ -7,6 +7,14 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/h-catering.html — CATERING UNDER CLOCHEN** (23/10 — kun /ny/, den rigtige side er urørt). Fjerde af
+vejviserens seks. Havneblå på hvid dug, så siden ikke ligner forsidens røde: en tegnet sølvcloche, hvor
+låget løftes af maden (stille ved "reducer bevægelse"), "VI LAVER MADEN. / I HOLDER FESTEN." i Bebas,
+notitserne med husets tegninger (vimpler, den røde vogn, den røde drejeskivetelefon), "Vi elsker at lave
+mad til andre" som citat, "Det kan vi lave til jer" som et trykt menukort med BLÅT hoved og de samme
+fotos som forsidens bestilling i stedet for emojis (priserne fyldes stadig af catering.js), og "Sådan gør
+vi" som husets røde kort med kransen. Mailknappen og telefonen er de samme.
+
 **/ny/h-baglokale.html — AFTENEN I BAGLOKALET** (23/10 — kun /ny/, den rigtige side er urørt). Tredje af
 vejviserens seks. Fotoet viser lokalet om aftenen med lyskæden på trævæggen, så siden er det: mørkt træ,
 en lyskæde over toppen (pærerne gløder langsomt; slået fra ved "reducer bevægelse"), navnet på en
