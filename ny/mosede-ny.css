@@ -356,3 +356,13 @@ body.ny-side #bestil .seg2 button:not(.on) svg.ny-hv-ikon{filter:saturate(.85)}
 .ny-side .ny-lev-ikon svg.ny-lev-vogn{width:44px;height:44px;fill:none}
 /* bestil.js' egen leveringslinje under adressen siger det samme som kortet over den */
 .ny-side #flevfelt #lev-hint{display:none}
+
+/* ingen "Henter …": smørrebrødets liste står som stille streger, til menukortet er hentet */
+.ny-side .nk-liste li.nk-skelet{height:38px;padding:0;border-bottom:1px solid rgba(36,26,23,.06);position:relative}
+.ny-side .nk-liste li.nk-skelet::before{content:"";position:absolute;left:0;top:12px;height:12px;width:62%;border-radius:6px;
+  background:linear-gradient(90deg,rgba(36,26,23,.06),rgba(36,26,23,.11),rgba(36,26,23,.06));background-size:200% 100%;animation:nk-skelet 1.4s ease-in-out infinite}
+.ny-side .nk-liste li.nk-skelet:nth-child(2n)::before{width:48%}
+@keyframes nk-skelet{from{background-position:100% 0}to{background-position:-100% 0}}
+@media (prefers-reduced-motion:reduce){.ny-side .nk-liste li.nk-skelet::before{animation:none}}
+.ny-side .ny-uge-prik[hidden],.ny-side .ny-uge-pile[hidden],.ny-side .ny-nav a[hidden]{display:none !important}
+.ny-side .nk-dag.er-udsolgt .nk-dag-hoved{background:#8d6e63}

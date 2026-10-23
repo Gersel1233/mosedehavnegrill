@@ -265,7 +265,7 @@
       </div>
       <div class="nk-tekst">
         <h3 class="nk-rubrik"><span aria-hidden="true">◆</span>Varianter</h3>
-        <ul class="nk-liste" id="nySmoerListe"><li class="nk-henter">Henter menukortet …</li></ul>
+        <ul class="nk-liste" id="nySmoerListe" aria-busy="true"><li class="nk-skelet"></li><li class="nk-skelet"></li><li class="nk-skelet"></li><li class="nk-skelet"></li><li class="nk-skelet"></li></ul>
         <button type="button" class="nk-flere" id="nySmoerFlere" hidden></button>
         <div class="nk-bokse" id="nySmoerBokse"></div>
         <div class="nk-knapper">
@@ -277,7 +277,7 @@
   </article>
 </section>
 
-<section id="dagens" class="nk-afsnit nk-afsnit--uge" aria-labelledby="dagens-titel">
+<section id="dagens" class="nk-afsnit nk-afsnit--uge" aria-labelledby="dagens-titel" hidden>
   <div class="nk-afsnit-hoved">
     <div>
       <h2 class="nk-rubrik nk-rubrik--stor" id="dagens-titel"><span aria-hidden="true">◆</span>Dagens ret</h2>
@@ -285,7 +285,7 @@
     </div>
     <div class="ny-uge-pile" aria-hidden="true"><button type="button" data-pil="-1" tabindex="-1"><svg viewBox="0 0 24 24"><use href="ikoner.svg#tilbage"/></svg></button><button type="button" data-pil="1" tabindex="-1"><svg viewBox="0 0 24 24"><use href="ikoner.svg#videre"/></svg></button></div>
   </div>
-  <div class="ny-uge-raekke" id="nyUge" tabindex="0" aria-label="De næste syv dage"><p class="nk-henter">Henter ugens retter …</p></div>
+  <div class="ny-uge-raekke" id="nyUge" tabindex="0" aria-label="De næste dages retter"></div>
   <div class="ny-uge-prik" id="nyUgePrik" aria-hidden="true"></div>
 </section>
 <section id="idag" style="padding-bottom:6px">

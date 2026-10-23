@@ -110,62 +110,51 @@
   }
 
   /* Hver dag er et lille trykt menukort: rødt hoved med dagen, den ternede
-     kant og retten på papiret. Er der ingen retter lagt op i hele ugen, står
-     der ét kort, der siger det — ikke syv ens "kommer snart". */
+     kant og retten på papiret.
+     ⚠️ KUN DAGE MED EN RET (23/10). Mikkel: *"der skal ikke stå henter
+     dagens retter, hvis der ikke er nogen"*. En dag uden ret er ikke en
+     nyhed; er der ingen retter i hele ugen, findes afsnittet ikke — heller
+     ikke i bjælken. Afsnittet står skjult i HTML'en, til dataen siger andet,
+     så der aldrig står "Henter …". */
   function tegnUge(d) {
     var række = document.getElementById('nyUge');
     var prikker = document.getElementById('nyUgePrik');
+    var afsnit = document.getElementById('dagens');
     if (!række || !window.Butik || !Butik.nu || !R.ugedagFor) return;
     var iDag = Butik.nu().dato;
     var husk = række.scrollLeft;
     var dage = [];
-    for (var n = 0; n < 7; n++) dage.push(dagenI(d, Butik.isoPlus(iDag, n)));
+    for (var n = 0; n < 7; n++) {
+      var dg = dagenI(d, Butik.isoPlus(iDag, n));
+      dg.nr = n;
+      if (dg.retter.length) dage.push(dg);
+    }
     række.textContent = '';
     if (prikker) prikker.textContent = '';
-    var nogen = dage.some(function (x) { return x.retter.length; });
-    række.classList.toggle('er-tom', !nogen);
+    var nogen = dage.length > 0;
+    if (afsnit) afsnit.hidden = !nogen;
+    document.querySelectorAll('a[href="#dagens"]').forEach(function (a) { a.hidden = !nogen; });
+    if (!nogen) return;
     var linje = document.querySelector('#dagens .nk-afsnit-linje');
-    if (linje) linje.textContent = nogen ? 'En ret fra køkkenet hver dag — swipe og se ugen.' : 'En ret fra køkkenet hver dag.';
-    if (!nogen) {
-      var tom = lav('article', 'nk-dag nk-dag--tom');
-      var th = lav('header', 'nk-dag-hoved');
-      th.appendChild(lav('b', null, 'Ugens retter'));
-      tom.appendChild(th);
-      tom.appendChild(lav('div', 'nk-dag-kant'));
-      var tk = lav('div', 'nk-dag-krop');
-      tk.appendChild(lav('h3', null, 'Køkkenet har ikke skrevet ugens retter endnu'));
-      tk.appendChild(lav('p', 'nk-kursiv', 'De står her, så snart de er lagt op. Indtil da: smørrebrødet og hele menukortet.'));
-      var mk = lav('a', 'nk-knap nk-knap--lys', 'Se hele menukortet →');
-      mk.setAttribute('href', 'm-menukort.html');
-      tk.appendChild(mk);
-      tom.appendChild(tk);
-      række.appendChild(tom);
-      return;
-    }
-    dage.forEach(function (dag, i) {
-      var iso = dag.iso, ret = dag.retter[0];
-      var kort = lav('article', 'nk-dag' + (i === 0 ? ' er-idag' : '') + (dag.lukket ? ' er-lukket' : '') + (!ret ? ' er-tom' : ''));
+    if (linje) linje.textContent = dage.length > 1 ? 'En ret fra køkkenet hver dag — swipe og se de næste.' : 'En ret fra køkkenet hver dag.';
+    if (prikker) prikker.hidden = dage.length < 2;
+    var pile = document.querySelector('#dagens .ny-uge-pile');
+    if (pile) pile.hidden = dage.length < 3;
+    dage.forEach(function (dag, plads) {
+      var i = dag.nr, iso = dag.iso, ret = dag.retter[0];
+      var kort = lav('article', 'nk-dag' + (i === 0 ? ' er-idag' : '') + (ret.udsolgt ? ' er-udsolgt' : ''));
       var hoved = lav('header', 'nk-dag-hoved');
       hoved.appendChild(lav('b', null, i === 0 ? 'I dag' : i === 1 ? 'I morgen' : ugedag(iso)));
       hoved.appendChild(lav('span', null, (i < 2 ? ugedag(iso) + ' · ' : '') + kortDato(iso)));
       kort.appendChild(hoved);
       kort.appendChild(lav('div', 'nk-dag-kant'));
       var krop = lav('div', 'nk-dag-krop');
-      if (ret) {
+      {
         krop.appendChild(lav('h3', null, ret.navn));
         var linjer = [];
         if (ret.beskrivelse) linjer.push(ret.beskrivelse);
         dag.retter.slice(1).forEach(function (r) { linjer.push('Eller: ' + r.navn); });
         if (linjer.length) krop.appendChild(lav('p', 'nk-kursiv', linjer.join(' ')));
-      } else if (dag.lukket) {
-        krop.appendChild(lav('h3', null, 'Lukket'));
-        krop.appendChild(lav('p', 'nk-kursiv', 'Vi holder lukket den dag.'));
-      } else if (dag.ingen) {
-        krop.appendChild(lav('h3', null, 'Ingen dagens ret'));
-        krop.appendChild(lav('p', 'nk-kursiv', 'Vælg frit fra menukortet.'));
-      } else {
-        krop.appendChild(lav('h3', null, 'Kommer snart'));
-        krop.appendChild(lav('p', 'nk-kursiv', 'Retten skrives her, når køkkenet har lagt den op.'));
       }
       var fod = lav('div', 'nk-dag-fod');
       if (ret && ret.pris !== null && ret.pris !== undefined) fod.appendChild(lav('span', 'nk-pris', Butik.kroner(ret.pris)));
@@ -185,7 +174,7 @@
       if (fod.children.length) krop.appendChild(fod);
       kort.appendChild(krop);
       række.appendChild(kort);
-      if (prikker) prikker.appendChild(lav('i', i === 0 ? 'on' : ''));
+      if (prikker) prikker.appendChild(lav('i', plads === 0 ? 'on' : ''));
     });
     række.scrollLeft = husk;
     prikPå();
@@ -219,6 +208,7 @@
     basis = basis === undefined ? null : Number(basis);
     var egne = varer.filter(function (v) { return v.pris != null && basis != null && v.pris >= basis + 25; }).slice(0, 2);
     liste.textContent = '';
+    liste.removeAttribute('aria-busy');
     varer.filter(function (v) { return egne.indexOf(v) === -1; }).forEach(function (v, i) {
       var li = lav('li', i >= 10 ? 'nk-skjult' : '');
       li.appendChild(lav('span', 'nk-navn', v.navn));
@@ -308,6 +298,11 @@
     }
     heroKort.hidden = true;
   }
+
+  setTimeout(function () {
+    var l = document.getElementById('nySmoerListe');
+    if (l && l.getAttribute('aria-busy') === 'true') l.hidden = true;
+  }, 9000);
 
   function tegnAlt(d) {
     if (!d || !window.Butik) return;

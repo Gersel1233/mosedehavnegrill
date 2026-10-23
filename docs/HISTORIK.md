@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ INGEN TOMME KORT OG INGEN "HENTER …"** (23/10 — kun /ny/). Mikkel: *"der skal ikke stå
+henter dagens retter, hvis der ikke er nogen"*. Dagens ret-afsnittet står skjult i HTML'en og
+vises kun, når mindst én af de næste syv dage HAR en ret — og så kun de dage (ingen "Kommer
+snart", "Lukket" eller tomme kort). Er der ingen, forsvinder også genvejen i bjælken. Prikker og
+pile kommer kun, når der er noget at swipe til. Smørrebrødets liste står som stille streger, til
+menukortet er hentet (og skjules efter 9 sek., hvis det aldrig kommer). Posen og bordet er
+tegnet om (foldet top, sidefold, is-klistermærke; dug med bølgekant, smørrebrød og kaffe).
+⚠️ Den rigtige forside (#ugen) viser stadig "Følger snart" — rørt ikke.
+
 **/ny/ DAG, TID, LEVERING OG IKONER** (23/10 — kun /ny/). Mikkel: dag og tid skal være
 rullelisterne *"som før, så når man trykker, folder de ned"*; *"levering skal være meget
 bedre"*; og om ikonerne: *"kan de her ikoner ikke være mindre generiske"*. Chipsene er væk;
