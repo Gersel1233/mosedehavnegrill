@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ SELSKAB & CATERING SOM TRYKT KORT** (23/10 — kun /ny/). Mikkel: *"fortsæt til næste
+section"*. Samme sprog som smørrebrødet og menukortet: rødt hoved "Selskab & catering" med kransen,
+ternet kant, "◆ Vi gør os umage hver gang" som linjer med husets tegn, stemningsfotoerne (de samme,
+#stemning), de tre løfter som små bokse med ternet top, og "Skal vi tage snakken?" som kortets røde
+afslutning med hvid knap og telefonnummeret. Alle tekster er forsidens egne; den gamle overskrift
+"Lad os holde jeres næste arrangement" står nu i hovedets kursive linje.
+
 **/ny/ "VORES IS" OG KRANSEN PÅ POSEN** (23/10 — kun /ny/). Mikkel: *"den skal hedde Vores is —
 man skal kunne se alle deres gode kendte is"* og *"prop lige det rigtige logo på den der"* (posen).
 Overskriften er "Vores is"; under "◆ Hele isen" står smagene ved lugen (indstillingen is_smage,

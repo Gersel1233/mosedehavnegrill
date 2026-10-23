@@ -585,3 +585,44 @@ body.ny-side .nk--is{background:none;box-shadow:none;border-radius:0;overflow:vi
 }
 /* kransen i posen: knappens egen svg-regel (26 px) må ikke gælde den indlejrede svg */
 body.ny-side #bestil .seg2 button svg.ny-hv-ikon svg.ny-krans{width:14px;height:14px;margin:0;opacity:1}
+
+/* ============================================================
+   SELSKAB & CATERING SOM TRYKT KORT  (23/10)
+   ============================================================ */
+body.ny-side .nk-afsnit--selskab{background:var(--cream)}
+.ny-side .nk--selskab .nk-titel span{color:var(--nk-pink)}
+.ny-side .nk--selskab .nk-selskab-krop h3.nk-rubrik{margin-top:0;font-size:27px}
+/* "vi gør os umage": linjer med husets tegn, ikke kasser */
+.ny-side .nk--selskab .feats{gap:0;margin-top:10px}
+.ny-side .nk--selskab .feat{padding:13px 2px;border-radius:0;background:none;box-shadow:none;border-bottom:1px solid rgba(36,26,23,.1);font-size:16px;align-items:center}
+.ny-side .nk--selskab .feat b{font-weight:500}
+.ny-side .nk--selskab .feat svg{width:22px;height:22px;margin:0}
+.ny-side .nk--selskab .stemning{margin-top:22px;gap:10px}
+.ny-side .nk--selskab .stem-flis{border-radius:20px;box-shadow:0 14px 30px -14px rgba(36,26,23,.4)}
+/* de tre løfter: små bokse med ternet top */
+.ny-side .nk--selskab .facts{gap:10px;margin-top:24px}
+.ny-side .nk--selskab .fact{position:relative;overflow:hidden;padding:22px 16px 16px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.25);font-size:14.5px;flex-direction:column;gap:6px}
+.ny-side .nk--selskab .fact::before{content:"";position:absolute;left:0;right:0;top:0;height:7px;
+  background:linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/7px 100%,linear-gradient(0deg,transparent 50%,rgba(216,41,59,.5) 0) 0 0/100% 7px,#fff}
+.ny-side .nk--selskab .fact svg{width:22px;height:22px;margin:0}
+.ny-side .nk--selskab .fact b{display:block;font:400 22px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase;margin-bottom:2px}
+/* skal vi tage snakken: kortets afslutning, rød boks */
+.ny-side .nk--selskab .talk{margin-top:26px;padding:28px 20px 24px;border-radius:22px;color:var(--nk-creme);background:var(--red);box-shadow:0 20px 40px -20px rgba(180,31,46,.8);position:relative;overflow:hidden}
+.ny-side .nk--selskab .talk::after{content:"";position:absolute;width:380px;height:380px;right:-200px;top:-200px;border-radius:50%;border:1px solid rgba(255,255,255,.18);pointer-events:none}
+.ny-side .nk--selskab .talk h3{font:400 40px/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:var(--nk-creme)}
+.ny-side .nk--selskab .talk p{color:rgba(251,246,236,.9);font-size:15.5px;font-style:italic}
+body.ny-side .nk--selskab .talk .g.solid{color:var(--red-d);background:#fff;box-shadow:0 12px 24px -10px rgba(80,8,16,.6)}
+.ny-side .nk--selskab .talk .ring{color:rgba(251,246,236,.85);font-size:14px}
+.ny-side .nk--selskab .talk .ring a{color:#fff;text-decoration-color:rgba(255,255,255,.5)}
+@media (min-width:821px){
+  .ny-side .nk--selskab .nk-selskab-krop{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px 44px;padding:36px 40px 40px;align-items:start}
+  .ny-side .nk--selskab .nk-selskab-umage{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:0 44px;align-items:start}
+  .ny-side .nk--selskab .nk-selskab-umage > h3,.ny-side .nk--selskab .nk-selskab-umage > .feats{grid-column:1}
+  .ny-side .nk--selskab .nk-selskab-umage > .stemning{grid-column:2;grid-row:1/4;margin-top:0}
+  .ny-side .nk--selskab .facts{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:6px}
+  .ny-side .nk--selskab .talk{grid-column:1/-1;margin-top:6px}
+}
+/* .talk har sit eget smalle mål i havnegrillen-desktop.css — her følger den kortet */
+body.ny-side .nk--selskab .talk{max-width:none;margin-left:0;margin-right:0;width:auto}
+@media (max-width:820px){.ny-side .nk--selskab .nk-selskab-krop h3.nk-rubrik{font-size:23px}}
+body.ny-side .nk--selskab .talk .g{width:min(100%,420px)}
