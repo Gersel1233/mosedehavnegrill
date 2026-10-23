@@ -1,0 +1,40 @@
+<!-- Mosede Havn tegnet efter Mikkels skud fra Google Maps (23/10); vej og husrække lagt efter adressernes koordinater, nålen på Havnevej 20I. Se index.html, "RUTEN ER KORTET". -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="120 40 1260 900" width="1260" height="900">
+<rect x="0" y="0" width="1532" height="1206" fill="#a8d8ea"/>
+<path fill="#f4f3f0" d="M0 0H828L772 88 762 192 795 292 850 320 990 324 1006 340 846 562 748 640 738 745 652 757 560 744 420 746 300 758 176 768 156 792 0 942Z"/>
+<path fill="#dcefdc" d="M742 176L762 192 795 292 850 320 990 324 996 334 745 336Z"/>
+<path fill="#dcefdc" d="M0 832L272 612 334 652 430 744 300 758 176 768 156 792 0 942Z"/>
+<g fill="none" stroke="#f4f3f0" stroke-linejoin="round" stroke-linecap="round">
+<path stroke-width="36" d="M650 772L770 800 905 872 914 926 1180 893 1322 722 1300 654"/>
+<path stroke-width="30" d="M1000 336L1252 572"/>
+<path stroke-width="22" d="M832 578L908 656"/>
+<path stroke-width="26" d="M886 790L906 880"/>
+</g>
+<g fill="#e6e6e3" stroke="#d6d6d2" stroke-width="1.5"><rect x="136" y="101" width="39" height="19" rx="2" transform="rotate(56 136 101)"/><rect x="47" y="335" width="44" height="21" rx="2" transform="rotate(-35 47 335)"/><rect x="45" y="249" width="43" height="20" rx="2" transform="rotate(-34 45 249)"/><rect x="256" y="335" width="27" height="27" rx="2" transform="rotate(-35 256 335)"/><rect x="391" y="45" width="43" height="23" rx="2" transform="rotate(-34 391 45)"/><rect x="221" y="328" width="37" height="29" rx="2" transform="rotate(-35 221 328)"/><rect x="237" y="365" width="33" height="27" rx="2" transform="rotate(-35 237 365)"/><rect x="230" y="354" width="36" height="27" rx="2" transform="rotate(-36 230 354)"/><rect x="151" y="154" width="30" height="30" rx="2" transform="rotate(-35 151 154)"/><rect x="234" y="304" width="44" height="30" rx="2" transform="rotate(-36 234 304)"/><rect x="247" y="60" width="36" height="21" rx="2" transform="rotate(-36 247 60)"/><rect x="69" y="284" width="27" height="29" rx="2" transform="rotate(56 69 284)"/><rect x="233" y="493" width="32" height="29" rx="2" transform="rotate(56 233 493)"/><rect x="204" y="450" width="27" height="19" rx="2" transform="rotate(-36 204 450)"/><rect x="195" y="379" width="27" height="29" rx="2" transform="rotate(56 195 379)"/><rect x="397" y="464" width="32" height="24" rx="2" transform="rotate(-36 397 464)"/><rect x="19" y="269" width="29" height="20" rx="2" transform="rotate(-35 19 269)"/><rect x="75" y="237" width="32" height="20" rx="2" transform="rotate(55 75 237)"/><rect x="347" y="170" width="34" height="24" rx="2" transform="rotate(55 347 170)"/><rect x="384" y="101" width="30" height="22" rx="2" transform="rotate(-34 384 101)"/><rect x="15" y="469" width="30" height="23" rx="2" transform="rotate(-34 15 469)"/><rect x="173" y="219" width="37" height="33" rx="2" transform="rotate(56 173 219)"/><rect x="299" y="267" width="43" height="33" rx="2" transform="rotate(56 299 267)"/><rect x="163" y="235" width="28" height="28" rx="2" transform="rotate(-35 163 235)"/><rect x="84" y="552" width="35" height="20" rx="2" transform="rotate(56 84 552)"/><rect x="351" y="352" width="29" height="22" rx="2" transform="rotate(-36 351 352)"/><rect x="245" y="276" width="28" height="26" rx="2" transform="rotate(55 245 276)"/><rect x="197" y="188" width="29" height="30" rx="2" transform="rotate(-36 197 188)"/><rect x="197" y="394" width="36" height="21" rx="2" transform="rotate(56 197 394)"/><rect x="367" y="429" width="32" height="28" rx="2" transform="rotate(-35 367 429)"/><rect x="153" y="110" width="41" height="27" rx="2" transform="rotate(56 153 110)"/><rect x="139" y="140" width="42" height="34" rx="2" transform="rotate(-34 139 140)"/><rect x="324" y="462" width="41" height="22" rx="2" transform="rotate(56 324 462)"/><rect x="202" y="415" width="46" height="31" rx="2" transform="rotate(55 202 415)"/><rect x="364" y="232" width="45" height="25" rx="2" transform="rotate(-36 364 232)"/><rect x="698" y="127" width="30" height="22" rx="2" transform="rotate(-34 698 127)"/><rect x="402" y="164" width="46" height="28" rx="2" transform="rotate(-35 402 164)"/><rect x="470" y="219" width="42" height="19" rx="2" transform="rotate(-35 470 219)"/><rect x="677" y="260" width="41" height="26" rx="2" transform="rotate(-34 677 260)"/><rect x="448" y="213" width="28" height="33" rx="2" transform="rotate(55 448 213)"/><rect x="281" y="61" width="46" height="18" rx="2" transform="rotate(56 281 61)"/><rect x="674" y="268" width="29" height="31" rx="2" transform="rotate(55 674 268)"/><rect x="555" y="122" width="37" height="20" rx="2" transform="rotate(-35 555 122)"/><rect x="624" y="242" width="28" height="30" rx="2" transform="rotate(-34 624 242)"/><rect x="637" y="78" width="31" height="23" rx="2" transform="rotate(-34 637 78)"/><rect x="607" y="114" width="37" height="31" rx="2" transform="rotate(-35 607 114)"/><rect x="677" y="123" width="35" height="27" rx="2" transform="rotate(56 677 123)"/><rect x="481" y="180" width="36" height="18" rx="2" transform="rotate(55 481 180)"/><rect x="613" y="205" width="42" height="20" rx="2" transform="rotate(-34 613 205)"/><rect x="507" y="114" width="36" height="27" rx="2" transform="rotate(-35 507 114)"/><rect x="664" y="28" width="30" height="19" rx="2" transform="rotate(-35 664 28)"/><rect x="484" y="190" width="41" height="33" rx="2" transform="rotate(55 484 190)"/><rect x="700" y="545" width="60" height="34" rx="2" transform="rotate(-36 700 545)"/><rect x="752" y="505" width="52" height="34" rx="2" transform="rotate(-36 752 505)"/><rect x="800" y="470" width="44" height="30" rx="2" transform="rotate(-36 800 470)"/><rect x="842" y="438" width="50" height="30" rx="2" transform="rotate(-36 842 438)"/><rect x="890" y="405" width="46" height="28" rx="2" transform="rotate(-36 890 405)"/><rect x="655" y="610" width="40" height="88" rx="2"/><rect x="685" y="608" width="44" height="90" rx="2"/><rect x="686" y="700" width="32" height="46" rx="2"/><rect x="880" y="852" width="24" height="36" rx="2"/></g>
+<g fill="none" stroke="#d4dbe4" stroke-linecap="round" stroke-linejoin="round">
+<path stroke-width="22" d="M155 -10L420 384 470 416 592 500 640 546 660 700 700 758 872 850"/>
+<path stroke-width="18" d="M8 30L188 534"/>
+<path stroke-width="18" d="M-20 236L56 618"/>
+<path stroke-width="18" d="M420 -10L506 106"/>
+<path stroke-width="14" d="M455 410L548 300 568 248M548 300 578 290"/>
+<path stroke-width="14" d="M640 546L700 470 780 375 870 372 900 390"/>
+<path stroke-width="10" d="M436 532L640 664"/>
+<path stroke-width="10" d="M515 652L650 740"/>
+</g>
+<g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-weight="600" fill="#5f6b7a" stroke="#fff" stroke-width="5" paint-order="stroke" font-size="26">
+<text transform="translate(232 112) rotate(56)">Havnevej</text>
+<text transform="translate(470 432) rotate(36)">Havnevej</text>
+<text transform="translate(20 92) rotate(70)">Fundersvej</text>
+</g>
+<g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-style="italic" font-weight="500" fill="#3f7fa6" font-size="30">
+<text x="1000" y="760" text-anchor="middle">Mosede Havn</text>
+<text x="1230" y="300" text-anchor="middle">Køge Bugt</text>
+<text x="1150" y="1050" text-anchor="middle">Køge Bugt</text>
+</g>
+<g class="ny-rutekort-naal" transform="translate(774 474)">
+<ellipse cx="0" cy="4" rx="16" ry="6" fill="rgba(0,0,0,.22)"/>
+<path d="M0 0C-6-18-30-34-30-58a30 30 0 0 1 60 0c0 24-24 40-30 58z" fill="#d62a3a" stroke="#fff" stroke-width="4"/>
+<circle cx="0" cy="-58" r="11" fill="#fff"/>
+</g>
+<text x="815" y="530" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-weight="700" font-size="34" fill="#b41f2e" stroke="#fff" stroke-width="7" paint-order="stroke">Mosede Havnecafe</text>
+</svg>

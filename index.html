@@ -1081,7 +1081,6 @@
         <span class="fk-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="ikoner.svg#find-os"/></svg></span>
         <div><h3>Her finder du os</h3><p class="fk-under">Nede ved vandet på Mosede Havn.</p></div>
       </div>
-      <p class="fk-adresse">Mosede Havnecafe<br>Havnevej 20I<br>2670 Greve</p>
       <!-- ⚠️ VIS RUTE (8/9). Kundens ord: "vi mangler også at få
            fixet en rute ting og gør alt det her langt langt bedre."
 
@@ -1101,8 +1100,15 @@
            flydende pille ("Bestil mad"). En rute er noget, man bruger,
            når man ALLEREDE har besluttet sig — samme "second
            option"-sprog som Ring og Send en mail fik 30/8. -->
-      <a class="g blk rute-knap" data-rute target="_blank" rel="noopener"
-         href="https://www.google.com/maps/dir/?api=1&amp;destination=Mosede%20Havnecafe%2C%20Havnevej%2020I%2C%202670%20Greve">Vis rute til havnen <span aria-hidden="true">&rarr;</span><span class="sheen"></span></a>
+      <p class="fk-adresse">Mosede Havnecafe<br>Havnevej 20I<br>2670 Greve</p>
+      <!-- ⚠️ RUTEN ER KORTET (23/10). Mikkel sendte et skærmbillede fra Google Maps: "brug det her til
+           ruten i stedet". Kortet er TEGNET efter det — ingen Google-fliser, intet hentes udefra, så
+           persondatapolitikkens "ingen indlejrede kort" holder. Havnevej og husrækken er lagt efter
+           adressernes koordinater (Klimadatastyrelsens Adressevælger, 23/10): nr. 2 → nr. 20 ved havnen,
+           20A–20N langs bassinets nordside; nålen står på 20I. Andre forretningers navne er ikke med.
+           Hele kortet er det ENE rute-link (data-rute) — js/skal/kontakt.js sætter ejerens adresse i href. -->
+      <a class="ny-rutekort" data-rute target="_blank" rel="noopener"
+         href="https://www.google.com/maps/dir/?api=1&amp;destination=Mosede%20Havnecafe%2C%20Havnevej%2020I%2C%202670%20Greve"><img class="ny-rutekort-svg" src="billeder/havnekort.svg?v=__V__" alt="" width="1260" height="900" loading="lazy" decoding="async"><span class="ny-rutekort-knap">Vis rute til havnen <span aria-hidden="true">&rarr;</span></span></a>
       <!-- ⚠️ DER LOVES IKKE "JERES EGET KORT". Linket åbner Google
            Maps — på en iPhone appen, hvis den er der, ellers Safari.
            Apple Kort åbner den IKKE, og en linje, der lovede det,

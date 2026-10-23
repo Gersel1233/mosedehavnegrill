@@ -7,6 +7,24 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**PÆLEN STÅR I VANDET, RUTEN ER ET KORT, ISEN BLIVER I RAMMEN** (23/10, aften). Mikkel: *"det ligner ikke, at
+pælen står i vand — det skal den"*, et skud fra Google Maps med *"brug det her til ruten i stedet"* og *"isene i
+bunden af det hvide — det ligner, at billedet går ud over på telefonen"*.
+· Pælen: vandet ligger nu i afsnittets egen baggrund, og ::after er vandets forside — en halvgennemsigtig flade
+  OVER pælen, så den del under vandet bliver blå og forsvinder i dybet. Pælen går ned til afsnittets bund, og
+  der står ringe i vandskorpen om den (svag bølge i ringene; stille ved "reducér bevægelse"). Bølgetoppene er
+  fladere og blå i stedet for creme buer.
+· Ruten: kortet er TEGNET efter skuddet (billeder/havnekort.svg) — ingen Google-fliser, intet hentes udefra,
+  så "ingen indlejrede kort" i persondatapolitikken holder. Havnevej og husrækken er lagt efter adressernes
+  koordinater fra Klimadatastyrelsens Adressevælger: nr. 2 (706905, 6162931) → nr. 20 ved havnen (707102,
+  6162730), 20A–20N langs bassinets nordside; nålen står på 20I (707164, 6162773). Andre forretningers navne
+  er udeladt. Hele kortet er det ene rute-link (data-rute) med "Vis rute til havnen" på; kontakt.js sætter
+  stadig ejerens adresse i href. Kortet er et <img>, så vejnavnet på det ikke tæller som en adresse mere i
+  Find os (kontakt-post.spec.js). "Ruten er ikke rød" består nu: linket selv er kortet, knappen er en etiket.
+· Isens polaroider: billedet havde height:100% af en ramme, hvis højde kom fra aspect-ratio. Safari regner
+  ikke den procent ud og brugte fotoets egen højde (720×1080), så isen stak ud under den hvide kant. Nu bærer
+  billedet selv formatet. (Chromium viste det rigtigt — fejlen er udledt af koden, ikke set her.)
+
 **LEVERINGEN HEL, SKILTENE ÉT AD GANGEN, FIND OS UDEN KORT, NY BUND** (23/10). Mikkel med fem skud fra sin
 iPhone: *"alt det her skal fixes, også bunden, og med lokation brug det originale gamle — ikke det der båd-noget
 — og animationen på pælen virker ikke hverken op eller ned"*.
