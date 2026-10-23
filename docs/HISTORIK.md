@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ ÉN KNAP FOR HELE SIDEN** (23/10 — kun /ny/). Mikkel: *"ret lige alle knapper på siden
+til dem, vi skal bruge"*. To slags overalt: RØD (hovedhandlingen — husets røde gradient, hvid
+tekst) og LYS (ingen flade, rød kant og tekst; hvid kant og tekst på de mørke fotos: heroen,
+Find os, historien). Samme højde (52), skrift og runding; glansen og emojierne i knapperne er
+væk. Også isens "Læg i kurven", "Vælg kl. …", de flydende piller nederst og pilene i "Hvad skal
+vi hjælpe med?". ⚠️ Bjælkens "Menu"-knap er undtaget (.icn): dens ord står i ::after.
+
 **/ny/ INGEN TOMME KORT OG INGEN "HENTER …"** (23/10 — kun /ny/). Mikkel: *"der skal ikke stå
 henter dagens retter, hvis der ikke er nogen"*. Dagens ret-afsnittet står skjult i HTML'en og
 vises kun, når mindst én af de næste syv dage HAR en ret — og så kun de dage (ingen "Kommer

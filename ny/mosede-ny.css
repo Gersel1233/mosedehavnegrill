@@ -366,3 +366,44 @@ body.ny-side #bestil .seg2 button:not(.on) svg.ny-hv-ikon{filter:saturate(.85)}
 @media (prefers-reduced-motion:reduce){.ny-side .nk-liste li.nk-skelet::before{animation:none}}
 .ny-side .ny-uge-prik[hidden],.ny-side .ny-uge-pile[hidden],.ny-side .ny-nav a[hidden]{display:none !important}
 .ny-side .nk-dag.er-udsolgt .nk-dag-hoved{background:#8d6e63}
+
+/* ============================================================
+   ÉN KNAP FOR HELE SIDEN  (23/10)
+   Mikkel: "ret lige alle knapper på siden til dem, vi skal bruge".
+   To slags, som smørrebrødets og bestillingens kort:
+   · RØD (hovedhandlingen): husets røde gradient, hvid tekst, pille.
+   · LYS (det andet valg): ingen flade, rød kant og rød tekst — på
+     de mørke fotos (heroen, Find os, historien) hvid kant og hvid tekst.
+   Samme højde, skrift og runding overalt; ingen glans, ingen emoji.
+   ============================================================ */
+body.ny-side :is(a,button).g:not(.icn),body.ny-side .nk-knap{min-height:52px;height:auto;padding:0 22px;border-radius:999px;font:600 16px/1.15 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.005em;
+  -webkit-backdrop-filter:none;backdrop-filter:none;transition:transform .2s var(--spring),box-shadow .2s ease,background-color .2s ease}
+body.ny-side :is(a,button).g:not(.icn)::after,body.ny-side :is(a,button).g .sheen{display:none}
+body.ny-side :is(a,button).g:not(.icn) > span[aria-hidden="true"]:first-child{display:none}
+/* rød */
+body.ny-side :is(a,button).g.solid,body.ny-side .isbyg-laeg,body.ny-side .venter-knap,body.ny-side .lev-nyhed-knap{
+  color:#fff;background:linear-gradient(180deg,#e2404f,#b41f2e);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 24px -10px rgba(180,31,46,.7)}
+body.ny-side .isbyg-laeg,body.ny-side .venter-knap{border:0;border-radius:999px;font:600 15px/1 "Host Grotesk",system-ui,sans-serif}
+body.ny-side .isbyg-laeg{min-height:52px}
+body.ny-side .venter-knap{padding:12px 18px}
+body.ny-side :is(a,button).g.solid:disabled,body.ny-side .isbyg-laeg:disabled{color:var(--ink2);background:#e4d3c8;box-shadow:none}
+/* lys */
+body.ny-side :is(a,button).g:not(.solid):not(.icn){color:var(--red-d);background:transparent;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.45)}
+body.ny-side :is(a,button).g:not(.solid):not(.icn):hover{background:rgba(214,42,58,.06)}
+/* lys på de mørke fotos */
+body.ny-side .hero :is(a,button).g:not(.solid),body.ny-side #find :is(a,button).g:not(.solid),body.ny-side .about .hist-teaser-knap{
+  color:#fff;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7)}
+body.ny-side .about .hist-teaser-knap{min-height:48px;padding:0 20px;border-radius:999px;font:600 15px/1 "Host Grotesk",system-ui,sans-serif;text-decoration:none}
+/* menuens "Menu"-knap i bjælken: hvid pille med tynd kant */
+body.ny-side .topbar .g.icn.menu{background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1),0 6px 16px -8px rgba(36,26,23,.35)}
+/* de flydende piller nederst (Bestil mad, kurven) i samme røde */
+body.ny-side .bestil,body.ny-side .kurvbar{background:linear-gradient(180deg,#e2404f,#b41f2e);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 14px 30px -10px rgba(180,31,46,.75)}
+body.ny-side :is(.bestil,.kurvbar) .sheen{display:none}
+/* "Hvad skal vi hjælpe med?": pilen er rød som resten */
+body.ny-side #alt .linse{background:var(--red);color:#fff}
+/* isens valg: hvide chips med tynd kant, det valgte rødt */
+body.ny-side .isbyg-knap{background:#fff;box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.12)}
+body.ny-side .isbyg-knap.valgt,body.ny-side .isbyg-knap.on{color:#fff;background:var(--red);box-shadow:none}
+/* knapper side om side: lige brede, på telefonen under hinanden */
+body.ny-side .hero-cta{gap:12px}
+body.ny-side .hero-cta .g{width:100%;min-height:56px;font-size:17px}
