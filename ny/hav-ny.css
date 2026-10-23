@@ -295,3 +295,57 @@ body.ny-frokostside .bl-trin-navn span{width:30px;height:30px;font:400 17px/1 "B
 body.ny-frokostside .ledigkal{background:#fff;border-radius:16px}
 body.ny-frokostside .lk-dag.valgt{background:var(--red);color:#fff}
 body.ny-frokostside .bl-panel .trin-liste{background:#fff}
+
+/* ============================================================
+   KALENDER — OPSLAGSTAVLEN VED LUGEN
+   Kork hele vejen ned; overskriften er en plakat med tegnestifter,
+   arrangementerne er opslag med en rød billet til datoen, og
+   "Tidligere på havnen" hænger som et ark på tavlen.
+   ============================================================ */
+body.ny-kalside .screen{background:
+  radial-gradient(circle at 20% 30%,rgba(90,55,25,.22) 0 1px,transparent 1.5px) 0 0/7px 7px,
+  radial-gradient(circle at 70% 60%,rgba(255,235,200,.18) 0 1px,transparent 1.5px) 0 0/9px 9px,
+  radial-gradient(circle at 40% 80%,rgba(70,40,15,.16) 0 1.2px,transparent 1.7px) 0 0/13px 11px,
+  linear-gradient(180deg,#c69a63,#b98a54)}
+body.ny-kalside .ny-tavle{max-width:640px;margin:0 auto;padding:12px var(--pad) 6px}
+body.ny-kalside .ny-plakat{position:relative;padding:30px 22px 24px;text-align:center;background:#fbf6ec;border-radius:3px;transform:rotate(-.8deg);
+  box-shadow:0 2px 0 rgba(90,55,25,.25),0 24px 40px -22px rgba(40,22,8,.85)}
+body.ny-kalside .ny-plakat::after{content:"";position:absolute;inset:8px;border:2px solid #d62a3a;outline:1px solid rgba(214,42,58,.5);outline-offset:3px;pointer-events:none}
+body.ny-kalside .ny-stift{position:absolute;top:10px;width:16px;height:16px;border-radius:50%;z-index:1;
+  background:radial-gradient(circle at 35% 35%,#ff9a9a,#d62a3a 55%,#8f1824);box-shadow:0 4px 5px rgba(0,0,0,.4)}
+body.ny-kalside .ny-stift:first-child{left:18px}
+body.ny-kalside .ny-stift:nth-child(2){right:18px;background:radial-gradient(circle at 35% 35%,#9cc4ea,#2a5f8f 55%,#1d3d5c)}
+body.ny-kalside .ny-plakat-over{font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--blaa)}
+body.ny-kalside .ny-plakat h1{margin:12px 0 0;font:400 clamp(58px,15vw,112px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:#d62a3a}
+body.ny-kalside .ny-plakat h1 span{display:block;margin-top:6px;font-size:.42em;letter-spacing:.06em;color:#241a17}
+body.ny-kalside .ny-plakat .sub{max-width:34ch;margin:14px auto 0;color:var(--ink2)}
+
+/* filtrene som papirmærker */
+body.ny-kalside .chipset button{background:#fbf6ec;border-radius:4px;box-shadow:0 2px 0 rgba(90,55,25,.3);font:400 17px/1 "Bebas Neue",sans-serif;letter-spacing:.06em;text-transform:uppercase}
+body.ny-kalside .chipset button.on{background:#d62a3a;color:#fff}
+
+/* opslagene */
+body.ny-kalside .evcard{border-radius:3px;background:#fffdf8;box-shadow:0 2px 0 rgba(90,55,25,.25),0 18px 30px -20px rgba(40,22,8,.85)}
+body.ny-kalside .evcard:nth-child(odd){transform:rotate(-.6deg)}
+body.ny-kalside .evcard:nth-child(even){transform:rotate(.5deg)}
+body.ny-kalside .evcard::before{content:"";position:absolute;top:-6px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;z-index:2;
+  background:radial-gradient(circle at 35% 35%,#ff9a9a,#d62a3a 55%,#8f1824);box-shadow:0 4px 5px rgba(0,0,0,.4)}
+body.ny-kalside .evcard .date{width:62px;padding:8px 0 10px;border-radius:6px;background:#d62a3a;color:#fff;
+  -webkit-mask:radial-gradient(circle at 50% 0,transparent 5px,#000 5.5px) 0 0/100% 51% no-repeat,radial-gradient(circle at 50% 100%,transparent 5px,#000 5.5px) 0 100%/100% 51% no-repeat;
+          mask:radial-gradient(circle at 50% 0,transparent 5px,#000 5.5px) 0 0/100% 51% no-repeat,radial-gradient(circle at 50% 100%,transparent 5px,#000 5.5px) 0 100%/100% 51% no-repeat}
+body.ny-kalside .evcard .date b{font:400 34px/1 "Bebas Neue",sans-serif;color:#fff}
+body.ny-kalside .evcard .date span{font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.18em;color:rgba(255,255,255,.85)}
+body.ny-kalside .evcard .line{background:transparent;border-left:1.5px dashed rgba(36,26,23,.25);width:0}
+body.ny-kalside .evcard h3{font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+
+/* intet planlagt: en gul seddel på tavlen */
+body.ny-kalside .evtom{position:relative;border-radius:2px;transform:rotate(1deg);background:linear-gradient(180deg,#fff3a6,#ffe97a);box-shadow:0 18px 30px -18px rgba(40,22,8,.85)}
+body.ny-kalside .evtom::before{content:"";position:absolute;top:8px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#9cc4ea,#2a5f8f 55%,#1d3d5c);box-shadow:0 4px 5px rgba(0,0,0,.4)}
+body.ny-kalside .evtom b{display:block;margin-top:8px;font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+
+/* tidligere på havnen: et ark på tavlen */
+body.ny-kalside .tidligere{border-radius:3px;background:#fffdf8;box-shadow:0 2px 0 rgba(90,55,25,.25),0 18px 30px -20px rgba(40,22,8,.85)}
+body.ny-kalside .tidligere summary{font:400 21px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+body.ny-kalside .tidl .when{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.14em}
+body.ny-kalside .tidl h4{font:400 22px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}

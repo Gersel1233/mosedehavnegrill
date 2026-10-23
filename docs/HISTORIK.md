@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/h-kalender.html — OPSLAGSTAVLEN VED LUGEN** (23/10 — kun /ny/, den rigtige side er urørt). Sidste af
+vejviserens seks. Kork hele vejen ned; overskriften er en plakat med dobbelt rød ramme og to tegnestifter,
+filtrene er papirmærker (det valgte rødt), arrangementerne er opslag med en rød BILLET til datoen
+(stanset i top og bund med en maske), "intet planlagt" er en gul seddel, og "Tidligere på havnen" er et
+ark på tavlen. Reservationen er husets trykte kort. kalender.js og tidligere.js er de samme.
+Billetten er prøvet med et opslag lagt ind i browseren — der var intet planlagt den dag.
+
 **/ny/h-frokost.html — FROKOSTEN I BRUNE POSER** (23/10 — kun /ny/, den rigtige side er urørt). Femte af
 vejviserens seks. Kraftpapir hele vejen ned (frokosten kommer i papirposer); overskriften står på en
 hvid adresselap med rødt hoved, "Til: Arbejdspladsen · Fra: Mosede Havnecafé" og en stregkode, holdt
