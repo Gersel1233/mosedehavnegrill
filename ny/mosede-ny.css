@@ -407,3 +407,50 @@ body.ny-side .isbyg-knap.valgt,body.ny-side .isbyg-knap.on{color:#fff;background
 /* knapper side om side: lige brede, på telefonen under hinanden */
 body.ny-side .hero-cta{gap:12px}
 body.ny-side .hero-cta .g{width:100%;min-height:56px;font-size:17px}
+
+/* ============================================================
+   MENUKORTET OG TAPASSEN SOM TRYKTE KORT  (23/10)
+   ============================================================ */
+.ny-side .nk-afsnit--menu{display:grid;gap:28px}
+.ny-side .nk-afsnit--menu .nk-titel{font-size:clamp(44px,12vw,96px)}
+.ny-side .nk-foto--kort{aspect-ratio:4/3;margin-bottom:22px}
+.ny-side .nk-foto--kort img{object-position:50% 50%}
+/* kapitlerne: foto, navn og antal — som en indholdsfortegnelse på kortet */
+.ny-side .nk-kapitler{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:1fr;gap:0}
+.ny-side .nk-kapitler li.nk-skjult{display:none}
+.ny-side .nk-kapitler.vis-alle li.nk-skjult{display:block}
+.ny-side .nk-kapitler li.nk-skelet{height:58px;border-bottom:1px solid rgba(36,26,23,.08);position:relative}
+.ny-side .nk-kapitler li.nk-skelet::before{content:"";position:absolute;left:0;top:14px;width:30px;height:30px;border-radius:50%;background:rgba(36,26,23,.07)}
+.ny-side .nk-kapitel{display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid rgba(36,26,23,.1);color:var(--ink);text-decoration:none;transition:background .2s ease}
+.ny-side .nk-kapitel:hover{background:rgba(214,42,58,.04)}
+.ny-side .nk-kapitel-foto{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;font-size:20px;background:center 62%/cover no-repeat var(--cream2);box-shadow:0 0 0 2px #fff,0 4px 10px -4px rgba(36,26,23,.4)}
+.ny-side .nk-kapitel-navn{flex:1;min-width:0;font:400 21px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+.ny-side .nk-kapitel-tal{flex:none;font:italic 400 13.5px/1 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+.ny-side .nk-kapitel::after{content:"→";flex:none;margin-left:4px;font:600 15px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red);transition:transform .2s ease}
+.ny-side .nk-kapitel:hover::after{transform:translateX(3px)}
+.ny-side .nk-kapitel-mere{padding-top:4px}
+.ny-side .nk-note{margin:16px 0 0;font:italic 400 14px/1.45 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+.ny-side .nk-note span{font-style:normal;color:var(--nk-blaa);margin-right:4px}
+.ny-side .nk--menu .nk-knapper .nk-knap{flex:1 1 100%}
+/* tapassen */
+.ny-side .nk-foto--tapas{aspect-ratio:4/3;margin-bottom:22px}
+.ny-side .nk-foto--tapas image-slot{position:absolute;inset:0;display:block;width:100%;height:100%}
+.ny-side .nk-foto--tapas image-slot img{width:100%;height:100%;object-fit:cover}
+.ny-side .nk-liste--kort li{padding:11px 0}
+.ny-side .nk-liste--kort li::before{content:"◆";margin-right:10px;font-size:11px;color:var(--nk-blaa)}
+.ny-side .nk-tapas-fod{display:flex;align-items:center;flex-wrap:wrap;gap:14px 18px;margin-top:22px}
+.ny-side .nk-tapas-pris{display:grid;font:400 46px/.9 "Bebas Neue",sans-serif;color:var(--red)}
+.ny-side .nk-tapas-pris small{font:italic 400 13px/1.2 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+.ny-side .nk-tapas-fod .nk-knap{flex:1 1 200px}
+@media (min-width:821px){
+  .ny-side .nk--menu .nk-krop,.ny-side .nk--tapas .nk-krop{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:44px;padding:36px 40px 40px;align-items:start}
+  .ny-side .nk--tapas .nk-krop{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)}
+  .ny-side .nk--tapas .nk-foto--tapas{order:2}
+  .ny-side .nk-foto--kort,.ny-side .nk-foto--tapas{margin:0;position:sticky;top:110px}
+  .ny-side .nk-liste--kort{columns:1}
+  .ny-side .nk-kapitel-navn{font-size:22px}
+  .ny-side .nk-kapitel-mere{grid-column:1/-1}
+}
+/* .tapasec har sit eget smalle mål i havnegrillen-desktop.css — kortet her følger spalten */
+body.ny-side .nk--tapas.tapasec{max-width:none;width:auto;margin-left:0;margin-right:0;padding:0;display:block}
+.ny-side .nk-liste--kort li{flex-wrap:nowrap}

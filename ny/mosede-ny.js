@@ -245,6 +245,53 @@
     }
   }
 
+  /* ============================================================
+     MENUKORTETS KAPITLER — fra databasen, med husets fotos
+     ------------------------------------------------------------
+     Kategorierne i ejerens egen rækkefølge, kun dem med mindst én
+     aktiv vare, og antallet af retter. Hver peger ind på sin plads i
+     menukortet (#kat-ID, som js/skal/menukort.js sætter). Findes
+     pladsen ikke, lander man øverst på kortet — aldrig på en fejl.
+     ============================================================ */
+  function tegnKapitler(d) {
+    var liste = document.getElementById('nyKapitler');
+    if (!liste) return;
+    var varer = d.menu_varer || [];
+    var kat = (d.menu_kategorier || []).filter(function (k) { return k.aktiv !== false; })
+      .map(function (k) {
+        return { k: k, n: varer.filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false; }).length };
+      })
+      .filter(function (x) { return x.n > 0 && !/^tilkøb|^tillæg|fyld/i.test(String(x.k.navn)); })
+      .sort(function (a, b) { return (a.k.sortering || 0) - (b.k.sortering || 0); });
+    liste.textContent = '';
+    liste.removeAttribute('aria-busy');
+    if (!kat.length) { liste.hidden = true; return; }
+    kat.forEach(function (x, i) {
+      var li = lav('li', i >= 8 ? 'nk-skjult' : '');
+      var a = lav('a', 'nk-kapitel');
+      a.setAttribute('href', 'm-menukort.html#kat-' + x.k.id);
+      var foto = fotoFor(x.k.navn);
+      var f = lav('span', 'nk-kapitel-foto');
+      f.setAttribute('aria-hidden', 'true');
+      if (foto) f.style.backgroundImage = 'url("' + foto + '")';
+      else if (window.MosedeEmoji && MosedeEmoji.forKategori) f.textContent = MosedeEmoji.forKategori(x.k);
+      a.appendChild(f);
+      a.appendChild(lav('span', 'nk-kapitel-navn', x.k.navn));
+      a.appendChild(lav('span', 'nk-kapitel-tal', x.n + (x.n === 1 ? ' ret' : ' retter')));
+      li.appendChild(a);
+      liste.appendChild(li);
+    });
+    var skjulte = liste.querySelectorAll('.nk-skjult').length;
+    if (skjulte) {
+      var mere = lav('li', 'nk-kapitel-mere');
+      var k = lav('button', 'nk-flere', 'Vis alle ' + kat.length + ' kapitler');
+      k.type = 'button';
+      k.addEventListener('click', function () { liste.classList.add('vis-alle'); mere.remove(); });
+      mere.appendChild(k);
+      liste.appendChild(mere);
+    }
+  }
+
   function prikPå() {
     var række = document.getElementById('nyUge');
     var prikker = document.querySelectorAll('#nyUgePrik i');
@@ -300,14 +347,17 @@
   }
 
   setTimeout(function () {
-    var l = document.getElementById('nySmoerListe');
-    if (l && l.getAttribute('aria-busy') === 'true') l.hidden = true;
+    ['nySmoerListe', 'nyKapitler'].forEach(function (id) {
+      var l = document.getElementById(id);
+      if (l && l.getAttribute('aria-busy') === 'true') l.hidden = true;
+    });
   }, 9000);
 
   function tegnAlt(d) {
     if (!d || !window.Butik) return;
     try { tegnUge(d); } catch (e) { console.error(e); }
     try { tegnSmoer(d); } catch (e) { console.error(e); }
+    try { tegnKapitler(d); } catch (e) { console.error(e); }
     try { tegnHero(d); } catch (e) { console.error(e); }
   }
   document.addEventListener('ny-data', function (e) { tegnAlt(e.detail); });
@@ -383,6 +433,7 @@
     [/pindemad/, 'billeder/menu-pindemad.jpg'],
   ];
   function fotoFor(navn) {
+    if (!FOTOS) return null;   /* kan spørges, før listen nedenfor er sat */
     var n = String(navn || '').toLowerCase().trim();
     for (var i = 0; i < FOTOS.length; i++) if (FOTOS[i][0].test(n)) return FOTOS[i][1];
     return null;

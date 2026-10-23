@@ -7,6 +7,17 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ MENUKORTET OG TAPASSEN SOM TRYKTE KORT** (23/10 — kun /ny/). Mikkel: *"nu den her
+sektion"* (menukortets kort med emoji-chips og tapaskortet). Begge er nu kort som smørrebrødet:
+rødt hoved med kransen, ternet kant, ◆-rubrikker. MENUKORT: fotoet af de trykte kort og "På
+kortet" — kapitlerne fra databasen i ejerens rækkefølge (kun dem med aktive varer; tilkøb, tillæg
+og fyld udeladt), med husets foto, antal retter og et link til `m-menukort.html#kat-ID` (det id,
+menukort.js sætter); otte står fremme, resten bag "Vis alle". Allergilinjen er en kursiv note.
+TAPAS: "Nyhed på havnen", fadets indhold som ◆-linjer (fra den eksisterende beskrivelse),
+prisen i rød Bebas (forside.js' visTapasPris skriver den stadig — `.tapasec .pris` er bevaret)
+og det samme image-slot til fotoet. ⚠️ `.tapasec` har et smalt mål i havnegrillen-desktop.css,
+som kortet overskriver.
+
 **/ny/ ÉN KNAP FOR HELE SIDEN** (23/10 — kun /ny/). Mikkel: *"ret lige alle knapper på siden
 til dem, vi skal bruge"*. To slags overalt: RØD (hovedhandlingen — husets røde gradient, hvid
 tekst) og LYS (ingen flade, rød kant og tekst; hvid kant og tekst på de mørke fotos: heroen,

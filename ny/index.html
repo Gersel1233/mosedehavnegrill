@@ -530,53 +530,60 @@
   </div>
 </section>
 
-<section id="menu">
-  <div class="mid rev"><h2>Menukort</h2>
-  <p class="sub" style="max-width:32ch">Dagens retter, grillen, smørrebrødet, isen og drikkevarerne, samlet ét sted.</p></div>
-  <div class="menucard rev d1">
-    <!-- ⚠️ KUNDENS EGNE KORT PÅ DUGEN (27/9). Mikkels ord: "delen på
-         forsiden med se hele menukortet … er lidt kedelig, kan du ikke bruge
-         higgsfield". Billedet er Higgsfield (GPT Image 2.5), men KORTENE er
-         husets egne trykte (01, 03 og 05 fra vaerktoej/kortene.py) givet som
-         reference, og dugen er den samme røde tern som på tapasfotoet —
-         intet opfundet sted, ingen fremmed havn. ⚠️ Modellen har tegnet
-         teksten om: enkelte ord og priser er skæve, hvis man zoomer. I 350
-         px kan de ikke læses; priserne står i menukortet lige bag knappen.
-         Under folden, derfor lazy; bredde og højde står, så intet hopper. -->
-    <img class="menucard-foto" src="billeder/menukort-bord-800.jpg"
-         srcset="billeder/menukort-bord-800.jpg 800w, billeder/menukort-bord-1400.jpg 1400w"
-         sizes="(min-width: 1024px) 560px, 100vw" width="800" height="597"
-         loading="lazy" decoding="async"
-         alt="Mosede Havnecafés trykte menukort på en rødternet dug">
-    <!-- ⚠️ EMOJI, IKKE STREG-IKONER (31/8, kundens skærmbillede:
-         "prop emojier på menukort-tingen"). Fliserne er pynt og
-         siger det samme som knappen — derfor aria-hidden på hele
-         rækken, så en skærmlæser ikke siger "gryde burger salat
-         sodavand Se hele menukortet". -->
-    <div class="tiles" aria-hidden="true">
-      <span class="tile-emoji">🍲</span>
-      <span class="tile-emoji">🍔</span>
-      <span class="tile-emoji">🥗</span>
-      <span class="tile-emoji">🥤</span>
+<!-- /ny/ MENUKORTET OG TAPASSEN SOM TRYKTE KORT (23/10). Mikkel: "nu den her
+     sektion". Samme sprog som smørrebrødet: rødt hoved, ternet kant, ◆-rubrikker.
+     Kapitlerne tegnes af ny/mosede-ny.js fra menukortet i databasen (navn, antal
+     retter, husets foto) og peger ind på menukortets eget kapitel. Tapasprisen
+     skrives af forside.js (visTapasPris leder efter .tapasec .pris) — intet tal her. -->
+<section id="menu" class="nk-afsnit nk-afsnit--menu">
+  <article class="nk nk--menu">
+    <header class="nk-hoved">
+      <div class="nk-over">Mosede Havnecafé<i></i></div>
+      <h2 class="nk-titel">Menukort</h2>
+      <p class="nk-slogan">Dagens retter, grillen, smørrebrødet, isen og drikkevarerne — samlet ét sted.</p>
+      <span class="nk-logo" aria-hidden="true"></span>
+    </header>
+    <div class="nk-kant" aria-hidden="true"></div>
+    <div class="nk-krop">
+      <figure class="nk-foto nk-foto--kort"><img src="billeder/menukort-bord-800.jpg" srcset="billeder/menukort-bord-800.jpg 800w, billeder/menukort-bord-1400.jpg 1400w" sizes="(min-width: 1024px) 520px, 100vw" width="800" height="597" loading="lazy" decoding="async" alt="Mosede Havnecafés trykte menukort på en rødternet dug"></figure>
+      <div class="nk-tekst">
+        <h3 class="nk-rubrik"><span aria-hidden="true">◆</span>På kortet</h3>
+        <ul class="nk-kapitler" id="nyKapitler" aria-busy="true"><li class="nk-skelet"></li><li class="nk-skelet"></li><li class="nk-skelet"></li><li class="nk-skelet"></li></ul>
+        <div class="nk-knapper"><a class="nk-knap" href="m-menukort.html">Se hele menukortet</a></div>
+        <p class="nk-note"><span aria-hidden="true">◆</span> Allergi? Spørg personalet om allergener — vi hjælper gerne.</p>
+      </div>
     </div>
-    <a class="g solid blk" href="m-menukort.html"><span aria-hidden="true">📖 </span>Se hele menukortet<span class="sheen"></span></a>
-    <p class="glaspille"><span aria-hidden="true">🥜</span>Allergi? Spørg personalet ift. allergener. Vi hjælper gerne.</p>
-  </div>
-  <div class="tapasec rev d2">
-    <!-- data-tegn og data-flade står HER og ikke i JavaScript: tegnet
-         hører til den plads, det udfylder, og den, der flytter
-         pladsen, tager tegnet med. Se visFotos() i js/skal/forside.js. -->
-    <image-slot id="tapas-forside" data-fil="billeder/tapas-1.jpg" data-alt="Tapasfad med oste, salami, oliven, brød og vindruer på et ternet bord ved havnen" placeholder="Foto af tapasfadet" shape="rect"
+  </article>
+
+  <article class="nk nk--tapas tapasec">
+    <header class="nk-hoved">
+      <div class="nk-over">Nyhed på havnen<i></i></div>
+      <h2 class="nk-titel">Tapas</h2>
+      <p class="nk-slogan">Fem slags ost, serranoskinke, chorizo, paté, hummus og oliven med baguette, dip og frugt.</p>
+      <span class="nk-logo" aria-hidden="true"></span>
+    </header>
+    <div class="nk-kant" aria-hidden="true"></div>
+    <div class="nk-krop">
+      <div class="nk-foto nk-foto--tapas">
+        <image-slot id="tapas-forside" data-fil="billeder/tapas-1.jpg" data-alt="Tapasfad med oste, salami, oliven, brød og vindruer på et ternet bord ved havnen" placeholder="Foto af tapasfadet" shape="rect"
                 data-tegn="🧀" data-flade="ost"></image-slot>
-    <div class="body">
-      <span class="nyt glaspille">Nyhed</span>
-      <h3>Havnens tapas</h3>
-      <p>Fem slags ost, serranoskinke, chorizo, paté, hummus og oliven med baguette, dip og frugt.</p>
-      <div class="bits"><span>5 slags ost</span><span>Charcuteri</span><span>Dip og oliven</span><span>Baguette og smør</span></div>
-      <div class="foot"><div class="pris" style="display:none"><small>pr. person</small></div><a class="g solid" href="m-tapas.html">Se og bestil tapas<span class="sheen"></span></a></div>
+      </div>
+      <div class="nk-tekst">
+        <h3 class="nk-rubrik"><span aria-hidden="true">◆</span>På fadet</h3>
+        <ul class="nk-liste nk-liste--kort">
+          <li><span class="nk-navn">5 slags ost</span></li>
+          <li><span class="nk-navn">Serranoskinke, chorizo og paté</span></li>
+          <li><span class="nk-navn">Hummus, dip og oliven</span></li>
+          <li><span class="nk-navn">Baguette, smør og frugt</span></li>
+        </ul>
+        <div class="nk-tapas-fod">
+          <div class="pris nk-tapas-pris" style="display:none"><small>pr. person</small></div>
+          <a class="nk-knap" href="m-tapas.html">Se og bestil tapas</a>
+        </div>
+      </div>
     </div>
-  </div>
-  </section>
+  </article>
+</section>
 
 
 <div class="dug dug--b" aria-hidden="true"></div>
