@@ -190,6 +190,19 @@
       dg.nr = n;
       if (dg.retter.length) dage.push(dg);
     }
+    /* ⚠️ EN STRIBE ENS DAGE SIGES ÉN GANG (4/10, genindført 23/10). Mikkel: fire ens kort
+       ved siden af hinanden "ser forældet og sjusket ud". Motorens regel
+       (Butik.sammeRetFlereDage) slår dem sammen til ét kort med spændet — "4 dage ·
+       7.–10. august" — og resten af ugen står dag for dag. Samme regel som menukortet. */
+    var stribe = Butik.sammeRetFlereDage ? Butik.sammeRetFlereDage(d, iDag) : null;
+    if (stribe) {
+      dage = dage.filter(function (x) { return x.nr >= stribe.dage; });
+      var første = dagenI(d, iDag);
+      første.nr = 0;
+      første.plan = null;   // dagens åbningstid gælder ikke hele striben
+      første.stribe = stribe;
+      dage.unshift(første);
+    }
     række.textContent = '';
     if (prikker) prikker.textContent = '';
     var nogen = dage.length > 0;
@@ -205,8 +218,13 @@
       var i = dag.nr, iso = dag.iso, ret = dag.retter[0];
       var kort = lav('article', 'nk-dag' + (i === 0 ? ' er-idag' : '') + (ret.udsolgt ? ' er-udsolgt' : ''));
       var hoved = lav('header', 'nk-dag-hoved');
-      hoved.appendChild(lav('b', null, i === 0 ? 'I dag' : i === 1 ? 'I morgen' : ugedag(iso)));
-      hoved.appendChild(lav('span', null, (i < 2 ? ugedag(iso) + ' · ' : '') + kortDato(iso)));
+      if (dag.stribe) {
+        hoved.appendChild(lav('b', null, Butik.spaendOrd(dag.stribe.dage)));
+        hoved.appendChild(lav('span', null, 'Fra i dag · ' + Butik.datoSpaend(dag.stribe.fra, dag.stribe.til)));
+      } else {
+        hoved.appendChild(lav('b', null, i === 0 ? 'I dag' : i === 1 ? 'I morgen' : ugedag(iso)));
+        hoved.appendChild(lav('span', null, (i < 2 ? ugedag(iso) + ' · ' : '') + kortDato(iso)));
+      }
       kort.appendChild(hoved);
       kort.appendChild(lav('div', 'nk-dag-kant'));
       var krop = lav('div', 'nk-dag-krop');
@@ -483,6 +501,19 @@
   function tegnAlt(d) {
     if (!d || !window.Butik) return;
     try { tegnUge(d); } catch (e) { console.error(e); }
+    /* ⚠️ INGEN RESERVEPRISER (23/10). Svarer databasen ikke, står motoren på kodens egne
+       reservedata — og deres priser er ikke ejerens. Smørrebrødets bokse og islisten
+       tegnes derfor ikke; listerne skjules, og bestillingens .nede-note siger, hvem
+       man ringer til. Samme regel som resten af siden (Butik.reservedata,
+       ingen-reservepriser.spec.js). */
+    if (Butik.reservedata && Butik.reservedata(d)) {
+      ['nySmoerListe', 'nySmoerBokse', 'nySmoerFlere', 'nyKapitler', 'nyIsAlt', 'nyIsFaner', 'nyIsSmage'].forEach(function (id) {
+        var l = document.getElementById(id);
+        if (l) { l.textContent = ''; l.hidden = true; }
+      });
+      try { tegnHero(d); } catch (e) { console.error(e); }
+      return;
+    }
     try { tegnSmoer(d); } catch (e) { console.error(e); }
     try { tegnKapitler(d); } catch (e) { console.error(e); }
     try { tegnIs(d); } catch (e) { console.error(e); }

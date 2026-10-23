@@ -3,7 +3,7 @@
    Kun body.ny-under. js og css/style.css er urørte: laget her
    klæder de samme felter på i forsidens udtryk.
    ============================================================ */
-body.ny-under{--roeg:rgba(28,20,16,.42);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45);
+body.ny-under{--roeg:rgba(28,20,16,.64);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45);
   --creme:#fbf6ec;--messing:#e8c48f;--blaa:#2a5f8f;--red-d:#b41f2e;background:var(--creme)}
 
 /* ---------- bjælken: som på /ny/ — røget glas, hvid skrift, ens hele vejen ---------- */

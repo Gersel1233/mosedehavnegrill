@@ -52,7 +52,7 @@
    (menukort, tapas, selskaber): røget glas, hvid skrift — som på
    forsiden og undersiderne (topbjaelken.spec.js holder det fast).
    ============================================================ */
-body.hav:not(.ny-side):not(.ny-hav):not(.ny-hist){--roeg:rgba(28,20,16,.42);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45)}
+body.hav:not(.ny-side):not(.ny-hav):not(.ny-hist){--roeg:rgba(28,20,16,.64);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45)}
 body.hav:not(.ny-side):not(.ny-hav):not(.ny-hist) .topbar.stuck,body.hav:not(.ny-side):not(.ny-hav):not(.ny-hist) .topbar.solid{background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
 body.hav:not(.ny-side):not(.ny-hav):not(.ny-hist) .topbar.stuck .ordmaerke,body.hav:not(.ny-side):not(.ny-hav):not(.ny-hist) .topbar.solid .ordmaerke{display:inline-flex;align-items:center;min-height:0;height:44px;padding:0 18px;border-radius:999px;color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.35);
   background:var(--roeg);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:var(--roeg-kant)}
@@ -74,7 +74,7 @@ body.hav:not(.ny-side):not(.ny-hav):not(.ny-hist) .topbar .g.icn.menu{background
 @media (min-width:821px){body.ny-hav .topbar .ordmaerke{margin-left:-18px}}
 
 /* bestil/ (ikke lavet om endnu): bjælken som forsidens — røget glas, hvid skrift (topbjaelken.spec.js) */
-body.underside:not(.ny-under):not(.personale){--roeg:rgba(28,20,16,.42);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45)}
+body.underside:not(.ny-under):not(.personale){--roeg:rgba(28,20,16,.64);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45)}
 body.underside:not(.ny-under):not(.personale) #hd.stuck{background:transparent;box-shadow:none}
 body.underside:not(.ny-under):not(.personale) #hd .logo,body.underside:not(.ny-under):not(.personale) #hd.stuck .logo{display:inline-flex;align-items:center;height:44px;min-height:0;padding:0 18px;border-radius:999px;
   color:#fff;font:500 21px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.015em;text-shadow:0 1px 10px rgba(0,0,0,.35);

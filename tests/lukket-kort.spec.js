@@ -66,11 +66,13 @@ async function intetKort(page) {
 /* ============================================================
    DE FEM SIDER
    ============================================================ */
+/* Sider, der lever under det nye design (23/10), skriver adressen med sidens eget
+   navn eller roden ('../#bestil') — samme sted, så begge skrivemåder godtages. */
 const SIDER = [
   ['forsiden', '/index.html', '#bestil'],
   ['bestillingssiden', '/bestil/', '#bestil-form'],
-  ['bordbookingen', '/bord/', '../index.html#bestil'],
-  ['smørrebrødssiden', '/h-smorrebrod.html', '#bestil'],
+  ['bordbookingen', '/bord/', /^\.\.\/(index\.html)?#bestil$/],
+  ['smørrebrødssiden', '/h-smorrebrod.html', /^(h-smorrebrod\.html)?#bestil$/],
   ['tapassiden', '/m-tapas.html', '#bestil-tapas'],
 ];
 

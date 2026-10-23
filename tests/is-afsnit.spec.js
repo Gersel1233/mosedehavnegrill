@@ -50,35 +50,49 @@ async function åbnForsiden(page, data) {
   await expect(page.locator('#isen')).toHaveCount(1);
 }
 
-const rækker = (page) => page.locator('#isen [data-is-priser] li');
+/* ⚠️ DET NYE IS-KORT (23/10). Mikkel: "den skal hedde Vores is — man skal kunne se
+   alle deres gode kendte is". Afsnittet viser nu HELE iskortet: én fane pr.
+   is-kategori og i fanen hver vare med pris i menukortets rækkefølge — også
+   tilkøbene, for det er kortet, gæsten læser (ny/mosede-ny.js, tegnIs). Reglen,
+   prøverne vogter, er den samme: hvert tal er menukortets, og ejerens rettelse
+   slår igennem. */
+const rækker = (page) => page.locator('#isen #nyIsAlt li');
+const fane = (page, navn) => page.locator('#isen #nyIsFaner .nk-is-fane', { hasText: navn });
 
 test.describe('Isen på forsiden', () => {
 
-  test('priserne er menukortets — én pr. slags, aldrig en "fra"-pris', async ({ page }) => {
+  test('priserne er menukortets — varerne i kortets rækkefølge, én fane pr. slags', async ({ page }) => {
     await åbnForsiden(page, medIs());
-    await expect(rækker(page)).toHaveCount(4);
-    const navne = await page.locator('#isen .is-navn').allTextContents();
-    expect(navne).toEqual(['Softice, lille', '1 kugle', 'Boblevaffel med 1 kugle',
-      'Churros med sukker og kanel']);
-    const priser = await page.locator('#isen .is-pris').allTextContents();
-    expect(priser.map((p) => p.replace(/\D/g, ''))).toEqual(['37', '35', '59', '45']);
-    // Tilkøbene er ikke husets is
-    await expect(page.locator('#isen')).not.toContainText('Løs vaffel');
-    await expect(page.locator('#isen')).not.toContainText('Softice-top');
+    await expect(page.locator('#isen #nyIsFaner .nk-is-fane')).toHaveCount(2);
+    // Første fane: kugleis i menukortets rækkefølge og med dets priser
+    await expect(rækker(page)).toHaveCount(3);
+    expect(await page.locator('#isen #nyIsAlt .nk-navn').allTextContents())
+      .toEqual(['Løs vaffel', '1 kugle', 'Softice-top']);
+    expect((await page.locator('#isen #nyIsAlt .nk-pris').allTextContents()).map((p) => p.replace(/\D/g, '')))
+      .toEqual(['4', '35', '18']);
+    // Anden fane: softice og vafler
+    await fane(page, 'Softice og vafler').click();
+    expect(await page.locator('#isen #nyIsAlt .nk-navn').allTextContents())
+      .toEqual(['Softice, lille', 'Boblevaffel med 1 kugle', 'Churros med sukker og kanel']);
+    expect((await page.locator('#isen #nyIsAlt .nk-pris').allTextContents()).map((p) => p.replace(/\D/g, '')))
+      .toEqual(['37', '59', '45']);
+    // Aldrig en "fra"-pris
+    await expect(page.locator('#isen #nyIsAlt')).not.toContainText(/fra\s*\d/i);
   });
 
   test('en pris, ejeren retter, står rettet', async ({ page }) => {
     const d = medIs();
     d.menu_varer.find((x) => x.id === 5).pris = 39;
     await åbnForsiden(page, d);
-    await expect(page.locator('#isen .is-pris').first()).toContainText('39');
+    await fane(page, 'Softice og vafler').click();
+    await expect(rækker(page).filter({ hasText: 'Softice, lille' }).locator('.nk-pris')).toContainText('39');
   });
 
   test('uden is på kortet er listen væk — afsnittet og vejen til kortet står', async ({ page }) => {
     const d = medIs();
     d.menu_kategorier = d.menu_kategorier.filter((k) => k.afdeling !== 'is');
     await åbnForsiden(page, d);
-    await expect(page.locator('#isen [data-is-priser]')).toBeHidden();
+    await expect(page.locator('#isen #nyIsAlt')).toBeHidden();
     await expect(page.locator('#isen h2')).toBeVisible();
     await expect(page.locator('#isen [data-is-knap]')).toHaveAttribute('href', 'm-menukort.html');
   });
@@ -126,14 +140,14 @@ test.describe('Isen på forsiden', () => {
 
   test('fotoene venter på gæsten og siger, hvad de viser', async ({ page }) => {
     await åbnForsiden(page, medIs());
-    const fotos = page.locator('#isen .is-fotos img');
-    await expect(fotos).toHaveCount(2);
+    /* Det nye is-kort (23/10) har tre polaroider: havnens softice, kugleisen
+       foran bådene og den gamle bubblewaffle (Mikkels valg: "den var real nok"). */
+    const fotos = page.locator('#isen .nk-is-fotos img');
+    await expect(fotos).toHaveCount(3);
     for (const f of await fotos.all()) {
       await expect(f).toHaveAttribute('loading', 'lazy');
       expect((await f.getAttribute('alt')).length).toBeGreaterThan(10);
-      /* 26/9: havnens softice + den gamle bubblewaffle (Mikkels valg:
-         "den var real nok"). Ikke det gamle softice-foto. */
-      await expect(f).toHaveAttribute('src', /billeder\/(havn-softice|menu-kugleis)\.jpg/);
+      await expect(f).toHaveAttribute('src', /billeder\/(havn-softice|havn-kugleis|menu-kugleis)\.jpg/);
       await f.scrollIntoViewIfNeeded();
       await expect.poll(() => f.evaluate((i) => i.naturalWidth), { message: 'fotoet kom ikke' }).toBeGreaterThan(0);
     }

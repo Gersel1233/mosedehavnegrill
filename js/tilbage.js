@@ -79,12 +79,19 @@
 
   /* Højst fire sekunder: kommer databasen aldrig, står gæsten så
      langt nede, som siden rækker, i stedet for at vente for evigt. */
+  /* ⚠️ OG POSITIONEN HOLDES, MENS SIDEN BYGGES FÆRDIG (23/10). Første udgave rullede
+     ÉN gang, så snart siden var høj nok — men menukortets ventebillede blev højere med
+     det nye design, så det skete FØR kortet kom. Da kortet så blev tegnet, holdt
+     browseren (scroll anchoring) fast i det, der stod på skærmen, og skubbede gæsten
+     2.600 px ned (målt: 1800 → 4388). Nu rettes positionen igen, hver gang den skrider,
+     til de fire sekunder er gået — eller gæsten selv rører skærmen. */
   var slut = Date.now() + 4000;
   (function prøv() {
     if (afbrudt) return;
     var max = document.documentElement.scrollHeight - window.innerHeight;
-    if (max >= maal - 2) { window.scrollTo(0, maal); return; }
-    if (Date.now() > slut) { window.scrollTo(0, Math.max(0, max)); return; }
+    var højNok = max >= maal - 2;
+    if (højNok && Math.abs(y() - maal) > 4) window.scrollTo(0, maal);
+    if (Date.now() > slut) { if (!højNok) window.scrollTo(0, Math.max(0, max)); return; }
     requestAnimationFrame(prøv);
   })();
 })();

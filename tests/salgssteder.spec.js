@@ -56,12 +56,23 @@ async function foldListe(page, sti, data) {
   await åbnSkal(page, sti, { ur: UR, data });
   if (sti === '/index.html') await springIntroOver(page);
   await page.waitForSelector('[data-liste] .item');
-  for (let i = 0; i < 30; i++) {
-    const lukket = page.locator('[data-liste] [data-kategori] .add').filter({ hasText: '+ tilføj' });
-    if (!(await lukket.count())) break;
-    await lukket.first().click();
+  /* ⚠️ Forsidens harmonika (23/10) har ÉN kategori åben ad gangen — så de åbnes
+     én for én, og rækkerne samles op undervejs. */
+  const fundet = new Set();
+  const saml = async () => (await page.$$eval('[data-liste] .item[data-vare]',
+    (r) => r.map((e) => e.getAttribute('data-vare')))).forEach((n) => fundet.add(n));
+  await saml();
+  const kategorier = await page.$$eval('[data-liste] .item[data-kategori]',
+    (rk) => rk.map((e) => e.getAttribute('data-kategori')));
+  for (const k of kategorier) {
+    const add = page.locator('[data-liste] .item[data-kategori=' + JSON.stringify(k) + '] .add');
+    if ((await add.count()) && /\+ tilføj/.test(await add.first().textContent())) {
+      await add.first().click();
+      await page.waitForTimeout(30);
+    }
+    await saml();
   }
-  return page.$$eval('[data-liste] .item[data-vare]', (r) => r.map((e) => e.getAttribute('data-vare')));
+  return [...fundet];
 }
 async function bordet(page, data) {
   await åbn(page, '/ved-bordet/?bord=7', { ur: UR, data });

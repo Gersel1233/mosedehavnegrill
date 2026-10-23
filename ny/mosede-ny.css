@@ -824,7 +824,7 @@ body.ny-side .bestil .ny-pille-linse svg.ny-pille-pose{width:36px;height:36px}
    som over heroen. Glasset er røget, så den hvide tekst også kan læses
    over de lyse afsnit; ordmærket får det samme glas af samme grund.
    ============================================================ */
-body.ny-side{--roeg:rgba(28,20,16,.42);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45)}
+body.ny-side{--roeg:rgba(28,20,16,.64);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45)}
 body.ny-side .topbar.stuck,body.ny-side .topbar.solid{background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
 body.ny-side .topbar .ny-nav,body.ny-side .topbar.stuck .ny-nav{background:var(--roeg);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:var(--roeg-kant)}
 body.ny-side .topbar.stuck .ny-nav a,body.ny-side .topbar.solid .ny-nav a{color:#fff}
@@ -1042,3 +1042,37 @@ body.ny-side #find .ny-rutekort-knap{position:absolute;left:12px;right:12px;bott
 body.ny-side #find .ny-rutekort:focus-visible{outline:3px solid var(--red);outline-offset:3px}
 body.ny-side #find .ny-rutekort + .rute-note{margin-top:10px;text-align:center}
 @media (min-width:821px){body.ny-side #find .ny-rutekort{aspect-ratio:16/10}}
+
+/* RING OG MAIL SOM RIGTIGE KNAPPER (23/10). Mikkel: "fix lige de her knapper". Det var to hvide kasser,
+   hvor kun den røde tekst kunne trykkes. Nu er hele flisen knappen (linkets ::before dækker den), med
+   husets tegnede telefon og brev, og på telefonen står de under hinanden, så nummeret aldrig klemmes. */
+body.ny-side #find #find-kontakt{grid-template-columns:1fr;gap:10px}
+@media (min-width:520px){body.ny-side #find #find-kontakt{grid-template-columns:1fr 1fr}}
+body.ny-side #find #find-kontakt > div{position:relative;display:grid;grid-template-columns:46px minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:center;
+  column-gap:12px;row-gap:3px;min-height:66px;padding:10px 16px 10px 10px;border-radius:18px;background:#fff;
+  box-shadow:inset 0 0 0 1px rgba(36,26,23,.1),0 8px 18px -14px rgba(36,26,23,.5);transition:transform .2s cubic-bezier(.2,.9,.24,1),box-shadow .2s ease}
+body.ny-side #find #find-kontakt > div::before{content:"";grid-row:1/3;grid-column:1;width:46px;height:46px;border-radius:50%;
+  background:#fbf6ec center/30px 30px no-repeat;box-shadow:inset 0 0 0 1px rgba(214,42,58,.18)}
+body.ny-side #find #find-kontakt > div:has(a[href^="tel:"])::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M14 7.5c2.2-1.2 4.4-.3 5.5 1.8l3.2 6.3c1 2 .3 4.2-1.6 5.3l-2.4 1.3c1.3 4.4 5 8.3 9.3 9.7l1.4-2.3c1.1-1.9 3.4-2.6 5.4-1.6l6.2 3.3c2.1 1.1 2.9 3.4 1.7 5.5l-1.4 2.6c-1.6 2.9-5 4.2-8.1 3.2C20.7 38.4 9.7 27.4 5.6 14.9c-1-3.1.3-6.5 3.2-8.1z' fill='%23d62a3a' stroke='%235a3d2b' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M28 8.5a12 12 0 0 1 11.5 11.5M28 14a6.5 6.5 0 0 1 6 6' fill='none' stroke='%232a5f8f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E")}
+body.ny-side #find #find-kontakt > div:has(a[href^="mailto:"])::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect x='5' y='11' width='38' height='27' rx='3.5' fill='%23fff' stroke='%235a3d2b' stroke-width='1.8'/%3E%3Cpath d='M6.5 13.5L24 27l17.5-13.5' fill='none' stroke='%23d62a3a' stroke-width='2.2' stroke-linejoin='round' stroke-linecap='round'/%3E%3Cpath d='M6.5 36l12-10.5M41.5 36l-12-10.5' fill='none' stroke='%235a3d2b' stroke-width='1.4' stroke-linecap='round' opacity='.55'/%3E%3C/svg%3E")}
+body.ny-side #find #find-kontakt > div > span:first-child{grid-column:2;grid-row:1;align-self:end;font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.16em;color:var(--muted)}
+body.ny-side #find #find-kontakt > div > span:last-child{grid-column:2;grid-row:2;align-self:start;min-width:0;font:600 18px/1.15 "Host Grotesk",system-ui,sans-serif}
+body.ny-side #find #find-kontakt > div::after{content:"\2192";display:block;flex:none;order:0;border:0;transform:none;grid-column:3;grid-row:1/3;font:600 18px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red);opacity:.7}
+body.ny-side #find #find-kontakt > div[hidden]{display:none}
+body.ny-side #find #find-kontakt a{padding:0;margin:0;color:var(--red-d);text-decoration:none;white-space:nowrap}
+body.ny-side #find #find-kontakt a::before{content:"";position:absolute;inset:0;border-radius:18px}
+body.ny-side #find #find-kontakt a:focus-visible{outline:none}
+body.ny-side #find #find-kontakt > div:has(a:focus-visible){outline:3px solid var(--red);outline-offset:2px}
+@media (hover:hover){body.ny-side #find #find-kontakt > div:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 1px rgba(214,42,58,.3),0 14px 24px -14px rgba(120,20,30,.55)}}
+body.ny-side #find #find-kontakt > div:active{transform:scale(.98)}
+
+/* isen skiller sig ud i bestillingen (ejerens ord: "is er en kæmpe stolthed") — samme lyserøde
+   flade som is-afsnittet, både kategorien og varerne i den (23/10) */
+.ny-side [data-liste] > .item[data-afd="is"]{background:#fdeef0}
+
+/* "Skal vi tage snakken?": cremet tekst på husets røde nåede kun 3,7-4:1. Kortet står på den mørke
+   røde, og teksten er fuld creme — over 4,5:1, også for den lille linje med telefonnummeret (23/10) */
+.ny-side .nk--selskab .talk{background:var(--red-d)}
+.ny-side .nk--selskab .talk p,.ny-side .nk--selskab .talk .ring{color:var(--nk-creme)}
+/* Ring og Mail i Find os: selve linket er en fuld trykflade, ikke kun tekstens 24 px */
+body.ny-side #find #find-kontakt a{display:inline-block;padding:10px 0;margin:-10px 0}

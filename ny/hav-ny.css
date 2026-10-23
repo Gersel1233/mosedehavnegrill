@@ -6,7 +6,7 @@
    eget udtryk længere nede, scopet til sin egen body-klasse.
    bestil.js og havnegrillen.css er urørte.
    ============================================================ */
-body.ny-hav{--roeg:rgba(28,20,16,.42);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45);
+body.ny-hav{--roeg:rgba(28,20,16,.64);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45);
   --creme:#fbf6ec;--messing:#e8c48f;--blaa:#2a5f8f;--rud:clamp(18px,4.6vw,36px)}
 
 /* ---------- bjælken: røget glas, ens i toppen og efter rul ---------- */
@@ -382,3 +382,8 @@ body.ny-kalside .topbar .ordmaerke,body.ny-frokostside .topbar .ordmaerke{backgr
 /* ⚠️ FEJLKANTEN VINDER OVER FOKUS (23/10). Send sætter markøren i det første forkerte felt —
    og kortets fokusregel (outline:none) slukkede netop den røde kant. frokost-flow.spec.js fangede det. */
 body.ny-hav .panel:has(> .rk-hoved) .inp[aria-invalid="true"],body.ny-hav .panel:has(> .rk-hoved) .inp[aria-invalid="true"]:focus{outline:2px solid var(--red);outline-offset:-2px}
+
+/* ankerhop: undersidernes bjælke er 66 px — husets 128 px luft (topbjælken fra før) lod afsnittet
+   lande med et tomt bånd over sig. Nu lander det lige under bjælken (23/10) */
+html:has(body.ny-hav){scroll-padding-top:80px}
+body.ny-hav main [id],body.ny-hav main[id],body.ny-hav section[id],body.ny-hav .panel[id]{scroll-margin-top:80px}

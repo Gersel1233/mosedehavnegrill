@@ -216,6 +216,10 @@ test.describe('Forsidens bestilling', () => {
 
     await page.locator('#navn').fill('Sara Poulsen');
     await page.locator('#tlf').fill('28 87 13 43');
+    /* Det nye design (23/10) gemmer beskedfeltet bag "+ Skriv en besked til
+       køkkenet" (ny/mosede-ny.js) — gæsten åbner det, før hun skriver. */
+    const beskedknap = page.locator('.ny-beskedknap');
+    if (await beskedknap.count()) await beskedknap.click();
     await page.locator('#besked').fill('Uden agurk, tak.');
     await page.locator('#tid').selectOption('17:00');
     await page.locator('button.g.solid.blk').click();
@@ -375,7 +379,8 @@ test.describe('Forsidens bestilling', () => {
        til sidst. Prøven er vendt med grunden, ikke lempet. */
     expect(etiketter).toEqual(['Hvordan vil I spise?',
       'Hvor mange spiser med? (valgfrit)', 'Hvor skal det leveres?',
-      'Dato', 'Tidspunkt', 'Vælg jeres retter',
+      /* tidspunktets etiket følger spisemåden (23/10): to-go er valgt fra start */
+      'Dato', 'Hvornår henter I?', 'Vælg jeres retter',
       'Navn', 'Telefonnummer',
       'Allergi (valgfrit)', 'Ja, køkkenet må gemme det her, så de kan tage hensyn.',
       'Besked (valgfrit)']);
@@ -1938,7 +1943,8 @@ test.describe('Bestil mad følger kunderejsen', () => {
     await page.locator('#bestil .venter-knap').click();
     await expect(page.locator('#tid')).toHaveValue('14:00');
     await expect(smoer).not.toHaveAttribute('data-venter', '');
-    await expect(page.locator('#bestil [data-vare="Leverpostej med surt"] button').first()).toBeVisible();
+    /* minus-knappen står skjult, til der er lagt noget i kurven (det nye design, 23/10) */
+    await expect(page.locator('#bestil [data-vare="Leverpostej med surt"] button[data-d="+"]')).toBeVisible();
   });
 
   /* ⚠️ VENDT 7/10 (aften): PLATTERNE STÅR SOM BJÆLKE I DAG OGSÅ — "fra
@@ -1960,7 +1966,7 @@ test.describe('Bestil mad følger kunderejsen', () => {
     await page.locator('#bestil .venter-knap').click();
     await expect(page.locator('#dato')).toHaveValue(iMorgen);
     await expect(platter).not.toHaveAttribute('data-venter', '');
-    await expect(page.locator('#bestil [data-vare="Platte"] button').first()).toBeVisible();
+    await expect(page.locator('#bestil [data-vare="Platte"] button[data-d="+"]')).toBeVisible();
   });
 });
 
@@ -1988,7 +1994,13 @@ test.describe('Leveringen som nyhed', () => {
   test('slået til: heroen og Bestil mad siger det — med ejerens område og pris', async ({ page }) => {
     await åbn(page, { data: medLevering(true) });
     await expect(page.locator('.hero-nyhed')).toBeVisible();
-    const felt = page.locator('#bestil .lev-nyhed');
+    /* ⚠️ DET NYE DESIGN (23/10): nyhedskortet over formularen er væk. Levering står
+       som et af de tre valg med et "Ny"-mærke, og område og pris står i boksen,
+       der folder sig ud dér, hvor gæsten vælger det (#flevfelt .ny-lev). */
+    const lev = page.locator('[data-seg="how"] button[data-nyt]');
+    await expect(lev).toBeVisible();
+    await lev.click();
+    const felt = page.locator('#flevfelt .ny-lev');
     await expect(felt).toBeVisible();
     await expect(felt).toContainText('Til Greve og Tune.');
     await expect(felt).toContainText('79,- pr. bestilling');
@@ -2008,10 +2020,10 @@ test.describe('Leveringen som nyhed', () => {
     await åbn(page, { data: medLevering(true) });
     const lev = page.locator('[data-seg="how"] button', { hasText: 'Levering' });
     await expect(lev).not.toHaveClass(/\bon\b/);
-    await page.locator('#bestil .lev-nyhed-knap').click();
+    /* Heroens "Nyhed · Vi kører maden ud" er vejen ind nu (23/10) */
+    await page.locator('.hero-nyhed').click();
     await expect(lev).toHaveClass(/\bon\b/);
     await expect(page.locator('#flevfelt')).toBeVisible();
-    await expect(page.locator('#bestil .lev-nyhed-knap')).toHaveText('Levering er valgt ✓');
   });
 
   test('et link med ?hvordan=levering lander med Levering valgt', async ({ page }) => {

@@ -95,19 +95,32 @@ async function forsiden(page, data) {
   await springIntroOver(page);
   await page.waitForSelector('[data-liste] .item');
 
-  for (let i = 0; i < 30; i++) {
-    const lukket = page.locator('[data-liste] [data-kategori] .add')
-      .filter({ hasText: '+ tilføj' });
-    if (!(await lukket.count())) break;
-    await lukket.first().click();
+  /* ⚠️ HARMONIKAEN (23/10): forsidens nye design har ÉN kategori åben ad gangen
+     (ny/mosede-ny.js) — åbnes den næste, lukker den forrige. Prøven åbner derfor
+     kategorierne én for én og samler rækkerne op undervejs, som en gæst, der
+     bladrer kortet igennem. Reglerne nedenfor er de samme. */
+  const fundet = new Map();
+  const saml = async () => {
+    const r = await page.$$eval('[data-liste] .item[data-vare]', (rk) => rk.map((e) => ({
+      navn: e.getAttribute('data-vare'),
+      pris: (e.querySelector('.tag') || {}).textContent || '',
+      kanBestilles: !!e.querySelector('.taeller'),
+      harTegn: !!e.querySelector('.item-tegn, .item-foto'),
+    })));
+    r.forEach((x) => { if (!fundet.has(x.navn)) fundet.set(x.navn, x); });
+  };
+  await saml();
+  const kategorier = await page.$$eval('[data-liste] .item[data-kategori]',
+    (rk) => rk.map((e) => e.getAttribute('data-kategori')));
+  for (const k of kategorier) {
+    const add = page.locator('[data-liste] .item[data-kategori=' + JSON.stringify(k) + '] .add');
+    if ((await add.count()) && /\+ tilføj/.test(await add.first().textContent())) {
+      await add.first().click();
+      await page.waitForTimeout(30);
+    }
+    await saml();
   }
-
-  return page.$$eval('[data-liste] .item[data-vare]', (r) => r.map((e) => ({
-    navn: e.getAttribute('data-vare'),
-    pris: (e.querySelector('.tag') || {}).textContent || '',
-    kanBestilles: !!e.querySelector('.taeller'),
-    harTegn: !!e.querySelector('.item-tegn, .item-foto'),
-  })));
+  return [...fundet.values()];
 }
 
 async function stkListe(page, sti, data) {
@@ -382,6 +395,9 @@ test.describe('Samme menukort, samme priser — de tre veje', () => {
       'https://abc.supabase.co/storage/v1/object/public/nyheder/burger.jpg';
 
     await forsiden(page, d);
+    /* Harmonikaen (23/10): grillens kategori åbnes igen, så rækken står */
+    const grill = page.locator('[data-liste] .item[data-kategori="Grill fra pladen"] .add');
+    if (/\+ tilføj/.test(await grill.first().textContent())) await grill.first().click();
     const fRaekke = page.locator('[data-liste] .item[data-vare="Havnens burger"]');
     await expect(fRaekke).toHaveCount(1);          // vagt: rækken er tegnet
     await expect(fRaekke.locator('.item-foto')).toHaveCount(0);

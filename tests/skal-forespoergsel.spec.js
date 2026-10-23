@@ -150,7 +150,7 @@ test.describe('Forespørgselssiderne', () => {
 
     await seg.locator('button', { hasText: 'Vi henter selv' }).click();
     await expect(seg.locator('button.on'), 'markeringen fulgte ikke trykket — '
-      + 'knappen ser død ud').toHaveText('Vi henter selv');
+      + 'knappen ser død ud').toHaveText(/Vi henter selv/);  // posen bærer husets logo (23/10)
     await expect(page.locator('#fadrfelt')).toBeHidden();
 
     // Og tilbage igen: et segment skal kunne fortryde.
@@ -895,7 +895,8 @@ test.describe('Cateringsiden', () => {
          Footeren og skuffemenuen er de samme på tolv sider og
          måles af kontakt-post.spec.js; det, DEN her handler om,
          er den sælgende tekst. */
-      const tekst = (await page.locator('.phead').innerText())
+      /* det nye design (23/10) kalder hovedet header.ny-cater */
+      const tekst = (await page.locator('.phead, header.ny-cater').first().innerText())
         + '\n' + (await page.locator('section').first().innerText());
 
       const forbudt = [

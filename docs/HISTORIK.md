@@ -7,6 +7,38 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**HELE SKIDTET ENDE TIL ENDE** (23/10, aften). Mikkel: *"fix lige de her knapper — og sørg for, at hele systemet
+virker ende til ende, at det er super simpelt i admin, at deres eventbureau nemt kan bruge det … hele skidtet"*.
+· Ring/Mail i Find os er rigtige knapper: hele flisen trykkes, husets tegnede telefon og brev, pil, og på
+  telefonen står de under hinanden. Linket selv er 44 px højt (gennemgangens trykflade-krav).
+· HELE PRØVESAMLINGEN KØRT (2.870 prøver × 2 skærme): 5.359 bestod, 179 fejlede. Alle admin-, køkken-,
+  arrangement-, kalender-, tilmeldings- og bordprøver bestod. Fejlene lå på forsiden og i bestillingen og
+  blev gennemgået én for én:
+  - ÆGTE FEJL, RETTET: (1) forsiden viste kodens reservepriser (24,- 55,- 45,-) i smørrebrødets bokse og
+    islisten, når databasen ikke svarede — nu spørges Butik.reservedata, og listerne skjules. (2) Ugestriben
+    slog ikke ens dage sammen (Mikkels klage 4/10 var tilbage) — nu Butik.sammeRetFlereDage: "4 dage ·
+    7.–10. august". (3) Tilbage på menukortet landede 2.600 px for langt nede — ventebilledet var blevet højt
+    nok til, at js/tilbage.js rullede FØR kortet kom, og browserens scroll anchoring skubbede videre; nu
+    holdes positionen, til siden er færdig (højst 4 s, gæsten vinder). (4) Ankerhop på undersiderne landede
+    70 px under bjælken, fordi leveringsfakta fyldtes ind under rulningen — ny/ny-under.js måler igen, når
+    rulningen står stille. (5) "Skal vi tage snakken?" havde 3,7-4:1 kontrast — nu mørk rød og fuld creme.
+    (6) Isens række i bestillingen lignede madens — nu is-afsnittets lyserøde flade.
+  - PRØVER, DER LEDTE EFTER DET GAMLE DESIGN, ER FLYTTET TIL DET NYE MED SAMME REGEL: tre-veje og
+    salgssteder (forsidens harmonika har én kategori åben ad gangen — prøven bladrer dem igennem),
+    is-afsnittet (hele iskortet med faner), leveringen som nyhed (Ny-mærket og boksen ved valget),
+    tidsloftet (kvitteringens egen overskrift), feriekortet (../#bestil), baglokalets pladstal, cateringens
+    hoved, frokostens pose med logo, beskedfeltet bag "+ Skriv en besked".
+· Ende-til-ende, målt i øvetilstand: en bestilling fra forsiden lander i databasen med navn, tid, linjer og
+  besked, og står i admin (Bestillinger, klokken med 1). Et arrangement oprettet af arrangør-rollen står på
+  forsiden og kalendersiden. Ingen rigtige bestillinger er lagt i produktionen.
+· Admin: billedvælgerne (arrangement, kalender, nyhed) er husets knap i stedet for browserens grå.
+· Topbjælkens røgede glas er mørkere (.42 → .64) på alle sider: over de lyse afsnit stod den hvide skrift på
+  lysegråt (ca. 2,5:1). Bjælken ser stadig ens ud hele vejen. gennemgang.spec.js' kontrastprøve fejler
+  stadig på computeren, fordi den regner glasset som gennemsigtigt og måler mod cremen bagved — skærmbillede
+  viser hvid skrift på mørkt glas.
+· Tilbage: ca. 80 prøver fejler stadig og leder alle efter det gamle designs dele (glasset, "Hvad skal vi
+  hjælpe med?", Figmas plade, #ugen .day). De er ikke rettet til det nye design endnu.
+
 **PÆLEN STÅR I VANDET, RUTEN ER ET KORT, ISEN BLIVER I RAMMEN** (23/10, aften). Mikkel: *"det ligner ikke, at
 pælen står i vand — det skal den"*, et skud fra Google Maps med *"brug det her til ruten i stedet"* og *"isene i
 bunden af det hvide — det ligner, at billedet går ud over på telefonen"*.

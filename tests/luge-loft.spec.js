@@ -260,7 +260,9 @@ test.describe('Afsendelsen afvises som i databasen', () => {
          kvittere for. Vi spørger derfor om ANTALLET, og om at
          send-knappen stadig står — en tom kvittering og en
          forsvundet formular er ikke det samme. */
-      await expect(page.locator('#bestil .panel h3')).toHaveCount(0);
+      /* Det nye design (23/10) har sine egne h3-rubrikker i formularen ("Vælg maden"
+         osv.) — så det er kvitteringens EGEN overskrift, der ikke må findes. */
+      await expect(page.locator('#bestil .kvit-titel')).toHaveCount(0);
       await expect(page.locator('button.g.solid.blk')).toBeVisible();
       const gemt = await gemteData(page);
       expect(gemt.bestillinger).toHaveLength(1);

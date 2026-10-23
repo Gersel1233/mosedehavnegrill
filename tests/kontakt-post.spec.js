@@ -999,7 +999,7 @@ test.describe('Vejen til bordbooking', () => {
            behandler kun rene hash-links som et hop paa siden, en
            hel adresse er en navigation. Naboerne #nyheder og
            #bestil lukkede; mit gjorde ikke. */
-        .toMatch(/href="(index\.html)?#isen"/);
+        .toMatch(/href="(index\.html|\.\/)?#isen"/);  // './#isen' fra undersiderne (23/10)
     }
   });
 
@@ -1021,7 +1021,8 @@ test.describe('Vejen til bordbooking', () => {
     /* Rækken står ØVERST: at sikre sig en plads er det mest
        hverdagsagtige ærinde. Falder den ned i bunden af listen,
        er det en beslutning, nogen skal tage bevidst. */
-    const rows = tekst.slice(tekst.indexOf('<div class="rows">'));
+    /* Det nye design (23/10): hjælpelisten er vejviserens skilte (ul.ny-vejviser) */
+    const rows = tekst.slice(tekst.indexOf('<ul class="ny-vejviser">'));
     const foerste = rows.indexOf('href="bord/"');
     const smoer = rows.indexOf('href="h-smorrebrod.html"');
     expect(foerste, 'forsiden har ingen bord-række i hjælpelisten').toBeGreaterThan(-1);

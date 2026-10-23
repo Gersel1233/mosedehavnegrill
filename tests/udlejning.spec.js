@@ -1012,7 +1012,9 @@ test.describe('Vilkårene for baglokalet', () => {
     await expect(side).not.toContainText('40 siddende');
     await expect(side).not.toContainText('1.200');
     await expect(side).not.toContainText('2.000');
-    await expect(page.locator('.phead .sub')).toContainText('plads til 25 siddende');
+    /* Hovedet hedder ikke .phead i det nye design (23/10) — det er linjen med pladstallet */
+    await expect(page.locator('p.sub', { has: page.locator('[data-vilk="pladser"]') }).first())
+      .toContainText('plads til 25 siddende');
   });
 
   /* ⚠️ VI OVERSKRIVER KUN, NÅR DATABASEN HAR NOGET AT SIGE.
