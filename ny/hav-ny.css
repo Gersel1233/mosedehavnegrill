@@ -1,0 +1,117 @@
+/* ============================================================
+   /ny/ UNDERSIDERNE PÅ HAVNEGRILL-SKABELONEN  (23/10)
+   h-smorrebrod, h-baglokale, h-catering … som kopier under /ny/.
+   Fælles: forsidens røgede glas-bjælke og det trykte kort (rødt
+   hoved med kransen, ternet bølgekant). Hver side har derudover sit
+   eget udtryk længere nede, scopet til sin egen body-klasse.
+   bestil.js og havnegrillen.css er urørte.
+   ============================================================ */
+body.ny-hav{--roeg:rgba(28,20,16,.42);--roeg-kant:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 26px -12px rgba(0,0,0,.45);
+  --creme:#fbf6ec;--messing:#e8c48f;--blaa:#2a5f8f;--rud:clamp(18px,4.6vw,36px)}
+
+/* ---------- bjælken: røget glas, ens i toppen og efter rul ---------- */
+body.ny-hav .topbar,body.ny-hav .topbar.stuck,body.ny-hav .topbar.solid{background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  padding-top:max(calc(env(safe-area-inset-top) + 12px),14px);padding-bottom:10px;margin-bottom:0}
+body.ny-hav .topbar .ordmaerke,body.ny-hav .topbar.stuck .ordmaerke{display:inline-flex;align-items:center;opacity:1;visibility:visible;height:42px;min-height:0;padding:0 18px;border-radius:999px;
+  color:#fff;text-decoration:none;text-shadow:0 1px 10px rgba(0,0,0,.35);
+  background:var(--roeg);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:var(--roeg-kant)}
+body.ny-hav .ny-nav,body.ny-hav .ny-bord{display:none}
+@media (min-width:821px){
+  body.ny-hav .topbar,body.ny-hav .topbar.stuck,body.ny-hav .topbar.solid{padding-top:16px;gap:6px}
+  body.ny-hav .topbar .ordmaerke,body.ny-hav .topbar.stuck .ordmaerke{height:44px}
+  body.ny-hav .ny-nav{display:flex;align-items:center;gap:2px;margin-right:8px;padding:4px;border-radius:999px;
+    background:var(--roeg);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:var(--roeg-kant)}
+  body.ny-hav .ny-nav a{padding:9px 14px;border-radius:999px;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;text-decoration:none;transition:background .2s ease}
+  body.ny-hav .ny-nav a:hover{background:rgba(255,255,255,.16)}
+  body.ny-hav .ny-bord{display:inline-flex;align-items:center;height:40px;padding:0 16px;margin-right:6px;border-radius:999px;
+    font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;text-decoration:none;background:var(--red);
+    box-shadow:inset 0 1px .5px rgba(255,255,255,.4),0 8px 20px rgba(214,42,58,.3)}
+  body.ny-hav .ny-bord:hover{background:var(--red-d)}
+}
+
+/* ---------- det trykte kort: rødt hoved, krans, ternet bølgekant ---------- */
+body.ny-hav .panel.ny-kort,body.ny-hav #bestil.panel{position:relative;overflow:hidden;padding:0 0 26px;border-radius:28px;background:var(--creme);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 24px 60px rgba(36,26,23,.16),0 4px 14px rgba(36,26,23,.08)}
+body.ny-hav #bestil.panel > :not(.rk-hoved):not(.rk-kant){margin-left:var(--rud);margin-right:var(--rud)}
+body.ny-hav #bestil.panel > :first-child:not(.rk-hoved){margin-top:26px}
+body.ny-hav .rk-hoved{position:relative;padding:24px 20px 22px;padding-right:116px;background:var(--red);color:var(--creme);overflow:hidden}
+body.ny-hav .rk-hoved::before,body.ny-hav .rk-hoved::after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.16);pointer-events:none}
+body.ny-hav .rk-hoved::before{width:420px;height:420px;right:-210px;top:-150px}
+body.ny-hav .rk-hoved::after{width:360px;height:360px;right:-90px;bottom:-300px}
+body.ny-hav .rk-over{display:flex;align-items:center;gap:14px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;text-transform:uppercase}
+body.ny-hav .rk-over i{flex:1;max-width:180px;height:1px;background:rgba(255,255,255,.45)}
+body.ny-hav .rk-titel{margin:12px 0 0;font:400 clamp(44px,11vw,76px)/.88 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:var(--creme)}
+body.ny-hav .rk-slogan{margin:12px 0 0;max-width:32ch;font:italic 400 15.5px/1.4 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.01em;color:var(--creme)}
+body.ny-hav .rk-logo{position:absolute;top:18px;right:16px;width:82px;height:82px;border-radius:50%;box-shadow:0 10px 26px rgba(80,8,16,.35)}
+body.ny-hav .rk-logo svg{display:block;width:100%;height:100%}
+body.ny-hav .rk-kant{height:40px;margin:-1px 0 8px;background:
+  radial-gradient(circle at 50% 100%,var(--creme) 11.5px,transparent 12px) 0 100%/24px 18px repeat-x,
+  linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/24px 100%,
+  linear-gradient(0deg,transparent 50%,rgba(216,41,59,.5) 0) 0 0/100% 24px,#fff}
+@media (min-width:700px){
+  body.ny-hav .rk-hoved{padding:32px 36px 28px;padding-right:170px}
+  body.ny-hav .rk-logo{width:112px;height:112px;top:24px;right:30px}
+}
+
+/* felterne i kortet: Bebas-etiketter, hvide felter, rød fokus, rød knap */
+body.ny-hav #bestil .field > label:not(.allergi-ja):not(.vilkaar-ja),body.ny-hav #bestil .two-col > div > label{
+  font:400 17px/1.1 "Bebas Neue",sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--blaa)}
+body.ny-hav #bestil .inp{background-color:#fff;border-radius:14px;box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.12)}
+body.ny-hav #bestil .inp:focus{outline:none;box-shadow:inset 0 0 0 2px var(--red)}
+body.ny-hav #bestil .item{background:#fff;border-radius:16px;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
+body.ny-hav #bestil .seg2 button{background:#fff;box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.12)}
+body.ny-hav #bestil .seg2 button.on{background:#fff;color:var(--red-d);box-shadow:inset 0 0 0 2px var(--red),0 10px 22px -12px rgba(214,42,58,.6)}
+body.ny-hav #bestil .note{background:#fff}
+body.ny-hav #bestil button.g.solid.blk:not(:disabled){background:linear-gradient(180deg,#e2404f,var(--red-d));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 24px -10px rgba(180,31,46,.7)}
+body.ny-hav #bestil button.g.solid.blk:disabled{background:#e4d3c8;color:var(--ink2)}
+
+/* ============================================================
+   SMØRREBRØD UD AF HUSET — AVISFORSIDEN
+   Smørrebrødet går ud af huset i avispapir (forretningens egne
+   fotos), så siden er sat som en forside: masthead med dobbelte
+   streger, Bebas-overskrift, billeder i tynde rammer, notitserne
+   som spalter, og "et helt fad" som et udklip med stiplet kant.
+   ============================================================ */
+body.ny-smoerside .screen{background:
+  repeating-linear-gradient(0deg,rgba(36,26,23,.018) 0 1px,transparent 1px 3px),#f4eee2}
+body.ny-smoerside .ny-avis{position:relative;max-width:1000px;margin:4px auto 0;padding-inline:var(--pad);padding:14px 0 18px;text-align:center;color:var(--ink)}
+body.ny-smoerside .ny-avis-top{display:flex;justify-content:center;align-items:center;gap:10px;padding:9px 0;flex-wrap:wrap;
+  border-top:3px double var(--ink);border-bottom:1px solid var(--ink);
+  font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--ink)}
+body.ny-smoerside .ny-avis-top b{font-size:9px;color:var(--red)}
+body.ny-smoerside .ny-avis h1{margin:18px 0 0;font:400 clamp(62px,17vw,128px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:var(--ink)}
+body.ny-smoerside .ny-avis h1 span{display:block;color:var(--red)}
+body.ny-smoerside .ny-avis .sub{max-width:40ch;margin:16px auto 0;padding-top:14px;border-top:1px solid rgba(36,26,23,.25);
+  font:italic 400 16.5px/1.45 "Host Grotesk",system-ui,sans-serif;color:var(--ink2)}
+@media (max-width:420px){body.ny-smoerside .ny-avis-top span:last-child,body.ny-smoerside .ny-avis-top b:last-of-type{display:none}}
+
+/* billederne som avisfotos: tynd sort ramme, hvid kant, ingen runde hjørner */
+body.ny-smoerside .smoer-galleri{margin-top:6px}
+body.ny-smoerside .smoer-galleri image-slot{border-radius:3px;padding:5px;background:#fff;box-shadow:0 0 0 1px var(--ink),0 14px 30px -18px rgba(36,26,23,.6)}
+
+/* notitserne som tre spalter med streger imellem */
+body.ny-smoerside .facts{gap:0;margin-top:22px;border-top:3px double var(--ink);border-bottom:1px solid var(--ink)}
+body.ny-smoerside .fact{background:transparent;box-shadow:none;border-radius:0;padding:14px 4px;font-size:14px}
+body.ny-smoerside .fact + .fact{border-top:1px solid rgba(36,26,23,.25)}
+body.ny-smoerside .fact b{display:block;margin-bottom:2px;font:400 19px/1.05 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+body.ny-smoerside .fact svg{width:20px;height:20px;margin-top:2px}
+@media (min-width:821px){
+  body.ny-smoerside .facts{grid-template-columns:repeat(3,1fr)}
+  body.ny-smoerside .fact{padding:16px 18px}
+  body.ny-smoerside .fact + .fact{border-top:0;border-left:1px solid rgba(36,26,23,.25)}
+}
+
+/* "Smørrebrød, som det skal smage" som lederen: overskrift og initial, uden kort */
+body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort){background:transparent;box-shadow:none;border-radius:0;padding:6px 2px 4px;margin-top:26px}
+body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) h3{font:400 clamp(34px,8vw,48px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) .saelg-stor{font-size:17.5px;line-height:1.6}
+body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) .saelg-stor::first-letter{float:left;margin:4px 8px 0 0;font:400 64px/.8 "Bebas Neue",sans-serif;color:var(--red)}
+
+body.ny-smoerside #bestil.panel{margin-top:26px}
+
+/* "Skal I bruge et helt fad?" som et udklip: stiplet kant og en saks */
+body.ny-smoerside .tilbud-kort{position:relative;margin-top:30px;background:#fff;border-radius:6px;padding:24px 22px 20px;
+  box-shadow:0 0 0 1px rgba(36,26,23,.06),0 18px 40px -26px rgba(36,26,23,.5);outline:2px dashed rgba(36,26,23,.38);outline-offset:-10px}
+body.ny-smoerside .tilbud-kort::before{content:"✂";position:absolute;top:-3px;left:24px;padding:0 6px;font-size:18px;line-height:1;color:var(--ink);background:#f4eee2;transform:translateY(-50%)}
+body.ny-smoerside .tilbud-kort h3{font:400 34px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+body.ny-smoerside .tilbud-kort .tilbud-knap{background:var(--ink);color:#fff}

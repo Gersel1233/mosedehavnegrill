@@ -7,6 +7,16 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/h-smorrebrod.html — SMØRREBRØD UD AF HUSET SOM AVISFORSIDE** (23/10 — kun /ny/, den rigtige side er
+urørt). Anden af vejviserens seks. Smørrebrødet går ud af huset i avispapir (forretningens egne fotos),
+så siden er sat som en forside: masthead med dobbelt streg, "SMØRREBRØD / UD AF HUSET" i Bebas, de tre
+notitser som spalter, "Smørrebrød, som det skal smage" som leder med rød initial, formularen som
+husets trykte bestillingsseddel (rødt hoved, krans, ternet kant) og "Skal I bruge et helt fad?" som et
+udklip med stiplet kant. Samme bestil.js — ordrerne går samme vej som før. Fælles stil for undersiderne
+på havnegrill-skabelonen ligger i `ny/hav-ny.css` (`body.ny-hav`); sidens eget i `body.ny-smoerside`.
+⚠️ `href="#bestil"` bliver stående: havnegrillen.js bruger den som CSS-vælger. Med `<base>` ville et
+#-link ellers gå til roden, så `ny/ny-under.js` ruller selv, når ingen anden gjorde.
+
 **/ny/bord/ — BOOK ET BORD I FORSIDENS STIL** (23/10 — kun /ny/, bord/ er urørt). Første af vejviserens
 seks sider. En kopi af bord/ med `<base href="../../">` og noindex; bord.js er den samme, så bookingen
 lander i admin præcis som før. Bjælken er forsidens røgede glas, hovedet er Bebas på terrassefotoet
