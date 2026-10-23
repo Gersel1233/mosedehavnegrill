@@ -7,6 +7,11 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/h-smorrebrod.html: FORSIDENS FOTOS I BESTILLINGEN** (23/10 — kun /ny/). Mikkel: *"brug de normale
+billeder for bestillingen også her"*. Den tegnede skive i listen er afløst af de samme fotos som i
+forsidens bestilling (smoer-bakke.jpg til Smørrebrød, smoer-havn.jpg til Håndmadder). Ren CSS: rækkerne
+bærer `data-kategori` fra bestil.js. Notitsernes tegninger bliver.
+
 **/ny/h-smorrebrod.html: HUSETS EGNE TEGNINGER I STEDET FOR STANDARDIKONER** (23/10 — kun /ny/). Mikkel om
 kalender-, lastbil- og hjerteikonet: *"kan siderne blive mindre generiske, og de her fixes"*. Notitserne har
 nu tegninger i vejviserens stil: et rødt æggeur med den gule time, den røde vogn med ternet bånd (samme
