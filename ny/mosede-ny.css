@@ -894,8 +894,11 @@ body.ny-side .topbar.stuck .ordmaerke{display:inline-flex;align-items:center;min
    ============================================================ */
 .ny-side .dug--d{display:none}
 body.ny-side #find{padding-top:84px}
-body.ny-side #find::before{content:"";position:absolute;left:0;right:0;top:0;height:30px;z-index:2;pointer-events:none;
-  background:radial-gradient(circle at 50% 0,#2a5f8f 14px,transparent 14.5px) 0 0/30px 30px repeat-x,linear-gradient(#2a5f8f,#2a5f8f) 0 0/100% 15px no-repeat}
+/* vandet løber blødt ind i fotoet (23/10): på iPhonen stod bølgen mørkeblå mod en mørk himmel og
+   så ud som en hård kant. Nu falder havets blå langsomt ud over fotoets top. */
+body.ny-side #find::before{content:"";position:absolute;left:0;right:0;top:-1px;height:220px;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,#2a5f8f 0%,rgba(42,95,143,.82) 22%,rgba(33,58,82,.45) 55%,rgba(26,18,16,0) 100%)}
+body.ny-side #find > :not(.find-bg):not(.find-slor){position:relative;z-index:1}
 body.ny-side #find .findhoved .eyebrow{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;color:var(--messing,#e8c48f)}
 body.ny-side #find .findhoved h2{margin-top:10px;font:400 clamp(50px,11vw,104px)/.88 "Bebas Neue",sans-serif;letter-spacing:.005em;color:#fff}
 body.ny-side #find .findkort{position:relative;overflow:hidden;padding:0 0 22px;border-radius:26px;color:var(--ink);background:#fbf6ec;-webkit-backdrop-filter:none;backdrop-filter:none;
@@ -917,7 +920,6 @@ body.ny-side #find .hours div span:first-child{order:0}
 body.ny-side #find .hours div span:last-child{order:2;font:400 23px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;color:var(--ink)}
 body.ny-side #find .hours div.now{margin:2px -12px;padding-inline:12px;border-radius:12px;background:rgba(214,42,58,.09);color:var(--red-d)}
 body.ny-side #find .hours div.now span:last-child{color:var(--red-d)}
-body.ny-side #find .ny-kortskitse{display:block;width:calc(100% - 44px);height:auto;margin-bottom:14px;border-radius:14px;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08)}
 body.ny-side #find .fk-adresse{margin-top:0;font:400 28px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;color:var(--ink)}
 body.ny-side #find a.rute-knap.g.blk{display:flex;width:auto;justify-content:center;margin-top:16px;color:#fff;background:linear-gradient(180deg,#e2404f,var(--red-d));border:0;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 24px -10px rgba(180,31,46,.7)}
@@ -948,17 +950,7 @@ body.ny-side #find #find-kontakt div span:last-child{font:600 15px/1.2 "Host Gro
    rammen skar netop den væk */
 .ny-side .ny-tidslinje li:nth-child(4) .ny-print img{object-position:18% 60%}
 
-/* ---------- Find os: det rigtige kort med ét tryk, og kontakten som knapper (23/10) ---------- */
-body.ny-side #find .ny-kort{position:relative;margin-bottom:16px;border-radius:16px;overflow:hidden;aspect-ratio:16/10;background:#cfe0ec;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
-body.ny-side #find .ny-kort .ny-kortskitse{position:absolute;inset:0;width:100%;height:100%;margin:0;border-radius:0;filter:saturate(.9);object-fit:cover}
-body.ny-side #find .ny-kort::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(29,61,92,.35));pointer-events:none}
-body.ny-side #find .ny-kort.vist::after{display:none}
-body.ny-side #find .ny-kort-vis{position:absolute;left:50%;top:50%;z-index:1;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 20px;border:0;border-radius:999px;cursor:pointer;
-  font:600 15px/1 "Host Grotesk",system-ui,sans-serif;color:#241a17;background:#fff;box-shadow:0 10px 24px -8px rgba(29,61,92,.6),inset 0 0 0 1px rgba(36,26,23,.08)}
-body.ny-side #find .ny-kort-vis svg{width:18px;height:18px;color:var(--red)}
-body.ny-side #find .ny-kort-vis:hover{transform:translate(-50%,-52%)}
-body.ny-side #find .ny-kort-note{position:absolute;left:0;right:0;bottom:8px;z-index:1;margin:0;text-align:center;font:500 12px/1.3 "Host Grotesk",system-ui,sans-serif;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5)}
-body.ny-side #find .ny-kort iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+/* ---------- Find os: adressen og kontakten som knapper (23/10) ---------- */
 /* adressen på én linje og mindre råbende */
 body.ny-side #find .fk-adresse{font-size:24px;line-height:1.05}
 /* ring og skriv som to knapper side om side */
@@ -968,10 +960,6 @@ body.ny-side #find #find-kontakt > div::after{display:none}
 body.ny-side #find #find-kontakt > div > span:first-child{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.14em;color:var(--muted)}
 body.ny-side #find #find-kontakt > div > span:last-child{font:600 16px/1.2 "Host Grotesk",system-ui,sans-serif}
 body.ny-side #find #find-kontakt > div[hidden]{display:none}
-body.ny-side #find .ny-kort-vis{top:auto;bottom:44px;transform:translateX(-50%)}
-body.ny-side #find .ny-kort-vis:hover{transform:translate(-50%,-2px)}
-body.ny-side #find .ny-kort{aspect-ratio:2/1;min-height:170px}
-body.ny-side #find .ny-kort-vis{bottom:36px}
 /* fejlkanten vinder over fokus — samme regel som undersiderne (23/10) */
 .ny-side #bestil .inp[aria-invalid="true"],.ny-side #bestil .inp[aria-invalid="true"]:focus{outline:2px solid var(--red);outline-offset:-2px}
 
@@ -980,3 +968,8 @@ body.ny-side #find .ny-kort-vis{bottom:36px}
   transition:opacity .45s ease,transform .7s cubic-bezier(.2,.9,.24,1)}
 .ny-side .ny-vejviser.ny-skilt-anim > li.ude{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.ny-side .ny-vejviser.ny-skilt-anim > li{opacity:1;transform:none;transition:none}}
+
+/* "Nyt fra havnen": knapperne brydes på to linjer i stedet for at løbe ud over kanten, og der
+   står ingen lys stribe bag dem (23/10) */
+.ny-side .ny-strib--top .social{flex-wrap:wrap;justify-content:center;gap:8px;overflow:visible;margin:0;padding:6px 0 4px;background:none;-webkit-mask-image:none;mask-image:none}
+.ny-side .ny-strib--top .social a{height:40px;padding:0 14px;-webkit-backdrop-filter:none;backdrop-filter:none}

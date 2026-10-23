@@ -7,6 +7,28 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LEVERINGEN HEL, SKILTENE ÉT AD GANGEN, FIND OS UDEN KORT, NY BUND** (23/10). Mikkel med fem skud fra sin
+iPhone: *"alt det her skal fixes, også bunden, og med lokation brug det originale gamle — ikke det der båd-noget
+— og animationen på pælen virker ikke hverken op eller ned"*.
+· Levering: boksen under valget havde fået valgets To-go- og Spis her-knapper kopieret ind i sig (en
+  rettelse af tegningerne tog for meget med) — det var den smalle grå søjle oven på adressefeltet. Boksen
+  har nu kun sin egen tegning (vognen) og teksterne.
+· Vejviseren: hvert skilt havde sin egen IntersectionObserver. På telefonen kom flere ind i samme ryk og
+  foldede sig ud samtidig, og på vej op gik de først ind under skærmkanten — man så intet ske. Nu er der
+  én linje lidt over skærmens bund; skiltene over den er ude, og forskellen tages ét ad gangen (130 ms),
+  ned og op. Målt i Chromium: 100000 → 111111 ned, 111110 → 000000 op. Med "reducér bevægelse" står de
+  fremme (gennemgang.spec.js kræver det) — står den slået til på iPhonen, ses ingen animation.
+· Find os: det tegnede havnekort og "Vis kortet"-knappen (Google ved tryk) er væk; adressen og "Vis rute
+  til havnen" står som før. Persondatapolitikken siger igen "ingen indlejrede kort" — ordret som ved
+  lanceringen.
+· Vandet → Find os: bølgen var mørkeblå mod en mørk himmel og så ud som en hård kant. Havets blå falder
+  nu blødt ud over fotoets top.
+· Bunden: emoji-pillerne (😊 🏅) er byttet for husets tegnede smiley og medalje på alle 14 sider med
+  footer; overskrift og kolonnenavne i Bebas som resten af huset; luften i bunden regner iPhonens
+  hjemmestreg med, så Bestil mad-pillen ikke dækker "Lavet af Lesreg".
+· "Nyt fra havnen": knapperne brydes på to linjer i stedet for at løbe ud over højre kant, uden lys
+  stribe bag.
+
 **"PÅ KORTET" ER CHEFENS KORT, SPROGSKIFTET STÅR STILLE, SKILTENE FOLDES UD** (23/10). Mikkel: *"rækkefølgen
 på kortene skal give mening og være rigtig efter chefens ønske"*, *"når jeg skifter fra dansk til engelsk,
 ryger det ned i kappen under det røde"* og *"pælen med de seks ting — 1 by 1 frem, når man scroller ned, og

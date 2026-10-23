@@ -13993,3 +13993,6 @@ body.personale .ferie-tom { margin: 8px 0; }
    indtastning. */
 body.personale .kal-lukket-vis { padding: 6px 0 2px; }
 body.personale .kal-lukket-vis a { pointer-events: none; }
+
+/* footerens mærker er husets tegninger, ikke emoji (23/10) — ny/ark-ny.css klæder dem videre på */
+.smiley-linje .fod-ill{flex:none;width:24px;height:24px}

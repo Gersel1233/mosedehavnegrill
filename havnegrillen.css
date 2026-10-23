@@ -3950,3 +3950,6 @@ button.g:disabled:active{transform:none}
    resten blegner; ordet "Aflyst" står i knappens plads (kalender.js). */
 .evcard.aflyst h3{text-decoration:line-through;text-decoration-thickness:1.5px}
 .evcard.aflyst .kind,.evcard.aflyst p{opacity:.6}
+
+/* footerens mærker er husets tegninger, ikke emoji (23/10) — ny/ark-ny.css klæder dem videre på */
+.smiley-linje .fod-ill{flex:none;width:24px;height:24px}

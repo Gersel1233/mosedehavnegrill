@@ -88,3 +88,28 @@ body.ny-side .topbar .g.icn.menu,body.ny-hav .topbar .g.icn.menu,body.ny-under #
 .sheet .ny-ark-top a .ny-ark-ill svg{position:static;width:40px;height:40px}
 .sheet .ny-ark-bord .ny-ark-ill{box-shadow:0 0 0 1.5px rgba(214,42,58,.25)}
 .sheet .ny-ark-top a{min-height:124px;padding-top:66px}
+
+/* ============================================================
+   FOOTEREN I HUSETS UDTRYK  (23/10)
+   Mikkel med et skud fra sin iPhone: "bunden skal fixes". Emoji-
+   pillerne (😊 🏅) er byttet for husets egne tegninger — smileyen og
+   medaljen fra nyhedskortene øverst — og overskrifterne står i Bebas
+   som resten af huset. Bunden har plads til den flydende Bestil mad-
+   pille OG iPhonens hjemmestreg, så intet ender under pillen.
+   ============================================================ */
+body.hav footer{padding-top:46px;padding-bottom:calc(max(118px, var(--pille-plads)) + env(safe-area-inset-bottom, 0px))}
+body.hav footer h3{margin:8px 0 26px;font:400 clamp(48px,12vw,88px)/.9 "Bebas Neue",sans-serif;letter-spacing:.01em;color:#fbf6ec;text-wrap:balance}
+body.hav footer .fcols{gap:6px 24px;font-size:15px}
+body.hav footer .fcols b{margin-bottom:4px;font:400 15px/1 "Bebas Neue",sans-serif;letter-spacing:.26em;color:#e8c48f}
+body.hav footer .fcols a{padding:8px 0;color:rgba(251,246,236,.84);text-decoration:none}
+body.hav footer .fcols a:hover{color:#fff}
+.smiley-linje .fod-ill{width:34px;height:34px;padding:2px;border-radius:50%;background:#fbf6ec}
+body.hav footer .smiley-linje{display:flex;width:fit-content;max-width:100%;gap:12px;margin:14px 0 0;padding:6px 18px 6px 6px;border-radius:999px;
+  font-size:13.5px;line-height:1.35;color:rgba(251,246,236,.92);text-decoration:none;background:rgba(251,246,236,.07);box-shadow:inset 0 0 0 1px rgba(251,246,236,.14)}
+body.hav footer .smiley-linje + .smiley-linje{margin-top:10px}
+body.hav footer .smiley-linje:hover{background:rgba(251,246,236,.12)}
+body.hav footer .legal{margin-top:30px;border-top:1px solid rgba(251,246,236,.12);color:rgba(251,246,236,.6)}
+/* bord/ og bestil/ har deres egen footer-opbygning (.fgrid) — samme overskrifter som resten */
+body.underside:not(.personale) footer .fgrid h3{font:400 clamp(48px,12vw,88px)/.9 "Bebas Neue",sans-serif;letter-spacing:.01em;color:#fbf6ec}
+body.underside:not(.personale) footer .fcol b{font:400 15px/1 "Bebas Neue",sans-serif;letter-spacing:.26em;color:#e8c48f}
+body.underside:not(.personale) footer .smiley-linje{color:rgba(251,246,236,.92);background:rgba(251,246,236,.07);box-shadow:inset 0 0 0 1px rgba(251,246,236,.14);padding:6px 18px 6px 6px;gap:12px}

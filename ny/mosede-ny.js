@@ -70,45 +70,36 @@
   });
 
   /* VEJVISERENS SKILTE KOMMER FREM ÉT AD GANGEN (23/10). Mikkel: "den nederste pæl med de seks ting —
-     når man scroller ned, kommer de frem 1 by 1, og scroll op er de væk 1 by 1". Hvert skilt har sin
-     egen vagt: det foldes ud fra pælen, når det kommer ind i billedet, og går ind igen, når man ruller
-     op forbi det (kun når det ligger UNDER skærmen — skilte, man har læst, bliver stående). Uden
-     IntersectionObserver eller med "reducér bevægelse" står de bare fremme. */
+     når man scroller ned, kommer de frem 1 by 1, og scroll op er de væk 1 by 1".
+     Første udgave gav hvert skilt sin egen IntersectionObserver. På en telefon kom flere skilte ind
+     i samme ryk og foldede sig ud SAMTIDIG, og på vej op gik de først ind, når de var under
+     skærmen — så man så aldrig noget ske ("virker ikke hverken op eller ned").
+     Nu er der én linje lidt over skærmens bund: alle skilte over linjen skal være ude, resten inde.
+     Forskellen tages ét skilt ad gangen med et lille ophold, så man ser dem komme og gå enkeltvis
+     — også når man ruller hurtigt. Med "reducér bevægelse" står de bare fremme. */
   (function () {
     var ul = document.querySelector('.ny-vejviser');
-    if (!ul || !('IntersectionObserver' in window) || roligt()) return;
+    if (!ul || roligt()) return;
+    var skilte = [].slice.call(ul.children);
     ul.classList.add('ny-skilt-anim');
-    var io = new IntersectionObserver(function (poster) {
-      poster.forEach(function (p) {
-        if (p.isIntersecting) p.target.classList.add('ude');
-        else if (p.boundingClientRect.top > 0) p.target.classList.remove('ude');
-      });
-    }, { rootMargin: '0px 0px -14% 0px', threshold: 0.35 });
-    ul.querySelectorAll(':scope > li').forEach(function (li) { io.observe(li); });
-  })();
-
-  /* Find os: det rigtige Google-kort kommer først, når gæsten trykker. Persondatapolitikken
-     lover, at intet hentes fra Google af sig selv, og Google sætter cookies — så trykket ER
-     samtykket, og det huskes IKKE: næste besøg starter forfra uden Google. */
-  (function () {
-    var boks = document.querySelector('[data-ny-kort]');
-    if (!boks) return;
-    var URL_ = 'https://maps.google.com/maps?q=' + encodeURIComponent('Mosede Havnecafe, Havnevej 20I, 2670 Greve') + '&z=15&hl=da&output=embed';
-    function vis() {
-      var f = document.createElement('iframe');
-      f.src = URL_;
-      f.title = 'Kort: Mosede Havnecafe, Havnevej 20I, 2670 Greve';
-      f.loading = 'lazy';
-      f.referrerPolicy = 'no-referrer-when-downgrade';
-      f.setAttribute('allowfullscreen', '');
-      boks.innerHTML = '';
-      boks.appendChild(f);
-      boks.classList.add('vist');
+    var ude = 0, maal = 0, timer = null, vent = false;
+    function skridt() {
+      timer = null;
+      if (ude < maal) { skilte[ude].classList.add('ude'); ude++; }
+      else if (ude > maal) { ude--; skilte[ude].classList.remove('ude'); }
+      if (ude !== maal) timer = setTimeout(skridt, 130);
     }
-    var knap = boks.querySelector('.ny-kort-vis');
-    if (knap) knap.addEventListener('click', function () {
-      vis();
-    });
+    function tjek() {
+      vent = false;
+      var linje = innerHeight * 0.88, n = 0;
+      skilte.forEach(function (li, i) { if (li.getBoundingClientRect().top + 20 < linje) n = i + 1; });
+      maal = n;
+      if (!timer && ude !== maal) skridt();
+    }
+    function bed() { if (!vent) { vent = true; requestAnimationFrame(tjek); } }
+    addEventListener('scroll', bed, { passive: true });
+    addEventListener('resize', bed);
+    tjek();
   })();
 
   /* Kransen fra heroen går igen i de trykte korts hjørne, som på papiret */
