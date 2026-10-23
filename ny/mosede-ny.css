@@ -974,3 +974,9 @@ body.ny-side #find .ny-kort{aspect-ratio:2/1;min-height:170px}
 body.ny-side #find .ny-kort-vis{bottom:36px}
 /* fejlkanten vinder over fokus — samme regel som undersiderne (23/10) */
 .ny-side #bestil .inp[aria-invalid="true"],.ny-side #bestil .inp[aria-invalid="true"]:focus{outline:2px solid var(--red);outline-offset:-2px}
+
+/* vejviserens skilte foldes ud fra pælen ét ad gangen (ny/mosede-ny.js sætter .ude) — kun transform og opacitet */
+.ny-side .ny-vejviser.ny-skilt-anim > li{opacity:0;transform:translateX(-34px) rotate(-6deg);transform-origin:0 50%;
+  transition:opacity .45s ease,transform .7s cubic-bezier(.2,.9,.24,1)}
+.ny-side .ny-vejviser.ny-skilt-anim > li.ude{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.ny-side .ny-vejviser.ny-skilt-anim > li{opacity:1;transform:none;transition:none}}

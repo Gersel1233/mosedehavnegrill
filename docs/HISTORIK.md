@@ -7,6 +7,21 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**"PÅ KORTET" ER CHEFENS KORT, SPROGSKIFTET STÅR STILLE, SKILTENE FOLDES UD** (23/10). Mikkel: *"rækkefølgen
+på kortene skal give mening og være rigtig efter chefens ønske"*, *"når jeg skifter fra dansk til engelsk,
+ryger det ned i kappen under det røde"* og *"pælen med de seks ting — 1 by 1 frem, når man scroller ned, og
+væk 1 by 1 op"*.
+· Forsidens "På kortet" viste databasens 19 kategorier i deres egen sortering. Nu står menukortets otte
+  kapitler — chefens trykte kort fra korrekturen 7/10 (menukort-kort.js) — i samme rækkefølge, hver med
+  link til sit kapitel (#kapitel-<id>, isen #afsnit-is). Intet tal: et kapitel samler flere kategorier.
+  Menukort-siden selv fulgte allerede chefens kort og er urørt.
+· Sprogskiftet bygger hele kortet om; Safari holder ikke pladsen, så skærmen gled. `ny/menukort-ny.js`
+  måler sprogknapperne før (capture), holder kortets højde under skiftet og ruller dem tilbage på plads.
+  (Kunne ikke genskabes i Chromium, som holder pladsen selv — målt også med overflow-anchor slået fra.)
+· Vejviserens skilte foldes ud fra pælen, når de kommer ind i billedet, og ind igen, når man ruller op
+  forbi dem (kun når de ligger under skærmen). Kun transform og opacitet; står fremme ved "reducér
+  bevægelse". Målt: 1 → 2 → 4 → 5 → 6 ned, 5 → 2 → 0 op.
+
 **MENUKORTET: BÅNDET KLÆBER IKKE MERE, OG SIDEN ER LIDT PÆNERE** (23/10). Mikkel: *"fix selve inde på
 menukort-tabben, i hvert fald for telefon: når man scroller, med den der — fjern den. Og ændr ikke så
 meget, men gør den lidt pænere og bedre i desktop og telefon."*

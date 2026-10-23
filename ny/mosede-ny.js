@@ -69,6 +69,24 @@
     el.setAttribute('href', her() + el.getAttribute('href'));
   });
 
+  /* VEJVISERENS SKILTE KOMMER FREM ÉT AD GANGEN (23/10). Mikkel: "den nederste pæl med de seks ting —
+     når man scroller ned, kommer de frem 1 by 1, og scroll op er de væk 1 by 1". Hvert skilt har sin
+     egen vagt: det foldes ud fra pælen, når det kommer ind i billedet, og går ind igen, når man ruller
+     op forbi det (kun når det ligger UNDER skærmen — skilte, man har læst, bliver stående). Uden
+     IntersectionObserver eller med "reducér bevægelse" står de bare fremme. */
+  (function () {
+    var ul = document.querySelector('.ny-vejviser');
+    if (!ul || !('IntersectionObserver' in window) || roligt()) return;
+    ul.classList.add('ny-skilt-anim');
+    var io = new IntersectionObserver(function (poster) {
+      poster.forEach(function (p) {
+        if (p.isIntersecting) p.target.classList.add('ude');
+        else if (p.boundingClientRect.top > 0) p.target.classList.remove('ude');
+      });
+    }, { rootMargin: '0px 0px -14% 0px', threshold: 0.35 });
+    ul.querySelectorAll(':scope > li').forEach(function (li) { io.observe(li); });
+  })();
+
   /* Find os: det rigtige Google-kort kommer først, når gæsten trykker. Persondatapolitikken
      lover, at intet hentes fra Google af sig selv, og Google sætter cookies — så trykket ER
      samtykket, og det huskes IKKE: næste besøg starter forfra uden Google. */
@@ -305,43 +323,40 @@
      menukortet (#kat-ID, som js/skal/menukort.js sætter). Findes
      pladsen ikke, lander man øverst på kortet — aldrig på en fejl.
      ============================================================ */
-  function tegnKapitler(d) {
+  /* "PÅ KORTET" ER CHEFENS KORT (23/10). Mikkel: "rækkefølgen på kortene skal give mening og være
+     rigtig efter chefens ønske". Her stod databasens 19 kategorier i deres egen sortering ("Retter",
+     "Tilkøb", "Sandwich 1 ret" …). Nu står menukortets otte kapitler — de trykte kort fra chefens
+     korrektur 7/10 (js/skal/menukort-kort.js, KAPITLER) — i samme rækkefølge, og hvert link lander på
+     sit kapitel (#kapitel-<id>, som menukort.js sætter). Antallet af retter tælles ikke: et kapitel
+     samler flere kategorier, og et forkert tal er værre end intet. */
+  var KORT_KAPITLER = [
+    { id: 'grillen', navn: 'Morgenmad & frokost', foto: 'billeder/havn-morgenmad.jpg' },
+    { id: 'burgere', navn: 'À la carte, burgere & pølser', foto: 'billeder/havn-burgere.jpg' },
+    { id: 'smoerrebroed', navn: 'Smørrebrød', foto: 'billeder/smoer-bakke.jpg' },
+    { id: 'haandmadder', navn: 'Håndmadder', foto: 'billeder/smoer-havn.jpg' },
+    { id: 'is', navn: 'Is & sødt', foto: 'billeder/havn-kugleis.jpg', anker: 'afsnit-is' },
+    { id: 'kaffe', navn: 'Kaffe, koldt & knas', foto: 'billeder/havn-kaffe.jpg' },
+    { id: 'bar', navn: 'Øl, vin & bar', foto: 'billeder/havn-oel.jpg' },
+    { id: 'selskab', navn: 'Til selskabet', foto: 'billeder/havn-platter.jpg' }
+  ];
+  function tegnKapitler() {
     var liste = document.getElementById('nyKapitler');
     if (!liste) return;
-    var varer = d.menu_varer || [];
-    var kat = (d.menu_kategorier || []).filter(function (k) { return k.aktiv !== false; })
-      .map(function (k) {
-        return { k: k, n: varer.filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false; }).length };
-      })
-      .filter(function (x) { return x.n > 0 && !/^tilkøb|^tillæg|fyld/i.test(String(x.k.navn)); })
-      .sort(function (a, b) { return (a.k.sortering || 0) - (b.k.sortering || 0); });
     liste.textContent = '';
     liste.removeAttribute('aria-busy');
-    if (!kat.length) { liste.hidden = true; return; }
-    kat.forEach(function (x, i) {
-      var li = lav('li', i >= 8 ? 'nk-skjult' : '');
+    KORT_KAPITLER.forEach(function (x) {
+      var li = lav('li', '');
       var a = lav('a', 'nk-kapitel');
-      a.setAttribute('href', 'm-menukort.html#kat-' + x.k.id);
-      var foto = fotoFor(x.k.navn);
+      a.setAttribute('href', 'm-menukort.html#' + (x.anker || ('kapitel-' + x.id)));
       var f = lav('span', 'nk-kapitel-foto');
       f.setAttribute('aria-hidden', 'true');
-      if (foto) f.style.backgroundImage = 'url("' + foto + '")';
-      else if (window.MosedeEmoji && MosedeEmoji.forKategori) f.textContent = MosedeEmoji.forKategori(x.k);
+      f.style.backgroundImage = 'url("' + x.foto + '")';
       a.appendChild(f);
-      a.appendChild(lav('span', 'nk-kapitel-navn', x.k.navn));
-      a.appendChild(lav('span', 'nk-kapitel-tal', x.n + (x.n === 1 ? ' ret' : ' retter')));
+      a.appendChild(lav('span', 'nk-kapitel-navn', x.navn));
+      a.appendChild(lav('span', 'nk-kapitel-tal', 'Se kortet →'));
       li.appendChild(a);
       liste.appendChild(li);
     });
-    var skjulte = liste.querySelectorAll('.nk-skjult').length;
-    if (skjulte) {
-      var mere = lav('li', 'nk-kapitel-mere');
-      var k = lav('button', 'nk-flere', 'Vis alle ' + kat.length + ' kapitler');
-      k.type = 'button';
-      k.addEventListener('click', function () { liste.classList.add('vis-alle'); mere.remove(); });
-      mere.appendChild(k);
-      liste.appendChild(mere);
-    }
   }
 
   /* ============================================================
