@@ -851,47 +851,44 @@
      tidslinje langs et stykke tovværk. Teksterne er forsidens egne; fotoerne er
      historiesidens (historien.html), med deres egne alt-tekster. 1710 er
      "overlevering", som historiesiden selv siger — ikke en påstand. -->
-<section class="ny-album" id="omos" aria-labelledby="album-titel">
+<section class="ny-album ny-film" id="omos" aria-labelledby="album-titel">
   <div class="ny-album-hoved">
     <div class="nk-over">Historien<i></i></div>
     <h2 class="ny-album-titel" id="album-titel">Fiskerne, havnen <span>og ankeret</span></h2>
     <p class="ny-album-lead">Et anker, som overleveringen knytter til et søslag i 1710. En fiskerihavn, fiskerne selv byggede i 1929. Og en grill med vaffelis, der har stået her, så længe folk kan huske. Det er den havn, vi laver mad i.</p>
   </div>
-  <figure class="ny-album-luft">
-    <picture>
-      <source media="(min-width:821px)" srcset="billeder/historie-bred.jpg">
-      <img src="billeder/historie-hoej.jpg" loading="lazy" decoding="async" width="941" height="1672" alt="Gammelt luftfoto af Mosede Havn og kysten">
-    </picture>
-    <figcaption>Mosede Havn, set fra luften</figcaption>
-  </figure>
-  <ol class="ny-tidslinje">
+  <picture class="ny-album-bg" aria-hidden="true">
+    <source media="(min-width:821px)" srcset="billeder/historie-bred.jpg">
+    <img src="billeder/historie-hoej.jpg" alt="" loading="lazy" decoding="async" width="941" height="1672">
+  </picture>
+  <ol class="ny-tidslinje" tabindex="0" aria-label="Havnens historie, år for år">
     <li>
-      <span class="ny-aar">1710</span>
+      <a class="ny-tl-link" href="historien.html"><span class="ny-aar">1710</span>
       <figure class="ny-print"><img src="billeder/historie-anker.jpg" loading="lazy" decoding="async" width="1600" height="900" alt="Et rustent anker med rurer, halvt begravet i vådt sand ved vandkanten"></figure>
-      <div class="ny-tl-tekst"><h3>Ankeret</h3><p>Ankeret på havnen knyttes i overleveringen til slaget i Køge Bugt i 1710.</p></div>
+      <div class="ny-tl-tekst"><h3>Ankeret</h3><p>Ankeret på havnen knyttes i overleveringen til slaget i Køge Bugt i 1710.</p></div></a>
     </li>
     <li>
-      <span class="ny-aar">1929</span>
+      <a class="ny-tl-link" href="historien.html"><span class="ny-aar">1929</span>
       <figure class="ny-print"><img src="billeder/historie-kyst.jpg" loading="lazy" decoding="async" width="1600" height="900" alt="Fiskere trækker en træbåd op på en strand, net til tørre på stænger"></figure>
-      <div class="ny-tl-tekst"><h3>Havnen</h3><p>Lokale fiskere samlede pengene og byggede en ø-havn med en træbro til land.</p></div>
+      <div class="ny-tl-tekst"><h3>Havnen</h3><p>Lokale fiskere samlede pengene og byggede en ø-havn med en træbro til land.</p></div></a>
     </li>
     <li>
-      <span class="ny-aar">1943</span>
+      <a class="ny-tl-link" href="historien.html"><span class="ny-aar">1943</span>
       <figure class="ny-print"><img src="billeder/historie-1943.jpg" loading="lazy" decoding="async" width="1600" height="900" alt="En lille fiskerbåd på mørkt, stille vand om natten"></figure>
-      <div class="ny-tl-tekst"><h3>Overfarten</h3><p>Fiskere fra havnen sejlede jødiske flygtninge over til Sverige.</p></div>
+      <div class="ny-tl-tekst"><h3>Overfarten</h3><p>Fiskere fra havnen sejlede jødiske flygtninge over til Sverige.</p></div></a>
     </li>
     <li>
-      <span class="ny-aar">Dengang</span>
+      <a class="ny-tl-link" href="historien.html"><span class="ny-aar">Dengang</span>
       <figure class="ny-print"><img src="billeder/historie-is.jpg" loading="lazy" decoding="async" width="1600" height="900" alt="En bubblewaffle med to kugler is foran havnen i aftenlys"></figure>
-      <div class="ny-tl-tekst"><h3>Ishuset</h3><p>Træterrasse, blomsterkasser og skilte med gammeldags vaffelis, og sejlbådene lige bagved.</p></div>
+      <div class="ny-tl-tekst"><h3>Ishuset</h3><p>Træterrasse, blomsterkasser og skilte med gammeldags vaffelis, og sejlbådene lige bagved.</p></div></a>
     </li>
     <li class="ny-tl-nu">
-      <span class="ny-aar">I dag</span>
+      <a class="ny-tl-link" href="historien.html"><span class="ny-aar">I dag</span>
       <figure class="ny-print"><img src="billeder/historie-master.jpg" loading="lazy" decoding="async" width="1600" height="900" alt="Fiskerbåde og master i blå time, en lanterne tændt på broen"></figure>
-      <div class="ny-tl-tekst"><h3>Havnecaféen</h3><p>Det er den havn, vi laver mad i.</p></div>
+      <div class="ny-tl-tekst"><h3>Havnecaféen</h3><p>Det er den havn, vi laver mad i.</p></div></a>
     </li>
   </ol>
-  <div class="ny-album-fod"><a class="nk-knap" href="historien.html">Læs hele historien om Mosede Havn</a></div>
+  <div class="ny-album-fod"><a class="nk-knap ny-hist-knap" href="historien.html">Læs hele historien om Mosede Havn <span aria-hidden="true">→</span></a><span class="ny-hist-note">Syv kapitler, fra ankeret i 1710 til havnen i dag.</span></div>
 </section>
 <section id="alt">
   <!-- ⚠️ GLASSET HAR NOGET AT BRYDE (10/10). Figmas eget nej: "Pane over

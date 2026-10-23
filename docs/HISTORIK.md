@@ -7,14 +7,17 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
-**/ny/ HISTORIEN SOM HAVNENS FOTOALBUM** (23/10 — kun /ny/). Mikkel: *"ja nu til denne"*. Som
-isen (isbaren) og selskabet (festaftenen) får historien sit eget udtryk: gulnet albumpapir,
-luftfotoet som et gammelt fotografi med hvid kant, fotohjørner og en håndskrevet linje, og årene
-som en tidslinje langs et stykke tovværk med røde årstalsstempler: 1710 Ankeret (som
-"overlevering", ordret), 1929 Havnen, 1943 Overfarten, Dengang Ishuset, I dag Havnecaféen. Hvert
-punkt har historiesidens eget foto (samme filer og alt-tekster som historien.html), de
-historiske i sepia og "I dag" i farver. Teksterne er forsidens; knappen er "Læs hele historien
-om Mosede Havn". Klassen .about er taget af i /ny/ (intet script slår den op).
+**/ny/ HISTORIEN SOM FILMSTRIMMEL** (23/10 — kun /ny/). Mikkel: *"ja nu til denne"*, og efter en
+første udgave som fotoalbum (aldrig udgivet alene — samme dag): *"det må gerne forblive
+cinematisk, men tænke skarpere og mindre generisk"* og *"stadig være en slags side, man ryger ind
+på, når man læser yderligere"*. Nu: luftfotoet fylder afsnittet mørkt og filmisk med filmkorn og
+vignet, overskriften stor i Bebas (creme og varmt gult), og glasboksene er afløst af en rigtig
+filmstrimmel med perforering, man swiper i: 1710 Ankeret (som "overlevering"), 1929 Havnen, 1943
+Overfarten, Dengang Ishuset, I dag Havnecaféen — historiesidens egne fotos i sepia, "I dag" i
+farver. Hvert billede er et link til historien.html, og "Læs hele historien om Mosede Havn" er en
+stor, varm knap med "Syv kapitler, fra ankeret i 1710 til havnen i dag". ⚠️ Kapitlerne på
+historien.html har ingen id'er, så linkene lander øverst på siden; at lande på det rigtige kapitel
+kræver en lille ændring på den rigtige historieside — spurgt Mikkel.
 
 **/ny/ SELSKAB SOM FESTAFTEN** (23/10 — kun /ny/). Mikkel: *"det ligner stadig meget det samme
 — ligesom issiden, lav den lidt mere unik"*. Som isen fik sin isbar, får selskabet sin aften:
