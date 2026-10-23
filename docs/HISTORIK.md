@@ -7,6 +7,18 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ DAG, TID, LEVERING OG IKONER** (23/10 — kun /ny/). Mikkel: dag og tid skal være
+rullelisterne *"som før, så når man trykker, folder de ned"*; *"levering skal være meget
+bedre"*; og om ikonerne: *"kan de her ikoner ikke være mindre generiske"*. Chipsene er væk;
+rullelisterne har kortets udtryk (hvid, rød pil). Tidspunktets overskrift følger måden
+("Hvornår henter I?" / "… vil I spise?" / "… skal maden være der?"). Leveringen står i sammenhæng:
+vælges Levering, står pris, område og "I betaler, når maden kommer" lige over adressen (de
+samme data-lev-felter, kontakt.js fylder fra indstillingerne), og nyhedskortet over formularen
+er afløst af et "Ny"-mærke på knappen. To-go, Spis her og Levering har husets egne små tegninger
+(papirposen med kransen, bordet med den ternede dug, den røde vogn) i stedet for streg-ikoner.
+⚠️ Mærket er CSS (::before), ikke tekst i knappen: hvordanTekst() læser knappens textContent.
+Rækkefølgen af maden er stadig chefens kunderejse fra 7/10 — spurgt Mikkel, om den skal ændres.
+
 **/ny/ BESTILLINGEN, SMARTERE** (22/10 — kun /ny/). Mikkel: *"smartere"*. Inden for den originale
 form: (1) SØG i hele menuen over kategorierne — husets egen regel, `Butik.soegPasser` (æ/ø/å
 foldet, én tastefejl tilgivet); mens der søges, er alle kategorier foldet ud, og kun det, der

@@ -4,9 +4,9 @@
    uden at én fil er kopieret.
 
    ⚠️ BESTILLINGENS MOTOR ER URØRT. js/skal/bestil.js ejer kurven, datoen,
-   tiden og reglerne. Alt her er et lag ovenpå: chipsene sætter den samme
-   <select> og sender den samme "change", og kategori-baren trykker på de
-   samme rækker, en gæst ville trykke på. Intet her bestemmer, hvad der kan
+   tiden og reglerne. Alt her er et lag ovenpå: ugens knapper sætter den samme
+   <select> og sender den samme "change", og søgningen og harmonikaen trykker
+   på de samme rækker, en gæst ville trykke på. Intet her bestemmer, hvad der kan
    bestilles. */
 (function () {
   'use strict';
@@ -330,62 +330,27 @@
   })();
 
   /* ============================================================
-     BESTILLINGEN — dato og tid som chips
+     BESTILLINGEN — tidspunktets overskrift følger måden
+     ------------------------------------------------------------
+     Dag og tid er rullelisterne igen (Mikkel: *"som før, så når man
+     trykker, folder de ned"*). Vælger gæsten levering, spørger
+     overskriften om, hvornår maden skal være der — ikke hvornår hun
+     henter den.
      ============================================================ */
-  function chips(sel, slags) {
-    if (!sel) return;
-    var felt = sel.closest('.field');
-    if (felt) felt.classList.add('ny-chipfelt');
-    var række = lav('div', 'ny-chips ny-chips--' + slags);
-    række.setAttribute('role', 'radiogroup');
-    var label = felt && felt.querySelector('label');
-    if (label) række.setAttribute('aria-label', label.textContent.trim());
-    sel.insertAdjacentElement('afterend', række);
-
-    function tekst(o) {
-      if (slags === 'tid') return [String(o.textContent).replace(/^kl\.?\s*/i, '').trim()];
-      var iso = o.value;
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(iso) || !R.ugedagFor) return [o.textContent.trim()];
-      var iDag = Butik.nu().dato;
-      var navn = iso === iDag ? 'I dag' : iso === Butik.isoPlus(iDag, 1) ? 'I morgen' : ugedag(iso).slice(0, 3) + '.';
-      return [navn, kortDato(iso)];
+  (function () {
+    var seg = document.querySelector('#bestil [data-seg="how"]');
+    var tid = document.getElementById('tid');
+    var mærkat = tid && tid.closest('.field') ? tid.closest('.field').querySelector('label') : null;
+    if (!seg || !mærkat) return;
+    function sæt() {
+      var på = seg.querySelector('button.on');
+      var t = på ? på.textContent.trim() : '';
+      mærkat.textContent = t === 'Levering' ? 'Hvornår skal maden være der?' : t === 'Spis her' ? 'Hvornår vil I spise?' : 'Hvornår henter I?';
     }
-    function tegn() {
-      række.textContent = '';
-      var valgt = null;
-      [].forEach.call(sel.options, function (o) {
-        var k = lav('button', 'ny-chip');
-        k.type = 'button';
-        k.setAttribute('role', 'radio');
-        var t = tekst(o);
-        k.appendChild(lav('b', null, t[0]));
-        if (t[1]) k.appendChild(lav('small', null, t[1]));
-        k.disabled = o.disabled;
-        if (slags === 'tid' && !o.disabled && !række.querySelector('.er-foerst')) k.classList.add('er-foerst');
-        var på = o.value === sel.value;
-        k.setAttribute('aria-checked', på ? 'true' : 'false');
-        if (på) { k.classList.add('on'); valgt = k; }
-        k.addEventListener('click', function () {
-          if (sel.value === o.value) return;
-          sel.value = o.value;
-          sel.dispatchEvent(new Event('change', { bubbles: true }));
-          tegn();
-        });
-        række.appendChild(k);
-      });
-      if (valgt) {
-        var r = række.getBoundingClientRect(), v = valgt.getBoundingClientRect();
-        if (v.left < r.left || v.right > r.right) række.scrollLeft += v.left - r.left - 16;
-      }
-    }
-    var vent;
-    new MutationObserver(function () { clearTimeout(vent); vent = setTimeout(tegn, 30); })
-      .observe(sel, { childList: true, subtree: true, attributes: true });
-    sel.addEventListener('change', function () { setTimeout(tegn, 0); });
-    tegn();
-  }
-  chips(document.getElementById('dato'), 'dato');
-  chips(document.getElementById('tid'), 'tid');
+    seg.addEventListener('click', function () { setTimeout(sæt, 0); });
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-vaelg-levering]')) setTimeout(sæt, 60); });
+    sæt();
+  })();
 
   /* ============================================================
      BESTILLINGEN — den originale liste, med husets fotos

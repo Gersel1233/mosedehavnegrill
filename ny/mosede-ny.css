@@ -256,23 +256,6 @@ body.ny-side #bestil .seg2 button::after{content:attr(data-under);font:italic 40
 body.ny-side #bestil .seg2 button.on{background:#fff;color:var(--red-d);box-shadow:inset 0 0 0 2px var(--red),0 10px 22px -12px rgba(214,42,58,.6)}
 body.ny-side #bestil .seg2 button.on svg{color:var(--red)}
 
-/* dato og tid som chips (listen står skjult bagved) */
-.ny-side .ny-chipfelt{position:relative}
-.ny-side .ny-chipfelt select.inp{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
-.ny-side .ny-chips{display:flex;gap:8px;margin:10px -18px 0;padding:2px 18px 8px;overflow-x:auto;scrollbar-width:none;scroll-padding:0 18px}
-.ny-side .ny-chips::-webkit-scrollbar{display:none}
-.ny-side .ny-chip{flex:none;display:grid;justify-items:center;align-content:center;gap:5px;min-width:72px;height:64px;padding:0 12px;border:0;border-radius:16px;cursor:pointer;
-  background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(36,26,23,.1);transition:transform .2s var(--spring)}
-.ny-side .ny-chip b{font:400 21px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;text-transform:uppercase}
-.ny-side .ny-chip small{font:italic 400 12.5px/1 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
-.ny-side .ny-chip:active{transform:scale(.95)}
-.ny-side .ny-chip.on{background:var(--red);color:var(--nk-creme);box-shadow:0 10px 20px -10px rgba(180,31,46,.8)}
-.ny-side .ny-chip.on small{color:var(--nk-pink)}
-.ny-side .ny-chip:disabled{opacity:.4;cursor:not-allowed;background:transparent}
-.ny-side .ny-chip:disabled b{text-decoration:line-through}
-.ny-side .ny-chips--tid{display:grid;grid-template-rows:repeat(2,auto);grid-auto-flow:column;grid-auto-columns:max-content}
-.ny-side .ny-chips--tid .ny-chip{height:44px;min-width:70px}
-
 /* kategorirækkerne: den originale liste, der folder sig ud — nu med husets foto på hver række */
 .ny-side [data-liste] > .item[data-kategori]{gap:14px;min-height:72px;padding:10px 14px 10px 10px;background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08),0 6px 16px -12px rgba(36,26,23,.4);cursor:pointer;transition:transform .2s var(--spring)}
 .ny-side [data-liste] > .item[data-kategori]:active{transform:scale(.985)}
@@ -306,7 +289,6 @@ body.ny-side #bestil .panel button.g.solid.blk:disabled{background:#e4d3c8;color
   body.ny-side #bestil.papir{--g:max(28px,calc((100% - 860px)/2))}
   body.ny-side #bestil.papir .panel{max-width:none;padding:0 36px 36px}
   body.ny-side #bestil.papir .panel > .nk-hoved,body.ny-side #bestil.papir .panel > .nk-kant{margin-left:-36px;margin-right:-36px}
-  .ny-side .ny-chips{margin-left:-36px;margin-right:-36px;padding-left:36px;padding-right:36px}
   body.ny-side #bestil.papir .lev-nyhed{max-width:none}
 }
 .ny-side .nk-afsnit-hoved,.ny-side .nk-afsnit-hoved > div{max-width:none;width:auto}
@@ -330,8 +312,47 @@ body.ny-side #bestil .panel button.g.solid.blk:disabled{background:#e4d3c8;color
 .ny-side [data-liste].ny-soeger > .item.ny-match{box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.35)}
 .ny-side .ny-soeg-ingen{margin:14px 4px 0;font:italic 400 15px/1.45 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
 .ny-side .ny-soeg-ingen[hidden]{display:none}
-/* den første ledige tid får et lille mærke */
-.ny-side .ny-chip.er-foerst{position:relative}
-.ny-side .ny-chip.er-foerst::after{content:"Først";position:absolute;top:-7px;right:-4px;padding:3px 6px;border-radius:999px;
-  font:700 9.5px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--nk-blaa)}
-.ny-side .ny-chips--tid{padding-top:10px}
+
+/* ============================================================
+   DAG, TID OG LEVERING  (23/10)
+   Mikkel: dag og tid skal være rullelisterne "som før, så når man
+   trykker, folder de ned", og "levering skal være meget bedre".
+   ============================================================ */
+/* rullelisterne: telefonens egen liste, når man trykker — men i kortets udtryk */
+.ny-side #bestil select.inp{height:56px;padding:0 48px 0 16px;border-radius:16px;font:600 16px/1 "Host Grotesk",system-ui,sans-serif;color:var(--ink);
+  -webkit-appearance:none;appearance:none;background-color:#fff;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d62a3a' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 16px center;background-size:20px 20px;
+  box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.12),0 6px 14px -12px rgba(36,26,23,.5)}
+.ny-side #bestil select.inp:focus{outline:none;box-shadow:inset 0 0 0 2px var(--red)}
+.ny-side #bestil .two-col .inp,.ny-side #bestil input.inp,.ny-side #bestil textarea.inp{background-color:#fff;box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.12)}
+.ny-side #bestil input.inp:focus,.ny-side #bestil textarea.inp:focus{box-shadow:inset 0 0 0 2px var(--red)}
+
+/* levering: et "Ny"-mærke på knappen; nyhedskortet over formularen er overflødigt nu */
+.ny-side #bestil > .lev-nyhed{display:none !important}
+body.ny-side #bestil .seg2 button{position:relative}
+body.ny-side #bestil .seg2 button[data-nyt]::before{content:"Ny";position:absolute;top:-8px;right:-4px;padding:4px 8px;border-radius:999px;
+  font:700 10px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--red);box-shadow:0 4px 10px -4px rgba(214,42,58,.7)}
+/* levering valgt: det, gæsten skal vide, står lige over adressen */
+.ny-side #flevfelt{margin-top:14px;padding:16px;border-radius:20px;background:#fff;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.3),0 14px 30px -20px rgba(214,42,58,.6)}
+.ny-side .ny-lev{display:flex;gap:14px;align-items:flex-start;padding-bottom:16px;margin-bottom:14px;border-bottom:1.5px dashed rgba(36,26,23,.14)}
+.ny-side .ny-lev-ikon{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;color:#fff;background:var(--red)}
+.ny-side .ny-lev-ikon svg{width:26px;height:26px;fill:currentColor}
+.ny-side .ny-lev-tekst{display:grid;gap:4px}
+.ny-side .ny-lev-tekst > b{font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+.ny-side .ny-lev-tekst p{margin:0;font-size:14.5px;line-height:1.4;color:var(--ink2)}
+.ny-side .ny-lev-tekst p [data-lev-pris]{font:400 22px/1 "Bebas Neue",sans-serif;color:var(--red)}
+.ny-side .ny-lev-tekst p[hidden]{display:none}
+.ny-side .ny-lev-gratis b{color:#1f7a45}
+.ny-side .ny-lev-betal{font-style:italic;color:var(--muted)}
+.ny-side #flevfelt > label{display:block;margin-bottom:8px}
+.ny-side #flevfelt .inp{height:56px;font-size:16px;padding-left:46px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d62a3a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z'/%3E%3Ccircle cx='12' cy='9.5' r='2.5'/%3E%3C/svg%3E") no-repeat 14px center/22px 22px}
+.ny-side #flevfelt .adr-status{margin-top:10px;padding:10px 12px;border-radius:12px;font-size:14px}
+.ny-side #flevfelt #lev-hint:empty{display:none}
+/* hvordan: husets egne små tegninger — posen fra lugen, bordet med den ternede dug, den røde vogn */
+body.ny-side #bestil .seg2 button svg.ny-hv-ikon{width:44px;height:44px;color:inherit;opacity:1;margin-bottom:2px}
+body.ny-side #bestil .seg2 button:not(.on) svg.ny-hv-ikon{filter:saturate(.85)}
+.ny-side .ny-lev-ikon{width:56px;height:56px;background:var(--nk-creme);box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.25)}
+.ny-side .ny-lev-ikon svg.ny-lev-vogn{width:44px;height:44px;fill:none}
+/* bestil.js' egen leveringslinje under adressen siger det samme som kortet over den */
+.ny-side #flevfelt #lev-hint{display:none}
