@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/h-frokost.html — FROKOSTEN I BRUNE POSER** (23/10 — kun /ny/, den rigtige side er urørt). Femte af
+vejviserens seks. Kraftpapir hele vejen ned (frokosten kommer i papirposer); overskriften står på en
+hvid adresselap med rødt hoved, "Til: Arbejdspladsen · Fra: Mosede Havnecafé" og en stregkode, holdt
+af et stykke tape. Notitserne med tegninger (den røde vogn, et tilbudsmærke, en kalender med dagen
+ringet ind), "Frokost, folk glæder sig til" som en gul huskeseddel med knappenål, og tilbuddet som
+husets trykte kort, hvor valgene er hvide og det valgte rødt. Samme forespoergsel-motor.
+
 **/ny/h-catering.html — CATERING UNDER CLOCHEN** (23/10 — kun /ny/, den rigtige side er urørt). Fjerde af
 vejviserens seks. Havneblå på hvid dug, så siden ikke ligner forsidens røde: en tegnet sølvcloche, hvor
 låget løftes af maden (stille ved "reducer bevægelse"), "VI LAVER MADEN. / I HOLDER FESTEN." i Bebas,
