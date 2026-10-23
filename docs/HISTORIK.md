@@ -7,6 +7,33 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**PRØVET MOD HUSETS EGNE PRØVER EFTER LANCERINGEN** (23/10). 20 prøvefiler (jura, bestilling, bord,
+forespørgsler, frokost, catering, baglokale, kalender, levering, isbygger, min-bestilling, admin):
+651 bestod. Det, der faldt, var tre slags: (1) prøver af det GAMLE design (glas, Figma-pladen, creme
+bjælke, afsnittenes gamle rækkefølge) — designet er skiftet med vilje; (2) to fejl, prøverne fangede og
+som er rettet: fokusreglen slukkede den røde fejlkant på et forkert felt (frokost), og Bebas med
+`text-transform:uppercase` gjorde, at teksten LÆSTES med store bogstaver ("SIDDENDE", "HAVNEVEJ 20I") —
+Bebas har kun store bogstaver (målt: samme bredde), så transformen er fjernet i alle 70 Bebas-regler,
+og intet ser anderledes ud; (3) "en bestilling lander i databasen" faldt kun, fordi beskedfeltet nu er
+foldet bag "+ Skriv en besked til køkkenet" — med det ene tryk lander bestillingen med de rigtige linjer,
+beskeden og referencen (prøvet på telefon og computer). ⚠️ De gamle designprøver bør skrives om til det
+nye design, før de igen kan bruges som vagt for forsiden.
+
+**FIND OS MED DET RIGTIGE KORT — MED ÉT TRYK** (23/10). Mikkel: *"gør det her bedre og brug rigtigt
+kortbillede fra Google Maps"*. ⚠️ Huset har en bevidst regel (jura.spec.js, persondatapolitikken): siden
+henter INTET fra Google af sig selv, og der er intet cookiebanner, fordi der intet er at spørge om. Et
+Google-kort sætter cookies. Derfor: den tegnede havn står som forsmag med "Vis kortet"; FØRST trykket
+lægger Google Maps' kort ind (`ny/mosede-ny.js`, iframe bygges i browseren — ingen `<iframe>` i HTML'en).
+Trykket er samtykket og huskes IKKE. Knappen siger det ("Hentes fra Google Maps, som kan sætte
+cookies"), og persondatapolitikken siger det nu også — "ingen indlejrede kort" var ikke længere sandt.
+Ring og Mail står som to knapper under ruten.
+
+**ADMIN I HUSETS NYE UDTRYK** (23/10). Mikkel: *"ret admin til samme ting, bare bedre"*. `ny/admin-ny.css`
+(kun body.personale, kun udseende): emojierne i søjlen og bundbjælken er tegnede streg-ikoner i samme
+tykkelse (farven følger teksten, så valgt/ikke valgt virker som før), sidens titel og etiketterne er i
+Bebas, og kortenes hoved har husets ◆ og dobbelte røde streg. ⚠️ Overskrifter og tal er stadig Host
+Grotesk — Mikkels "ét hus, én skrift" (27/9), som admin-prøverne holder fast.
+
 **EFTER LANCERINGEN: TOPPEN, FIND OS OG TELEFONEN** (23/10). Mikkel med skud fra sin iPhone.
 · Toppen hedder "Nyt fra havnen": følg-knapperne på én linje og de fire kort som lige store mærker med
   husets tegninger (smiley-mærke og medalje i stedet for emojis) — fire i en række på computeren, to og to

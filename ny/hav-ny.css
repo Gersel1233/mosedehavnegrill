@@ -39,9 +39,9 @@ body.ny-hav .rk-hoved{position:relative;padding:24px 20px 22px;padding-right:116
 body.ny-hav .rk-hoved::before,body.ny-hav .rk-hoved::after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.16);pointer-events:none}
 body.ny-hav .rk-hoved::before{width:420px;height:420px;right:-210px;top:-150px}
 body.ny-hav .rk-hoved::after{width:360px;height:360px;right:-90px;bottom:-300px}
-body.ny-hav .rk-over{display:flex;align-items:center;gap:14px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;text-transform:uppercase}
+body.ny-hav .rk-over{display:flex;align-items:center;gap:14px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.34em}
 body.ny-hav .rk-over i{flex:1;max-width:180px;height:1px;background:rgba(255,255,255,.45)}
-body.ny-hav .rk-titel{margin:12px 0 0;font:400 clamp(44px,11vw,76px)/.88 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:var(--creme)}
+body.ny-hav .rk-titel{margin:12px 0 0;font:400 clamp(44px,11vw,76px)/.88 "Bebas Neue",sans-serif;letter-spacing:.005em;color:var(--creme)}
 body.ny-hav .rk-slogan{margin:12px 0 0;max-width:32ch;font:italic 400 15.5px/1.4 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.01em;color:var(--creme)}
 body.ny-hav .rk-logo{position:absolute;top:18px;right:16px;width:82px;height:82px;border-radius:50%;box-shadow:0 10px 26px rgba(80,8,16,.35)}
 body.ny-hav .rk-logo svg{display:block;width:100%;height:100%}
@@ -56,9 +56,9 @@ body.ny-hav .rk-kant{height:40px;margin:-1px 0 8px;background:
 
 /* felterne i kortet: Bebas-etiketter, hvide felter, rød fokus, rød knap */
 body.ny-hav .panel:has(> .rk-hoved) .field > label:not(.allergi-ja):not(.vilkaar-ja),body.ny-hav .panel:has(> .rk-hoved) .two-col > div > label{
-  font:400 17px/1.1 "Bebas Neue",sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--blaa)}
+  font:400 17px/1.1 "Bebas Neue",sans-serif;letter-spacing:.1em;color:var(--blaa)}
 body.ny-hav .panel:has(> .rk-hoved) :is(.field,.bl-tid) label span,body.ny-hav .panel:has(> .rk-hoved) label .hjaelp{font:italic 400 13px/1.3 "Host Grotesk",system-ui,sans-serif;letter-spacing:0;text-transform:none;color:var(--muted)}
-body.ny-hav .panel:has(> .rk-hoved) .bl-tid label{font:400 17px/1.1 "Bebas Neue",sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--blaa)}
+body.ny-hav .panel:has(> .rk-hoved) .bl-tid label{font:400 17px/1.1 "Bebas Neue",sans-serif;letter-spacing:.1em;color:var(--blaa)}
 body.ny-hav .callrow .g{white-space:nowrap}
 body.ny-hav .panel:has(> .rk-hoved) .inp{background-color:#fff;border-radius:14px;box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.12)}
 body.ny-hav .panel:has(> .rk-hoved) .inp:focus{outline:none;box-shadow:inset 0 0 0 2px var(--red)}
@@ -81,9 +81,9 @@ body.ny-smoerside .screen{background:
 body.ny-smoerside .ny-avis{position:relative;max-width:1000px;margin:4px auto 0;padding-inline:var(--pad);padding:14px 0 18px;text-align:center;color:var(--ink)}
 body.ny-smoerside .ny-avis-top{display:flex;justify-content:center;align-items:center;gap:10px;padding:9px 0;flex-wrap:wrap;
   border-top:3px double var(--ink);border-bottom:1px solid var(--ink);
-  font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--ink)}
+  font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.24em;color:var(--ink)}
 body.ny-smoerside .ny-avis-top b{font-size:9px;color:var(--red)}
-body.ny-smoerside .ny-avis h1{margin:18px 0 0;font:400 clamp(62px,17vw,128px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:var(--ink)}
+body.ny-smoerside .ny-avis h1{margin:18px 0 0;font:400 clamp(62px,17vw,128px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;color:var(--ink)}
 body.ny-smoerside .ny-avis h1 span{display:block;color:var(--red)}
 body.ny-smoerside .ny-avis .sub{max-width:40ch;margin:16px auto 0;padding-top:14px;border-top:1px solid rgba(36,26,23,.25);
   font:italic 400 16.5px/1.45 "Host Grotesk",system-ui,sans-serif;color:var(--ink2)}
@@ -97,7 +97,7 @@ body.ny-smoerside .smoer-galleri image-slot{border-radius:3px;padding:5px;backgr
 body.ny-smoerside .facts{gap:0;margin-top:22px;border-top:3px double var(--ink);border-bottom:1px solid var(--ink)}
 body.ny-smoerside .fact{background:transparent;box-shadow:none;border-radius:0;padding:14px 4px;font-size:14px}
 body.ny-smoerside .fact + .fact{border-top:1px solid rgba(36,26,23,.25)}
-body.ny-smoerside .fact b{display:block;margin-bottom:2px;font:400 19px/1.05 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+body.ny-smoerside .fact b{display:block;margin-bottom:2px;font:400 19px/1.05 "Bebas Neue",sans-serif;letter-spacing:.04em}
 /* husets egne tegninger i stedet for standardikoner: æggeuret, den røde vogn, skiven med flaget */
 body.ny-smoerside .fact{align-items:center;gap:14px}
 body.ny-smoerside .fact svg.ny-ill{width:52px;height:52px;flex:none;margin:0;color:inherit;filter:drop-shadow(0 6px 8px rgba(36,26,23,.12))}
@@ -115,7 +115,7 @@ body.ny-smoerside #bestil .item[data-kategori^="Håndmad" i] .kat-tegn{backgroun
 
 /* "Smørrebrød, som det skal smage" som lederen: overskrift og initial, uden kort */
 body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort){background:transparent;box-shadow:none;border-radius:0;padding:6px 2px 4px;margin-top:26px}
-body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) h3{font:400 clamp(34px,8vw,48px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) h3{font:400 clamp(34px,8vw,48px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--ink)}
 body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) .saelg-stor{font-size:17.5px;line-height:1.6}
 body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) .saelg-stor::first-letter{float:left;margin:4px 8px 0 0;font:400 64px/.8 "Bebas Neue",sans-serif;color:var(--red)}
 
@@ -125,7 +125,7 @@ body.ny-smoerside #bestil.panel{margin-top:26px}
 body.ny-smoerside .tilbud-kort{position:relative;margin-top:30px;background:#fff;border-radius:6px;padding:24px 22px 20px;
   box-shadow:0 0 0 1px rgba(36,26,23,.06),0 18px 40px -26px rgba(36,26,23,.5);outline:2px dashed rgba(36,26,23,.38);outline-offset:-10px}
 body.ny-smoerside .tilbud-kort::before{content:"✂";position:absolute;top:-3px;left:24px;padding:0 6px;font-size:18px;line-height:1;color:var(--ink);background:#f4eee2;transform:translateY(-50%)}
-body.ny-smoerside .tilbud-kort h3{font:400 34px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+body.ny-smoerside .tilbud-kort h3{font:400 34px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--ink)}
 body.ny-smoerside .tilbud-kort .tilbud-knap{background:var(--ink);color:#fff}
 
 /* ============================================================
@@ -150,8 +150,8 @@ body.ny-bagside .ny-messing::before,body.ny-bagside .ny-messing::after{content:"
   background:radial-gradient(circle at 35% 35%,#fff3d6,#8a6430 70%);box-shadow:0 1px 1px rgba(0,0,0,.4)}
 body.ny-bagside .ny-messing::before{left:10px}
 body.ny-bagside .ny-messing::after{right:10px}
-body.ny-bagside .ny-messing-over{display:block;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.4em;text-transform:uppercase;color:#6b4a22}
-body.ny-bagside .ny-messing h1{margin:6px 0 0;font:400 clamp(52px,14vw,104px)/.86 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase;color:#3b2612;
+body.ny-bagside .ny-messing-over{display:block;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.4em;color:#6b4a22}
+body.ny-bagside .ny-messing h1{margin:6px 0 0;font:400 clamp(52px,14vw,104px)/.86 "Bebas Neue",sans-serif;letter-spacing:.02em;color:#3b2612;
   text-shadow:0 1px 0 rgba(255,240,205,.8),0 -1px 0 rgba(80,45,10,.35)}
 body.ny-bagside .ny-messing h1 span{display:block;margin-top:6px;font:italic 400 clamp(17px,4.4vw,22px)/1.2 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.01em;text-transform:none;color:#5a3a18;text-shadow:none}
 body.ny-bagside .ny-bag .sub{max-width:40ch;margin:20px auto 0;font-size:16.5px;line-height:1.5;color:rgba(243,234,217,.86)}
@@ -161,7 +161,7 @@ body.ny-bagside .evhero{border-radius:18px;box-shadow:0 0 0 1px rgba(232,196,143
 
 /* notitserne på væggen: creme tekst, husets tegninger */
 body.ny-bagside .fact{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(232,196,143,.18);color:rgba(243,234,217,.78);align-items:center;gap:14px;font-size:14px}
-body.ny-bagside .fact b{display:block;margin-bottom:2px;font:400 20px/1.05 "Bebas Neue",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#f3ead9}
+body.ny-bagside .fact b{display:block;margin-bottom:2px;font:400 20px/1.05 "Bebas Neue",sans-serif;letter-spacing:.05em;color:#f3ead9}
 body.ny-bagside .fact svg.ny-ill{width:52px;height:52px;flex:none;margin:0;color:inherit;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
 
 /* prisen på et bordkort */
@@ -173,10 +173,10 @@ body.ny-bagside .lp-eyebrow{font:400 30px/1 "Bebas Neue",sans-serif;letter-spaci
 body.ny-bagside .lp-linje{border-top:0;align-items:flex-start}
 body.ny-bagside .lp-linje::before{content:"";order:2;flex:1;align-self:flex-start;margin-top:15px;border-bottom:2px dotted rgba(36,26,23,.35)}
 body.ny-bagside .lp-tal{order:3;font:400 32px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--red-tekst)}
-body.ny-bagside .lp-navn{font:400 21px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+body.ny-bagside .lp-navn{font:400 21px/1 "Bebas Neue",sans-serif;letter-spacing:.04em}
 body.ny-bagside .lp-navn small{font:italic 400 13px/1.3 "Host Grotesk",system-ui,sans-serif;letter-spacing:0;text-transform:none;margin-top:4px}
 body.ny-bagside .lp-gratis{margin-top:16px;background:transparent;border:2.5px solid #1f7a4a;border-radius:10px;padding:10px 14px;transform:rotate(-1.4deg);max-width:max-content;
-  font:400 18px/1.15 "Bebas Neue",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#1f7a4a;box-shadow:inset 0 0 0 2px rgba(31,122,74,.18)}
+  font:400 18px/1.15 "Bebas Neue",sans-serif;letter-spacing:.05em;color:#1f7a4a;box-shadow:inset 0 0 0 2px rgba(31,122,74,.18)}
 
 /* med i lokalet: messingmærker på væggen */
 body.ny-bagside .lokale-udstyr li{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(232,196,143,.35);color:#f3ead9}
@@ -186,7 +186,7 @@ body.ny-bagside .screen > section > p.sub{color:rgba(243,234,217,.8);font-style:
 
 /* forespørgslen: trinene som røde Bebas-numre */
 body.ny-bagside .bl-panel{color:#241a17}
-body.ny-bagside .bl-trin-navn{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+body.ny-bagside .bl-trin-navn{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.04em}
 body.ny-bagside .bl-trin-navn span{width:30px;height:30px;font:400 17px/1 "Bebas Neue",sans-serif;background:var(--red)}
 body.ny-bagside .ledigkal{background:#fff;border-radius:16px}
 body.ny-bagside .lk-dag.valgt{background:var(--red);color:#fff}
@@ -208,9 +208,9 @@ body.ny-caterside .ny-cloche{display:block;width:min(260px,70%);height:auto;marg
 body.ny-caterside .ny-cloche-laag{transform-origin:186px 78px;animation:ny-laag 1.4s cubic-bezier(.2,.9,.24,1) .3s both}
 @keyframes ny-laag{from{transform:translate(-2px,36px) rotate(10deg)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){body.ny-caterside .ny-cloche-laag{animation:none}}
-body.ny-caterside .ny-cater-over{display:inline-flex;align-items:center;gap:12px;margin-top:10px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--blaa)}
+body.ny-caterside .ny-cater-over{display:inline-flex;align-items:center;gap:12px;margin-top:10px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.3em;color:var(--blaa)}
 body.ny-caterside .ny-cater-over::before,body.ny-caterside .ny-cater-over::after{content:"";width:28px;height:1px;background:currentColor;opacity:.5}
-body.ny-caterside .ny-cater h1{margin:12px 0 0;font:400 clamp(54px,14vw,112px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:#241a17}
+body.ny-caterside .ny-cater h1{margin:12px 0 0;font:400 clamp(54px,14vw,112px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;color:#241a17}
 body.ny-caterside .ny-cater h1 span{display:block;color:var(--blaa)}
 body.ny-caterside .ny-cater .sub{max-width:42ch;margin:16px auto 0;font-size:16.5px;line-height:1.5;color:var(--ink2)}
 
@@ -219,13 +219,13 @@ body.ny-caterside .foto-galleri image-slot{border-radius:16px;box-shadow:0 0 0 5
 
 /* notitserne med husets tegninger, blå rubrikker */
 body.ny-caterside .fact{background:#fff;box-shadow:inset 0 0 0 1px rgba(42,95,143,.14),0 10px 26px -18px rgba(29,61,92,.5);align-items:center;gap:14px;font-size:14px}
-body.ny-caterside .fact b{display:block;margin-bottom:2px;font:400 20px/1.05 "Bebas Neue",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:var(--blaa)}
+body.ny-caterside .fact b{display:block;margin-bottom:2px;font:400 20px/1.05 "Bebas Neue",sans-serif;letter-spacing:.05em;color:var(--blaa)}
 body.ny-caterside .fact svg.ny-ill{width:52px;height:52px;flex:none;margin:0;color:inherit}
 
 /* "Vi elsker at lave mad til andre" som et citat */
 body.ny-caterside .panel:not(.ny-menukort):not(#skriv){position:relative;background:transparent;box-shadow:none;text-align:center;padding:30px 10px 6px}
 body.ny-caterside .panel:not(.ny-menukort):not(#skriv)::before{content:"“";display:block;height:44px;font:400 96px/1 Georgia,serif;color:var(--blaa);opacity:.85}
-body.ny-caterside .panel:not(.ny-menukort):not(#skriv) h3{font:400 clamp(30px,7vw,42px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:#241a17}
+body.ny-caterside .panel:not(.ny-menukort):not(#skriv) h3{font:400 clamp(30px,7vw,42px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;color:#241a17}
 body.ny-caterside .panel:not(.ny-menukort):not(#skriv) .saelg-stor{max-width:40ch;margin-inline:auto;font-style:italic}
 
 /* blåt hoved på menukortet, uden krans */
@@ -236,7 +236,7 @@ body.ny-hav .rk-kant--blaa{background:
   linear-gradient(0deg,transparent 50%,rgba(42,95,143,.5) 0) 0 0/100% 24px,#fff}
 body.ny-caterside .ny-menukort .getlist{grid-template-columns:1fr;gap:0;margin-top:6px}
 body.ny-caterside .ny-menukort .getlist > span{align-items:center;gap:14px;padding:12px 0;border-bottom:1px dashed rgba(42,95,143,.28);font-size:15px}
-body.ny-caterside .ny-menukort .gl-t{font:400 21px/1.05 "Bebas Neue",sans-serif;letter-spacing:.03em;text-transform:uppercase;color:#241a17}
+body.ny-caterside .ny-menukort .gl-t{font:400 21px/1.05 "Bebas Neue",sans-serif;letter-spacing:.03em;color:#241a17}
 body.ny-caterside .ny-menukort .gl-pris{font:600 13.5px/1.3 "Host Grotesk",system-ui,sans-serif;letter-spacing:0;text-transform:none;color:var(--red-tekst)}
 body.ny-caterside .ny-menukort .gl-i{flex:none;width:58px;height:58px;margin:0;border-radius:14px;font-size:0;background:center/cover no-repeat #fff;box-shadow:0 6px 14px -8px rgba(29,61,92,.6)}
 body.ny-caterside .ny-menukort .ny-glblad{display:grid;place-items:center;background:#eef5e4}
@@ -263,18 +263,18 @@ body.ny-frokostside .ny-lap{position:relative;margin:6px auto 0;max-width:460px;
 body.ny-frokostside .ny-lap::before{content:"";position:absolute;top:-10px;left:50%;width:84px;height:22px;margin-left:-42px;transform:rotate(2deg);
   background:rgba(255,255,255,.55);box-shadow:0 1px 3px rgba(59,42,32,.18)}
 body.ny-frokostside .ny-lap-top{display:flex;justify-content:space-between;padding:10px 18px;border-radius:6px 6px 0 0;background:var(--red);
-  font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.24em;text-transform:uppercase;color:#fbf6ec}
+  font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.24em;color:#fbf6ec}
 body.ny-frokostside .ny-lap-adr{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:14px 18px 0;padding-bottom:12px;border-bottom:1.5px dashed rgba(36,26,23,.3)}
-body.ny-frokostside .ny-lap-adr dt{font:400 15px/1.2 "Bebas Neue",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--blaa)}
+body.ny-frokostside .ny-lap-adr dt{font:400 15px/1.2 "Bebas Neue",sans-serif;letter-spacing:.14em;color:var(--blaa)}
 body.ny-frokostside .ny-lap-adr dd{margin:0;font:italic 400 15px/1.2 "Host Grotesk",system-ui,sans-serif;color:#241a17;border-bottom:1px solid rgba(36,26,23,.15);padding-bottom:4px}
-body.ny-frokostside .ny-lap h1{margin:14px 18px 0;font:400 clamp(50px,13vw,84px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:#241a17}
+body.ny-frokostside .ny-lap h1{margin:14px 18px 0;font:400 clamp(50px,13vw,84px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;color:#241a17}
 body.ny-frokostside .ny-lap h1 span{display:block;color:var(--red)}
 body.ny-frokostside .ny-lap-stregkode{height:30px;margin:14px 18px 0;background:repeating-linear-gradient(90deg,#241a17 0 2px,transparent 2px 4px,#241a17 4px 5px,transparent 5px 8px,#241a17 8px 11px,transparent 11px 13px);opacity:.85;max-width:180px}
 body.ny-frokostside .ny-frokost .sub{max-width:40ch;margin:22px auto 0;font-size:16.5px;line-height:1.5;color:#3b2a20}
 
 body.ny-frokostside .foto-galleri image-slot{border-radius:4px}
 body.ny-frokostside .fact{background:#fffdf8;box-shadow:0 2px 0 rgba(90,61,43,.14),0 10px 22px -16px rgba(59,42,32,.7);border-radius:6px;align-items:center;gap:14px;font-size:14px}
-body.ny-frokostside .fact b{display:block;margin-bottom:2px;font:400 20px/1.05 "Bebas Neue",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#241a17}
+body.ny-frokostside .fact b{display:block;margin-bottom:2px;font:400 20px/1.05 "Bebas Neue",sans-serif;letter-spacing:.05em;color:#241a17}
 body.ny-frokostside .fact svg.ny-ill{width:52px;height:52px;flex:none;margin:0;color:inherit}
 
 /* den gule huskeseddel */
@@ -282,7 +282,7 @@ body.ny-frokostside .panel.ny-memo{position:relative;max-width:520px;margin:30px
   background:linear-gradient(180deg,#fff3a6,#ffe97a);box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 18px 30px -18px rgba(59,42,32,.8)}
 body.ny-frokostside .panel.ny-memo::before{content:"";position:absolute;top:10px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;
   background:radial-gradient(circle at 35% 35%,#ff8a8a,#b41f2e 70%);box-shadow:0 3px 4px rgba(0,0,0,.35)}
-body.ny-frokostside .panel.ny-memo h3{font:400 clamp(30px,7vw,40px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:#241a17}
+body.ny-frokostside .panel.ny-memo h3{font:400 clamp(30px,7vw,40px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;color:#241a17}
 body.ny-frokostside .panel.ny-memo .saelg-stor{color:#3b2a20}
 
 /* valgene i tilbuddet: hvide, det valgte rødt — som resten af kortet */
@@ -290,7 +290,7 @@ body.ny-frokostside .bl-panel .chipset button{background:#fff;box-shadow:inset 0
 body.ny-frokostside .bl-panel .chipset button.on{background:#fff;color:var(--red-d);box-shadow:inset 0 0 0 2px var(--red)}
 body.ny-frokostside .bl-panel .seg2 button{background:#fff}
 body.ny-frokostside .bl-panel .seg2 button.on{background:#fff;color:var(--red-d);box-shadow:inset 0 0 0 2px var(--red),0 10px 22px -12px rgba(214,42,58,.6)}
-body.ny-frokostside .bl-trin-navn{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+body.ny-frokostside .bl-trin-navn{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.04em}
 body.ny-frokostside .bl-trin-navn span{width:30px;height:30px;font:400 17px/1 "Bebas Neue",sans-serif}
 body.ny-frokostside .ledigkal{background:#fff;border-radius:16px}
 body.ny-frokostside .lk-dag.valgt{background:var(--red);color:#fff}
@@ -315,13 +315,13 @@ body.ny-kalside .ny-stift{position:absolute;top:10px;width:16px;height:16px;bord
   background:radial-gradient(circle at 35% 35%,#ff9a9a,#d62a3a 55%,#8f1824);box-shadow:0 4px 5px rgba(0,0,0,.4)}
 body.ny-kalside .ny-stift:first-child{left:18px}
 body.ny-kalside .ny-stift:nth-child(2){right:18px;background:radial-gradient(circle at 35% 35%,#9cc4ea,#2a5f8f 55%,#1d3d5c)}
-body.ny-kalside .ny-plakat-over{font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--blaa)}
-body.ny-kalside .ny-plakat h1{margin:12px 0 0;font:400 clamp(58px,15vw,112px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:#d62a3a}
+body.ny-kalside .ny-plakat-over{font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.3em;color:var(--blaa)}
+body.ny-kalside .ny-plakat h1{margin:12px 0 0;font:400 clamp(58px,15vw,112px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;color:#d62a3a}
 body.ny-kalside .ny-plakat h1 span{display:block;margin-top:6px;font-size:.42em;letter-spacing:.06em;color:#241a17}
 body.ny-kalside .ny-plakat .sub{max-width:34ch;margin:14px auto 0;color:var(--ink2)}
 
 /* filtrene som papirmærker */
-body.ny-kalside .chipset button{background:#fbf6ec;border-radius:4px;box-shadow:0 2px 0 rgba(90,55,25,.3);font:400 17px/1 "Bebas Neue",sans-serif;letter-spacing:.06em;text-transform:uppercase}
+body.ny-kalside .chipset button{background:#fbf6ec;border-radius:4px;box-shadow:0 2px 0 rgba(90,55,25,.3);font:400 17px/1 "Bebas Neue",sans-serif;letter-spacing:.06em}
 body.ny-kalside .chipset button.on{background:#d62a3a;color:#fff}
 
 /* opslagene */
@@ -336,19 +336,19 @@ body.ny-kalside .evcard .date{width:62px;padding:8px 0 10px;border-radius:6px;ba
 body.ny-kalside .evcard .date b{font:400 34px/1 "Bebas Neue",sans-serif;color:#fff}
 body.ny-kalside .evcard .date span{font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.18em;color:rgba(255,255,255,.85)}
 body.ny-kalside .evcard .line{background:transparent;border-left:1.5px dashed rgba(36,26,23,.25);width:0}
-body.ny-kalside .evcard h3{font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+body.ny-kalside .evcard h3{font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.02em}
 
 /* intet planlagt: en gul seddel på tavlen */
 body.ny-kalside .evtom{position:relative;border-radius:2px;transform:rotate(1deg);background:linear-gradient(180deg,#fff3a6,#ffe97a);box-shadow:0 18px 30px -18px rgba(40,22,8,.85)}
 body.ny-kalside .evtom::before{content:"";position:absolute;top:8px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;
   background:radial-gradient(circle at 35% 35%,#9cc4ea,#2a5f8f 55%,#1d3d5c);box-shadow:0 4px 5px rgba(0,0,0,.4)}
-body.ny-kalside .evtom b{display:block;margin-top:8px;font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+body.ny-kalside .evtom b{display:block;margin-top:8px;font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.02em}
 
 /* tidligere på havnen: et ark på tavlen */
 body.ny-kalside .tidligere{border-radius:3px;background:#fffdf8;box-shadow:0 2px 0 rgba(90,55,25,.25),0 18px 30px -20px rgba(40,22,8,.85)}
-body.ny-kalside .tidligere summary{font:400 21px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+body.ny-kalside .tidligere summary{font:400 21px/1 "Bebas Neue",sans-serif;letter-spacing:.04em}
 body.ny-kalside .tidl .when{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.14em}
-body.ny-kalside .tidl h4{font:400 22px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+body.ny-kalside .tidl h4{font:400 22px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em}
 
 /* ---------- valg med tegninger (levering/afhentning) — som forsidens bestilling ---------- */
 body.ny-hav .seg2 button:has(.ny-hv-ikon){height:auto;min-height:104px;flex-direction:column;gap:4px;padding:12px 8px 12px;border-radius:18px;font-weight:600}
@@ -370,7 +370,7 @@ body.ny-hav .ny-levtjek[hidden]{display:none}
 body.ny-hav .ny-hent{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
 body.ny-hav .ny-hent[hidden]{display:none}
 body.ny-hav .ny-hent-ind{flex:1;display:grid;gap:2px;font-size:13.5px;color:var(--ink2)}
-body.ny-hav .ny-hent-ind b{font:400 19px/1 "Bebas Neue",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#241a17}
+body.ny-hav .ny-hent-ind b{font:400 19px/1 "Bebas Neue",sans-serif;letter-spacing:.05em;color:#241a17}
 body.ny-hav .ny-hent-vej{flex:none;display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d);text-decoration:none;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.45)}
 /* kalenderens filtre på én linje på telefonen (23/10) */
 @media (max-width:520px){
@@ -379,3 +379,6 @@ body.ny-hav .ny-hent-vej{flex:none;display:inline-flex;align-items:center;height
 }
 /* ordmærket på kork og kraftpapir: det røgede glas blev brunt — mørkere glas */
 body.ny-kalside .topbar .ordmaerke,body.ny-frokostside .topbar .ordmaerke{background:rgba(28,20,16,.62)}
+/* ⚠️ FEJLKANTEN VINDER OVER FOKUS (23/10). Send sætter markøren i det første forkerte felt —
+   og kortets fokusregel (outline:none) slukkede netop den røde kant. frokost-flow.spec.js fangede det. */
+body.ny-hav .panel:has(> .rk-hoved) .inp[aria-invalid="true"],body.ny-hav .panel:has(> .rk-hoved) .inp[aria-invalid="true"]:focus{outline:2px solid var(--red);outline-offset:-2px}

@@ -11,7 +11,7 @@
 body.ny-hist{--messing:#e8c48f}
 
 /* ---- heroen: overskriften i Bebas ---- */
-body.ny-hist .h-hero h1{font:400 clamp(64px,19vw,168px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;text-shadow:0 6px 40px rgba(0,0,0,.6)}
+body.ny-hist .h-hero h1{font:400 clamp(64px,19vw,168px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;text-shadow:0 6px 40px rgba(0,0,0,.6)}
 body.ny-hist .h-hero h1 em{font-style:normal;color:var(--messing)}
 body.ny-hist .h-mrk{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;color:var(--messing)}
 body.ny-hist .h-manchet{font-style:italic;font-size:17px;line-height:1.55;color:rgba(239,231,221,.88)}
@@ -36,7 +36,7 @@ body.ny-hist .ny-kapbar a.on + a{border-left-color:transparent}
 body.ny-hist .kap{scroll-margin-top:150px}
 body.ny-hist .kap-aar{font:400 clamp(72px,22vw,150px)/.82 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--messing)}
 body.ny-hist .kap-navn{margin-top:6px;font:400 15px/1 "Bebas Neue",sans-serif;letter-spacing:.32em;color:rgba(239,231,221,.7)}
-body.ny-hist .kap h2{font:400 clamp(34px,9vw,52px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase}
+body.ny-hist .kap h2{font:400 clamp(34px,9vw,52px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em}
 body.ny-hist .h-citat{border-left-color:var(--messing)}
 
 /* ---- fotoerne som rammer på en filmrulle ---- */
@@ -52,7 +52,7 @@ body.ny-hist .h-billedtekst{font-size:13.5px;color:rgba(239,231,221,.6)}
 body.ny-hist .h-billedtekst::before{content:"◆ ";color:var(--messing);font-style:normal}
 
 /* ---- slutningen ---- */
-body.ny-hist .h-slut h2{font:400 clamp(44px,12vw,84px)/.9 "Bebas Neue",sans-serif;text-transform:uppercase}
+body.ny-hist .h-slut h2{font:400 clamp(44px,12vw,84px)/.9 "Bebas Neue",sans-serif}
 body.ny-hist .h-tilbage{display:inline-flex;align-items:center;gap:8px;min-height:56px;padding:0 24px;border-radius:999px;
   font:600 17px/1 "Host Grotesk",system-ui,sans-serif;color:#1b120d;background:var(--messing);border:0;text-decoration:none;box-shadow:0 14px 30px -12px rgba(0,0,0,.8)}
 body.ny-hist .h-tilbage svg{color:#1b120d}

@@ -104,9 +104,9 @@ body.ny-side #idag,body.ny-side #ugen{display:none !important}
 .ny-side .nk-hoved::before,.ny-side .nk-hoved::after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.16);pointer-events:none}
 .ny-side .nk-hoved::before{width:420px;height:420px;right:-210px;top:-150px}
 .ny-side .nk-hoved::after{width:360px;height:360px;right:-90px;bottom:-300px}
-.ny-side .nk-over{display:flex;align-items:center;gap:14px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;text-transform:uppercase;color:var(--nk-creme)}
+.ny-side .nk-over{display:flex;align-items:center;gap:14px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;color:var(--nk-creme)}
 .ny-side .nk-over i{flex:1;max-width:220px;height:1px;background:rgba(255,255,255,.45)}
-.ny-side .nk-titel{margin:12px 0 0;font:400 clamp(44px,12vw,104px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:var(--nk-creme)}
+.ny-side .nk-titel{margin:12px 0 0;font:400 clamp(44px,12vw,104px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;color:var(--nk-creme)}
 .ny-side .nk-slogan{margin:12px 0 0;max-width:34ch;font:italic 400 16px/1.4 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.01em;color:var(--nk-creme)}
 .ny-side .nk-logo{position:absolute;top:18px;right:16px;width:82px;height:82px;border-radius:50%;box-shadow:0 10px 26px rgba(80,8,16,.35)}
 .ny-side .nk-logo svg{display:block;width:100%;height:100%}
@@ -119,7 +119,7 @@ body.ny-side #idag,body.ny-side #ugen{display:none !important}
 .ny-side .nk-kursiv{font:italic 400 14.5px/1.45 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.005em;color:var(--muted)}
 
 /* ◆ + rubrik + dobbelt rød streg */
-.ny-side .nk-rubrik{display:flex;align-items:center;gap:10px;margin:0;font:400 27px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+.ny-side .nk-rubrik{display:flex;align-items:center;gap:10px;margin:0;font:400 27px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;color:var(--ink)}
 .ny-side .nk-rubrik > span{flex:none;font-size:15px;color:var(--nk-blaa);transform:translateY(-2px)}
 .ny-side .nk-rubrik::after{content:"";flex:1;min-width:24px;height:4px;margin-left:6px;border-top:1.5px solid var(--red);border-bottom:1.5px solid var(--red);opacity:.85}
 .ny-side .nk-rubrik--stor{font-size:clamp(44px,12vw,64px);line-height:.9}
@@ -157,8 +157,8 @@ body.ny-side #idag,body.ny-side #ugen{display:none !important}
   box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.3)}
 .ny-side .nk-boks::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;
   background:linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/8px 100%,linear-gradient(0deg,transparent 50%,rgba(216,41,59,.5) 0) 0 0/100% 8px,#fff}
-.ny-side .nk-boks small{font:400 12px/1 "Bebas Neue",sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--nk-blaa)}
-.ny-side .nk-boks b{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+.ny-side .nk-boks small{font:400 12px/1 "Bebas Neue",sans-serif;letter-spacing:.2em;color:var(--nk-blaa)}
+.ny-side .nk-boks b{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--ink)}
 .ny-side .nk-boks .nk-pris{font-size:34px;margin-top:4px}
 .ny-side .nk-boks p{margin:2px 0 0;font-size:12.5px;line-height:1.35}
 .ny-side .nk-knapper{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
@@ -191,9 +191,9 @@ body.ny-side #idag,body.ny-side #ugen{display:none !important}
 .ny-side .nk-dag.er-idag{width:min(84vw,330px)}
 .ny-side .nk-dag-hoved{position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:16px 18px 12px;background:var(--red);color:var(--nk-creme);overflow:hidden}
 .ny-side .nk-dag-hoved::after{content:"";position:absolute;width:220px;height:220px;right:-110px;top:-120px;border-radius:50%;border:1px solid rgba(255,255,255,.18)}
-.ny-side .nk-dag-hoved b{font:400 34px/.9 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase}
+.ny-side .nk-dag-hoved b{font:400 34px/.9 "Bebas Neue",sans-serif;letter-spacing:.01em}
 .ny-side .nk-dag.er-idag .nk-dag-hoved b{font-size:42px}
-.ny-side .nk-dag-hoved span{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--nk-pink);white-space:nowrap}
+.ny-side .nk-dag-hoved span{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.16em;color:var(--nk-pink);white-space:nowrap}
 .ny-side .nk-dag-kant{height:26px;background:
   radial-gradient(circle at 50% 100%,var(--nk-creme) 7.5px,transparent 8px) 0 100%/16px 12px repeat-x,
   linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/16px 100%,
@@ -245,7 +245,7 @@ body.ny-side #bestil.papir .lev-nyhed-knap{color:#fff;background:var(--red)}
 .ny-side .ny-trin[data-trin="1"]{margin-top:10px}
 .ny-side .ny-trin .nk-rubrik > span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;font-size:19px;color:var(--nk-creme);background:var(--red);transform:none}
 .ny-side .ny-trin p{margin:8px 0 0;font:italic 400 14.5px/1.4 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
-.ny-side #bestil .field > label:not(.vilkaar-ja):not(.allergi-ja),.ny-side #bestil .two-col > div > label{font:400 17px/1 "Bebas Neue",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--nk-blaa)}
+.ny-side #bestil .field > label:not(.vilkaar-ja):not(.allergi-ja),.ny-side #bestil .two-col > div > label{font:400 17px/1 "Bebas Neue",sans-serif;letter-spacing:.12em;color:var(--nk-blaa)}
 
 /* hvordan: tre kort med ikon og en linje under */
 body.ny-side #bestil .seg2{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:10px}
@@ -261,7 +261,7 @@ body.ny-side #bestil .seg2 button.on svg{color:var(--red)}
 .ny-side [data-liste] > .item[data-kategori]:active{transform:scale(.985)}
 .ny-side .ny-katfoto{flex:none;display:block;width:56px;height:56px;border-radius:14px;background:center 62%/cover no-repeat var(--cream2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 .ny-side [data-liste] > .item.har-foto .kat-tegn,.ny-side .isbyg-blok.har-foto .isbyg-blok-tegn{display:none}
-.ny-side [data-liste] > .item[data-kategori] h4{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+.ny-side [data-liste] > .item[data-kategori] h4{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.02em}
 .ny-side [data-liste] > .item[data-kategori] .add{font:600 13.5px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d);padding:9px 12px;border-radius:999px;background:rgba(214,42,58,.08)}
 .ny-side [data-liste] > .item.ny-aaben{box-shadow:inset 0 0 0 2px var(--red),0 10px 22px -14px rgba(214,42,58,.6)}
 .ny-side [data-liste] > .item.ny-aaben .add{color:var(--ink2);background:var(--cream2)}
@@ -339,7 +339,7 @@ body.ny-side #bestil .seg2 button[data-nyt]::before{content:"Ny";position:absolu
 .ny-side .ny-lev-ikon{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;color:#fff;background:var(--red)}
 .ny-side .ny-lev-ikon svg{width:26px;height:26px;fill:currentColor}
 .ny-side .ny-lev-tekst{display:grid;gap:4px}
-.ny-side .ny-lev-tekst > b{font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+.ny-side .ny-lev-tekst > b{font:400 26px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;color:var(--ink)}
 .ny-side .ny-lev-tekst p{margin:0;font-size:14.5px;line-height:1.4;color:var(--ink2)}
 .ny-side .ny-lev-tekst p [data-lev-pris]{font:400 22px/1 "Bebas Neue",sans-serif;color:var(--red)}
 .ny-side .ny-lev-tekst p[hidden]{display:none}
@@ -424,7 +424,7 @@ body.ny-side .hero-cta .g{width:100%;min-height:56px;font-size:17px}
 .ny-side .nk-kapitel{display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid rgba(36,26,23,.1);color:var(--ink);text-decoration:none;transition:background .2s ease}
 .ny-side .nk-kapitel:hover{background:rgba(214,42,58,.04)}
 .ny-side .nk-kapitel-foto{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;font-size:20px;background:center 62%/cover no-repeat var(--cream2);box-shadow:0 0 0 2px #fff,0 4px 10px -4px rgba(36,26,23,.4)}
-.ny-side .nk-kapitel-navn{flex:1;min-width:0;font:400 21px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+.ny-side .nk-kapitel-navn{flex:1;min-width:0;font:400 21px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em}
 .ny-side .nk-kapitel-tal{flex:none;font:italic 400 13.5px/1 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
 .ny-side .nk-kapitel::after{content:"→";flex:none;margin-left:4px;font:600 15px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red);transition:transform .2s ease}
 .ny-side .nk-kapitel:hover::after{transform:translateX(3px)}
@@ -558,13 +558,13 @@ body.ny-side .nk--is{background:none;box-shadow:none;border-radius:0;overflow:vi
 /* ---------- VORES IS: smagene, fanerne og hele sortimentet ---------- */
 .ny-side .nk-is-smage{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:16px 0 0}
 .ny-side .nk-is-smage[hidden]{display:none}
-.ny-side .nk-is-smage b{width:100%;font:400 15px/1 "Bebas Neue",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--nk-blaa)}
+.ny-side .nk-is-smage b{width:100%;font:400 15px/1 "Bebas Neue",sans-serif;letter-spacing:.14em;color:var(--nk-blaa)}
 .ny-side .nk-is-smage span{padding:8px 14px;border-radius:999px;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d);background:#fde7ea;box-shadow:inset 0 0 0 1px rgba(214,42,58,.2)}
 .ny-side .nk-is-faner{display:flex;gap:8px;margin:20px 0 4px;overflow-x:auto;scrollbar-width:none}
 .ny-side .nk-is-faner[hidden]{display:none}
 .ny-side .nk-is-faner::-webkit-scrollbar{display:none}
 .ny-side .nk-is-fane{flex:none;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:999px;cursor:pointer;
-  font:400 19px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:#fff;box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.12)}
+  font:400 19px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;color:var(--ink);background:#fff;box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.12)}
 .ny-side .nk-is-fane small{font:600 12px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:0;color:var(--muted)}
 .ny-side .nk-is-fane.on{color:#fff;background:var(--red);box-shadow:0 8px 18px -8px rgba(180,31,46,.8)}
 .ny-side .nk-is-fane.on small{color:var(--nk-pink)}
@@ -605,11 +605,11 @@ body.ny-side .nk-afsnit--selskab{background:var(--cream)}
 .ny-side .nk--selskab .fact::before{content:"";position:absolute;left:0;right:0;top:0;height:7px;
   background:linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/7px 100%,linear-gradient(0deg,transparent 50%,rgba(216,41,59,.5) 0) 0 0/100% 7px,#fff}
 .ny-side .nk--selskab .fact svg{width:22px;height:22px;margin:0}
-.ny-side .nk--selskab .fact b{display:block;font:400 22px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase;margin-bottom:2px}
+.ny-side .nk--selskab .fact b{display:block;font:400 22px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em;margin-bottom:2px}
 /* skal vi tage snakken: kortets afslutning, rød boks */
 .ny-side .nk--selskab .talk{margin-top:26px;padding:28px 20px 24px;border-radius:22px;color:var(--nk-creme);background:var(--red);box-shadow:0 20px 40px -20px rgba(180,31,46,.8);position:relative;overflow:hidden}
 .ny-side .nk--selskab .talk::after{content:"";position:absolute;width:380px;height:380px;right:-200px;top:-200px;border-radius:50%;border:1px solid rgba(255,255,255,.18);pointer-events:none}
-.ny-side .nk--selskab .talk h3{font:400 40px/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase;color:var(--nk-creme)}
+.ny-side .nk--selskab .talk h3{font:400 40px/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--nk-creme)}
 .ny-side .nk--selskab .talk p{color:rgba(251,246,236,.9);font-size:15.5px;font-style:italic}
 body.ny-side .nk--selskab .talk .g.solid{color:var(--red-d);background:#fff;box-shadow:0 12px 24px -10px rgba(80,8,16,.6)}
 .ny-side .nk--selskab .talk .ring{color:rgba(251,246,236,.85);font-size:14px}
@@ -690,7 +690,7 @@ body.ny-side .nk--selskab .feat svg.ny-ill{background:var(--nk-creme);box-shadow
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .ny-side .ny-film .nk-over{color:#e8c48f}
 .ny-side .ny-film .nk-over i{background:#e8c48f;opacity:.5}
-.ny-side .ny-album-titel{margin:14px 0 0;font:400 clamp(56px,16vw,150px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:var(--nk-creme);text-shadow:0 4px 30px rgba(0,0,0,.5)}
+.ny-side .ny-album-titel{margin:14px 0 0;font:400 clamp(56px,16vw,150px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;color:var(--nk-creme);text-shadow:0 4px 30px rgba(0,0,0,.5)}
 .ny-side .ny-album-titel span{display:block;color:#e8c48f}
 .ny-side .ny-album-lead{margin:18px 0 0;max-width:44ch;font:italic 400 17px/1.55 "Host Grotesk",system-ui,sans-serif;color:rgba(251,246,236,.88);text-shadow:0 2px 12px rgba(0,0,0,.6)}
 /* filmstrimlen: sort bånd med perforering foroven og forneden, rammer man swiper i */
@@ -716,7 +716,7 @@ body.ny-side .nk--selskab .feat svg.ny-ill{background:var(--nk-creme);box-shadow
 .ny-side .ny-tl-nu .ny-aar{color:#ffd27a;background:none}
 .ny-side .ny-tidslinje li::before{content:none}
 .ny-side .ny-tl-tekst{padding:12px 4px 4px}
-.ny-side .ny-tl-tekst h3{margin:0;font:400 24px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#e8c48f}
+.ny-side .ny-tl-tekst h3{margin:0;font:400 24px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;color:#e8c48f}
 .ny-side .ny-tl-tekst p{margin:6px 0 0;font-size:14.5px;line-height:1.5;color:rgba(251,246,236,.82)}
 .ny-side .ny-album-fod{margin-top:30px}
 .ny-side .ny-album-fod .nk-knap{color:var(--nk-creme);background:transparent;box-shadow:inset 0 0 0 1.5px rgba(232,196,143,.7)}
@@ -773,7 +773,7 @@ body.ny-side #alt.ny-vej{position:relative;isolation:isolate;overflow:hidden;pad
   background:radial-gradient(circle at 50% 100%,transparent 11px,#5f8fb4 11.5px) 0 0/30px 16px repeat-x,linear-gradient(#5f8fb4,#3f6f96 70%,#2a5f8f)}
 .ny-side .ny-vej .nk-over{color:var(--nk-blaa)}
 .ny-side .ny-vej .nk-over i{background:var(--nk-blaa);opacity:.4}
-.ny-side .ny-vej-titel{margin:12px 0 0;font:400 clamp(52px,15vw,120px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:var(--ink)}
+.ny-side .ny-vej-titel{margin:12px 0 0;font:400 clamp(52px,15vw,120px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;color:var(--ink)}
 .ny-side .ny-vej-titel span{display:block;color:var(--red)}
 .ny-side .ny-vej-linje{margin:14px 0 0;max-width:40ch;font:italic 400 17px/1.5 "Host Grotesk",system-ui,sans-serif;color:var(--ink2)}
 /* pælen og skiltene */
@@ -796,7 +796,7 @@ body.ny-side #alt.ny-vej{position:relative;isolation:isolate;overflow:hidden;pad
 .ny-side .ny-skilt-ill{flex:none;display:grid;place-items:center;width:58px;height:58px;margin-left:10px;border-radius:50%;background:var(--nk-creme);box-shadow:0 0 0 3px rgba(0,0,0,.08)}
 .ny-side .ny-skilt-ill svg{width:44px;height:44px}
 .ny-side .ny-skilt-tekst{display:grid;gap:4px;min-width:0}
-.ny-side .ny-skilt-tekst b{font:400 25px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;text-transform:uppercase}
+.ny-side .ny-skilt-tekst b{font:400 25px/1 "Bebas Neue",sans-serif;letter-spacing:.03em}
 .ny-side .ny-skilt-tekst small{font:italic 400 13.5px/1.35 "Host Grotesk",system-ui,sans-serif;opacity:.88}
 .ny-side .ny-skilt-pil{position:absolute;right:28px;top:50%;transform:translateY(-50%);font:700 20px/1 "Host Grotesk",system-ui,sans-serif;opacity:.85}
 @media (min-width:821px){
@@ -860,7 +860,7 @@ body.ny-side .topbar.stuck .ordmaerke{display:inline-flex;align-items:center;min
    følg-knapperne på én linje, og kortene som lige store mærker med
    husets tegninger — fire i en række på computeren, to og to på telefonen.
    ============================================================ */
-.ny-side .ny-top-over{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 0;font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.32em;text-transform:uppercase;color:var(--red)}
+.ny-side .ny-top-over{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 0;font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.32em;color:var(--red)}
 .ny-side .ny-top-over i{width:40px;height:1px;background:currentColor;opacity:.45}
 .ny-side .ny-strib--top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:16px var(--pad) 8px;max-width:1120px;margin:0 auto}
 .ny-side .ny-strib--top > :not(.glasraekke){grid-column:1/-1}
@@ -872,7 +872,7 @@ body.ny-side .topbar.stuck .ordmaerke{display:inline-flex;align-items:center;min
 .ny-side .ny-strib--top .gr-tegn svg{width:30px;height:30px}
 .ny-side .ny-strib--top .gr-tegn svg.ny-maerke-ill{width:38px;height:38px}
 .ny-side .ny-strib--top .gr-tegn .knaek-logo{width:34px}
-.ny-side .ny-strib--top .gr-tekst b{font:400 20px/1.02 "Bebas Neue",sans-serif;letter-spacing:.03em;text-transform:uppercase;text-wrap:balance}
+.ny-side .ny-strib--top .gr-tekst b{font:400 20px/1.02 "Bebas Neue",sans-serif;letter-spacing:.03em;text-wrap:balance}
 .ny-side .ny-strib--top .gr-tekst span{font-size:12.5px;line-height:1.35}
 .ny-side .ny-strib--top .gr-pil{position:absolute;top:18px;right:14px;width:16px;height:16px}
 @media (min-width:821px){
@@ -896,8 +896,8 @@ body.ny-side .topbar.stuck .ordmaerke{display:inline-flex;align-items:center;min
 body.ny-side #find{padding-top:84px}
 body.ny-side #find::before{content:"";position:absolute;left:0;right:0;top:0;height:30px;z-index:2;pointer-events:none;
   background:radial-gradient(circle at 50% 0,#2a5f8f 14px,transparent 14.5px) 0 0/30px 30px repeat-x,linear-gradient(#2a5f8f,#2a5f8f) 0 0/100% 15px no-repeat}
-body.ny-side #find .findhoved .eyebrow{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;text-transform:uppercase;color:var(--messing,#e8c48f)}
-body.ny-side #find .findhoved h2{margin-top:10px;font:400 clamp(50px,11vw,104px)/.88 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:#fff}
+body.ny-side #find .findhoved .eyebrow{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;color:var(--messing,#e8c48f)}
+body.ny-side #find .findhoved h2{margin-top:10px;font:400 clamp(50px,11vw,104px)/.88 "Bebas Neue",sans-serif;letter-spacing:.005em;color:#fff}
 body.ny-side #find .findkort{position:relative;overflow:hidden;padding:0 0 22px;border-radius:26px;color:var(--ink);background:#fbf6ec;-webkit-backdrop-filter:none;backdrop-filter:none;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 30px 60px -24px rgba(0,0,0,.75)}
 body.ny-side #find .findkort > :not(.fk-hoved){margin-left:22px;margin-right:22px}
@@ -907,7 +907,7 @@ body.ny-side #find .fk-hoved::after{content:"";position:absolute;left:0;right:0;
   linear-gradient(90deg,rgba(216,41,59,.5) 50%,transparent 0) 0 0/20px 100%,
   linear-gradient(0deg,transparent 50%,rgba(216,41,59,.5) 0) 0 0/100% 20px,#fff}
 body.ny-side #find .fk-ic{width:46px;height:46px;border-radius:50%;background:#fbf6ec;color:var(--red)}
-body.ny-side #find .fk-hoved h3{font:400 32px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase;color:#fbf6ec}
+body.ny-side #find .fk-hoved h3{font:400 32px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;color:#fbf6ec}
 body.ny-side #find .fk-under{font:italic 400 14px/1.35 "Host Grotesk",system-ui,sans-serif;color:rgba(251,246,236,.9)}
 body.ny-side #find .fk-status{margin-top:0;color:var(--red-d);background:rgba(214,42,58,.1);font-weight:600}
 body.ny-side #find .findkort .hours{margin-top:10px;border-top:0}
@@ -918,7 +918,7 @@ body.ny-side #find .hours div span:last-child{order:2;font:400 23px/1 "Bebas Neu
 body.ny-side #find .hours div.now{margin:2px -12px;padding-inline:12px;border-radius:12px;background:rgba(214,42,58,.09);color:var(--red-d)}
 body.ny-side #find .hours div.now span:last-child{color:var(--red-d)}
 body.ny-side #find .ny-kortskitse{display:block;width:calc(100% - 44px);height:auto;margin-bottom:14px;border-radius:14px;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08)}
-body.ny-side #find .fk-adresse{margin-top:0;font:400 28px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--ink)}
+body.ny-side #find .fk-adresse{margin-top:0;font:400 28px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;color:var(--ink)}
 body.ny-side #find a.rute-knap.g.blk{display:flex;width:auto;justify-content:center;margin-top:16px;color:#fff;background:linear-gradient(180deg,#e2404f,var(--red-d));border:0;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 24px -10px rgba(180,31,46,.7)}
 body.ny-side #find .rute-note{color:var(--muted)}
@@ -947,3 +947,30 @@ body.ny-side #find #find-kontakt div span:last-child{font:600 15px/1.2 "Host Gro
 /* ishuset i filmstrimlen: isen står i venstre side af fotoet, og
    rammen skar netop den væk */
 .ny-side .ny-tidslinje li:nth-child(4) .ny-print img{object-position:18% 60%}
+
+/* ---------- Find os: det rigtige kort med ét tryk, og kontakten som knapper (23/10) ---------- */
+body.ny-side #find .ny-kort{position:relative;margin-bottom:16px;border-radius:16px;overflow:hidden;aspect-ratio:16/10;background:#cfe0ec;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
+body.ny-side #find .ny-kort .ny-kortskitse{position:absolute;inset:0;width:100%;height:100%;margin:0;border-radius:0;filter:saturate(.9);object-fit:cover}
+body.ny-side #find .ny-kort::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(29,61,92,.35));pointer-events:none}
+body.ny-side #find .ny-kort.vist::after{display:none}
+body.ny-side #find .ny-kort-vis{position:absolute;left:50%;top:50%;z-index:1;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 20px;border:0;border-radius:999px;cursor:pointer;
+  font:600 15px/1 "Host Grotesk",system-ui,sans-serif;color:#241a17;background:#fff;box-shadow:0 10px 24px -8px rgba(29,61,92,.6),inset 0 0 0 1px rgba(36,26,23,.08)}
+body.ny-side #find .ny-kort-vis svg{width:18px;height:18px;color:var(--red)}
+body.ny-side #find .ny-kort-vis:hover{transform:translate(-50%,-52%)}
+body.ny-side #find .ny-kort-note{position:absolute;left:0;right:0;bottom:8px;z-index:1;margin:0;text-align:center;font:500 12px/1.3 "Host Grotesk",system-ui,sans-serif;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+body.ny-side #find .ny-kort iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+/* adressen på én linje og mindre råbende */
+body.ny-side #find .fk-adresse{font-size:24px;line-height:1.05}
+/* ring og skriv som to knapper side om side */
+body.ny-side #find #find-kontakt{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+body.ny-side #find #find-kontakt > div{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
+body.ny-side #find #find-kontakt > div::after{display:none}
+body.ny-side #find #find-kontakt > div > span:first-child{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.14em;color:var(--muted)}
+body.ny-side #find #find-kontakt > div > span:last-child{font:600 16px/1.2 "Host Grotesk",system-ui,sans-serif}
+body.ny-side #find #find-kontakt > div[hidden]{display:none}
+body.ny-side #find .ny-kort-vis{top:auto;bottom:44px;transform:translateX(-50%)}
+body.ny-side #find .ny-kort-vis:hover{transform:translate(-50%,-2px)}
+body.ny-side #find .ny-kort{aspect-ratio:2/1;min-height:170px}
+body.ny-side #find .ny-kort-vis{bottom:36px}
+/* fejlkanten vinder over fokus — samme regel som undersiderne (23/10) */
+.ny-side #bestil .inp[aria-invalid="true"],.ny-side #bestil .inp[aria-invalid="true"]:focus{outline:2px solid var(--red);outline-offset:-2px}

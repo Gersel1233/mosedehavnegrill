@@ -69,6 +69,30 @@
     el.setAttribute('href', her() + el.getAttribute('href'));
   });
 
+  /* Find os: det rigtige Google-kort kommer først, når gæsten trykker. Persondatapolitikken
+     lover, at intet hentes fra Google af sig selv, og Google sætter cookies — så trykket ER
+     samtykket, og det huskes IKKE: næste besøg starter forfra uden Google. */
+  (function () {
+    var boks = document.querySelector('[data-ny-kort]');
+    if (!boks) return;
+    var URL_ = 'https://maps.google.com/maps?q=' + encodeURIComponent('Mosede Havnecafe, Havnevej 20I, 2670 Greve') + '&z=15&hl=da&output=embed';
+    function vis() {
+      var f = document.createElement('iframe');
+      f.src = URL_;
+      f.title = 'Kort: Mosede Havnecafe, Havnevej 20I, 2670 Greve';
+      f.loading = 'lazy';
+      f.referrerPolicy = 'no-referrer-when-downgrade';
+      f.setAttribute('allowfullscreen', '');
+      boks.innerHTML = '';
+      boks.appendChild(f);
+      boks.classList.add('vist');
+    }
+    var knap = boks.querySelector('.ny-kort-vis');
+    if (knap) knap.addEventListener('click', function () {
+      vis();
+    });
+  })();
+
   /* Kransen fra heroen går igen i de trykte korts hjørne, som på papiret */
   (function () {
     var krans = document.querySelector('.hero-badge svg');
