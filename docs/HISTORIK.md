@@ -7,6 +7,19 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**SE MENUKORTET, SOM GÆSTEN SER DET — FRA ADMIN** (23/10, aften). Mikkel: *"hvis de tilføjer ting til
+menukortet — bliver det så længere, og følger skriften, kortet og tilføjelserne automatisk præcis, hvordan
+menukortene ser ud nu — og hvorhenne de vil have det, og et preview"*.
+· Svaret var allerede ja, nu kan det SES: m-menukort.html tegner alt af databasen i de trykte korts form. En
+  ny vare står i sin kategoris afsnit (målt: "Rødspætte med remoulade 129,-" i Smørrebrød under Varianter);
+  en ny kategori får sit eget afsnit i kapitlet «Mere fra lugen» med husets hoved, rubrik og bølge. Kortet
+  bliver bare længere. Rækkefølgen styres med pilene ↑↓ i admin, placeringen af kategorien.
+· Admin → Menukort: knappen «Se menukortet, som gæsten ser det» åbner den RIGTIGE side i et ark
+  (ny/admin-forhaand.js) — ingen efterligning. Under ⋯ ved hver vare: «Se på menukortet →» hopper til
+  varen, markerer den og siger «står i kapitlet X under Y» (ny/menukort-ny.js, ?forhaand=1&vis=navn). Står
+  den ikke på kortet, siger arket hvorfor det kan være (Vis slået fra, ingen pris, ikke gemt).
+· Prøve: tests/menukort-forhaand.spec.js (ny vare, ny kategori, åbn/luk).
+
 **HELE SKIDTET ENDE TIL ENDE** (23/10, aften). Mikkel: *"fix lige de her knapper — og sørg for, at hele systemet
 virker ende til ende, at det er super simpelt i admin, at deres eventbureau nemt kan bruge det … hele skidtet"*.
 · Ring/Mail i Find os er rigtige knapper: hele flisen trykkes, husets tegnede telefon og brev, pil, og på

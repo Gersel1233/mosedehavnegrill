@@ -56,3 +56,23 @@ body.personale input[type="file"]::file-selector-button{margin-right:12px;paddin
   font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;background:#241a17}
 body.personale input[type="file"]::-webkit-file-upload-button{margin-right:12px;padding:11px 18px;border:0;border-radius:999px;cursor:pointer;
   font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:#fff;background:#241a17}
+
+/* forhåndsvisningen af menukortet (ny/admin-forhaand.js) */
+body.personale .forhaand-linje{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:4px 0 16px}
+body.personale .forhaand-knap{background:var(--red,#d62a3a);color:#fff;border:0}
+body.personale .forhaand-linje .hjaelp{flex:1 1 260px;margin:0}
+body.personale .vare-bag .forhaand-vare{margin-left:auto}
+.forhaand-ark{position:fixed;inset:0;z-index:9000;display:flex;flex-direction:column;background:rgba(36,26,23,.55);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
+.forhaand-ark[hidden]{display:none}
+.forhaand-top{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:18px 18px 0 0;background:#fbf6ec}
+.forhaand-top > div{flex:1;display:grid;gap:2px;min-width:0}
+.forhaand-top b{font:400 20px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;color:#241a17}
+.forhaand-top span{font:400 12.5px/1.3 "Host Grotesk",system-ui,sans-serif;color:#6f5b55}
+.forhaand-ramme{flex:1;width:100%;max-width:520px;margin:0 auto;border:0;border-radius:0 0 18px 18px;background:#fff}
+.forhaand-top{max-width:520px;width:100%;margin:0 auto}
+@media (min-width:900px){.forhaand-ramme,.forhaand-top{max-width:1100px}}
+html.forhaand-aaben,html.forhaand-aaben body{overflow:hidden}
+body.personale .forhaand-ark .forhaand-top .knap{flex:none;height:42px;padding:0 16px;border-radius:999px;border:0;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;box-shadow:none;background:#fff;color:#241a17;box-shadow:inset 0 0 0 1px rgba(36,26,23,.14)}
+body.personale .forhaand-ark .forhaand-top .forhaand-luk{background:#241a17;color:#fff;box-shadow:none}
+@media (max-width:520px){.forhaand-top span{display:none}}
