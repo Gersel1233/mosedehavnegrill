@@ -554,3 +554,34 @@ body.ny-side .nk--is{background:none;box-shadow:none;border-radius:0;overflow:vi
 /* markisen går fra kant til kant, og dugen før den er overflødig — markisen er isens kant */
 .ny-side .nk--is::before{margin-left:calc(50% - 50vw) !important;margin-right:calc(50% - 50vw) !important}
 .ny-side .dug--b{display:none}
+
+/* ---------- VORES IS: smagene, fanerne og hele sortimentet ---------- */
+.ny-side .nk-is-smage{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:16px 0 0}
+.ny-side .nk-is-smage[hidden]{display:none}
+.ny-side .nk-is-smage b{width:100%;font:400 15px/1 "Bebas Neue",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--nk-blaa)}
+.ny-side .nk-is-smage span{padding:8px 14px;border-radius:999px;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d);background:#fde7ea;box-shadow:inset 0 0 0 1px rgba(214,42,58,.2)}
+.ny-side .nk-is-faner{display:flex;gap:8px;margin:20px 0 4px;overflow-x:auto;scrollbar-width:none}
+.ny-side .nk-is-faner[hidden]{display:none}
+.ny-side .nk-is-faner::-webkit-scrollbar{display:none}
+.ny-side .nk-is-fane{flex:none;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:999px;cursor:pointer;
+  font:400 19px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:#fff;box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.12)}
+.ny-side .nk-is-fane small{font:600 12px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:0;color:var(--muted)}
+.ny-side .nk-is-fane.on{color:#fff;background:var(--red);box-shadow:0 8px 18px -8px rgba(180,31,46,.8)}
+.ny-side .nk-is-fane.on small{color:var(--nk-pink)}
+.ny-side .nk-is-alt{list-style:none;margin:8px 0 0;padding:0}
+.ny-side .nk-is-alt[hidden]{display:none}
+.ny-side .nk-is-alt li{padding:11px 0;border-bottom:1px solid rgba(36,26,23,.1)}
+.ny-side .nk-is-alt li.nk-skelet{height:44px;position:relative;padding:0}
+.ny-side .nk-is-alt li.nk-skelet::before{content:"";position:absolute;left:0;top:16px;height:12px;width:60%;border-radius:6px;background:rgba(36,26,23,.07)}
+.ny-side .nk-is-linje{display:flex;align-items:baseline;gap:8px}
+.ny-side .nk-is-linje .nk-navn{flex:0 1 auto}
+.ny-side .nk-is-linje .nk-pris{flex:none;font-size:24px}
+.ny-side .nk-is-alt small{display:block;margin-top:3px;font-size:13.5px}
+.ny-side .nk-is-alt li.er-udsolgt .nk-navn{text-decoration:line-through;color:var(--muted)}
+@media (min-width:821px){
+  .ny-side .nk-is-alt{columns:2;column-gap:32px}
+  .ny-side .nk-is-alt li{break-inside:avoid}
+  .ny-side .nk--is .nk-is-krop{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr)}
+}
+/* kransen i posen: knappens egen svg-regel (26 px) må ikke gælde den indlejrede svg */
+body.ny-side #bestil .seg2 button svg.ny-hv-ikon svg.ny-krans{width:14px;height:14px;margin:0;opacity:1}

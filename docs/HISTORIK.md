@@ -7,6 +7,14 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ "VORES IS" OG KRANSEN PÅ POSEN** (23/10 — kun /ny/). Mikkel: *"den skal hedde Vores is —
+man skal kunne se alle deres gode kendte is"* og *"prop lige det rigtige logo på den der"* (posen).
+Overskriften er "Vores is"; under "◆ Hele isen" står smagene ved lugen (indstillingen is_smage,
+Butik.isSmage — i dag jordbær, vanilje, chokolade) og hele sortimentet i faner pr. is-kategori
+(afdeling "is": Kugleis 13, Softice og vafler 16), hver vare med pris og ejerens beskrivelse;
+slukkede varer og varer uden pris står ikke (ispindene er slukket). To-go-posen bærer nu husets
+krans (den samme SVG som heroens, med egne id'er) som klistermærke.
+
 **/ny/ ISEN SOM ISBAR + AFSNITSBJÆLKEN** (23/10 — kun /ny/). Mikkel: *"det ligner alt sammen
 hinanden … mere unikt og nemmere at navigere"* — og straks efter: *"det var kun isen, der skulle
 se lidt anderledes ud … de andre sektioner er gode nu, rør dem ikke"*. Isen er nu en isbar: en

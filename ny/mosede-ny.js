@@ -320,6 +320,75 @@
     }
   }
 
+  /* ============================================================
+     VORES IS — hele sortimentet, som ejeren har det i menukortet
+     ------------------------------------------------------------
+     Mikkel: *"den skal hedde Vores is — man skal kunne se alle deres
+     gode kendte is"*. Én fane pr. is-kategori (afdeling "is", aktiv,
+     med mindst én vare med pris), og i fanen hver vare med pris og
+     ejerens egen beskrivelse. Smagene er indstillingen is_smage
+     (Butik.isSmage) — den samme, bestillingen spørger. Slukkede varer
+     og varer uden pris står ikke (ispindene er slukket i dag).
+     ============================================================ */
+  function tegnIs(d) {
+    var liste = document.getElementById('nyIsAlt');
+    var faner = document.getElementById('nyIsFaner');
+    var smage = document.getElementById('nyIsSmage');
+    if (!liste) return;
+    var varer = d.menu_varer || [];
+    var kat = (d.menu_kategorier || []).filter(function (k) { return k.afdeling === 'is' && k.aktiv !== false; })
+      .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); })
+      .map(function (k) {
+        return { k: k, v: varer.filter(function (v) {
+          return v.kategori_id === k.id && v.aktiv !== false && v.pris !== null && v.pris !== undefined && v.pris !== '';
+        }).sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0) || a.id - b.id; }) };
+      })
+      .filter(function (x) { return x.v.length; });
+    liste.removeAttribute('aria-busy');
+    if (smage && Butik.isSmage) {
+      var s = Butik.isSmage(d);
+      smage.textContent = '';
+      if (s.length) {
+        smage.appendChild(lav('b', null, 'Smagene ved lugen'));
+        s.forEach(function (n) { smage.appendChild(lav('span', null, n)); });
+      }
+      smage.hidden = !s.length;
+    }
+    if (!kat.length) { liste.hidden = true; if (faner) faner.hidden = true; return; }
+    function vis(nr) {
+      liste.textContent = '';
+      kat[nr].v.forEach(function (v) {
+        var li = lav('li');
+        var top = lav('div', 'nk-is-linje');
+        top.appendChild(lav('span', 'nk-navn', v.navn));
+        top.appendChild(lav('i', 'nk-prik'));
+        top.appendChild(lav('span', 'nk-pris', Butik.varePris ? Butik.varePris(v.pris) : Butik.kroner(v.pris)));
+        li.appendChild(top);
+        if (v.beskrivelse) li.appendChild(lav('small', 'nk-kursiv', v.beskrivelse));
+        if (v.udsolgt) li.classList.add('er-udsolgt');
+        liste.appendChild(li);
+      });
+      if (faner) [].forEach.call(faner.children, function (f, i) {
+        f.classList.toggle('on', i === nr);
+        f.setAttribute('aria-selected', i === nr ? 'true' : 'false');
+      });
+    }
+    if (faner) {
+      faner.textContent = '';
+      kat.forEach(function (x, i) {
+        var f = lav('button', 'nk-is-fane');
+        f.type = 'button';
+        f.setAttribute('role', 'tab');
+        f.appendChild(lav('span', null, x.k.navn));
+        f.appendChild(lav('small', null, String(x.v.length)));
+        f.addEventListener('click', function () { vis(i); });
+        faner.appendChild(f);
+      });
+      faner.hidden = kat.length < 2;
+    }
+    vis(0);
+  }
+
   function prikPå() {
     var række = document.getElementById('nyUge');
     var prikker = document.querySelectorAll('#nyUgePrik i');
@@ -375,7 +444,7 @@
   }
 
   setTimeout(function () {
-    ['nySmoerListe', 'nyKapitler'].forEach(function (id) {
+    ['nySmoerListe', 'nyKapitler', 'nyIsAlt'].forEach(function (id) {
       var l = document.getElementById(id);
       if (l && l.getAttribute('aria-busy') === 'true') l.hidden = true;
     });
@@ -386,6 +455,7 @@
     try { tegnUge(d); } catch (e) { console.error(e); }
     try { tegnSmoer(d); } catch (e) { console.error(e); }
     try { tegnKapitler(d); } catch (e) { console.error(e); }
+    try { tegnIs(d); } catch (e) { console.error(e); }
     try { tegnHero(d); } catch (e) { console.error(e); }
   }
   document.addEventListener('ny-data', function (e) { tegnAlt(e.detail); });
