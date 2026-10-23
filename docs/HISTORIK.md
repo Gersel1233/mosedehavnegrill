@@ -7,6 +7,12 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ SELSKABETS EGNE TEGNINGER** (23/10 — kun /ny/). Mikkel om stregikonerne i "Vi gør os
+umage": *"fix dem her og gør siden lidt mere unik"*. Seks små tegninger i samme stil som posen og
+bordet (brun streg, husets rød og havneblå): rugbrød på bræt (hjemmelavet), skipperkasket med
+anker (folk der kender havnen), festbord med dannebrogsflagranke (store som små selskaber);
+menukort med pen, vægur og rød drejeskivetelefon på de tre løfter. Kun i selskabsafsnittet.
+
 **/ny/ SELSKAB & CATERING SOM TRYKT KORT** (23/10 — kun /ny/). Mikkel: *"fortsæt til næste
 section"*. Samme sprog som smørrebrødet og menukortet: rødt hoved "Selskab & catering" med kransen,
 ternet kant, "◆ Vi gør os umage hver gang" som linjer med husets tegn, stemningsfotoerne (de samme,
