@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ BJÆLKEN FLYDER, POSEN I MIDTEN** (23/10 — kun /ny/). Mikkel: *"kan baren så ikke også flyde
+på resten af siden?"* og om posen i Bestil mad: *"skal være i centrum og symmetrisk ift. knappen"*.
+Når man ruller, er der ingen creme flade på tværs mere: ordmærket, genvejene, Book bord og Menu
+flyder som glas-piller over siden (computer), og på telefonen flyder ordmærket, Menu og afsnits-
+bjælken som piller. Cirklen i Bestil mad stod allerede med 5 px til tre sider (målt); det skæve var
+posen, hvis sidefold trækker den ud af midten — dens SVG har nu en udsnitsramme om selve posen.
+
 **/ny/ "HVAD SKAL VI HJÆLPE MED?" SOM HAVNENS VEJVISER + BESTIL MAD-PILLEN** (23/10 — kun /ny/).
 Mikkel: *"den her især skal fixes … tag et efter et"* og *"bestil mad-knappen er ikke opdateret ift.
 udseendet"*. Afsnittet har sit eget udtryk: dagslys over molen (lys himmel → creme, vand nederst),
