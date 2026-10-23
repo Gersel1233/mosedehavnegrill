@@ -7,6 +7,19 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**🚀 DET NYE DESIGN ER LANCERET** (23/10). Mikkel: *"nu skal alt pushes live og hænge sammen med hele
+systemet og virke, til det kan lanceres i dag — gør det nu"*. Prøven under /ny/ er flyttet ud på de
+rigtige adresser: forsiden (index.html), historien.html, bord/, h-smorrebrod.html, h-baglokale.html,
+h-catering.html, h-frokost.html og h-kalender.html. Hver rod-side er bygget af sin /ny/-kopi: `<base>` og
+`noindex` ud, sidens egen canonical ind igen, og alle links peger på de rigtige sider (bord/ beholder
+`<base href="../">`, som den blev testet med). Designets egne filer bliver i `ny/` (mosede-ny.css/js,
+ny-data.js, hav-ny.css, bord-ny.css, historien-ny.css, frokost-ny.js, ny-under.js). /ny/-adresserne
+sender nu videre til de rigtige sider (med anker), så delte prøvelinks stadig lander rigtigt.
+`ny/ny-under.js` sender IKKE længere links til /ny/ — den hjælper kun bord/ med `<base>`.
+Motoren er urørt: bestil.js, bord.js, forespoergsel.js, kalender.js, admin og databasen er de samme.
+Ikke i det nye design endnu: h-selskaber.html, menu-/tapassiderne og bestil/ — de virker som før.
+Byggeskripterne (kopi + lancering) lå i sessionens kladdemappe; ret fremover direkte i rod-siderne.
+
 **/ny/h-frokost.html: "LEVERING ELLER AFHENTNING?" TÆNKER MED** (23/10 — kun /ny/). Mikkel: *"fix og gør den
 lidt bedre, mere intelligent og dygtigere"*. De to valg har forsidens tegninger (den røde vogn, papirposen
 med kransen) og en linje under ("Vi kører den ud" / "Ved lugen på havnen"). Leveres den, tjekkes

@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="da">
-<head>
-<meta charset="utf-8">
+<head><base href="../">
+<meta charset="utf-8"><link rel="canonical" href="https://mosedehavnecafe.dk/bord/">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Book et bord på Mosede Havn – Mosede Havnecafe</title>
 <meta name="description" content="Book et bord ved vandet hos Mosede Havnecafe på Mosede Havn i Greve. Vælg dag, tid og antal — bordet er booket med det samme.">
-<link rel="canonical" href="https://mosedehavnecafe.dk/bord/">
 
 <meta property="og:title" content="Book et bord på Mosede Havn">
 <meta property="og:description" content="Book et bord ved vandet. Vælg dag, tid og antal — bordet er booket med det samme. Mosede Havn i Greve.">
@@ -31,7 +30,7 @@
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../css/style.css?v=__V__"><link rel="stylesheet" href="../css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="../css/lukket.css?v=__V__"><link rel="stylesheet" href="../css/kvittering.css?v=__V__">
+<link rel="stylesheet" href="../css/style.css?v=__V__"><link rel="stylesheet" href="ny/bord-ny.css?v=__V__"><link rel="stylesheet" href="../css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="../css/lukket.css?v=__V__"><link rel="stylesheet" href="../css/kvittering.css?v=__V__">
 
 <!-- JSON-LD. Se noten i index.html om hvorfor den er skrevet ind i
      siden og ikke bygget af JavaScript.
@@ -48,7 +47,7 @@
      js/skal/seo.js bygger blokken af den ENE kilde nu, på alle tolv
      indekserbare sider. -->
 <script src="../js/tilbage.js?v=__V__"></script></head>
-<body class="underside">
+<body class="underside ny-under ny-bordside">
 <script src="../js/loader.js?v=__V__"></script>
 
 <header id="hd" class="stuck">
@@ -66,7 +65,7 @@
        ⚠️ OG DET ER STADIG VEJEN HJEM. På forsiden er ordmærket et
        <span> — et link til den side, man står på, gør ingenting —
        men her er det den ene vej tilbage ved siden af pilen. -->
-  <a class="logo" href="../index.html" data-tilbage aria-label="Mosede Havnecafe — tilbage">Mosede Havnecafe</a>
+  <a class="logo" href="../" data-tilbage aria-label="Mosede Havnecafe — tilbage">Mosede Havnecafe</a>
   <!-- ⚠️ PILEN ER VÆK, OG NAVNET ER VEJEN TILBAGE (11/10). Mikkels ord:
        "det mosedehavnecafe i toppen skifter ift skrifttype og placering
        imellem tabsne … det skal se ud som når man scroller ned på
@@ -76,15 +75,8 @@
        data-tilbage giver det pilens opførsel (js/tilbage.js: ét skridt
        tilbage i huset, ellers forsiden). -->
 
-  <nav>
-    <a href="../index.html">Forside</a>
-    <a href="../menu.html">Menukort</a>
-    <a href="../index.html#bestil">Bestil mad</a>
-    <a href="../selskaber/">Selskaber</a>
-    <a href="./" aria-current="page">Book bord</a>
-    <a href="../index.html#isen">Is og kager</a>
-    <a class="glass sm" href="../index.html#find">Find os</a>
-  </nav>
+  <nav class="ny-nav" aria-label="Genveje"><a href="./#smoerrebroed">Smørrebrød</a><a href="m-menukort.html">Menukort</a><a href="./#isen">Is</a><a href="./#selskab">Selskab</a><a href="./#find">Find os</a></nav>
+  <a class="ny-bord" href="bord/" aria-current="page">Book bord</a>
 
   <button class="burger" id="burger" type="button"
           aria-label="Åbn menu" aria-expanded="false" aria-controls="ark"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../ikoner.svg#menu"/></svg></button>
@@ -103,18 +95,18 @@
   </div>
 
   <nav class="ark-liste" aria-label="Sider">
-    <a href="../index.html">Forside</a>
+    <a href="../">Forside</a>
     <a href="../menu.html">Menukort</a>
-    <a href="../index.html#bestil">Bestil mad</a>
+    <a href="../#bestil">Bestil mad</a>
     <a href="../smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
-    <a href="./" aria-current="page">Book et bord</a>
+    <a href="bord/" aria-current="page">Book et bord</a>
     <a href="../selskaber/">Selskaber</a>
     <a href="../catering/">Catering</a>
     <a href="../baglokale/">Baglokalet</a>
     <a href="../arrangementer/">Arrangementer</a>
     <a href="../nyheder/">Nyheder</a>
-    <a href="../index.html#isen">Is og kager</a>
-    <a href="../index.html#find">Åbningstider og adresse</a>
+    <a href="../#isen">Is og kager</a>
+    <a href="../#find">Åbningstider og adresse</a>
   </nav>
 
   <a class="ark-fine" href="../admin.html">Personale</a>
@@ -138,7 +130,8 @@
   <header class="smoer-hoved hoved-foto">
     <div class="wrap side-top mork-top">
       
-      <h1>Book et bord<br>ved vandet</h1>
+      <div class="ny-kicker">Mosede Havnecafé · Bord ved vandet</div>
+      <h1>Book et bord <span>ved vandet</span></h1>
       <!-- BOOKET ER BOOKET. Her stod "Spørg om et bord … der er
            ikke aftalt noget, før vi har snakket sammen".
 
@@ -163,7 +156,7 @@
   <!-- VI HOLDER LUKKET (18/10) — js/lukket.js. Står FØR formularen, af
        samme grund som beskeden nedenfor. Tomt og skjult uden en lukning. -->
   <section class="lukket-kort" id="lukket-kort" hidden aria-label="Vi holder lukket"
-    data-ikoner="../ikoner.svg" data-kontakt="../index.html#find" data-bestil="../index.html#bestil"></section>
+    data-ikoner="../ikoner.svg" data-kontakt="../#find" data-bestil="../#bestil"></section>
 
   <section class="dagsbesked" id="dagsbesked" hidden>
     <div class="dagsbesked-ind">
@@ -177,7 +170,16 @@
 
     <form id="bord-form" class="form-kort" novalidate>
 
-      <h2 class="h-panel">Hvornår kommer I?</h2>
+      <!-- /ny/ RESERVATIONSKORTET (23/10): formularen i husets trykte kortstil — rødt hoved
+           med kransen og den ternede kant. bord.js er urørt; felterne er de samme. -->
+      <header class="rk-hoved" aria-hidden="true">
+        <div class="rk-over">Mosede Havnecafé<i></i></div>
+        <div class="rk-titel">Reserveret</div>
+        <p class="rk-slogan">Vælg dag, tid og hvor mange I er — så står bordet klar.</p>
+        <span class="rk-logo"><svg class="crest rk-krans" viewBox="0 0 300 300" aria-hidden="true"><defs><path id="rk-ta2" d="M38.65 109.5A118.5 118.5 0 0 1 261.35 109.5"/><g id="rk-ta2j" fill="none" stroke="#d62a3a" stroke-width="5.4" stroke-linecap="butt"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/><g transform="translate(41 0) scale(-1 1)"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/></g></g></defs><circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="8"/><circle cx="150" cy="150" r="113" fill="none" stroke="#2a5f8f" stroke-width="3.4"/><text class="ct" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="18.5" letter-spacing="3.5" fill="#d62a3a"><textPath href="#rk-ta2" startOffset="50%">MOSEDE HAVNECAFE</textPath></text><g fill="#fff" stroke="#d62a3a" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="150" cy="96" r="19"/><circle cx="133" cy="124" r="19"/><circle cx="167" cy="124" r="19"/><path d="M124 139h52l-26 66z"/></g><g fill="none" stroke="#d62a3a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><path d="M131 155h38M138 172h24M144 188h12"/></g><use href="#rk-ta2j" transform="translate(51 152)"/><use href="#rk-ta2j" transform="translate(207 152)"/><text class="est" x="150" y="236" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="14.5" letter-spacing="2.75" fill="#2a5f8f">EST. 2025</text></svg></span>
+      </header>
+      <div class="rk-kant" aria-hidden="true"></div>
+      <h2 class="h-panel"><span aria-hidden="true">◆</span> Hvornår kommer I?</h2>
       <div class="dage" id="bord-dage"></div>
 
       <div class="felt-par">
@@ -209,7 +211,7 @@
         så vi kan forberede os.
       </p>
 
-      <h2 class="h-panel luft-top">Hvem booker?</h2>
+      <h2 class="h-panel luft-top"><span aria-hidden="true">◆</span> Hvem booker?</h2>
 
       <div class="felt-par">
         <div class="felt">
@@ -306,10 +308,10 @@
 
     <div class="fcol">
       <b>Havnen</b>
-      <a href="../index.html">Forside</a>
+      <a href="../">Forside</a>
       <a href="../m-menukort.html">Menukort</a>
-      <a href="../index.html#bestil">Bestil mad</a>
-      <a href="../index.html#find">Åbningstider</a>
+      <a href="../#bestil">Bestil mad</a>
+      <a href="../#find">Åbningstider</a>
       <!-- ⚠️ JURA-LINKET HØRER DÉR, HVOR DATAEN SAMLES (8/9).
            E-handelsloven og GDPR kræver, at oplysningerne er let
            tilgængelige — og den her side beder om navn og
@@ -343,6 +345,7 @@
 <script src="../js/dagsbesked.js?v=__V__"></script>
 <script src="../js/lukket.js?v=__V__"></script>
 <script src="../js/bord.js?v=__V__"></script>
+<script src="ny/ny-under.js?v=__V__"></script>
 
 </body>
 </html>
