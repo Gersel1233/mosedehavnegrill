@@ -1,0 +1,64 @@
+/* ============================================================
+   /ny/ HISTORIESIDEN — SAMME FILM, SKARPERE  (23/10)
+   Mikkel: "tag nu inde i den" efter forsidens filmstrimmel, og
+   "det må gerne forblive cinematisk, men tænke skarpere og mindre
+   generisk". Siden beholder sin mørke film og sine kapitler; laget
+   her giver den forsidens sprog: Bebas, varmt messing, en kapitel-
+   strimmel, man kan hoppe i, og fotoerne som rammer på en filmrulle.
+   Alt er scopet til body.ny-hist — historien.html er urørt.
+   ============================================================ */
+@font-face{font-family:"Bebas Neue";src:url("../fonts/bebas-neue.woff2") format("woff2");font-weight:400;font-display:swap}
+body.ny-hist{--messing:#e8c48f}
+
+/* ---- heroen: overskriften i Bebas ---- */
+body.ny-hist .h-hero h1{font:400 clamp(64px,19vw,168px)/.84 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;text-shadow:0 6px 40px rgba(0,0,0,.6)}
+body.ny-hist .h-hero h1 em{font-style:normal;color:var(--messing)}
+body.ny-hist .h-mrk{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.34em;color:var(--messing)}
+body.ny-hist .h-manchet{font-style:italic;font-size:17px;line-height:1.55;color:rgba(239,231,221,.88)}
+
+/* ---- kapitelstrimlen: klæber under bjælken, et år pr. ramme ---- */
+body.ny-hist .ny-kapbar{position:sticky;top:var(--ny-top,72px);z-index:40;display:flex;gap:0;overflow-x:auto;scrollbar-width:none;
+  padding:16px 14px;background:#0b0807;box-shadow:0 10px 30px -10px rgba(0,0,0,.8)}
+body.ny-hist .ny-kapbar::-webkit-scrollbar{display:none}
+/* hullerne er baggrund på selve bjælken — som pseudo-elementer rullede de med indholdet og stoppede midt på */
+body.ny-hist .ny-kapbar{background-color:#0b0807;
+  background-image:repeating-linear-gradient(90deg,transparent 0 7px,rgba(216,207,196,.75) 7px 15px,transparent 15px 22px),repeating-linear-gradient(90deg,transparent 0 7px,rgba(216,207,196,.75) 7px 15px,transparent 15px 22px);
+  background-size:100% 6px,100% 6px;background-position:0 4px,0 calc(100% - 4px);background-repeat:no-repeat}
+body.ny-hist .ny-kapbar a{flex:none;display:grid;gap:3px;padding:8px 16px;border-left:1px solid rgba(239,231,221,.12);
+  font:500 12.5px/1 "Host Grotesk",system-ui,sans-serif;color:rgba(239,231,221,.6);text-decoration:none;transition:color .2s ease,background .2s ease}
+body.ny-hist .ny-kapbar a:first-child{border-left:0}
+body.ny-hist .ny-kapbar a b{font:400 22px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;color:rgba(239,231,221,.85)}
+body.ny-hist .ny-kapbar a.on{color:#1b120d;background:var(--messing);border-radius:6px}
+body.ny-hist .ny-kapbar a.on b{color:#1b120d}
+body.ny-hist .ny-kapbar a.on + a{border-left-color:transparent}
+
+/* ---- kapitlerne: år og navn som filmens titelkort ---- */
+body.ny-hist .kap{scroll-margin-top:150px}
+body.ny-hist .kap-aar{font:400 clamp(72px,22vw,150px)/.82 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--messing)}
+body.ny-hist .kap-navn{margin-top:6px;font:400 15px/1 "Bebas Neue",sans-serif;letter-spacing:.32em;color:rgba(239,231,221,.7)}
+body.ny-hist .kap h2{font:400 clamp(34px,9vw,52px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;text-transform:uppercase}
+body.ny-hist .h-citat{border-left-color:var(--messing)}
+
+/* ---- fotoerne som rammer på en filmrulle ---- */
+/* hullerne står i en kant og ikke i padding: billedet zoomer (scale) ved indgangen, og overflow klipper
+   ved padding-kanten — så ville billedet dække dem. Baggrunden går ind under kanten. */
+body.ny-hist .h-foto{padding:0;border-top:22px solid transparent;border-bottom:22px solid transparent;background-origin:border-box;background-clip:border-box;background-color:#070505;
+  background-image:repeating-linear-gradient(90deg,transparent 0 9px,rgba(216,207,196,.7) 9px 21px,transparent 21px 30px),
+                   repeating-linear-gradient(90deg,transparent 0 9px,rgba(216,207,196,.7) 9px 21px,transparent 21px 30px);
+  background-size:100% 8px,100% 8px;background-position:0 7px,0 calc(100% - 7px);background-repeat:repeat-x;
+  box-shadow:0 30px 60px -24px rgba(0,0,0,.9)}
+body.ny-hist .h-foto img,body.ny-hist .h-foto .foto-felt{border-radius:2px}
+body.ny-hist .h-billedtekst{font-size:13.5px;color:rgba(239,231,221,.6)}
+body.ny-hist .h-billedtekst::before{content:"◆ ";color:var(--messing);font-style:normal}
+
+/* ---- slutningen ---- */
+body.ny-hist .h-slut h2{font:400 clamp(44px,12vw,84px)/.9 "Bebas Neue",sans-serif;text-transform:uppercase}
+body.ny-hist .h-tilbage{display:inline-flex;align-items:center;gap:8px;min-height:56px;padding:0 24px;border-radius:999px;
+  font:600 17px/1 "Host Grotesk",system-ui,sans-serif;color:#1b120d;background:var(--messing);border:0;text-decoration:none;box-shadow:0 14px 30px -12px rgba(0,0,0,.8)}
+body.ny-hist .h-tilbage svg{color:#1b120d}
+
+@media (min-width:821px){
+  body.ny-hist .ny-kapbar{justify-content:center;padding:16px max(28px,calc((100% - 1160px)/2))}
+  body.ny-hist .h-foto{margin-left:0;margin-right:0}
+  body.ny-hist .kap-aar{font-size:clamp(64px,7vw,120px)}
+}

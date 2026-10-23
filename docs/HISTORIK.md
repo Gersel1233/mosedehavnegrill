@@ -7,6 +7,18 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/historien.html — HISTORIESIDEN I SAMME FILM** (23/10 — kun /ny/, noindex; historien.html er
+urørt). Mikkel: *"tag nu inde i den og brug det gamle is billede i stedet"*. En kopi af historiesiden
+med `<base href="../">` og eget lag (`ny/historien-ny.css`, scopet til body.ny-hist): overskrifter og
+årstal i Bebas og varmt messing, en klæbende KAPITELSTRIMMEL med perforering (1710 · Før 1929 ·
+1929 · 1943 · 1969 · Dengang · I dag), der hopper til kapitlet og lyser, hvor man er (genbruger
+`ny/mosede-ny.js`' afsnitsvagt), og fotoerne som rammer på en filmrulle. ⚠️ Hullerne står i en
+KANT, ikke i padding: billedet skaleres ved indgangen, og overflow klipper ved padding-kanten. Kapitlerne
+har fået id'er (kap-1710 … kap-idag) i kopien, så forsidens filmstrimmel nu lander på det rigtige
+kapitel. "Det gamle is-billede": Ishuset bruger havn-softice.jpg (softicen i vaffel på træbroen) i
+stedet for bubblewafflen — både på historiesiden og i forsidens "Dengang"-ramme. Billedpladsen
+historie-4 er stadig ejerens; lægger han et andet foto op i admin, vises det.
+
 **/ny/ HISTORIEN SOM FILMSTRIMMEL** (23/10 — kun /ny/). Mikkel: *"ja nu til denne"*, og efter en
 første udgave som fotoalbum (aldrig udgivet alene — samme dag): *"det må gerne forblive
 cinematisk, men tænke skarpere og mindre generisk"* og *"stadig være en slags side, man ryger ind
