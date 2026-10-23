@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ HISTORIEN SOM HAVNENS FOTOALBUM** (23/10 — kun /ny/). Mikkel: *"ja nu til denne"*. Som
+isen (isbaren) og selskabet (festaftenen) får historien sit eget udtryk: gulnet albumpapir,
+luftfotoet som et gammelt fotografi med hvid kant, fotohjørner og en håndskrevet linje, og årene
+som en tidslinje langs et stykke tovværk med røde årstalsstempler: 1710 Ankeret (som
+"overlevering", ordret), 1929 Havnen, 1943 Overfarten, Dengang Ishuset, I dag Havnecaféen. Hvert
+punkt har historiesidens eget foto (samme filer og alt-tekster som historien.html), de
+historiske i sepia og "I dag" i farver. Teksterne er forsidens; knappen er "Læs hele historien
+om Mosede Havn". Klassen .about er taget af i /ny/ (intet script slår den op).
+
 **/ny/ SELSKAB SOM FESTAFTEN** (23/10 — kun /ny/). Mikkel: *"det ligner stadig meget det samme
 — ligesom issiden, lav den lidt mere unik"*. Som isen fik sin isbar, får selskabet sin aften:
 havneblå nattehimmel, en lyskæde med glødende pærer fra kant til kant (SVG i CSS, gløder svagt;

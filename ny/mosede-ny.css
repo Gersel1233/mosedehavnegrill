@@ -671,3 +671,57 @@ body.ny-side .nk--selskab .feat svg.ny-ill{background:var(--nk-creme);box-shadow
 }
 .ny-side .nk--selskab .nk-hoved{overflow:visible}
 .ny-side .nk--selskab .nk-logo{box-shadow:0 0 0 5px rgba(255,210,122,.14)}
+
+/* ============================================================
+   HISTORIEN SOM HAVNENS FOTOALBUM  (23/10)
+   Gulnet albumpapir, luftfotoet med fotohjørner, og årene langs et
+   stykke tovværk. De historiske fotos står i sepia; "I dag" i farver.
+   ============================================================ */
+.ny-side .ny-album{--sepia:#7a5a3a;--papir:#efe2c8;position:relative;padding:48px var(--pad) 52px;color:#3b2a1d;
+  background-color:var(--papir);
+  background-image:radial-gradient(120% 80% at 50% 0,rgba(255,255,255,.35),transparent 60%),radial-gradient(100% 60% at 50% 100%,rgba(122,90,58,.18),transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .32 0 0 0 0 .18 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E")}
+.ny-side .ny-album .nk-over{color:var(--sepia)}
+.ny-side .ny-album .nk-over i{background:var(--sepia);opacity:.5}
+.ny-side .ny-album-titel{margin:12px 0 0;font:400 clamp(48px,13.5vw,104px)/.88 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:#3b2a1d}
+.ny-side .ny-album-titel span{display:block;color:var(--red-d)}
+.ny-side .ny-album-lead{margin:14px 0 0;max-width:46ch;font:italic 400 17px/1.55 "Host Grotesk",system-ui,sans-serif;color:#5b4430}
+/* luftfotoet: et gammelt fotografi med hvid kant, fotohjørner og en håndskrevet tekst */
+.ny-side .ny-album-luft{position:relative;margin:30px 0 0;padding:10px 10px 38px;background:#fbf6ea;transform:rotate(-1deg);
+  box-shadow:0 2px 3px rgba(59,42,29,.15),0 24px 46px -20px rgba(59,42,29,.55)}
+.ny-side .ny-album-luft img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:50% 45%;filter:sepia(.55) contrast(1.05)}
+.ny-side .ny-album-luft figcaption{position:absolute;left:14px;bottom:10px;font:italic 500 15px/1 "Host Grotesk",system-ui,sans-serif;color:#6b4f35}
+.ny-side .ny-album-luft::before,.ny-side .ny-album-luft::after{content:"";position:absolute;width:30px;height:30px;background:#2e231b;opacity:.85}
+.ny-side .ny-album-luft::before{left:-6px;top:-6px;clip-path:polygon(0 0,100% 0,0 100%)}
+.ny-side .ny-album-luft::after{right:-6px;bottom:-6px;clip-path:polygon(100% 0,100% 100%,0 100%)}
+/* tidslinjen: tovværk ned langs venstre side, et stempel pr. år */
+.ny-side .ny-tidslinje{position:relative;list-style:none;margin:40px 0 0;padding:0 0 0 34px}
+.ny-side .ny-tidslinje::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:7px;border-radius:4px;
+  background:repeating-linear-gradient(-55deg,#c9a46e 0 4px,#a07c4b 4px 6px,#d9b986 6px 9px);box-shadow:0 1px 2px rgba(59,42,29,.3)}
+.ny-side .ny-tidslinje li{position:relative;padding:0 0 34px}
+.ny-side .ny-tidslinje li::before{content:"";position:absolute;left:-31px;top:12px;width:15px;height:15px;border-radius:50%;background:#fbf6ea;box-shadow:0 0 0 3px var(--red),0 2px 4px rgba(59,42,29,.3)}
+.ny-side .ny-aar{display:inline-block;padding:6px 12px 4px;border:2px solid var(--red);border-radius:6px;transform:rotate(-2deg);
+  font:400 30px/1 "Bebas Neue",sans-serif;letter-spacing:.06em;color:var(--red);background:rgba(255,255,255,.35);mix-blend-mode:multiply}
+.ny-side .ny-print{margin:14px 0 0;padding:8px 8px 8px;background:#fbf6ea;max-width:360px;transform:rotate(1.2deg);box-shadow:0 2px 3px rgba(59,42,29,.12),0 16px 30px -16px rgba(59,42,29,.55)}
+.ny-side .ny-tidslinje li:nth-child(even) .ny-print{transform:rotate(-1.4deg)}
+.ny-side .ny-print img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;filter:sepia(.7) contrast(1.05) brightness(1.02)}
+.ny-side .ny-tl-nu .ny-print img{filter:none}
+.ny-side .ny-tl-tekst h3{margin:14px 0 0;font:400 28px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase;color:#3b2a1d}
+.ny-side .ny-tl-tekst p{margin:6px 0 0;max-width:40ch;font-size:16px;line-height:1.5;color:#5b4430}
+.ny-side .ny-tl-nu .ny-aar{color:#fff;background:var(--red);mix-blend-mode:normal}
+.ny-side .ny-album-fod{margin-top:8px}
+.ny-side .ny-album-fod .nk-knap{width:100%}
+@media (min-width:821px){
+  .ny-side .ny-album{--ag:max(28px,calc((100% - 1160px)/2));display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:0 64px;padding:84px var(--ag) 80px;align-items:start}
+  .ny-side .ny-album-titel{font-size:clamp(56px,6vw,96px)}
+  .ny-side .ny-album-hoved{grid-column:1;grid-row:1}
+  .ny-side .ny-album-luft{grid-column:1;grid-row:2;position:sticky;top:120px;margin-top:34px}
+  .ny-side .ny-tidslinje{grid-column:2;grid-row:1/4;margin-top:6px}
+  .ny-side .ny-tidslinje li{display:grid;grid-template-columns:minmax(0,250px) minmax(0,1fr);grid-template-areas:"aar aar" "foto tekst";gap:14px 26px;align-items:start;padding-bottom:40px}
+  .ny-side .ny-aar{grid-area:aar;justify-self:start}
+  .ny-side .ny-print{grid-area:foto;margin:0}
+  .ny-side .ny-tl-tekst{grid-area:tekst}
+  .ny-side .ny-tl-tekst h3{margin-top:2px}
+  .ny-side .ny-album-fod{grid-column:1;grid-row:3;margin-top:34px}
+  .ny-side .ny-album-fod .nk-knap{width:auto}
+}
