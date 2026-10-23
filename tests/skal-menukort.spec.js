@@ -265,7 +265,9 @@ test.describe('Menukortet', () => {
      telefon, det er elendigt". Båndet stod på 109 px — bjælkens højde
      FØR den blev kompakt — og der lå en stribe af menuen imellem. To
      elementer mod hinanden: bjælkens bund og båndets top. */
-  test('på telefonen klæber båndet lige under den faste bjælke', async ({ page }, info) => {
+  /* ⚠️ BÅNDET KLÆBER IKKE MERE PÅ TELEFONEN (23/10). Mikkel: "når man scroller, med den der — fjern
+     den". Det står øverst i kortet og ruller væk; et tryk i det lander stadig kortet rigtigt (nedenfor). */
+  test('på telefonen ruller båndet væk med siden', async ({ page }, info) => {
     test.skip(info.project.name === 'computer', 'på computeren står båndet ude i siden');
     const d = medRet();
     d.menu_kategorier.push({ id: 50, afdeling: 'mad', navn: 'Lang liste', sortering: 30, aktiv: true });
@@ -276,11 +278,9 @@ test.describe('Menukortet', () => {
     await åbn(page, d);
     await page.locator('[data-vare="Vare 15"]').evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
     await expect(page.locator('.topbar.stuck')).toHaveCount(1);
-    await expect.poll(async () => {
-      const b = await page.locator('#mk-hop').boundingBox();
-      const t = await page.locator('.topbar').boundingBox();
-      return Math.abs(Math.round(b.y - (t.y + t.height)));
-    }, { message: 'afstanden mellem bjælkens bund og båndets top' }).toBeLessThanOrEqual(2);
+    expect(await page.locator('#mk-hop').evaluate((e) => getComputedStyle(e).position)).toBe('static');
+    const b = await page.locator('#mk-hop').boundingBox();
+    expect(b.y + b.height, 'båndet ligger stadig på skærmen oven på kortet').toBeLessThan(0);
   });
 
   test('båndet ligger aldrig oven på kortene', async ({ page }, info) => {
@@ -417,7 +417,9 @@ test.describe('Menukortet har havnens tema', () => {
   test('overskrifterne er husets — og kortenes egne i kapitlerne', async ({ page }) => {
     await åbn(page);
     const skrift = (v) => page.locator(v).first().evaluate((el) => getComputedStyle(el).fontFamily);
-    expect(await skrift('.phead h1')).toContain('Host Grotesk');
+    /* ⚠️ SIDENS OVERSKRIFT ER BEBAS SIDEN 23/10 — som overskrifterne på resten af den nye side
+       (Mikkel: "gør den lidt pænere"). Varernes navne er stadig husets skrift. */
+    expect(await skrift('.phead h1')).toContain('Bebas');
     expect(await skrift('#mk-kat .mk-kh-titel')).toContain('Bebas');
     expect(await skrift('#mk-kat .panel h3')).toContain('Bebas');
     expect(await skrift('#mk-kat .mk-linje h4')).toContain('Host Grotesk');
@@ -1301,7 +1303,7 @@ test.describe('Båndet på telefonen ligger over kortene — aldrig oven på dem
   }
 
   for (const bredde of [320, 430]) {
-    test(`et tryk i båndet lander kortet under båndet med titel og logo fri (${bredde} px)`, async ({ page }, info) => {
+    test(`et tryk i båndet lander kortet under bjælken med titel og logo fri (${bredde} px)`, async ({ page }, info) => {
       test.skip(info.project.name === 'computer', 'på computeren står båndet ude i siden');
       await page.setViewportSize({ width: bredde, height: 760 });
       await åbn(page, langtKort());
@@ -1315,7 +1317,7 @@ test.describe('Båndet på telefonen ligger over kortene — aldrig oven på dem
         return ro;
       }, { intervals: [200], timeout: 6000 }).toBe(true);
       const m = await page.evaluate(() => {
-        const bånd = document.getElementById('mk-hop').getBoundingClientRect();
+        const bånd = document.querySelector('.topbar').getBoundingClientRect();   // båndet ruller væk (23/10) — bjælken er kanten nu
         const kap = document.querySelectorAll('#mk-kat .mk-kapitel')[1];
         return {
           båndBund: Math.round(bånd.bottom),
@@ -1332,20 +1334,12 @@ test.describe('Båndet på telefonen ligger over kortene — aldrig oven på dem
     });
   }
 
-  test('båndet er en hylde i fuld bredde — intet skinner igennem', async ({ page }, info) => {
+  test('båndet lægger sig aldrig oven på kortet, mens man ruller', async ({ page }, info) => {
     test.skip(info.project.name === 'computer', 'på computeren står båndet ude i siden');
     await page.setViewportSize({ width: 390, height: 760 });
     await åbn(page, langtKort());
-    const m = await page.evaluate(() => {
-      const b = document.getElementById('mk-hop');
-      const r = b.getBoundingClientRect();
-      const farve = getComputedStyle(b).backgroundColor;
-      const alfa = /rgba/.test(farve) ? Number(farve.split(',')[3].replace(')', '')) : 1;
-      return { venstre: Math.round(r.left), højre: Math.round(r.right), skærm: innerWidth, alfa };
-    });
-    expect(m.venstre, 'kortet kan ses ved siden af båndet').toBeLessThanOrEqual(0);
-    expect(m.højre, 'kortet kan ses ved siden af båndet').toBeGreaterThanOrEqual(m.skærm);
-    expect(m.alfa, 'kortets tekst skinner igennem båndet').toBe(1);
+    const pos = await page.locator('#mk-hop').evaluate((e) => getComputedStyle(e).position);
+    expect(pos, 'båndet klæber igen').not.toMatch(/sticky|fixed/);
   });
 });
 

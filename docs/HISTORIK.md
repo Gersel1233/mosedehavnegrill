@@ -7,6 +7,18 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**MENUKORTET: BÅNDET KLÆBER IKKE MERE, OG SIDEN ER LIDT PÆNERE** (23/10). Mikkel: *"fix selve inde på
+menukort-tabben, i hvert fald for telefon: når man scroller, med den der — fjern den. Og ændr ikke så
+meget, men gør den lidt pænere og bedre i desktop og telefon."*
+· Kategoribåndet (#mk-hop) står øverst i kortet og ruller væk på telefonen — det lå oven på menuen.
+  Et tryk i det lander stadig kortet lige under bjælken (landingsstedet mistede båndets 54 px; reglen
+  skal være lige så specifik som menukort-kort.css' `#mk-kat .mk-kapitel`). På computeren står listen
+  i venstre side som før, med en lille "Hop til" over.
+· Overskriften "Menukort" og "Dagens ret" i Bebas med husets overlinje, allergipillen som et hvidt kort,
+  rubrikkerne nederst med ◆. `ny/menukort-ny.css` (body.ny-mkside), siden er ellers urørt.
+· skal-menukort.spec.js er skrevet om, hvor den målte det klæbende bånd: nu måler den, at båndet ruller
+  væk, og at et tryk lander kortet under bjælken med titel og logo fri. 120 bestod.
+
 **MENUEN (DE TRE STREGER) OG BESTIL MAD, DER ER TIL AT FINDE** (23/10). Mikkel: *"lav bestil mad mere
 eksklusiv, da det hele godt kan ligne hinanden og være svært at navigere i — og lav de tre streger-
 tabben bedre"*, og bagefter: *"samme farve som før, ikke det sorte — men stadig til at finde"*.

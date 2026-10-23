@@ -1,0 +1,40 @@
+/* ============================================================
+   MENUKORTET I HUSETS UDTRYK — UDEN AT LAVE SIDEN OM  (23/10)
+   Mikkel: "fix selve inde på menukort-tabben, i hvert fald for
+   telefon: når man scroller, med den der — fjern den. Og ændr ikke
+   så meget, men gør den lidt pænere og bedre i desktop og telefon."
+   · Kategoribåndet klæber ikke mere på telefonen — det lå oven på
+     kortet, hver gang man rullede. På computeren står det som før:
+     en liste i venstre side, der ikke dækker noget.
+   · Overskriften, rubrikkerne og knapperne i husets Bebas.
+   ============================================================ */
+body.ny-mkside .ny-mk-over{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 6px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.3em;color:#d62a3a}
+body.ny-mkside .ny-mk-over i{width:34px;height:1px;background:currentColor;opacity:.45}
+body.ny-mkside .phead h1{font:400 clamp(64px,17vw,120px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;color:#241a17;margin-top:6px}
+body.ny-mkside .phead .sub{font-style:italic;max-width:34ch;margin-inline:auto}
+body.ny-mkside .mk-allergi{border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.08),0 10px 24px -18px rgba(36,26,23,.5)}
+
+/* "Ugen der kommer / Dagens ret" og kortenes rubrikker */
+body.ny-mkside .mid .eyebrow{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.3em;color:#d62a3a}
+body.ny-mkside .mid h2{font:400 clamp(44px,12vw,72px)/.9 "Bebas Neue",sans-serif;letter-spacing:.01em;color:#241a17}
+body.ny-mkside #kost h3,body.ny-mkside #kost ~ * h3,body.ny-mkside section > .panel > h3{display:flex;align-items:center;gap:10px;font:400 28px/1 "Bebas Neue",sans-serif;letter-spacing:.02em;color:#241a17}
+body.ny-mkside section > .panel > h3::before{content:"◆";font-size:15px;color:#2a5f8f;transform:translateY(-2px)}
+
+/* sprogknapperne og kategorierne */
+body.ny-mkside .mk-sprog-knap{font-weight:600}
+body.ny-mkside .mk-hop button{font-weight:600}
+
+@media (max-width:820px){
+  /* ⚠️ BÅNDET KLÆBER IKKE MERE PÅ TELEFONEN. Det står øverst i kortet og ruller væk med siden. */
+  body.ny-mkside .mk-hop{position:static;top:auto;margin:6px calc(var(--pad) * -1) 4px;padding:6px var(--pad) 10px;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+  body.ny-mkside .mk-kat .panel{scroll-margin-top:calc(max(calc(env(safe-area-inset-top) + 6px), 12px) + 60px)}
+}
+@media (min-width:821px){
+  /* computerens liste i venstre side: husets etiket over, rolig markering */
+  body.ny-mkside .mk-hop::before{content:"Hop til";display:block;margin:0 0 8px 14px;font:400 13px/1 "Bebas Neue",sans-serif;letter-spacing:.3em;color:#d62a3a}
+  body.ny-mkside .mk-hop button{border-radius:12px}
+}
+/* uden båndet over kortene lander et tryk lige under bjælken: kortenes landingssted mister båndets 54 px (menukort-kort.css regner dem med) (skal-menukort.spec.js) */
+@media (max-width:820px){
+  body.ny-mkside .mk-kat .panel,body.ny-mkside #mk-kat .mk-kapitel,body.ny-mkside #mk-kat .mk-sek.panel{scroll-margin-top:calc(max(calc(env(safe-area-inset-top) + 6px), 12px) + 48px + 14px)}
+}
