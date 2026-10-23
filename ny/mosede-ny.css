@@ -350,7 +350,7 @@ body.ny-side #bestil .seg2 button[data-nyt]::before{content:"Ny";position:absolu
 .ny-side #flevfelt .adr-status{margin-top:10px;padding:10px 12px;border-radius:12px;font-size:14px}
 .ny-side #flevfelt #lev-hint:empty{display:none}
 /* hvordan: husets egne små tegninger — posen fra lugen, bordet med den ternede dug, den røde vogn */
-body.ny-side #bestil .seg2 button svg.ny-hv-ikon{width:44px;height:44px;color:inherit;opacity:1;margin-bottom:2px}
+body.ny-side #bestil .seg2 button svg.ny-hv-ikon{width:52px;height:52px;color:inherit;opacity:1;margin-bottom:2px}
 body.ny-side #bestil .seg2 button:not(.on) svg.ny-hv-ikon{filter:saturate(.85)}
 .ny-side .ny-lev-ikon{width:56px;height:56px;background:var(--nk-creme);box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.25)}
 .ny-side .ny-lev-ikon svg.ny-lev-vogn{width:44px;height:44px;fill:none}
