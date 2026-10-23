@@ -7,6 +7,16 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ "HVAD SKAL VI HJÆLPE MED?" SOM HAVNENS VEJVISER + BESTIL MAD-PILLEN** (23/10 — kun /ny/).
+Mikkel: *"den her især skal fixes … tag et efter et"* og *"bestil mad-knappen er ikke opdateret ift.
+udseendet"*. Afsnittet har sit eget udtryk: dagslys over molen (lys himmel → creme, vand nederst),
+filmens mørke slutter i en bølgekant, og de seks veje er malede skilte på en træpæl (rød, havneblå,
+creme på skift) med husets egne tegninger — bord med lys, smørrebrødsbakke, det røde baglokale,
+cloche, den røde vogn, kalender med node. Links og tekster er de samme. ⚠️ #alt har sin egen creme i
+havnegrillen.css; et id slår to klasser, så reglerne her skriver `#alt.ny-vej`. Bestil mad-pillen
+nederst: teksten midt for, husets rød og To-go-posen med kransen i linsen. Næste: siderne, vejviseren
+linker til, én ad gangen.
+
 **/ny/ TOPPEN TILBAGE, RENE SKIFT, ISHUSETS FOTO** (23/10 — kun /ny/). Mikkel: *"alt det med
 Facebook og tidligere på havnen skal være i toppen stadig, og de ting de støttede"*, *"sektionsskiftet
 skal lige fixes, så de giver mening, og der ikke er en streg"* og om isen i historien: *"det andet

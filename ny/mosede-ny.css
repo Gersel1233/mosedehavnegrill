@@ -757,3 +757,59 @@ body.ny-side .nk-afsnit--selskab{background:linear-gradient(180deg,transparent 7
 .ny-side .ny-top{background:var(--cream)}
 .ny-side .ny-strib--top{background:none;padding-top:18px}
 .ny-side .ny-top .nyheder{background:none}
+
+/* ============================================================
+   "HVAD SKAL VI HJÆLPE MED?" SOM HAVNENS VEJVISER  (23/10)
+   Dagslys over molen efter filmens mørke: en træpæl med malede skilte,
+   der peger hen til hver ting — rød, havneblå og creme på skift.
+   ============================================================ */
+/* #alt har sin egen creme i havnegrillen.css (et id slår to klasser) — derfor id'et her */
+body.ny-side #alt.ny-vej{position:relative;isolation:isolate;overflow:hidden;padding:64px var(--pad) 120px;color:var(--ink);
+  background:linear-gradient(180deg,#cfe0ec 0%,#e6eef3 45%,#f6f1e8 100%)}
+/* filmens mørke slutter med en creme bølgekant — ingen streg */
+.ny-side .ny-vej::before{content:"";position:absolute;left:0;right:0;top:0;height:14px;background:radial-gradient(circle at 50% 0,#120d0a 10px,transparent 10.5px) 0 0/22px 14px repeat-x}
+/* vandet under molen */
+.ny-side .ny-vej::after{content:"";position:absolute;left:0;right:0;bottom:0;height:80px;z-index:-1;
+  background:radial-gradient(circle at 50% 100%,transparent 11px,#5f8fb4 11.5px) 0 0/30px 16px repeat-x,linear-gradient(#5f8fb4,#3f6f96 70%,#2a5f8f)}
+.ny-side .ny-vej .nk-over{color:var(--nk-blaa)}
+.ny-side .ny-vej .nk-over i{background:var(--nk-blaa);opacity:.4}
+.ny-side .ny-vej-titel{margin:12px 0 0;font:400 clamp(52px,15vw,120px)/.86 "Bebas Neue",sans-serif;letter-spacing:.005em;text-transform:uppercase;color:var(--ink)}
+.ny-side .ny-vej-titel span{display:block;color:var(--red)}
+.ny-side .ny-vej-linje{margin:14px 0 0;max-width:40ch;font:italic 400 17px/1.5 "Host Grotesk",system-ui,sans-serif;color:var(--ink2)}
+/* pælen og skiltene */
+.ny-side .ny-vejviser{position:relative;list-style:none;margin:34px 0 0;padding:0 0 0 22px;display:grid;gap:14px}
+.ny-side .ny-vejviser::before{content:"";position:absolute;left:4px;top:-18px;bottom:-110px;width:18px;border-radius:6px 6px 0 0;
+  background:linear-gradient(90deg,#7a5537,#a5774f 40%,#8a603f 70%,#6b4a32);box-shadow:inset 0 0 0 1px rgba(59,42,29,.4),4px 0 10px rgba(59,42,29,.25)}
+.ny-side .ny-vejviser::after{content:"";position:absolute;left:0;top:-28px;width:26px;height:14px;border-radius:50%;background:#6b4a32}
+.ny-side .ny-vejviser li{position:relative}
+.ny-side .ny-skilt{position:relative;display:flex;align-items:center;gap:12px;min-height:84px;padding:10px 46px 10px 14px;margin-left:-4px;color:var(--nk-creme);text-decoration:none;
+  background:var(--red);clip-path:polygon(0 0,calc(100% - 30px) 0,100% 50%,calc(100% - 30px) 100%,0 100%);
+  filter:drop-shadow(0 8px 10px rgba(36,26,23,.25));transition:transform .25s var(--spring)}
+.ny-side .ny-skilt::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 2px,transparent 2px 7px),linear-gradient(180deg,rgba(255,255,255,.14),transparent 40%,rgba(0,0,0,.12))}
+.ny-side .ny-skilt::after{content:"";position:absolute;left:8px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:rgba(0,0,0,.35);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.ny-side .ny-vejviser li:nth-child(3n+2) .ny-skilt{background:var(--nk-blaa)}
+.ny-side .ny-vejviser li:nth-child(3n) .ny-skilt{background:#f3e6cf;color:var(--ink)}
+.ny-side .ny-vejviser li:nth-child(odd) .ny-skilt{transform:rotate(-1deg)}
+.ny-side .ny-vejviser li:nth-child(even) .ny-skilt{transform:rotate(.8deg)}
+.ny-side .ny-skilt:hover,.ny-side .ny-skilt:focus-visible{transform:translateX(6px) rotate(0)}
+.ny-side .ny-skilt-ill{flex:none;display:grid;place-items:center;width:58px;height:58px;margin-left:10px;border-radius:50%;background:var(--nk-creme);box-shadow:0 0 0 3px rgba(0,0,0,.08)}
+.ny-side .ny-skilt-ill svg{width:44px;height:44px}
+.ny-side .ny-skilt-tekst{display:grid;gap:4px;min-width:0}
+.ny-side .ny-skilt-tekst b{font:400 25px/1 "Bebas Neue",sans-serif;letter-spacing:.03em;text-transform:uppercase}
+.ny-side .ny-skilt-tekst small{font:italic 400 13.5px/1.35 "Host Grotesk",system-ui,sans-serif;opacity:.88}
+.ny-side .ny-skilt-pil{position:absolute;right:28px;top:50%;transform:translateY(-50%);font:700 20px/1 "Host Grotesk",system-ui,sans-serif;opacity:.85}
+@media (min-width:821px){
+  body.ny-side #alt.ny-vej{--vg:max(28px,calc((100% - 1160px)/2));display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:0 70px;align-items:start;padding:110px var(--vg) 170px}
+  .ny-side .ny-vej-hoved{position:sticky;top:130px}
+  .ny-side .ny-vejviser{margin-top:0}
+  .ny-side .ny-vej-titel{font-size:clamp(64px,6.4vw,104px)}
+}
+
+/* "Bestil mad"-pillen i samme knap som resten: husets røde, teksten midt for, posen i linsen */
+body.ny-side .bestil{justify-content:center;padding:0 64px;font:600 17px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.005em}
+body.ny-side .bestil .ny-pille-linse{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  background:var(--nk-creme);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+body.ny-side .bestil .ny-pille-linse::before,body.ny-side .bestil .ny-pille-linse::after{display:none}
+body.ny-side .bestil .ny-pille-linse svg.ny-pille-pose{width:34px;height:34px}
+body.ny-side .bestil .ny-pille-linse svg.ny-krans2{width:14px;height:14px}
