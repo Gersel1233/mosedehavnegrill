@@ -10,7 +10,7 @@ body.ny-under{--roeg:rgba(28,20,16,.42);--roeg-kant:inset 0 1px 0 rgba(255,255,2
 body.ny-under #hd,body.ny-under #hd.stuck{background:transparent;box-shadow:none}
 body.ny-under #hd::before{display:none}
 body.ny-under #hd .logo,body.ny-under #hd.stuck .logo{display:inline-flex;align-items:center;height:44px;min-height:0;padding:0 18px;border-radius:999px;
-  color:#fff;font:500 19px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.015em;text-shadow:0 1px 10px rgba(0,0,0,.35);
+  color:#fff;font:500 21px/1 "Host Grotesk",system-ui,sans-serif;letter-spacing:-.015em;text-shadow:0 1px 10px rgba(0,0,0,.35);
   background:var(--roeg);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:var(--roeg-kant)}
 body.ny-under #hd .burger{background:#fff;color:#241a17}
 body.ny-under #hd .ny-nav,body.ny-under #hd .ny-bord{display:none}

@@ -101,19 +101,20 @@ test.describe('Historien om havnen', () => {
 
     await åbnSkal(page, '/index.html', { data: grunddata() });
     await expect(page.locator('#omos h2')).toContainText('ankeret');
-    await expect(page.locator('.about .hist-teaser')).toContainText('Ankeret');
+    /* ⚠️ FORSIDENS HISTORIE ER EN FILMSTRIMMEL SIDEN 23/10 (#omos .ny-tidslinje). */
+    await expect(page.locator('#omos .ny-tidslinje')).toContainText('Ankeret');
   });
 
   test('forsidens mørke afsnit fører derhen', async ({ page }) => {
     await åbnSkal(page, '/index.html', { data: grunddata() });
     await springIntroOver(page);
 
-    const knap = page.locator('.about .hist-teaser-knap');
+    const knap = page.locator('#omos .ny-hist-knap');
     await expect(knap).toHaveCount(1);
     expect(await knap.getAttribute('href')).toBe('historien.html');
     /* Teaseren lover 1929 — det, der ER dokumenteret (14/9). */
-    await expect(page.locator('.about .hist-teaser')).toContainText('1929');
-    await expect(page.locator('.about .hist-teaser')).not.toContainText('270 år');
+    await expect(page.locator('#omos .ny-tidslinje')).toContainText('1929');
+    await expect(page.locator('#omos')).not.toContainText('270 år');
   });
 
   /* ============================================================

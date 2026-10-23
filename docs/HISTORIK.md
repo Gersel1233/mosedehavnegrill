@@ -7,6 +7,22 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**MENUEN (DE TRE STREGER) OG BESTIL MAD, DER ER TIL AT FINDE** (23/10). Mikkel: *"lav bestil mad mere
+eksklusiv, da det hele godt kan ligne hinanden og være svært at navigere i — og lav de tre streger-
+tabben bedre"*, og bagefter: *"samme farve som før, ikke det sorte — men stadig til at finde"*.
+· Skuffen er ens på alle sider med skuffe (`ny/ark-ny.css`): øverst to store felter med husets
+  tegninger — Bestil mad (rød) og Book et bord (hvid) — og resten i tre grupper: Spis og drik, Til jeres
+  dag, Havnen. Sidens egen knap (Bestil smørrebrød, Spørg om en dato …) står nederst over Luk.
+· Bjælken på computeren har "Bestil mad" som den ENE røde knap (med posen); Book bord er hvid med rød skrift.
+· Knappen med de tre streger har husets egne streger (den nederste rød), uden ikonfilen.
+· Bjælken er den samme røgede glasbjælke på menukort, tapas, selskaber og bestil/ (topbjaelken.spec.js);
+  historien beholder sin sorte bjælke med vilje (historien.spec.js) og er undtaget i prøven.
+· Prøverne er kørt (menu, bjælker, jura, historien: 194 bestod). Tre prøver er skrevet om, fordi
+  designet er det, ikke fejlen: forsidens historie er en filmstrimmel (historien.spec.js), og navnet står
+  i glasset fra start på computeren (topbjaelken.spec.js, Mikkels "præcis den her").
+· Kortet under Find os: et rigtigt kortbillede af stedet (OpenStreetMap-data) kan ikke hentes fra
+  sessionens maskine (OSM er spærret i netværket). Knappen med Google Maps står, til et billede er der.
+
 **PRØVET MOD HUSETS EGNE PRØVER EFTER LANCERINGEN** (23/10). 20 prøvefiler (jura, bestilling, bord,
 forespørgsler, frokost, catering, baglokale, kalender, levering, isbygger, min-bestilling, admin):
 651 bestod. Det, der faldt, var tre slags: (1) prøver af det GAMLE design (glas, Figma-pladen, creme

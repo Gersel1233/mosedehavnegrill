@@ -162,6 +162,11 @@ test.describe('Mærket i toppen', () => {
     expect(await page.locator('.topbar').evaluate((e) => e.classList.contains('stuck')),
       'bjælken var klæbet, før der var rullet — prøven måler ingenting').toBe(false);
     const foer = await laes();
+    /* ⚠️ PÅ EN COMPUTER STÅR NAVNET OGSÅ ØVERST (23/10). Mikkels ord om bjælken over heroen:
+       "det skal være præcis den her" — hele vejen ned. Navnet står derfor i det røgede glas fra
+       start på computeren (ny/mosede-ny.css); på telefonen kommer det stadig med bjælken. */
+    const bred = (page.viewportSize() || { width: 0 }).width > 820;
+    if (bred) { expect(foer.synlig).toBe('visible'); return; }
     expect(foer.synlig, 'navnet står på ternet, hvor det er larm').toBe('hidden');
     expect(parseFloat(foer.gennemsigt)).toBe(0);
 
@@ -326,7 +331,11 @@ test.describe('Den faste bjælke er forsidens på alle sider', () => {
     const html = fs.readFileSync(path.join(ROD, 'index.html'), 'utf8');
     const skuffe = html.slice(html.indexOf('id="sheet"'), html.indexOf('id="sheet"') + 6000);
     const sider = [...new Set([...skuffe.matchAll(/href="([^"#:]+)"/g)].map((m) => m[1]))]
-      .filter((h) => h !== 'index.html').map((h) => '/' + h).concat('/bestil/');
+      .filter((h) => h !== 'index.html')
+      /* ⚠️ HISTORIEN HAR SIN EGEN SORTE BJÆLKE MED VILJE (historien.spec.js: "den faste bjælke er
+         sidens sorte, ikke husets creme"). Den kom i menuen 23/10 — dens bjælke er ikke en fejl. */
+      .filter((h) => h !== 'historien.html')
+      .map((h) => '/' + h).concat('/bestil/');
     expect(sider.length, 'vagt: menuens sider').toBeGreaterThanOrEqual(9);
     expect(sider, 'vagt: bord/ er i menuen').toContain('/bord/');
 

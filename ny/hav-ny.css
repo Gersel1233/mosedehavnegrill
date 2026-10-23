@@ -11,8 +11,8 @@ body.ny-hav{--roeg:rgba(28,20,16,.42);--roeg-kant:inset 0 1px 0 rgba(255,255,255
 
 /* ---------- bjælken: røget glas, ens i toppen og efter rul ---------- */
 body.ny-hav .topbar,body.ny-hav .topbar.stuck,body.ny-hav .topbar.solid{background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
-  padding-top:max(calc(env(safe-area-inset-top) + 12px),14px);padding-bottom:10px;margin-bottom:0}
-body.ny-hav .topbar .ordmaerke,body.ny-hav .topbar.stuck .ordmaerke{display:inline-flex;align-items:center;opacity:1;visibility:visible;height:42px;min-height:0;padding:0 18px;border-radius:999px;
+  padding-top:max(calc(env(safe-area-inset-top) + 12px),12px);padding-bottom:10px;margin-bottom:0}
+body.ny-hav .topbar .ordmaerke,body.ny-hav .topbar.stuck .ordmaerke{display:inline-flex;align-items:center;opacity:1;visibility:visible;height:44px;min-height:0;padding:0 18px;border-radius:999px;
   color:#fff;text-decoration:none;text-shadow:0 1px 10px rgba(0,0,0,.35);
   background:var(--roeg);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:var(--roeg-kant)}
 body.ny-hav .ny-nav,body.ny-hav .ny-bord{display:none}

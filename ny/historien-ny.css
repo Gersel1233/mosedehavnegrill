@@ -63,6 +63,9 @@ body.ny-hist .h-tilbage svg{color:#1b120d}
   body.ny-hist .kap-aar{font-size:clamp(64px,7vw,120px)}
 }
 /* Ishuset: bubblewafflen er et farvefoto — tonet, så den står som "dengang" mellem de gamle billeder */
-body.ny-hist #kap-ishuset .h-foto img{filter:sepia(.6) saturate(.75) contrast(1.06) brightness(.95)}
+/* sepiaen er pynt: med "reducér bevægelse" står billedet helt fremme, uden filter (historien.spec.js) */
+@media (prefers-reduced-motion:no-preference){body.ny-hist #kap-ishuset .h-foto img{filter:sepia(.6) saturate(.75) contrast(1.06) brightness(.95)}}
 /* isen står i venstre side af fotoet — udsnittet skal vise den (23/10) */
 body.ny-hist #kap-ishuset .h-foto img{object-position:18% 60%}
+/* "Rul ned" står over skærmens bund på en telefon (historien.spec.js målte 3 px for langt nede) */
+@media (max-width:820px){body.ny-hist .h-rul{position:relative;top:-14px}}
