@@ -7,6 +7,14 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/bord/ — BOOK ET BORD I FORSIDENS STIL** (23/10 — kun /ny/, bord/ er urørt). Første af vejviserens
+seks sider. En kopi af bord/ med `<base href="../../">` og noindex; bord.js er den samme, så bookingen
+lander i admin præcis som før. Bjælken er forsidens røgede glas, hovedet er Bebas på terrassefotoet
+med ternet bølgekant, og formularen er et trykt reservationskort: rødt hoved "Reserveret" med kransen,
+ternet kant, ◆-rubrikker, dagene som hvide billetter (den valgte rød). Stilen ligger i `ny/bord-ny.css`
+under `body.ny-under`, så de næste undersider kan bruge den samme. `ny/ny-under.js` sender links til
+forsiden og bord/ videre til /ny/-udgaverne. Book bord på /ny/ og i historien peger nu på /ny/bord/.
+
 **/ny/ BJÆLKEN ER DEN SAMME HELE VEJEN NED** (23/10 — kun /ny/). Mikkel: *"baren skifter markant,
 når man scroller ned … det skal den ikke, det skal være præcis den her"* (bjælken over heroen). Afløser
 "glas-pillerne" fra tidligere samme dag: hvid skrift, glas-pille med genvejene, rød Book bord og hvid
