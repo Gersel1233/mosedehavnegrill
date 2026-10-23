@@ -7,6 +7,14 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ BJÆLKEN ER DEN SAMME HELE VEJEN NED** (23/10 — kun /ny/). Mikkel: *"baren skifter markant,
+når man scroller ned … det skal den ikke, det skal være præcis den her"* (bjælken over heroen). Afløser
+"glas-pillerne" fra tidligere samme dag: hvid skrift, glas-pille med genvejene, rød Book bord og hvid
+Menu overalt; glasset er røget (`--roeg`), så den hvide tekst kan læses over de lyse afsnit, og
+ordmærket står i samme glas både over heroen og længere nede. Målt: Menu, ordmærke og genveje står på
+præcis samme pixel (y 18/16/18) i toppen og efter rul — intet hop. Telefonens afsnitsbjælke er samme
+røgede glas med hvid tekst.
+
 **/ny/ BJÆLKEN FLYDER, POSEN I MIDTEN** (23/10 — kun /ny/). Mikkel: *"kan baren så ikke også flyde
 på resten af siden?"* og om posen i Bestil mad: *"skal være i centrum og symmetrisk ift. knappen"*.
 Når man ruller, er der ingen creme flade på tværs mere: ordmærket, genvejene, Book bord og Menu
