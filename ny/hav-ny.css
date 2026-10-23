@@ -372,3 +372,10 @@ body.ny-hav .ny-hent[hidden]{display:none}
 body.ny-hav .ny-hent-ind{flex:1;display:grid;gap:2px;font-size:13.5px;color:var(--ink2)}
 body.ny-hav .ny-hent-ind b{font:400 19px/1 "Bebas Neue",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#241a17}
 body.ny-hav .ny-hent-vej{flex:none;display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d);text-decoration:none;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.45)}
+/* kalenderens filtre på én linje på telefonen (23/10) */
+@media (max-width:520px){
+  body.ny-kalside .chipset{flex-wrap:nowrap;justify-content:safe center;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+  body.ny-kalside .chipset button{flex:none;height:36px;padding:0 12px;font-size:15px}
+}
+/* ordmærket på kork og kraftpapir: det røgede glas blev brunt — mørkere glas */
+body.ny-kalside .topbar .ordmaerke,body.ny-frokostside .topbar .ordmaerke{background:rgba(28,20,16,.62)}

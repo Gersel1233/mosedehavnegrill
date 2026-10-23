@@ -64,3 +64,5 @@ body.ny-hist .h-tilbage svg{color:#1b120d}
 }
 /* Ishuset: bubblewafflen er et farvefoto — tonet, så den står som "dengang" mellem de gamle billeder */
 body.ny-hist #kap-ishuset .h-foto img{filter:sepia(.6) saturate(.75) contrast(1.06) brightness(.95)}
+/* isen står i venstre side af fotoet — udsnittet skal vise den (23/10) */
+body.ny-hist #kap-ishuset .h-foto img{object-position:18% 60%}

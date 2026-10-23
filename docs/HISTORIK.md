@@ -7,6 +7,18 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**EFTER LANCERINGEN: TOPPEN, FIND OS OG TELEFONEN** (23/10). Mikkel med skud fra sin iPhone.
+· Toppen hedder "Nyt fra havnen": følg-knapperne på én linje og de fire kort som lige store mærker med
+  husets tegninger (smiley-mærke og medalje i stedet for emojis) — fire i en række på computeren, to og to
+  på telefonen. Nyhedernes tomme luft er væk, når der ingen nyheder er.
+· Find os er husets trykte kort: rødt hoved, ternet kant, tiderne med prikker hen til klokkeslættet (i dag
+  markeret), en tegnet havn over adressen og en rød rute-knap. Den ternede stribe (dug--d) mellem
+  vejviseren og fotoet er væk; vandet løber i en bølge ind over fotoet.
+· Telefonen: afsnitsbjælken er væk (den lå over indholdet); ordmærket stak 18 px ud over kanten efter rul
+  (computerens -18 px vandt); is-polaroiderne gik ud over skærmen i Safari (1fr → minmax(0,1fr)); isen i
+  filmstrimlen og i historien var skåret væk (udsnittet flyttet til venstre, hvor isen står); kalenderens
+  filtre står på én linje.
+
 **🚀 DET NYE DESIGN ER LANCERET** (23/10). Mikkel: *"nu skal alt pushes live og hænge sammen med hele
 systemet og virke, til det kan lanceres i dag — gør det nu"*. Prøven under /ny/ er flyttet ud på de
 rigtige adresser: forsiden (index.html), historien.html, bord/, h-smorrebrod.html, h-baglokale.html,
