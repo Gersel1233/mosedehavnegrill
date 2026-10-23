@@ -7,6 +7,19 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**HELE REJSEN PRØVET, SIDE FOR SIDE** (23/10, aften). Mikkel: *"alt ende til ende — også med de nye steder —
+og alt man kan administrere, test lige det hele"*. tests/hele-rejsen.spec.js sætter de to halvdele sammen,
+som før kun var prøvet hver for sig: gæsten sender fra siden, admin åbnes i en ny fane, og sagen står i den
+rigtige fane. 11 rejser × telefon og computer = 22 prøver, alle grønne:
+· forsiden, smørrebrødssiden, tapassiden og QR ved bordet → Bestillinger
+· bord/ → Borde · h-selskaber og h-frokost → Forespørgsler · h-baglokale → Baglokalet (egen fane, ejerens ønske)
+· h-kalender (reservation) → Tilmeldinger
+· og den anden vej: en ny ret i admin står på menukortet med sin pris; et arrangement, arrangøren udgiver,
+  står på kalendersiden og forsidens musikbanner.
+Cateringsiden har ingen formular (ejerens valg: én knap til mailen) og sender derfor intet til admin.
+Undervejs viste prøven to ting, siden gør rigtigt: selskabet kræver en mail (tilbuddet sendes dér), og
+Bestillinger viser "I dag" fra start — en bestilling til søndag står under "Alle dage".
+
 **SE MENUKORTET, SOM GÆSTEN SER DET — FRA ADMIN** (23/10, aften). Mikkel: *"hvis de tilføjer ting til
 menukortet — bliver det så længere, og følger skriften, kortet og tilføjelserne automatisk præcis, hvordan
 menukortene ser ud nu — og hvorhenne de vil have det, og et preview"*.
