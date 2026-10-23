@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/h-smorrebrod.html: HUSETS EGNE TEGNINGER I STEDET FOR STANDARDIKONER** (23/10 — kun /ny/). Mikkel om
+kalender-, lastbil- og hjerteikonet: *"kan siderne blive mindre generiske, og de her fixes"*. Notitserne har
+nu tegninger i vejviserens stil: et rødt æggeur med den gule time, den røde vogn med ternet bånd (samme
+som vejviserens Frokostordning) og en rugbrødsskive med et dannebrogsflag — flaget, der markerer en
+særlig bestilling. Listens 🍞 er en tegnet skive smørrebrød. Det ternede bånd er tegnet med firkanter,
+ikke et SVG-mønster: `url(#…)` og `<base>` er en dårlig blanding.
+
 **/ny/h-smorrebrod.html — SMØRREBRØD UD AF HUSET SOM AVISFORSIDE** (23/10 — kun /ny/, den rigtige side er
 urørt). Anden af vejviserens seks. Smørrebrødet går ud af huset i avispapir (forretningens egne fotos),
 så siden er sat som en forside: masthead med dobbelt streg, "SMØRREBRØD / UD AF HUSET" i Bebas, de tre
