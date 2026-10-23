@@ -240,6 +240,11 @@
      dag; ny/mosede-ny.js tegner dem af den samme data, forside.js henter.
      #idag og #ugen nedenfor bliver stående (forside.js skriver i dem), men
      vises ikke på /ny/. -->
+<!-- /ny/ AFSNITSBJÆLKEN (23/10). Mikkel: "nemmere at navigere". Klæber under
+     topbjælken, når heroen er rullet forbi, og viser, hvor man er (ny/mosede-ny.js). -->
+<nav class="ny-afsnitbar" id="nyAfsnitbar" aria-label="Afsnit på siden">
+  <a href="#smoerrebroed">Smørrebrød</a><a href="#dagens">Dagens ret</a><a href="#bestil">Bestil mad</a><a href="#menu">Menukort</a><a href="#tapas">Tapas</a><a href="#isen">Is</a><a href="#selskab">Selskab</a><a href="#find">Find os</a>
+</nav>
 <div class="dug dug--top" aria-hidden="true"></div>
 <!-- /ny/ AFSNIT 1, TREDJE UDGAVE (22/10). Mikkel: "det slet ikke cafe agtig
      … de vil gerne være kendt for at lave gode smørrebrød og ja cafe". Afsnittet
@@ -555,7 +560,7 @@
     </div>
   </article>
 
-  <article class="nk nk--tapas tapasec">
+  <article class="nk nk--tapas tapasec" id="tapas">
     <header class="nk-hoved">
       <div class="nk-over">Nyhed på havnen<i></i></div>
       <h2 class="nk-titel">Tapas</h2>

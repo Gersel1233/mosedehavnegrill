@@ -21,7 +21,9 @@
   function rulTil(el, luft) {
     if (!el) return;
     var bar = document.querySelector('.topbar');
-    var y = el.getBoundingClientRect().top + scrollY - (bar ? bar.offsetHeight : 0) - (luft || 8);
+    var ab = document.getElementById('nyAfsnitbar');
+    var abH = ab && getComputedStyle(ab).display !== 'none' ? ab.offsetHeight : 0;
+    var y = el.getBoundingClientRect().top + scrollY - (bar ? bar.offsetHeight : 0) - abH - (luft || 8);
     scrollTo({ top: y, behavior: roligt() ? 'auto' : 'smooth' });
   }
 
@@ -33,6 +35,32 @@
     var sæt = function () { document.documentElement.style.setProperty('--ny-top', tb.offsetHeight + 'px'); };
     sæt();
     if (window.ResizeObserver) new ResizeObserver(sæt).observe(tb);
+  })();
+
+  /* AFSNITSBJÆLKEN: hvor er jeg? Det afsnit, der står midt på skærmen,
+     lyser i bjælken (og i topbjælkens genveje på en computer), og bjælken
+     ruller selv, så det aktive navn kan ses. */
+  (function () {
+    var bar = document.getElementById('nyAfsnitbar');
+    var links = [].slice.call(document.querySelectorAll('#nyAfsnitbar a, .ny-nav a'));
+    if (!links.length || !('IntersectionObserver' in window)) return;
+    var aktiv = null;
+    function sæt(id) {
+      if (id === aktiv) return;
+      aktiv = id;
+      links.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + id); });
+      var på = bar && bar.querySelector('a.on');
+      if (på && bar.scrollWidth > bar.clientWidth) {
+        var r = bar.getBoundingClientRect(), v = på.getBoundingClientRect();
+        bar.scrollTo({ left: bar.scrollLeft + v.left - r.left - (r.width - v.width) / 2, behavior: roligt() ? 'auto' : 'smooth' });
+      }
+    }
+    var ids = [];
+    links.forEach(function (a) { var id = a.getAttribute('href').slice(1); if (id && ids.indexOf(id) === -1) ids.push(id); });
+    var io = new IntersectionObserver(function (poster) {
+      poster.forEach(function (p) { if (p.isIntersecting) sæt(p.target.id); });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    ids.forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
   })();
 
   /* ⚠️ SVG'ens egne #-henvisninger (kransens ringtekst og ankre) ville

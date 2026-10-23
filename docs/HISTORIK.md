@@ -7,6 +7,17 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ ISEN SOM ISBAR + AFSNITSBJÆLKEN** (23/10 — kun /ny/). Mikkel: *"det ligner alt sammen
+hinanden … mere unikt og nemmere at navigere"* — og straks efter: *"det var kun isen, der skulle
+se lidt anderledes ud … de andre sektioner er gode nu, rør dem ikke"*. Isen er nu en isbar: en
+rød-hvid stribet markise med bølgekant fra kant til kant (i stedet for dugen), lyserød bund,
+"IS & SØDT" i rødt, fotoerne som skæve polaroids og prislisten på et hvidt kort. Menukortet og
+tapassen er UÆNDREDE (en prøve på et nyt udtryk for dem blev rullet tilbage, før den gik op;
+tapaskortet har bare fået id="tapas"). Nyt: AFSNITSBJÆLKEN på telefonen — klæber under
+topbjælken, viser afsnittene (Smørrebrød, Dagens ret, Bestil mad, Menukort, Tapas, Is, Selskab,
+Find os) og lyser det, man er i; på en computer lyser topbjælkens genvej. Links til #dagens
+skjules sammen med afsnittet, når der ingen retter er.
+
 **/ny/ ISEN SOM HUSETS STOLTHED** (23/10 — kun /ny/). Mikkel: *"ja tag isen nu … det er noget af
 deres stolthed"*. Det største kort på siden: "Husets stolthed" og kort 05's eget hoved og linje
 ("IS & SØDT", "Kugleis og cremet softice, sprøde bubblewaffles, churros og hjemmelavede
