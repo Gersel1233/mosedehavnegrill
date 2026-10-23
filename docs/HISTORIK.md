@@ -7,6 +7,16 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/h-baglokale.html — AFTENEN I BAGLOKALET** (23/10 — kun /ny/, den rigtige side er urørt). Tredje af
+vejviserens seks. Fotoet viser lokalet om aftenen med lyskæden på trævæggen, så siden er det: mørkt træ,
+en lyskæde over toppen (pærerne gløder langsomt; slået fra ved "reducer bevægelse"), navnet på en
+messingplade som på en dør, notitserne med husets tegninger (det lange bord med rød dug, smørrebrød og
+fadøl, kuvert med serviet), prisen på et bordkort med prikkede linjer og det gratis som et GRØNT stempel
+(grøn er husets "det er på plads" — rød er pris og tryk), udstyret som messingmærker og forespørgslen
+som husets trykte kort. Samme forespoergsel-motor; datoer, priser og pladser hentes stadig af
+`data-vilk`. Det trykte kort i `ny/hav-ny.css` gælder nu enhver `.panel:has(> .rk-hoved)`, og
+undersiderne bygges af `byg/nykopi.py`-mønstret (base, noindex, bjælke, links → /ny/).
+
 **/ny/h-smorrebrod.html: FORSIDENS FOTOS I BESTILLINGEN** (23/10 — kun /ny/). Mikkel: *"brug de normale
 billeder for bestillingen også her"*. Den tegnede skive i listen er afløst af de samme fotos som i
 forsidens bestilling (smoer-bakke.jpg til Smørrebrød, smoer-havn.jpg til Håndmadder). Ren CSS: rækkerne
