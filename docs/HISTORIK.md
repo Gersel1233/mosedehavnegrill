@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ ISEN SOM HUSETS STOLTHED** (23/10 — kun /ny/). Mikkel: *"ja tag isen nu … det er noget af
+deres stolthed"*. Det største kort på siden: "Husets stolthed" og kort 05's eget hoved og linje
+("IS & SØDT", "Kugleis og cremet softice, sprøde bubblewaffles, churros og hjemmelavede
+pandekager — til en tur langs vandet", vaerktoej/kortene.py), tre store fotos (softice, ishorn,
+bubblewaffle), "◆ Fra lugen" med prislisten som på papiret (navn, prikket linje, rød Bebas-pris —
+visIs() i forside.js skriver den stadig), "Bestil is" (fører ned til isen i bestillingen, målt) og
+"Se hele is-menukortet", og isvognen i en boks med ejerens ord. ⚠️ Isfilmen er IKKE brugt: den
+har det gamle navn "Mosede Havnegrill & Ishus" brændt ind — skal laves om, hvis den skal på.
+
 **/ny/ MENUKORTET OG TAPASSEN SOM TRYKTE KORT** (23/10 — kun /ny/). Mikkel: *"nu den her
 sektion"* (menukortets kort med emoji-chips og tapaskortet). Begge er nu kort som smørrebrødet:
 rødt hoved med kransen, ternet kant, ◆-rubrikker. MENUKORT: fotoet af de trykte kort og "På

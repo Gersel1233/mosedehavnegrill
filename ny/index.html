@@ -598,88 +598,46 @@
      ⚠️ FOTOENE ER LAZY — de står tæt på tapasfotoet, og fartprøven
      kender dem. De er menukortets egne stemningsbilleder, og
      alt-teksten siger kun, hvad de viser. -->
-<section id="isen" class="isafsnit">
-  <div class="mid rev"><h2>Is ved vandet</h2>
-  <p class="sub" style="max-width:32ch">Softice, kugleis og vafler fra lugen, med bådene lige bag ved.</p>
-  <!-- ============================================================
-       EJERENS EGEN TEKST TIL "IS VED VANDET"  (21/9)
-       ------------------------------------------------------------
-       ⚠️ ORDRET FRA JIM GJERMANDSENS BESKED 20/9, under hans egen
-       overskrift "Is ved vandet": *"Køb din is på havnen, nyd den
-       ved vandkanten, på gåturen ved havnen, eller køb den med hjem
-       i en Thermo box med løse vafler og Toppings."*
-
-       Thermoboksen og de løse vafler er varer på kortet
-       (Thermobox 80,-, løs vaffel 7,-, glutenfri 10,-) — teksten
-       lover altså ikke noget, der ikke kan købes.
-       ============================================================ -->
-  <p class="sub rev d1" style="max-width:46ch">Køb din is på havnen og nyd den ved
-    vandkanten eller på gåturen. Du kan også tage den med hjem i en thermoboks
-    med løse vafler og toppings.</p></div>
-  <div class="is-vitrine rev d1">
-    <!-- ISENS BAAND ER FJERNET  (25/9). Her stod et ternet roedt baand
-         med en tegnet is og ordet "Ishuset" i kursiv, bygget 24/9 som en
-         kopi af dagens rets baand. Mikkels ord med et skaermbillede af
-         det: *"det lige praecis saadan noget her claude lignende der skal
-         vaek ogsaa"*. Kortet begynder nu paa fotoerne. Laeg det ikke
-         tilbage uden at spoerge — og dagens rets "I dag"-baand har samme
-         form, men er IKKE fjernet: det blev ikke vist, og det er bygget
-         paa hans eget oenske om en markoer (se docs/HISTORIK.md 25/9). -->
-    <div class="is-fotos">
-      <img src="billeder/havn-softice.jpg?v=__V__" loading="lazy" decoding="async" width="720" height="1080"
-           alt="En softice i vaffel med chokoladesauce og drys på et træbord ved vandet, med bådene i havnen bag ved">
-      <img src="billeder/menu-kugleis.jpg?v=__V__" loading="lazy" decoding="async" width="720" height="1080"
-           alt="En bubblewaffle med is, chokolade og hakkede nødder holdt op foran havnen">
+<!-- /ny/ ISEN SOM HUSETS STOLTHED (23/10). Mikkel: "det er noget af deres stolthed"
+     (ejerens ord 15/9: "is er en kæmpe stolthed"). Det største kort på siden, i de
+     trykte korts sprog: hovedet er kort 05's eget ("IS & SØDT" og dets linje fra
+     vaerktoej/kortene.py), tre store fotos, prislisten og knappen, som forside.js'
+     visIs() stadig skriver (data-is-priser, data-is-knap, data-is-kortlink), og
+     isvognen med ejerens egne ord. ⚠️ Isfilmen (billeder/isfilm*.mp4) er IKKE brugt:
+     den har det gamle navn "Mosede Havnegrill & Ishus" brændt ind. -->
+<section id="isen" class="isafsnit nk-afsnit nk-afsnit--is">
+  <article class="nk nk--is">
+    <header class="nk-hoved">
+      <div class="nk-over">Husets stolthed<i></i></div>
+      <h2 class="nk-titel">Is <span>&amp; sødt</span></h2>
+      <p class="nk-slogan">Kugleis og cremet softice, sprøde bubblewaffles, churros og hjemmelavede pandekager — til en tur langs vandet.</p>
+      <span class="nk-logo" aria-hidden="true"></span>
+    </header>
+    <div class="nk-kant" aria-hidden="true"></div>
+    <div class="nk-is-fotos">
+      <figure class="nk-foto"><img src="billeder/havn-softice.jpg" width="720" height="1080" loading="lazy" decoding="async" alt="En softice i vaffel med chokoladesauce og drys på et træbord ved vandet, med bådene i havnen bag ved"></figure>
+      <figure class="nk-foto"><img src="billeder/havn-kugleis.jpg" width="720" height="1080" loading="lazy" decoding="async" alt="Et ishorn med tre kugler holdt op foran bådene i havnen"></figure>
+      <figure class="nk-foto"><img src="billeder/menu-kugleis.jpg" width="720" height="1080" loading="lazy" decoding="async" alt="En bubblewaffle med is, chokolade og hakkede nødder holdt op foran havnen"></figure>
     </div>
-    <div class="is-kort">
-      <ul class="is-priser" data-is-priser hidden></ul>
-      <a class="g solid blk" href="m-menukort.html" data-is-knap><span aria-hidden="true">🍦 </span><span data-is-ord>Se iskortet</span><span class="sheen"></span></a>
-      <!-- ============================================================
-           GENVEJ TIL ISEN I MENUKORTET  (21/9)
-           ------------------------------------------------------------
-           Ejerens ord: isen er det, de er stolte af, og den lå langt
-           nede i menukortet — "Mad" fylder femten kategorier, før
-           "Is og dessert" begynder.
-
-           ⚠️ DEN VISES KUN, NÅR KNAPPEN OVENOVER SIGER "BESTIL IS".
-           Kan isen ikke bestilles, peger knappen selv på
-           menukortet, og så ville de to linjer sige det samme to
-           gange. js/skal/forside.js styrer det.
-
-           ⚠️ OG HOPPET VIRKER KUN, FORDI menukortet HÅNDTERER
-           HASHEN EFTER OPTEGNINGEN. Kortet tegnes af JavaScript,
-           så #afsnit-is findes ikke, når browseren selv prøver at
-           rulle — se noten i js/skal/menukort.js. Uden den ville
-           linket her lande i toppen og ligne noget i stykker. -->
-      <a class="is-kortlink skjult" href="m-menukort.html#afsnit-is" data-is-kortlink>Se hele is-menukortet <span aria-hidden="true">→</span></a>
-      <p class="fine">Kom forbi lugen. Isen er altid til rådighed.</p>
+    <div class="nk-krop nk-is-krop">
+      <div class="nk-tekst">
+        <h3 class="nk-rubrik"><span aria-hidden="true">◆</span>Fra lugen</h3>
+        <p class="nk-is-intro">Køb din is på havnen og nyd den ved vandkanten eller på gåturen. Du kan også tage den med hjem i en thermoboks med løse vafler og toppings.</p>
+        <ul class="is-priser nk-is-priser" data-is-priser hidden></ul>
+        <div class="nk-knapper">
+          <a class="nk-knap" href="m-menukort.html" data-is-knap><span data-is-ord>Se iskortet</span></a>
+          <a class="nk-knap nk-knap--lys is-kortlink skjult" href="m-menukort.html#afsnit-is" data-is-kortlink>Se hele is-menukortet →</a>
+        </div>
+        <p class="nk-note"><span aria-hidden="true">◆</span> Kom forbi lugen. Isen er altid til rådighed.</p>
+      </div>
+      <aside class="nk-boks nk-isvogn">
+        <small>Til festen</small>
+        <b>Isvognen</b>
+        <p class="nk-kursiv">Book vores isvogn til festen, eller lej isfryseren med tilbehør.</p>
+        <a class="nk-knap nk-knap--lys nk-knap--lille" href="h-selskaber.html">Skriv til os med jeres ønsker →</a>
+      </aside>
     </div>
-  </div>
-
-  <!-- ============================================================
-       ISVOGNEN OG ISFRYSEREN  (21/9)
-       ------------------------------------------------------------
-       ⚠️ EJERENS EGNE ORD, Jim Gjermandsen 20/9: *"Book vores
-       isvogn med div tilkøbs muligheder. Eller lej vores isfryser
-       med tilbehør etc. Alt er muligt, kontakt os med dine
-       ønsker."*
-
-       ⚠️ INGEN PRIS. Han oplyser ingen, og et gæt på en udlejning
-       er værre end ingen pris: gæsten tror, hun ved, hvad det
-       koster. Derfor fører linjen hen, hvor man kan spørge —
-       ikke til et tal, vi har fundet på.
-
-       ⚠️ OG DEN STÅR I ISAFSNITTET, ikke som sit eget afsnit.
-       Ejernes eget punkt fra 20/9 om siden: jo flere ting, der
-       kræver teknik, jo mere er der at komme igennem for gæsten.
-       To linjer under isen er nok til, at den, der leder efter
-       det, finder det.
-       ============================================================ -->
-  <div class="mid rev d2">
-    <p class="sub" style="max-width:48ch">Book vores isvogn til festen,
-      eller lej isfryseren med tilbehør.
-      <a href="h-selskaber.html">Skriv til os med jeres ønsker</a>.</p>
-  </div>
+  </article>
 </section>
 
 <!-- ============================================================
