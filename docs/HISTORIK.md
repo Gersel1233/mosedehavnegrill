@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ TOPPEN TILBAGE, RENE SKIFT, ISHUSETS FOTO** (23/10 — kun /ny/). Mikkel: *"alt det med
+Facebook og tidligere på havnen skal være i toppen stadig, og de ting de støttede"*, *"sektionsskiftet
+skal lige fixes, så de giver mening, og der ikke er en streg"* og om isen i historien: *"det andet
+billede … og passe bedre ind"*. Striben (sociale medier, musik, Facebook, smiley, Greve-prisen, Knæk
+Cancer) og nyhederne med "Tidligere på havnen" står igen lige under heroen (`.ny-top`), som på den
+rigtige forside. Skiftene: dugen mellem isen og selskabet er væk — isbarens lyserøde buer drypper ned
+over lyskæden, og festaftenen glider ud i filmens mørke. Ishuset (historiesiden og forsidens
+"Dengang"-ramme) bruger igen bubblewafflen (historie-is.jpg), tonet i sepia, så den står som "dengang".
+
 **/ny/historien.html — HISTORIESIDEN I SAMME FILM** (23/10 — kun /ny/, noindex; historien.html er
 urørt). Mikkel: *"tag nu inde i den og brug det gamle is billede i stedet"*. En kopi af historiesiden
 med `<base href="../">` og eget lag (`ny/historien-ny.css`, scopet til body.ny-hist): overskrifter og

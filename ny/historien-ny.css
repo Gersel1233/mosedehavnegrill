@@ -62,3 +62,5 @@ body.ny-hist .h-tilbage svg{color:#1b120d}
   body.ny-hist .h-foto{margin-left:0;margin-right:0}
   body.ny-hist .kap-aar{font-size:clamp(64px,7vw,120px)}
 }
+/* Ishuset: bubblewafflen er et farvefoto — tonet, så den står som "dengang" mellem de gamle billeder */
+body.ny-hist #kap-ishuset .h-foto img{filter:sepia(.6) saturate(.75) contrast(1.06) brightness(.95)}
