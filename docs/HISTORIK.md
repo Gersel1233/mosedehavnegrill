@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/ SELSKAB SOM FESTAFTEN** (23/10 — kun /ny/). Mikkel: *"det ligner stadig meget det samme
+— ligesom issiden, lav den lidt mere unik"*. Som isen fik sin isbar, får selskabet sin aften:
+havneblå nattehimmel, en lyskæde med glødende pærer fra kant til kant (SVG i CSS, gløder svagt;
+står stille ved reduceret bevægelse), "SELSKAB & CATERING" i creme og varmt gult, tegningerne på
+creme fliser, fotoerne med varm glød, løfterne på creme kort og den røde "Skal vi tage snakken?"
+som festens lys. Teksterne er uændrede.
+
 **/ny/ SELSKABETS EGNE TEGNINGER** (23/10 — kun /ny/). Mikkel om stregikonerne i "Vi gør os
 umage": *"fix dem her og gør siden lidt mere unik"*. Seks små tegninger i samme stil som posen og
 bordet (brun streg, husets rød og havneblå): rugbrød på bræt (hjemmelavet), skipperkasket med
