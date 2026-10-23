@@ -349,3 +349,26 @@ body.ny-kalside .tidligere{border-radius:3px;background:#fffdf8;box-shadow:0 2px
 body.ny-kalside .tidligere summary{font:400 21px/1 "Bebas Neue",sans-serif;letter-spacing:.04em;text-transform:uppercase}
 body.ny-kalside .tidl .when{font:400 14px/1 "Bebas Neue",sans-serif;letter-spacing:.14em}
 body.ny-kalside .tidl h4{font:400 22px/1.05 "Bebas Neue",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+
+/* ---------- valg med tegninger (levering/afhentning) — som forsidens bestilling ---------- */
+body.ny-hav .seg2 button:has(.ny-hv-ikon){height:auto;min-height:104px;flex-direction:column;gap:4px;padding:12px 8px 12px;border-radius:18px;font-weight:600}
+body.ny-hav .seg2 button .ny-hv-ikon{width:52px;height:52px;margin-bottom:2px;opacity:1;filter:saturate(.85)}
+body.ny-hav .seg2 button.on .ny-hv-ikon{filter:none}
+body.ny-hav .seg2 button .ny-hv-ikon svg.ny-krans{opacity:1;margin:0}
+body.ny-hav .seg2 button[data-under]::after{content:attr(data-under);font:italic 400 12.5px/1.2 "Host Grotesk",system-ui,sans-serif;color:var(--muted)}
+body.ny-hav .seg2 button.on[data-under]::after{color:var(--red-d)}
+/* adressetjekket: grønt på ruten, messing uden for, neutralt ellers */
+body.ny-hav .ny-levtjek{display:flex;gap:9px;margin:10px 0 0;padding:11px 13px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1);
+  font-size:13.5px;line-height:1.45;color:var(--ink2)}
+body.ny-hav .ny-levtjek::before{content:"";flex:none;width:16px;height:16px;margin-top:1px;border-radius:50%;background:#e4d3c8}
+body.ny-hav .ny-levtjek--ja{background:rgba(31,122,74,.09);box-shadow:none;color:#17603a}
+body.ny-hav .ny-levtjek--ja::before{background:#1f7a4a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2l2.3 2.3 4.7-5' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px}
+body.ny-hav .ny-levtjek--spoerg{background:rgba(232,196,143,.25);box-shadow:none;color:#6b4a22}
+body.ny-hav .ny-levtjek--spoerg::before{background:#c99a4a}
+body.ny-hav .ny-levtjek[hidden]{display:none}
+/* hent selv: hvor lugen er */
+body.ny-hav .ny-hent{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
+body.ny-hav .ny-hent[hidden]{display:none}
+body.ny-hav .ny-hent-ind{flex:1;display:grid;gap:2px;font-size:13.5px;color:var(--ink2)}
+body.ny-hav .ny-hent-ind b{font:400 19px/1 "Bebas Neue",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#241a17}
+body.ny-hav .ny-hent-vej{flex:none;display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;color:var(--red-d);text-decoration:none;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.45)}

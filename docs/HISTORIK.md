@@ -7,6 +7,17 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**/ny/h-frokost.html: "LEVERING ELLER AFHENTNING?" TÆNKER MED** (23/10 — kun /ny/). Mikkel: *"fix og gør den
+lidt bedre, mere intelligent og dygtigere"*. De to valg har forsidens tegninger (den røde vogn, papirposen
+med kransen) og en linje under ("Vi kører den ud" / "Ved lugen på havnen"). Leveres den, tjekkes
+adressen, MENS den skrives: postnummeret slås op i forretningens eget leveringsområde med
+`MosedeRegler.leveringSvar` — samme regel som bestillingen — og svaret står grønt ("2690 Karlslunde
+ligger på vores rute") eller i messing ("… uden for vores faste område. Længere ude kører vi efter aftale,
+så vi ringer om det"). Uden adresse står området. Hentes den, står lugens adresse med "Find vej".
+`ny/frokost-ny.js`; siden henter nu også js/bestil-regler.js og ny/ny-data.js (ingen ekstra tur til
+databasen — data kommer fra forespoergsel.js' egen hentning). forespoergsel.js er urørt. Samtidig sætter
+`ny/ny-under.js` sidens adresse foran SVG'ernes #-henvisninger (kransens ringtekst), som forsiden gør.
+
 **/ny/h-kalender.html — OPSLAGSTAVLEN VED LUGEN** (23/10 — kun /ny/, den rigtige side er urørt). Sidste af
 vejviserens seks. Kork hele vejen ned; overskriften er en plakat med dobbelt rød ramme og to tegnestifter,
 filtrene er papirmærker (det valgte rødt), arrangementerne er opslag med en rød BILLET til datoen

@@ -34,6 +34,11 @@
       if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); history.replaceState(null, '', h); }
     });
   }
+  /* SVG'ens egne #-henvisninger (kransens ringtekst) peger med <base> på roden i
+     nogle browsere — de får sidens egen adresse foran, som på /ny/-forsiden. */
+  document.querySelectorAll('svg [href^="#"]').forEach(function (el) {
+    el.setAttribute('href', location.href.split('#')[0] + el.getAttribute('href'));
+  });
   function alle(rod) { (rod.querySelectorAll ? rod : document).querySelectorAll('a[href]').forEach(ret); }
   alle(document);
   new MutationObserver(function (poster) {
