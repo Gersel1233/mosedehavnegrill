@@ -7,6 +7,26 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**SMS TIL GÆSTEN — BYGGET, MEN SLUKKET** (24/10). Mikkel: *"beskeder … det samme [som spiis], men
+selvfølgelig til deres forskellige principper med levering og hvornår det præcis er klar"*. Hans valg:
+kun **afhentning og spis her**, og **byg det slukket**. Ejerens nej 15/9 (*"for dyrt i længden"*) står,
+til ejeren selv slår det til. INTET ER KØRT I PRODUKTIONEN, og intet er lagt op som Edge Function.
+· Gæsten får en bekræftelse med det samme (nummer, dag, klokkeslæt og et link til min-bestilling/) og en
+  påmindelse ca. 30 min. før: "klar ved lugen — sig nummer M-0047" (spis her: "kom op til lugen"; tapas:
+  "jeres tapasfad"; står den til Klar: "er klar ved lugen"). Ikke ved bordet (QR), ikke levering, ikke
+  ved afviste/hentede/udeblevne/slettede bestillinger, og ingen påmindelse, hvis der er bestilt under en
+  time før. Afvis er stadig et opkald.
+· Hver besked er én sms (≤160 tegn, kun GSM-tegn). Det giver 2 sms'er pr. bestilling.
+· Teknik: `supabase/sms.sql` (tabellen sms_sendt, udløseren sms_ny_bestilling og pg_cron hvert 5. min.)
+  og `supabase/funktioner/send-sms.ts`. **Bestillingen røres aldrig**: et sms-stempel på rækken ville give
+  en logbogslinje pr. sms. Adressen og hemmeligheden lånes fra push-webhooken, som ugepaamindelse.sql gør.
+  Der sendes intet, før SMS_AKTIV = ja.
+· Prøvet: proev-sms.sql 9 af 9 (set fejle: uden bord-filteret falder 7, uden fejl-værnet falder 3). Hele
+  SQL-runden: 66 filer, 1873 bestod, 0 fejlede. sql-mappen.spec.js 10 af 10. Teksterne og funktionen er
+  prøvet med en falsk database og en falsk sms-tjeneste (38 + 11 prøver). Det fangede én ægte fejl: en
+  bestilling lagt 23.53 til 00.33 fik en påmindelse, fordi den krydsede datoen. Nu regnes der i rigtig tid.
+· Opskriften til den dag, ejeren siger ja: `docs/SMS-OPSAETNING.md`.
+
 **HELE REJSEN PRØVET, SIDE FOR SIDE** (23/10, aften). Mikkel: *"alt ende til ende — også med de nye steder —
 og alt man kan administrere, test lige det hele"*. tests/hele-rejsen.spec.js sætter de to halvdele sammen,
 som før kun var prøvet hver for sig: gæsten sender fra siden, admin åbnes i en ny fane, og sagen står i den

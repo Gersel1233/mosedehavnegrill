@@ -63,7 +63,17 @@ og derfra:
   → arrangoer.sql
   → kategori-rolle.sql
   → levering-store-17-10.sql
+  → sms.sql
 ```
+
+**⚠️ `sms.sql` (24/10) — IKKE KØRT I PRODUKTIONEN. Bygget SLUKKET** (Mikkels valg 24/10:
+*"byg det slukket"*; ejerens nej til sms 15/9 står, til han selv slår det til). Sms til
+gæsten ved afhentning og spis her: bekræftelse med det samme og påmindelse ca. 30 min. før
+— aldrig ved bordet (QR) og aldrig levering. Låner push-webhookens adresse og
+hemmelighed (som `ugepaamindelse.sql`), så den skal stå efter `push.sql`, og webhooken
+`push_bestillinger` skal findes. Opskriften er `docs/SMS-OPSAETNING.md`; Edge
+Function'en er `supabase/funktioner/send-sms.ts`. Prøven er `proev-sms.sql` — 9 af 9.
+Set fejle: uden bord-filteret falder nr. 7, uden fejl-værnet nr. 3.
 
 **⚠️ `levering-store-17-10.sql` (17/10) — KØRT I PRODUKTIONEN 18/10 (Mikkel: *"kørt"*; ikke
 målt bagefter — Supabase-forbindelsen var nede i sessionen). SKAL STÅ EFTER
