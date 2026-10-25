@@ -117,6 +117,31 @@ test.describe('Historien om havnen', () => {
     await expect(page.locator('#omos')).not.toContainText('270 år');
   });
 
+  /* ⚠️ HULLERNE FØLGER MED HELE VEJEN  (25/10). Mikkel: "kassettebåndet i
+     historie-tingen ude på forsiden fortsætter ikke hele tidslinjen".
+     Perforeringen var ::before/::after med left:0;right:0 — så bred som
+     SKÆRMEN (390 px af 1540 på telefonen), så den sluttede efter første
+     skærmbillede, når man swipede. Nu er den båndets egen baggrund med
+     attachment "local", som dækker alt, der kan rulles. Tallene udefra:
+     båndets scrollbredde mod hullernes lag. */
+  test('filmstrimlens huller fortsætter til sidste billede', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    const m = await page.locator('#omos .ny-tidslinje').evaluate((e) => {
+      const cs = getComputedStyle(e);
+      const før = getComputedStyle(e, '::before'), efter = getComputedStyle(e, '::after');
+      return {
+        rulbar: e.scrollWidth > e.clientWidth,
+        lag: cs.backgroundAttachment.split(',').map((x) => x.trim()),
+        huller: (cs.backgroundImage.match(/repeating-linear-gradient/g) || []).length,
+        pseudo: [før.content, efter.content].filter((c) => c && c !== 'none' && c !== 'normal').length,
+      };
+    });
+    expect(m.rulbar, 'tidslinjen skal kunne swipes, ellers måler prøven intet').toBe(true);
+    expect(m.huller, 'hullerne foroven og forneden').toBe(2);
+    expect(m.lag.slice(0, 2), 'hullerne skal rulle med hele båndet').toEqual(['local', 'local']);
+    expect(m.pseudo, 'en perforering som ::before er kun skærmbred').toBe(0);
+  });
+
   /* ============================================================
      BILLEDERNE PÅ SIDEN  (6/9)
 

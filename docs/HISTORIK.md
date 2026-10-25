@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**FILMSTRIMLENS HULLER FØLGER MED HELE VEJEN** (25/10). Mikkel: *"kassettebåndet i historie-tingen ude på
+forsiden fortsætter ikke hele timelinen"*. Perforeringen i #omos .ny-tidslinje var ::before/::after med
+left:0;right:0 — så bred som skærmen (målt: 390 af 1540 px på telefonen, 1216 af 1556 på computeren), så den
+sluttede efter første skærmbillede, når man swipede. Nu er den båndets egen baggrund med
+background-attachment:local, som dækker alt, der kan rulles. Set på skud af start og slut, telefon og
+computer. Prøve i historien.spec.js; set fejle med den gamle CSS.
+
 **GREVE-PRISEN ER VÆK, OG SMILEYEN ER FØDEVARESTYRELSENS EGEN** (25/10). Mikkel om de fire kort øverst:
 *"knæk cancer er rigtig, smiley'en kan du selv finde … medaljen skal faktisk fjernes, de er ikke med
 længere, det er ovre"* (prisuddelingen var 8/10).

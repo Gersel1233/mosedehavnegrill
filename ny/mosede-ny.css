@@ -695,16 +695,19 @@ body.ny-side .nk--selskab .feat svg.ny-ill{background:var(--nk-creme);box-shadow
 .ny-side .ny-album-lead{margin:18px 0 0;max-width:44ch;font:italic 400 17px/1.55 "Host Grotesk",system-ui,sans-serif;color:rgba(251,246,236,.88);text-shadow:0 2px 12px rgba(0,0,0,.6)}
 /* filmstrimlen: sort bånd med perforering foroven og forneden, rammer man swiper i */
 .ny-side .ny-tidslinje{position:relative;display:flex;gap:0;list-style:none;margin:40px calc(-1 * var(--pad)) 0;padding:26px var(--pad);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 var(--pad);scrollbar-width:none;outline:none;
+  /* ⚠️ PERFORERINGEN ER BÅNDETS EGEN BAGGRUND, "local" (25/10). Mikkel:
+     "kassettebåndet fortsætter ikke hele tidslinjen". Den stod som
+     ::before/::after med left:0;right:0 — så bred som SKÆRMEN, ikke som
+     tidslinjen, og den sluttede efter det første skærmbillede, når man
+     swipede (målt: 390 px af 1540 på telefonen, 1216 af 1556 på computeren).
+     background-attachment:local lægger baggrunden over hele det, der kan
+     rulles, så hullerne følger med til sidste billede. */
   background:
-    radial-gradient(circle at 50% 50%,#2a211b 0 0) 0 0/0 0,
+    repeating-linear-gradient(90deg,transparent 0 9px,rgba(216,207,196,.85) 9px 21px,transparent 21px 30px) 0 7px/100% 12px repeat-x local,
+    repeating-linear-gradient(90deg,transparent 0 9px,rgba(216,207,196,.85) 9px 21px,transparent 21px 30px) 0 calc(100% - 7px)/100% 12px repeat-x local,
     linear-gradient(#0b0807,#0b0807);
   box-shadow:0 30px 60px -20px rgba(0,0,0,.8)}
 .ny-side .ny-tidslinje::-webkit-scrollbar{display:none}
-.ny-side .ny-tidslinje::before,.ny-side .ny-tidslinje::after{content:"";position:absolute;left:0;right:0;height:12px;pointer-events:none;
-  background:repeating-linear-gradient(90deg,transparent 0 9px,#d8cfc4 9px 21px,transparent 21px 30px);
-  -webkit-mask:linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0);opacity:.85;border-radius:2px;width:max(100%,var(--strimmel,100%))}
-.ny-side .ny-tidslinje::before{top:7px}
-.ny-side .ny-tidslinje::after{bottom:7px}
 .ny-side .ny-tidslinje li{flex:none;width:min(78vw,300px);scroll-snap-align:start;padding:0 7px;position:relative;display:flex;flex-direction:column}
 .ny-side .ny-tidslinje li + li{border-left:2px solid #1e1714}
 .ny-side .ny-print{position:relative;margin:0;padding:0;background:none;box-shadow:none;transform:none;max-width:none}
