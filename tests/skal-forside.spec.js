@@ -209,11 +209,12 @@ test.describe('Forsidens kobling', () => {
        med siden på flad creme, der er intet bag dem (31/8)
      · hele rækken er linket, med titel, en linje under og en pil
      ============================================================ */
-  test('Facebook, smileyen og prisen er det samme klare glas', async ({ page }) => {
+  test('Facebook og smileyen er det samme klare glas', async ({ page }) => {
     const data = grunddata();
     data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
     await åbn(page, '/index.html', { data });
-    const rækker = ['.promo.fb', 'a.smiley-kort[href*="findsmiley.dk"]', '.pris-kort'];
+    /* Greve-prisen var den tredje — fjernet 25/10 (se "Greve-prisen er væk") */
+    const rækker = ['.promo.fb', 'a.smiley-kort[href*="findsmiley.dk"]'];
     const læs = (e) => {
       const c = getComputedStyle(e), k = getComputedStyle(e, '::before');
       const ydre = c.boxShadow.split(/,(?![^(]*\))/).map((x) => x.trim()).filter((x) => !/inset/.test(x));
@@ -3075,39 +3076,18 @@ test.describe('Isen er premium som dagens ret', () => {
    til en sejr på vejen fra en besked til en hjemmeside, er den
    slags, ingen opdager, før nogen spørger til pokalen.
    ============================================================ */
-test.describe('Greve-prisen øverst', () => {
-  test('står lige under smileyen, i samme glas, med linket og "indstillet til"', async ({ page }) => {
+/* ⚠️ FJERNET 25/10. Mikkel: *"medaljen … skal faktisk fjernes, de er
+   ikke med længere, det er ovre"*. Prisuddelingen var 8. oktober.
+   Prøven vender: kortet øverst OG linjen i bunden er væk, og intet
+   link peger på prisen mere — en nominering, der er overstået, står
+   ellers og lover noget, ingen kan følge op på. */
+test.describe('Greve-prisen er væk', () => {
+  test('hverken kort øverst, linje i bunden eller link til prisen', async ({ page }) => {
     await åbn(page, '/index.html');
     await springIntroOver(page);
-
-    const pris = page.locator('.pris-kort');
-    await expect(pris).toHaveCount(1);
-    await pris.scrollIntoViewIfNeeded();
-    await expect(pris).toBeVisible();
-    await expect(pris).toHaveAttribute('href', 'https://erhvervscentret.greve.dk/gba');
-    await expect(pris).toContainText('Indstillet til Greve Iværksætterpris 2026');
-    await expect(pris).not.toContainText(/vinder/i);
-
-    const m = await page.evaluate(() => {
-      const smil = document.querySelector('.smiley-kort:not(.pris-kort)');
-      const pris = document.querySelector('.pris-kort');
-      const læs = (e) => { const cs = getComputedStyle(e);
-        return { grund: cs.backgroundColor, skygge: cs.boxShadow, hjoerne: cs.borderRadius }; };
-      const a = smil.getBoundingClientRect(), b = pris.getBoundingClientRect();
-      return { lige_under: smil.nextElementSibling === pris, afstand: Math.round(b.top - a.bottom),
-        smil: læs(smil), pris: læs(pris) };
-    });
-    expect(m.lige_under, 'prisen står ikke lige under smileyen').toBe(true);
-    expect(m.afstand, 'prisen hænger ikke sammen med smileyen').toBeLessThanOrEqual(16);
-    /* ⚠️ VENDT IGEN 28/9, AFTEN — MIKKELS VALG AF FORSLAG 7. Guldpladen
-       (27/9) og guldkernen (28/9) er væk: alle tre rækker er det samme
-       klare glas, og prisens guld sidder i medaljen. Prøven sammenligner
-       prisen med smileyen lige over — samme flade og samme skygge. */
-    expect(m.pris.grund + m.pris.skygge + m.pris.hjoerne, 'prisen er ikke samme glas som smileyen')
-      .toBe(m.smil.grund + m.smil.skygge + m.smil.hjoerne);
-
-    /* Og bunden beholder sin linje — ligesom smileyen står begge steder. */
-    await expect(page.locator('footer a[href="https://erhvervscentret.greve.dk/gba"]')).toHaveCount(1);
+    await expect(page.locator('.pris-kort')).toHaveCount(0);
+    await expect(page.locator('a[href*="erhvervscentret.greve.dk"]')).toHaveCount(0);
+    await expect(page.locator('body')).not.toContainText(/Iværksætterpris|Greve Business Awards/i);
   });
 });
 
@@ -3166,19 +3146,18 @@ test.describe('Knæk Cancer øverst', () => {
     await expect(kc, 'kortet bærer en dato, det ikke kan holde')
       .not.toContainText(/\d{1,2}\.\s*(okt|oktober)/i);
 
+    /* Greve-prisen stod imellem indtil 25/10 — nu er det smileyen,
+       kortet følger lige efter, og i samme glas. */
     const m = await page.evaluate(() => {
-      const pris = document.querySelector('.pris-kort');
+      const smil = document.querySelector('.smiley-kort:not(.knaek-kort)');
       const kc = document.querySelector('.knaek-kort');
       const læs = (e) => { const cs = getComputedStyle(e);
         return cs.backgroundColor + cs.boxShadow + cs.borderRadius; };
-      const a = pris.getBoundingClientRect(), b = kc.getBoundingClientRect();
-      return { lige_under: pris.nextElementSibling === kc,
-        afstand: Math.round(b.top - a.bottom),
-        samme_glas: læs(pris) === læs(kc) };
+      return { lige_efter: smil.nextElementSibling === kc,
+        samme_glas: læs(smil) === læs(kc) };
     });
-    expect(m.lige_under, 'kortet står ikke lige under Greve-prisen').toBe(true);
-    expect(m.afstand, 'kortet hænger ikke sammen med de tre over').toBeLessThanOrEqual(16);
-    expect(m.samme_glas, 'kortet er ikke samme glas som de andre tre').toBe(true);
+    expect(m.lige_efter, 'kortet står ikke lige efter smileyen').toBe(true);
+    expect(m.samme_glas, 'kortet er ikke samme glas som smileyen').toBe(true);
   });
 
   /* ⚠️ LOGOFILEN SKAL FINDES, OG DEN SKAL KUNNE VISES OVERALT.
@@ -3329,8 +3308,7 @@ test.describe('Felter med en sidste dag', () => {
      aldrig forsvinde. */
   test('kortene uden en sidste dag bliver stående', async ({ page }) => {
     await åbn(page, '/index.html', { ur: NOVEMBER });
-    await expect(page.locator('.smiley-kort:not(.pris-kort):not(.knaek-kort)')).toBeVisible();
-    await expect(page.locator('.pris-kort')).toBeVisible();
+    await expect(page.locator('.smiley-kort:not(.knaek-kort)')).toBeVisible();
     /* ⚠️ FACEBOOK-KORTET ER IKKE MED HER. js/skal/kontakt.js fjerner
        det, når ejeren ingen Facebook-adresse har — og prøvedataene
        har ingen. Det ville altså mangle af en HELT anden grund end

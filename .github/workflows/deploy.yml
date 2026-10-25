@@ -47,6 +47,15 @@ on:
   # kører nøjagtig samme commit igen og kan ikke pege på en anden
   # gren – det er forskellen på en gentagelse og en bagdør.
 
+  # HVER NAT, KUN FOR SMILEYENS SKYLD (25/10). Udgivelsen henter
+  # Fødevarestyrelsens seneste smiley (trinnet "Hent smileyen" nedenfor).
+  # Skifter resultatet ved en kontrol, skal siden følge med uden at nogen
+  # pusher. En planlagt kørsel kører ALTID standardgrenen og den commit,
+  # der står der — den kan ikke pege på en anden gren, så den er ikke den
+  # bagdør, workflow_dispatch var. 03.23 UTC: midt om natten, uden for :00.
+  schedule:
+    - cron: '23 3 * * *'
+
 permissions:
   contents: read
   pages: write
@@ -127,6 +136,18 @@ jobs:
       #     er væk. Det er set virke (15/9): "rm -rf * .claude" gav exit 1.
       #     Fjern det ikke
       # docs/ er historikken og reglerne, flyttet ud af CLAUDE.md 15/9.
+      # DEN RIGTIGE SMILEY (25/10). Mikkel: "smiley'en kan du selv finde".
+      # Fødevarestyrelsens API sender ingen CORS-headere, så siden kan ikke
+      # spørge selv — byggeserveren kan. vaerktoej/hent-smiley.py henter
+      # Mosedes seneste resultat og myndighedens egen tegning og bytter den
+      # tegnede smiley ud i KOPIEN her. Svarer de ikke, står tegningen som
+      # altid. ⚠️ continue-on-error: en smiley må aldrig stoppe en udgivelse.
+      # Skal stå FØR oprydningen — den fjerner vaerktoej/.
+      - name: Hent smileyen fra Fødevarestyrelsen
+        continue-on-error: true
+        timeout-minutes: 2
+        run: python3 vaerktoej/hent-smiley.py
+
       - name: Fjern udviklingsfiler
         run: |
           rm -rf .claude CLAUDE.md LAERT-AF-SPIIS.md docs supabase tests tests-gamle overdragelse vaerktoej menukort GENNEMGANG-TI-KUNDER.md VEJLEDNING.md havnegrillen-handoff.md README.md playwright.config.js package.json package-lock.json kig-dage.png kig-dagens.png .mcp.json .gitignore

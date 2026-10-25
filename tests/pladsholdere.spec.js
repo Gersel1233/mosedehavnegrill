@@ -24,10 +24,10 @@ const ROD = path.join(__dirname, '..');
 const UNDTAGET = {
   'historien.html': 'havnens historie — datoerne er fra 1710, ikke fra kalenderen',
 };
-/* To RIGTIGE datoer, som ikke er pladsholdere — de står med deres grund.
-   Kommer der en tredje, skal den stå her, før prøven består. */
+/* Én RIGTIG dato, som ikke er en pladsholder — den står med sin grund.
+   (Greve-prisens "8. oktober" forsvandt med kortet 25/10.) Kommer der en
+   ny, skal den stå her, før prøven består. */
 const RIGTIGE_DATOER = {
-  'index.html': ['8. oktober'],              // Greve Business Awards 2026 — ejerens egen nominering
   'persondatapolitik.html': ['15. september'], // "Senest opdateret" — politikkens egen dato
 };
 const IKKE_GÆST = /^(admin|googlea|menu)\b/;   // admin, Googles fil, menu.html er en viderestilling

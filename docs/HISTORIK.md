@@ -7,6 +7,29 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**GREVE-PRISEN ER VÆK, OG SMILEYEN ER FØDEVARESTYRELSENS EGEN** (25/10). Mikkel om de fire kort øverst:
+*"knæk cancer er rigtig, smiley'en kan du selv finde … medaljen skal faktisk fjernes, de er ikke med
+længere, det er ovre"* (prisuddelingen var 8/10).
+· Greve-kortet øverst og linjen i bunden er fjernet, og intet linker til erhvervscentret mere.
+  pladsholdere.spec.js' "8. oktober" er taget af listen over rigtige datoer.
+· SMILEYEN: Fødevarestyrelsens API sender ingen CORS-headere, og sandkassen kan hverken nå findsmiley.dk
+  eller deres CDN. Derfor henter UDGIVELSEN den: vaerktoej/hent-smiley.py (trinnet "Hent smileyen fra
+  Fødevarestyrelsen" i deploy.yml, FØR oprydningen) slår findsmiley-id 1480560 op i det officielle API
+  (appsmiley.gold.extension.gopublic.dk, findsmiley.dk's egen offentlige module_id), tager den seneste
+  kontrol og henter myndighedens egen tegning (cdn2.gopublic.dk …/smiley_glad|mellem|sur.svg) til
+  billeder/smiley-officiel.svg, og bytter den tegnede smiley ud — øverst og i bunden af alle 14 sider
+  (15 steder). Reserve: smiley.nembestil.dev (læser samme API). Fejler alt, står tegningen; trinnet har
+  continue-on-error og kan aldrig stoppe en udgivelse. Kun værterne cdn2.gopublic.dk/findsmiley.dk
+  accepteres, og en SVG med <script> afvises.
+· Udgivelsen kører nu også hver nat (schedule 03.23 UTC), så smileyen følger med en ny kontrol. En
+  planlagt kørsel kører altid standardgrenen — ikke en bagdør som workflow_dispatch var.
+· Tre kort i stedet for fire: på telefonen bruger det tredje hele bredden; på computeren tæller
+  kolonnerne de synlige kort (tre nu, to fra november, når Knæk Cancer skjuler sig).
+· ⚠️ IKKE SET MED DEN RIGTIGE SVG HERFRA — kun med en prøve-SVG i en kopi. Første udgivelse viser, om
+  GitHubs runner når Fødevarestyrelsen (se loggen for trinnet; "smiley: … sat ind 15 steder").
+· Prøver: tests/hent-smiley.spec.js (3), "Greve-prisen er væk" og Knæk Cancer-prøverne består. 24 prøver
+  i skal-forside.spec.js fejler pr. profil — de SAMME 24 fejlede før ændringen (målt på forrige udgave).
+
 **HVAD KAN GÆSTEN BESTILLE I DAG? — TRE KNAPPER** (25/10). Mikkel: *"gør det nemmere at slå fra, om den
 kun kan bestilles enten take-away eller spis her eller begge dele — og virke ende til ende"*, og bagefter:
 *"det skal kun gælde denne dag, det er forvirrende med alt hverdag"* (*"f.eks. kun 1 ting i dag"*).

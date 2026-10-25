@@ -872,11 +872,25 @@ body.ny-side .topbar.stuck .ordmaerke{display:inline-flex;align-items:center;min
 .ny-side .ny-strib--top .gr-tegn svg{width:30px;height:30px}
 .ny-side .ny-strib--top .gr-tegn svg.ny-maerke-ill{width:38px;height:38px}
 .ny-side .ny-strib--top .gr-tegn .knaek-logo{width:34px}
+/* Fødevarestyrelsens egen smiley (vaerktoej/hent-smiley.py, 25/10) i samme mål som tegningen */
+.ny-side .ny-strib--top .gr-tegn img.smiley-officiel{width:38px;height:38px;object-fit:contain}
+/* ⚠️ KORTENE ER ET ULIGE ANTAL, NÅR GREVE-PRISEN ER VÆK (25/10): Facebook,
+   smileyen og Knæk Cancer. Det tredje bruger hele bredden på telefonen i
+   stedet for at stå alene i en halv række. (Efter 31/10 er Knæk Cancer
+   skjult, og de to står side om side.) */
+.ny-side .ny-strib--top > a.glasraekke:nth-of-type(3):last-of-type{grid-column:1/-1}
 .ny-side .ny-strib--top .gr-tekst b{font:400 20px/1.02 "Bebas Neue",sans-serif;letter-spacing:.03em;text-wrap:balance}
 .ny-side .ny-strib--top .gr-tekst span{font-size:12.5px;line-height:1.35}
 .ny-side .ny-strib--top .gr-pil{position:absolute;top:18px;right:14px;width:16px;height:16px}
 @media (min-width:821px){
-  .ny-side .ny-strib--top{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:22px 28px 10px}
+  /* ⚠️ KOLONNERNE TÆLLER DE SYNLIGE KORT (25/10): tre nu, to fra november,
+     når Knæk Cancer skjuler sig (forside.js sætter display:none — derfor
+     [style*="none"]). auto-fit virkede ikke: rækkerne over kortene spænder
+     over alle spor, så de tomme spor aldrig faldt sammen — målt på skuddet. */
+  .ny-side .ny-strib--top{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:22px 28px 10px}
+  .ny-side .ny-strib--top:has(> a.glasraekke:nth-of-type(3):not([style*="none"])){grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ny-side .ny-strib--top:has(> a.glasraekke:nth-of-type(4):not([style*="none"])){grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ny-side .ny-strib--top > a.glasraekke:nth-of-type(3):last-of-type{grid-column:auto}
   .ny-side .ny-strib--top .glasraekke{padding:20px 20px 22px}
   .ny-side .ny-strib--top .gr-tekst b{font-size:22px}
   .ny-side .ny-strib--top .glasraekke:hover{transform:translateY(-3px)}
