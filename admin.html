@@ -727,6 +727,35 @@
         </div>
       </div>
 
+      <!-- ============ HVAD KAN GÆSTEN BESTILLE I DAG?  (25/10) ============
+           Mikkel: "gør det nemmere at slå fra, om den kun kan bestilles
+           enten take-away eller spis her eller begge dele" — og bagefter:
+           "det skal kun gælde denne dag, det er forvirrende med alt
+           hverdag". Tre knapper, der styrer I DAG og intet andet: de
+           sætter dagens egen regel (luk_takeaway / luk_spis_her i
+           dags_regler) — den samme, kalenderen bruger, og som databasen
+           allerede håndhæver (dagsregler.sql). I morgen er alt åbent igen
+           af sig selv. js/admin/kalender.js (tegnIDag) fylder kortet ud.
+           Det står her og ikke på Bestillinger: den fane er arbejdet, og
+           indstillinger over arbejdet blev flyttet væk 27/8. Og EFTER
+           åbningstiderne, ikke før: panelets første overskrift skjules,
+           når den gentager fanens navn (dobbelt-titel i kerne.js) — stod
+           kortet her først, stod "Åbningstider" to gange. -->
+      <div class="kort luft-top" id="i-dag-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Hvad kan gæsten bestille i dag?</h2>
+          <span class="kort-note" id="i-dag-note">kun i dag — i morgen er begge dele åbne igen</span>
+        </div>
+        <div class="adm-seg" role="group" aria-label="Hvad gæsten kan bestille i dag" id="i-dag-valg">
+          <button type="button" data-maade="begge" aria-pressed="true">Begge dele</button>
+          <button type="button" data-maade="takeaway" aria-pressed="false">Kun take-away</button>
+          <button type="button" data-maade="spis_her" aria-pressed="false">Kun spis her</button>
+        </div>
+        <p class="hjaelp" id="i-dag-hjaelp">Take-away er to-go og levering. Spis her er også bordene (QR og bordbooking).
+          Skal det gælde en anden dag, lukker I den i kalenderen.</p>
+      </div>
+
+
       <!-- ============ KØKKENET OG VARSLERNE ==============
            ⚠️ ÅBNINGSTIDERNE ER LUGENS, IKKE KØKKENETS (30/8).
            Kundens ord: "køkkenet lukker jo 20.00, så sidste

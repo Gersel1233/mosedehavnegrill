@@ -7,6 +7,22 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**HVAD KAN GÆSTEN BESTILLE I DAG? — TRE KNAPPER** (25/10). Mikkel: *"gør det nemmere at slå fra, om den
+kun kan bestilles enten take-away eller spis her eller begge dele — og virke ende til ende"*, og bagefter:
+*"det skal kun gælde denne dag, det er forvirrende med alt hverdag"* (*"f.eks. kun 1 ting i dag"*).
+· Admin → Åbningstider, lige under åbningstiderne: **Begge dele / Kun take-away / Kun spis her**. Knapperne
+  skriver DAGENS EGEN regel (dags_regler: luk_takeaway / luk_spis_her) med kalenderens gemRegel — hele
+  rækken, så dagens besked, overskrift, tider og bordloft bliver stående. I morgen er alt åbent igen af sig
+  selv. Ligger der bestillinger til den måde i dag, spørges der først (kalenderens ramtAf).
+· INGEN ny regel og ingen SQL: gæstesiden og databasen kender i forvejen dagens lukning (dagsregler.sql,
+  Butik.maaBestille/dagLukketFor). Take-away er to-go og levering; spis her er også bordene (QR og booking).
+· En første udgave som FAST indstilling (takeaway/spis_her for alle dage + bestil-maader.sql) blev bygget
+  og rullet tilbage, før den kom live — den ligger på den lokale gren gemt-fast-maade-valg, ikke i repoet.
+· Prøve: tests/i-dag-maade.spec.js (5) — admin skriver kun i dag, "Begge dele" fjerner rækken, besked/tider/
+  bordloft overlever, der spørges ved eksisterende bestillinger, og forsiden får det. Set fejle: gemmes
+  dagen uden gemRegel, falder "besked, tider og bordloft". admin-design fangede, at kortet først i panelet
+  gav "Åbningstider" to gange (dobbelt-titel) — derfor står det under åbningstiderne.
+
 **SMS TIL GÆSTEN — BYGGET, MEN SLUKKET** (24/10). Mikkel: *"beskeder … det samme [som spiis], men
 selvfølgelig til deres forskellige principper med levering og hvornår det præcis er klar"*. Hans valg:
 kun **afhentning og spis her**, og **byg det slukket**. Ejerens nej 15/9 (*"for dyrt i længden"*) står,

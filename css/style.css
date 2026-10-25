@@ -11290,6 +11290,12 @@ body.personale .adm-seg button[aria-pressed="true"] {
               0 0 0 1px rgba(36, 26, 23, .06);
 }
 
+/* "Hvad kan gæsten bestille i dag?" (25/10): tre knapper i fuld bredde,
+   delt ligeligt. Som inline-flex skar "Kun spis her" ud over kanten på
+   390 px — MÅLT på skuddet, ikke regnet. */
+body.personale #i-dag-valg { display: flex; width: 100%; box-sizing: border-box; }
+body.personale #i-dag-valg button { flex: 1 1 0; min-width: 0; padding: 0 6px; }
+
 /* Dagvælgeren: pil, dag, pil — én linje, der ikke ombrydes. */
 body.personale .adm-dagvaelger {
   display: inline-flex;
