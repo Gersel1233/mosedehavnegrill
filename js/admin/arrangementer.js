@@ -180,6 +180,9 @@
       b.setAttribute('aria-pressed', b.getAttribute('data-vis') === vis ? 'true' : 'false');
     });
     if ($('arr-mangler-sql')) $('arr-mangler-sql').hidden = nyeKolonner();
+    /* Søgefeltet står først, når listen er lang nok til at skulle søges i —
+       på en telefon var det et felt nr. to lige under «Find en sag». */
+    if ($('arr-soeg')) $('arr-soeg').hidden = rk.length <= 8 && !soeg;
     /* Uden arrangoer.sql findes tabellen med stederne ikke. */
     if ($('arr-ret-steder-liste')) $('arr-ret-steder-liste').hidden = !nyeKolonner();
 
@@ -227,9 +230,35 @@
     return b;
   }
 
+  /* ⚠️ ÉN KNAP, DER SES — RESTEN BAG ⋯  (26/10). Rækken havde fem
+     knapper (Ret, Kopiér, Tilmeldte, Aflys, Slet) side om side; på en
+     telefon brød de over to linjer, og Slet stod lige ved siden af Ret.
+     Nu: hele rækken åbner arrangementet, Tilmeldte står med sit tal,
+     og det sjældne (kopiér, aflys, slet, se på siden) ligger i en menu. */
+  var aabenMenu = null;
+  function lukMenu() {
+    if (!aabenMenu) return;
+    aabenMenu.hidden = true;
+    var k = aabenMenu.previousElementSibling;
+    if (k) k.setAttribute('aria-expanded', 'false');
+    aabenMenu = null;
+  }
+  /* Et tryk ved siden af lukker menuen — og gør ikke andet (capture):
+     ellers åbnede trykket arrangementet under sløret på en telefon. */
+  document.addEventListener('click', function (e) {
+    if (!aabenMenu || (e.target.closest && e.target.closest('.arr-menu, .arr-mere-knap'))) return;
+    lukMenu();
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+
   function raekke(k) {
     var r = lav('article', 'arr-raekke' + (k.aflyst ? ' aflyst' : '') + (k.offentlig ? '' : ' kladde'));
     r.setAttribute('data-arr', String(k.id));
+    r.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('button, a, .arr-mere')) return;
+      aabn(k);
+    });
 
     var dag = lav('div', 'arr-dag');
     dag.appendChild(lav('span', 'arr-ugedag', ugedag(k.dato)));
@@ -250,26 +279,75 @@
     midt.appendChild(lav('p', 'arr-tilmeldt', tilmeldTekst(k)));
     r.appendChild(midt);
 
+    /* Billedet, som det står på siden — så man kan se, hvilke der mangler et. */
+    if (String(k.billede || '').trim()) {
+      var foto = lav('img', 'arr-raekke-foto');
+      foto.src = k.billede;
+      foto.alt = '';
+      foto.loading = 'lazy';
+      r.appendChild(foto);
+      r.classList.add('med-foto');
+    }
+
     var knapper = lav('div', 'knap-raekke arr-knapper');
-    knapper.appendChild(knap('Ret', null, function () { aabn(k); }));
-    knapper.appendChild(knap('Kopiér', null, function () { kopier(k); }));
+    knapper.appendChild(knap('Ret', 'arr-ret', function () { aabn(k); }));
     if (k.tilmelding || harTilmeldte(k.id)) {
-      knapper.appendChild(knap('Tilmeldte', null, function () {
+      var n = taget(k.id);
+      var tk = knap('Tilmeldte', 'arr-tilmeldte-knap', function () {
         if (Admin.visTilmeldinger) Admin.visTilmeldinger(k.id);
-      }));
+      });
+      if (n) tk.appendChild(lav('span', 'arr-tal-chip', String(n)));
+      knapper.appendChild(tk);
+    }
+
+    var mere = lav('div', 'arr-mere');
+    var mk = lav('button', 'knap lille arr-mere-knap');
+    mk.type = 'button';
+    mk.setAttribute('aria-haspopup', 'true');
+    mk.setAttribute('aria-expanded', 'false');
+    mk.setAttribute('aria-label', 'Mere til «' + (k.titel || 'arrangementet') + '»');
+    mk.textContent = '⋯';
+    var menu = lav('div', 'arr-menu');
+    menu.setAttribute('role', 'menu');
+    menu.hidden = true;
+    mk.addEventListener('click', function () {
+      var var_aaben = !menu.hidden;
+      lukMenu();
+      if (var_aaben) return;
+      menu.hidden = false;
+      mk.setAttribute('aria-expanded', 'true');
+      aabenMenu = menu;
+    });
+    function punkt(tekst, klasse, hvad) {
+      var b = knap(tekst, klasse, function () { lukMenu(); hvad(); });
+      b.setAttribute('role', 'menuitem');
+      menu.appendChild(b);
+      return b;
+    }
+    punkt('Kopiér', null, function () { kopier(k); });
+    if (k.offentlig && !erForbi(k) && !k.aflyst) {
+      var se = lav('a', 'knap lille', 'Se på siden ↗');
+      se.href = 'h-kalender.html#arr-' + k.id;
+      se.target = '_blank';
+      se.rel = 'noopener';
+      se.setAttribute('role', 'menuitem');
+      menu.appendChild(se);
     }
     if (nyeKolonner() && !erForbi(k)) {
-      if (k.aflyst) knapper.appendChild(knap('Genåbn', null, function () { genaabn(k); }));
-      else knapper.appendChild(knap('Aflys', 'fare-tekst', function () { aflys(k); }));
+      if (k.aflyst) punkt('Genåbn', null, function () { genaabn(k); });
+      else punkt('Aflys', 'fare-tekst', function () { aflys(k); });
     }
     /* ⚠️ SLET KUN UDEN TILMELDTE. Databasen afviser det alligevel
        (kalender_slet_vaern) — knappen siger det, før nogen prøver. */
-    var slet = knap('Slet', 'fare', function () { sletArr(k); });
+    var slet = punkt('Slet', 'fare', function () { sletArr(k); });
     if (harTilmeldte(k.id)) {
       slet.disabled = true;
       slet.title = 'Der er tilmeldte. Aflys det i stedet — så står listen der stadig.';
+      menu.appendChild(lav('p', 'arr-menu-hjaelp', 'Der er tilmeldte — aflys det i stedet, så står listen der stadig.'));
     }
-    knapper.appendChild(slet);
+    mere.appendChild(mk);
+    mere.appendChild(menu);
+    knapper.appendChild(mere);
     r.appendChild(knapper);
     return r;
   }
@@ -309,17 +387,57 @@
   // ----------------------------------------------------------
   function felt(id) { return $(id) || { value: '', checked: false }; }
 
-  function visForm(titel) {
-    $('arr-form-kort').hidden = false;
-    $('arr-form-titel').textContent = titel;
-    var kort = $('arr-form-kort');
-    if (kort.scrollIntoView) kort.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* ---- ARKET ---------------------------------------------------
+     Formularen dækker skærmen, mens den er åben (husets lag-aabent:
+     siden bagved står stille, og bundbaren skjules). Ud igen med Luk,
+     Escape eller et tryk ved siden af — de to sidste spørger først,
+     hvis der er skrevet noget, der ikke er gemt. */
+  var bag = null;
+  var foer = '';                // formularen, som den stod, da den blev åbnet
+  var fane = 'udfyld';
+
+  function aftryk() { return JSON.stringify([udkast(), felt('arr-gentag').value, felt('arr-gentag-til').value,
+    felt('arr-max').value, nytBillede === undefined ? null : nytBillede]); }
+  function aendret() { return !$('arr-form-kort').hidden && aftryk() !== foer; }
+
+  function visFane(f) {
+    fane = f === 'se' ? 'se' : 'udfyld';
+    $('arr-form-kort').setAttribute('data-fane', fane);
+    trykket($('arr-form-faner'), 'data-fane', fane);
+    if (fane === 'se') sendUdkast();
   }
 
-  function luk() {
+  function visForm(titel) {
+    var kort = $('arr-form-kort');
+    kort.hidden = false;
+    $('arr-form-titel').textContent = titel;
+    if (!bag) {
+      bag = lav('div', 'arr-ark-bag');
+      bag.addEventListener('click', function () { luk(true); });
+      kort.parentNode.insertBefore(bag, kort);
+    }
+    bag.hidden = false;
+    document.body.classList.add('lag-aabent', 'arr-ark-aaben');
+    kort.scrollTop = 0;
+    visFane('udfyld');
+    sikrRamme();
+  }
+
+  function luk(spoerg) {
+    if (spoerg === true && aendret()
+      && !window.confirm('Luk uden at gemme? Det, du har skrevet, bliver ikke gemt.')) return;
     $('arr-form-kort').hidden = true;
+    if (bag) bag.hidden = true;
+    document.body.classList.remove('arr-ark-aaben');
+    /* Kalenderens dag-lag bruger også lag-aabent — lad det stå, hvis det er åbent. */
+    if (!document.querySelector('.dag-lag:not([hidden])')) document.body.classList.remove('lag-aabent');
     retter = null;
   }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (aabenMenu) return lukMenu();
+    if (!$('arr-form-kort').hidden) luk(true);
+  });
 
   function fyld(k) {
     felt('arr-titel').value = k ? k.titel || '' : '';
@@ -351,6 +469,7 @@
     $('arr-gentag-felt').hidden = false;
     visForm('Nyt arrangement');
     tegnForm();
+    foer = aftryk();
     try { $('arr-titel').focus({ preventScroll: true }); } catch (e) { $('arr-titel').focus(); }
   }
 
@@ -361,6 +480,7 @@
     $('arr-gentag-felt').hidden = true;
     visForm('Ret "' + (k.titel || 'arrangementet') + '"');
     tegnForm();
+    foer = aftryk();
   }
 
   /* KOPIÉR: alt det samme — undtagen datoen, som er det, der er nyt. */
@@ -374,6 +494,7 @@
     $('arr-gentag-felt').hidden = false;
     visForm('Kopi af "' + (k.titel || 'arrangementet') + '"');
     tegnForm();
+    foer = '';                  // en kopi er ikke gemt, før den er gemt
     try { $('arr-dato').focus({ preventScroll: true }); } catch (e) { $('arr-dato').focus(); }
   }
 
@@ -509,56 +630,96 @@
     };
   }
 
-  function tegnForhaand() {
+  /* ---- FORHÅNDSVISNINGEN ---------------------------------------
+     ⚠️ KALENDERSIDENS KORT ER SIDENS EGET  (26/10). Før stod der en
+     efterligning her — hvide kort med rund skrift — mens siden har
+     opslag på kork med en rød billet og Bebas-overskrifter. Arrangøren
+     så ikke det, gæsten ser. Nu er det h-kalender.html i en ramme, og
+     udkastet sendes derind (js/skal/kalender.js tegner det med sin
+     egen kode). Intet gemmes af det. */
+  var ramme = null;
+  var rammeKlar = false;
+  function sikrRamme() {
     var boks = $('arr-forhaand');
+    if (!boks || ramme) return;
+    ramme = lav('iframe', 'arr-ramme');
+    ramme.title = 'Kalendersiden, som gæsten ser den';
+    ramme.setAttribute('loading', 'eager');
+    ramme.src = 'h-kalender.html?forhaand=1';
+    boks.appendChild(ramme);
+  }
+  window.addEventListener('message', function (e) {
+    if (e.origin !== location.origin || !ramme || e.source !== ramme.contentWindow) return;
+    if (!e.data || e.data.type !== 'mosede-arr-klar') return;
+    rammeKlar = true;
+    sendUdkast();
+  });
+  var sendTimer = 0;
+  function sendUdkast() {
+    if (!ramme || !rammeKlar || $('arr-form-kort').hidden) return;
+    clearTimeout(sendTimer);
+    sendTimer = setTimeout(function () {
+      var k = udkast();
+      try { ramme.contentWindow.postMessage({ type: 'mosede-arr-forhaand', k: k }, location.origin); } catch (e) { /* rammen er væk */ }
+    }, 120);
+  }
+
+  /* Forsiden viser kun ÉT arrangement: det næste (js/skal/forside.js,
+     visMusik). Er det ikke dette, siger vi hvilket — ellers tror
+     arrangøren, at det står der. */
+  function naesteFoer(k) {
+    var iDagIso = iDag();
+    return alle().filter(function (x) {
+      if (retter && String(x.id) === String(retter.id)) return false;
+      return x.offentlig && !x.aflyst && (x.slut_dato || x.dato) >= iDagIso;
+    }).concat(k.dato && !k.aflyst ? [k] : []).sort(function (a, b) {
+      if (a.dato !== b.dato) return a.dato < b.dato ? -1 : 1;
+      return String(a.start_kl || '') < String(b.start_kl || '') ? -1 : 1;
+    })[0] || null;
+  }
+
+  function tegnForhaand() {
     var forside = $('arr-forhaand-forside');
-    if (!boks || !forside) return;
+    var note = $('arr-forhaand-note');
+    sendUdkast();
+    if (!forside) return;
     var k = udkast();
-    Admin.tøm(boks);
     Admin.tøm(forside);
-
-    var kort = lav('div', 'arr-kv' + (k.aflyst ? ' aflyst' : ''));
-    var dag = lav('div', 'arr-kv-dato');
-    dag.appendChild(lav('b', null, k.dato ? String(Number(k.dato.slice(8, 10))).padStart(2, '0') : '—'));
-    dag.appendChild(lav('span', null, k.dato ? (MAANEDER[Number(k.dato.slice(5, 7)) - 1] || '').slice(0, 3) : ''));
-    kort.appendChild(dag);
-    var tekst = lav('div', 'arr-kv-tekst');
-    var slags = KAT_NAVN[Butik.arrangementSlags(k)] || 'Andet';
-    tekst.appendChild(lav('span', 'arr-kv-slags', slags + (k.pris_tekst ? ' · ' + k.pris_tekst : '')));
-    tekst.appendChild(lav('h4', null, k.titel || 'Titlen står her'));
-    var meta = [k.start_kl ? 'Kl. ' + kl(k.start_kl) + (k.slut_kl ? '–' + kl(k.slut_kl) : '') : '', stedNavn(k)]
-      .filter(Boolean).join(' · ');
-    if (meta) tekst.appendChild(lav('p', 'arr-kv-meta', meta));
-    if (k.beskrivelse) tekst.appendChild(lav('p', 'arr-kv-besk', k.beskrivelse));
-    if (k.billede) {
-      var img = lav('img', 'arr-kv-foto');
-      img.src = k.billede;
-      img.alt = '';
-      tekst.appendChild(img);
-    }
-    var cta;
-    if (k.aflyst) cta = 'Aflyst' + (k.aflyst_tekst ? ' — ' + k.aflyst_tekst : '');
-    else if (k.bord_booking) cta = 'Book bord';
-    else if (!k.tilmelding) cta = 'Kig bare forbi, ingen tilmelding';
-    else {
-      cta = 'Reservér plads';
-      if (k.tilmelding_lukker_timer !== null) {
-        cta += ' · lukker ' + (FRIST_NAVN[k.tilmelding_lukker_timer] || k.tilmelding_lukker_timer + ' timer før');
-      }
-    }
-    tekst.appendChild(lav('span', 'arr-kv-knap' + (k.tilmelding || k.bord_booking ? ' rod' : ''), cta));
-    kort.appendChild(tekst);
-    boks.appendChild(kort);
-    if (!k.offentlig) {
-      boks.appendChild(lav('p', 'hjaelp', 'Står ikke på siden, før det er udgivet.'));
+    if (note) {
+      note.textContent = !k.titel || !k.dato ? 'Skriv en titel og vælg en dato — så hænger det på tavlen.'
+        : k.offentlig ? 'Tryk på opslaget for at se det hele, som gæsten ser det.'
+          : 'Står ikke på siden, før det er udgivet. Tryk på opslaget for at se det hele.';
     }
 
-    /* Forsidens kort viser det NÆSTE arrangement — titel, dag og den
-       korte udgave af beskrivelsen (Butik.kortFortalt, samme regel). */
+    /* Forsidens banner: mørkt glas med rødt lys, tegnet og «Se kalenderen →». */
     var f = lav('div', 'arr-kv-forside');
-    f.appendChild(lav('b', null, (k.titel || 'Titlen') + (k.dato ? ' · ' + langDato(k.dato) : '')));
-    if (k.beskrivelse) f.appendChild(lav('p', null, Butik.kortFortalt(k.beskrivelse)));
+    var tegn = lav('span', 'arr-kv-forside-tegn');
+    tegn.setAttribute('aria-hidden', 'true');
+    if (Butik.arrangementSlags(k) === 'musik') {
+      var eq = lav('span', 'arr-kv-eq');
+      for (var i = 0; i < 4; i++) eq.appendChild(lav('i'));
+      tegn.appendChild(eq);
+    } else {
+      tegn.textContent = { spisning: '🍽', fest: '🎉' }[Butik.arrangementSlags(k)] || '⚓';
+    }
+    f.appendChild(tegn);
+    var tekst = lav('div', 'arr-kv-forside-tekst');
+    tekst.appendChild(lav('b', null, (k.titel || 'Titlen') + (k.dato ? ' · ' + langDato(k.dato).replace(' ', ' d. ') : '')));
+    if (k.beskrivelse) tekst.appendChild(lav('p', null, Butik.kortFortalt(k.beskrivelse)));
+    tekst.appendChild(lav('span', 'arr-kv-forside-cta', 'Se kalenderen →'));
+    f.appendChild(tekst);
     forside.appendChild(f);
+
+    var n = naesteFoer(k);
+    var hvad;
+    if (k.aflyst) hvad = 'Et aflyst arrangement står ikke på forsiden.';
+    else if (!k.dato) hvad = 'Forsiden viser det næste arrangement.';
+    else if (n === k) hvad = k.offentlig ? 'Det er det næste — så det står på forsiden.'
+      : 'Det bliver det næste — så det kommer på forsiden, når det er udgivet.';
+    else if (n) hvad = 'Forsiden viser kun det næste arrangement. Lige nu er det «' + n.titel + '» ('
+      + kortDato(n.dato) + '); dette kommer frem, når det er overstået.';
+    else hvad = 'Forsiden viser det næste arrangement.';
+    forside.appendChild(lav('p', 'hjaelp arr-forside-hvad', hvad));
   }
 
   /* ---- HVAD RAMMER DATOEN? ------------------------------------- */
@@ -719,23 +880,47 @@
     if (!boks || !foto) return;
     boks.hidden = !url;
     foto.src = url || '';
+    if ($('arr-billede-flise')) $('arr-billede-flise').hidden = !!url;
   }
 
+  function lægOp(fil) {
+    if (!fil) return;
+    var status = $('arr-billede-status');
+    if (!/^image\//.test(fil.type || '')) {
+      if (status) status.textContent = 'Det er ikke et billede. Vælg et foto (jpg, png eller lignende).';
+      return;
+    }
+    var flise = $('arr-billede-flise');
+    if (flise) flise.classList.add('arbejder');
+    if (status) status.textContent = 'Lægger billedet op…';
+    Butik.skrive.nyhedBillede(fil).then(function (url) {
+      nytBillede = url;
+      visBillede(url);
+      if (status) status.textContent = 'Billedet er lagt op. Husk at gemme.';
+      tegnForhaand();
+    }).catch(function (e) {
+      if (status) status.textContent = 'Billedet kunne ikke lægges op: ' + (e.message || e);
+    }).then(function () {
+      if (flise) flise.classList.remove('arbejder');
+    });
+  }
   if ($('arr-billede')) {
     $('arr-billede').addEventListener('change', function () {
-      var fil = this.files && this.files[0];
-      if (!fil) return;
-      var status = $('arr-billede-status');
-      if (status) status.textContent = 'Lægger billedet op…';
-      Butik.skrive.nyhedBillede(fil).then(function (url) {
-        nytBillede = url;
-        visBillede(url);
-        if (status) status.textContent = 'Billedet er lagt op. Husk at gemme.';
-        tegnForhaand();
-      }).catch(function (e) {
-        if (status) status.textContent = 'Billedet kunne ikke lægges op: ' + (e.message || e);
-      });
+      lægOp(this.files && this.files[0]);
       this.value = '';
+    });
+  }
+  if ($('arr-billede-flise')) {
+    var flise = $('arr-billede-flise');
+    ['dragenter', 'dragover'].forEach(function (h) {
+      flise.addEventListener(h, function (e) { e.preventDefault(); flise.classList.add('over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (h) {
+      flise.addEventListener(h, function () { flise.classList.remove('over'); });
+    });
+    flise.addEventListener('drop', function (e) {
+      e.preventDefault();
+      lægOp(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]);
     });
   }
   if ($('arr-billede-fjern')) {
@@ -804,7 +989,11 @@
   //  LYTTERNE
   // ----------------------------------------------------------
   $('arr-ny').addEventListener('click', function () { ny(); });
-  $('arr-luk').addEventListener('click', luk);
+  $('arr-luk').addEventListener('click', function () { luk(); });
+  $('arr-form-faner').addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-fane]');
+    if (b) visFane(b.getAttribute('data-fane'));
+  });
   $('arr-udgiv').addEventListener('click', function () {
     gem(true);
   });
@@ -857,10 +1046,65 @@
     }).catch(function () { optagne = []; });
   }
 
+  /* ---- OVERBLIKKET: DET NÆSTE PÅ HAVNEN  (26/10) ---------------- */
+  function tegnOverblik() {
+    var kort = $('ob-arr-kort');
+    var boks = $('ob-arr');
+    if (!kort || !boks) return;
+    var til = plusDage(iDag(), 14);
+    var kommende = alle().filter(function (k) {
+      return k.offentlig && !erForbi(k) && k.dato <= til;
+    }).sort(function (a, b) {
+      var x = (a.dato || '') + (a.start_kl || ''), y = (b.dato || '') + (b.start_kl || '');
+      return x < y ? -1 : 1;
+    });
+    var kladder = alle().filter(function (k) { return gruppe(k) === 'kladder'; }).length;
+    Admin.tøm(boks);
+    kort.classList.toggle('skjult', !kommende.length && !kladder);
+    kommende.slice(0, 4).forEach(function (k) {
+      var r = lav('button', 'ob-arr-raekke' + (k.aflyst ? ' aflyst' : ''));
+      r.type = 'button';
+      var dag = lav('span', 'arr-dag');
+      dag.appendChild(lav('span', 'arr-ugedag', ugedag(k.dato)));
+      dag.appendChild(lav('b', null, String(Number(String(k.dato).slice(8, 10)))));
+      dag.appendChild(lav('span', 'arr-md', (MAANEDER[Number(String(k.dato).slice(5, 7)) - 1] || '').slice(0, 3)));
+      r.appendChild(dag);
+      var midt = lav('span', 'ob-arr-midt');
+      midt.appendChild(lav('b', 'ob-arr-titel', (k.aflyst ? 'Aflyst: ' : '') + k.titel));
+      var meta = [k.dato === iDag() ? 'I dag' : '', tid(k), stedNavn(k)].filter(Boolean).join(' · ');
+      if (meta) midt.appendChild(lav('span', 'ob-arr-meta', meta));
+      midt.appendChild(lav('span', 'ob-arr-tilmeldt', tilmeldTekst(k)));
+      r.appendChild(midt);
+      r.addEventListener('click', function () { aabn(k); });
+      boks.appendChild(r);
+    });
+    if (kommende.length > 4) boks.appendChild(lav('p', 'hjaelp', '… og ' + (kommende.length - 4) + ' mere de næste 14 dage.'));
+    if (!kommende.length) boks.appendChild(lav('p', 'hjaelp', 'Intet udgivet de næste 14 dage.'));
+    if (kladder) {
+      var kl = lav('button', 'knap-tekst ob-arr-kladder', kladder === 1
+        ? '1 kladde står ikke på siden endnu →' : kladder + ' kladder står ikke på siden endnu →');
+      kl.type = 'button';
+      kl.addEventListener('click', function () { vis = 'kladder'; Admin.visFane('p-arrangementer'); tegnListe(); });
+      boks.appendChild(kl);
+    }
+  }
+  if ($('ob-til-arr')) {
+    $('ob-til-arr').addEventListener('click', function () { vis = 'kommende'; Admin.visFane('p-arrangementer'); tegnListe(); });
+  }
+
   function tegnAlt() {
+    tegnOverblik();
     tegnListe();
     if (!$('arr-form-kort').hidden) tegnForm();
     if (!$('arr-steder-kort').hidden) tegnStedListe();
+  }
+
+  /* Skifter admin fane (klokken, «Find en sag», kalenderens dag), må
+     arket ikke blive hængende over den nye fane. */
+  if (Admin.efterFane) {
+    Admin.efterFane.push(function (id) {
+      if (id !== 'p-arrangementer' && !$('arr-form-kort').hidden) luk();
+    });
   }
 
   Admin.tegnere.push(tegnAlt);

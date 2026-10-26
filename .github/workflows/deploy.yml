@@ -47,14 +47,11 @@ on:
   # kører nøjagtig samme commit igen og kan ikke pege på en anden
   # gren – det er forskellen på en gentagelse og en bagdør.
 
-  # HVER NAT, KUN FOR SMILEYENS SKYLD (25/10). Udgivelsen henter
-  # Fødevarestyrelsens seneste smiley (trinnet "Hent smileyen" nedenfor).
-  # Skifter resultatet ved en kontrol, skal siden følge med uden at nogen
-  # pusher. En planlagt kørsel kører ALTID standardgrenen og den commit,
-  # der står der — den kan ikke pege på en anden gren, så den er ikke den
-  # bagdør, workflow_dispatch var. 03.23 UTC: midt om natten, uden for :00.
-  schedule:
-    - cron: '23 3 * * *'
+  # INGEN TIDSPLAN (26/10). 25/10 kom en natlig kørsel på for smileyens
+  # skyld — og den brød husets regel (tests/udgivelse.spec.js): intet
+  # udgives, uden at et menneske har pushet. Fanget af prøven dagen
+  # efter. Smileyen hentes nu ved hver udgivelse; kontrollerne kommer
+  # med års mellemrum, og siden udgives mange gange om ugen.
 
 permissions:
   contents: read

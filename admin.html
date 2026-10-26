@@ -709,6 +709,21 @@
         <div id="ob-booking"></div>
       </div>
 
+      <!-- ============ DET NÆSTE PÅ HAVNEN  (26/10) ==========
+           Samme form: en rude, ikke et sted at rette. Chefen og
+           personalet ser, hvad der kommer, og hvor mange der har
+           meldt sig — og om en kladde venter på at blive udgivet.
+           Findes kun, når der er noget de næste 14 dage.
+           js/admin/arrangementer.js fylder det ud. -->
+      <div class="kort skjult" id="ob-arr-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">🎶 Det næste på havnen</h2>
+          <span class="kort-note">arrangementerne de næste 14 dage — og hvem der kommer</span>
+          <button class="knap sekundaer lille" id="ob-til-arr" type="button">Alle arrangementer →</button>
+        </div>
+        <div id="ob-arr"></div>
+      </div>
+
       <!-- Opsætningen: se noten øverst i panelet. -->
       <div id="overblik-opsaetning" class="luft-top"></div>
     </div>
@@ -3227,11 +3242,22 @@
         <button class="knap-tekst" id="arr-ret-steder-liste" type="button">Ret stedernes navne</button>
       </div>
 
-      <div class="kort arr-form" id="arr-form-kort" hidden>
-        <div class="kort-hoved">
+      <!-- ⚠️ ET ARK, NÅR DET ER ÅBENT  (26/10). Mikkel: "det rigtig vigtigt
+           at de ting kan administreres perfekt fra siden, især event-tingen,
+           og det bliver flot på siden, når de laver changes". Formularen
+           lå under listen, og man skulle rulle forbi alt for at se den.
+           Nu dækker den skærmen: felterne til venstre, den RIGTIGE
+           kalenderside til højre (på telefonen: fanen «Se på siden»), og
+           Udgiv står fast i bunden. js/admin/arrangementer.js. -->
+      <div class="kort arr-form" id="arr-form-kort" hidden role="dialog" aria-modal="true" aria-labelledby="arr-form-titel">
+        <div class="kort-hoved arr-form-hoved">
           <h2 class="h-panel" id="arr-form-titel">Nyt arrangement</h2>
-          <span class="kort-note">står på hjemmesiden, når det er udgivet</span>
+          <span class="kort-note" id="arr-form-note">står på hjemmesiden, når det er udgivet</span>
           <button class="knap sekundaer lille" id="arr-luk" type="button">Luk</button>
+        </div>
+        <div class="adm-seg arr-form-faner" role="group" aria-label="Vis" id="arr-form-faner">
+          <button type="button" data-fane="udfyld" aria-pressed="true">Udfyld</button>
+          <button type="button" data-fane="se" aria-pressed="false">Se på siden</button>
         </div>
         <div class="arr-gitter">
           <div class="arr-felter">
@@ -3265,13 +3291,25 @@
                   <p class="hjaelp">Der er ingen betaling på hjemmesiden — der betales ved lugen.</p>
                 </div>
                 <div class="felt">
-                  <label for="arr-billede">Billede <span class="hjaelp">(valgfrit)</span></label>
-                  <input type="file" id="arr-billede" accept="image/*">
-                  <p class="hjaelp" id="arr-billede-status"></p>
+                  <span class="felt-etiket">Billede <span class="hjaelp">(valgfrit)</span></span>
+                  <!-- Feltet til filen er skjult; hele flisen er knappen — og
+                       et billede kan trækkes ind på en computer. -->
+                  <label class="arr-billede-flise" id="arr-billede-flise" for="arr-billede">
+                    <input type="file" id="arr-billede" accept="image/*" class="arr-billede-fil">
+                    <span class="arr-billede-tom" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="26" height="26"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M4 7.5A2.5 2.5 0 0 1 6.5 5h1.8l1.4-1.8h4.6L15.7 5h1.8A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+                      <b>Vælg et billede</b>
+                      <span>fra telefonen eller computeren</span>
+                    </span>
+                  </label>
                   <div class="arr-billede-vis" id="arr-billede-vis" hidden>
                     <img id="arr-billede-foto" alt="">
-                    <button class="knap lille" id="arr-billede-fjern" type="button">Fjern billedet</button>
+                    <div class="arr-billede-knapper">
+                      <label class="knap lille" for="arr-billede">Skift billede</label>
+                      <button class="knap lille" id="arr-billede-fjern" type="button">Fjern billedet</button>
+                    </div>
                   </div>
+                  <p class="hjaelp" id="arr-billede-status" aria-live="polite"></p>
                 </div>
               </div>
             </fieldset>
@@ -3355,18 +3393,27 @@
             </fieldset>
           </div>
 
-          <aside class="arr-eksempel" aria-label="Sådan ser det ud">
-            <h3 class="arr-eksempel-titel">På kalendersiden</h3>
+          <!-- Kalendersiden er SIDENS EGEN, i en ramme (h-kalender.html
+               ?forhaand=1, js/skal/kalender.js). Forsidens kort er husets
+               regel for "det næste" og den korte tekst (Butik.kortFortalt). -->
+          <aside class="arr-eksempel" aria-label="Sådan ser det ud på hjemmesiden">
+            <div class="arr-eksempel-hoved">
+              <h3 class="arr-eksempel-titel">På kalendersiden</h3>
+              <span class="arr-eksempel-live">følger med, mens du skriver</span>
+            </div>
             <div id="arr-forhaand" class="arr-forhaand"></div>
+            <p class="hjaelp arr-forhaand-note" id="arr-forhaand-note"></p>
             <h3 class="arr-eksempel-titel">På forsiden</h3>
             <div id="arr-forhaand-forside" class="arr-forhaand-forside"></div>
           </aside>
         </div>
 
-        <div id="arr-advarsler" class="arr-advarsler" aria-live="polite"></div>
-        <div class="knap-raekke">
-          <button class="knap" id="arr-udgiv" type="button">Udgiv på hjemmesiden</button>
-          <button class="knap sekundaer" id="arr-kladde" type="button">Gem som kladde</button>
+        <div class="arr-form-fod">
+          <div id="arr-advarsler" class="arr-advarsler" aria-live="polite"></div>
+          <div class="knap-raekke">
+            <button class="knap" id="arr-udgiv" type="button">Udgiv på hjemmesiden</button>
+            <button class="knap sekundaer" id="arr-kladde" type="button">Gem som kladde</button>
+          </div>
         </div>
       </div>
 

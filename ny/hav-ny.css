@@ -387,3 +387,19 @@ body.ny-hav .panel:has(> .rk-hoved) .inp[aria-invalid="true"],body.ny-hav .panel
    lande med et tomt bånd over sig. Nu lander det lige under bjælken (23/10) */
 html:has(body.ny-hav){scroll-padding-top:80px}
 body.ny-hav main [id],body.ny-hav main[id],body.ny-hav section[id],body.ny-hav .panel[id]{scroll-margin-top:80px}
+
+/* ============================================================
+   FORHÅNDSVISNINGEN I ADMIN  (26/10, js/skal/kalender.js)
+   Siden i en ramme i arrangørens editor: kun tavlen og opslagene —
+   og arrangørens eget opslag med en stiplet ramme, så det ses.
+   ============================================================ */
+html.arr-forhaand .topbar,html.arr-forhaand .ny-tavle,html.arr-forhaand .chipset,html.arr-forhaand #reserver,
+html.arr-forhaand #bestil-pill,html.arr-forhaand footer,html.arr-forhaand .tidligere,html.arr-forhaand .hc-load,
+html.arr-forhaand .ny-afsnitsbjaelke,html.arr-forhaand .tilbage{display:none!important}
+html.arr-forhaand section{padding-top:22px!important;padding-bottom:40px}
+html.arr-forhaand .evcard.er-udkast{outline:2px dashed #d62a3a;outline-offset:5px}
+html.arr-forhaand .evcard.er-udkast::after{content:"Det, du retter";position:absolute;right:10px;top:-11px;z-index:3;padding:3px 9px;border-radius:999px;
+  background:#241a17;color:#fff;font:600 11px/1.3 "Host Grotesk",system-ui,sans-serif;letter-spacing:.02em}
+/* Billetten står som en billet, også når opslaget har et foto (26/10) —
+   før strakte den sig i hele kortets højde og blev en rød stang. */
+body.ny-kalside .evcard .date{align-self:flex-start}

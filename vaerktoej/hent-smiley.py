@@ -21,7 +21,7 @@
 #  ⚠️ OG DET ER IKKE EN EFTERLIGNING. Den tegnede smiley stod, fordi et
 #     hjemmelavet myndighedsmærke er værre end et tegn. Her er det
 #     myndighedens egen fil, for virksomhedens eget seneste resultat —
-#     og den følger med, når resultatet skifter (udgivelsen kører hver nat).
+#     og den følger med ved næste udgivelse, når resultatet skifter.
 #
 #  Prøv det lokalt uden net: python3 vaerktoej/hent-smiley.py --proev
 # ============================================================

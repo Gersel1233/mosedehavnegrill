@@ -43,6 +43,40 @@
   var panel = document.getElementById('reserver');
   if (!liste) return;
 
+  /* ============================================================
+     FORHÅNDSVISNINGEN I ADMIN  (26/10)
+     ------------------------------------------------------------
+     Mikkel: *"det rigtig vigtigt at de ting kan administreres
+     perfekt fra siden, især event-tingen, og det bliver flot på
+     siden, når de laver changes"*. Admin åbner DENNE side i en ramme
+     med ?forhaand=1 og sender det, arrangøren skriver, hertil
+     (postMessage) — så kortet i admin er sidens eget kort, tegnet af
+     sidens egen kode, ikke en efterligning. Samme greb som
+     menukortets forhåndsvisning (ny/admin-forhaand.js).
+
+     ⚠️ KUN I EN RAMME, OG KUN FRA SAMME ADRESSE. Udkastet gemmes
+     ingen steder; det står kun i rammen i arrangørens egen browser.
+     Intet kan reserveres herfra, og Google får ikke udkastet at se. */
+  var FORHAAND = /[?&]forhaand=1(&|$)/.test(location.search) && window.parent !== window;
+  var udkast = null;
+  var grund = [];
+  var gemtePladser = {};
+  if (FORHAAND) {
+    document.documentElement.classList.add('arr-forhaand');
+    document.addEventListener('click', function (e) {
+      var t = e.target && e.target.closest ? e.target.closest('a, [data-pick], form button') : null;
+      if (t && !t.closest('.ev-lag-top')) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+    window.addEventListener('message', function (e) {
+      if (e.origin !== location.origin) return;
+      var m = e.data || {};
+      if (m.type !== 'mosede-arr-forhaand') return;
+      udkast = m.k && typeof m.k === 'object' ? m.k : null;
+      if (klar) blandUdkast();
+    });
+  }
+  var klar = false;
+
   /* ⚠️ FORMULAREN ER FOLDET SAMMEN BAG PILLEN  (13/9). Kundens ord:
      "reservér plads inde på hvad sker der skal bare være en knap i
      bunden ligesom bestilling tingen på forsiden, og ved klik kommer
@@ -257,6 +291,7 @@
          ankeret ikke (arrangementet er slettet eller udløbet),
          lander gæsten øverst på kalenderen — ikke på en fejl. */
       kort.id = 'arr-' + k.id;
+      if (k._udkast) kort.classList.add('er-udkast');
 
       var dato = lav('div', 'date');
       dato.appendChild(lav('b', null, String(dagsTal(k.dato)).padStart(2, '0')));
@@ -338,7 +373,36 @@
        Findes ankeret ikke, sker der ingenting — gæsten står øverst
        på kalenderen, hvilket er det rigtige svar for et
        arrangement, der er væk. */
+    if (FORHAAND) {
+      var mit = liste.querySelector('.er-udkast');
+      if (mit) mit.scrollIntoView({ block: 'center' });
+      return;
+    }
     hopTilArrangement();
+  }
+
+  /* Udkastet ind på sin plads i rækken — og det gemte af samme
+     arrangement ud, så det ikke står to gange. */
+  function blandUdkast() {
+    var u = udkast;
+    var med = u && String(u.titel || '').trim() && /^\d{4}-\d{2}-\d{2}$/.test(String(u.dato || ''));
+    arrangementer = grund.filter(function (k) {
+      return !u || !u.id || String(k.id) !== String(u.id);
+    });
+    pladser = Object.assign({}, gemtePladser);
+    if (med) {
+      var k = Object.assign({}, u, { type: 'arrangement', _udkast: true });
+      arrangementer.push(k);
+      arrangementer.sort(function (a, b) {
+        if (a.dato !== b.dato) return a.dato < b.dato ? -1 : 1;
+        return String(a.start_kl || '') < String(b.start_kl || '') ? -1 : 1;
+      });
+      if (k.tilmelding) {
+        pladser[k.id] = { pladser: k.pladser || null,
+          optaget: (gemtePladser[k.id] && gemtePladser[k.id].optaget) || 0 };
+      }
+    }
+    tegnListe();
   }
 
   /* ============================================================
@@ -1011,6 +1075,14 @@
     return Butik.hentPladser().catch(function () { return {}; });
   }).then(function (p) {
     pladser = p || {};
+    if (FORHAAND) {
+      grund = arrangementer.slice();
+      gemtePladser = pladser;
+      klar = true;
+      blandUdkast();
+      window.parent.postMessage({ type: 'mosede-arr-klar' }, location.origin);
+      return;
+    }
     tegnListe();
     tegnVælger();
     /* Egen fangst: Googles data må ikke vælte listen. */

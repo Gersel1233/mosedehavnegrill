@@ -76,3 +76,187 @@ html.forhaand-aaben,html.forhaand-aaben body{overflow:hidden}
 body.personale .forhaand-ark .forhaand-top .knap{flex:none;height:42px;padding:0 16px;border-radius:999px;border:0;font:600 14px/1 "Host Grotesk",system-ui,sans-serif;box-shadow:none;background:#fff;color:#241a17;box-shadow:inset 0 0 0 1px rgba(36,26,23,.14)}
 body.personale .forhaand-ark .forhaand-top .forhaand-luk{background:#241a17;color:#fff;box-shadow:none}
 @media (max-width:520px){.forhaand-top span{display:none}}
+
+/* ============================================================
+   ARRANGEMENTER: LISTEN, ARKET OG DEN RIGTIGE SIDE  (26/10)
+   Mikkel: "det rigtig vigtigt at de ting kan administreres perfekt
+   fra siden, især event-tingen, og det bliver flot på siden, når de
+   laver changes". js/admin/arrangementer.js.
+   ============================================================ */
+
+/* ---- Listen: billetten, billedet, én knap og ⋯ ---- */
+body.personale .arr-raekke{cursor:pointer;border-radius:14px;padding:12px 10px;margin:0 -10px;transition:background .15s}
+body.personale .arr-raekke:hover{background:rgba(36,26,23,.035)}
+body.personale .arr-dag{border-radius:7px;padding:7px 0 8px;background:#d62a3a;color:#fff;
+  -webkit-mask:radial-gradient(circle at 50% 0,transparent 4.5px,#000 5px) 0 0/100% 51% no-repeat,radial-gradient(circle at 50% 100%,transparent 4.5px,#000 5px) 0 100%/100% 51% no-repeat;
+          mask:radial-gradient(circle at 50% 0,transparent 4.5px,#000 5px) 0 0/100% 51% no-repeat,radial-gradient(circle at 50% 100%,transparent 4.5px,#000 5px) 0 100%/100% 51% no-repeat}
+body.personale .arr-dag b{font:400 30px/1 "Bebas Neue",sans-serif;letter-spacing:.01em;color:#fff}
+body.personale .arr-dag .arr-ugedag,body.personale .arr-dag .arr-md{font:400 12px/1.1 "Bebas Neue",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.88)}
+body.personale .arr-raekke.kladde .arr-dag{background:#fff;color:var(--sea);box-shadow:none;outline:1.5px dashed rgba(36,26,23,.35);outline-offset:-2px}
+body.personale .arr-raekke.kladde .arr-dag b,body.personale .arr-raekke.kladde .arr-dag span{color:var(--sea)}
+body.personale .arr-raekke.aflyst .arr-dag{background:#8d7f79}
+body.personale .arr-raekke-foto{display:none}
+body.personale .arr-ret{font-weight:600}
+body.personale .arr-tal-chip{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--sea);color:#fff;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+body.personale .arr-mere{position:relative}
+body.personale .arr-mere-knap{min-width:44px;font-size:20px;line-height:1;letter-spacing:.05em}
+body.personale .arr-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;display:grid;gap:2px;min-width:190px;padding:6px;border-radius:16px;background:#fff;
+  box-shadow:0 0 0 1px rgba(36,26,23,.08),0 18px 40px -14px rgba(36,26,23,.45)}
+body.personale .arr-menu[hidden]{display:none}
+body.personale .arr-menu .knap{justify-content:flex-start;width:100%;border:0;box-shadow:none;background:transparent;border-radius:10px;text-align:left;text-decoration:none}
+body.personale .arr-menu .knap:hover{background:rgba(36,26,23,.06)}
+body.personale .arr-menu .knap.fare{color:var(--red-tekst)}
+body.personale .arr-menu .knap:disabled{opacity:.45}
+body.personale .arr-menu-hjaelp{margin:2px 10px 6px;font-size:12px;line-height:1.35;color:var(--muted);max-width:22ch}
+body.personale .arr-knapper{flex-wrap:nowrap;align-items:center}
+@media (min-width:900px){
+  body.personale .arr-raekke.med-foto{grid-template-columns:58px minmax(0,1fr) 88px auto}
+  body.personale .arr-raekke-foto{display:block;grid-column:3;width:88px;height:62px;object-fit:cover;border-radius:10px;box-shadow:0 1px 2px rgba(36,26,23,.15)}
+  body.personale .arr-raekke.med-foto .arr-knapper{grid-column:4}
+}
+/* På telefonen kommer menuen op fra bunden over bundbaren, som et ark. */
+@media (max-width:899px){
+  body.personale .arr-menu{position:fixed;left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:220;min-width:0;padding:8px;border-radius:22px;
+    box-shadow:0 0 0 100vmax rgba(28,18,15,.45),0 18px 40px -14px rgba(36,26,23,.45)}
+  body.personale .arr-menu .knap{min-height:52px;font-size:17px;justify-content:center;text-align:center}
+  body.personale .arr-menu-hjaelp{max-width:none;text-align:center}
+}
+
+/* ---- Arket ---- */
+body.personale .arr-ark-bag{position:fixed;inset:0;z-index:199;background:rgba(28,18,15,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+body.personale .arr-ark-bag[hidden]{display:none}
+body.personale #arr-form-kort:not([hidden]){position:fixed;z-index:200;inset:0;margin:0;overflow:auto;overscroll-behavior:contain;
+  padding:0 16px;border-radius:0;background:#fffdf9}
+body.personale #arr-form-kort .arr-form-hoved{position:sticky;top:0;z-index:5;margin:0 -16px 10px;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 12px;
+  background:#fffdf9;align-items:center;flex-wrap:nowrap}
+body.personale #arr-form-kort .arr-form-hoved .h-panel{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.personale #arr-form-kort .arr-form-hoved .kort-note{display:none}
+body.personale #arr-luk{flex:none}
+body.personale .arr-form-faner{display:flex;width:100%;margin:0 0 16px}
+body.personale .arr-form-faner button{flex:1 1 0}
+body.personale #arr-form-kort[data-fane="se"] .arr-felter{display:none}
+body.personale #arr-form-kort[data-fane="udfyld"] .arr-eksempel{display:none}
+body.personale .arr-form-fod{position:sticky;bottom:0;z-index:5;margin:8px -16px 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+  background:rgba(255,253,249,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 -1px 0 var(--streg)}
+body.personale .arr-form-fod .knap-raekke{margin:0;flex-wrap:nowrap}
+body.personale .arr-form-fod .knap{flex:1 1 0;min-width:0}
+body.personale .arr-form-fod .arr-advarsler{max-height:30vh;overflow:auto}
+@media (min-width:900px){
+  body.personale #arr-form-kort:not([hidden]){inset:3vh auto 3vh 50%;transform:translateX(-50%);width:min(1180px,calc(100% - 48px));
+    padding:0 28px;border-radius:26px;box-shadow:0 40px 90px -30px rgba(20,12,10,.6)}
+  body.personale #arr-form-kort .arr-form-hoved{margin:0 -28px 14px;padding:22px 28px 14px}
+  body.personale #arr-form-kort .arr-form-hoved .kort-note{display:block;margin-left:auto}
+  body.personale .arr-form-faner{display:none}
+  body.personale #arr-form-kort[data-fane] .arr-felter,body.personale #arr-form-kort[data-fane] .arr-eksempel{display:block}
+  body.personale .arr-form-fod{margin:8px -28px 0;padding:14px 28px}
+  body.personale .arr-form-fod .knap{flex:0 0 auto}
+  body.personale #arr-form-kort .arr-gitter{grid-template-columns:minmax(0,1fr) 400px;align-items:start;gap:32px}
+  body.personale #arr-form-kort .arr-eksempel{position:sticky;top:76px}
+}
+
+/* ---- Billedet: en flise, ikke "Choose File" ---- */
+body.personale .arr-billede-flise{position:relative;display:grid;place-items:center;min-height:118px;padding:14px;border-radius:16px;cursor:pointer;
+  border:1.5px dashed rgba(36,26,23,.28);background:rgba(36,26,23,.025);color:var(--muted);text-align:center;transition:border-color .15s,background .15s}
+body.personale .arr-billede-flise[hidden]{display:none}
+body.personale .arr-billede-flise:hover,body.personale .arr-billede-flise.over{border-color:#d62a3a;background:rgba(214,42,58,.05);color:var(--red-tekst)}
+body.personale .arr-billede-flise:focus-within{outline:2px solid #2a5f8f;outline-offset:2px}
+body.personale .arr-billede-flise.arbejder{opacity:.6;pointer-events:none}
+body.personale .arr-billede-fil{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
+body.personale .arr-billede-tom{display:grid;justify-items:center;gap:3px}
+body.personale .arr-billede-tom b{color:var(--sea);font-size:15px}
+body.personale .arr-billede-tom span{font-size:13px}
+body.personale .arr-billede-vis{display:grid;gap:8px;margin-top:0}
+body.personale .arr-billede-vis[hidden]{display:none}
+body.personale .arr-billede-vis img{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:14px}
+body.personale .arr-billede-knapper{display:flex;gap:8px;flex-wrap:wrap}
+body.personale .arr-billede-knapper label.knap{cursor:pointer}
+
+/* ---- Forhåndsvisningen: sidens egen tavle i en telefonramme ---- */
+body.personale .arr-eksempel-hoved{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+body.personale .arr-eksempel-hoved .arr-eksempel-titel{margin:0}
+body.personale .arr-eksempel-live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+body.personale .arr-eksempel-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#2e9e62;box-shadow:0 0 0 3px rgba(46,158,98,.18)}
+body.personale .arr-forhaand{position:relative;overflow:hidden;border-radius:22px;background:#b98a54;
+  box-shadow:0 0 0 6px #241a17,0 18px 40px -18px rgba(36,26,23,.6);margin:6px 6px 14px}
+body.personale .arr-ramme{display:block;width:100%;height:min(560px,calc(100dvh - 330px));min-height:380px;border:0;background:#b98a54}
+body.personale .arr-forhaand-note{margin:0 0 18px}
+@media (max-width:899px){
+  body.personale .arr-ramme{height:calc(100dvh - 300px)}
+}
+/* forsidens banner — mørkt glas med rødt lys, som på forsiden */
+body.personale .arr-kv-forside{display:flex;gap:14px;align-items:flex-start;padding:18px;border-radius:24px;color:#fff;
+  background:radial-gradient(120% 140% at 85% 30%,rgba(214,42,58,.45),transparent 55%),linear-gradient(160deg,#3a2120,#1f1412)}
+body.personale .arr-kv-forside-tegn{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:rgba(255,255,255,.12);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);font-size:22px}
+body.personale .arr-kv-eq{display:flex;align-items:flex-end;gap:3px;height:16px}
+body.personale .arr-kv-eq i{width:3.5px;border-radius:2px;background:#fff}
+body.personale .arr-kv-eq i:nth-child(1){height:7px}body.personale .arr-kv-eq i:nth-child(2){height:12px}
+body.personale .arr-kv-eq i:nth-child(3){height:5px}body.personale .arr-kv-eq i:nth-child(4){height:14px}
+body.personale .arr-kv-forside-tekst{min-width:0}
+body.personale .arr-kv-forside b{display:block;font-size:17px;line-height:1.25;font-weight:600}
+body.personale .arr-kv-forside p{margin:6px 0 0;font-size:14px;color:rgba(255,255,255,.75)}
+body.personale .arr-kv-forside-cta{display:inline-block;margin-top:12px;padding:9px 16px;border-radius:999px;background:linear-gradient(180deg,#e2404d,#c3202f);
+  font-size:14px;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+body.personale .arr-forside-hvad{margin:8px 2px 0}
+
+/* ---- Søjlen skal kunne ses i ét stykke  (26/10) ----
+   MÅLT på en bærbar (1366×900) som ejer: 17 punkter à 46 px + fem
+   overskrifter fyldte 1.023 px i en søjle på 736 — «Hjemmesiden» og
+   alt under den lå under kanten, og ingen vidste, at søjlen kunne rulle.
+   På en lav skærm rykker punkterne tættere; på en høj står de som før. */
+@media (min-width:900px) and (max-height:1120px){
+  body.personale .faner button{min-height:37px;font-size:14.5px}
+  body.personale .faner > .fane-gruppe{padding:10px 12px 3px}
+}
+@media (min-width:900px) and (max-height:940px){
+  body.personale .faner{padding-top:2px;padding-bottom:4px}
+  body.personale .faner button{min-height:33px}
+  body.personale .faner > .fane-gruppe{padding:6px 12px 2px;font-size:10.5px;line-height:1.4}
+  body.personale .faner .fane-ikon{width:18px;height:18px;flex-basis:18px}
+}
+
+/* ---- Overblikket: det næste på havnen (26/10) ---- */
+body.personale #ob-arr{display:grid;gap:8px}
+body.personale .ob-arr-raekke{display:grid;grid-template-columns:52px minmax(0,1fr);gap:14px;align-items:center;width:100%;padding:10px;margin:0;border:0;border-radius:16px;
+  background:rgba(36,26,23,.035);color:var(--sea);font:inherit;text-align:left;cursor:pointer;transition:background .15s}
+body.personale .ob-arr-raekke:hover{background:rgba(36,26,23,.07)}
+body.personale .ob-arr-raekke .arr-dag b{font-size:26px}
+body.personale .ob-arr-raekke.aflyst .arr-dag{background:#8d7f79}
+body.personale .ob-arr-midt{display:grid;gap:2px;min-width:0}
+body.personale .ob-arr-titel{font-size:16px;font-weight:600;line-height:1.25}
+body.personale .ob-arr-raekke.aflyst .ob-arr-titel{text-decoration:line-through}
+body.personale .ob-arr-meta{font-size:14px;color:var(--muted)}
+body.personale .ob-arr-tilmeldt{font-size:14px;font-variant-numeric:tabular-nums}
+body.personale #p-overblik .ob-arr-kladder{justify-self:start;width:auto;margin:0;text-align:left;display:inline-flex;align-items:center;min-height:40px;padding:0 2px;border:0;background:none;color:var(--red-tekst);font:inherit;font-size:14px;
+  text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+body.personale #arr-soeg[hidden]{display:none}
+@media (max-width:899px){
+  body.personale .arr-top #arr-filter{display:flex;width:100%}
+  body.personale .arr-top #arr-filter button{flex:1 1 0}
+  body.personale .arr-top #arr-ny{width:100%;margin-left:0}
+}
+/* Menuens punkter ser ens ud — også Slet og linket (de har ellers hver sin kant). */
+body.personale .arr-mere .arr-menu .knap{border:0;outline:0;box-shadow:none;background:transparent}
+body.personale .arr-mere .arr-menu .knap:hover{background:rgba(36,26,23,.06)}
+@media (max-width:899px){
+  body.personale .arr-mere .arr-menu .knap + .knap{border-top:1px solid var(--streg);border-radius:0}
+}
+
+/* ============================================================
+   FELTERNE STOD UD OVER KORTET PÅ IPHONE  (26/10)
+   Mikkels skærmbillede: «Nyt arrangement» på en iPhone — titlen,
+   Slags og «Hvad sker der?» gik ud over kortets højre kant. Safari
+   giver dato- og tidsfelter (og en <select> med en lang mulighed) en
+   indre mindstebredde, og et gitter uden minmax(0, 1fr) vokser med det
+   bredeste barn — så hele kolonnen blev bredere end skærmen.
+   Sandkassen har ingen Safari: målt i Chromium med tidsfelterne tvunget
+   op på 260 px, som Safari gør dem. Før: arket kunne rulle sidelæns
+   (481 px i en skærm på 430). Efter: intet går ud over kanten.
+   ============================================================ */
+body.personale .arr-gitter{grid-template-columns:minmax(0,1fr)}
+body.personale .felt-par > *,body.personale .arr-felter,body.personale .arr-afsnit,body.personale #arr-form-kort .felt{min-width:0}
+body.personale #arr-form-kort :is(input[type="date"],input[type="time"]){width:100%;min-width:0;max-width:100%;display:block;-webkit-appearance:none;appearance:none}
+body.personale #arr-form-kort :is(input[type="date"],input[type="time"])::-webkit-date-and-time-value{text-align:left}
+body.personale #arr-form-kort select{width:100%;min-width:0;max-width:100%;text-overflow:ellipsis}
+body.personale #arr-form-kort .felt-smal{max-width:none}
+body.personale #arr-form-kort:not([hidden]){overflow-x:hidden}

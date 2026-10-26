@@ -179,6 +179,8 @@ test.describe('Feltet i admin', () => {
     await expect(page.locator('#arr-beskrivelse')).toBeVisible();
     await expect(page.locator('label[for="arr-beskrivelse"]')).toContainText('Hvad sker der?');
 
+    /* Arbejdsbordet er et ark over hele skærmen (26/10) — ud ad Luk, som en finger gør. */
+    await page.locator('#arr-luk').click();
     await visFane(page, 'p-kalender');
     await page.locator('#kalender-typer [data-type="lukkedag"]').click();
     await expect(page.locator('#kal-tekst-felt')).toBeVisible();

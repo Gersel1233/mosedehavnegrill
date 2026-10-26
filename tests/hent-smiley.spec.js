@@ -43,7 +43,9 @@ test('udgivelsen henter smileyen før oprydningen, og en fejl stopper den ikke',
   expect(smil, 'oprydningen fjerner vaerktoej/ — trinnet skal stå før').toBeLessThan(ryd);
   const trin = y.slice(y.lastIndexOf('- name:', smil), smil);
   expect(trin).toContain('continue-on-error: true');
-  /* og den følger med, når resultatet skifter — uden at nogen pusher */
-  expect(y).toMatch(/schedule:\s*\n\s*- cron:/);
+  /* ⚠️ INGEN TIDSPLAN (26/10): en natlig kørsel udgiver, uden at nogen
+     har pushet — husets regel i udgivelse.spec.js. Smileyen følger med
+     ved næste udgivelse. */
+  expect(y).not.toMatch(/^\s*schedule:/m);
   expect(y, 'bagdøren må ikke komme tilbage').not.toMatch(/^\s*workflow_dispatch:/m);
 });

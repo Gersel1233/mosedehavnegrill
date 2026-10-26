@@ -45,6 +45,12 @@ async function arbejdsbordet(page, data) {
   await visFane(page, 'p-arrangementer');
 }
 const række = (page, titel) => page.locator('.arr-raekke', { hasText: titel || 'Fredagsbar på molen' });
+/* Kopiér, Aflys, Genåbn og Slet ligger bag ⋯ på rækken (26/10). */
+async function iMenuen(page, navn, titel) {
+  const r = række(page, titel);
+  if (await r.locator('.arr-menu').isHidden()) await r.locator('.arr-mere-knap').click();
+  return r.locator('.arr-menu').locator('button', { hasText: new RegExp('^' + navn + '$') });
+}
 
 /* ============================================================
    ARBEJDSBORDET
@@ -83,7 +89,7 @@ test.describe('Arbejdsbordet', () => {
   test('Aflys lader arrangementet og gæstelisten stå', async ({ page }) => {
     await arbejdsbordet(page, med([arr({ tilmelding: true, pladser: 40 })], [res()]));
     page.once('dialog', (d) => d.accept('Bandet er sygt'));
-    await række(page).locator('button', { hasText: /^Aflys$/ }).click();
+    await (await iMenuen(page, 'Aflys')).click();
     await expect(page.locator('#kvittering')).toContainText('Ring til de 2');
 
     const gemt = await gemteData(page);
@@ -96,7 +102,7 @@ test.describe('Arbejdsbordet', () => {
     expect(gemt.reservationer, 'gæstelisten forsvandt med aflysningen').toHaveLength(1);
 
     await expect(række(page)).toContainText('Aflyst');
-    await expect(række(page).locator('button', { hasText: /^Genåbn$/ })).toHaveCount(1);
+    await expect(await iMenuen(page, 'Genåbn')).toHaveCount(1);
   });
 
   /* ⚠️ SLET MED TILMELDTE TOG GÆSTELISTEN MED I STILHED (on delete
@@ -105,13 +111,13 @@ test.describe('Arbejdsbordet', () => {
      knap, der ALTID var låst, bestå. */
   test('Slet er låst, når nogen har meldt sig til', async ({ page }) => {
     await arbejdsbordet(page, med([arr({ tilmelding: true, pladser: 40 })], [res()]));
-    await expect(række(page).locator('button', { hasText: /^Slet$/ })).toBeDisabled();
+    await expect(await iMenuen(page, 'Slet')).toBeDisabled();
   });
 
   test('uden tilmeldte kan det slettes', async ({ page }) => {
     await arbejdsbordet(page, med([arr()], []));
     page.once('dialog', (d) => d.accept());
-    await række(page).locator('button', { hasText: /^Slet$/ }).click();
+    await (await iMenuen(page, 'Slet')).click();
     await expect(page.locator('#kvittering')).toContainText('Slettet');
     expect((await gemteData(page)).kalender).toHaveLength(0);
   });
@@ -131,7 +137,7 @@ test.describe('Arbejdsbordet', () => {
      undtagen datoen, som er det, der er nyt. */
   test('Kopiér tager alt med undtagen datoen', async ({ page }) => {
     await arbejdsbordet(page, med([arr({ tilmelding: true, pladser: 30, sted_id: 2, pris_tekst: '50,-' })]));
-    await række(page).locator('button', { hasText: /^Kopiér$/ }).click();
+    await (await iMenuen(page, 'Kopiér')).click();
     await expect(page.locator('#arr-titel')).toHaveValue('Fredagsbar på molen');
     await expect(page.locator('#arr-dato')).toHaveValue('');
     await expect(page.locator('#arr-maade [data-maade="tilmelding"]')).toHaveAttribute('aria-pressed', 'true');
@@ -217,8 +223,8 @@ test.describe('Arbejdsbordet', () => {
     await page.locator('#arr-billede').setInputFiles({ name: 'molen.svg',
       mimeType: 'image/svg+xml', buffer: Buffer.from(svg) });
     await expect(page.locator('#arr-billede-status')).toContainText('lagt op');
-    // Arrangøren ser det på kortet, før der trykkes Udgiv.
-    await expect(page.locator('#arr-forhaand img.arr-kv-foto')).toHaveCount(1);
+    // Arrangøren ser det på sidens eget opslag, før der trykkes Udgiv.
+    await expect(page.frameLocator('#arr-forhaand iframe').locator('.evcard.er-udkast img.evfoto')).toHaveCount(1);
 
     await page.locator('#arr-udgiv').click();
     await expect(page.locator('#kvittering')).toContainText('Udgivet');

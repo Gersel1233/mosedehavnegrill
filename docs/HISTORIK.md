@@ -7,6 +7,34 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**ADMIN: ARRANGEMENTERNE I ET ARK MED SIDENS EGEN KALENDER VED SIDEN AF** (26/10). Mikkel: *"tag et kig
+på mosedehavnecafes admin og gør den langt bedre udseende og overblik-mæssigt … især event-tingen, og det
+bliver flot på siden, når de laver changes"* — og et skærmbillede fra hans iPhone, hvor felterne i «Nyt
+arrangement» gik ud over kortets højre kant.
+· iPHONE-FEJLEN: Safari giver dato-/tidsfelter (og en lang <select>) en indre mindstebredde, og formularens
+  gitter havde ingen minmax(0, 1fr) — så hele kolonnen voksede ud over skærmen. Nu min-width:0 hele vejen
+  ned og overflow-x:hidden på arket. Målt i Chromium med felterne tvunget op på Safaris bredde (ingen
+  Safari i sandkassen): titel, Slags og tekstfeltet står inden for kanten.
+· ARKET: Ret / + Nyt arrangement åbner over hele skærmen (husets lag-aabent), Udgiv står fast i bunden.
+  Escape og et tryk ved siden af spørger først, hvis noget ikke er gemt; Luk lukker. Skifter admin fane,
+  lukker arket.
+· FORHÅNDSVISNINGEN ER SIDENS EGEN: h-kalender.html?forhaand=1 i en ramme; udkastet sendes ind med
+  postMessage (kun samme adresse, kun i en ramme) og tegnes af js/skal/kalender.js' egen kode — kork,
+  rød billet, nål, Bebas. Intet gemmes; intet kan reserveres derfra; Google får det ikke. På telefonen
+  under fanen «Se på siden». Forsidens banner vises i forsidens udtryk, og der står ærligt, om dette er
+  det næste arrangement (forsiden viser kun ét).
+· LISTEN: billet-dato, billedet, Ret + Tilmeldte (med tal), resten bag ⋯ (Kopiér, Se på siden, Aflys,
+  Slet); hele rækken åbner. Søgefeltet står først ved mere end otte. Billedet er en flise, der kan trækkes
+  ind på.
+· OVERBLIK: kortet «Det næste på havnen» — de næste 14 dages arrangementer, tilmeldte og ventende kladder.
+· SØJLEN: 17 punkter fyldte 1.023 px i en søjle på 736 (bærbar, 900 høj) — Hjemmesiden lå under kanten.
+  Tættere på lave skærme; målt til at passe ved 900.
+· KALENDERSIDEN: billetten strakte sig til en rød stang på opslag med foto — står nu som en billet.
+· UDGIVELSEN HAR IGEN KUN PUSH: 25/10's natlige kørsel (for smileyen) brød udgivelse.spec.js — fjernet.
+· Prøver: tests/arrangement-ark.spec.js (6 × 2), set fejle med forhåndsvisningen og Escape-spørgsmålet
+  slået fra. Helrunden på telefonen: de tilbageværende fejl (forsiden, find-foto, gennemgang,
+  siden-staar-stille m.fl.) fejler også på 64eadb2 — de er gamle og ikke rørt her.
+
 **FILMSTRIMLENS HULLER FØLGER MED HELE VEJEN** (25/10). Mikkel: *"kassettebåndet i historie-tingen ude på
 forsiden fortsætter ikke hele timelinen"*. Perforeringen i #omos .ny-tidslinje var ::before/::after med
 left:0;right:0 — så bred som skærmen (målt: 390 af 1540 px på telefonen, 1216 af 1556 på computeren), så den
@@ -28,8 +56,8 @@ længere, det er ovre"* (prisuddelingen var 8/10).
   (15 steder). Reserve: smiley.nembestil.dev (læser samme API). Fejler alt, står tegningen; trinnet har
   continue-on-error og kan aldrig stoppe en udgivelse. Kun værterne cdn2.gopublic.dk/findsmiley.dk
   accepteres, og en SVG med <script> afvises.
-· Udgivelsen kører nu også hver nat (schedule 03.23 UTC), så smileyen følger med en ny kontrol. En
-  planlagt kørsel kører altid standardgrenen — ikke en bagdør som workflow_dispatch var.
+· (Rettet 26/10: en natlig kørsel kom på her og brød udgivelse.spec.js' regel om, at intet udgives
+  uden et push. Den er fjernet; smileyen hentes ved hver udgivelse.)
 · Tre kort i stedet for fire: på telefonen bruger det tredje hele bredden; på computeren tæller
   kolonnerne de synlige kort (tre nu, to fra november, når Knæk Cancer skjuler sig).
 · ⚠️ IKKE SET MED DEN RIGTIGE SVG HERFRA — kun med en prøve-SVG i en kopi. Første udgivelse viser, om
