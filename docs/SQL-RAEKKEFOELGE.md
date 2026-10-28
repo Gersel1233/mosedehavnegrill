@@ -65,7 +65,14 @@ og derfra:
   → levering-store-17-10.sql
   → sms.sql
   → lancering-28-10.sql
+  → eventudvalg-nyheder-28-10.sql
 ```
+
+**⚠️ `eventudvalg-nyheder-28-10.sql` (28/10) — SKAL KØRES.** Mikkel: eventudvalget er *"primært event
+og nyheder og alle de tilmeldinger"*. Rollen `arrangoer` får nyhederne (skrivning via
+`kan_arrangere_for` i stedet for `is_admin_for`); alt andet er urørt. Prøven er
+`proev-eventudvalg-nyheder-28-10.sql` — 12 af 12 (og 3 af dem fejler uden filen). er-vi-klar 156.
+Uden filen ser arrangøren fanen Nyheder, men et gem bliver afvist.
 
 **⚠️ `lancering-28-10.sql` (28/10) — SKAL KØRES FØR LANCERINGEN 29/10.** To ting i én fil:
 levering kan lukkes og åbnes for sig selv pr. dag (`dags_regler.luk_levering`; tom = følger
@@ -381,6 +388,7 @@ tavst — derfor listen:
 | `gaestens-regler.sql`, `gaestens-vaern-26-9.sql` eller `tilvalg-og-tidsbegraensede-varer-1-10.sql` | `levering-tid-8-10.sql` | leveringens køretur forsvinder, så en gammel fane kan bestille en levering til Køge om et kvarter (tjek 152) |
 | `gaestens-regler.sql`, `gaestens-vaern-26-9.sql`, `tilvalg-og-tidsbegraensede-varer-1-10.sql` eller `levering-tid-8-10.sql` | `levering-store-17-10.sql` | store bestillinger mister chefens ekstra tid i køkkenet, så en gammel fane kan bestille 30 stk. til levering om en halv time |
 | `gaestens-regler.sql`, `gaestens-vaern-26-9.sql`, `tilvalg-og-tidsbegraensede-varer-1-10.sql`, `levering-tid-8-10.sql`, `levering-store-17-10.sql`, `dagsregler.sql`, `lukkedag-vaern.sql`, `dagsbesked-og-qr.sql` eller `aabent-og-antal-vaern.sql` | `lancering-28-10.sql` | levering lukker igen med to-go, og morgenmadens tilkøb afvises (tjek 154, 155) |
+| `setup.sql` eller `flerlejer.sql` | `eventudvalg-nyheder-28-10.sql` | eventudvalget kan ikke længere gemme en nyhed (tjek 156) |
 | `gaestens-regler.sql` eller `arrangement-sluttid.sql` | `arrangoer.sql` | tilmeldingens bremse mister venteliste, frist, aflysning og max pr. tilmelding — et aflyst arrangement tager imod igen |
 
 Og to rækkefølger inden i rækkefølgen: `bestilling-dato-vaern.sql` FØR

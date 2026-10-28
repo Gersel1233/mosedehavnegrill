@@ -284,11 +284,39 @@ test.describe('Arrangøren ser sit eget', () => {
      en arrangør ville have fået priser, salg og personale at se.
      Databasen siger nej alligevel (is_admin_for), men en skærm fuld af
      felter, der ikke kan gemmes, er et system, der ser i stykker ud. */
-  test('arrangøren ser kun Arrangementer og Tilmeldinger', async ({ page }) => {
+  /* Mikkel 28/10: eventudvalget er "primært event og nyheder og alle
+     de tilmeldinger" — Nyheder kom med (eventudvalg-nyheder-28-10.sql). */
+  test('arrangøren ser kun Arrangementer, Tilmeldinger og Nyheder', async ({ page }) => {
     await åbnAdmin(page, { data: med([arr()], [], { personale: PERSONALE('arrangoer') }) });
-    expect((await synligeFaner(page)).sort()).toEqual(['p-arrangementer', 'p-tilmeldinger']);
+    expect((await synligeFaner(page)).sort()).toEqual(['p-arrangementer', 'p-nyheder', 'p-tilmeldinger']);
     await expect(page.locator('#p-arrangementer')).toBeVisible();
     await expect(række(page)).toBeVisible();
+  });
+
+  /* Eventudvalget skriver selv havnens nyheder — og gæsten ser dem. */
+  test('arrangøren skriver en nyhed, og den står på forsiden', async ({ page, browser }) => {
+    await åbnAdmin(page, { data: med([arr()], [], { personale: PERSONALE('arrangoer') }) });
+    await synligeFaner(page);
+    await visFane(page, 'p-nyheder');
+    await page.locator('#ny-titel').fill('Julefrokost på havnen');
+    await page.locator('#ny-tekst').fill('Book bord til december.');
+    await page.locator('#tilfoej-nyhed').click();
+    await expect(page.locator('#kvittering')).not.toBeEmpty();
+    const gemt = await gemteData(page);
+    expect(gemt.nyheder.some((n) => n.titel === 'Julefrokost på havnen')).toBe(true);
+
+    const gaest = await (await browser.newContext()).newPage();
+    await åbnSkal(gaest, '/index.html#nyheder', { data: gemt });
+    await expect(gaest.locator('body')).toContainText('Julefrokost på havnen');
+  });
+
+  test('på telefonen har arrangøren sine tre faner i bundbjælken', async ({ page }, info) => {
+    test.skip(info.project.name !== 'mobil', 'bundbjælken er telefonens');
+    await åbnAdmin(page, { data: med([arr()], [], { personale: PERSONALE('arrangoer') }) });
+    await synligeFaner(page);
+    const synlige = await page.locator('#bundbar button[data-gaa]').evaluateAll(
+      (bs) => bs.filter((b) => !b.hidden).map((b) => b.dataset.gaa));
+    expect(synlige).toEqual(['p-arrangementer', 'p-tilmeldinger', 'p-nyheder']);
   });
 
   test('ejeren ser stadig det hele', async ({ page }) => {

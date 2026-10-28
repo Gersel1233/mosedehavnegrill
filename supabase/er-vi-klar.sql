@@ -1354,7 +1354,15 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and coalesce(pg_get_functiondef(to_regproc('public.mosede_gaestens_regler'))
                     like '%to_jsonb(v) -> ''tilvalg''%', false)),
    'Et tilkøb til morgenmaden afvises, eller står løst på bonen. '
-   || 'Kør supabase/lancering-28-10.sql.')
+   || 'Kør supabase/lancering-28-10.sql.'),
+
+  (156, 'Roller', 'Eventudvalget (arrangør) kan skrive nyhederne',
+   (select count(*) = 3 from pg_policies
+     where schemaname = 'public' and tablename = 'nyheder'
+       and policyname in ('nyheder_opret_admin', 'nyheder_ret_admin', 'nyheder_slet_admin')
+       and coalesce(qual, with_check) like '%kan_arrangere_for%'),
+   'Eventudvalget ser fanen Nyheder, men kan ikke gemme. '
+   || 'Kør supabase/eventudvalg-nyheder-28-10.sql.')
 ),
 
 samlet as (

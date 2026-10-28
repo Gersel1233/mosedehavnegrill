@@ -59,8 +59,11 @@
   function arrangoer() { return Admin.rolle === 'arrangoer'; }
   function ejer() { return Admin.rolle !== 'medarbejder' && !arrangoer(); }
 
-  /* Arrangøren ser to faner — havnens program og hvem der kommer. */
-  var ARRANGOERENS = ['p-arrangementer', 'p-tilmeldinger'];
+  /* Arrangøren ser tre faner — havnens program, hvem der kommer, og
+     nyhederne. Mikkel 28/10: eventudvalget er *"primært event og
+     nyheder og alle de tilmeldinger"*. Databasens halvdel er
+     supabase/eventudvalg-nyheder-28-10.sql (12/12). */
+  var ARRANGOERENS = ['p-arrangementer', 'p-tilmeldinger', 'p-nyheder'];
 
   /* Kaldes efter login og hver gang rollen er hentet. Fanerne
      bliver i opmærkningen — de skjules, så en senere ændring af

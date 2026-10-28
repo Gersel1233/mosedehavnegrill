@@ -7,6 +7,12 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**EVENTUDVALGET SKRIVER OGSÅ NYHEDERNE** (28/10). Mikkel: *"cheferne som har adgang til alt, event
+udvalget, primært event og nyheder og alle de tilmeldinger"*. Cheferne = rollen Ejer (uændret). Arrangør
+(eventudvalget) ser nu Arrangementer, Tilmeldinger OG Nyheder — også i telefonens bundbjælke.
+supabase/eventudvalg-nyheder-28-10.sql (12/12; 3 fejler uden filen), er-vi-klar 156. Logins: Supabase →
+Authentication → Users → Invite user, og derefter admin → Personale → e-mail, navn, rolle → Giv adgang.
+
 **FORSIDENS SLUTBILLEDE LEVER** (28/10). Mikkel: *"B med higgsfield … laves brutalt med materiale fra
 havnecafeen selv"*. Efter filmen blændes en sløjfe af SAMME slutbillede ind (vand, lys, både — bordet står).
 FLUX 3 Video fra film/hero-*-slut.jpg som start- og slutbillede; enden blændet over i begyndelsen med ffmpeg
