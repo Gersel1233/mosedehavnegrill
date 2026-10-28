@@ -373,9 +373,23 @@
        Findes ankeret ikke, sker der ingenting — gæsten står øverst
        på kalenderen, hvilket er det rigtige svar for et
        arrangement, der er væk. */
+    /* ⚠️ RAMMEN RULLER KUN SIG SELV  (28/10). Mikkel fra sin iPad:
+       *"når man skriver noget nederst, scroller de op og hakker"*.
+       scrollIntoView i en ramme ruller OGSÅ forælderens rullebokse —
+       her arket i admin — så hvert tastetryk (sendt efter 120 ms)
+       flyttede formularen væk fra fingeren. Nu ruller kun rammens eget
+       vindue, og kun når opslaget ikke allerede står i syne: en titel,
+       der skrives, flytter ingenting; en ny dato, der flytter
+       opslaget, gør. */
     if (FORHAAND) {
       var mit = liste.querySelector('.er-udkast');
-      if (mit) mit.scrollIntoView({ block: 'center' });
+      if (mit) {
+        var r = mit.getBoundingClientRect();
+        var hoej = window.innerHeight || document.documentElement.clientHeight;
+        if (r.top < 0 || r.bottom > hoej) {
+          window.scrollTo(0, Math.max(0, (window.scrollY || 0) + r.top - Math.max(0, (hoej - r.height) / 2)));
+        }
+      }
       return;
     }
     hopTilArrangement();
@@ -595,12 +609,61 @@
 
   function markerValg() {
     var boks = id('kvalg');
-    if (!boks) return;
-    Array.prototype.forEach.call(boks.querySelectorAll('button'), function (b) {
-      var på = valgt !== null && String(b.getAttribute('data-kalender')) === String(valgt);
-      b.classList.toggle('on', på);
-      b.setAttribute('aria-checked', på ? 'true' : 'false');
+    if (boks) {
+      Array.prototype.forEach.call(boks.querySelectorAll('button'), function (b) {
+        var på = valgt !== null && String(b.getAttribute('data-kalender')) === String(valgt);
+        b.classList.toggle('on', på);
+        b.setAttribute('aria-checked', på ? 'true' : 'false');
+      });
+    }
+    var k = valgtArrangement();
+    visPris(k);
+    visSiddevalg(k);
+  }
+  function valgtArrangement() {
+    return arrangementer.filter(function (x) { return String(x.id) === String(valgt); })[0] || null;
+  }
+
+  /* ⚠️ PRISEN PR. BILLET  (28/10). Mikkel: *"prisen pr. billet skal stå
+     tydeligt, og der skal også stå betales ved kassen"*. Prisen er
+     arrangørens egen tekst (pris_tekst). Er den bare et tal ("150 kr."),
+     regner billetten også det samlede beløb ud (prisTal). */
+  function prisTal(t) {
+    var m = String(t || '').trim().match(/^(\d{1,5})(?:[.,]-|,-)?\s*(?:kr\.?|dkk)?\s*(?:(?:pr\.?|per|\/)\s*(?:person|pers\.?|billet|stk\.?|mand))?\.?$/i);
+    return m ? Number(m[1]) : null;
+  }
+  function visPris(k) {
+    var p = id('kpris');
+    if (!p) return;
+    var t = k && String(k.pris_tekst || '').trim();
+    p.classList.toggle('skjult', !t);
+    tøm(p);
+    if (!t) return;
+    p.appendChild(lav('b', null, 'Pris: ' + t + (prisTal(t) !== null && !/pr\.?|per|\//i.test(t) ? ' pr. billet' : '')));
+    p.appendChild(document.createTextNode(' · betales ved kassen'));
+  }
+
+  /* ⚠️ "HVOR VIL I SIDDE?" ER ARRANGEMENTETS EGET  (28/10). Valgene
+     skrives i admin (kalender.siddevalg). Uden dem stilles spørgsmålet
+     ikke — og antal-feltet får hele bredden. "Er lige meget" kommer
+     altid med, så ingen tvinges til at vælge. */
+  function visSiddevalg(k) {
+    var felt = id('kbord-felt');
+    var sel = id('kbord');
+    var raekke = id('kantal-raekke');
+    if (!felt || !sel) return;
+    var valg = (k && Array.isArray(k.siddevalg) ? k.siddevalg : [])
+      .map(function (v) { return String(v || '').trim(); }).filter(Boolean);
+    felt.hidden = !valg.length;
+    if (raekke) raekke.classList.toggle('two-col', !!valg.length);
+    tøm(sel);
+    if (!valg.length) return;
+    valg.concat(['Er lige meget']).forEach(function (v) {
+      var o = document.createElement('option');
+      o.textContent = v;
+      sel.appendChild(o);
     });
+    sel.value = 'Er lige meget';
   }
 
   /* ⚠️ EN KNAP, DER PEGER PÅ ET SKJULT PANEL, GØR INGENTING.
@@ -730,44 +793,15 @@
        personalet læser. En kolonne til hver af designets små
        valgmuligheder ville være en SQL-fil pr. felt, og ingen af
        dem ville nogensinde blive brugt til at regne på noget. */
-    var hvor = (id('kbord') || {}).value || '';
+    var hvor = id('kbord-felt') && !id('kbord-felt').hidden ? (id('kbord') || {}).value || '' : '';
     var besked = String((id('kbesked') || {}).value || '').trim();
     if (hvor && hvor !== 'Er lige meget') {
       besked = 'Vil gerne sidde: ' + hvor + (besked ? '\n' + besked : '');
     }
 
-    /* ⚠️ ALLERGIEN BLEV ALDRIG LÆST HER  (21/9, MÅLT).
-
-       h-kalender.html har haft #kallergi og en samtykkelinje
-       siden 10/9 — og ordet "allergi" optrådte NUL gange i den
-       her fil. En gæst, der tilmeldte sig en fællesspisning og
-       skrev "skaldyr", fik hverken en linje at sige ja på eller
-       en oplysning frem til køkkenet. Det er NØJAGTIG den fejl,
-       frokostsiden fik rettet 16/9 — den blev bare rettet ét
-       sted og ikke som en klasse. tests/allergi-paa-alle.spec.js
-       læser nu alle sider og slår hvert felt op i den kode,
-       siden faktisk indlæser, så en syvende side ikke kan slippe
-       forbi.
-
-       Og fællesspisningen er netop den aften, hvor køkkenet laver
-       ÉN ret til alle — der er ingen menu at vælge sig uden om.
-
-       ⚠️ SAMTYKKET SPÆRRER KUN, NÅR DER FAKTISK STÅR NOGET.
-       Reglen er Butik.allergiMangler: kan man ikke tilmelde sig
-       uden at sige ja til at få gemt en helbredsoplysning, er
-       samtykket ikke frivilligt — og så er det ugyldigt. */
-    var allergi = String((id('kallergi') || {}).value || '').trim();
-    var aFlueben = id('kallergi-samtykke');
-    var savn = Butik.allergiMangler(allergi, aFlueben && aFlueben.checked);
-    if (savn) {
-      if (aFlueben && aFlueben.focus) aFlueben.focus();
-      if (knap) knap.disabled = false;
-      return sigFejl(savn);
-    }
-    /* Forrest, med ordet ALLERGI:. Den samme ene regel, de fire
-       andre veje bruger — og grunden til, at admin og køkkenet
-       kan kende en allergi fra en almindelig besked. */
-    besked = Butik.medAllergi(besked, allergi);
+    /* ⚠️ INGEN ALLERGI PÅ TILMELDINGEN  (28/10). Mikkel: *"fjern også
+       allergi fra der"*. Feltet, samtykket og ordet ALLERGI: på rækken er
+       væk fra h-kalender.html; bestillingerne har stadig deres. */
 
     var valgtArr = arrangementer.filter(function (x) { return String(x.id) === String(vælger.value); })[0] || {};
     var maks = valgtArr.max_pr_tilmelding || 20;
@@ -795,6 +829,47 @@
       sigFejl(grund, /telefonnummer/i.test(grund) ? id('ktlf') : null);
       if (knap) knap.disabled = false;
     });
+  }
+
+  /* ⚠️ BILLETTEN SIGER, HVAD DEN ER  (28/10). Mikkel: *"prisen pr. billet
+     skal stå tydeligt, og der skal også stå betales ved kassen — dette er
+     en reservationsbillet — og afbud senest 24 timer inden, også
+     nummer"*. Linjerne: hvad, hvornår, hvor mange, pris pr. billet og —
+     når prisen er et tal — det samlede beløb ved kassen. */
+  function billetLinjer(k, svar) {
+    var antal = Number(svar.antal_personer) || 1;
+    var l = [];
+    if (k) {
+      l.push({ navn: 'Arrangement', vaerdi: k.titel });
+      l.push({ navn: 'Hvornår', vaerdi: pænDag(k.dato) + (klokken(k) ? ' kl. ' + klokken(k) : '') });
+    }
+    l.push({ navn: 'Antal', vaerdi: antal + (svar.venteliste ? ' personer' : (antal === 1 ? ' billet' : ' billetter')) });
+    var pris = k && String(k.pris_tekst || '').trim();
+    if (pris && !svar.venteliste) {
+      var tal = prisTal(pris);
+      l.push({ navn: 'Pris pr. billet', vaerdi: pris });
+      if (tal !== null && tal > 0) {
+        l.push({ navn: 'I alt ved kassen', vaerdi: (tal * antal).toLocaleString('da-DK') + ' kr.', fed: true });
+      }
+    }
+    return l;
+  }
+  function husetsTelefon() {
+    return (window.MOSEDE && window.MOSEDE.telefonPent) || '28 87 13 43';
+  }
+  function billetVilkaar(k) {
+    var boks = lav('div', 'kvit-vilkaar');
+    boks.appendChild(lav('p', 'kvit-vilkaar-top', 'Reservationsbillet — betales ved kassen'));
+    var p = lav('p', null, (k && String(k.pris_tekst || '').trim()
+      ? 'Billetten holder jeres pladser. I betaler, når I kommer. '
+      : 'Billetten holder jeres pladser. ')
+      + 'Bliver I forhindret, så meld afbud senest 24 timer før på ');
+    var a = lav('a', null, husetsTelefon());
+    a.href = 'tel:+45' + husetsTelefon().replace(/\D/g, '').slice(-8);
+    p.appendChild(a);
+    p.appendChild(document.createTextNode(' — så kan pladsen gå videre til en anden.'));
+    boks.appendChild(p);
+    return boks;
   }
 
   function visTak(svar) {
@@ -833,8 +908,7 @@
        noget ændrer sig — og en kvittering, der siger "vi ringer",
        får gæsten til at vente på et opkald, der aldrig kommer.
        Samme lære som bordbookingen: bestilt er bestilt. */
-    var besked = hvad + ' Vi siger til, hvis noget ændrer sig. '
-      + 'Bliver I forhindret, så ring, så kan pladsen gå videre til en anden.';
+    var besked = hvad + ' Vi siger til, hvis noget ændrer sig.';
     /* ⚠️ VENTELISTE ER IKKE EN PLADS (12/10). Svaret kommer fra
        databasen (mosede_paa_venteliste) — kvitteringen må aldrig love en
        plads, der blev til en venteliste i samme sekund. Her ER der et
@@ -872,7 +946,7 @@
       skaermbillede: true,
       kode: {
         /* På ventelisten er nummeret ikke en plads — det er sagen. */
-        navn: svar.venteliste ? 'Jeres nummer' : 'Pladsnummer',
+        navn: svar.venteliste ? 'Jeres nummer' : 'Billetnummer',
         reference: svar.reference, refNavn: 'Jeres reference',
         /* ⚠️ NUMMERET ER DET STORE, NÅR DET FINDES  (10/9).
            Kundens ord: referencen er rigtig, men nummeret skal
@@ -887,10 +961,9 @@
           });
         },
       },
-      linjer: [
-        { navn: 'Antal', vaerdi: (svar.antal_personer || 1) + (svar.venteliste ? ' personer' : ' pladser') },
-      ],
-      fine: svar.venteliste ? 'Sig referencen, når vi ringer.' : 'Sig referencen i døren, hvis vi spørger.',
+      linjer: billetLinjer(k, svar),
+      ekstra: svar.venteliste ? [] : [billetVilkaar(k)],
+      fine: svar.venteliste ? 'Sig referencen, når vi ringer.' : 'Vis billetten eller sig nummeret i døren.',
     });
     /* "Gem i min kalender" — kun med en plads. En venteliste i kalenderen
        ville ligne en aftale, der ikke er der. */
@@ -920,27 +993,6 @@
       if (el) el.addEventListener('input', rydFejl);
     });
 
-    /* ⚠️ FLUEBENET FINDES KUN, NÅR DER ER SKREVET NOGET (21/9).
-       Linjen ligger med klassen `skjult` i opmærkningen, og INTET
-       fjernede den før nu — så gæsten kunne skrive en allergi og
-       aldrig få mulighed for at sige ja til, at vi gemmer den.
-       Samme mønster som js/bestilling.js, js/skal/bestil.js og
-       js/skal/forespoergsel.js; se den lange note i send().
-
-       ⚠️ OG DET NULSTILLES, NÅR TEKSTEN RYDDES. Ellers stod et
-       gammelt ja og gjaldt en allergi, gæsten havde slettet. */
-    var aFelt = id('kallergi');
-    var aLinje = id('kallergi-samtykke-linje');
-    if (aFelt && aLinje) {
-      aFelt.addEventListener('input', function () {
-        var harTekst = !!aFelt.value.trim();
-        aLinje.classList.toggle('skjult', !harTekst);
-        if (!harTekst) {
-          var boks = id('kallergi-samtykke');
-          if (boks) boks.checked = false;
-        }
-      });
-    }
   }
 
   /* ⚠️ "HVAD SKER DER" OG "HVAD HAR DER VÆRET" ER ÉT STED  (13/9).

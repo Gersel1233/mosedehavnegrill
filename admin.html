@@ -45,8 +45,13 @@
 
     <form id="login-form" novalidate>
       <div class="felt">
-        <label for="email">E-mail</label>
-        <input type="email" id="email" autocomplete="username" required>
+        <!-- ⚠️ ET BRUGERNAVN VIRKER OGSÅ (28/10): "eventudvalg1010" logger
+             ind som eventudvalg1010@mosedehavnecafe.dk (Butik.auth.loginMail).
+             type="text", så iPhonen ikke kræver et @ — og uden stort
+             begyndelsesbogstav og autokorrektur. -->
+        <label for="email">E-mail eller brugernavn</label>
+        <input type="text" id="email" inputmode="email" autocomplete="username"
+               autocapitalize="none" autocorrect="off" spellcheck="false" required>
       </div>
       <div class="felt">
         <label for="kode">Adgangskode</label>
@@ -3306,9 +3311,10 @@
               </div>
               <div class="felt-par">
                 <div class="felt">
-                  <label for="arr-pris">Pris <span class="hjaelp">(dine egne ord)</span></label>
-                  <input type="text" id="arr-pris" maxlength="120" placeholder="fx 145,- eller fri entré">
-                  <p class="hjaelp">Der er ingen betaling på hjemmesiden — der betales ved lugen.</p>
+                  <label for="arr-pris">Pris pr. billet <span class="hjaelp">(dine egne ord)</span></label>
+                  <input type="text" id="arr-pris" maxlength="120" placeholder="fx 145 kr. eller fri entré">
+                  <p class="hjaelp">Der er ingen betaling på hjemmesiden — der betales ved kassen. Skriver du bare et
+                    beløb (fx 145 kr.), regner gæstens billet selv det samlede beløb ud.</p>
                 </div>
                 <div class="felt">
                   <span class="felt-etiket">Billede <span class="hjaelp">(valgfrit)</span></span>
@@ -3390,8 +3396,13 @@
                     <input type="number" id="arr-pladser" min="1" max="2000" inputmode="numeric" placeholder="ingen grænse">
                   </div>
                   <div class="felt felt-smal">
-                    <label for="arr-max">Højst pr. tilmelding</label>
-                    <input type="number" id="arr-max" min="1" max="100" inputmode="numeric" placeholder="20">
+                    <!-- ⚠️ "HØJST HVAD?" (Mikkel 28/10, på iPad'en). Det er,
+                         hvor mange ÉN gæst må skrive sig på med — tomt er 20,
+                         samme tal som siden og databasen bruger. -->
+                    <label for="arr-max">Højst personer pr. tilmelding</label>
+                    <input type="number" id="arr-max" min="1" max="100" inputmode="numeric" placeholder="20"
+                           aria-describedby="arr-max-hjaelp">
+                    <span class="hjaelp" id="arr-max-hjaelp">Hvor mange én gæst må melde med. Tomt = 20.</span>
                   </div>
                   <div class="felt felt-smal" id="arr-frist-felt">
                     <label for="arr-frist">Tilmeldingen lukker</label>
@@ -3409,6 +3420,17 @@
                   <input type="checkbox" id="arr-venteliste">
                   <span>Venteliste, når der er udsolgt <span class="hjaelp">— I ringer, når en plads bliver ledig</span></span>
                 </label>
+                <!-- ⚠️ "HVOR VIL I SIDDE?" ER ARRANGØRENS EGET (28/10). Mikkel: det
+                     skal *"væk eller administreres, når de opretter den — og
+                     hvilke slags pladser, og selv kunne personalisere dem"*.
+                     Tomt = gæsten bliver ikke spurgt. kalender.siddevalg. -->
+                <div class="felt" id="arr-sidde-felt">
+                  <label for="arr-sidde">Spørg gæsten, hvor de vil sidde <span class="hjaelp">(valgfrit)</span></label>
+                  <input type="text" id="arr-sidde" maxlength="300" autocomplete="off"
+                         placeholder="fx Langbord ude, Indenfor, Ved scenen" aria-describedby="arr-sidde-hjaelp">
+                  <span class="hjaelp" id="arr-sidde-hjaelp">Skriv pladserne med komma imellem — højst 8.
+                    Tomt = gæsten bliver ikke spurgt. «Er lige meget» kommer selv med.</span>
+                </div>
               </div>
             </fieldset>
           </div>

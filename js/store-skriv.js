@@ -258,6 +258,14 @@
       ren.tilmelding_lukker_timer = talEllerNull(r.tilmelding_lukker_timer);
     }
     if (r.bord_booking !== undefined) ren.bord_booking = !!r.bord_booking;
+    /* "Hvor vil I sidde?" (28/10). Samme regel som databasens
+       kalender_siddevalg_ok: højst 8, og tomt er null — ikke []. */
+    if (r.siddevalg !== undefined) {
+      var sv = (Array.isArray(r.siddevalg) ? r.siddevalg : [])
+        .map(function (v) { return String(v || '').trim().slice(0, 40); })
+        .filter(Boolean).slice(0, 8);
+      ren.siddevalg = sv.length ? sv : null;
+    }
     if (r.serie !== undefined) ren.serie = r.serie || null;
     if (r.slut_kl !== undefined) ren.slut_kl = r.slut_kl || null;
     return ren;

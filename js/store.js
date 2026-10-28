@@ -5002,7 +5002,21 @@
       || v === '' || location.protocol === 'file:';
   }
 
+  /* ⚠️ ET BRUGERNAVN ER EN E-MAIL PÅ HUSETS DOMÆNE  (28/10). Mikkel:
+     eventudvalget skal have *"en custom der hedder eventudvalg1010"*.
+     Supabase kender kun e-mails, så "eventudvalg1010" logger ind som
+     eventudvalg1010@mosedehavnecafe.dk — sådan er brugeren oprettet i
+     Authentication. Står der et @, er det en e-mail som før. Små
+     bogstaver: iPhonen skriver gerne "Eventudvalg1010". */
+  var BRUGER_DOMAENE = 'mosedehavnecafe.dk';
+  function loginMail(s) {
+    var v = String(s || '').trim().toLowerCase();
+    return v && v.indexOf('@') === -1 ? v + '@' + BRUGER_DOMAENE : v;
+  }
+
   var auth = {
+    loginMail: loginMail,
+
     /* Til den direkte forbindelse (js/admin/live.js): realtime
        skal bruge selve nøglen for at få lov at lytte med — samme
        nøgle, som hoveder() sender på hvert kald. */
@@ -5016,6 +5030,7 @@
     },
 
     login: function (email, kode, husk) {
+      email = loginMail(email);
       if (!SKY) {
         // Uden database er der ingen at spørge. Admin kører i
         // øvetilstand, hvor intet går videre til nettet.

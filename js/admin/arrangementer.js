@@ -67,6 +67,27 @@
      `aflyst`, er arrangoer.sql kørt. En tom kalender er et "måske" —
      samme begrundelse som maaTilmelding: en høj fejl med en løsning
      (PGRST204 → "Kør supabase/arrangoer.sql") slår en tavs. */
+  /* "Hvor vil I sidde?" (28/10, eventudvalg-nyheder-28-10.sql). Feltet
+     står kun, når kolonnen findes — ellers kunne arket ikke gemmes. */
+  var harSidde = !Butik.sky;
+  if (Butik.sky && Butik.skrive && Butik.skrive.harKolonne) {
+    Butik.skrive.harKolonne('kalender', 'siddevalg').then(function (ja) {
+      harSidde = !!ja;
+      if (!$('arr-form-kort').hidden) tegnForm();
+    }).catch(function () { harSidde = false; });
+  }
+  function siddevalg() {
+    var set = {};
+    return String(felt('arr-sidde').value || '').split(/[,\n]/)
+      .map(function (v) { return v.trim().replace(/\s+/g, ' ').slice(0, 40); })
+      .filter(function (v) {
+        var n = v.toLowerCase();
+        if (!v || n === 'er lige meget' || set[n]) return false;
+        set[n] = true;
+        return true;
+      }).slice(0, 8);
+  }
+
   function nyeKolonner() {
     if (!Butik.sky) return true;
     var liste = d().kalender || [];
@@ -451,6 +472,7 @@
     felt('arr-frist').value = k && k.tilmelding_lukker_timer !== null && k.tilmelding_lukker_timer !== undefined
       ? String(k.tilmelding_lukker_timer) : '';
     felt('arr-venteliste').checked = !!(k && k.venteliste);
+    felt('arr-sidde').value = k && Array.isArray(k.siddevalg) ? k.siddevalg.join(', ') : '';
     felt('arr-gentag').value = '';
     felt('arr-gentag-til').value = '';
     valg.kategori = k ? (k.kategori || '') : '';
@@ -552,6 +574,7 @@
     $('arr-frist-felt').hidden = !nyeKolonner();
     $('arr-venteliste-felt').hidden = !nyeKolonner();
     $('arr-max').closest('.felt').hidden = !nyeKolonner();
+    $('arr-sidde-felt').hidden = !harSidde;
     /* Venteliste uden et loft er en liste, ingen kommer på. */
     var loft = felt('arr-pladser').value !== '';
     felt('arr-venteliste').disabled = !loft;
@@ -623,6 +646,7 @@
       pladser: valg.maade === 'tilmelding' && felt('arr-pladser').value !== '' ? Number(felt('arr-pladser').value) : null,
       venteliste: valg.maade === 'tilmelding' && felt('arr-venteliste').checked,
       tilmelding_lukker_timer: valg.maade === 'tilmelding' && felt('arr-frist').value !== '' ? Number(felt('arr-frist').value) : null,
+      siddevalg: valg.maade === 'tilmelding' && siddevalg().length ? siddevalg() : null,
       billede: nytBillede !== undefined ? nytBillede : (retter ? retter.billede : null),
       aflyst: retter ? !!retter.aflyst : false,
       aflyst_tekst: retter ? retter.aflyst_tekst : null,
@@ -839,6 +863,7 @@
       r.tilmelding_lukker_timer = k.tilmelding_lukker_timer;
       if (serie) r.serie = serie;
     }
+    if (harSidde) r.siddevalg = k.siddevalg;
     return r;
   }
 
@@ -1031,7 +1056,7 @@
     tegnForm();
   });
   ['arr-titel', 'arr-beskrivelse', 'arr-pris', 'arr-dato', 'arr-start', 'arr-slut', 'arr-pladser',
-    'arr-max', 'arr-frist', 'arr-venteliste', 'arr-gentag', 'arr-gentag-til'].forEach(function (id) {
+    'arr-max', 'arr-frist', 'arr-venteliste', 'arr-sidde', 'arr-gentag', 'arr-gentag-til'].forEach(function (id) {
     var e = $(id);
     if (!e) return;
     e.addEventListener('input', tegnForm);

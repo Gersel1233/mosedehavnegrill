@@ -2286,6 +2286,10 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    ikke en skygge, for skralden står på 37 af 37. */
 .ev-valg-titel{margin:0 0 10px;font-size:15px;font-weight:600}
 .ev-valg{display:grid;gap:10px}
+/* Prisen pr. billet over antal-feltet (28/10) — ikke gemt i en lille tekst. */
+.ev-pris{margin:14px 0 4px;padding:10px 14px;border-radius:12px;font-size:15px;
+  background:rgba(180,31,46,.06);border:1px solid rgba(180,31,46,.18)}
+.ev-pris b{color:var(--red-d,var(--red-dyb,#b41f2e))}
 .ev-valg button{display:flex;align-items:center;gap:14px;width:100%;padding:12px 14px;border:2px solid transparent;border-radius:18px;background:var(--cream2);font-family:inherit;text-align:left;color:var(--ink);cursor:pointer}
 .ev-valg button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .ev-valg button.on{background:var(--paper);border-color:var(--red)}

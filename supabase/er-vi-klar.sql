@@ -1362,6 +1362,13 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and policyname in ('nyheder_opret_admin', 'nyheder_ret_admin', 'nyheder_slet_admin')
        and coalesce(qual, with_check) like '%kan_arrangere_for%'),
    'Eventudvalget ser fanen Nyheder, men kan ikke gemme. '
+   || 'Kør supabase/eventudvalg-nyheder-28-10.sql.'),
+
+  (157, 'Arrangementer', '"Hvor vil I sidde?" styres pr. arrangement',
+   (select exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'kalender'
+                      and column_name = 'siddevalg')),
+   'Feltet med pladserne står ikke i arrangementets ark, og gæsten bliver aldrig spurgt. '
    || 'Kør supabase/eventudvalg-nyheder-28-10.sql.')
 ),
 

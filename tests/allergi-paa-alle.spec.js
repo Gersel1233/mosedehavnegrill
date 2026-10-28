@@ -313,78 +313,8 @@ test.describe('Hvert allergifelt bliver læst af sidens egen kode', () => {
   });
 });
 
-/* ---- OG DET SAMME MÅLT GENNEM SKÆRMEN PÅ ARRANGEMENTSSIDEN ----
+/* ---- ARRANGEMENTSSIDEN HAR INTET ALLERGIFELT  (28/10) ----
 
-   ⚠️ FILPRØVEN OVENFOR ER IKKE NOK. Den ser et id i en fil; den
-   ser ikke, om samtykkelinjen dukker op, eller om ordet ALLERGI:
-   kommer med på rækken. Nøjagtig den samme deling som
-   frokostsiden fik 16/9. */
-test.describe('Arrangementssidens allergifelt', () => {
-
-  const ARR = {
-    id: 11, lokation_id: 'mosede', type: 'arrangement', dato: '2026-08-16',
-    slut_dato: null, titel: 'Fællesspisning på havnen', beskrivelse: null,
-    emoji: null, lukker_kl: null, offentlig: true, tilmelding: true,
-    pladser: 40, pris_tekst: null, start_kl: '18:00',
-  };
-
-  async function åbnKalender(page) {
-    const d = grunddata();
-    d.kalender = [ARR];
-    d.reservationer = [];
-    await åbnSkal(page, '/h-kalender.html', { ur: FREDAG, data: d });
-    await page.locator('.evcard, .evtom').first().waitFor({ state: 'attached' });
-    const pille = page.locator('#bestil-pill');
-    if (await pille.getAttribute('href') === '#reserver') await pille.click();
-    await expect(page.locator('#reserver')).toBeVisible();
-  }
-
-  async function udfyld(page, allergi, sigJa) {
-    await page.locator('#kvalg button').first().click();
-    await page.locator('#knavn').fill('Anna Vind');
-    await page.locator('#ktlf').fill('20304050');
-    if (allergi) {
-      await page.locator('#kallergi').fill(allergi);
-      if (sigJa) await page.locator('#kallergi-samtykke').check();
-    }
-    await page.locator('#reserver button.g.solid.blk').click();
-  }
-
-  test('fluebenet dukker op, når der skrives en allergi', async ({ page }) => {
-    await åbnKalender(page);
-    const linje = page.locator('#kallergi-samtykke-linje');
-    await expect(linje).toBeHidden();
-    await page.locator('#kallergi').fill('skaldyr');
-    await expect(linje).toBeVisible();
-    /* Og det nulstilles igen — ellers står et gammelt ja og
-       gælder en allergi, gæsten har slettet. */
-    await page.locator('#kallergi').fill('');
-    await expect(linje).toBeHidden();
-  });
-
-  test('uden fluebenet bliver tilmeldingen ikke sendt', async ({ page }) => {
-    await åbnKalender(page);
-    await udfyld(page, 'skaldyr', false);
-    await page.waitForTimeout(400);
-    expect(((await gemteData(page)).reservationer || []).length).toBe(0);
-  });
-
-  test('med fluebenet kommer allergien med — forrest, med ordet ALLERGI:',
-    async ({ page }) => {
-      await åbnKalender(page);
-      await udfyld(page, 'skaldyr', true);
-      await expect.poll(async () =>
-        ((await gemteData(page)).reservationer || [{}])[0].besked || '')
-        .toMatch(/^ALLERGI: skaldyr/);
-    });
-
-  /* ⚠️ MODSTYKKET, OG DET VIGTIGSTE: uden en allergi må
-     ingenting spærre. Et samtykke, man ikke kan komme udenom, er
-     ikke frivilligt — og dermed ugyldigt. */
-  test('uden en allergi spærrer ingenting', async ({ page }) => {
-    await åbnKalender(page);
-    await udfyld(page, null, false);
-    await expect.poll(async () =>
-      ((await gemteData(page)).reservationer || []).length).toBe(1);
-  });
-});
+   Mikkel: *"fjern også allergi fra der"*. Prøverne af feltet og
+   samtykket på h-kalender.html (21/9) er taget ud med det; at det
+   er VÆK, måles i tests/tilmelding-billet.spec.js. */

@@ -93,6 +93,20 @@ select pg_temp.svar('10 arrangøren kan slette en nyhed',
   pg_temp.tal($s$with d as (delete from public.nyheder where lokation_id = 'proev-nyh'
                  and titel = 'Fra Lone' returning 1) select count(*) from d$s$) = 1);
 
+-- Siddevalgene
+set local request.jwt.claims = '{"email":"anna@nyh.dk"}';
+select pg_temp.svar('13 arrangøren kan sætte sine egne pladser på et arrangement',
+  pg_temp.proev($s$insert into public.kalender (lokation_id, type, dato, titel, offentlig, tilmelding, siddevalg)
+                 values ('proev-nyh', 'arrangement', current_date + 5, 'Fællesspisning', true, true,
+                         array['Langbord ude', 'Indenfor'])$s$) = 'gik igennem');
+select pg_temp.svar('14 men ikke ni af dem',
+  pg_temp.proev($s$insert into public.kalender (lokation_id, type, dato, titel, offentlig, tilmelding, siddevalg)
+                 values ('proev-nyh', 'arrangement', current_date + 6, 'For mange', true, true,
+                         array['1','2','3','4','5','6','7','8','9'])$s$) like '%kalender_siddevalg_ok%');
+select pg_temp.svar('15 og et tomt felt betyder: spørg ikke',
+  pg_temp.proev($s$insert into public.kalender (lokation_id, type, dato, titel, offentlig, tilmelding, siddevalg)
+                 values ('proev-nyh', 'arrangement', current_date + 7, 'Uden', true, true, null)$s$) = 'gik igennem');
+
 -- Gæsten
 set local role anon;
 set local request.jwt.claims = '{}';

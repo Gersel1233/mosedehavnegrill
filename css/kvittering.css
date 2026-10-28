@@ -117,6 +117,16 @@
 .kvit-total .kvit-l-pris{color:inherit;font-weight:700}
 .kvit-fine{margin-top:14px}
 
+/* ---- BILLETTENS VILKÅR  (28/10) ------------------------------
+   Mikkel: *"der skal også stå betales ved kassen — dette er en
+   reservationsbillet — og afbud senest 24 timer inden"*. En stiplet
+   kant som en afrivningsbillet, og telefonnummeret som et link. */
+.kvit-vilkaar{margin-top:16px;padding:14px 16px;border-radius:14px;text-align:left;
+  border:1.5px dashed rgba(180,31,46,.35);background:rgba(180,31,46,.04);font-size:14px;line-height:1.5}
+.kvit-vilkaar p{margin:0}
+.kvit-vilkaar .kvit-vilkaar-top{font-weight:700;color:var(--red-d,var(--red-dyb,#b41f2e));margin-bottom:4px}
+.kvit-vilkaar a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+
 /* ⚠️ EN GÆST, DER HAR SLÅET BEVÆGELSE FRA, SKAL SE DET FÆRDIGE
    MÆRKE — ikke et halvt tegnet hak. Et hak, der aldrig kommer,
    er en kvittering, der ser uafsluttet ud. */
