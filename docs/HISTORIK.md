@@ -7,6 +7,14 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**FORSIDENS SLUTBILLEDE LEVER** (28/10). Mikkel: *"B med higgsfield … laves brutalt med materiale fra
+havnecafeen selv"*. Efter filmen blændes en sløjfe af SAMME slutbillede ind (vand, lys, både — bordet står).
+FLUX 3 Video fra film/hero-*-slut.jpg som start- og slutbillede; enden blændet over i begyndelsen med ffmpeg
+xfade (0,75 s), så sømmen ikke ses. film/hero-9x16-liv.mp4 (1,41 MB) og hero-16x9-liv.mp4 (1,23 MB), H.264.
+Kun på forsiden (data-liv), ikke ved reduceret bevægelse/datasparing/2G, hentes først, når heroen ses, og står
+stille, når den er rullet væk eller fanen er skjult. Fejl eller afvist play (strømbesparelse) = billedet står.
+Sky-containerens Chromium kan ikke H.264: afspilningen er målt med en WebM-kopi (spiller, slår om, pauser).
+
 **LANCERINGEN 29/10: LEVERING PR. DAG, TILKØB PÅ RETTEN, TAPAS FRA ADMIN, INGEN SAG BLIVER LIGGENDE** (28/10).
 Mikkel aftenen før: *"det skal bare sidde og virke, nemt og tilgængeligt … for dem, der ikke kan en skid digitalt"*.
 · DATABASEN: supabase/lancering-28-10.sql (SKAL KØRES; proev-lancering-28-10.sql 15/15). dags_regler.luk_levering

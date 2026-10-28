@@ -5689,13 +5689,17 @@
     if (!lukket) return null;
     /* Hvad kan gæsten så? Levering tæller kun, når den er slået til. */
     var aabne = [];
-    if (!r.luk_takeaway) aabne.push('hente maden');
-    if (leveringFor(d, dato) && !lukketMaade(r, 'levering')) aabne.push('få den leveret');
+    var leverer = leveringFor(d, dato) && !lukketMaade(r, 'levering');
+    if (!r.luk_takeaway) aabne.push('tage maden med hjem');
+    if (leverer) aabne.push('få den leveret');
     if (!r.luk_spis_her) aabne.push('spise her');
     if (!aabne.length) return 'Køkkenet er lukket den dag.';
+    /* Kører der heller ikke levering, er det hele "ud af huset", der er
+       lukket — sådan stod det før 28/10, og sådan læser bestil/ det. */
     var hvad = hvordan === 'spis_her' ? 'Der er ikke plads til gæster den dag'
       : hvordan === 'levering' ? 'Vi leverer ikke den dag'
-        : 'Vi laver ikke mad til afhentning den dag';
+        : leverer ? 'Vi laver ikke mad til afhentning den dag'
+          : 'Vi laver ikke mad ud af huset den dag';
     return hvad + ', men I kan ' + ogListe(aabne) + '.';
   }
   function leveringTil(d) {

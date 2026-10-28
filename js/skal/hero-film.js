@@ -53,10 +53,62 @@
   function visSlut() {
     if (film.classList.contains('slut')) return;
     film.classList.add('slut');
+    startLiv();
     if (!still) return;
     hentSlut();
     if (still.complete && still.naturalWidth > 0) still.classList.add('vis');
     else still.addEventListener('load', function () { still.classList.add('vis'); }, { once: true });
+  }
+
+  /* ⚠️ SLUTBILLEDET LEVER  (28/10). Mikkels ord: B "skal laves brutalt
+     … med materiale fra havnecafeen selv". Når filmen er færdig, bliver
+     slutbilledet til en stille sløjfe af det SAMME billede: vandet
+     bevæger sig, lyset flimrer, bordet står. Sløjfens første billede ER
+     slutbilledet, og dens ende er blændet over i dens begyndelse, så
+     hverken overgangen eller sømmen kan ses.
+
+     Tre regler, og de hører sammen:
+     · den blændes ind OVEN PÅ billedet, først når den SPILLER — kan den
+       ikke (fejl, iPhone på strømbesparelse), står billedet som før
+     · kun hvor rammen beder om det (data-liv; historiens film har
+       ingen), og ikke ved reduceret bevægelse, datasparing eller 2G —
+       det er 1,2–1,4 MB, siden kan undvære
+     · den hentes først, når heroen er på skærmen, og spiller kun, mens
+       den er det, og fanen er åben: ingen film, der tygger batteri
+       nede under menukortet */
+  var liv = null;
+  var heroSes = true;
+  function maaLeve() {
+    if (!film.hasAttribute('data-liv') || ro) return false;
+    var c = navigator.connection;
+    return !(c && (c.saveData || /(^|-)2g$/.test(c.effectiveType || '')));
+  }
+  function styrLiv() {
+    if (!liv) return;
+    if (!heroSes || document.hidden) { liv.pause(); return; }
+    if (!liv.getAttribute('src')) liv.src = base + '-liv.mp4' + stempel;
+    var p = liv.play();
+    if (p && typeof p.catch === 'function') p.catch(function () { /* billedet står */ });
+  }
+  function startLiv() {
+    if (liv || !maaLeve()) return;
+    liv = document.createElement('video');
+    if (typeof liv.play !== 'function') { liv = null; return; }
+    liv.className = 'hero-liv';
+    liv.muted = true;
+    liv.loop = true;
+    ['muted', 'loop', 'playsinline', 'disablepictureinpicture'].forEach(function (a) { liv.setAttribute(a, ''); });
+    liv.preload = 'auto';
+    liv.addEventListener('playing', function () { liv.classList.add('vis'); });
+    liv.addEventListener('error', function () { if (liv.parentNode) liv.parentNode.removeChild(liv); });
+    (still || video).insertAdjacentElement('afterend', liv);
+    document.addEventListener('visibilitychange', styrLiv);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (e) {
+        heroSes = e[e.length - 1].isIntersecting;
+        styrLiv();
+      }).observe(film);
+    } else styrLiv();
   }
 
   var afsloeret = false;

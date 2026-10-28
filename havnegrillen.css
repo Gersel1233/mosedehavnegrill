@@ -543,8 +543,8 @@ body.har-film .topbar.stuck{background:var(--cream);
 .hero-film .hero-start.klar{opacity:1}
 .hero-film.afspiller .hero-start{opacity:0;transition-duration:.4s}
 .hero-film video,.hero-film .hero-start,.hero-film .hero-slut{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.hero-film .hero-slut{opacity:0;transition:opacity 1.2s ease}
-.hero-film .hero-slut.vis{opacity:1}
+.hero-film .hero-slut,.hero-film .hero-liv{opacity:0;transition:opacity 1.2s ease}
+.hero-film .hero-slut.vis,.hero-film .hero-liv.vis{opacity:1}
 /* ⚠️ LÆRREDET GÅR OP (11/9). Kundens ord: "kan den starte ud mere
    cinematisk … helt fuldskærm". Heroen starter sort, og filmen åbner
    sig fra en stribe midt i skærmen til fuld skærm, mens den blændes

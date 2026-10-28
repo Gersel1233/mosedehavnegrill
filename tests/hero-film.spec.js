@@ -24,6 +24,8 @@ async function taelPlay(page, svar = 'lykkes') {
   await page.addInitScript((s) => {
     window.__play = 0;
     HTMLMediaElement.prototype.play = function () {
+      /* Slutbilledets sløjfe (28/10) er ikke filmen — den tælles ikke. */
+      if (this.classList && this.classList.contains('hero-liv')) return Promise.resolve();
       window.__play++;
       return s === 'afvises' ? Promise.reject(new Error('NotAllowedError')) : Promise.resolve();
     };
@@ -75,7 +77,7 @@ test.describe('Heroens film er åbningen', () => {
     await åbnSkal(page, '/', { data: grunddata() });
     const forventet = info.project.name === 'computer' ? '16x9' : '9x16';
     await expect(page.locator('.hero-film')).toHaveAttribute('data-format', forventet);
-    const v = page.locator('.hero-film video');
+    const v = page.locator('.hero-film video:not(.hero-liv)');
     expect(await v.getAttribute('src')).toContain(`film/hero-${forventet}.mp4`);
     expect(await v.getAttribute('poster')).toContain(`film/hero-${forventet}-start.jpg`);
     /* Startbilledet vælges af browseren, før scriptet kører, og derfor
@@ -105,7 +107,7 @@ test.describe('Heroens film er åbningen', () => {
     await page.addInitScript(() => {
       window.__afsloer = null;
       new MutationObserver(() => {
-        const v = document.querySelector('.hero-film video');
+        const v = document.querySelector('.hero-film video:not(.hero-liv)');
         const h = document.documentElement;
         if (window.__afsloer === null && v && h && !h.classList.contains('film-aabner')
             && v.currentTime > 0) {
@@ -263,7 +265,7 @@ test.describe('Heroens film er åbningen', () => {
     await åbnSkal(s, '/', { data: grunddata() });
     expect(await aabner(s)).toBe(false);
     await expect(s.locator('.hero-slut')).toHaveClass(/vis/);
-    expect(await s.locator('.hero-film video').getAttribute('src')).toBeNull();
+    expect(await s.locator('.hero-film video:not(.hero-liv)').getAttribute('src')).toBeNull();
     expect(await s.evaluate(() => window.__play)).toBe(0);
     expect(await synlighed(s, '.hero h1')).toBe(1);
     await kon.close();
@@ -499,7 +501,7 @@ test.describe('Heroens film er åbningen', () => {
       document.addEventListener('playing', () => { if (m.start === null) m.start = performance.now(); }, true);
       document.addEventListener('ended', () => { if (m.slut === null) m.slut = performance.now(); }, true);
       const tik = () => {
-        const v = document.querySelector('.hero-film video');
+        const v = document.querySelector('.hero-film video:not(.hero-liv)');
         const h1 = document.querySelector('.hero h1');
         if (v && h1 && m.start !== null && !v.ended && v.currentTime > 0) {
           const o = parseFloat(getComputedStyle(h1).opacity);
@@ -540,7 +542,7 @@ test.describe('Heroens film er åbningen', () => {
     await page.addInitScript(() => {
       window.__fr = []; window.__t0 = performance.now();
       document.addEventListener('DOMContentLoaded', () => {
-        const v = document.querySelector('.hero-film video');
+        const v = document.querySelector('.hero-film video:not(.hero-liv)');
         const film = document.querySelector('.hero-film');
         /* Hvornår slutbilledet tog over. Et stop, der ender i et spring,
            giver aldrig et næste synligt billede at måle hullet mod — så
@@ -585,7 +587,7 @@ test.describe('Heroens film er åbningen', () => {
       'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await åbnSkal(page, '/', { data: grunddata() });
     await expect(page.locator('.hero-film')).toHaveClass(/afspiller/, { timeout: 10000 });
-    await page.locator('.hero-film video').evaluate((v) => v.dispatchEvent(new Event('waiting')));
+    await page.locator('.hero-film video:not(.hero-liv)').evaluate((v) => v.dispatchEvent(new Event('waiting')));
     await expect(page.locator('.hero-film'), 'filmen stod frosset i stedet for at gå til slutbilledet')
       .toHaveClass(/slut/, { timeout: 1500 });
     await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
@@ -599,7 +601,7 @@ test.describe('Heroens film er åbningen', () => {
       'browseren her kan ikke afspille H.264 — filmen starter aldrig');
     await åbnSkal(page, '/', { data: grunddata() });
     await expect(page.locator('.hero-film')).toHaveClass(/afspiller/, { timeout: 10000 });
-    await page.locator('.hero-film video').evaluate((v) => {
+    await page.locator('.hero-film video:not(.hero-liv)').evaluate((v) => {
       v.dispatchEvent(new Event('waiting'));
       v.dispatchEvent(new Event('playing'));
     });
@@ -686,7 +688,7 @@ test.describe('Heroens film er åbningen', () => {
     await kanHevc(page);
     await åbnSkal(page, '/', { data: grunddata() });
     const fmt = info.project.name === 'computer' ? '16x9' : '9x16';
-    await expect(page.locator('.hero-film video')).toHaveAttribute('src', new RegExp(`film/hero-${fmt}-hevc\\.mp4`));
+    await expect(page.locator('.hero-film video:not(.hero-liv)')).toHaveAttribute('src', new RegExp(`film/hero-${fmt}-hevc\\.mp4`));
     await expect(page.locator('.hero-film')).toHaveAttribute('data-codec', 'hevc');
   });
 
@@ -696,7 +698,7 @@ test.describe('Heroens film er åbningen', () => {
     await taelPlay(page);
     await kanHevc(page);
     await åbnSkal(page, '/historien.html', { data: grunddata() });
-    const src = await page.locator('.hero-film video').getAttribute('src');
+    const src = await page.locator('.hero-film video:not(.hero-liv)').getAttribute('src');
     expect(src).toMatch(/film\/historie-(9x16|16x9)\.mp4/);
     expect(src).not.toContain('-hevc');
   });
@@ -745,6 +747,93 @@ test.describe('Heroens film er åbningen', () => {
       for (const del of ['start', 'slut']) {
         expect(fs.statSync(`film/hero-${fmt}-${del}.jpg`).size).toBeLessThan(450 * 1024);
       }
+    }
+  });
+});
+
+/* ============================================================
+   SLUTBILLEDET LEVER  (28/10)
+   ------------------------------------------------------------
+   Mikkels ord: B "skal laves brutalt … med materiale fra
+   havnecafeen selv". Efter filmen står slutbilledet ikke stille
+   længere: en sløjfe af SAMME billede blændes ind oven på det.
+   Prøverne måler de regler, der gør den sikker: den kommer først,
+   når filmen er forbi, den står aldrig i vejen for billedet, og
+   den lader være, hvor den ikke hører til.
+   ============================================================ */
+test.describe('Slutbilledet lever', () => {
+  const fmt = (info) => (info.project.name === 'computer' ? '16x9' : '9x16');
+
+  test('sløjfen kommer oven på slutbilledet, når filmen er forbi — og spiller', async ({ page, browser }, info) => {
+    test.skip(!(await filmKanSpilles(browser)), 'browseren her kan ikke afspille H.264');
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('.hero-liv'), 'ingen sløjfe, mens filmen spiller').toHaveCount(0);
+    await page.evaluate(() => window.MosedeFilm.spring());
+    const liv = page.locator('.hero-film .hero-liv');
+    await expect(liv).toHaveCount(1);
+    await expect(liv).toHaveAttribute('src', new RegExp(`film/hero-${fmt(info)}-liv\\.mp4`));
+    expect(await liv.evaluate((v) => v.muted && v.loop && v.hasAttribute('playsinline'))).toBe(true);
+    await expect(liv).toHaveClass(/vis/, { timeout: 10000 });
+    await expect.poll(() => liv.evaluate((v) => v.currentTime)).toBeGreaterThan(0.2);
+    // Den ligger over billedet og under kornet og vignetten.
+    const orden = await page.evaluate(() => [...document.querySelector('.hero-film').children].map((e) => e.className));
+    expect(orden.indexOf('hero-liv')).toBe(orden.indexOf('hero-slut vis') + 1);
+    await expect(page.locator('.hero-slut')).toHaveClass(/vis/);
+  });
+
+  test('den står stille, når heroen er rullet væk', async ({ page, browser }) => {
+    test.skip(!(await filmKanSpilles(browser)), 'browseren her kan ikke afspille H.264');
+    await åbnSkal(page, '/', { data: grunddata() });
+    await page.evaluate(() => window.MosedeFilm.spring());
+    const liv = page.locator('.hero-liv');
+    await expect(liv).toHaveClass(/vis/, { timeout: 10000 });
+    await page.locator('#menu, #bestil').first().scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollBy(0, 2000));
+    await expect.poll(() => liv.evaluate((v) => v.paused)).toBe(true);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(() => liv.evaluate((v) => v.paused)).toBe(false);
+  });
+
+  test('kan sløjfen ikke hentes, står slutbilledet — intet sort hul', async ({ page }) => {
+    await page.route(/-liv\.mp4/, (r) => r.fulfill({ status: 404, body: '' }));
+    await åbnSkal(page, '/', { data: grunddata() });
+    await page.evaluate(() => window.MosedeFilm.spring());
+    await expect(page.locator('.hero-slut')).toHaveClass(/vis/);
+    await expect(page.locator('.hero-liv')).toHaveCount(0, { timeout: 8000 });
+    await expect.poll(() => synlighed(page, '.hero-slut')).toBe(1);
+  });
+
+  test('reduceret bevægelse og datasparing: ingen sløjfe', async ({ browser }) => {
+    const kon = await browser.newContext({ reducedMotion: 'reduce' });
+    const s = await kon.newPage();
+    await åbnSkal(s, '/', { data: grunddata() });
+    await expect(s.locator('.hero-slut')).toHaveClass(/vis/);
+    await s.waitForTimeout(400);
+    await expect(s.locator('.hero-liv')).toHaveCount(0);
+    await kon.close();
+
+    const k2 = await browser.newContext();
+    const s2 = await k2.newPage();
+    await s2.addInitScript(() => {
+      Object.defineProperty(navigator, 'connection', { value: { saveData: true, effectiveType: '4g' }, configurable: true });
+    });
+    await åbnSkal(s2, '/', { data: grunddata() });
+    await s2.evaluate(() => window.MosedeFilm.spring());
+    await s2.waitForTimeout(400);
+    await expect(s2.locator('.hero-liv')).toHaveCount(0);
+    await k2.close();
+  });
+
+  test('historiens film har ingen sløjfe', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    await page.evaluate(() => window.MosedeFilm && window.MosedeFilm.spring());
+    await page.waitForTimeout(400);
+    await expect(page.locator('.hero-liv')).toHaveCount(0);
+  });
+
+  test('sløjferne findes i begge formater og er lette', () => {
+    for (const f of ['9x16', '16x9']) {
+      expect(fs.statSync(`film/hero-${f}-liv.mp4`).size, f).toBeLessThan(1.6 * 1024 * 1024);
     }
   });
 });
