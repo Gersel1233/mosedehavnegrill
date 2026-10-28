@@ -107,6 +107,17 @@ test.describe('Adgang', () => {
     await expect(page.locator('#oeve-baand')).toBeVisible();
   });
 
+  /* Mikkel 28/10: eventudvalget er *"en custom der hedder eventudvalg1010"*.
+     Et brugernavn uden @ logger ind som navn@mosedehavnecafe.dk. */
+  test('et brugernavn uden @ logger ind på husets domæne', async ({ page }) => {
+    await åbn(page, '/admin.html');
+    await page.locator('#email').fill('Eventudvalg1010');
+    await page.locator('#kode').fill('noget');
+    await page.locator('#login-form button[type=submit]').click();
+    await expect(page.locator('#hvem')).toContainText('eventudvalg1010@mosedehavnecafe.dk');
+    expect(await page.evaluate(() => Butik.auth.loginMail('chef@eksempel.dk'))).toBe('chef@eksempel.dk');
+  });
+
   test('log ud lukker siden igen', async ({ page }) => {
     // Logger ind gennem formularen, ikke via hjælperen. Hjælperen
     // lægger nøglen ind ved hver sideindlæsning, og så ville

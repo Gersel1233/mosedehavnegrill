@@ -7,6 +7,14 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**TILMELDINGEN OG BILLETTEN, FÆLLES LOGINS** (28/10, sent). Mikkel fra iPad'en: «Hvor vil I sidde?» skal
+væk eller styres pr. arrangement → `kalender.siddevalg` (komma-felt i arket; tomt = ikke spurgt). Allergi
+taget af tilmeldingen. Prisen pr. billet står over antal-feltet; billetten har pris, «I alt ved kassen»
+(når prisen er et tal), «Reservationsbillet — betales ved kassen» og afbud senest 24 t før med tlf.
+Arket hoppede, mens der blev skrevet: kalender.js' scrollIntoView i rammen rullede også arket — nu ruller
+rammen kun sig selv (prøven fejler med den gamle linje). «Højst personer pr. tilmelding». Logins:
+logins-29-10.sql + saet-koderne-29-10.sql; et brugernavn uden @ logger ind på @mosedehavnecafe.dk.
+
 **EVENTUDVALGET SKRIVER OGSÅ NYHEDERNE** (28/10). Mikkel: *"cheferne som har adgang til alt, event
 udvalget, primært event og nyheder og alle de tilmeldinger"*. Cheferne = rollen Ejer (uændret). Arrangør
 (eventudvalget) ser nu Arrangementer, Tilmeldinger OG Nyheder — også i telefonens bundbjælke.

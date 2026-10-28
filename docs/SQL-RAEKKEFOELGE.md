@@ -72,7 +72,16 @@ og derfra:
 og nyheder og alle de tilmeldinger"*. Rollen `arrangoer` får nyhederne (skrivning via
 `kan_arrangere_for` i stedet for `is_admin_for`); alt andet er urørt. Prøven er
 `proev-eventudvalg-nyheder-28-10.sql` — 12 af 12 (og 3 af dem fejler uden filen). er-vi-klar 156.
-Uden filen ser arrangøren fanen Nyheder, men et gem bliver afvist.
+Uden filen ser arrangøren fanen Nyheder, men et gem bliver afvist. Samme fil lægger
+`kalender.siddevalg` (text[], højst 8) ind: arrangørens egne svar på «Hvor vil I sidde?» — tom =
+gæsten bliver ikke spurgt (er-vi-klar 157). Prøven er nu 15 af 15.
+
+**`logins-29-10.sql` (28/10) — DATA, kør én gang.** De fire logins i `admin_adgang`:
+bogholderi@ (ejer, Cheferne), booking@ (medarbejder, Kollegerne), eventudvalg1010@mosedehavnecafe.dk
+(arrangør — på login-siden skrives bare «eventudvalg1010») og skoleskiderikkerne@gmail.com (support).
+Alle andre fjernes. Svaret viser, hvem der mangler et login i Authentication. Koderne:
+dashboardets *Create new user* (Auto Confirm) eller `saet-koderne-29-10.sql` (værn som
+saet-de-to-koder-4-10). Supabase kan ikke sende mails herfra — ingen invitationer.
 
 **⚠️ `lancering-28-10.sql` (28/10) — SKAL KØRES FØR LANCERINGEN 29/10.** To ting i én fil:
 levering kan lukkes og åbnes for sig selv pr. dag (`dags_regler.luk_levering`; tom = følger
