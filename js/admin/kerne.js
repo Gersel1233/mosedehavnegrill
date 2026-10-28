@@ -238,6 +238,11 @@
   function svarStraks() {
     var k = document.activeElement;
     if (!k || k.tagName !== 'BUTTON' || k.disabled) return null;
+    /* ⚠️ EN KNAP MED INDHOLD (ikon, navn, stand) SKAL IKKE OMSKRIVES
+       (28/10). textContent flader den ud, og den gamle tekst kom tilbage
+       oven i den nye stand — i-dag-knapperne sagde "Åben" om en lukket
+       to-go. De viser selv, hvad der skete (grøn/grå). */
+    if (k.hasAttribute('data-uden-gemt')) return null;
     var foer = k.textContent;
     k.disabled = true;
     k.classList.add('gemmer');

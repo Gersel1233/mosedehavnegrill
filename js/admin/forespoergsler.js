@@ -216,6 +216,35 @@
     return f.status === 'ny' || f.status === 'kontaktet' || manglerIKalender(f);
   }
 
+  function naesteSkridtFor(f, nr) {
+    var navn = Admin.pæntNavn ? Admin.pæntNavn(f.navn) : (f.navn || 'gæsten');
+    var hvordan = nr ? 'Ring til ' + navn + ' på ' + nr
+      : f.email ? 'Skriv til ' + navn + ' på ' + f.email : 'Kontakt ' + navn;
+    var om = f.dato && Admin.omDage ? Admin.omDage(f.dato) : '';
+    var ventet = dageSiden(f.oprettet);
+    if (f.status === 'ny') {
+      return {
+        hvad: hvordan + ' — de venter på jeres svar'
+          + (ventet >= 1 ? ' (har ventet ' + ventet + (ventet === 1 ? ' dag' : ' dage') + ')' : '') + '.',
+        saa: 'Når I har talt sammen: tryk «📞 Jeg har kontaktet dem».'
+          + (om ? ' Dagen er ' + om + '.' : ''),
+        haster: ventet >= 2 || (f.dato && Admin.omDage && /i dag|i morgen/.test(om)),
+      };
+    }
+    if (f.status === 'kontaktet') {
+      return {
+        hvad: 'I har kontaktet ' + navn + ' — aftal det endelige' + (nr ? ' (📞 ' + nr + ')' : '') + '.',
+        saa: 'Når alt er på plads: tryk «✓ Aftal & sæt tid». Bliver det ikke til noget: «Afvis».'
+          + (om ? ' Dagen er ' + om + '.' : ''),
+        haster: !!(f.dato && /i dag|i morgen/.test(om)),
+      };
+    }
+    if (manglerIKalender(f)) {
+      return { hvad: 'Aftalen står ikke i kalenderen endnu.', saa: 'Tryk på knappen nedenfor, så den kommer på.', haster: true };
+    }
+    return null;
+  }
+
   function tegnTal(mine) {
     var boks = $('foresp-tal');
     if (!boks) return;
@@ -249,8 +278,10 @@
        ikke noget, der mindede om kalenderen. */
     var mine = paaFanen(forespoergsler);
 
+    /* ⚠️ "KONTAKTET" TÆLLER OGSÅ  (28/10). Man har ringet, men intet er
+       aftalt — det er netop den sag, der glemmes. */
     var mangler = mine.filter(function (f) {
-      return f.status === 'ny' || manglerIKalender(f);
+      return f.status === 'ny' || f.status === 'kontaktet' || manglerIKalender(f);
     }).length;
     var maerke = $('foresp-antal');
     if (mangler) { maerke.textContent = mangler; maerke.classList.remove('skjult'); }
@@ -808,7 +839,7 @@
     /* ⚠️ VENTETIDEN STÅR KUN, NÅR DEN ER ET PROBLEM. Et kort, der
        altid siger "har ventet 0 dage", er støj — og så ses tallet
        heller ikke den dag, det er 25. */
-    if (f.status === 'ny' && ventet >= 1) {
+    if ((f.status === 'ny' || f.status === 'kontaktet') && ventet >= 1) {
       top.appendChild(lav('span', 'foresp-ventet' + (ventet >= 3 ? ' laenge' : ''),
         '⏳ har ventet ' + ventet + (ventet === 1 ? ' dag' : ' dage')));
     }
@@ -891,7 +922,18 @@
     }
     k.appendChild(hvem);
 
-
+    /* ⚠️ NÆSTE SKRIDT, SAGT LIGEUD  (28/10, før lanceringen). Mikkel:
+       *"husk at skrive til dem, ring til dem, her er numrene — det må
+       ikke bare blive liggende"*. Baglokalet har haft linjen siden 15/9
+       (naesteSkridt i udlejning.js); nu står den på hver forespørgsel,
+       der venter: hvem, hvilket nummer, og hvad man trykker bagefter. */
+    var naeste = naesteSkridtFor(f, nr);
+    if (naeste) {
+      var nb = lav('div', 'foresp-naeste' + (naeste.haster ? ' haster' : ''));
+      nb.appendChild(lav('b', null, '👉 ' + naeste.hvad));
+      if (naeste.saa) nb.appendChild(lav('span', null, naeste.saa));
+      k.appendChild(nb);
+    }
 
     /* DETALJERNE. Formularerne spørger om mere end navn, dato og
        antal — anledning, tidsrum, hvad der skal serveres, hvor

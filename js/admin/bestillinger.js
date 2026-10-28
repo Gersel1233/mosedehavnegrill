@@ -1630,7 +1630,7 @@
            der nu står hos gæsten. */
         til ? 'Levering er slået til: gæsten kan vælge Levering på forsiden, '
             + 'smørrebrødssiden og bestil/, og forsiden siger "Vi kører maden ud". '
-            + 'En levering bekræftes aldrig af sig selv — I ringer.'
+            + 'Vil I kun levere enkelte dage, så lad den være slået FRA og tryk «Levering» under Åbningstider → «Hvad kan gæsten bestille i dag?».'
             : 'Levering er slået fra. Knappen og forsidens nyhed er væk; alt hentes eller spises her.');
     });
   }

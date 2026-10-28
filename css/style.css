@@ -14002,3 +14002,11 @@ body.personale .kal-lukket-vis a { pointer-events: none; }
 
 /* footerens mærker er husets tegninger, ikke emoji (23/10) — ny/ark-ny.css klæder dem videre på */
 .smiley-linje .fod-ill{flex:none;width:24px;height:24px}
+
+/* Mange tilkøb står bag én knap (28/10, morgenmaden) — js/bestilling.js */
+body:not(.personale) .stk-linje > .stk-tilvalg[hidden] { display: none; }
+body:not(.personale) .stk-linje > .stk-tilvalg-fold {
+  grid-column: 1 / -1; justify-self: start; margin-top: 8px; min-height: 40px; padding: 6px 14px; border-radius: 999px;
+  border: 1.5px dashed rgba(36, 26, 23, .3); background: transparent; color: var(--sea);
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}

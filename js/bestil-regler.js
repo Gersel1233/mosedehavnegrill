@@ -773,9 +773,7 @@
        er det samme svar som databasens værn giver — og gæsten
        skal møde det i vælgeren, ikke efter at have valgt hele sin
        mad. */
-    if (regel && hvordan) {
-      if (hvordan === 'spis_her' ? regel.luk_spis_her : regel.luk_takeaway) return [];
-    }
+    if (hvordan && Butik.maaBestille && !Butik.maaBestille(d, iso, hvordan)) return [];
 
     var fra = Butik.tilMinutter(p.aabner);
     var til = Butik.tilMinutter(p.lukker);

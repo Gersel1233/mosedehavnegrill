@@ -1193,8 +1193,29 @@
          rækken blive dobbelt så høj som sine naboer. Her løber de i
          fuld bredde under tælleren og brækker selv, når der er for
          mange. */
+      /* ⚠️ MANGE TILKØB FOLDES SAMMEN  (28/10). Morgenmaden har 13-14
+         tilkøb; stod de alle fremme, ville hver morgenret være en mur af
+         knapper. Over fire står de bag én knap, der siger, hvad der er. */
+      var foldLinje = null;
+      if (tvListe.length > 4) {
+        /* Egen linje under retten — ikke klemt ind mellem navn og plus. */
+        foldLinje = lav('span', 'item-tilvalg-foldlinje');
+        var fold = lav('button', 'item-tilvalg-fold');
+        fold.type = 'button';
+        fold.setAttribute('aria-expanded', 'false');
+        fold.textContent = '+ Tilkøb til retten (' + tvListe.length + ')';
+        tvRaekke.hidden = true;
+        fold.addEventListener('click', function () {
+          var aaben = tvRaekke.hidden;
+          tvRaekke.hidden = !aaben;
+          fold.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+          fold.textContent = aaben ? '− Skjul tilkøb' : '+ Tilkøb til retten (' + tvListe.length + ')';
+        });
+        foldLinje.appendChild(fold);
+      }
       række.appendChild(tvRaekke);
       tvByg();
+      if (foldLinje) række.insertBefore(foldLinje, tvRaekke);
       return række;
     }
 
@@ -2216,14 +2237,21 @@
     return Array.isArray(k) ? k : (k ? [k] : []);
   }
 
-  function segÅben() {
+  /* ⚠️ LEVERING KAN VÆRE SLÅET TIL FOR ÉN DAG  (28/10) — "Levering i
+     dag" i admin. Så står knappen, og dagen uden levering siger selv
+     fra (Butik.dagLukketFor / tiderne er tomme). */
+  function maadeFindes(n) {
     var i = data.indstillinger || {};
-    return segKraevede().some(function (n) { return i[n] === true; });
+    if (n === 'levering' && Butik.leveringNogenDag) return Butik.leveringNogenDag(data);
+    return i[n] === true;
+  }
+  function segÅben() {
+    return segKraevede().some(maadeFindes);
   }
 
   function svarTilladt(svar) {
     if (!svar || svar === 'afhentning') return true;
-    return (data.indstillinger || {})[svar] === true;
+    return maadeFindes(svar);
   }
 
   /* ---- HVOR LEVERER DE? ----

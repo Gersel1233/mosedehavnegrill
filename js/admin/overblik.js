@@ -1145,7 +1145,8 @@
     var fore = Admin.lister.forespoergsler || [];
     var lokale = Admin.lister.udlejninger || [];
 
-    var venter = fore.filter(function (f) { return f.status === 'ny'; }).length
+    /* "Kontaktet" er også ventende: der er ringet, men intet aftalt (28/10). */
+    var venter = fore.filter(function (f) { return f.status === 'ny' || f.status === 'kontaktet'; }).length
       + lokale.filter(function (u) { return u.status === 'ny'; }).length;
 
     var felter = [
@@ -1195,6 +1196,17 @@
 
     felter.forEach(function (t) {
       var f = lav('div', 'tal-felt');
+      /* "Venter på svar" fører hen til dem (28/10) — et tal, man ikke kan
+         trykke på, er et tal, man skal huske at gå efter. */
+      if (t[0] === 'Venter på svar' && t[1]) {
+        f.classList.add('kan-trykkes');
+        f.setAttribute('role', 'button');
+        f.setAttribute('tabindex', '0');
+        f.addEventListener('click', function () { Admin.visFane('p-forespoergsler'); });
+        f.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); Admin.visFane('p-forespoergsler'); }
+        });
+      }
       f.appendChild(lav('div', 'tal-navn', t[0]));
       f.appendChild(lav('div', 'tal-tal', t[1]));
       f.appendChild(lav('div', 'tal-note', t[2]));
@@ -1298,10 +1310,41 @@
       }
     }
 
+    /* 3) SVAR, DER MANGLER  (28/10, før lanceringen). Mikkel: *"husk at
+       skrive til dem, ring til dem … det må ikke bare blive liggende"*.
+       Forespørgsler og baglokalet, der har ventet en dag eller mere —
+       eller hvis dato er i dag/i morgen og stadig ikke aftalt. */
+    var iDagIso = Butik.nu().dato;
+    var iMorgen = Butik.isoPlus ? Butik.isoPlus(iDagIso, 1) : null;
+    function ventetDage(iso) {
+      var t = Date.parse(iso || '');
+      return isFinite(t) ? Math.floor((Date.now() - t) / 86400000) : 0;
+    }
+    var mangler = (Admin.lister.forespoergsler || []).filter(function (f) {
+      if (f.slettet || (f.status !== 'ny' && f.status !== 'kontaktet')) return false;
+      return ventetDage(f.oprettet) >= 1 || (f.dato && (f.dato === iDagIso || f.dato === iMorgen));
+    }).concat((Admin.lister.udlejninger || []).filter(function (u) {
+      return !u.slettet && u.status === 'ny' && ventetDage(u.oprettet) >= 1;
+    }));
+    if (mangler.length) {
+      var p3 = Admin.pæntNavn ? Admin.pæntNavn(mangler[0].navn) : mangler[0].navn;
+      var nr3 = String(mangler[0].telefon || '').trim();
+      linjer.push({ tekst: '📞 ' + (mangler.length === 1
+        ? p3 + ' venter på jeres svar' + (nr3 ? ' — ring på ' + nr3 : '') + '.'
+        : mangler.length + ' forespørgsler venter på jeres svar — den første er ' + p3
+          + (nr3 ? ' (' + nr3 + ')' : '') + '.') + ' Tryk her.', fane: 'p-forespoergsler' });
+    }
+
     boks.classList.toggle('skjult', !linjer.length);
     if (!linjer.length) return;
 
-    linjer.forEach(function (t) { boks.appendChild(lav('div', 'alarm-linje', t)); });
+    linjer.forEach(function (t) {
+      if (typeof t === 'string') return boks.appendChild(lav('div', 'alarm-linje', t));
+      var b = lav('button', 'alarm-linje alarm-knap', t.tekst);
+      b.type = 'button';
+      b.addEventListener('click', function () { Admin.visFane(t.fane); });
+      boks.appendChild(b);
+    });
   }
 
   /* ---- KØREPLANEN: DAGEN, SOM DEN ER ----
@@ -1450,6 +1493,22 @@
         linje.appendChild(lav('b', null, Admin.pæntNavn
           ? Admin.pæntNavn(f.navn) : f.navn));
         linje.appendChild(document.createTextNode(' — ' + dele.join(' · ')));
+        /* Nummer og adresse på dagen, de skal bruges (28/10): kører
+           cateringen ud, skal chaufføren kunne ringe og finde vej herfra. */
+        var nrA = String(f.telefon || '').trim();
+        if (nrA) {
+          var tA = lav('a', 'plan-tlf', ' 📞 ' + nrA);
+          tA.href = 'tel:' + nrA.replace(/[^0-9+]/g, '');
+          linje.appendChild(tA);
+        }
+        var adr = f.detaljer && (f.detaljer.adresse || f.detaljer.leveringsadresse);
+        if (ud && adr) {
+          var kA = lav('a', 'plan-tlf', ' 📍 ' + adr);
+          kA.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(adr);
+          kA.target = '_blank';
+          kA.rel = 'noopener';
+          linje.appendChild(kA);
+        }
         aftaler.appendChild(linje);
       });
 

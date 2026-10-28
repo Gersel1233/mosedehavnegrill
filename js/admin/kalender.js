@@ -1431,9 +1431,12 @@
         return (b.tid || '').slice(0, 5) + ' · ' + navnet(b.navn) + ' (booket bord)';
       }));
     }
+    /* 'togo' = afhentning OG levering (en dag, der lukker begge);
+       'afhentning' og 'levering' hver for sig (i-dag-knapperne, 28/10). */
     return ting.bestillinger.filter(function (b) {
       return !b.slettet && !FAERDIG[b.status]
-        && b.hvordan !== 'spis_her' && !b.bord_nummer;
+        && b.hvordan !== 'spis_her' && !b.bord_nummer
+        && (hvad === 'togo' || (hvad === 'levering') === (b.hvordan === 'levering'));
     }).map(function (b) {
       return (b.hent_tid || '').slice(0, 5) + ' · ' + navnet(b.navn);
     });
@@ -1575,12 +1578,17 @@
     kort.appendChild(lav('p', 'hjaelp',
       'Luk kun den ene måde — resten af dagen kører videre.'));
 
+    /* Tre veje, hver for sig (28/10) — samme knap-logik som i-dag-kortet
+       (skiftMaade), så kalenderen og «i dag» ikke kan blive uenige.
+       data-vej beholder kolonnens navn: prøverne og CSS'en kender det. */
     var par = lav('div', 'dag-par');
+    var aabenDag = iDagAaben(dag);
     [
-      ['🥡 Ud af huset', 'luk_takeaway', 'take-away'],
-      ['🍽️ Spis her', 'luk_spis_her', 'spis her'],
+      ['🥡 To-go', 'luk_takeaway', 'togo'],
+      ['🍽️ Spis her', 'luk_spis_her', 'spis_her'],
+      ['🚗 Levering', 'luk_levering', 'levering'],
     ].forEach(function (v) {
-      var lukket = !!r[v[1]];
+      var lukket = !aabenDag[v[2]];
       var b = lav('div', 'dag-vej' + (lukket ? ' er-lukket' : ''));
       b.setAttribute('data-vej', v[1]);
       b.appendChild(lav('div', 'dag-vej-navn', v[0]));
@@ -1589,22 +1597,8 @@
       var knap = lav('button', 'knap lille', lukket ? 'Åbn igen' : 'Luk');
       knap.type = 'button';
       knap.addEventListener('click', function () {
-        var aendring = {};
-        aendring[v[1]] = !lukket;
-
-        /* ⚠️ EN LUKNING MÅ IKKE STRANDE NOGEN I STILHED. */
-        if (!lukket) {
-          var ramte = ramtAf(ting, v[1] === 'luk_spis_her' ? 'spis_her' : 'togo');
-          if (ramte.length && !window.confirm(
-            'Der ligger allerede ' + ramte.length
-            + (ramte.length === 1 ? ' bestilling' : ' bestillinger')
-            + ' til ' + v[2] + ' den dag:\n\n' + ramte.join('\n')
-            + '\n\nDe forsvinder IKKE — men gæsterne regner med dem. '
-            + 'Ring til dem, hvis I lukker.\n\nLuk alligevel?')) return;
-        }
-        knap.disabled = true;
-        Admin.gem(gemRegel(dag, aendring),
-          v[0] + ' er ' + (lukket ? 'åben igen' : 'lukket') + ' den dag.');
+        var p = skiftMaade(dag, v[2], dag === Butik.nu().dato);
+        if (p) knap.disabled = true;
       });
       b.appendChild(knap);
       par.appendChild(b);
@@ -2593,33 +2587,46 @@
      tider og bordloft bliver stående. Og samme værn som kalenderens
      egne knapper: lukker man en måde, der allerede har bestillinger i
      dag, spørges der først. */
-  function iDagValg(r) {
-    if (!r) return 'begge';
-    if (r.luk_takeaway && r.luk_spis_her) return 'ingen';
-    if (r.luk_takeaway) return 'spis_her';
-    if (r.luk_spis_her) return 'takeaway';
-    return 'begge';
+  /* ⚠️ TRE KNAPPER, HVER FOR SIG  (28/10). To-go, spis her og levering
+     åbnes og lukkes uafhængigt — levering har sin egen kolonne
+     (supabase/lancering-28-10.sql). Levering kan også åbnes for NETOP i
+     dag, selv om den ellers er slået fra (luk_levering = false). */
+  function iDagAaben(dag) {
+    var d = Admin.data || {};
+    return {
+      togo: Butik.maaBestille(d, dag, 'afhentning'),
+      spis_her: Butik.maaBestille(d, dag, 'spis_her'),
+      levering: Butik.maaBestille(d, dag, 'levering'),
+    };
   }
+  var NAVN = { togo: 'To-go', spis_her: 'Spis her', levering: 'Levering' };
 
   function tegnIDag() {
     var gruppe = document.getElementById('i-dag-valg');
     if (!gruppe) return;
     var dag = Butik.nu().dato;
-    var valg = iDagValg(regelFor(dag));
-    Array.prototype.forEach.call(gruppe.querySelectorAll('button'), function (b) {
-      b.setAttribute('aria-pressed', b.getAttribute('data-maade') === valg ? 'true' : 'false');
+    var aaben = iDagAaben(dag);
+    Array.prototype.forEach.call(gruppe.querySelectorAll('button[data-maade]'), function (b) {
+      var m = b.getAttribute('data-maade');
+      var paa = !!aaben[m];
+      b.setAttribute('aria-pressed', paa ? 'true' : 'false');
+      b.setAttribute('aria-label', NAVN[m] + (paa ? ' er åben i dag — tryk for at lukke' : ' er lukket i dag — tryk for at åbne'));
+      var stand = b.querySelector('.i-dag-stand');
+      if (stand) stand.textContent = paa ? 'Åben' : 'Lukket';
     });
     var note = document.getElementById('i-dag-note');
     /* pænDato siger selv "I DAG · …" om i dag — det ord står allerede i titlen */
     if (note) note.textContent = (Admin.pænDato
       ? Admin.pænDato(dag).replace(/^i dag\s*·\s*/i, '') + ' · ' : '')
-      + 'i morgen er begge dele åbne igen';
+      + 'i morgen er alt som det plejer';
     var hjaelp = document.getElementById('i-dag-hjaelp');
     if (hjaelp) {
-      hjaelp.textContent = valg === 'ingen'
-        ? '⚠️ Begge måder er lukket i dag — vælg én af knapperne for at åbne igen.'
-        : 'Take-away er to-go og levering. Spis her er også bordene (QR og bordbooking). '
-          + 'Skal det gælde en anden dag, lukker I den i kalenderen.';
+      var aabne = ['togo', 'spis_her', 'levering'].filter(function (m) { return aaben[m]; })
+        .map(function (m) { return NAVN[m].toLowerCase(); });
+      hjaelp.textContent = !aabne.length
+        ? '⚠️ Alt er lukket i dag — gæsten kan ikke bestille noget. Tryk på en knap for at åbne.'
+        : 'I dag kan gæsten bestille: ' + aabne.join(', ').replace(/, ([^,]*)$/, ' og $1')
+          + '. Grøn = åben. Tryk for at skifte. Spis her er også bordene (QR og bordbooking).';
     }
   }
 
@@ -2628,24 +2635,42 @@
     iDagGruppe.addEventListener('click', function (e) {
       var knap = e.target.closest ? e.target.closest('button[data-maade]') : null;
       if (!knap) return;
-      var ny = knap.getAttribute('data-maade');
-      var dag = Butik.nu().dato;
-      if (ny === iDagValg(regelFor(dag))) return;
-      var aendring = { luk_takeaway: ny === 'spis_her', luk_spis_her: ny === 'takeaway' };
-      var lukkes = aendring.luk_takeaway ? 'togo' : aendring.luk_spis_her ? 'spis_her' : null;
-      if (lukkes) {
-        var ramte = ramtAf(dagensTing(dag), lukkes);
-        if (ramte.length && !window.confirm('Der ligger allerede ' + ramte.length
-          + (ramte.length === 1 ? ' bestilling' : ' bestillinger') + ' til '
-          + (lukkes === 'togo' ? 'take-away' : 'spis her') + ' i dag:\n\n' + ramte.join('\n')
-          + '\n\nDe forsvinder IKKE — men gæsterne regner med dem. '
-          + 'Ring til dem, hvis I lukker.\n\nLuk alligevel?')) return;
-      }
-      Admin.gem(gemRegel(dag, aendring),
-        ny === 'takeaway' ? 'I dag kan der kun bestilles take-away.'
-          : ny === 'spis_her' ? 'I dag kan der kun bestilles til at spise her.'
-            : 'I dag kan gæsten vælge både take-away og spis her.');
+      var m = knap.getAttribute('data-maade');
+      skiftMaade(Butik.nu().dato, m, true);
     });
+  }
+
+  /* Åbn eller luk ÉN måde på ÉN dag — i-dag-knapperne og kalenderens
+     dagspanel bruger den samme, så de ikke kan blive uenige. */
+  function skiftMaade(dag, m, iDag) {
+    var r = regelFor(dag) || {};
+    var aaben = iDagAaben(dag);
+    var aabnes = !aaben[m];
+    var globalLevering = (Admin.data && Admin.data.indstillinger || {}).levering === true;
+    var aendring = {};
+    if (m === 'togo') {
+      aendring.luk_takeaway = !aabnes;
+      /* Levering skal blive, som den står, når to-go lukkes: en tom
+         luk_levering ville ellers følge to-go og lukke med. */
+      if (!aabnes && aaben.levering && (r.luk_levering === null || r.luk_levering === undefined)) {
+        aendring.luk_levering = false;
+      }
+    } else if (m === 'spis_her') {
+      aendring.luk_spis_her = !aabnes;
+    } else {
+      aendring.luk_levering = aabnes ? false : (globalLevering ? true : null);
+    }
+    if (!aabnes) {
+      var ramte = ramtAf(dagensTing(dag), m === 'togo' ? 'afhentning' : m);
+      if (ramte.length && !window.confirm('Der ligger allerede ' + ramte.length
+        + (ramte.length === 1 ? ' bestilling' : ' bestillinger') + ' til '
+        + NAVN[m].toLowerCase() + (iDag ? ' i dag' : ' den dag') + ':\n\n' + ramte.join('\n')
+        + '\n\nDe forsvinder IKKE — men gæsterne regner med dem. '
+        + 'Ring til dem, hvis I lukker.\n\nLuk alligevel?')) return;
+    }
+    return Admin.gem(gemRegel(dag, aendring), NAVN[m] + (iDag
+      ? (aabnes ? ' er åben i dag.' : ' er lukket i dag.') + ' I morgen er alt som det plejer.'
+      : (aabnes ? ' er åben igen den dag.' : ' er lukket den dag.')));
   }
 
   Admin.tegnere.push(tegnIDag);

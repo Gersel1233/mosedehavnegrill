@@ -902,13 +902,15 @@ test.describe('Dagen kan være halvt åben', () => {
 
   const DAG = '2026-08-20';
 
-  test('de to veje står som et valg, begge åbne fra start', async ({ page }) => {
+  /* 28/10: tre veje — levering har sin egen (lancering-28-10.sql). */
+  test('de tre veje står hver for sig; to-go og spis her åbne fra start', async ({ page }) => {
     await åbnKalenderen(page);
     await dag(page, DAG).click();
     const veje = page.locator('.dag-vej');
-    await expect(veje).toHaveCount(2);
-    await expect(veje.filter({ hasText: 'Ud af huset' })).toContainText('Åben');
+    await expect(veje).toHaveCount(3);
+    await expect(veje.filter({ hasText: 'To-go' })).toContainText('Åben');
     await expect(veje.filter({ hasText: 'Spis her' })).toContainText('Åben');
+    await expect(page.locator('.dag-vej[data-vej="luk_levering"]')).toBeVisible();
   });
 
   test('lukkes spis her, står det i databasen — og take-away er urørt',

@@ -64,7 +64,17 @@ og derfra:
   → kategori-rolle.sql
   → levering-store-17-10.sql
   → sms.sql
+  → lancering-28-10.sql
 ```
+
+**⚠️ `lancering-28-10.sql` (28/10) — SKAL KØRES FØR LANCERINGEN 29/10.** To ting i én fil:
+levering kan lukkes og åbnes for sig selv pr. dag (`dags_regler.luk_levering`; tom = følger
+`luk_takeaway`, så gamle rækker betyder det samme), og morgenmadens tilkøb sidder på retten
+(`menu_varer.tilvalg`; listen fyldes af «Tilkøb morgenmad» + Ekstra spejlæg, og kategorien tages
+ud af bestillingen). Indeholder `mosede_gaestens_regler` = levering-store-17-10's udgave + tilkøb på
+kortets varer — kør aldrig levering-store-17-10.sql igen efter den. Prøven er
+`proev-lancering-28-10.sql` — 15 af 15. Admin og siden virker også, FØR den er kørt (så er der
+bare ingen levering-knap pr. dag og ingen tilkøb på retten).
 
 **⚠️ `sms.sql` (24/10) — IKKE KØRT I PRODUKTIONEN. Bygget SLUKKET** (Mikkels valg 24/10:
 *"byg det slukket"*; ejerens nej til sms 15/9 står, til han selv slår det til). Sms til
@@ -370,6 +380,7 @@ tavst — derfor listen:
 | `gaestens-regler.sql`, `kanal-vaern.sql`, `levering-valideret.sql` eller `bord-plads.sql` | `gaestens-vaern-26-9.sql` | den gamle dør ("kun rollen anon") kommer tilbage, så en bruger, der har oprettet sig selv, slipper uden om gæstens regler — og linjens antal og bordets dato holder op med at blive tjekket (tjek 150) |
 | `gaestens-regler.sql`, `gaestens-vaern-26-9.sql` eller `tilvalg-og-tidsbegraensede-varer-1-10.sql` | `levering-tid-8-10.sql` | leveringens køretur forsvinder, så en gammel fane kan bestille en levering til Køge om et kvarter (tjek 152) |
 | `gaestens-regler.sql`, `gaestens-vaern-26-9.sql`, `tilvalg-og-tidsbegraensede-varer-1-10.sql` eller `levering-tid-8-10.sql` | `levering-store-17-10.sql` | store bestillinger mister chefens ekstra tid i køkkenet, så en gammel fane kan bestille 30 stk. til levering om en halv time |
+| `gaestens-regler.sql`, `gaestens-vaern-26-9.sql`, `tilvalg-og-tidsbegraensede-varer-1-10.sql`, `levering-tid-8-10.sql`, `levering-store-17-10.sql`, `dagsregler.sql`, `lukkedag-vaern.sql`, `dagsbesked-og-qr.sql` eller `aabent-og-antal-vaern.sql` | `lancering-28-10.sql` | levering lukker igen med to-go, og morgenmadens tilkøb afvises (tjek 154, 155) |
 | `gaestens-regler.sql` eller `arrangement-sluttid.sql` | `arrangoer.sql` | tilmeldingens bremse mister venteliste, frist, aflysning og max pr. tilmelding — et aflyst arrangement tager imod igen |
 
 Og to rækkefølger inden i rækkefølgen: `bestilling-dato-vaern.sql` FØR

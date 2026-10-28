@@ -1093,3 +1093,20 @@ body.ny-side #find #find-kontakt > div:active{transform:scale(.98)}
 .ny-side .nk--selskab .talk p,.ny-side .nk--selskab .talk .ring{color:var(--nk-creme)}
 /* Ring og Mail i Find os: selve linket er en fuld trykflade, ikke kun tekstens 24 px */
 body.ny-side #find #find-kontakt a{display:inline-block;padding:10px 0;margin:-10px 0}
+
+/* ============================================================
+   INTET SKINNER IGENNEM UNDER URET  (28/10, før lanceringen)
+   Mikkel: "når vi er på mobil og spoler op, så lækker det der
+   havnecafe-logo eller noget bølge". Bjælken er gennemsigtig med vilje
+   (23/10 ovenfor), og siden går helt op under uret (viewport-fit=cover)
+   — så de røde afsnitshoveder med mærket og bølgekanten gled forbi
+   under klokken og batteriet. Nu ligger der en fast, mørk stribe
+   PRÆCIS under uret, mens bjælken sidder fast; pillerne er urørte.
+   Og når siden hopper (iOS' gummibånd) i toppen og bunden, er det,
+   der ses bag den, mørkt som filmen og bunden — ikke en creme kant.
+   ============================================================ */
+html:has(body.ny-side){background:#0b0706}
+@media (max-width:820px){
+  body.ny-side .topbar.stuck::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);
+    background:#0b0706;z-index:-1;pointer-events:none}
+}

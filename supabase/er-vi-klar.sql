@@ -1334,7 +1334,27 @@ with tjek(nr, del, hvad, ok, retning) as (values
    (select coalesce(pg_get_functiondef(to_regproc('public.mosede_gaestens_regler'))
                     like '%levering_store%', false)),
    'En gammel fane kan bestille 30 stk. til levering om en halv time. '
-   || 'Kør supabase/levering-store-17-10.sql.')
+   || 'Kør supabase/levering-store-17-10.sql.'),
+
+  /* 28/10: levering kan lukkes for sig selv pr. dag, og morgenmadens
+     tilkøb sidder på retten. Siger ❌, hvis lancering-28-10.sql ikke er
+     kørt — eller en ældre fil med de to funktioner er kørt efter den. */
+  (154, 'Bestillinger', 'Levering kan lukkes og åbnes for sig selv på en dag',
+   (select exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'dags_regler'
+                      and column_name = 'luk_levering')
+       and coalesce(pg_get_functiondef(to_regproc('public.mosede_dag_aaben'))
+                    like '%luk_levering%', false)),
+   'På en leveringsdag kan to-go ikke lukkes uden at lukke leveringen med. '
+   || 'Kør supabase/lancering-28-10.sql.'),
+  (155, 'Menukort', 'Morgenmadens tilkøb sidder på retten (køkkenet ser, hvilken ret de hører til)',
+   (select exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'menu_varer'
+                      and column_name = 'tilvalg')
+       and coalesce(pg_get_functiondef(to_regproc('public.mosede_gaestens_regler'))
+                    like '%to_jsonb(v) -> ''tilvalg''%', false)),
+   'Et tilkøb til morgenmaden afvises, eller står løst på bonen. '
+   || 'Kør supabase/lancering-28-10.sql.')
 ),
 
 samlet as (

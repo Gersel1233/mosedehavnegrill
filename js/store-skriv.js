@@ -712,6 +712,14 @@
           ren.bord_loft = tom(r.bord_loft) ? null : Math.round(Number(r.bord_loft));
         }
 
+        /* ⚠️ LEVERINGEN SENDES KUN, NÅR NOGEN HAR RØRT DEN  (28/10).
+           Kolonnen kom med supabase/lancering-28-10.sql. Samme greb som
+           loftet: undefined = "rør det ikke", så et gem virker, før filen
+           er kørt. null = følg to-go (som før); true/false = dagens eget valg. */
+        if (r.luk_levering !== undefined) {
+          ren.luk_levering = r.luk_levering === null ? null : !!r.luk_levering;
+        }
+
         /* ⚠️ TITLEN TÆLLER IKKE ALENE. En overskrift uden en
            tekst er ikke en besked — den ville stå som et banner
            med en linje og ingenting under. Er teksten tom,
@@ -723,6 +731,7 @@
            bookinger. */
         var harLoft = ren.bord_loft !== undefined && ren.bord_loft !== null;
         var intetSaerligt = !ren.luk_takeaway && !ren.luk_spis_her
+          && (ren.luk_levering === undefined || ren.luk_levering === null)
           && !ren.tidligst && !ren.senest_togo && !ren.senest_spis_her
           && !ren.besked_til_gaester && !harLoft;
 
@@ -755,7 +764,20 @@
            op, om rækken fandtes — to kald, og et hul imellem, hvor
            to faner kan nå at oprette hver sin. */
         return skriv('POST', 'dags_regler', 'on_conflict=lokation_id,dato',
-          [Object.assign({ aendret: new Date().toISOString() }, ren)], true);
+          [Object.assign({ aendret: new Date().toISOString() }, ren)], true)
+          .catch(function (e) {
+            /* ⚠️ ER lancering-28-10.sql IKKE KØRT, findes luk_levering ikke.
+               Så gemmes resten alligevel — og siges der højt, at netop
+               leveringen ikke kunne, i stedet for at hele trykket fejler. */
+            if (ren.luk_levering === undefined || !/luk_levering/.test(String(e && e.message || e))) throw e;
+            var uden = Object.assign({ aendret: new Date().toISOString() }, ren);
+            delete uden.luk_levering;
+            return skriv('POST', 'dags_regler', 'on_conflict=lokation_id,dato', [uden], true)
+              .then(function () {
+                throw new Error('Det er gemt — men levering kan ikke styres for sig selv endnu. '
+                  + 'Sig til Lesreg: supabase/lancering-28-10.sql skal køres.');
+              });
+          });
     },
 
     /* ⚠️ BÆR LOFTET MED, NÅR RÆKKEN HAR DET.
@@ -775,6 +797,12 @@
     medBordloft: function (gammel, ny) {
       if (gammel && Object.prototype.hasOwnProperty.call(gammel, 'bord_loft')) {
         ny.bord_loft = gammel.bord_loft;
+      }
+      /* Og dagens levering (28/10, lancering-28-10.sql) — samme grund:
+         et gem af en besked må ikke tage "Levering i dag" med sig. */
+      if (ny.luk_levering === undefined && gammel
+          && Object.prototype.hasOwnProperty.call(gammel, 'luk_levering')) {
+        ny.luk_levering = gammel.luk_levering;
       }
       return ny;
     },
@@ -1004,6 +1032,9 @@
           .filter(Boolean).slice(0, 16);
         ren.valg = liste.length >= 2 ? liste : null;
       }
+      /* TILKØBENE PÅ RETTEN (28/10, supabase/lancering-28-10.sql) — samme
+         form og samme rensning som dagens rets tilvalg. */
+      if (felter.tilvalg !== undefined) ren.tilvalg = renseTilvalg(felter.tilvalg);
 
       if (!SKY) {
         return lokalt(function (d) {

@@ -1560,6 +1560,22 @@
           });
           tvRaekke.appendChild(chip);
         });
+        /* Mange tilkøb (morgenmaden, 28/10) står bag én knap — samme
+           greb som forsiden (js/skal/bestil.js). */
+        if (tvListe.length > 4) {
+          var fold = lav('button', 'stk-tilvalg-fold');
+          fold.type = 'button';
+          fold.setAttribute('aria-expanded', 'false');
+          fold.textContent = '+ Tilkøb til retten (' + tvListe.length + ')';
+          tvRaekke.hidden = true;
+          fold.addEventListener('click', function () {
+            var aaben = tvRaekke.hidden;
+            tvRaekke.hidden = !aaben;
+            fold.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+            fold.textContent = aaben ? '− Skjul tilkøb' : '+ Tilkøb til retten (' + tvListe.length + ')';
+          });
+          r.appendChild(fold);
+        }
         r.appendChild(tvRaekke);
       }
 

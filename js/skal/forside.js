@@ -975,7 +975,48 @@
   //  designets pladsholder stående. Et opfundet tal ved siden af
   //  en bestil-knap er en pris, gæsten regner med.
   // ----------------------------------------------------------
+  /* ============================================================
+     FADETS INDHOLD FØLGER ADMIN  (28/10, før lanceringen)
+     ------------------------------------------------------------
+     Mikkel: *"hvad med tapas-tingen ude på forsiden, der står fem
+     slags — kan de godt lave det om?"* Det kunne de ikke: listen og
+     linjen stod fast i index.html. Nu læses de af tapasfadets
+     beskrivelse i admin (punkter adskilt med ·), præcis som
+     tapassidens "Det får I" (js/skal/tapas.js). Står der ingen
+     beskrivelse, bliver designets tekst stående. */
+  function visTapasIndhold(d) {
+    var fad = Butik.tapasFad ? Butik.tapasFad(d) : null;
+    var punkter = String((fad && fad.beskrivelse) || '').split('·')
+      .map(function (l) { return l.trim(); }).filter(Boolean);
+    if (punkter.length < 2) return;
+    var liste = find('.tapasec .nk-liste');
+    if (liste) {
+      while (liste.firstChild) liste.removeChild(liste.firstChild);
+      /* Kortet er et kort, ikke hele fadet: seks punkter og "… og N mere".
+         Resten står på tapassiden, som knappen lige under fører til. */
+      var vis = punkter.slice(0, 6);
+      if (punkter.length > 6) vis.push('… og ' + (punkter.length - 6) + ' mere');
+      vis.forEach(function (p) {
+        var li = document.createElement('li');
+        var sp = document.createElement('span');
+        sp.className = 'nk-navn';
+        sp.textContent = p.charAt(0).toUpperCase() + p.slice(1);
+        li.appendChild(sp);
+        liste.appendChild(li);
+      });
+    }
+    var slogan = find('.tapasec .nk-slogan');
+    if (slogan) {
+      var l = punkter.slice(0, 6).map(function (p, i) {
+        return i ? p.charAt(0).toLowerCase() + p.slice(1) : p.charAt(0).toUpperCase() + p.slice(1);
+      });
+      slogan.textContent = (l.length > 1 ? l.slice(0, -1).join(', ') + ' og ' + l[l.length - 1] : l[0])
+        + (punkter.length > 6 ? ' — og meget mere.' : '.');
+    }
+  }
+
   function visTapasPris(d) {
+    visTapasIndhold(d);
     var felt = find('.tapasec .pris');
     if (!felt) return;
     /* ⚠️ PRISEN STÅR KUN, NÅR DATABASEN HAR SAGT DEN  (25/9, aften).

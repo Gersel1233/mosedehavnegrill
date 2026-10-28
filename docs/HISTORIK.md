@@ -7,6 +7,24 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LANCERINGEN 29/10: LEVERING PR. DAG, TILKØB PÅ RETTEN, TAPAS FRA ADMIN, INGEN SAG BLIVER LIGGENDE** (28/10).
+Mikkel aftenen før: *"det skal bare sidde og virke, nemt og tilgængeligt … for dem, der ikke kan en skid digitalt"*.
+· DATABASEN: supabase/lancering-28-10.sql (SKAL KØRES; proev-lancering-28-10.sql 15/15). dags_regler.luk_levering
+  (tom = følger luk_takeaway; false åbner levering den dag, også når levering ellers er slået fra) og
+  menu_varer.tilvalg (tilkøb på retten; mosede_gaestens_regler kender dem). Morgenmadens 12 tilkøb + Ekstra spejlæg
+  (+ Ost på All in One) lægges på fem morgenretter, og «Tilkøb morgenmad» tages ud af bestillingen. er-vi-klar 154-155.
+  Siden og admin virker, før filen er kørt (luk_levering sendes kun, når nogen rører den; et gem uden kolonnen gemmer
+  resten og siger det).
+· ADMIN «HVAD KAN GÆSTEN BESTILLE I DAG?»: tre store knapper (to-go · spis her · levering), grøn/grå, kun i dag;
+  kalenderens dagspanel bruger samme skiftMaade. Knapperne har data-uden-gemt (Admin.gem's "✓ Gemt" fladede dem ud).
+· FORSIDEN: tilkøb foldes bag «+ Tilkøb til retten (N)» over fire; samme på bordets side. Tapaskortet læser fadets
+  beskrivelse (seks punkter + "… og N mere"). Mørk stribe under uret på mobil, når bjælken sidder fast, og mørk
+  baggrund bag iOS' gummibånd — logo/bølgekant skinnede igennem (ikke set på en rigtig iPhone).
+· FORESPØRGSLER: «👉 næste skridt» på hvert kort (ring til NN på nr / aftal / skriv i kalenderen), «kontaktet» tæller
+  med i mærket og på Overblik, Overblik har en rød linje med navn og nummer på dem, der venter, «Venter på svar» kan
+  trykkes, og dagens aftaler har telefon og kort-link. Leveringens toast lovede «I ringer» — rettet.
+· Manual til Mikkel: Claude Docs «Mosede Havnecafe — manual til lanceringen».
+
 **ADMIN: ARRANGEMENTERNE I ET ARK MED SIDENS EGEN KALENDER VED SIDEN AF** (26/10). Mikkel: *"tag et kig
 på mosedehavnecafes admin og gør den langt bedre udseende og overblik-mæssigt … især event-tingen, og det
 bliver flot på siden, når de laver changes"* — og et skærmbillede fra hans iPhone, hvor felterne i «Nyt

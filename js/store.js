@@ -3670,8 +3670,11 @@
           + 'men du kan bestille den med hjem.');
       }
       if (/bestilling_takeaway_lukket/.test(t)) {
-        return new Error('Vi laver ikke mad ud af huset den dag, '
-          + 'men du er velkommen til at spise her.');
+        return new Error('Vi laver ikke mad til afhentning den dag. '
+          + 'Vælg en anden måde, eller ring til os.');
+      }
+      if (/bestilling_levering_lukket_i_dag/.test(t)) {
+        return new Error('Vi leverer ikke den dag. Vælg en anden måde, eller ring til os.');
       }
       if (/bestilling_for_tidligt/.test(t)) {
         return new Error('Vi åbner senere den dag, end tiden du har valgt. '
@@ -5623,9 +5626,42 @@
      samme — ellers viser siden en mulighed, databasen afviser,
      og gæsten møder en fejl efter at have valgt hele sin mad. */
   function maaBestille(d, dato, hvordan) {
+    if (hvordan === 'levering' && !leveringFor(d, dato)) return false;
     var r = dagsregel(d, dato);
     if (!r) return true;
-    return hvordan === 'spis_her' ? !r.luk_spis_her : !r.luk_takeaway;
+    return !lukketMaade(r, hvordan);
+  }
+
+  /* Leveres der overhovedet den dag? Slået til i indstillingerne — ELLER
+     dagen selv har slået den til (luk_levering = false: "Levering i dag"
+     i admin). Databasen svarer det samme (lancering-28-10.sql). */
+  function leveringFor(d, dato) {
+    if (leveringTil(d)) return true;
+    var r = dagsregel(d, dato);
+    return !!r && r.luk_levering === false;
+  }
+  /* Har NOGEN kommende dag levering? Så skal knappen stå i formularen. */
+  function leveringNogenDag(d) {
+    if (leveringTil(d)) return true;
+    var idag = nu().dato;
+    return ((d || {}).dags_regler || []).some(function (r) {
+      return r.dato >= idag && r.luk_levering === false;
+    });
+  }
+
+  /* ⚠️ LEVERING ER SIN EGEN KNAP  (28/10). Mikkel før lanceringen:
+     *"hvis de kører levering en dag … så der kun skal spises her og
+     leveres, ikke to-go"*. Før lukkede luk_takeaway både afhentning og
+     levering. Nu har levering sin egen kolonne (supabase/levering-pr-dag.sql).
+     ⚠️ TOM luk_levering FØLGER luk_takeaway — sådan svarer databasen også,
+     så en gammel række og en database uden filen betyder det samme som før. */
+  function lukketMaade(r, hvordan) {
+    if (!r) return false;
+    if (hvordan === 'spis_her') return !!r.luk_spis_her;
+    if (hvordan === 'levering') {
+      return r.luk_levering === true || ((r.luk_levering === null || r.luk_levering === undefined) && !!r.luk_takeaway);
+    }
+    return !!r.luk_takeaway;
   }
 
   /* ⚠️ HVORFOR DAGEN ER LUKKET — SAGT PÅ SIDEN, IKKE VED AFSLAGET
@@ -5648,20 +5684,26 @@
      hun så kan gøre i stedet. Og null betyder "der er åbent" —
      en besked på hver eneste dag ville ingen læse. */
   function dagLukketFor(d, dato, hvordan) {
-    var r = dagsregel(d, dato);
-    if (!r) return null;
-    var spiserHer = hvordan === 'spis_her';
-    if (!spiserHer && r.luk_takeaway) {
-      return r.luk_spis_her
-        ? 'Køkkenet er lukket den dag.'
-        : 'Vi laver ikke mad ud af huset den dag, men I er velkomne til at spise her.';
-    }
-    if (spiserHer && r.luk_spis_her) {
-      return r.luk_takeaway
-        ? 'Køkkenet er lukket den dag.'
-        : 'Der er ikke plads til gæster den dag, men maden kan bestilles med hjem.';
-    }
-    return null;
+    var r = dagsregel(d, dato) || {};
+    var lukket = hvordan === 'levering' ? !maaBestille(d, dato, 'levering') : lukketMaade(r, hvordan);
+    if (!lukket) return null;
+    /* Hvad kan gæsten så? Levering tæller kun, når den er slået til. */
+    var aabne = [];
+    if (!r.luk_takeaway) aabne.push('hente maden');
+    if (leveringFor(d, dato) && !lukketMaade(r, 'levering')) aabne.push('få den leveret');
+    if (!r.luk_spis_her) aabne.push('spise her');
+    if (!aabne.length) return 'Køkkenet er lukket den dag.';
+    var hvad = hvordan === 'spis_her' ? 'Der er ikke plads til gæster den dag'
+      : hvordan === 'levering' ? 'Vi leverer ikke den dag'
+        : 'Vi laver ikke mad til afhentning den dag';
+    return hvad + ', men I kan ' + ogListe(aabne) + '.';
+  }
+  function leveringTil(d) {
+    var v = ((d || {}).indstillinger || {}).levering;
+    return v === true || v === 'true';
+  }
+  function ogListe(l) {
+    return l.length < 2 ? l.join('') : l.slice(0, -1).join(', ') + ' eller ' + l[l.length - 1];
   }
 
   /* Det korte mærkat til en dag i vælgeren. Det siger, hvad der
@@ -5669,10 +5711,16 @@
      gæsten, at dagen stadig kan bruges. */
   function dagMærkat(d, dato) {
     var r = dagsregel(d, dato);
-    if (!r || (r.luk_takeaway && r.luk_spis_her)) return '';
-    if (r.luk_takeaway) return 'kun spis her';
-    if (r.luk_spis_her) return 'kun ud af huset';
-    return '';
+    if (!r) return '';
+    var lev = leveringFor(d, dato);
+    var aabne = [];
+    if (!r.luk_takeaway) aabne.push('to-go');
+    if (lev && !lukketMaade(r, 'levering')) aabne.push('levering');
+    if (!r.luk_spis_her) aabne.push('spis her');
+    var alle = lev ? 3 : 2;
+    if (!aabne.length || aabne.length === alle) return '';
+    if (!lev && aabne[0] === 'to-go') return 'kun ud af huset';
+    return 'kun ' + aabne.join(' og ');
   }
 
   /* Må der bestilles fra bordene?
@@ -5696,7 +5744,8 @@
      dagvælgeren. */
   function dagenHeltLukket(d, dato) {
     var r = dagsregel(d, dato);
-    return !!r && r.luk_takeaway && r.luk_spis_her;
+    return !!r && r.luk_takeaway && r.luk_spis_her
+      && (!leveringFor(d, dato) || lukketMaade(r, 'levering'));
   }
 
   /* ⚠️ "KUN 3 TILBAGE" ER ÉN REGEL, IKKE FIRE  (5/9).
@@ -5961,6 +6010,9 @@
     antalLoft: antalLoft,
     dagsregel: dagsregel,
     maaBestille: maaBestille,
+    lukketMaade: lukketMaade,
+    leveringFor: leveringFor,
+    leveringNogenDag: leveringNogenDag,
     dagLukketFor: dagLukketFor,
     dagMærkat: dagMærkat,
     dagenHeltLukket: dagenHeltLukket,

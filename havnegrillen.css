@@ -3923,6 +3923,11 @@ button.g:disabled:active{transform:none}
 .item.har-tilvalg{flex-wrap:wrap}
 .item.har-tilvalg > div:not(.item-tilvalg):not(.step){flex:1 1 0;min-width:0}
 .item-tilvalg{flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.item-tilvalg[hidden]{display:none}
+/* Mange tilkøb står bag én knap (28/10, morgenmaden) */
+.item-tilvalg-foldlinje{display:block;flex:0 0 100%}
+.item-tilvalg-fold{margin-top:8px;min-height:40px;padding:6px 14px;border-radius:999px;border:1.5px dashed rgba(36,26,23,.3);background:transparent;color:var(--ink,#241a17);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.item-tilvalg-fold[aria-expanded="true"]{border-style:solid}
 .item-tilvalg-titel{flex:0 0 100%;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 /* Mindst 40 px at ramme — se noten i css/style.css. */
 .item-tilvalg-chip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:6px 14px;border-radius:999px;border:1.5px solid rgba(36,26,23,.18);background:var(--paper,#fff);color:var(--ink,#241a17);font:inherit;font-size:14px;cursor:pointer}

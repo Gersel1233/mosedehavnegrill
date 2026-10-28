@@ -817,7 +817,8 @@
           r.appendChild(lav('span', 'koek-faerdig-bord', 'Bord ' + b.bord_nummer));
           r.appendChild(lav('span', 'koek-faerdig-hvad',
             (b.linjer || []).map(function (l) {
-              return l.antal + ' × ' + l.navn;
+              /* Navnet med valg og tilkøb, som på bonen (28/10). */
+              return l.antal + ' × ' + (Butik.linjeNavn ? Butik.linjeNavn(l) : l.navn);
             }).join(' · ')));
           r.appendChild(lav('span', 'koek-faerdig-status',
             navnFor(b.status) || b.status));

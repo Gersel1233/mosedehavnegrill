@@ -759,15 +759,31 @@
       <div class="kort luft-top" id="i-dag-kort">
         <div class="kort-hoved">
           <h2 class="h-panel">Hvad kan gæsten bestille i dag?</h2>
-          <span class="kort-note" id="i-dag-note">kun i dag — i morgen er begge dele åbne igen</span>
+          <span class="kort-note" id="i-dag-note">kun i dag — i morgen er alt som det plejer</span>
         </div>
-        <div class="adm-seg" role="group" aria-label="Hvad gæsten kan bestille i dag" id="i-dag-valg">
-          <button type="button" data-maade="begge" aria-pressed="true">Begge dele</button>
-          <button type="button" data-maade="takeaway" aria-pressed="false">Kun take-away</button>
-          <button type="button" data-maade="spis_her" aria-pressed="false">Kun spis her</button>
+        <!-- TRE KNAPPER, HVER FOR SIG  (28/10). Mikkel før lanceringen:
+             "hvis de kører levering en dag … kun spis her og levering,
+             ikke to-go". Grøn = gæsten kan bestille det i dag; tryk for
+             at skifte. Gælder KUN i dag. js/admin/kalender.js (tegnIDag). -->
+        <div class="i-dag-knapper" role="group" aria-label="Hvad gæsten kan bestille i dag" id="i-dag-valg">
+          <button type="button" class="i-dag-knap" data-uden-gemt data-maade="togo" aria-pressed="true">
+            <span class="i-dag-ikon" aria-hidden="true">🥡</span>
+            <span class="i-dag-navn">To-go</span>
+            <span class="i-dag-stand">Åben</span>
+          </button>
+          <button type="button" class="i-dag-knap" data-uden-gemt data-maade="spis_her" aria-pressed="true">
+            <span class="i-dag-ikon" aria-hidden="true">🍽️</span>
+            <span class="i-dag-navn">Spis her</span>
+            <span class="i-dag-stand">Åben</span>
+          </button>
+          <button type="button" class="i-dag-knap" data-uden-gemt data-maade="levering" aria-pressed="false">
+            <span class="i-dag-ikon" aria-hidden="true">🚗</span>
+            <span class="i-dag-navn">Levering</span>
+            <span class="i-dag-stand">Lukket</span>
+          </button>
         </div>
-        <p class="hjaelp" id="i-dag-hjaelp">Take-away er to-go og levering. Spis her er også bordene (QR og bordbooking).
-          Skal det gælde en anden dag, lukker I den i kalenderen.</p>
+        <p class="hjaelp" id="i-dag-hjaelp">Grøn = gæsten kan bestille det i dag. Tryk for at åbne eller lukke.
+          Spis her er også bordene (QR og bordbooking). En anden dag lukker I i kalenderen.</p>
       </div>
 
 

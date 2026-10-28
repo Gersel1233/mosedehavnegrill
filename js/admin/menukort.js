@@ -105,6 +105,11 @@
   function maaValg() {
     return Admin.harNoegle(Admin.data && Admin.data.menu_varer, 'valg');
   }
+  /* Tilkøbene findes først, når lancering-28-10.sql er kørt. I
+     øvetilstanden kan de altid prøves. */
+  function maaTilkoeb() {
+    return !Butik.sky || Admin.harNoegle(Admin.data && Admin.data.menu_varer, 'tilvalg');
+  }
 
   /* ⚠️ TILLÆGGET SKRIVES, SOM KORTET SIGER DET  (20/9)
      Det trykte is-kort siger "glutenfri vaffel +3,-", så feltet skriver
@@ -118,6 +123,74 @@
 
      ⚠️ Ører skrives med PUNKTUM. Kommaet er allerede brugt som
      skilletegn mellem valgene, så "3,50" ville blive til to valg. */
+  /* ============================================================
+     TILKØB PÅ RETTEN  (28/10)
+     ------------------------------------------------------------
+     Mikkel: *"køber jeg Havnens All in One og en English Breakfast og
+     så tilkøber +10 grønt — hvad gælder det til?"* Tilkøbet sidder nu
+     på retten: gæsten trykker det på i retten, og bonen siger
+     "English Breakfast · Grønt". Samme greb som dagens rets tilbehør
+     (js/admin/dagensret.js): NAVN og PRIS hver for sig, altid én tom
+     linje nederst, og en knap, der siger Gem — ikke et felt, der skal
+     tolkes. */
+  function tilkoebBoks(v) {
+    var boks = lav('div', 'tilvalg-boks vare-tilkoeb');
+    boks.appendChild(lav('span', 'tilvalg-titel', 'Tilkøb på retten (gæsten vælger dem på netop den her ret)'));
+    var linjer = lav('div', 'tilvalg-linjer');
+    boks.appendChild(linjer);
+    function stop(h) { h.stopPropagation(); }
+    function linje(navn, pris) {
+      var l = lav('div', 'tilvalg-linje');
+      var tn = document.createElement('input');
+      tn.type = 'text'; tn.className = 'tilvalg-navn'; tn.maxLength = 60;
+      tn.placeholder = 'fx Ekstra spejlæg';
+      tn.setAttribute('aria-label', 'Tilkøbets navn (' + v.navn + ')');
+      tn.value = navn || '';
+      var tp = document.createElement('input');
+      tp.type = 'text'; tp.className = 'smal tilvalg-pris'; tp.inputMode = 'decimal';
+      tp.placeholder = 'kr.';
+      tp.setAttribute('aria-label', 'Tilkøbets pris (' + v.navn + ')');
+      tp.value = (pris === null || pris === undefined || pris === '') ? '' : String(pris).replace('.', ',');
+      var væk = lav('button', 'knap lille tilvalg-væk', '×');
+      væk.type = 'button';
+      væk.setAttribute('aria-label', 'Fjern tilkøbet');
+      væk.addEventListener('click', function () { l.remove(); tom(); });
+      /* Rækken har autogem på input/change — tilkøbene gemmes med deres egen knap. */
+      [tn, tp].forEach(function (f) { f.addEventListener('input', stop); f.addEventListener('change', stop); });
+      tn.addEventListener('input', tom);
+      l.appendChild(tn); l.appendChild(tp); l.appendChild(væk);
+      return l;
+    }
+    function tom() {
+      var alle = linjer.querySelectorAll('.tilvalg-linje');
+      var sidste = alle[alle.length - 1];
+      if (!sidste || sidste.querySelector('.tilvalg-navn').value.trim()) linjer.appendChild(linje('', ''));
+    }
+    (Butik.dagensTilvalg(v) || []).forEach(function (t) { linjer.appendChild(linje(t.navn, t.pris)); });
+    tom();
+    var gem = lav('button', 'knap lille', 'Gem tilkøbene');
+    gem.type = 'button';
+    gem.addEventListener('click', function () {
+      var liste = [];
+      var fejl = '';
+      linjer.querySelectorAll('.tilvalg-linje').forEach(function (l) {
+        var navn = l.querySelector('.tilvalg-navn').value.trim();
+        var prisTekst = l.querySelector('.tilvalg-pris').value.trim().replace(',', '.');
+        if (!navn) return;
+        var pris = prisTekst === '' ? 0 : Number(prisTekst);
+        if (!isFinite(pris) || pris < 0) fejl = 'Prisen på «' + navn + '» skal være et tal, fx 10.';
+        liste.push({ navn: navn, pris: pris });
+      });
+      if (fejl) return Admin.brøl(fejl);
+      if (liste.length > 16) return Admin.brøl('Højst 16 tilkøb på én ret.');
+      Admin.gem(Butik.skrive.vareFelter(v.id, { tilvalg: liste }), liste.length
+        ? v.navn + ' har nu ' + liste.length + (liste.length === 1 ? ' tilkøb' : ' tilkøb') + '.'
+        : v.navn + ' har ikke tilkøb længere.');
+    });
+    boks.appendChild(gem);
+    return boks;
+  }
+
   function valgSomTekst(v) {
     var navne = Butik.vareValg ? Butik.vareValg(v) : null;
     if (!navne) return '';
@@ -2509,6 +2582,19 @@
       });
       valgBoks.appendChild(valgFelt);
       bag.appendChild(valgBoks);
+    }
+    /* Kun retter MED tilkøb viser listen; de andre har én lille knap —
+       ellers stod der et ekstra felt på hver eneste ret i kortet. */
+    if (maaTilkoeb()) {
+      if (Butik.dagensTilvalg(v)) bag.appendChild(tilkoebBoks(v));
+      else {
+        var tkKnap = lav('button', 'knap-tekst vare-tilkoeb-ny', '+ Tilkøb på retten');
+        tkKnap.type = 'button';
+        tkKnap.addEventListener('click', function () {
+          tkKnap.parentNode.replaceChild(tilkoebBoks(v), tkKnap);
+        });
+        bag.appendChild(tkKnap);
+      }
     }
     bag.appendChild(favorit.mærkat);
     bag.appendChild(vis.mærkat);
