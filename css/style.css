@@ -14010,3 +14010,14 @@ body:not(.personale) .stk-linje > .stk-tilvalg-fold {
   border: 1.5px dashed rgba(36, 26, 23, .3); background: transparent; color: var(--sea);
   font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
 }
+
+/* ---- RABATKODE TIL AFTALER (28/10, bestil/) ------------------------
+   Foldet sammen: de fleste har ingen aftale, og et tomt kodefelt midt i
+   formularen ville få alle andre til at tro, de mangler noget. */
+.rabat-felt summary{cursor:pointer;font-weight:600;color:var(--sea,#2a5f8f);padding:6px 0;list-style:none}
+.rabat-felt summary::-webkit-details-marker{display:none}
+.rabat-felt summary::before{content:"+ "}
+.rabat-felt[open] summary::before{content:"− "}
+.rabat-raekke{display:flex;gap:8px;margin-top:8px}
+.rabat-raekke input{flex:1;min-width:0;text-transform:uppercase;letter-spacing:.04em}
+.rabat-felt .hjaelp.rabat-ok{color:#1f7a3f;font-weight:600}

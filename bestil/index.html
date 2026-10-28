@@ -451,6 +451,21 @@
                   placeholder="Fx uden remoulade, eller hvornår I kommer"></textarea>
       </div>
 
+      <!-- RABATKODE TIL AFTALER (28/10). Mikkel: dem, der har en ordning
+           med huset, skal kunne få lidt rabat — og det skal kunne styres.
+           Koderne laves i admin (Bestillinger → Aftaler og rabatkoder);
+           databasen regner rabatten ud (supabase/rabatkoder-28-10.sql). -->
+      <details class="felt rabat-felt" id="bestil-rabat">
+        <summary>Har I en aftale med os? Skriv jeres rabatkode</summary>
+        <div class="rabat-raekke">
+          <input id="bestil-rabatkode" type="text" maxlength="30" autocomplete="off"
+                 autocapitalize="characters" autocorrect="off" spellcheck="false"
+                 placeholder="Fx GREVE10" aria-label="Rabatkode" aria-describedby="bestil-rabat-svar">
+          <button type="button" class="knap lille" id="bestil-rabat-tjek">Brug koden</button>
+        </div>
+        <p class="hjaelp" id="bestil-rabat-svar" aria-live="polite"></p>
+      </details>
+
       <button class="knap send" id="bestil-send" type="submit">Send bestilling</button>
       <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="../handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at lave og udlevere bestillingen. Se <a href="../persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
 

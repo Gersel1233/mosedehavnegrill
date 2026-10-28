@@ -3112,7 +3112,7 @@
     var personerFelt = $('bestil-personer');
     var personer = personerFelt ? personerFelt.value : '';
 
-    visKig({
+    var tilKig = {
       navn: navn, telefon: telefon, email: email, besked: besked,
       kanal: hvilkenKanal(),
       hent_dato: valgtDag, hent_tid: tid, hvordan: kurv.hvordan,
@@ -3125,7 +3125,62 @@
       bord_kode: vedBord ? vedBordKoden() : null,
       antal_personer: String(personer).trim() === '' ? null : Number(personer),
       linjer: medTillaeg(linjer), fyld: kurv.fyld.slice(),
+    };
+    /* Rabatkoden tjekkes, før kigget vises — en kode, der ikke passer,
+       skal siges HER, ikke ved afsendelsen. */
+    tjekRabat().then(function (ok) {
+      if (!ok) { sigFejl('Rabatkoden passer ikke. Tjek den, eller fjern den og bestil uden.'); return; }
+      if (rabat) tilKig.rabat_kode = rabat.kode;
+      visKig(tilKig);
     });
+  }
+
+  /* ============================================================
+     RABATKODE TIL AFTALER  (28/10)
+     ------------------------------------------------------------
+     Kun hvor feltet findes (bestil/). Koden tjekkes, når gæsten trykker
+     «Brug koden» — og igen, før kigget vises, hvis hun bare skrev den.
+     Databasen regner det endelige beløb (zz_rabatkode); skærmen bruger
+     den samme regel (Butik.rabatBeloeb), så tallene er ens.
+     ============================================================ */
+  var rabat = null;
+  function rabatSvar(t, god) {
+    var p = $('bestil-rabat-svar');
+    if (!p) return;
+    p.textContent = t || '';
+    p.classList.toggle('rabat-ok', !!god);
+  }
+  function tjekRabat() {
+    var felt = $('bestil-rabatkode');
+    var kode = felt ? String(felt.value || '').trim().toUpperCase() : '';
+    if (!kode) { rabat = null; rabatSvar(''); return Promise.resolve(true); }
+    if (rabat && rabat.kode === kode) return Promise.resolve(true);
+    if (!Butik.tjekRabatkode) return Promise.resolve(true);
+    return Butik.tjekRabatkode(kode).then(function (r) {
+      rabat = r;
+      if (r) {
+        rabatSvar('✓ Aftale: ' + r.navn + ' — ' + r.procent + ' % rabat på bestillingen.', true);
+        visSum();
+        return true;
+      }
+      rabatSvar('Koden passer ikke. Tjek den, eller fjern den og bestil uden.');
+      return false;
+    }).catch(function () {
+      rabatSvar('Koden kunne ikke tjekkes lige nu. Prøv igen om lidt.');
+      return false;
+    });
+  }
+  if ($('bestil-rabat-tjek')) $('bestil-rabat-tjek').addEventListener('click', function () { tjekRabat(); });
+  if ($('bestil-rabatkode')) {
+    $('bestil-rabatkode').addEventListener('input', function () {
+      if (rabat && rabat.kode !== String(this.value || '').trim().toUpperCase()) { rabat = null; rabatSvar(''); }
+    });
+    $('bestil-rabatkode').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); tjekRabat(); }
+    });
+  }
+  function rabatKr(linjer) {
+    return rabat && Butik.rabatBeloeb ? Butik.rabatBeloeb(linjer, rabat.procent) : 0;
   }
 
   function visKig(b) {
@@ -3184,6 +3239,12 @@
       return l.pris !== null && l.pris !== undefined;
     }).length;
     if (sum && prisLinjer > 1) linje('I alt', window.MosedePris(sum));
+    var rk = rabatKr(b.linjer);
+    if (rk) {
+      linje('Aftale: ' + rabat.navn + ' (' + rabat.procent + ' %)', '−' + window.MosedePris(rk));
+      linje('Til betaling', window.MosedePris(sum - rk));
+      sum = sum - rk;
+    }
 
     /* Knappen nulstilles HVER gang kigget vises: efter en sendt
        bestilling og "Bestil noget mere" stod den ellers tilbage
@@ -3466,7 +3527,12 @@
     var i_alt = (b.linjer || []).reduce(function (m, l) {
       return m + (Number(l.pris) || 0) * (Number(l.antal) || 0);
     }, 0);
-    if (i_alt) linjer.push({ navn: 'I alt', vaerdi: window.MosedePris(i_alt), fed: true });
+    var rk = b.rabat_kode ? rabatKr(b.linjer) : 0;
+    if (i_alt && rk) {
+      linjer.push({ navn: 'I alt', vaerdi: window.MosedePris(i_alt) });
+      linjer.push({ navn: 'Aftale: ' + rabat.navn + ' (' + rabat.procent + ' %)', vaerdi: '−' + window.MosedePris(rk) });
+      linjer.push({ navn: 'Til betaling ved lugen', vaerdi: window.MosedePris(i_alt - rk), fed: true });
+    } else if (i_alt) linjer.push({ navn: 'I alt', vaerdi: window.MosedePris(i_alt), fed: true });
     if (b.bord_nummer) linjer.push({ navn: 'Bord', vaerdi: b.bord_nummer });
     else {
       linjer.push({ navn: leveres ? 'Leveres' : 'Hentes',

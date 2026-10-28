@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**RABATKODER TIL AFTALE-KUNDER** (28/10, nat). Mikkels valg: en rabatkode. supabase/rabatkoder-28-10.sql
+(tabellen kun for personalet, zz_rabatkode regner beløbet, mosede_tjek_rabatkode til gæsten; 17/17 — prøve 3
+fandt, at parameteren `kode` blev skygget af kolonnen, så ENHVER kode gav rabat; rettet med $1/$2, før noget
+kom ud). Admin: Bestillinger → «Aftaler og rabatkoder» (js/admin/rabatkoder.js), og bestillingskortet viser
+«Aftale: … −X kr.» og «Til betaling». bestil/: foldet felt «Har I en aftale med os?», kigget og kvitteringen
+viser rabatten. Menukort-fanen forklarer, hvordan forsidens smørrebrødspriskort regnes. er-vi-klar 158.
+
 **BANNER, TAPAS, BESKÆR SELV OG SMS TIL ALLE VEJE** (28/10, nat). Forsidens arrangementsbanner har en
 datostub, arrangementets eget foto, mærker (kl./pris/tilmelding) og kan trykkes (forside.js visBannerPynt).
 Tapaskortet på telefonen: fadets indhold som mærker, pris og knap side om side, hele kortet trykbart.

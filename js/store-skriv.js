@@ -582,6 +582,45 @@
       });
     },
 
+    /* RABATKODER TIL AFTALER (28/10, supabase/rabatkoder-28-10.sql).
+       Samme regler som databasen: koden med store bogstaver (A-Z, 0-9,
+       ÆØÅ og -), 3-30 tegn, 1-50 %, et navn på aftalen. */
+    rabatkode: function (r) {
+      var ren = {
+        lokation_id: r.lokation_id || LOKATION,
+        kode: String(r.kode || '').trim().toUpperCase().replace(/\s+/g, ''),
+        navn: String(r.navn || '').trim().slice(0, 80),
+        procent: Math.round(Number(String(r.procent || '').replace(',', '.'))),
+        aktiv: r.aktiv !== false,
+      };
+      if (!/^[A-Z0-9ÆØÅ-]{3,30}$/.test(ren.kode)) {
+        return Promise.reject(new Error('Koden skal være 3-30 tegn: bogstaver, tal eller bindestreg — fx GREVE10.'));
+      }
+      if (!ren.navn) return Promise.reject(new Error('Skriv, hvem aftalen er med — fx Greve Kommune.'));
+      if (!(ren.procent >= 1 && ren.procent <= 50)) return Promise.reject(new Error('Rabatten skal være mellem 1 og 50 %.'));
+      if (!SKY) return lokalt(function (d) {
+        d.rabatkoder = d.rabatkoder || [];
+        var andre = d.rabatkoder.filter(function (x) { return String(x.id) !== String(r.id); });
+        if (andre.some(function (x) { return x.kode === ren.kode && x.lokation_id === ren.lokation_id; })) {
+          throw new Error('Koden ' + ren.kode + ' findes allerede.');
+        }
+        if (r.id) d.rabatkoder = d.rabatkoder.map(function (x) { return String(x.id) === String(r.id) ? Object.assign({}, x, ren) : x; });
+        else d.rabatkoder.push(Object.assign({ id: næsteId(d.rabatkoder), oprettet: new Date().toISOString() }, ren));
+      });
+      if (r.id) return skriv('PATCH', 'rabatkoder', 'id=eq.' + encodeURIComponent(r.id), ren);
+      return skriv('POST', 'rabatkoder', null, [ren]).catch(function (e) {
+        if (/rabatkode_unik|duplicate/i.test(String(e && e.message))) throw new Error('Koden ' + ren.kode + ' findes allerede.');
+        throw e;
+      });
+    },
+
+    sletRabatkode: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.rabatkoder = (d.rabatkoder || []).filter(function (x) { return String(x.id) !== String(id); });
+      });
+      return skriv('DELETE', 'rabatkoder', 'id=eq.' + encodeURIComponent(id));
+    },
+
     sletPersonale: function (email, lokation) {
       var mail = String(email || '').trim().toLowerCase();
       var lok = lokation || LOKATION;

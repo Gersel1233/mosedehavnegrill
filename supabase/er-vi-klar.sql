@@ -1369,7 +1369,13 @@ with tjek(nr, del, hvad, ok, retning) as (values
                     where table_schema = 'public' and table_name = 'kalender'
                       and column_name = 'siddevalg')),
    'Feltet med pladserne står ikke i arrangementets ark, og gæsten bliver aldrig spurgt. '
-   || 'Kør supabase/eventudvalg-nyheder-28-10.sql.')
+   || 'Kør supabase/eventudvalg-nyheder-28-10.sql.'),
+
+  (158, 'Bestillinger', 'Rabatkoder til aftale-kunder',
+   (select to_regclass('public.rabatkoder') is not null
+       and exists (select 1 from pg_trigger where tgname = 'zz_rabatkode')),
+   'Aftale-kunderne kan ikke få deres rabat, og admin-kortet siger "skal køres". '
+   || 'Kør supabase/rabatkoder-28-10.sql.')
 ),
 
 samlet as (

@@ -298,3 +298,17 @@ body.personale .alarm-knap{display:block;width:100%;padding:0;text-align:left;bo
 body.personale .tal-felt.kan-trykkes{cursor:pointer;outline:2px solid transparent;transition:outline-color .15s}
 body.personale .tal-felt.kan-trykkes:hover,body.personale .tal-felt.kan-trykkes:focus-visible{outline-color:#2a5f8f}
 body.personale .vare-tilkoeb-ny{min-height:40px;padding:0 2px;border:0;background:none;color:var(--red-tekst);font:inherit;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* AFTALER OG RABATKODER (28/10, js/admin/rabatkoder.js) */
+.rabat-liste{display:grid;gap:8px;margin:12px 0 16px}
+.rabat-raekke-admin{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:12px 14px;border-radius:14px;background:#fff;border:1px solid rgba(36,26,23,.1)}
+.rabat-raekke-admin.slukket{opacity:.6}
+.rabat-tekst{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.rabat-kode-maerke{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;letter-spacing:.06em;
+  padding:3px 8px;border-radius:8px;background:rgba(42,95,143,.08);color:#2a5f8f}
+.rabat-procent{font-weight:600;color:#b41f2e}
+.rabat-knapper{display:flex;gap:8px}
+.rabat-ny{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) auto;gap:10px;align-items:end}
+@media (max-width:700px){.rabat-ny{grid-template-columns:1fr 1fr}.rabat-ny .felt:first-child,.rabat-ny .knap{grid-column:1/-1}}
+.bestil-rabat .bestil-linjepris{color:#1f7a3f;font-weight:600}

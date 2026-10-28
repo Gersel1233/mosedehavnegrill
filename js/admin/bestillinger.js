@@ -1039,6 +1039,22 @@
       t.appendChild(lav('span', 'bestil-linjepris', Butik.pris(sum)));
       linjer.appendChild(t);
     }
+    /* AFTALE-RABAT (28/10, supabase/rabatkoder-28-10.sql). Beløbet er
+       databasens — det står på rækken; skærmen regner det ikke selv. Det,
+       lugen skal tage, står med fed: "Til betaling". */
+    if (Number(b.rabat_kr) > 0) {
+      var rr = lav('div', 'bestil-linje bestil-rabat');
+      rr.appendChild(lav('span', 'bestil-antal-tal', '🏷️'));
+      rr.appendChild(lav('span', 'bestil-vare', 'Aftale: ' + (b.rabat_navn || b.rabat_kode)
+        + ' (' + b.rabat_procent + ' %, ' + b.rabat_kode + ')'));
+      rr.appendChild(lav('span', 'bestil-linjepris', '−' + Butik.pris(Number(b.rabat_kr))));
+      linjer.appendChild(rr);
+      var tb = lav('div', 'bestil-linje bestil-sum');
+      tb.appendChild(lav('span', 'bestil-antal-tal', ''));
+      tb.appendChild(lav('span', 'bestil-vare', 'Til betaling'));
+      tb.appendChild(lav('span', 'bestil-linjepris', Butik.pris(Math.max(0, sum - Number(b.rabat_kr)))));
+      linjer.appendChild(tb);
+    }
     k.appendChild(linjer);
 
     /* Emballagen som forlæggets egen chip: "📦 Emballage: 4 stk.

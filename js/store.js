@@ -3347,6 +3347,13 @@
       raekke.leverings_token = String(b.leverings_token).trim().slice(0, 100);
     }
 
+    /* RABATKODE TIL AFTALER  (28/10, supabase/rabatkoder-28-10.sql)
+       Kun koden sendes — databasen slår den op og regner rabatten ud.
+       Sendes kun, når der ER en kode: en database uden filen svarer
+       PGRST204 på en ukendt kolonne (samme greb som leverings_token). */
+    var rk = String(b.rabat_kode || '').trim().toUpperCase().slice(0, 30);
+    if (rk) raekke.rabat_kode = rk;
+
     // Øvetilstand: der er ingen database, så bestillingen lægges
     // lokalt. Så kan flowet prøves igennem uden nøgle.
     if (!SKY) {
@@ -3544,9 +3551,22 @@
         }
       }
 
+      /* Rabatten som databasens zz_rabatkode: koden slås op, beløbet
+         regnes her — og en forkert kode afviser (rabatkoder-28-10.sql). */
+      var rabat = null;
+      if (raekke.rabat_kode) {
+        rabat = rabatkodeLokalt(d, raekke.rabat_kode, raekke.lokation_id);
+        if (!rabat) return Promise.reject(new Error(RABAT_UGYLDIG));
+      }
       var gemt = { id: næsteId(d.bestillinger), status: 'ny', intern_note: null,
         oprettet: new Date().toISOString() };
       for (var n in raekke) gemt[n] = raekke[n];
+      if (rabat) {
+        gemt.rabat_kode = rabat.kode;
+        gemt.rabat_navn = rabat.navn;
+        gemt.rabat_procent = rabat.procent;
+        gemt.rabat_kr = rabatBeloeb(raekke.linjer, rabat.procent);
+      }
       // Som databasens trigger: nøglen står aldrig i rækken bagefter.
       gemt.bord_kode = null;
       /* Nummeret, som databasen giver det (bestillingsnummer.sql):
@@ -3673,6 +3693,7 @@
         return new Error('Vi laver ikke mad til afhentning den dag. '
           + 'Vælg en anden måde, eller ring til os.');
       }
+      if (/rabatkode_ugyldig/.test(t)) return new Error(RABAT_UGYLDIG);
       if (/bestilling_levering_lukket_i_dag/.test(t)) {
         return new Error('Vi leverer ikke den dag. Vælg en anden måde, eller ring til os.');
       }
@@ -4667,6 +4688,42 @@
      ============================================================ */
   /* Gæstens ord for bremsens nej (12/10). Ét sted — øvetilstanden og
      skyen skal sige det samme. */
+  /* ---- RABATKODER TIL AFTALER  (28/10) ----------------------------
+     Koderne bor i supabase/rabatkoder-28-10.sql. Gæsten kan kun spørge
+     om sin egen kode; beløbet regnes af databasen, og reglen her er den
+     samme, så skærmen viser det, bonen kommer til at sige. */
+  var RABAT_UGYLDIG = 'Rabatkoden passer ikke. Tjek den, eller fjern den og bestil uden.';
+  function rabatBeloeb(linjer, procent) {
+    var sum = (linjer || []).reduce(function (s, l) {
+      var p = Number(l && l.pris), a = Number(l && l.antal);
+      return s + (isFinite(p) && isFinite(a) && a > 0 ? p * a : 0);
+    }, 0);
+    return Math.round(sum * Number(procent || 0) / 100);
+  }
+  function rabatkodeLokalt(d, kode, lok) {
+    var k = String(kode || '').trim().toUpperCase();
+    return ((d || {}).rabatkoder || []).filter(function (r) {
+      return r.aktiv !== false && r.kode === k && (r.lokation_id || LOKATION) === (lok || LOKATION);
+    })[0] || null;
+  }
+  function tjekRabatkode(kode) {
+    var k = String(kode || '').trim().toUpperCase();
+    if (!/^[A-Z0-9ÆØÅ-]{3,30}$/.test(k)) return Promise.resolve(null);
+    if (!SKY) {
+      var r = rabatkodeLokalt(læsLokalt(), k);
+      return Promise.resolve(r ? { kode: r.kode, navn: r.navn, procent: r.procent } : null);
+    }
+    return fetch(cfg.url + '/rest/v1/rpc/mosede_tjek_rabatkode', {
+      method: 'POST', headers: hoveder(), body: JSON.stringify({ kode: k, lok: LOKATION }),
+    }).then(function (svar) {
+      if (!svar.ok) throw new Error('intet svar');
+      return svar.json();
+    }).then(function (rk) {
+      var r = Array.isArray(rk) ? rk[0] : rk;
+      return r && r.navn ? { kode: k, navn: r.navn, procent: Number(r.procent) } : null;
+    });
+  }
+
   var AFLYST_SVAR = 'Arrangementet er aflyst. Ring til os, hvis du har spørgsmål.';
   var FRIST_SVAR = 'Tilmeldingen er lukket. Ring til os, så ser vi, om der er plads.';
   function forMangeSvar(maks) {
@@ -6033,6 +6090,8 @@
     leveringFor: leveringFor,
     leveringNogenDag: leveringNogenDag,
     dagLukketFor: dagLukketFor,
+    tjekRabatkode: tjekRabatkode,
+    rabatBeloeb: rabatBeloeb,
     dagMærkat: dagMærkat,
     dagenHeltLukket: dagenHeltLukket,
     qrAaben: qrAaben,
@@ -6463,6 +6522,16 @@
       }).then(function (r) { return r.ok ? r.json() : null; })
         .then(function (v) { return v || null; })
         .catch(function () { return null; });
+    },
+
+    /* Aftalernes rabatkoder (28/10) — kun personalet kan læse dem. */
+    hentRabatkoder: function () {
+      if (!SKY) {
+        return Promise.resolve(((læsLokalt().rabatkoder) || []).slice().sort(function (a, b) {
+          return String(a.navn).localeCompare(String(b.navn), 'da');
+        }));
+      }
+      return hentTabel('rabatkoder', 'select=*' + MIT + '&order=navn');
     },
 
     hentPersonale: function () {

@@ -1680,6 +1680,31 @@
 
         <button class="knap" id="gem-bestil-regler">Gem reglerne</button>
       </details>
+
+      <!-- AFTALER OG RABATKODER (28/10). Mikkel: dem, der har en ordning
+           med huset, skal kunne få lidt rabat på smørrebrød ud af huset —
+           og det skal kunne styres herfra. js/admin/rabatkoder.js;
+           databasen er supabase/rabatkoder-28-10.sql. -->
+      <div class="kort" id="rabat-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Aftaler og rabatkoder</h2>
+          <span class="kort-note">til dem, der har en ordning med jer</span>
+        </div>
+        <p class="hjaelp">Giv en virksomhed eller en forening en kode. Gæsten skriver den, når hun
+          bestiller smørrebrød ud af huset, og rabatten står på bonen: <em>Aftale: Greve Kommune
+          −32 kr.</em> Der betales stadig ved lugen. En kode, der er slukket, virker ikke længere.</p>
+        <div id="rabat-liste" class="rabat-liste"></div>
+        <div class="admin-raekke rabat-ny" id="rabat-ny">
+          <label class="felt"><span>Aftalen er med</span>
+            <input type="text" id="rabat-navn" maxlength="80" autocomplete="off" placeholder="Greve Kommune"></label>
+          <label class="felt felt-smal"><span>Koden</span>
+            <input type="text" id="rabat-kode" maxlength="30" autocomplete="off" autocapitalize="characters"
+                   spellcheck="false" placeholder="GREVE10"></label>
+          <label class="felt felt-smal"><span>Rabat i %</span>
+            <input type="number" id="rabat-procent" min="1" max="50" inputmode="numeric" placeholder="10"></label>
+          <button type="button" class="knap" id="rabat-tilfoej">Lav koden</button>
+        </div>
+      </div>
     </div>
 
     <!-- ================= FORESPØRGSLER =====================
@@ -2823,6 +2848,9 @@
           i forvejen; <strong>Vis</strong> tager den helt af kortet.
           ⚠️ Retter I en pris, står det gamle tal stadig på kortet ved lugen,
           til I får trykt det om.
+          <strong>Smørrebrødets priskort på forsiden</strong> regnes herfra: «Alle varianter»
+          er den pris, flest smørrebrød har, og en ret, der koster mindst 25 kr. mere
+          (fx Rejemad), får sit eget kort.
         </p>
         <!-- ⚠️ SE KORTET, SOM GÆSTEN SER DET (23/10). Mikkel: "kommer tilføjelserne automatisk
              til at følge præcis, hvordan menukortene ser ud — og hvorhenne, og et preview".
@@ -3995,6 +4023,7 @@
 <script src="js/admin/kalender.js?v=__V__"></script>
 <script src="js/admin/tilmeldinger.js?v=__V__"></script>
 <script src="js/admin/beskaer.js?v=__V__"></script>
+<script src="js/admin/rabatkoder.js?v=__V__"></script>
 <script src="js/admin/arrangementer.js?v=__V__"></script>
 <script src="js/admin/bestillinger.js?v=__V__"></script>
 <!-- Køkken-køen læser bestillingernes liste og skal derfor stå EFTER

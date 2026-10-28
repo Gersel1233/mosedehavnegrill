@@ -67,7 +67,15 @@ og derfra:
   → lancering-28-10.sql
   → eventudvalg-nyheder-28-10.sql
   → sms-alle-28-10.sql   (kun sammen med sms.sql — se docs/SMS-OPSAETNING.md)
+  → rabatkoder-28-10.sql
 ```
+
+**`rabatkoder-28-10.sql` (28/10) — SKAL KØRES for rabatkoderne.** Tabellen `rabatkoder` (kun personalet
+kan læse den), fire kolonner på `bestillinger` (rabat_kode/_navn/_procent/_kr) og udløseren `zz_rabatkode`,
+der slår koden op og regner beløbet — browseren sender kun koden. `mosede_tjek_rabatkode(kode)` til
+gæstens «gælder min kode?». Prøven er `proev-rabatkoder-28-10.sql` — 17 af 17 (fandt selv en kolonne, der
+skyggede for parameteren). er-vi-klar 158. Uden filen viser admin-kortet "skal køres", og bestil/ sender
+ingen kode.
 
 **⚠️ `eventudvalg-nyheder-28-10.sql` (28/10) — SKAL KØRES.** Mikkel: eventudvalget er *"primært event
 og nyheder og alle de tilmeldinger"*. Rollen `arrangoer` får nyhederne (skrivning via
