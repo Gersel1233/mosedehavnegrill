@@ -66,6 +66,7 @@ og derfra:
   → sms.sql
   → lancering-28-10.sql
   → eventudvalg-nyheder-28-10.sql
+  → sms-alle-28-10.sql   (kun sammen med sms.sql — se docs/SMS-OPSAETNING.md)
 ```
 
 **⚠️ `eventudvalg-nyheder-28-10.sql` (28/10) — SKAL KØRES.** Mikkel: eventudvalget er *"primært event

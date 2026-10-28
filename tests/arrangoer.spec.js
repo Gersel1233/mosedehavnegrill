@@ -222,6 +222,8 @@ test.describe('Arbejdsbordet', () => {
       + '<rect width="1200" height="900" fill="#c83"/></svg>';
     await page.locator('#arr-billede').setInputFiles({ name: 'molen.svg',
       mimeType: 'image/svg+xml', buffer: Buffer.from(svg) });
+    // 28/10: arrangøren beskærer selv (js/admin/beskaer.js) — rammen har kortets form.
+    await page.locator('.besk-lag').getByRole('button', { name: 'Brug billedet' }).click();
     await expect(page.locator('#arr-billede-status')).toContainText('lagt op');
     // Arrangøren ser det på sidens eget opslag, før der trykkes Udgiv.
     await expect(page.frameLocator('#arr-forhaand iframe').locator('.evcard.er-udkast img.evfoto')).toHaveCount(1);
@@ -230,6 +232,42 @@ test.describe('Arbejdsbordet', () => {
     await expect(page.locator('#kvittering')).toContainText('Udgivet');
     const k = (await gemteData(page)).kalender[0];
     expect(k.billede, 'billedet blev ikke gemt med arrangementet').toMatch(/\/nyheder\/proeve-.*\.jpg$/);
+  });
+
+  /* ⚠️ BESKÆR SELV (28/10). Mikkel: billedet skal *"tilpasses og croppes
+     til siden, og man skal kunne gøre det selv"*. Det, der lægges op, har
+     kortets form (16:9) — også fra et foto på højkant — og Annullér lægger
+     intet op. */
+  test('billedet beskæres i kortets form, før det lægges op', async ({ page }) => {
+    await arbejdsbordet(page, med([]));
+    await page.locator('#arr-ny').click();
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1600">'
+      + '<rect width="900" height="1600" fill="#38c"/><rect y="1200" width="900" height="400" fill="#c33"/></svg>';
+    const fil = { name: 'hoejkant.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg) };
+
+    await page.locator('#arr-billede').setInputFiles(fil);
+    const lag = page.locator('.besk-lag');
+    await expect(lag).toBeVisible();
+    const ramme = lag.locator('.besk-ramme');
+    const boks = await ramme.boundingBox();
+    expect(Math.abs(boks.width / boks.height - 16 / 9)).toBeLessThan(0.02);
+    await lag.getByRole('button', { name: 'Annullér' }).click();
+    await expect(lag).toHaveCount(0);
+    await expect(page.locator('#arr-billede-status')).toContainText('ikke brugt');
+
+    await page.locator('#arr-billede').setInputFiles(fil);
+    // Træk billedet op, så den røde bund kommer i rammen, og zoom lidt ind.
+    const r = await page.locator('.besk-ramme').boundingBox();
+    await page.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(r.x + r.width / 2, r.y - r.height, { steps: 6 });
+    await page.mouse.up();
+    await page.locator('.besk-zoom input').fill('1.5');
+    await page.locator('.besk-lag').getByRole('button', { name: 'Brug billedet' }).click();
+    await expect(page.locator('#arr-billede-status')).toContainText('lagt op');
+    const src = await page.locator('#arr-billede-foto').getAttribute('src');
+    const [, b, h] = src.match(/-(\d+)x(\d+)\.jpg$/) || [];
+    expect(Number(b) / Number(h), src).toBeCloseTo(16 / 9, 1);
   });
 
   /* ⚠️ EN REGEL UDEN SCOPE LAVER HELE ADMIN OM (CLAUDE.md). Arbejdsbordets

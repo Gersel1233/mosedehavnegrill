@@ -128,7 +128,9 @@ begin
   perform pg_temp.laeg(5, 'spis_her', 'forside', '7');
   perform pg_temp.laeg(6, 'afhentning', 'bord');
   perform pg_temp.laeg(7, 'afhentning', 'forside');
-  perform pg_temp.svar('6) levering kalder ikke', not pg_temp.kaldt('SM-SMS-4'));
+  /* ⚠️ VENDT 28/10: sms-alle-28-10.sql giver levering sin egen sms
+     (adresse og tid, og "på vej"). Mikkel: "alle deres ting med levering". */
+  perform pg_temp.svar('6) levering kalder også (sms-alle-28-10.sql)', pg_temp.kaldt('SM-SMS-4'));
   perform pg_temp.svar('7) QR-bordet (bord_nummer) kalder ikke — ejerens nej 15/9', not pg_temp.kaldt('SM-SMS-5'));
   perform pg_temp.svar('8) kanal ''bord'' kalder ikke', not pg_temp.kaldt('SM-SMS-6'));
   /* modstykket: uden det ville et filter, der aldrig kaldte, bestå 6-8 */

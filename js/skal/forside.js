@@ -310,6 +310,80 @@
       if (næste.beskrivelse) p.textContent = kortFortalt(næste.beskrivelse);
       else skjul(p);
     }
+    visBannerPynt(boks, næste);
+  }
+
+  /* ============================================================
+     BANNERET SKAL FANGE ØJET  (28/10)
+     ------------------------------------------------------------
+     Mikkel med et skærmbillede af den mørke stribe: *"det skal også
+     være lidt mere iøjnefaldende"*. Tre ting, alle fra arrangementet
+     selv — intet opfundet:
+     · en DATOSTUB til venstre (dag og måned i stort), som på en billet
+     · arrangementets eget FOTO i højre side, når det har et
+     · en linje med klokkeslæt, pris og "Tilmelding åben"
+     Og hele banneret kan trykkes. Overskriften og teksten er de
+     samme som før (h4/p), så visMusik's regler står urørte. */
+  function visBannerPynt(boks, k) {
+    ['.music-stempel', '.music-over', '.music-fakta', '.music-foto'].forEach(function (s) {
+      var gl = find(s, boks);
+      if (gl && gl.parentNode) gl.parentNode.removeChild(gl);
+    });
+    var d = new Date(String(k.dato).slice(0, 10) + 'T12:00:00Z');
+    if (!isNaN(d.getTime())) {
+      var stub = document.createElement('div');
+      stub.className = 'music-stempel';
+      stub.setAttribute('aria-hidden', 'true');
+      var dag = document.createElement('b');
+      dag.textContent = String(d.getUTCDate());
+      var md = document.createElement('small');
+      md.textContent = String(MÅNEDER[d.getUTCMonth()] || '').slice(0, 3);
+      stub.appendChild(dag);
+      stub.appendChild(md);
+      boks.insertBefore(stub, boks.firstChild);
+    }
+    var h4 = find('h4', boks);
+    if (h4 && h4.parentNode) {
+      var over = document.createElement('span');
+      over.className = 'music-over';
+      over.textContent = 'Næste på havnen';
+      h4.parentNode.insertBefore(over, h4);
+      var fakta = [];
+      if (k.start_kl) fakta.push('kl. ' + String(k.start_kl).slice(0, 5).replace(':', '.'));
+      if (String(k.pris_tekst || '').trim()) fakta.push(String(k.pris_tekst).trim());
+      if (k.tilmelding) fakta.push('Tilmelding åben');
+      var cta = find('.cta', boks);
+      if (fakta.length) {
+        var linje = document.createElement('div');
+        linje.className = 'music-fakta';
+        fakta.forEach(function (t) {
+          var c = document.createElement('span');
+          c.textContent = t;
+          linje.appendChild(c);
+        });
+        h4.parentNode.insertBefore(linje, cta || null);
+      }
+      if (cta) cta.textContent = k.tilmelding ? 'Se og meld jer til →' : 'Se kalenderen →';
+    }
+    var url = String(k.billede || '').trim();
+    boks.classList.toggle('har-foto', !!url);
+    if (url) {
+      var img = document.createElement('img');
+      img.className = 'music-foto';
+      img.src = url;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      boks.insertBefore(img, boks.firstChild);
+    }
+    if (!boks.hasAttribute('data-trykbar')) {
+      boks.setAttribute('data-trykbar', '');
+      boks.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('a, button')) return;
+        var c = find('.cta', boks);
+        if (c) c.click();
+      });
+    }
   }
 
   /* ============================================================

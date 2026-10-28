@@ -915,10 +915,25 @@
       if (status) status.textContent = 'Det er ikke et billede. Vælg et foto (jpg, png eller lignende).';
       return;
     }
+    /* ⚠️ ARRANGØREN BESKÆRER SELV  (28/10, js/admin/beskaer.js). Mikkel:
+       billedet skal *"tilpasses og croppes til siden, og man skal kunne
+       gøre det selv"*. Rammen har kortets egen form (16:9); det, der
+       står i den, er det, gæsten ser. Uden værktøjet (et gammelt
+       script i cachen) går billedet op som før. */
+    var klar = Admin.beskaer ? Admin.beskaer(fil, { forhold: 16 / 9, bredde: 1600 }) : Promise.resolve(fil);
+    klar.then(function (skaaret) {
+      if (!skaaret) { if (status) status.textContent = 'Billedet blev ikke brugt.'; return; }
+      lægOpFærdig(skaaret, Admin.beskaer ? 'bevar' : undefined);
+    }).catch(function (e) {
+      if (status) status.textContent = e.message || String(e);
+    });
+  }
+  function lægOpFærdig(fil, fokus) {
+    var status = $('arr-billede-status');
     var flise = $('arr-billede-flise');
     if (flise) flise.classList.add('arbejder');
     if (status) status.textContent = 'Lægger billedet op…';
-    Butik.skrive.nyhedBillede(fil).then(function (url) {
+    Butik.skrive.nyhedBillede(fil, fokus, fokus === 'bevar' ? 1600 : undefined).then(function (url) {
       nytBillede = url;
       visBillede(url);
       if (status) status.textContent = 'Billedet er lagt op. Husk at gemme.';
@@ -946,6 +961,17 @@
     flise.addEventListener('drop', function (e) {
       e.preventDefault();
       lægOp(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]);
+    });
+  }
+  /* Et billede, der allerede er lagt op, kan tilpasses igen. */
+  if ($('arr-billede-tilpas')) {
+    $('arr-billede-tilpas').addEventListener('click', function () {
+      var url = nytBillede !== undefined ? nytBillede : (retter ? retter.billede : '');
+      if (!url || !Admin.beskaer) return;
+      var status = $('arr-billede-status');
+      Admin.beskaer(url, { forhold: 16 / 9, bredde: 1600 }).then(function (skaaret) {
+        if (skaaret) lægOpFærdig(skaaret, 'bevar');
+      }).catch(function (e) { if (status) status.textContent = e.message || String(e); });
     });
   }
   if ($('arr-billede-fjern')) {

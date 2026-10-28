@@ -455,6 +455,29 @@ body.ny-side .hero-cta .g{width:100%;min-height:56px;font-size:17px}
 body.ny-side .nk--tapas.tapasec{max-width:none;width:auto;margin-left:0;margin-right:0;padding:0;display:block}
 .ny-side .nk-liste--kort li{flex-wrap:nowrap}
 
+/* ⚠️ TAPASKORTET PÅ TELEFONEN  (28/10). Mikkel: *"det her må også gerne se
+   bedre ud, også på tlf — og mere trykbart, så man ryger derind"*. Syv høje
+   rækker gjorde kortet til en lang liste; nu står fadets indhold som små
+   mærker, prisen og knappen side om side, og hele kortet kan trykkes
+   (ny/mosede-ny.js). */
+.ny-side .nk-trykbar{cursor:pointer;transition:transform .18s cubic-bezier(.24,.72,.24,1),box-shadow .18s}
+.ny-side .nk-trykbar:active{transform:scale(.985)}
+@media (hover:hover){.ny-side .nk-trykbar:hover{box-shadow:0 18px 44px rgba(36,26,23,.14)}}
+@media (max-width:820px){
+  .ny-side .nk--tapas .nk-krop{padding:18px 18px 22px}
+  .ny-side .nk--tapas .nk-foto--tapas{aspect-ratio:16/11;margin-bottom:16px}
+  .ny-side .nk--tapas .nk-rubrik{margin-bottom:0}
+  .ny-side .nk--tapas .nk-liste--kort{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;columns:auto}
+  .ny-side .nk--tapas .nk-liste--kort li{padding:7px 12px;border:1px solid rgba(36,26,23,.12);border-radius:999px;
+    background:#fff;font-size:15px;line-height:1.2;border-bottom-width:1px;gap:0;align-items:center}
+  .ny-side .nk--tapas .nk-liste--kort li::before{font-size:8px;margin-right:6px}
+  .ny-side .nk--tapas .nk-liste--kort li:last-child:not(:first-child){background:transparent;border-style:dashed}
+  .ny-side .nk--tapas .nk-tapas-fod{flex-wrap:nowrap;gap:14px;margin-top:18px}
+  .ny-side .nk--tapas .nk-tapas-pris{font-size:40px;flex:0 0 auto}
+  .ny-side .nk--tapas .nk-tapas-fod .nk-knap{flex:1 1 auto;min-width:0}
+}
+@media (prefers-reduced-motion:reduce){.ny-side .nk-trykbar{transition:none}.ny-side .nk-trykbar:active{transform:none}}
+
 /* ============================================================
    ISEN — HUSETS STOLTHED  (23/10)
    Det største kort på siden: kort 05's hoved, tre store fotos,

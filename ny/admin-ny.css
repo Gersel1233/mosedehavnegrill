@@ -166,6 +166,20 @@ body.personale .arr-billede-tom{display:grid;justify-items:center;gap:3px}
 body.personale .arr-billede-tom b{color:var(--sea);font-size:15px}
 body.personale .arr-billede-tom span{font-size:13px}
 body.personale .arr-billede-vis{display:grid;gap:8px;margin-top:0}
+/* BESKÆR SELV (28/10, js/admin/beskaer.js): rammen har kortets form, billedet trækkes. */
+.besk-lag{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:rgba(20,12,10,.6);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.besk-ark{width:min(100%,720px);max-height:100%;overflow:auto;padding:20px;border-radius:22px;background:#fdf7ef;
+  box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.besk-titel{margin:0 0 4px;font-size:20px}
+.besk-hjaelp{margin:0 0 14px;color:var(--muted,#7a6a63);font-size:14px}
+.besk-ramme{position:relative;width:100%;overflow:hidden;border-radius:14px;background:#1a1210;cursor:grab;touch-action:none;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.6)}
+.besk-ramme.trækkes{cursor:grabbing}
+.besk-billede{position:absolute;left:0;top:0;max-width:none;transform-origin:0 0;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.besk-zoom{display:flex;align-items:center;gap:12px;margin:14px 0 4px;font-size:14px;font-weight:600}
+.besk-zoom input{flex:1;accent-color:#d62a3a}
+.besk-knapper{margin-top:12px}
 body.personale .arr-billede-vis[hidden]{display:none}
 body.personale .arr-billede-vis img{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:14px}
 body.personale .arr-billede-knapper{display:flex;gap:8px;flex-wrap:wrap}

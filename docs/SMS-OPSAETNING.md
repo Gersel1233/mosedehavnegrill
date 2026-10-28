@@ -5,28 +5,30 @@ ingen sms, før ejeren selv har sagt ja og trinnene herunder er gjort. Ejeren sa
 nej til "Din mad er klar" ved bordene — *"for dyrt i længden"* — og det står stadig:
 **ved bordene (QR) kommer der aldrig en sms.**
 
-## Hvad gæsten får
+## Hvad gæsten får (28/10: alle husets veje)
 
-Kun når der bestilles **afhentning** eller **spis her** på hjemmesiden. Ikke levering,
-ikke ved bordet, og ikke bordbookinger, forespørgsler eller arrangementer.
+Mikkel 28/10: *"sms ligesom med spiis, bare med alle deres ting med levering og
+frokostordning — de er alle lidt forskellige"*. Hver vej har sin egen besked. Alle er
+på højst 160 tegn, så hver besked koster én sms:
 
-1. **Med det samme:**
-   *Tak, Mikkel! M-0047 er bestilt: afhentning ved lugen i dag kl. 13.30. Påmindelse 30 min før. mosedehavnecafe.dk/min-bestilling/?ref=SM261024-KTPQR*
-2. **Ca. 30 min før:**
-   *Hej Mikkel! Om ca. 30 min (kl. 13.30) er din mad klar ved lugen hos Mosede Havnecafe. Sig nummer M-0047. Havnevej 20I, Greve. Vi ses!*
-   - Ved **spis her** står der i stedet: *"… klar hos Mosede Havnecafe. Kom op til lugen og sig nummer M-0047."*
-   - Ved **tapas** står der *"jeres tapasfad"* i stedet for *"din mad"*.
-   - Har køkkenet trykket **Sæt som klar**, står der *"Din mad er klar ved lugen"*.
+| Vej | Med det samme | Senere |
+|---|---|---|
+| **Afhentning** | *Tak, Mikkel! M-0047 er bestilt: afhentning ved lugen i dag kl. 13.30. Påmindelse 30 min før. (link)* | ca. 30 min før: *Om ca. 30 min er din mad klar ved lugen …* |
+| **Spis her** | samme, med "spis her" | ca. 30 min før: *… Kom op til lugen og sig nummer M-0047.* |
+| **Levering** | *Tak, Mikkel! M-0047 leveres i dag ca. kl. 13.30 til Strandvejen 112. Vi skriver, når den er på vej. 28 87 13 43* | når køkkenet trykker **Sæt som klar**: *Din mad … er på vej (M-0047) og er der ca. kl. 13.30.* |
+| **Bordbooking** | *Tak, Lone! Bord til 6 i dag kl. 18.00 hos Mosede Havnecafe, Havnevej 20I, Greve. Forhindret? Ring 28 87 13 43* | ca. 2 timer før: *Vi ses i dag kl. 18.00, bord til 6 …* |
+| **Tilmelding** | *Tak, Anna! Billet T-0012: Fredagsbar … lør. 31/10 kl. 20.00, 4 pers. Betales ved kassen. Afbud senest 24 t før: 28 87 13 43* | dagen før fra kl. 10: *I morgen kl. 20.00: Fredagsbar … Billet T-0012, 4 pers.* |
+| **Venteliste** | *Du står på ventelisten til … Bliver der en plads, ringer vi.* | — |
+| **Forespørgsel** (catering, baglokale, selskab, **frokostordning**) | *Tak, Ole! Mosede Havnecafe har din forespørgsel på frokostordning (F-0031). Vi ringer eller skriver inden for et døgn.* | — |
 
-Linket fører til `min-bestilling/`, hvor gæsten kan følge bestillingen live. Nummeret er
-det samme, gæsten siger højt ved lugen.
+**Ved bordene (QR) kommer der stadig aldrig en sms** (ejerens nej 15/9).
 
-**Hvornår der IKKE kommer en påmindelse:** når der er bestilt under en time før (så er
-bekræftelsen nok), og når bestillingen er afvist, hentet, udeblevet eller ligger i
-skraldespanden. **Afvis er stadig et opkald** — sms'en ændrer ikke ejerens regel.
+**Hvornår der IKKE kommer en påmindelse:** når der er bestilt/booket/meldt til så kort
+tid før, at bekræftelsen er påmindelse nok; når sagen er afvist, hentet, udeblevet eller
+ligger i skraldespanden; og når et arrangement er aflyst. **Afvis er stadig et opkald.**
 
-Hver besked er én sms (højst 160 tegn), så en bestilling koster **2 sms'er**: ca. 60 øre
-i alt hos GatewayAPI (se den aktuelle pris på gatewayapi.com).
+Pris: ca. 30 øre pr. sms hos GatewayAPI. En bestilling eller booking koster 2 sms'er, en
+forespørgsel 1 (se den aktuelle pris på gatewayapi.com).
 
 **En sms kan aldrig stoppe en bestilling.** Bestillingen gemmes først. Går noget galt
 med sms'en, er bestillingen der stadig (prøvet i `supabase/proev-sms.sql`, prøve 3).
@@ -68,8 +70,12 @@ funktionen ingenting. Den skriver bare i loggen, hvad den *ville* have sendt.
    Står "push-webhooken" til false, mangler push-opsætningen (se README under "Push").
    Står "påmindelsen hvert 5. minut" til false, så slå `pg_cron` til under
    **Database → Extensions** og kør filen igen.
-2. Tryk **New query**, indsæt `supabase/proev-sms.sql` og tryk **Run**. Der skal stå
-   **ALLE 9 AF 9 BESTOD**. Fejlen til sidst er med vilje: den ruller prøven tilbage, og
+2. Tryk **New query**, indsæt `supabase/sms-alle-28-10.sql` og tryk **Run**. Alle fem
+   kolonner skal vise **true**. (Den giver levering, bordbookinger, tilmeldinger og
+   forespørgsler deres egne sms'er.)
+3. Tryk **New query**, indsæt `supabase/proev-sms.sql` og tryk **Run**. Der skal stå
+   **ALLE 9 AF 9 BESTOD**. Gør det samme med `supabase/proev-sms-alle-28-10.sql`:
+   **ALLE 11 AF 11 BESTOD**. Fejlen til sidst er med vilje: den ruller prøven tilbage, og
    der sendes intet.
 
 ### Trin 5: Prøv det på din egen telefon
@@ -90,7 +96,8 @@ Gå til **Edge Functions → Secrets** og slet `SMS_KUN_TIL`. Så er det færdig
 
 ## Sluk igen
 Sæt `SMS_AKTIV` til `nej` under Edge Functions → Secrets. Så stopper det med det samme,
-og intet andet ændrer sig. Skal det helt væk, står de to linjer nederst i `supabase/sms.sql`.
+og intet andet ændrer sig. Skal det helt væk, står linjerne nederst i `supabase/sms.sql`
+og `supabase/sms-alle-28-10.sql`.
 
 ## Til den, der skal rette i det
 - `supabase/sms.sql` indeholder tabellen `sms_sendt` (hvem har fået hvad), udløseren

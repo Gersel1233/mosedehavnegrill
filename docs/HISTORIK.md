@@ -7,6 +7,14 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**BANNER, TAPAS, BESKÆR SELV OG SMS TIL ALLE VEJE** (28/10, nat). Forsidens arrangementsbanner har en
+datostub, arrangementets eget foto, mærker (kl./pris/tilmelding) og kan trykkes (forside.js visBannerPynt).
+Tapaskortet på telefonen: fadets indhold som mærker, pris og knap side om side, hele kortet trykbart.
+Arrangementets billede beskæres i en 16:9-ramme af arrangøren selv (js/admin/beskaer.js; lærredet skærer og
+komprimerer, før det lægges op). SMS: supabase/sms-alle-28-10.sql + send-sms.ts — levering (bekræft + på
+vej), bordbooking (+ 2 t før), tilmelding (billet + dagen før kl. 10), forespørgsler inkl. frokostordning.
+Stadig SLUKKET (SMS_AKTIV) og aldrig ved QR-bordene. proev-sms-alle 11/11, proev-sms 9/9 (prøve 6 vendt).
+
 **TILMELDINGEN OG BILLETTEN, FÆLLES LOGINS** (28/10, sent). Mikkel fra iPad'en: «Hvor vil I sidde?» skal
 væk eller styres pr. arrangement → `kalender.siddevalg` (komma-felt i arket; tomt = ikke spurgt). Allergi
 taget af tilmeldingen. Prisen pr. billet står over antal-feltet; billetten har pris, «I alt ved kassen»

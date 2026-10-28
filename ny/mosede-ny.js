@@ -751,6 +751,26 @@
   }
 
   /* ============================================================
+     TAPASKORTET ER ÉN STOR KNAP  (28/10)
+     ------------------------------------------------------------
+     Mikkel: *"mere trykbart, så man ryger derind"*. Et tryk hvor som
+     helst på kortet — fotoet, listen, prisen — går til tapassiden.
+     Knappen er stadig den rigtige vej for tastatur og skærmlæser; et
+     tryk på et link inde i kortet får lov at være sit eget.
+     ============================================================ */
+  (function () {
+    var kort = document.getElementById('tapas');
+    var knap = kort && kort.querySelector('.nk-knap');
+    if (!knap) return;
+    kort.classList.add('nk-trykbar');
+    kort.addEventListener('click', function (e) {
+      if (e.defaultPrevented || (e.target.closest && e.target.closest('a, button, input, select, textarea'))) return;
+      if (window.getSelection && String(window.getSelection())) return;
+      knap.click();
+    });
+  })();
+
+  /* ============================================================
      BESTILLINGEN — beskeden foldes ind, til man vil skrive en
      ============================================================ */
   (function () {
