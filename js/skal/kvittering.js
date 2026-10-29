@@ -209,20 +209,25 @@
      vi gætter på, er en blindgyde — og ingen knap er bedre end én,
      der peger forkert. Google står først: det er den, der hjælper på
      "smørrebrød Karlslunde". */
-  function kontakt(ind) {
+  /* o.udenTelefon: siden har allerede sin egen ring-knap under kvitteringen
+     (bestil/), så nummeret står ikke to gange. */
+  function kontakt(ind, o) {
     ind = ind || {};
+    o = o || {};
     var M = window.MOSEDE || {};
     var tlf = String(M.telefonPent || '28 87 13 43');
     var tlfLink = String(M.telefon || '+4528871343');
     var mail = String(ind.kontakt_email_booking || ind.kontakt_email || M.email || '').trim();
     var boks = lav('div', 'kvit-kontakt');
     boks.appendChild(lav('p', 'kvit-kontakt-top', 'Alt vedrørende jeres bestilling'));
-    var p = lav('p', null, 'Ring på ');
-    var a = lav('a', null, tlf);
-    a.href = 'tel:' + tlfLink;
-    p.appendChild(a);
+    var p = lav('p', null, o.udenTelefon ? '' : 'Ring på ');
+    if (!o.udenTelefon) {
+      var a = lav('a', null, tlf);
+      a.href = 'tel:' + tlfLink;
+      p.appendChild(a);
+    }
     if (mail) {
-      p.appendChild(document.createTextNode(' eller skriv til '));
+      p.appendChild(document.createTextNode(o.udenTelefon ? 'Skriv til ' : ' eller skriv til '));
       var m = lav('a', null, mail);
       m.href = 'mailto:' + mail;
       p.appendChild(m);

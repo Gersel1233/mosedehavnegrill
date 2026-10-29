@@ -3574,7 +3574,7 @@
           a.href = Butik.foelgAdresse(b.reference);
           a.textContent = 'Følg din bestilling →';
           return a;
-        }()), K.kontakt && !b.bord_nummer ? K.kontakt((data && data.indstillinger) || {}) : null],
+        }()), K.kontakt && !b.bord_nummer ? K.kontakt((data && data.indstillinger) || {}, { udenTelefon: true }) : null],
       });
     } else {
       var kvit = lav('div', 'kvit');
