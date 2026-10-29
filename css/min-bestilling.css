@@ -56,27 +56,35 @@
   text-align: center;
 }
 
-/* Hakket. ⚠️ Farven siger tilstanden, men ORDET bærer beskeden —
-   en farvet cirkel alene er ubrugelig for den, der ikke ser
-   forskel på grøn og rød. */
-.mb-side .mb-hak {
-  width: 62px;
-  height: 62px;
-  margin: 0 auto 14px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 30px;
-  line-height: 1;
-  color: #fff;
-  background: var(--red-dyb, var(--red-d, #9e1b28));
+/* ---- MÆRKET  (29/10) ----------------------------------------
+   Kvitteringens egen ring og hak (.kvit-hak i kvittering.css):
+   rødt, ikke orange og grønt. Mikkel: siden efter en bestilling
+   var *"slet ikke opdateret … også sammenhængen"* — den lignede en
+   anden butiks side. Nu er det den samme rød, det samme mærke og
+   den samme bevægelse som kvitteringen, hun lige har set.
+
+   ⚠️ Ordet under bærer beskeden. Farven alene siger intet. */
+.mb-side .mb-hak { margin: 2px auto 10px; }
+/* I gang: ringen er tegnet, og tre prikker bølger — ingen
+   uendelig drejning, der æder batteri, kun opacity. */
+.mb-side .mb-hak-igang .mb-hak-prik {
+  fill: var(--red, #d62a3a);
+  opacity: .25;
+  animation: mb-boelge 1.2s ease-in-out infinite;
 }
-.mb-side .mb-modtaget .mb-hak,
-.mb-side .mb-igang .mb-hak { background: #b8791f; }
-.mb-side .mb-klar .mb-hak,
-.mb-side .mb-faerdig .mb-hak { background: #2f7d4f; }
-.mb-side .mb-stop .mb-hak { background: var(--red-dyb, var(--red-d, #9e1b28)); }
-.mb-side .mb-tom .mb-hak { display: none; }
+.mb-side .mb-hak-igang .mb-hak-prik-1 { animation-delay: .15s; }
+.mb-side .mb-hak-igang .mb-hak-prik-2 { animation-delay: .3s; }
+@keyframes mb-boelge { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+/* Slagsen over overskriften: Afhentning, Levering, Spis her. */
+.mb-side .mb-hvordan {
+  margin: 0 0 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--red-tekst, var(--red-d, #b41f2e));
+}
 
 .mb-side .mb-titel {
   margin: 0;
@@ -91,63 +99,91 @@
   color: var(--sea2, var(--ink2, #5c4a45));
 }
 
-/* Nummeret er dét, hun siger højt ved lugen.
-   ⚠️ Loftet på 340 px er kvitteringens egen lære: på 1280 px
-   strakte kodeboksen sig over hele panelet, så det ene tal stod
-   som en lille streg midt i en meget bred flade. */
-.mb-side .mb-nr {
-  margin: 18px auto 0;
-  max-width: 340px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: var(--sand2, var(--cream2, #f7ede1));
-}
-.mb-side .mb-nr-navn {
-  display: block;
-  font-size: 12px;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--muted, #8b7871);
-}
-.mb-side .mb-nr-tal {
-  display: block;
-  margin-top: 4px;
-  font-size: 30px;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  color: var(--red-tekst, var(--red-d, #b6202f));
-}
+/* Nummeret: kvitteringens egen boks (.kvit-nr). Her står kun
+   luften over den. */
+.mb-side .mb-nr { margin-top: 18px; }
 
 /* Trinnene. En liste, ikke en sætning — personalet skimmer, og
-   gæsten gør det samme, når hun står og venter. */
+   gæsten gør det samme, når hun står og venter.
+
+   ⚠️ STREGEN BAG PRIKKERNE ER ÉN LINJE MED EN RØD FYLDNING
+   (--mb-fyld, 0–1, sat af js/min-bestilling.js). Den er tegnet
+   med transform: scaleX, aldrig width — reglen fra 31/8. */
 .mb-side .mb-trin {
+  position: relative;
   list-style: none;
-  margin: 20px 0 0;
+  margin: 22px 0 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: 0;
+}
+.mb-side .mb-trin::before,
+.mb-side .mb-trin::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 12.5%;
+  right: 12.5%;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(36, 26, 23, .10);
+}
+.mb-side .mb-trin::after {
+  background: var(--red, #d62a3a);
+  transform-origin: left center;
+  transform: scaleX(var(--mb-fyld, 0));
+  transition: transform .6s cubic-bezier(.2, .9, .24, 1);
 }
 .mb-side .mb-trin-et {
+  position: relative;
+  z-index: 1;
   display: grid;
   justify-items: center;
-  gap: 6px;
-  font-size: 11.5px;
+  gap: 7px;
+  font-size: 12px;
   line-height: 1.25;
   color: var(--muted, #8b7871);
 }
 .mb-side .mb-trin-prik {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 700;
   color: #fff;
-  background: rgba(36, 26, 23, .16);
+  background: var(--paper, #fff);
+  box-shadow: inset 0 0 0 2px rgba(36, 26, 23, .16);
 }
 .mb-side .mb-trin-et.naaet { color: var(--sea, #241a17); font-weight: 600; }
-.mb-side .mb-trin-et.naaet .mb-trin-prik { background: #2f7d4f; }
+.mb-side .mb-trin-et.naaet .mb-trin-prik {
+  background: var(--red, #d62a3a);
+  box-shadow: none;
+}
+/* Det trin, vi står på, har en ring om sig, der ånder. */
+.mb-side .mb-trin-et.nu .mb-trin-prik {
+  box-shadow: 0 0 0 5px rgba(214, 42, 58, .16);
+}
+
+/* "Opdaterer af sig selv" — beviset på, at siden lever. */
+.mb-side .mb-liv {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
+  font-size: 12.5px;
+  color: var(--muted, #8b7871);
+}
+.mb-side .mb-liv-prik {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2f9e5b;
+  animation: mb-boelge 2s ease-in-out infinite;
+}
 
 .mb-side .mb-fakta {
   margin: 20px 0 0;
@@ -205,13 +241,17 @@
   display: block;
   margin-top: 18px;
   padding: 14px 18px;
+  min-height: 48px;
   border-radius: 999px;
-  background: var(--sand2, var(--cream2, #f7ede1));
-  color: var(--sea, #241a17);
-  font-weight: 600;
+  background: var(--paper, #fff);
+  color: var(--red-tekst, var(--red-d, #b41f2e));
+  box-shadow: inset 0 0 0 1.5px rgba(214, 42, 58, .45);
+  font-weight: 700;
   font-size: 15px;
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
 }
+.mb-side .mb-ring:active { background: rgba(214, 42, 58, .06); }
 
 .mb-side .mb-soeg {
   display: grid;
@@ -241,7 +281,7 @@
   min-height: 48px;
   border: 0;
   border-radius: 999px;
-  background: var(--red, #d1462f);
+  background: var(--red, #d62a3a);
   color: #fff;
   font: inherit;
   font-weight: 600;
@@ -250,16 +290,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Hakket popper ind, når siden lander. Reduced motion slår det
-   fra — en side, der bevæger sig for den, der har bedt om at
-   lade være, er en fejl, ikke en detalje. */
-@keyframes mb-pop {
-  from { transform: scale(.7); opacity: 0; }
-  to   { transform: none; opacity: 1; }
-}
-.mb-side .mb-hak { animation: mb-pop .42s cubic-bezier(.2, .9, .24, 1) both; }
+/* Bevægelse væk for den, der har bedt om det. Mærket selv
+   (kvit-hak) slår sin egen fra i kvittering.css. */
 @media (prefers-reduced-motion: reduce) {
-  .mb-side .mb-hak { animation: none; }
+  .mb-side .mb-hak-igang .mb-hak-prik,
+  .mb-side .mb-liv-prik { animation: none; opacity: 1; }
+  .mb-side .mb-trin::after { transition: none; }
 }
 
 /* ⚠️ TILLÆGGET ER PENGE, IKKE MAD (8/9). Emballagen og fragten
@@ -270,3 +306,6 @@
 /* Uden antalskolonnen skal navnet fylde de to første spor;
    ellers ville prisen rykke ind, hvor antallet stod. */
 .mb-side .mb-tillaeg .mb-navn { grid-column: 1 / 3; }
+
+/* Aftalerabatten står som tillæggene, men i husets rød. */
+.mb-side .mb-rabat .mb-pris { color: var(--red-tekst, var(--red-d, #b41f2e)); font-weight: 600; }

@@ -68,7 +68,15 @@ og derfra:
   → eventudvalg-nyheder-28-10.sql
   → sms-alle-28-10.sql   (kun sammen med sms.sql — se docs/SMS-OPSAETNING.md)
   → rabatkoder-28-10.sql
+  → bestilling-status-rabat-29-10.sql   (EFTER rabatkoder — den stopper selv, hvis den kommer før)
 ```
+
+**`bestilling-status-rabat-29-10.sql` (29/10) — kør efter rabatkoderne.** "Følg din bestilling"
+(min-bestilling/) viser aftalerabatten og "Til betaling" som kvitteringen, i stedet for den fulde
+sum. Laver `mosede_bestilling_status` om med to kolonner mere (rabat_navn, rabat_kr) — aldrig koden,
+navnet eller telefonen. Prøven er `proev-bestilling-status-rabat-29-10.sql` — 4 af 4, og
+`proev-bestilling-status.sql` er stadig 9 af 9. er-vi-klar 159. Uden filen virker siden som før,
+blot uden rabatlinjen.
 
 **`rabatkoder-28-10.sql` (28/10) — SKAL KØRES for rabatkoderne.** Tabellen `rabatkoder` (kun personalet
 kan læse den), fire kolonner på `bestillinger` (rabat_kode/_navn/_procent/_kr) og udløseren `zz_rabatkode`,

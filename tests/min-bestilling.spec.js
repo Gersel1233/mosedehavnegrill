@@ -436,3 +436,58 @@ test.describe('Når databasen ikke svarer', () => {
         .toBeGreaterThan(førMange);
     });
 });
+
+/* ============================================================
+   SAMMENHÆNGEN MED KVITTERINGEN  (29/10)
+   ------------------------------------------------------------
+   Mikkel om siden efter en bestilling: *"slet ikke opdateret og
+   gjort ordentligt … også sammenhængen"* og *"følg din bestilling
+   virker jo ikke"*. Siden siger nu det samme som kvitteringen —
+   samme nummerboks med referencen under, samme rabat og samme
+   beløb — og den viser, at den lever.
+   ============================================================ */
+test.describe('Følg din bestilling hænger sammen med kvitteringen', () => {
+  test('nummeret står med referencen under, som på kvitteringen', async ({ page }) => {
+    await åbnStatus(page);
+    await expect(page.locator('.kvit-nr .kvit-nr-tal')).toHaveText('M-0047');
+    await expect(page.locator('.kvit-nr .kvit-nr-ref')).toContainText(REF);
+    await expect(page.locator('.mb-hvordan')).toHaveText('Afhentning');
+  });
+
+  test('aftalerabatten står, og beløbet er det samme som på kvitteringen', async ({ page }) => {
+    await åbnStatus(page, medBestilling({ rabat_kode: 'GREVE10', rabat_navn: 'Greve Kommune', rabat_procent: 10, rabat_kr: 20 }));
+    await expect(page.locator('.mb-rabat')).toContainText('Aftale: Greve Kommune');
+    await expect(page.locator('.mb-rabat')).toContainText('−20');
+    await expect(page.locator('.mb-ialt')).toContainText('Til betaling');
+    await expect(page.locator('.mb-ialt')).toContainText('183');
+    await expect(page.locator('.mb-kort'), 'koden selv er aftalens hemmelighed').not.toContainText('GREVE10');
+  });
+
+  test('uden rabat er summen "I alt" som før', async ({ page }) => {
+    await åbnStatus(page);
+    await expect(page.locator('.mb-rabat')).toHaveCount(0);
+    await expect(page.locator('.mb-ialt')).toContainText('I alt');
+  });
+
+  test('trinnene følger køkkenet, og det trin, vi står på, er markeret', async ({ page }) => {
+    await åbnStatus(page, medBestilling({ status: 'tilberedes' }));
+    await expect(page.locator('.mb-trin-et.naaet')).toHaveCount(3);
+    await expect(page.locator('.mb-trin-et.nu')).toHaveText(/I gang/);
+    await expect(page.locator('.mb-hak-igang')).toHaveCount(1);
+  });
+
+  test('en levering slutter i "På vej", en afhentning i "Klar"', async ({ page }) => {
+    await åbnStatus(page, medBestilling({ status: 'klar', hvordan: 'levering' }));
+    await expect(page.locator('.mb-trin-et').last()).toHaveText(/På vej/);
+    await expect(page.locator('.mb-hvordan')).toHaveText('Levering');
+    await åbnStatus(page, medBestilling({ status: 'klar' }));
+    await expect(page.locator('.mb-trin-et').last()).toHaveText(/Klar/);
+  });
+
+  test('siden siger, at den opdaterer sig selv — men ikke på en lukket bestilling', async ({ page }) => {
+    await åbnStatus(page);
+    await expect(page.locator('.mb-liv')).toContainText('Opdaterer af sig selv');
+    await åbnStatus(page, medBestilling({ status: 'afhentet' }));
+    await expect(page.locator('.mb-liv')).toHaveCount(0);
+  });
+});

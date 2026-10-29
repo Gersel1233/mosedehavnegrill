@@ -81,7 +81,6 @@
     if (st === 'afvist') {
       return {
         slags: 'stop',
-        tegn: '✕',
         titel: 'Vi kunne ikke lave den',
         /* ⚠️ RÆKKEFØLGEN ER KUNDENS EGEN (4/9): "hvis vi ikke har
            ringet til dig, så ring til vores nummer." Første udgave
@@ -102,7 +101,6 @@
     if (st === 'udeblevet') {
       return {
         slags: 'stop',
-        tegn: '·',
         titel: 'Den blev ikke hentet',
         tekst: 'Maden står ikke længere klar. Ring til os, hvis der er '
           + 'sket en misforståelse.',
@@ -111,7 +109,6 @@
     if (st === 'afhentet' || st === 'serveret') {
       return {
         slags: 'faerdig',
-        tegn: '✓',
         titel: bord ? 'Serveret' : (leveres ? 'Leveret' : 'Afhentet'),
         /* "Vi ses igen på havnen" er sandt for den, der HAR
            været her. Til den, maden blev kørt ud til, er det en
@@ -124,7 +121,6 @@
     if (st === 'klar') {
       return {
         slags: 'klar',
-        tegn: '✓',
         titel: bord ? 'Den er på vej ud' : 'Din mad er klar',
         tekst: bord
           ? 'Vi kommer ud til bord ' + bord + ' med det.'
@@ -136,7 +132,6 @@
     if (st === 'tilberedes') {
       return {
         slags: 'igang',
-        tegn: '🍳',
         titel: 'Maden er i gang',
         tekst: bord
           ? 'Køkkenet er i gang. Vi kommer ud til bord ' + bord + '.'
@@ -151,7 +146,6 @@
        til noget. */
     return {
       slags: 'modtaget',
-      tegn: '✓',
       titel: 'Vi har din bestilling',
       /* ⚠️ EN NY LEVERING ER IKKE LOVET ENDNU (26/9). Her stod "Vi kører
          den ud til dig" fra første sekund — mens kvitteringen lige havde
@@ -200,7 +194,8 @@
       + ' d. ' + d.getDate() + '.';
   }
 
-  function tegnTrin(status) {
+  function tegnTrin(b) {
+    var status = b.status;
     var stribe = lav('ol', 'mb-trin');
     var naaet = TRIN.indexOf(status);
     if (status === 'afhentet' || status === 'serveret') naaet = TRIN.length;
@@ -208,15 +203,79 @@
        linjer på en iPhone 13 og gjorde striben skæv — set på et
        skud, ikke læst. Og "Bestilt/Modtaget" sagde næsten det
        samme to gange; "Sendt" er hendes handling, "Modtaget" er
-       vores svar. */
-    var navne = ['Sendt', 'Modtaget', 'I gang', 'Klar'];
+       vores svar.
+
+       En levering slutter i "På vej" — det er dét, sms'en siger,
+       når køkkenet melder den klar (29/10). */
+    var navne = ['Sendt', 'Modtaget', 'I gang',
+      b.hvordan === 'levering' && !b.bord_nummer ? 'På vej' : 'Klar'];
+    /* Stregen mellem prikkerne fyldes op til det trin, vi er
+       nået — det er den, øjet læser først. */
+    stribe.style.setProperty('--mb-fyld',
+      String(Math.max(0, Math.min(naaet, navne.length - 1)) / (navne.length - 1)));
     navne.forEach(function (n, i) {
-      var li = lav('li', 'mb-trin-et' + (i <= naaet ? ' naaet' : ''));
+      var li = lav('li', 'mb-trin-et' + (i <= naaet ? ' naaet' : '')
+        + (i === naaet ? ' nu' : ''));
       li.appendChild(lav('span', 'mb-trin-prik', i <= naaet ? '✓' : ''));
       li.appendChild(lav('span', 'mb-trin-navn', n));
       stribe.appendChild(li);
     });
     return stribe;
+  }
+
+  /* ---- MÆRKET ØVERST — DET SAMME SOM KVITTERINGENS  (29/10) ---
+     Mikkel om siden efter en bestilling: *"slet ikke opdateret og
+     gjort ordentligt … også sammenhængen"*. Kvitteringen, hun lige
+     har set, har en rød ring med et hak, der tegner sig; den her
+     side havde en orange cirkel med en stegepande-emoji. Nu er det
+     det samme mærke: hak for "vi har den / klar / færdig", en ring,
+     der drejer, mens køkkenet er i gang, og et kryds ved et nej.
+     Ordet under bærer stadig beskeden — farven alene siger intet. */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function svg(tag, attr) {
+    var e = document.createElementNS(SVGNS, tag);
+    Object.keys(attr).forEach(function (k) { e.setAttribute(k, attr[k]); });
+    return e;
+  }
+  function maerke(slags) {
+    var s = svg('svg', { viewBox: '0 0 52 52', 'aria-hidden': 'true',
+      class: 'mb-hak kvit-hak' + (slags === 'igang' ? ' mb-hak-igang' : '') });
+    s.appendChild(svg('circle', { class: 'kvit-ring', cx: 26, cy: 26, r: 24 }));
+    if (slags === 'igang') {
+      /* Tre prikker — "vi er i gang" — i stedet for et hak, der
+         ville sige, at det er overstået. */
+      [17, 26, 35].forEach(function (x, i) {
+        s.appendChild(svg('circle', { class: 'mb-hak-prik mb-hak-prik-' + i, cx: x, cy: 26, r: 3 }));
+      });
+    } else if (slags === 'stop') {
+      s.appendChild(svg('path', { class: 'kvit-streg', d: 'M19 19l14 14M33 19L19 33' }));
+    } else {
+      s.appendChild(svg('path', { class: 'kvit-streg', d: 'M15 27l7 7 15-16' }));
+    }
+    return s;
+  }
+
+  function hvordanTekst(b) {
+    if (b.bord_nummer) return 'Spis her';
+    if (b.hvordan === 'levering') return 'Levering';
+    return 'Afhentning';
+  }
+
+  /* ---- "DEN LEVER" ---------------------------------------------
+     Mikkel: *"følg din bestilling virker jo ikke"*. Siden spurgte
+     hvert 20. sekund — men intet på skærmen sagde det, så en side,
+     der venter på, at køkkenet trykker, så ud som en side, der var
+     gået i stå. Nu står det: en prik, der blinker, og klokkeslættet
+     for sidste kig. På en lukket bestilling står linjen ikke — der
+     er intet at vente på. */
+  var liv = null;
+  function tegnLiv() {
+    if (!liv) return;
+    var d = new Date();
+    var t = String(d.getHours()).padStart(2, '0') + '.' + String(d.getMinutes()).padStart(2, '0');
+    liv.textContent = '';
+    liv.appendChild(lav('span', 'mb-liv-prik'));
+    liv.appendChild(document.createTextNode('Opdaterer af sig selv · sidst kl. ' + t));
   }
 
   function tegn(b) {
@@ -225,18 +284,21 @@
 
     var kort = lav('div', 'mb-kort mb-' + v.slags);
 
-    var hak = lav('div', 'mb-hak', v.tegn);
-    kort.appendChild(hak);
+    kort.appendChild(maerke(v.slags));
+    kort.appendChild(lav('p', 'mb-hvordan', hvordanTekst(b)));
     kort.appendChild(lav('h1', 'mb-titel', v.titel));
     kort.appendChild(lav('p', 'mb-tekst', v.tekst));
 
     /* Nummeret er dét, hun siger højt ved lugen — det er det
        store. Findes der ikke et (filen ikke kørt, en gammel
        række), står referencen alene, som kvitteringen gør. */
-    var kode = lav('div', 'mb-nr');
+    /* Nummerboksen er kvitteringens egen (.kvit-nr i
+       css/kvittering.css): samme tal, samme størrelse, og
+       referencen i det små nedenunder — som på kvitteringen. */
+    var kode = lav('div', 'mb-nr kvit-nr');
     if (b.nummer) {
-      kode.appendChild(lav('span', 'mb-nr-navn', 'Bestillingsnummer'));
-      kode.appendChild(lav('strong', 'mb-nr-tal',
+      kode.appendChild(lav('span', 'mb-nr-navn kvit-nr-navn', 'Bestillingsnummer'));
+      kode.appendChild(lav('strong', 'mb-nr-tal kvit-nr-tal',
         /* ⚠️ FORMATET SPØRGES, DET SKRIVES IKKE AF  (10/9).
            Fjerde håndlavede kopi fundet på én dag. Butik.pæntNummer
            er den ene regel, og bogstavet siger slagsen — uden det
@@ -245,13 +307,24 @@
            Siden henter med vilje ingenting, men den INDLÆSER
            store.js, så reglen er der. */
         Butik.pæntNummer(b.nummer, 'mad')));
+      var r = lav('span', 'kvit-nr-ref');
+      r.appendChild(lav('span', 'kvit-nr-mrk', 'Reference'));
+      r.appendChild(document.createTextNode(ref()));
+      kode.appendChild(r);
     } else {
-      kode.appendChild(lav('span', 'mb-nr-navn', 'Jeres reference'));
-      kode.appendChild(lav('strong', 'mb-nr-tal', ref()));
+      kode.appendChild(lav('span', 'mb-nr-navn kvit-nr-navn', 'Jeres reference'));
+      kode.appendChild(lav('strong', 'mb-nr-tal kvit-nr-tal', ref()));
     }
     kort.appendChild(kode);
 
-    if (v.slags !== 'stop') kort.appendChild(tegnTrin(b.status));
+    liv = null;
+    if (v.slags !== 'stop') kort.appendChild(tegnTrin(b));
+    if (!faerdig(b.status)) {
+      liv = lav('p', 'mb-liv');
+      liv.setAttribute('aria-live', 'off');
+      kort.appendChild(liv);
+      tegnLiv();
+    }
 
     /* Hvornår og hvor. Et bord har ingen hentetid — maden bæres
        ud, når den er klar — så linjen ville være et klokkeslæt,
@@ -338,10 +411,24 @@
         liste.appendChild(li);
       });
       kort.appendChild(liste);
+      /* ⚠️ AFTALERABATTEN STÅR SOM PÅ KVITTERINGEN  (29/10). Har
+         gæsten brugt en rabatkode, sagde kvitteringen "Til betaling
+         ved lugen 259,-" — og den her side sagde "I alt 288,-" om
+         den samme bestilling. Rabatten kommer fra databasen
+         (mosede_bestilling_status, filen bestilling-status-rabat-
+         29-10.sql); er filen ikke kørt, kender siden ingen rabat og
+         viser summen som før. */
+      var rabat = Number(b.rabat_kr) || 0;
+      if (sum > 0 && rabat > 0) {
+        var rl = lav('li', 'mb-tillaeg mb-rabat');
+        rl.appendChild(lav('span', 'mb-navn', 'Aftale: ' + (b.rabat_navn || 'rabat')));
+        rl.appendChild(lav('span', 'mb-pris', '−' + kroner(rabat)));
+        liste.appendChild(rl);
+      }
       if (sum > 0) {
         var i_alt = lav('p', 'mb-ialt');
-        i_alt.appendChild(lav('span', null, 'I alt'));
-        i_alt.appendChild(lav('strong', null, kroner(sum)));
+        i_alt.appendChild(lav('span', null, rabat > 0 ? 'Til betaling' : 'I alt'));
+        i_alt.appendChild(lav('strong', null, kroner(Math.max(0, sum - rabat))));
         kort.appendChild(i_alt);
       }
     }
@@ -448,6 +535,8 @@
       if (b.status !== sidsteStatus) {
         sidsteStatus = b.status;
         tegn(b);
+      } else {
+        tegnLiv();
       }
       if (faerdig(b.status)) stop();
     }).catch(function (e) {

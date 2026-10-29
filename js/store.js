@@ -5551,6 +5551,8 @@
         hvordan: fundet.hvordan || 'afhentning',
         antal: fundet.antal,
         linjer: fundet.linjer || [],
+        rabat_navn: fundet.rabat_navn || null,
+        rabat_kr: fundet.rabat_kr || null,
       });
     }
 

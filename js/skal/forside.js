@@ -349,7 +349,7 @@
       over.textContent = 'Næste på havnen';
       h4.parentNode.insertBefore(over, h4);
       var fakta = [];
-      if (k.start_kl) fakta.push('kl. ' + String(k.start_kl).slice(0, 5).replace(':', '.'));
+      if (k.start_kl) fakta.push('kl. ' + Butik.klokken(k.start_kl));
       if (String(k.pris_tekst || '').trim()) fakta.push(String(k.pris_tekst).trim());
       if (k.tilmelding) fakta.push('Tilmelding åben');
       var cta = find('.cta', boks);

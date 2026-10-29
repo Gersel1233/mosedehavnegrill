@@ -136,13 +136,16 @@ end $$;
 --    arrangement_pladser og bord_fyldte_dage: en kolonne mere er
 --    en oplysning, gaesten ikke skulle have haft.
 insert into _svar
-select 5, 'svaret har praecis de otte kolonner, det maa have',
+--    ⚠️ OTTE — ELLER TI EFTER bestilling-status-rabat-29-10.sql, som
+--    lægger aftalens navn og rabatten i kroner til. Selve koden og
+--    alt om gæsten er stadig ude.
+select 5, 'svaret har praecis de kolonner, det maa have',
   (select count(*) from information_schema.columns
     where table_schema = 'public'
       and table_name = 'mosede_bestilling_status') = 0
-  and (select count(*) = 8 and bool_and(a.attname in
+  and (select count(*) in (8, 10) and bool_and(a.attname in
         ('nummer','status','hent_dato','hent_tid','bord_nummer',
-         'hvordan','antal','linjer'))
+         'hvordan','antal','linjer','rabat_navn','rabat_kr'))
        from pg_proc p
        join pg_namespace ns on ns.oid = p.pronamespace
        join unnest(p.proargnames, p.proargmodes)

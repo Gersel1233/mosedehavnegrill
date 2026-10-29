@@ -1375,7 +1375,14 @@ with tjek(nr, del, hvad, ok, retning) as (values
    (select to_regclass('public.rabatkoder') is not null
        and exists (select 1 from pg_trigger where tgname = 'zz_rabatkode')),
    'Aftale-kunderne kan ikke få deres rabat, og admin-kortet siger "skal køres". '
-   || 'Kør supabase/rabatkoder-28-10.sql.')
+   || 'Kør supabase/rabatkoder-28-10.sql.'),
+
+  (159, 'Bestillinger', '"Følg din bestilling" kender aftalerabatten',
+   (select exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                    where n.nspname = 'public' and p.proname = 'mosede_bestilling_status'
+                      and pg_get_function_result(p.oid) like '%rabat_kr%')),
+   'En aftale-kunde ser den fulde sum på "Følg din bestilling", mens kvitteringen sagde rabatten. '
+   || 'Kør supabase/bestilling-status-rabat-29-10.sql (efter rabatkoder-28-10.sql).')
 ),
 
 samlet as (

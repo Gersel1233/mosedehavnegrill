@@ -7,6 +7,19 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**"FØLG DIN BESTILLING" HÆNGER SAMMEN MED KVITTERINGEN** (29/10). Mikkel: *"slet ikke opdateret og gjort
+ordentligt … også sammenhængen"* og *"følg din bestilling virker jo ikke"*. min-bestilling/ havde en orange
+cirkel med en stegepande-emoji og grønne prikker — en anden butiks side. Nu: kvitteringens røde ring og hak
+(tre prikker, der bølger, mens køkkenet er i gang; kryds ved et nej), slagsen over overskriften (Afhentning ·
+Levering · Spis her), kvitteringens egen nummerboks med referencen under, trin med en rød streg op til det
+trin, vi står på, en levering, der slutter i "På vej" (som sms'en), og linjen "Opdaterer af sig selv · sidst
+kl. …", så en side, der venter på køkkenet, ikke ligner en, der er gået i stå. Ringeknappen har husets røde
+kant. Aftalerabatten står som på kvitteringen ("Aftale: … −X", "Til betaling") — kræver
+supabase/bestilling-status-rabat-29-10.sql (efter rabatkoderne; 4/4, og proev-bestilling-status 9/9 med
+prøve 5 udvidet til de to nye kolonner). er-vi-klar 159. Teksterne er urørte. Samtidig rettet to fejl fra
+bannerets aften (28/10), fundet af typografi.spec.js: klokken skrevet i hånden (nu Butik.klokken) og tre nye
+skygger over loftet (nu tre af husets eksisterende).
+
 **SMS ER TÆNDT, OG KURVEN TØMMES** (29/10, lanceringsmorgen). Mikkel lagde send-sms op, kørte sms.sql +
 sms-alle-28-10.sql og fik test-sms'en — efter at SMS_AKTIV manglede første gang (sms_sendt havde "bekraeft"
 på M-0003/M-0004: funktionen behandlede dem, men sendte ikke). Samme GatewayAPI-konto som Spiis, egen nøgle.
