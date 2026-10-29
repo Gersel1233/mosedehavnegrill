@@ -101,59 +101,6 @@ body.ved-bordet {
   --bord-tern:  #d62a3a;   /* designets røde */
 }
 
-body.ved-bordet .bord-top { position: relative; z-index: 2; }
-
-body.ved-bordet #bestil.wrap {
-  position: relative;
-  padding-top: 0;
-}
-body.ved-bordet #bestil > .head {
-  position: relative;
-  margin: 0 calc(var(--pad) * -1) 20px;
-  padding: 30px var(--pad) 34px;
-  text-align: center;
-  overflow: hidden;
-  isolation: isolate;
-}
-/* HOVEDET STÅR PÅ FOTOET NU, IKKE PÅ TERNET (12/9). Det ternede
-   hoved var tegnet til en lys side; på lugens foto under sløret er
-   det teksten, der skal være lys — samme greb som forsidens
-   bestilling. Ternet bor i dugen på fotoet og i BORD-pillen.
-   Kontrasten regnes mod en HVID SKY under sløret alene i
-   tests/ved-bordet-glas.spec.js. */
-body.ved-bordet #bestil > .head h1 { color: #fff; }
-body.ved-bordet #bestil > .head p { color: rgba(255, 255, 255, .86); }
-/* BORDNUMMERET ER SIDENS VIGTIGSTE OPLYSNING — det afgør, om
-   maden havner ved det rigtige selskab. Derfor som en pille og
-   ikke som en linje tekst.
-
-   Hvid flade og ikke en gennemsigtig: pillen skal kunne læses
-   uanset hvad fotoet bag den viser. */
-/* ⚠️ GLAS OG ALMINDELIG SKRIFT (27/9). Den stod hvid med rød kant og
-   spærrede versaler ("BORD 7") og lignede en knap, der ikke kunne
-   trykkes på — Mikkels ord om de små flader: "ikke lesreg agtige".
-   Nu husets glas: næsten hvid (.9), så den stadig kan læses over et
-   hvilket som helst foto, slør, lys overkant og en tynd ring, og
-   "Bord 7" i almindelig skrift. Ingen skygge under: løftet er
-   knappernes. */
-body.ved-bordet #bord-eyebrow {
-  display: block;
-  width: fit-content;
-  margin-inline: auto;
-  padding: 7px 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .9);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: inset 0 1px .5px rgba(255, 255, 255, .95), inset 0 0 0 .5px rgba(36, 26, 23, .12);
-  color: var(--bord-blaek);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-}
-body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
-
 /* ---- Søgefeltet og chipsene, klæbende i toppen ---- */
 .kort-vaerktoej {
   position: sticky;
@@ -446,168 +393,6 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
    ovenfor. Stod de to steder, ville de skride fra hinanden første
    gang nogen rettede trykfladen ét af dem. */
 
-/* ============================================================
-   LUGENS FOTO OG MØRKT GLAS  (12/9)
-   ------------------------------------------------------------
-   Kundens ord: "samme glowup til qr bestillingssiden". Forlægget er
-   forsidens bestilling (.glasafsnit i havnegrillen.css): ejerens eget
-   foto af lugen, det fælles slør og formularen som mørkt glas med lys
-   tekst. Det er KUN udseendet — motoren i js/bestilling.js er urørt.
-
-   ⚠️ TALLENE ER FORSIDENS, TEGN FOR TEGN: sløret .66, glasset .3 med
-   blur(22px), rækkerne hvid .08, rosa #ffccd1 på rækkerne (4,96:1 over
-   en hvid sky). Det er dem, der er regnet efter dér; nye tal skulle
-   regnes forfra. tests/ved-bordet-glas.spec.js regner dem igen HER.
-
-   ⚠️ FIRE TING ER HVIDT PAPIR OG BEHOLDER BLÆKKET: en valgt vare (det
-   er den, øjet skal finde), kurvbjælken, og .flade-boksene — det sidste
-   kig, kvitteringen, bordvælgeren og "her er lukket". De er skrevet til
-   en lys flade, og deres egen gennemsigtige gradient (.92 → .74) lod
-   fotoet trænge igennem som gråt bag teksten.
-
-   ⚠️ SØGEBJÆLKEN ER NÆSTEN UIGENNEMSIGTIG, IKKE SLØRET. Den klæber over
-   listen, og et glas, man kan læse varerne igennem, er den fejl,
-   topbjælken havde 23/8. Og et slør inde i formularens slør ser kun
-   formularen — ikke fotoet.
-   ============================================================ */
-html:has(body.ved-bordet) { background: #1a1210; }
-body.ved-bordet { position: relative; background: #1a1210; }
-
-/* Laget er hele sidens højde; billedet i det klæber i skærmhøjde.
-   ⚠️ overflow: CLIP og ikke hidden — hidden gør laget til sin egen
-   rullebeholder, og så klæber intet (forsidens ar, set fejle begge
-   veje dér). */
-.bord-bg,
-.bord-slor { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-.bord-bg { overflow: clip; }
-.bord-bg img {
-  position: sticky;
-  top: 0;
-  display: block;
-  width: 100%;
-  height: 100vh;
-  height: 100lvh;
-  object-fit: cover;
-  object-position: 50% 38%;
-}
-.bord-slor {
-  background-color: rgba(26, 18, 16, .66);
-  background-image: linear-gradient(180deg, rgba(26, 18, 16, .4), transparent 32%, transparent 72%, rgba(31, 19, 16, .55));
-}
-body.ved-bordet main,
-body.ved-bordet .bord-bund { position: relative; z-index: 1; }
-body.ved-bordet #bestil.wrap { background: transparent; }
-body.ved-bordet #bestil > .note { color: rgba(255, 255, 255, .86); }
-
-/* ---- Formularen er glasset ---- */
-body.ved-bordet .form-kort {
-  color: #fff;
-  background: rgba(20, 14, 12, .3);
-  border-color: transparent;
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  backdrop-filter: blur(22px) saturate(160%);
-  box-shadow: inset 0 1px .5px rgba(255, 255, 255, .5), inset 0 0 0 1px rgba(255, 255, 255, .4), 0 10px 26px rgba(0, 0, 0, .32);
-}
-body.ved-bordet .form-kort .liste-titel,
-body.ved-bordet .form-kort label,
-body.ved-bordet .kort-gruppe-titel { color: #fff; }
-body.ved-bordet .form-kort .hjaelp,
-body.ved-bordet .form-kort .valgfri,
-body.ved-bordet .form-kort .send-note,
-body.ved-bordet .form-kort .jura-ved-send,
-body.ved-bordet .kort-gruppe-note { color: rgba(255, 255, 255, .76); }
-body.ved-bordet .form-kort .hjaelp strong { color: #fff; }
-body.ved-bordet .form-kort .jura-ved-send a { color: #ffccd1; }
-/* Handelsbetingelsernes flueben (14/9) står på det samme glas som
-   betingelseslinjen — samme farver, målt i ved-bordet-glas.spec. */
-body.ved-bordet .form-kort label.vilkaar-ja { color: rgba(255, 255, 255, .76); }
-body.ved-bordet .form-kort label.vilkaar-ja a { color: #ffccd1; }
-body.ved-bordet .form-kort .fejl { color: #ffccd1; }
-/* Fejlkortet (14/9) er lyst på glasset — blæk, ikke glassets rosa. */
-body.ved-bordet .fejl[role="alert"] { color: #241a17; }
-
-body.ved-bordet .form-kort input[type="text"],
-body.ved-bordet .form-kort input[type="tel"],
-body.ved-bordet .form-kort textarea {
-  color: #fff;
-  background: rgba(255, 255, 255, .1);
-  border-color: rgba(255, 255, 255, .22);
-}
-body.ved-bordet .form-kort ::placeholder { color: rgba(255, 255, 255, .7); }
-
-/* Allergien skal stadig SES som det ene røde felt — bare på mørkt. */
-body.ved-bordet .kort-visning .felt-allergi {
-  background: rgba(214, 42, 58, .16);
-  border-color: rgba(255, 179, 186, .5);
-}
-
-/* ---- Søgebjælken og chipsene ---- */
-body.ved-bordet .kort-vaerktoej { background: rgba(28, 20, 17, .94); }
-body.ved-bordet .kort-soeg {
-  color: #fff;
-  background: rgba(255, 255, 255, .1);
-  border-color: rgba(255, 255, 255, .22);
-}
-body.ved-bordet .kort-soeg::placeholder { color: rgba(255, 255, 255, .7); }
-/* ⚠️ :not(.on) — den valgte chip er husets røde, i SAMME regel som den
-   valgte dag på bord/ (fullskaerm-gamle.spec.js holder de to op mod
-   hinanden). Den må glasset ikke røre. */
-body.ved-bordet .kort-chip:not(.on) {
-  color: #fff;
-  background: rgba(255, 255, 255, .1);
-  border-color: rgba(255, 255, 255, .22);
-}
-
-/* Tegnet ved afsnittet: afdelingens farve, stærkere på mørkt. De tre
-   skal stadig være forskellige — farven er afdelingens, ikke pynt. */
-body.ved-bordet .kort-tegn { background: rgba(214, 42, 58, .3); }
-body.ved-bordet .kort-tegn-is { background: rgba(255, 139, 118, .3); }
-body.ved-bordet .kort-tegn-drikke { background: rgba(240, 160, 60, .3); }
-
-/* ---- Varerne ---- */
-body.ved-bordet .kort-visning .stk-linje:not(.valgt) {
-  color: #fff;
-  background: rgba(255, 255, 255, .08);
-  box-shadow: inset 0 0 0 .5px rgba(255, 255, 255, .12);
-}
-body.ved-bordet .kort-visning .stk-linje:not(.valgt) .desc,
-body.ved-bordet .kort-visning .stk-linje.spoerg-pris .navn { color: rgba(255, 255, 255, .76); }
-body.ved-bordet .kort-visning .stk-linje:not(.valgt) .stk-pris,
-body.ved-bordet .kort-visning .stk-linje:not(.valgt) .stk-faa { color: #ffccd1; }
-body.ved-bordet .kort-visning .stk-linje:not(.valgt) .udsolgt-chip {
-  color: #ffccd1;
-  background: rgba(214, 42, 58, .28);
-}
-body.ved-bordet .kort-visning .stk-linje:not(.valgt) .taeller {
-  background: rgba(255, 255, 255, .1);
-  border-color: rgba(255, 255, 255, .16);
-}
-/* Den valgte vare er papir: den skal være det, øjet finder først. */
-body.ved-bordet .kort-visning .stk-linje.valgt {
-  color: var(--sea);
-  background: #fff;
-}
-/* ⚠️ DAGENS RET ER OGSÅ PAPIR — OG DENS RÆKKE MÅ IKKE VÆRE GLAS
-   (13/9). Blokken blev hvidt papir, og reglen ovenfor gav rækken
-   inde i den hvid tekst: rettens navn stod hvidt på hvidt. Samme
-   farver som en valgt vare; blokken er fremhævelsen, ikke rækken. */
-body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) {
-  color: var(--sea);
-  background: none;
-  box-shadow: none;
-}
-body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) .desc { color: var(--muted); }
-body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) .stk-pris,
-body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) .stk-faa { color: var(--red-tekst); }
-body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) .taeller {
-  background: #fff;
-  border-color: rgba(36, 26, 23, .1);
-}
-body.ved-bordet .kort-intet {
-  color: rgba(255, 255, 255, .76);
-  border-color: rgba(255, 255, 255, .25);
-}
-
 /* ---- Varefotoet: et lille 16:9 ved siden af navnet ----
    ⚠️ Teksten må gå ned til 120 px, når der er et foto: med 150 faldt
    prisen ned på tællerens linje på en iPhone 13, og så stod rækkerne
@@ -615,5 +400,298 @@ body.ved-bordet .kort-intet {
    flexboksen stadig selv (se noten ved .stk-tekst ovenfor). */
 .kort-visning .stk-linje:has(> .stk-foto) .stk-tekst { flex-basis: 120px; }
 
-/* ---- Boksene er papir ---- */
+
+
+/* ============================================================
+   PAPIRET — SAMME KORT SOM FORSIDENS "BESTIL MAD"  (29/10)
+   ------------------------------------------------------------
+   Mikkel: *"kan vi ikke gøre bestillingssiden på QR-bordene i
+   opdateret stil som på siden her, med de rigtige menukort i stedet
+   for det der skrammel"*. Siden stod mørk med glas over et foto af
+   lugen — og fotoet viste skiltet "Grill & ishus", et navn huset ikke
+   vil have længere. Nu er den forsidens kort: lyst papir, et rødt
+   hoved med logoet og bordnummeret, den ternede dugkant, ◆-rubrikker
+   og hvide varekort. Motoren (js/bestilling.js) og alle id'er er de
+   samme — det er KUN tegningen, der er skiftet.
+   ============================================================ */
+html:has(body.ved-bordet) { background: #fdf7ef; }
+body.ved-bordet {
+  --nk-creme: #fdf7ef;
+  --nk-papir: #fbf4ea;
+  --nk-blaa: #2a5f8f;
+  position: relative;
+  background: #fdf7ef;
+  color: var(--sea);
+}
+/* Dugen øverst, som på menukortet — den toner ud i papiret. */
+body.ved-bordet::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 170px;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(214, 42, 58, .5) 50%, transparent 0) 0 0 / 28px 100%,
+    linear-gradient(0deg, transparent 50%, rgba(214, 42, 58, .5) 0) 0 0 / 100% 28px,
+    #fff;
+  -webkit-mask-image: linear-gradient(#000 30%, transparent);
+  mask-image: linear-gradient(#000 30%, transparent);
+}
+body.ved-bordet main,
+body.ved-bordet .bord-top,
+body.ved-bordet .bord-bund { position: relative; z-index: 1; }
+
+/* Bjælken: navnet i en hvid pille, så det kan læses på dugen */
+body.ved-bordet .bord-top .logo {
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--bord-blaek, #241a17);
+  box-shadow: 0 4px 14px rgba(36, 26, 23, .12);
+}
+
+/* ---- Kortet ---- */
+body.ved-bordet #bestil.wrap {
+  max-width: 600px;
+  margin: 8px auto 28px;
+  padding: 0 18px 26px;
+  border-radius: 28px;
+  background: var(--nk-papir);
+  box-shadow: 0 1px 0 rgba(36, 26, 23, .04), 0 22px 54px rgba(36, 26, 23, .14);
+  overflow: clip;
+}
+@media (max-width: 640px) {
+  body.ved-bordet #bestil.wrap { margin-inline: 12px; }
+}
+body.ved-bordet #bestil > .head {
+  position: relative;
+  margin: 0 -18px;
+  padding: 22px 112px 22px 20px;
+  background: var(--red, #d62a3a);
+  color: var(--nk-creme);
+  text-align: left;
+  overflow: hidden;
+}
+body.ved-bordet #bestil > .head::before,
+body.ved-bordet #bestil > .head::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .16);
+  pointer-events: none;
+}
+body.ved-bordet #bestil > .head::before { width: 420px; height: 420px; right: -210px; top: -150px; }
+body.ved-bordet #bestil > .head::after { width: 360px; height: 360px; right: -90px; bottom: -300px; }
+/* Bordnummeret er sidens vigtigste oplysning — en creme pille på det røde */
+body.ved-bordet #bord-eyebrow {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--nk-creme);
+  color: var(--red-tekst, #b6202f);
+  font: 600 14px/1.1 "Host Grotesk", system-ui, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+body.ved-bordet #bestil > .head h1 {
+  margin: 12px 0 0;
+  font: 400 clamp(40px, 11vw, 64px)/.9 "Bebas Neue", Impact, sans-serif;
+  letter-spacing: .005em;
+  color: var(--nk-creme);
+}
+body.ved-bordet #bestil > .head p {
+  margin: 10px 0 0;
+  max-width: 32ch;
+  font: italic 400 15.5px/1.4 "Host Grotesk", system-ui, sans-serif;
+  color: var(--nk-creme);
+}
+body.ved-bordet .vb-logo {
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  box-shadow: 0 10px 26px rgba(80, 8, 16, .35);
+}
+body.ved-bordet .vb-logo svg { display: block; width: 100%; height: 100%; }
+/* Den ternede kant med bølger — forsidens .nk-kant */
+body.ved-bordet .vb-kant {
+  height: 40px;
+  margin: -1px -18px 18px;
+  background:
+    radial-gradient(circle at 50% 100%, var(--nk-papir) 11.5px, transparent 12px) 0 100% / 24px 18px repeat-x,
+    linear-gradient(90deg, rgba(216, 41, 59, .5) 50%, transparent 0) 0 0 / 24px 100%,
+    linear-gradient(0deg, transparent 50%, rgba(216, 41, 59, .5) 0) 0 0 / 100% 24px,
+    #fff;
+}
+body.ved-bordet #bestil > .note,
+body.ved-bordet .ventetid { color: var(--muted); }
+
+/* ---- Formularen er kortets krop, ikke et kort i kortet ---- */
+body.ved-bordet .form-kort {
+  color: var(--sea);
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+/* ◆ + rubrik + dobbelt rød streg — forsidens .nk-rubrik */
+body.ved-bordet .form-kort .liste-titel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 12px;
+  font: 400 27px/1 "Bebas Neue", Impact, sans-serif;
+  letter-spacing: .02em;
+  color: var(--sea);
+}
+body.ved-bordet .form-kort .liste-titel::before {
+  content: "◆";
+  font-size: 15px;
+  color: var(--nk-blaa);
+  transform: translateY(-2px);
+}
+body.ved-bordet .form-kort .liste-titel::after {
+  content: "";
+  flex: 1;
+  min-width: 24px;
+  height: 4px;
+  margin-left: 6px;
+  border-top: 1.5px solid var(--red, #d62a3a);
+  border-bottom: 1.5px solid var(--red, #d62a3a);
+  opacity: .85;
+}
+body.ved-bordet .form-kort label {
+  color: var(--nk-blaa);
+  font: 400 17px/1.1 "Bebas Neue", Impact, sans-serif;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+body.ved-bordet .form-kort label .valgfri { letter-spacing: .08em; }
+body.ved-bordet .form-kort label.vilkaar-ja,
+body.ved-bordet .form-kort label.allergi-ja {
+  font: 400 14px/1.45 "Host Grotesk", system-ui, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+body.ved-bordet .form-kort .hjaelp,
+body.ved-bordet .form-kort .valgfri,
+body.ved-bordet .form-kort .send-note,
+body.ved-bordet .form-kort .jura-ved-send,
+body.ved-bordet .kort-gruppe-note { color: var(--muted); }
+body.ved-bordet .form-kort .hjaelp strong { color: var(--sea); }
+body.ved-bordet .form-kort .fejl { color: var(--red-tekst, #b6202f); }
+body.ved-bordet .form-kort input[type="text"],
+body.ved-bordet .form-kort input[type="tel"],
+body.ved-bordet .form-kort input[type="number"],
+body.ved-bordet .form-kort textarea {
+  color: var(--sea);
+  background: #fff;
+  border: 1px solid rgba(36, 26, 23, .12);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .04);
+}
+body.ved-bordet .form-kort ::placeholder { color: #8b7871; }
+
+/* Allergien er stadig det ene røde felt */
+body.ved-bordet .kort-visning .felt-allergi {
+  background: #fdebed;
+  border-color: rgba(214, 42, 58, .35);
+}
+
+/* ---- Søgebjælken og chipsene ---- */
+body.ved-bordet .kort-vaerktoej {
+  background: var(--nk-papir);
+  box-shadow: 0 10px 14px -12px rgba(36, 26, 23, .25);
+}
+body.ved-bordet .kort-soeg {
+  color: var(--sea);
+  background: #fff;
+  border-color: rgba(36, 26, 23, .12);
+}
+body.ved-bordet .kort-soeg::placeholder { color: #8b7871; }
+body.ved-bordet .kort-chip:not(.on) {
+  color: var(--sea);
+  background: #fff;
+  border-color: rgba(36, 26, 23, .12);
+}
+
+/* ---- Afsnittene — som menukortets rubrikker ---- */
+body.ved-bordet .kort-gruppe-titel {
+  color: var(--sea);
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-weight: 400;
+  letter-spacing: .02em;
+}
+body.ved-bordet .kort-tegn { background: #fbe3e5; }
+body.ved-bordet .kort-tegn-is { background: #fde5df; }
+body.ved-bordet .kort-tegn-drikke { background: #fcecd7; }
+
+/* ---- Varerne: hvide kort som forsidens ---- */
+body.ved-bordet .kort-visning .stk-linje {
+  color: var(--sea);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 1px 0 rgba(36, 26, 23, .04), 0 8px 22px rgba(36, 26, 23, .07);
+}
+body.ved-bordet .kort-visning .stk-linje + .stk-linje { margin-top: 10px; }
+body.ved-bordet .kort-visning .stk-linje .desc,
+body.ved-bordet .kort-visning .stk-linje.spoerg-pris .navn { color: var(--muted); }
+body.ved-bordet .kort-visning .stk-linje .stk-pris,
+body.ved-bordet .kort-visning .stk-linje .stk-faa { color: var(--red-tekst, #b6202f); }
+body.ved-bordet .kort-visning .stk-linje .udsolgt-chip {
+  color: var(--red-tekst, #b6202f);
+  background: #fdebed;
+}
+body.ved-bordet .kort-visning .stk-linje .taeller {
+  background: var(--nk-papir);
+  border-color: rgba(36, 26, 23, .1);
+}
+/* Den valgte vare får husets røde ring */
+body.ved-bordet .kort-visning .stk-linje.valgt {
+  background: #fff;
+  box-shadow: inset 0 0 0 2px var(--red, #d62a3a), 0 8px 22px rgba(214, 42, 58, .14);
+}
+body.ved-bordet .kort-visning .dagens-blok .stk-linje {
+  background: none;
+  box-shadow: none;
+}
+body.ved-bordet .kort-intet {
+  color: var(--muted);
+  border-color: rgba(36, 26, 23, .18);
+}
+
+/* ---- Boksene og bunden ---- */
 body.ved-bordet .flade { color: var(--sea); background: #fff; }
+body.ved-bordet .bord-bund {
+  background: none;
+  color: var(--muted);
+}
+body.ved-bordet .bord-bund a { color: var(--red-tekst, #b6202f); }
+/* Bordnummeret som en pille, ikke en bjælke */
+body.ved-bordet #bord-eyebrow { width: fit-content; }
+/* "Bestil til bord 7" skal kunne stå på én linje på en telefon */
+body.ved-bordet #bestil > .head h1 { font-size: clamp(34px, 9vw, 60px); }
+/* Footerens linje var hvid på papiret */
+body.ved-bordet .bord-bund .fine { color: var(--muted); opacity: 1; }
+/* Kurvbjælken: næsten massiv på papiret — ellers skinner den røde
+   send-knap lyserødt igennem, når bjælken står over den. */
+body.ved-bordet .bestil-bund { background: rgba(255, 253, 250, .96); }
+/* ⚠️ DEN FØRSTE VARE SKAL KUNNE TRYKKES PÅ UDEN AT RULLE (ved-bordet.spec:
+   "den første vare er på det første skærmbillede"). Det røde hoved er
+   derfor strammere end forsidens: gæsten sidder ved bordet og vil vælge. */
+@media (max-width: 640px) {
+  body.ved-bordet #bestil > .head { padding: 16px 86px 16px 18px; }
+  body.ved-bordet .vb-logo { top: 14px; right: 14px; width: 62px; height: 62px; }
+  body.ved-bordet #bestil > .head h1 { margin-top: 8px; font-size: clamp(30px, 8.4vw, 44px); }
+  body.ved-bordet #bestil > .head p { margin-top: 6px; font-size: 14px; }
+  body.ved-bordet .vb-kant { height: 30px; margin-bottom: 12px; }
+  body.ved-bordet .form-kort .liste-titel { margin: 2px 0 10px; font-size: 24px; }
+}
+/* På en computer gjorde husets .head-regel hovedet til to spalter, så
+   "Bestil til bord 7" stod som fire ord i en smal søjle. Én spalte. */
+body.ved-bordet #bestil > .head { display: block; }
+body.ved-bordet #bestil > .head h1 { max-width: none; }

@@ -7,6 +7,16 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**QR-BORDET I FORSIDENS STIL** (29/10). Mikkel: *"kan vi ikke gøre bestillingssiden på QR-bordene i opdateret
+stil som på siden her, med de rigtige menukort i stedet for det der skrammel"* — og *"ikke 1:1 med bestillings-
+siden på forsiden, men noget derhen af, men stadig bestil mad på QR-agtigt"*. ved-bordet/ var mørkt glas over et
+foto af lugen (skiltet "Grill & ishus"). Nu: lyst papir med dugen øverst, forsidens røde hoved med logo og "Bord 7"
+som pille, den ternede bølgekant, ◆-rubrikker ("Hvad skal I have?", "Hvem bestiller"), hvide varekort med rød
+ring, når de er valgt, blå Bebas-etiketter. QR-opbygningen er urørt: søgning, chips, alle afsnit åbne, ingen dag/tid.
+Motoren (js/bestilling.js) og alle id'er er de samme — kun tegningen er skiftet (css/ved-bordet.css, PAPIRET).
+Hovedet er strammere på telefonen, så den første vare kan trykkes uden at rulle. ved-bordet-glas.spec.js måler
+nu papiret (logo, rødt hoved, ingen lugefoto, kontrast ≥ 4,5 overalt, rød ring på den valgte).
+
 **KVITTERINGEN: ALT OM JERES BESTILLING + ANMELDELSE** (29/10). Mikkel med et skud af kvitteringen: *"skriv også
 … alt vedrørende jeres bestilling, og du ved måske link til Trustpilot for at skrive"*. Under "Følg din
 bestilling" står nu en boks: "Alt vedrørende jeres bestilling — ring på 28 87 13 43 eller skriv til booking@…

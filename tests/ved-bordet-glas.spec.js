@@ -1,6 +1,15 @@
 // @ts-check
 /* ============================================================
-   QR-SIDEN STÅR PÅ LUGEN — MØRKT GLAS SOM FORSIDENS BESTILLING  (12/9)
+   QR-SIDEN ER FORSIDENS KORT — LYST PAPIR  (29/10; før: mørkt glas 12/9)
+   ------------------------------------------------------------
+   Mikkel 29/10: *"kan vi ikke gøre bestillingssiden på QR-bordene i
+   opdateret stil som på siden her, med de rigtige menukort i stedet
+   for det der skrammel"*. Siden er nu forsidens "Bestil mad"-kort:
+   lyst papir, rødt hoved med logo og bordnummer, ternet kant, hvide
+   varekort. Fotoet af lugen er væk (det viste skiltet "Grill &
+   ishus"). Prøverne nedenfor måler det nye — kontrasten på papiret.
+   ------------------------------------------------------------
+   DEN GAMLE NOTE (12/9):
    ------------------------------------------------------------
    Kundens ord: "samme glowup til qr bestillingssiden". Forlægget er
    #bestil på forsiden: ejerens foto af lugen, det fælles slør og
@@ -43,32 +52,28 @@ async function åbnBord(page) {
   await expect(page.locator('#bestil-stykker .stk-linje').first()).toBeVisible();
 }
 
-test.describe('QR-siden står på lugen', () => {
+test.describe('QR-siden er forsidens kort', () => {
 
-  test('fotoet er ejerens eget af lugen, og det er dekorativt', async ({ page }) => {
+  test('ingen foto af lugen, et rødt hoved med logo og bordnummeret', async ({ page }) => {
     await åbnBord(page);
-    const img = page.locator('.bord-bg img');
-    await expect(img).toHaveCount(1);
-    await expect(img).toHaveAttribute('alt', '');
-    await expect(page.locator('.bord-bg')).toHaveAttribute('aria-hidden', 'true');
-    // Samme fil som forsidens bestilling — gæsten ser den samme luge to steder.
-    expect(await img.getAttribute('src')).toContain('billeder/bestil-luge.jpg');
-    await expect.poll(() => img.evaluate((e) => e.naturalWidth), 'fotoet blev ikke hentet').toBeGreaterThan(0);
+    await expect(page.locator('.bord-bg')).toHaveCount(0);
+    await expect(page.locator('#bord-eyebrow')).toHaveText('Bord 7');
+    await expect(page.locator('#bestil > .head .vb-logo svg')).toHaveCount(1);
+    await expect(page.locator('.vb-kant')).toHaveCount(1);
+    const rod = await page.locator('#bestil > .head').evaluate((e) => getComputedStyle(e).backgroundColor);
+    expect(rod).toBe('rgb(214, 42, 58)');
   });
 
-  test('formularen er glas — og teksten kan læses over en hvid sky', async ({ page }) => {
+  test('teksten kan læses på papiret — alle de steder, gæsten læser', async ({ page }) => {
     await åbnBord(page);
     const f = await page.evaluate(() => {
       const c = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).color : null; };
       const bg = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).backgroundColor : null; };
-      const k = getComputedStyle(document.querySelector('#bestil-form'));
       return {
-        slor: bg('.bord-slor'), kort: k.backgroundColor, bf: k.backdropFilter || k.webkitBackdropFilter || '',
-        raekke: bg('#bestil-stykker .stk-linje:not(.valgt)'),
-        vaerktoej: bg('.kort-vaerktoej'), soegBg: bg('.kort-soeg'), chipBg: bg('.kort-chip:not(.on)'),
-        feltBg: bg('#bestil-navn'),
-        direkte: { logo: c('.bord-top .logo'), titel: c('#bord-titel'), manchet: c('#bord-manchet') },
-        glas: {
+        papir: bg('#bestil'), hoved: bg('#bestil > .head'), raekke: bg('#bestil-stykker .stk-linje:not(.valgt)'),
+        feltBg: bg('#bestil-navn'), soegBg: bg('.kort-soeg'), chipBg: bg('.kort-chip:not(.on)'),
+        paaHoved: { titel: c('#bord-titel'), manchet: c('#bord-manchet') },
+        paaPapir: {
           overskrift: c('#bestil-form .liste-titel'), afsnit: c('.kort-gruppe-titel'),
           note: c('.kort-gruppe-note'), etiket: c('label[for="bestil-navn"]'),
           valgfri: c('#bestil-form .valgfri'), jura: c('#bestil-form .jura-ved-send'),
@@ -82,40 +87,30 @@ test.describe('QR-siden står på lugen', () => {
         soeg: c('.kort-soeg'), chip: c('.kort-chip:not(.on)'), felt: c('#bestil-navn'),
       };
     });
-    expect(f.bf, 'formularen slører ikke fotoet bag sig').toContain('blur');
-    expect(rgba(f.kort).a, 'formularen er ikke glas, men en flade').toBeLessThan(0.6);
-
-    const paaSlor = over(rgba(f.slor), [255, 255, 255]);
-    const paaGlas = over(rgba(f.kort), paaSlor);
-    const bjaelke = over(rgba(f.vaerktoej), paaGlas);
-    const maal = (farver, grund, hvor) => {
+    const grund = (s) => over(rgba(s), [255, 255, 255]);
+    const maal = (farver, bund, hvor) => {
       for (const [navn, farve] of Object.entries(farver)) {
         expect(farve, `${hvor} ${navn} findes ikke — prøven måler ingenting`).not.toBeNull();
-        const k = kontrast(over(rgba(farve), grund), grund);
+        const k = kontrast(over(rgba(farve), bund), bund);
         expect(k, `${hvor} ${navn} ${farve}: ${k.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
       }
     };
-    maal(f.direkte, paaSlor, 'sløret:');
-    maal(f.glas, paaGlas, 'glasset:');
-    maal(f.raekkeTekst, over(rgba(f.raekke), paaGlas), 'rækken:');
-    maal({ felt: f.felt }, over(rgba(f.feltBg), paaGlas), 'feltet:');
-    maal({ soeg: f.soeg }, over(rgba(f.soegBg), bjaelke), 'søgefeltet:');
-    maal({ chip: f.chip }, over(rgba(f.chipBg), bjaelke), 'chippen:');
+    maal(f.paaHoved, grund(f.hoved), 'det røde hoved:');
+    maal(f.paaPapir, grund(f.papir), 'papiret:');
+    maal(f.raekkeTekst, grund(f.raekke), 'varekortet:');
+    maal({ felt: f.felt }, grund(f.feltBg), 'feltet:');
+    maal({ soeg: f.soeg }, grund(f.soegBg), 'søgefeltet:');
+    maal({ chip: f.chip }, grund(f.chipBg), 'chippen:');
   });
 
-  /* Den valgte vare er papir — det er den, øjet skal finde. Uden
-     resettet ville den arve rækkens hvide tekst på en hvid flade. */
-  test('en valgt vare er hvidt papir med blæk', async ({ page }) => {
+  /* Den valgte vare får husets røde ring — og teksten står stadig på hvidt. */
+  test('en valgt vare er hvid med en rød ring', async ({ page }) => {
     await åbnBord(page);
     const r = page.locator('#bestil-stykker .stk-linje').first();
     await r.locator('button', { hasText: '+' }).click();
     await expect(r).toHaveClass(/valgt/);
-    /* ⚠️ VENT PÅ FLADEN, IKKE PÅ KLASSEN. Rækken glider over i sin nye
-       farve, og en måling i samme øjeblik som klassen sættes læser
-       overgangens første billede — glassets hvid .08. Målt: første
-       udgave faldt på præcis det tal, mens skuddet viste hvidt papir. */
-    await expect.poll(() => r.evaluate((e) => Number((getComputedStyle(e).backgroundColor
-      .match(/[\d.]+/g) || [])[3] ?? 1)), { timeout: 3000 }).toBeGreaterThanOrEqual(0.9);
+    await expect.poll(() => r.evaluate((e) => getComputedStyle(e).boxShadow), { timeout: 3000 })
+      .toContain('214, 42, 58');
     const m = await r.evaluate((e) => ({
       bg: getComputedStyle(e).backgroundColor,
       navn: getComputedStyle(e.querySelector('.navn')).color,
@@ -126,19 +121,5 @@ test.describe('QR-siden står på lugen', () => {
       const k = kontrast(rgba(farve).rgb, rgba(m.bg).rgb);
       expect(k, `valgt ${navn} ${farve} på ${m.bg}: ${k.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
     }
-  });
-
-  test('fotoet står stille, mens menuen ruller forbi', async ({ page }) => {
-    await åbnBord(page);
-    const m = await page.evaluate(async () => {
-      window.scrollTo({ top: 900, behavior: 'instant' });
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      return {
-        rullet: window.scrollY,
-        img: document.querySelector('.bord-bg img').getBoundingClientRect().top,
-      };
-    });
-    expect(m.rullet, 'siden rullede ikke — prøven måler ingenting').toBeGreaterThan(400);
-    expect(Math.abs(m.img), 'fotoet rullede med menuen').toBeLessThan(2);
   });
 });
