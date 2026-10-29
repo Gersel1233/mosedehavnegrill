@@ -7,6 +7,12 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**SMS ER TÆNDT, OG KURVEN TØMMES** (29/10, lanceringsmorgen). Mikkel lagde send-sms op, kørte sms.sql +
+sms-alle-28-10.sql og fik test-sms'en — efter at SMS_AKTIV manglede første gang (sms_sendt havde "bekraeft"
+på M-0003/M-0004: funktionen behandlede dem, men sendte ikke). Samme GatewayAPI-konto som Spiis, egen nøgle.
+Kurvbjælken stod med "3 i kurven" under kvitteringen: glemKurv() glemte kun det gemte — nu tømmes kurven.
+Logins: alle fire ✅ klar (logins-29-10.sql).
+
 **RABATKODER TIL AFTALE-KUNDER** (28/10, nat). Mikkels valg: en rabatkode. supabase/rabatkoder-28-10.sql
 (tabellen kun for personalet, zz_rabatkode regner beløbet, mosede_tjek_rabatkode til gæsten; 17/17 — prøve 3
 fandt, at parameteren `kode` blev skygget af kolonnen, så ENHVER kode gav rabat; rettet med $1/$2, før noget

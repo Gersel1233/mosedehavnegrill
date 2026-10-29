@@ -101,7 +101,7 @@ kortets varer — kør aldrig levering-store-17-10.sql igen efter den. Prøven e
 `proev-lancering-28-10.sql` — 15 af 15. Admin og siden virker også, FØR den er kørt (så er der
 bare ingen levering-knap pr. dag og ingen tilkøb på retten).
 
-**⚠️ `sms.sql` (24/10) — IKKE KØRT I PRODUKTIONEN. Bygget SLUKKET** (Mikkels valg 24/10:
+**⚠️ `sms.sql` (24/10) — KØRT I PRODUKTIONEN 29/10 sammen med `sms-alle-28-10.sql`, og SMS_AKTIV = ja (Mikkels test-sms kom 29/10). Bygget slukket** (Mikkels valg 24/10:
 *"byg det slukket"*; ejerens nej til sms 15/9 står, til han selv slår det til). Sms til
 gæsten ved afhentning og spis her: bekræftelse med det samme og påmindelse ca. 30 min. før
 — aldrig ved bordet (QR). (28/10: `sms-alle-28-10.sql` lægger levering, bordbooking,

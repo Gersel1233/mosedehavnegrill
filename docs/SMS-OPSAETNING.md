@@ -1,6 +1,8 @@
 # Sms til gæsten — sådan slås det til
 
-**Status 24/10 2026: bygget, men SLUKKET.** Intet er lagt op i Supabase, og der sendes
+**Status 29/10 2026: TÆNDT.** send-sms er lagt op, sms.sql og sms-alle-28-10.sql er kørt, SMS_AKTIV = ja, og Mikkels test-sms kom frem (samme GatewayAPI-konto som Spiis, egen nøgle "mosede hjemmeside"). Ved første tænding stod SMS_KUN_TIL; slettes den, får alle gæster sms.
+
+**(Tidligere: 24/10 bygget, men SLUKKET.)** Intet er lagt op i Supabase, og der sendes
 ingen sms, før ejeren selv har sagt ja og trinnene herunder er gjort. Ejeren sagde 15/9
 nej til "Din mad er klar" ved bordene — *"for dyrt i længden"* — og det står stadig:
 **ved bordene (QR) kommer der aldrig en sms.**
