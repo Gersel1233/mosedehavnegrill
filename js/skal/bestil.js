@@ -3048,6 +3048,14 @@
     }).then(function (raekke) {
       glemKurv();
       visTak(raekke);
+      /* ⚠️ KURVEN ER TOM, NÅR BESTILLINGEN ER SENDT  (29/10). Mikkel fra
+         iPad'en: *"når man har bestilt, står der stadig det der i kurven
+         eller knappen"* — bjælken sagde "3 i kurven · Se og send" lige
+         under kvitteringen. glemKurv() glemte kun det GEMTE; kurven selv
+         og bjælken blev stående. */
+      Object.keys(kurv).forEach(function (k) { delete kurv[k]; });
+      valgtFyld = [];
+      visKurvbar();
     }).catch(function (fejl) {
       if (knap) knap.disabled = false;
       if (knapTekst) knapTekst.textContent = knapFoer;

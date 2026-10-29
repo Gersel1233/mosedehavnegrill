@@ -151,3 +151,28 @@ test.describe('Isen kan tages ud, og kurven overlever et link', () => {
     await expect(page.locator('#sumline')).toContainText('Jordbær');
   });
 });
+
+/* ⚠️ KURVEN ER TOM, NÅR BESTILLINGEN ER SENDT  (29/10). Mikkel fra iPad'en:
+   bjælken sagde "3 i kurven · Se og send" lige under kvitteringen. */
+test('efter en sendt bestilling står kurvbjælken ikke længere', async ({ page }) => {
+  const { åbnSkal, grunddata } = require('./hjaelp');
+  const d = grunddata();
+  d.indstillinger.bestilling_varsel_timer = 1;
+  d.indstillinger.bestilling_min_stk = 1;
+  await åbnSkal(page, '/index.html#bestil', { ur: '2026-08-07T08:00:00Z', data: d });
+  const dage = await page.locator('#dato option').evaluateAll((os) => os.map((o) => o.value));
+  await page.locator('#dato').selectOption(dage[1] || dage[0]);
+  await page.locator('#bestil .item').first().click();
+  const plus = page.locator('#bestil button[data-d="+"]').first();
+  await plus.click();
+  await plus.click();
+  await page.fill('#navn', 'Mikkel Gersel');
+  await page.fill('#tlf', '28871343');
+  await page.locator('#tid').selectOption({ index: 1 });
+  await page.locator('button.g.solid.blk').click();
+  await expect(page.locator('.kvit-titel')).toBeVisible();
+  await page.mouse.wheel(0, 1500);
+  await page.waitForTimeout(600);
+  await expect(page.locator('.kurvbar.vis')).toHaveCount(0);
+  await expect(page.locator('body')).not.toHaveClass(/har-kurv/);
+});
