@@ -65,7 +65,10 @@ const STATUSSIDE = "mosedehavnecafe.dk/min-bestilling/?ref=";
 /* Åbne statusser — de samme tre som admin (AABNE i
    js/admin/bestillinger.js). Afvist, afhentet, udeblevet: ingen
    påmindelse. Et nyt ord får heller ingen, før nogen tager stilling. */
-const AABNE = ["ny", "bekraeftet", "klar"];
+const AABNE = ["ny", "bekraeftet", "tilberedes", "klar"];
+/* ⚠️ "tilberedes" MANGLEDE (29/10). Trykkede køkkenet "Start
+   tilberedning" i god tid, fik gæsten aldrig sin påmindelse 30 min
+   før — bestillingen var ikke længere "åben" for funktionen. */
 
 type Bestilling = {
   id: number; reference: string; lokation_id: string; navn: string;
@@ -281,12 +284,42 @@ function bekraeftForesp(f: Foresp) {
   return `Tak, ${navn}! Mosede Havnecafe har din forespørgsel på ${hvad} (${fNr}). Vi ringer eller skriver inden for et døgn. Spørgsmål: ${TELEFON}`.slice(0, 160);
 }
 
+/* ---- AFVIST (29/10) ----
+   Mikkel: beskederne skal hænge sammen, og personalet skal have det
+   nemt. Før: et afvist nej stod kun på personalets skærm, og nogen
+   skulle huske at ringe. Nu får gæsten det med det samme — og siden
+   "Følg din bestilling" siger det samme: vi ringer, ellers ring selv. */
+function afvistBestilling(b: Bestilling, nu = new Date()) {
+  const navn = fornavn(b.navn);
+  const hvad = b.hvordan === "levering" ? "leveringen" : "din bestilling";
+  const bud = [
+    `Hej ${navn}! Desværre kan Mosede Havnecafe ikke lave ${hvad} ${nr(b)} ${dag(b.hent_dato, nu)} kl. ${kl(b.hent_tid)}. Vi ringer til dig - eller ring selv: ${TELEFON}`,
+    `Hej ${navn}! Desværre kan vi ikke lave ${hvad} ${nr(b)}. Vi ringer til dig - eller ring selv: ${TELEFON}. Mosede Havnecafe`,
+  ];
+  return bud.find((t) => t.length <= 160) || bud[bud.length - 1].slice(0, 160);
+}
+function afvistBord(b: Bordbooking, nu = new Date()) {
+  const navn = fornavn(b.navn);
+  return `Hej ${navn}! Desværre kan vi ikke give jer bordet ${dag(b.dato, nu)} kl. ${kl(b.tid)} hos Mosede Havnecafe. Ring gerne, så finder vi en anden tid: ${TELEFON}`.slice(0, 160);
+}
+function afvistTilmelding(t: Tilmelding, a: Arrangement, nu = new Date()) {
+  const navn = fornavn(t.navn);
+  const bud = [
+    `Hej ${navn}! Desværre kan vi ikke tage imod din tilmelding ${tNr(t)} til ${titelKort(a.titel)} ${dag(a.dato, nu)}. Spørgsmål: ${TELEFON}. Mosede Havnecafe`,
+    `Hej ${navn}! Desværre kan vi ikke tage imod din tilmelding ${tNr(t)} til ${titelKort(a.titel)} ${dag(a.dato, nu)}. Spørgsmål: ${TELEFON}`,
+  ];
+  return bud.find((x) => x.length <= 160) || bud[bud.length - 1].slice(0, 160);
+}
+
 // ---------- slut på teksterne ----------
 
 const env = (k: string) => Deno.env.get(k) ?? "";
 const AKTIV = env("SMS_AKTIV").trim().toLowerCase() === "ja";
 const KUN_TIL = msisdn(env("SMS_KUN_TIL"));
 const AFSENDER = (env("SMS_AFSENDER").trim() || "MosedeHavn").slice(0, 11);
+/* Udgaven står i loggen ved hver kold start (Edge Functions → send-sms →
+   Logs) — så kan man SE, om den udgivne funktion er den nyeste. */
+console.log("send-sms · udgave 2026-10-29 · bekræft, påmind, på vej, afvist");
 const KOLONNER = "id,reference,lokation_id,navn,telefon,hent_dato,hent_tid,hvordan,bord_nummer,kanal,status,slettet,oprettet,nummer,leverings_adresse";
 const T_KOL = "id,reference,lokation_id,kalender_id,navn,telefon,antal_personer,status,slettet,oprettet,nummer";
 const A_KOL = "id,titel,dato,start_kl,pris_tekst,aflyst";
@@ -351,6 +384,33 @@ Deno.serve(async (req: Request) => {
   }
   const kald = await req.json().catch(() => ({}));
   const nu = new Date();
+
+  /* ---- afvist (29/10): bestilling, bord og tilmelding ---- */
+  if (kald.slags === "afvist" && kald.id && kald.kilde === "bord") {
+    const { data: b } = await supa.from("bordbestillinger").select(B_KOL).eq("id", kald.id).maybeSingle();
+    if (!b || b.lokation_id !== LOKATION || b.slettet || b.status !== "afvist" || b.dato < lokal(nu).iso) return new Response("ok");
+    await sendSag("bord", b.id, "afvist", b.telefon, afvistBord(b as Bordbooking, nu));
+    return new Response("ok");
+  }
+  if (kald.slags === "afvist" && kald.id && kald.kilde === "tilmelding") {
+    const { data: t } = await supa.from("reservationer").select(T_KOL).eq("id", kald.id).maybeSingle();
+    if (!t || t.lokation_id !== LOKATION || t.slettet || t.status !== "afvist") return new Response("ok");
+    const { data: a } = await supa.from("kalender").select(A_KOL).eq("id", t.kalender_id).maybeSingle();
+    if (!a || a.dato < lokal(nu).iso) return new Response("ok");
+    await sendSag("tilmelding", t.id, "afvist", t.telefon, afvistTilmelding(t as Tilmelding, a as Arrangement, nu));
+    return new Response("ok");
+  }
+  if (kald.slags === "afvist" && kald.id) {
+    const { data } = await supa.from("bestillinger").select(KOLONNER).eq("id", kald.id).maybeSingle();
+    const b = data as Bestilling | null;
+    /* Samme regel som faarSms — men statussen SKAL være afvist */
+    if (!b || b.lokation_id !== LOKATION || b.status !== "afvist" || b.slettet || b.bord_nummer || b.kanal === "bord"
+        || !["afhentning", "spis_her", "levering"].includes(b.hvordan) || b.hent_dato < lokal(nu).iso) {
+      return new Response("ok");
+    }
+    if (await krav(b.id, "afvist") && !(await send(b.telefon, afvistBestilling(b, nu)))) await slip(b.id, "afvist");
+    return new Response("ok");
+  }
 
   /* ---- tilmelding, bordbooking og forespørgsel (28/10) ---- */
   if (kald.slags === "bekraeft" && kald.id && kald.kilde === "tilmelding") {

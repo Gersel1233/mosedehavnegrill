@@ -255,17 +255,17 @@ test.describe('En levering får leveringens ord', () => {
     });
   });
 
-  /* ⚠️ EN NY LEVERING ER IKKE LOVET (26/9). Kvitteringen siger "vi
-     ringer og bekræfter" — følg-siden må ikke love bilen, før
-     personalet har gjort det. Modstykket: den bekræftede lover den. */
-  test('en ny levering lover opkaldet, ikke bilen — den bekræftede lover bilen', async ({ page }) => {
-    await åbnStatus(page, levering({ status: 'ny' }));
-    await expect(page.locator('.mb-tekst')).toContainText('ringer');
-    await expect(page.locator('.mb-tekst'), 'bilen blev lovet før opkaldet')
-      .not.toContainText('kører den ud');
-
-    await åbnStatus(page, levering({ status: 'bekraeftet' }));
-    await expect(page.locator('.mb-tekst')).toContainText('kører den ud');
+  /* ⚠️ BESTILT ER BESTILT — OGSÅ LEVERINGEN (29/10). 26/9 lovede en ny
+     levering et opkald; Mikkel sagde 9/10 ja til, at leveringer bekræftes
+     af sig selv, og kvitteringen og sms'en siger "bestilt" og "vi skriver,
+     når maden er på vej". Siden må ikke love et opkald, ingen foretager. */
+  test('en ny levering siger det samme som kvitteringen og sms\'en', async ({ page }) => {
+    for (const status of ['ny', 'bekraeftet']) {
+      await åbnStatus(page, levering({ status }));
+      await expect(page.locator('.mb-tekst'), status).toContainText('Leveringen er bestilt');
+      await expect(page.locator('.mb-tekst'), status).toContainText('sms');
+      await expect(page.locator('.mb-tekst'), status + ' lover et opkald').not.toContainText('ringer');
+    }
   });
 
   test('en levering betales ikke ved lugen', async ({ page }) => {
@@ -469,19 +469,28 @@ test.describe('Følg din bestilling hænger sammen med kvitteringen', () => {
     await expect(page.locator('.mb-ialt')).toContainText('I alt');
   });
 
-  test('trinnene følger køkkenet, og det trin, vi står på, er markeret', async ({ page }) => {
-    await åbnStatus(page, medBestilling({ status: 'tilberedes' }));
-    await expect(page.locator('.mb-trin-et.naaet')).toHaveCount(3);
-    await expect(page.locator('.mb-trin-et.nu')).toHaveText(/I gang/);
-    await expect(page.locator('.mb-hak-igang')).toHaveCount(1);
+  /* "Følg din bestilling virker jo ikke": siden stod på "Sendt", fordi
+     afhentningen lukkes med ét tryk. Nu er "Modtaget" nået fra start. */
+  test('en ny bestilling er "Modtaget" med det samme', async ({ page }) => {
+    await åbnStatus(page, medBestilling({ status: 'ny' }));
+    await expect(page.locator('.mb-trin-et.naaet')).toHaveCount(1);
+    await expect(page.locator('.mb-trin-et.nu')).toHaveText(/Modtaget/);
+    await expect(page.locator('.mb-trin-et')).toHaveText([/Modtaget/, /Klar/, /Hentet/]);
   });
 
-  test('en levering slutter i "På vej", en afhentning i "Klar"', async ({ page }) => {
+  test('ved bordet følger trinnene køkkenskærmen', async ({ page }) => {
+    await åbnStatus(page, medBestilling({ status: 'tilberedes', bord_nummer: '7', hvordan: 'spis_her' }));
+    await expect(page.locator('.mb-trin-et')).toHaveText([/Modtaget/, /I gang/, /Klar/, /Serveret/]);
+    await expect(page.locator('.mb-trin-et.nu')).toHaveText(/I gang/);
+    await expect(page.locator('.mb-hak-igang')).toHaveCount(1);
+    await expect(page.locator('.mb-hvordan')).toHaveText('Spis her');
+  });
+
+  test('en levering går Modtaget → På vej → Leveret', async ({ page }) => {
     await åbnStatus(page, medBestilling({ status: 'klar', hvordan: 'levering' }));
-    await expect(page.locator('.mb-trin-et').last()).toHaveText(/På vej/);
+    await expect(page.locator('.mb-trin-et')).toHaveText([/Modtaget/, /På vej/, /Leveret/]);
+    await expect(page.locator('.mb-trin-et.nu')).toHaveText(/På vej/);
     await expect(page.locator('.mb-hvordan')).toHaveText('Levering');
-    await åbnStatus(page, medBestilling({ status: 'klar' }));
-    await expect(page.locator('.mb-trin-et').last()).toHaveText(/Klar/);
   });
 
   test('siden siger, at den opdaterer sig selv — men ikke på en lukket bestilling', async ({ page }) => {

@@ -1096,7 +1096,9 @@ test.describe('En levering er lovet et opkald', () => {
     return d;
   }
 
-  test('Færdig på en levering spørger om opkaldet FØRST — når kontakten står på opkald', async ({ page }) => {
+  /* ⚠️ 29/10: en leverings grønne knap er "🚗 Kør ud" (den sender sms'en
+     "på vej") — spørgsmålet om opkaldet hører til den første knap. */
+  test('Kør ud på en levering spørger om opkaldet FØRST — når kontakten står på opkald', async ({ page }) => {
     await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medOpkald() });
     await visFane(page, 'p-bestillinger');
 
@@ -1105,10 +1107,10 @@ test.describe('En levering er lovet et opkald', () => {
     let spurgt = null;
     page.once('dialog', (d) => { spurgt = d.message(); return d.dismiss(); });
     await page.locator('.bestil-kort', { hasText: 'Lone Hansen' })
-      .getByRole('button', { name: /Færdig/ }).click();
+      .getByRole('button', { name: /Kør ud/ }).click();
     await page.waitForTimeout(400);
 
-    expect(spurgt, 'Færdig på en levering spurgte om ingenting').toBeTruthy();
+    expect(spurgt, 'Kør ud på en levering spurgte om ingenting').toBeTruthy();
     expect(spurgt).toContain('LEVERET');
     expect(spurgt, 'spørgsmålet nævner ikke nummeret, personalet skal ringe til')
       .toContain('20304051');
@@ -1118,7 +1120,7 @@ test.describe('En levering er lovet et opkald', () => {
       'status flyttede sig, selv om spørgsmålet blev afvist').toBe('bekraeftet');
   });
 
-  test('bekræftes leveringer af sig selv, spørger Færdig ikke om et opkald (9/10)', async ({ page }) => {
+  test('bekræftes leveringer af sig selv, spørger Kør ud ikke om et opkald (9/10)', async ({ page }) => {
     /* Kvitteringen siger "Bestilt. Leveres …" — der er intet opkald at
        spørge om, og et spørgsmål uden grund er et, man lærer at klikke
        væk. TALLET KOMMER UDEFRA: auto_bekraeft står ikke i kulissen, og
@@ -1128,11 +1130,11 @@ test.describe('En levering er lovet et opkald', () => {
     let spurgt = null;
     page.on('dialog', (d) => { spurgt = d.message(); return d.dismiss(); });
     await page.locator('.bestil-kort', { hasText: 'Lone Hansen' })
-      .getByRole('button', { name: /Færdig/ }).click();
+      .getByRole('button', { name: /Kør ud/ }).click();
     await page.waitForTimeout(500);
-    expect(spurgt, 'Færdig spurgte om et opkald, kvitteringen ikke har lovet').toBeNull();
+    expect(spurgt, 'Kør ud spurgte om et opkald, kvitteringen ikke har lovet').toBeNull();
     const gemt = await gemteData(page);
-    expect(gemt.bestillinger.find((x) => x.id === 1).status).toBe('afhentet');
+    expect(gemt.bestillinger.find((x) => x.id === 1).status, 'Kør ud sætter "klar" (sms: på vej)').toBe('klar');
   });
 
   test('en almindelig afhentning spørger IKKE', async ({ page }) => {
@@ -1163,7 +1165,7 @@ test.describe('En levering er lovet et opkald', () => {
     let spurgt = null;
     page.once('dialog', (d) => { spurgt = d.message(); return d.dismiss(); });
     await page.locator('.vagt-raekke', { hasText: 'Lone Hansen' })
-      .getByRole('button', { name: /Færdig/ }).first().click();
+      .getByRole('button', { name: /Kør ud/ }).first().click();
     await page.waitForTimeout(400);
 
     expect(spurgt, 'Overbliks Færdig spurgte om ingenting').toBeTruthy();

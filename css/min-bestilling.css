@@ -115,7 +115,7 @@
   margin: 22px 0 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(var(--mb-n, 4), 1fr);
   gap: 0;
 }
 .mb-side .mb-trin::before,
@@ -123,8 +123,8 @@
   content: "";
   position: absolute;
   top: 12px;
-  left: 12.5%;
-  right: 12.5%;
+  left: calc(50% / var(--mb-n, 4));
+  right: calc(50% / var(--mb-n, 4));
   height: 3px;
   border-radius: 3px;
   background: rgba(36, 26, 23, .10);

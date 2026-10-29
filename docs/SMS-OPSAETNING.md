@@ -17,10 +17,11 @@ på højst 160 tegn, så hver besked koster én sms:
 |---|---|---|
 | **Afhentning** | *Tak, Mikkel! M-0047 er bestilt: afhentning ved lugen i dag kl. 13.30. Påmindelse 30 min før. (link)* | ca. 30 min før: *Om ca. 30 min er din mad klar ved lugen …* |
 | **Spis her** | samme, med "spis her" | ca. 30 min før: *… Kom op til lugen og sig nummer M-0047.* |
-| **Levering** | *Tak, Mikkel! M-0047 leveres i dag ca. kl. 13.30 til Strandvejen 112. Vi skriver, når den er på vej. 28 87 13 43* | når køkkenet trykker **Sæt som klar**: *Din mad … er på vej (M-0047) og er der ca. kl. 13.30.* |
+| **Levering** | *Tak, Mikkel! M-0047 leveres i dag ca. kl. 13.30 til Strandvejen 112. Vi skriver, når den er på vej. 28 87 13 43* | når personalet trykker **🚗 Kør ud** (den grønne knap på en levering, 29/10): *Din mad … er på vej (M-0047) og er der ca. kl. 13.30.* |
 | **Bordbooking** | *Tak, Lone! Bord til 6 i dag kl. 18.00 hos Mosede Havnecafe, Havnevej 20I, Greve. Forhindret? Ring 28 87 13 43* | ca. 2 timer før: *Vi ses i dag kl. 18.00, bord til 6 …* |
 | **Tilmelding** | *Tak, Anna! Billet T-0012: Fredagsbar … lør. 31/10 kl. 20.00, 4 pers. Betales ved kassen. Afbud senest 24 t før: 28 87 13 43* | dagen før fra kl. 10: *I morgen kl. 20.00: Fredagsbar … Billet T-0012, 4 pers.* |
 | **Venteliste** | *Du står på ventelisten til … Bliver der en plads, ringer vi.* | — |
+| **Afvist** (bestilling, bord eller tilmelding — 29/10) | *Hej Anna! Desværre kan Mosede Havnecafe ikke lave din bestilling M-0047 fre. 31/10 kl. 12.30. Vi ringer til dig - eller ring selv: 28 87 13 43* (bord: *… Ring gerne, så finder vi en anden tid*) | — kun noget i dag eller senere; aldrig ved QR-bordene |
 | **Forespørgsel** (catering, baglokale, selskab, **frokostordning**) | *Tak, Ole! Mosede Havnecafe har din forespørgsel på frokostordning (F-0031). Vi ringer eller skriver inden for et døgn.* | — |
 
 **Ved bordene (QR) kommer der stadig aldrig en sms** (ejerens nej 15/9).

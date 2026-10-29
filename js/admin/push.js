@@ -75,11 +75,13 @@
   function visKnapper(tilmeldt) {
     $('push-til').classList.toggle('skjult', tilmeldt);
     $('push-fra').classList.toggle('skjult', !tilmeldt);
+    if ($('push-proeve')) $('push-proeve').classList.toggle('skjult', !tilmeldt);
   }
 
   function opdater() {
     var opsat = !!nøgle();
     $('push-opsaetning').classList.toggle('skjult', opsat);
+    if ($('push-proeve')) $('push-proeve').classList.add('skjult');
     if (!opsat) {
       $('push-til').classList.add('skjult');
       $('push-fra').classList.add('skjult');
@@ -108,8 +110,21 @@
       if (!reg) { visKnapper(false); sigStatus('Denne enhed får ikke besked endnu.'); return; }
       return reg.pushManager.getSubscription().then(function (ab) {
         visKnapper(!!ab);
-        sigStatus(ab ? 'Denne enhed får besked, når der kommer noget ind.'
+        sigStatus(ab ? 'Denne enhed får besked, når der kommer noget ind. '
+                       + 'Tryk «Send en prøve hertil» for at se det med egne øjne.'
                      : 'Denne enhed får ikke besked endnu.');
+        /* ⚠️ ENHEDEN SKRIVER SIG PÅ LISTEN IGEN, HVER GANG ADMIN ÅBNES
+           (29/10). Logins blev lagt om 29/10, og en telefon, der sagde
+           ja før, kan have mistet sin række (eller stå under en gammel
+           mail). Browseren HAR stadig abonnementet — så det er gratis at
+           gemme det igen. Upsert på endpoint giver aldrig to rækker. */
+        if (ab && !gemtIgen) {
+          gemtIgen = true;
+          var j = ab.toJSON();
+          Butik.skrive.gemPush({ endpoint: j.endpoint, p256dh: j.keys.p256dh,
+            auth: j.keys.auth, enhed: enhedsNavn() })
+            .then(visEnheder).catch(function () { /* listen siger resten */ });
+        }
       });
     }).catch(function () { visKnapper(false); });
   }
@@ -206,7 +221,49 @@
     });
   }
 
+  var gemtIgen = false;
+
+  /* ---- «SEND EN PRØVE HERTIL»  (29/10) ----------------------------
+     Mikkel: *"notifikationer skal lige være sikker på det virker"*.
+     Før kunne man kun vente på en rigtig bestilling og håbe. Nu sender
+     databasen én besked til DEN her enhed (ikke hele køkkenet), og
+     skærmen siger, hvad man gør, hvis den ikke kommer. */
+  function sendProeve() {
+    var knap = $('push-proeve');
+    knap.disabled = true;
+    navigator.serviceWorker.getRegistration().then(function (reg) {
+      return reg ? reg.pushManager.getSubscription() : null;
+    }).then(function (ab) {
+      if (!ab) throw new Error('ikke_til');
+      return Butik.skrive.pushProeve(ab.endpoint);
+    }).then(function (svar) {
+      knap.disabled = false;
+      if (svar === 'sendt') {
+        sigStatus('Prøven er sendt. Inden for et halvt minut skal der stå '
+          + '«✅ Beskederne virker» på skærmen. Kommer den ikke: tjek at '
+          + 'Notifikationer er slået til for appen i telefonens Indstillinger, '
+          + 'og at Fokus/Forstyr ikke er tændt.' + (erIOS()
+            ? ' På iPhone skal admin være åbnet fra hjemmeskærmen.' : ''));
+        Admin.kvitter('Prøven er sendt til denne enhed.');
+      } else if (svar === 'ikke_paa_listen') {
+        sigStatus('Enheden stod ikke på listen. Tryk «Slå fra på denne enhed» '
+          + 'og derefter «Slå til på denne enhed», og prøv igen.', true);
+      } else {
+        sigStatus('Beskederne er ikke koblet til i databasen endnu. '
+          + Admin.sigTilLesreg('push-webhooken'), true);
+      }
+    }).catch(function (e) {
+      knap.disabled = false;
+      var m = String((e && e.message) || e);
+      sigStatus(m === 'mangler'
+        ? 'Prøveknappen er ikke slået til endnu. ' + Admin.sigTilLesreg('beskeder-29-10.sql')
+        : m === 'ikke_til' ? 'Denne enhed får ikke besked endnu — tryk «Slå til på denne enhed».'
+        : 'Prøven kunne ikke sendes: ' + m, true);
+    });
+  }
+
   $('push-til').addEventListener('click', slaaTil);
+  if ($('push-proeve')) $('push-proeve').addEventListener('click', sendProeve);
   $('push-fra').addEventListener('click', slaaFra);
 
   $('gem-vapid').addEventListener('click', function () {

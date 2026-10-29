@@ -72,11 +72,14 @@
     },
     afvis: function (b, note) {
       /* DET ER HER, DER SKAL RINGES: gæsten regner med bordet. */
+      /* ⚠️ GÆSTEN FÅR EN SMS NU (29/10, beskeder-29-10.sql): "Desværre
+         kan vi ikke give jer bordet … Ring gerne, så finder vi en anden
+         tid". Opkaldet er stadig det pæne, men ikke længere det eneste. */
       if (!confirm('Afvis bookingen fra ' + b.navn + '?\n\n'
-        + 'RING TIL ' + b.telefon + ' — gæsten har fået bordet i sin '
-        + 'kvittering og regner med det.')) return null;
+        + 'Gæsten får en sms om det med det samme og bliver bedt om at ringe '
+        + 'for en anden tid. Ring til ' + b.telefon + ', hvis I kan — de regner med bordet.')) return null;
       return gemBord(Butik.skrive.bordStatus(b.id, 'afvist', note),
-        'Bookingen er afvist. Ring til ' + b.telefon + '.');
+        'Bookingen er afvist. Gæsten får en sms.');
     },
     /* GENDAN FØRER TIL NY (3/9): "bekraeftet" betyder ANKOMMET. */
     gendan: function (b, note) {

@@ -46,7 +46,6 @@
      ⚠️ OG `afvist` MÅ ALDRIG BARE STÅ SOM "AFVIST". Det er den
      ene besked, hele siden er bygget for: hun skal vide, at
      maden ikke kommer, OG hvad hun gør ved det. */
-  var TRIN = ['ny', 'bekraeftet', 'tilberedes', 'klar'];
 
   /* ⚠️ SIDEN LÆSTE ALDRIG `hvordan`  (8/9).
 
@@ -155,9 +154,13 @@
       tekst: bord
         ? 'Vi laver den nu og kommer ud til bord ' + bord + '.'
         : leveres
-          ? (st === 'ny'
-            ? 'Vi ringer til dig og bekræfter adressen og tiden, før vi kører.'
-            : 'Leveringen er bekræftet. Vi kører den ud til dig.')
+          /* ⚠️ BESTILT ER BESTILT — OGSÅ LEVERINGEN  (29/10). Her stod
+             "Vi ringer og bekræfter adressen" på en ny levering (26/9),
+             men Mikkel sagde 9/10 ja til, at leveringer bekræftes af sig
+             selv: adressen er slået op af serveren, kvitteringen siger
+             "Bestilt. Leveres …", og sms'en siger "Vi skriver, når maden
+             er på vej". Nu siger siden det samme. */
+          ? 'Leveringen er bestilt. Du får en sms, når vi kører ud til dig.'
           : 'Den ligger i køkkenet. Du kan følge med her.',
     };
   }
@@ -194,28 +197,43 @@
       + ' d. ' + d.getDate() + '.';
   }
 
-  function tegnTrin(b) {
-    var status = b.status;
-    var stribe = lav('ol', 'mb-trin');
-    var naaet = TRIN.indexOf(status);
-    if (status === 'afhentet' || status === 'serveret') naaet = TRIN.length;
-    /* ⚠️ FIRE KORTE ORD. "Set af køkkenet" brækkede over to
-       linjer på en iPhone 13 og gjorde striben skæv — set på et
-       skud, ikke læst. Og "Bestilt/Modtaget" sagde næsten det
-       samme to gange; "Sendt" er hendes handling, "Modtaget" er
-       vores svar.
+  /* ⚠️ TRINNENE ER DE TRYK, PERSONALET FAKTISK GØR  (29/10).
+     Mikkel: *"følg din bestilling virker jo ikke"*. Siden havde fire
+     trin — Sendt, Modtaget, I gang, Klar — men køkkenskærmen viser KUN
+     bordene, og en afhentning lukkes med ét tryk på "✓ Færdig". Så
+     stod gæstens side på "Sendt", til den sprang til "Afhentet".
 
-       En levering slutter i "På vej" — det er dét, sms'en siger,
-       når køkkenet melder den klar (29/10). */
-    var navne = ['Sendt', 'Modtaget', 'I gang',
-      b.hvordan === 'levering' && !b.bord_nummer ? 'På vej' : 'Klar'];
+     Nu har hver slags sine egne trin, og "Modtaget" er nået fra første
+     sekund — bestilt er bestilt (auto-bekræft, Mikkel 23/8 og 9/10):
+       afhentning / spis her:  Modtaget → Klar → Hentet
+       levering:               Modtaget → På vej → Leveret  ("🚗 Kør ud")
+       bordet (QR):            Modtaget → I gang → Klar → Serveret */
+  function trinFor(b) {
+    if (b.bord_nummer) {
+      return { navne: ['Modtaget', 'I gang', 'Klar', 'Serveret'],
+        nr: { ny: 0, bekraeftet: 0, tilberedes: 1, klar: 2, serveret: 3, afhentet: 3 } };
+    }
+    if (b.hvordan === 'levering') {
+      return { navne: ['Modtaget', 'På vej', 'Leveret'],
+        nr: { ny: 0, bekraeftet: 0, tilberedes: 0, klar: 1, afhentet: 2, serveret: 2 } };
+    }
+    return { navne: ['Modtaget', 'Klar', 'Hentet'],
+      nr: { ny: 0, bekraeftet: 0, tilberedes: 0, klar: 1, afhentet: 2, serveret: 2 } };
+  }
+
+  function tegnTrin(b) {
+    var t = trinFor(b);
+    var stribe = lav('ol', 'mb-trin');
+    var naaet = t.nr[b.status];
+    if (naaet === undefined) naaet = 0;
+    var sidste = t.navne.length - 1;
+    stribe.style.setProperty('--mb-n', String(t.navne.length));
     /* Stregen mellem prikkerne fyldes op til det trin, vi er
        nået — det er den, øjet læser først. */
-    stribe.style.setProperty('--mb-fyld',
-      String(Math.max(0, Math.min(naaet, navne.length - 1)) / (navne.length - 1)));
-    navne.forEach(function (n, i) {
+    stribe.style.setProperty('--mb-fyld', String(naaet / sidste));
+    t.navne.forEach(function (n, i) {
       var li = lav('li', 'mb-trin-et' + (i <= naaet ? ' naaet' : '')
-        + (i === naaet ? ' nu' : ''));
+        + (i === naaet && naaet < sidste ? ' nu' : ''));
       li.appendChild(lav('span', 'mb-trin-prik', i <= naaet ? '✓' : ''));
       li.appendChild(lav('span', 'mb-trin-navn', n));
       stribe.appendChild(li);

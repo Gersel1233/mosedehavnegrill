@@ -198,6 +198,29 @@ function bygBesked(tabel: string, r: Record<string, unknown>) {
         + `${antal ? " · " + antal : ""}. Husk: ét ja pr. dag.`,
     };
   }
+  if (tabel === "reservationer") {
+    /* ⚠️ TILMELDINGER HAVDE INGEN PUSH (29/10). Bestillinger, borde og
+       forespørgsler bippede; en tilmelding til et arrangement kom kun
+       frem, hvis nogen kiggede. Titel og dato hentes fra kalenderen af
+       kaldet herunder (r._titel, r._dato, r._kl). */
+    const vente = r?.status === "venteliste";
+    const titel = String(r?._titel ?? "et arrangement").slice(0, 40);
+    const hvornår = [pænDato(r?._dato), pænTid(r?._kl) ? "kl. " + pænTid(r?._kl) : ""]
+      .filter(Boolean).join(" ");
+    return {
+      titel: vente ? `⏳ Venteliste · ${titel}` : `🎟️ Ny tilmelding · ${titel}`,
+      tekst: `${navn} · ${r?.antal_personer ?? "?"} pers.${hvornår ? " · " + hvornår : ""}. `
+        + (vente ? "Står på ventelisten — se Tilmeldinger i admin." : "Se den under Tilmeldinger i admin."),
+    };
+  }
+  if (tabel === "proeve") {
+    /* «Send en prøve hertil» i admin (29/10) — kun til DEN enhed. */
+    return {
+      titel: "✅ Beskederne virker",
+      tekst: `Den her ${String(r?.enhed ?? "enhed")} får besked, når der kommer bestillinger, `
+        + "bookinger, tilmeldinger og forespørgsler ind.",
+    };
+  }
   if (tabel === "paamindelse") {
     /* ⚠️ UGENS PÅMINDELSE (14/9). Ikke en ny række fra en gæst, men
        databasen selv: supabase/ugepaamindelse.sql sender den lørdag og
@@ -239,9 +262,9 @@ function bygBesked(tabel: string, r: Record<string, unknown>) {
    ⚠️ OG DEN SKAL FØLGE MED, når ordlyden ændres. Ellers er
    stemplet en påstand i stedet for en måling — husets ældste
    ar, nu på udgivelsessiden. */
-const UDGAVE = "2026-09-14";
+const UDGAVE = "2026-10-29";
 console.log("send-push · udgave " + UDGAVE
-  + " · ordlyd: bord / levering / spis her / afhentning / påmindelse");
+  + " · ordlyd: bord / levering / spis her / afhentning / påmindelse / tilmelding / prøve");
 
 Deno.serve(async (req) => {
   /* DØREN, FØR ALT ANDET. Uden den kunne hvem som helst på
@@ -257,6 +280,22 @@ Deno.serve(async (req) => {
     return Response.json({ ignored: true });
   }
 
+  /* service_role: funktionen er på indersiden og må læse listen.
+     Nøglen ligger som secret hos Supabase selv — den er ALDRIG i
+     nærheden af klientkoden. */
+  const db = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
+  /* En tilmelding kender kun sit arrangements id — titlen og dagen
+     står i kalenderen. */
+  if (data.table === "reservationer" && data.record.kalender_id) {
+    const { data: a } = await db.from("kalender").select("titel, dato, start_kl")
+      .eq("id", data.record.kalender_id).maybeSingle();
+    if (a) Object.assign(data.record, { _titel: a.titel, _dato: a.dato, _kl: a.start_kl });
+  }
+
   const besked = bygBesked(String(data.table), data.record);
   if (!besked) return Response.json({ ignored: true });
 
@@ -266,19 +305,14 @@ Deno.serve(async (req) => {
     Deno.env.get("VAPID_PRIVAT")!,
   );
 
-  /* service_role: funktionen er på indersiden og må læse listen.
-     Nøglen ligger som secret hos Supabase selv — den er ALDRIG i
-     nærheden af klientkoden. */
-  const db = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
-
   const lokation = String(data.record.lokation_id ?? "mosede");
-  const { data: enheder, error } = await db
+  let spoerg = db
     .from("push_abonnementer")
     .select("id, endpoint, p256dh, auth")
     .eq("lokation_id", lokation);
+  /* Prøven går KUN til den enhed, der bad om den — ikke hele køkkenet */
+  if (data.table === "proeve") spoerg = spoerg.eq("endpoint", String(data.record.endpoint ?? ""));
+  const { data: enheder, error } = await spoerg;
 
   if (error) return Response.json({ fejl: error.message }, { status: 500 });
 

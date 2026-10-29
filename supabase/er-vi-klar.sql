@@ -1382,7 +1382,15 @@ with tjek(nr, del, hvad, ok, retning) as (values
                     where n.nspname = 'public' and p.proname = 'mosede_bestilling_status'
                       and pg_get_function_result(p.oid) like '%rabat_kr%')),
    'En aftale-kunde ser den fulde sum på "Følg din bestilling", mens kvitteringen sagde rabatten. '
-   || 'Kør supabase/bestilling-status-rabat-29-10.sql (efter rabatkoder-28-10.sql).')
+   || 'Kør supabase/bestilling-status-rabat-29-10.sql (efter rabatkoder-28-10.sql).'),
+
+  (160, 'Beskeder', 'Push-prøven, push ved tilmelding og sms ved afvisning',
+   (select exists (select 1 from pg_proc where proname = 'mosede_push_proeve')
+       and exists (select 1 from pg_trigger where tgname = 'push_ny_tilmelding')
+       and exists (select 1 from pg_trigger where tgname = 'sms_afvist_bestilling')),
+   'Knappen «Send en prøve hertil» svarer "ikke slået til", tilmeldinger bipper ikke, '
+   || 'og en afvist gæst hører det kun, hvis nogen ringer. Kør supabase/beskeder-29-10.sql, '
+   || 'og læg send-push og send-sms op igen.')
 ),
 
 samlet as (

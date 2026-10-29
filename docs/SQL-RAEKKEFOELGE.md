@@ -69,7 +69,16 @@ og derfra:
   → sms-alle-28-10.sql   (kun sammen med sms.sql — se docs/SMS-OPSAETNING.md)
   → rabatkoder-28-10.sql
   → bestilling-status-rabat-29-10.sql   (EFTER rabatkoder — den stopper selv, hvis den kommer før)
+  → beskeder-29-10.sql   (EFTER sms.sql, sms-alle-28-10.sql og push.sql — og læg send-push + send-sms op igen)
 ```
+
+**`beskeder-29-10.sql` (29/10) — SKAL KØRES, og send-push + send-sms skal lægges op igen (udgave 2026-10-29).**
+Mikkel: notifikationerne skal være *"sikre på at de virker"*, og beskederne skal hænge sammen for spis her,
+levering, to go og dato. Filen giver (1) `mosede_push_proeve(endpoint)` bag admin-knappen «Send en prøve
+hertil» — én push til DEN enhed; (2) push ved ny tilmelding (`push_ny_tilmelding` på reservationer); (3) sms,
+når en bestilling, bordbooking eller tilmelding afvises (`sms_afvist_*`, kun i dag og frem, aldrig QR-bordet).
+Prøven er `proev-beskeder-29-10.sql` — 13 af 13; proev-sms 9/9 og proev-sms-alle 11/11 består stadig.
+er-vi-klar 160.
 
 **`bestilling-status-rabat-29-10.sql` (29/10) — kør efter rabatkoderne.** "Følg din bestilling"
 (min-bestilling/) viser aftalerabatten og "Til betaling" som kvitteringen, i stedet for den fulde

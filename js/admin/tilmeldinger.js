@@ -364,8 +364,8 @@
       af.type = 'button';
       af.addEventListener('click', function () {
         if (!confirm('Afvis ' + r.navn + '?\n\n'
-          + 'Pladsen bliver fri igen. Husk at ringe til ' + r.telefon
-          + ' — de regner med at komme.')) return;
+          + 'Pladsen bliver fri igen, og gæsten får en sms om det med det samme. '
+          + 'Ring gerne også til ' + r.telefon + ' — de regner med at komme.')) return;
         saet(r, 'afvist');
       });
       mere.appendChild(af);

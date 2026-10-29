@@ -476,9 +476,9 @@
        fire linjer. */
     var handling = lav('div', 'vagt-handling');
 
-    var trin = r.b && Admin.naesteTrin && Admin.naesteTrin(r.b.status);
+    var trin = r.b && Admin.naesteTrin && Admin.naesteTrin(r.b.status, r.b);
     if (trin) {
-      var frem = lav('button', 'knap primaer gron vagt-frem', '✓ ' + trin.navn);
+      var frem = lav('button', 'knap primaer gron vagt-frem', (trin.tegn || '✓') + ' ' + trin.navn);
       frem.type = 'button';
       frem.addEventListener('click', function () {
         /* ⚠️ SAMME SPØRGSMÅL SOM PÅ BESTILLINGER-FANEN, og det er
@@ -495,7 +495,8 @@
         Butik.skrive.bestillingStatus(r.b.id, trin.status)
           .then(function () { return Admin.friskOp(); })
           .then(function () {
-            Admin.kvitter(r.navn + ' er sat til "' + trin.efter + '".');
+            Admin.kvitter(r.navn + ' er sat til "' + trin.efter + '".'
+              + (trin.sms && String(r.b.telefon || '').trim() ? ' Gæsten får en sms om, at maden er på vej.' : ''));
           })
           .catch(function (e) {
             frem.disabled = false;

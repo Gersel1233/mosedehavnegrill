@@ -115,7 +115,7 @@ body.ny-smoerside #bestil .item[data-kategori^="Håndmad" i] .kat-tegn{backgroun
 
 /* "Smørrebrød, som det skal smage" som lederen: overskrift og initial, uden kort */
 body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort){background:transparent;box-shadow:none;border-radius:0;padding:6px 2px 4px;margin-top:26px}
-body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) h3{font:400 clamp(34px,8vw,48px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--ink)}
+body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) h3,body.ny-smoerside .omraade-kort h2{margin:0;font:400 clamp(34px,8vw,48px)/.95 "Bebas Neue",sans-serif;letter-spacing:.01em;color:var(--ink)}
 body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) .saelg-stor{font-size:17.5px;line-height:1.6}
 body.ny-smoerside .panel:not(#bestil):not(.tilbud-kort) .saelg-stor::first-letter{float:left;margin:4px 8px 0 0;font:400 64px/.8 "Bebas Neue",sans-serif;color:var(--red)}
 

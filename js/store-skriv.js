@@ -1686,6 +1686,22 @@
       return skriv('POST', 'push_abonnementer', 'on_conflict=endpoint', [raekke], true);
     },
 
+    /* «Send en prøve hertil» (29/10, supabase/beskeder-29-10.sql):
+       databasen sender en push til DEN enhed — ikke til hele køkkenet.
+       Svaret er 'sendt', 'ikke_paa_listen' eller 'ingen_webhook'. */
+    pushProeve: function (endpoint) {
+      if (!SKY) return Promise.resolve('sendt');
+      return fetch(cfg.url + '/rest/v1/rpc/mosede_push_proeve', {
+        method: 'POST',
+        headers: hoveder(),
+        body: JSON.stringify({ endpoint: String(endpoint || '') }),
+      }).then(function (r) {
+        if (r.status === 404) throw new Error('mangler');
+        if (!r.ok) return r.text().then(function (t) { throw new Error(t || ('HTTP ' + r.status)); });
+        return r.json();
+      });
+    },
+
     sletPush: function (endpoint) {
       if (!SKY) return lokalt(function (d) {
         d.push_abonnementer = (d.push_abonnementer || []).filter(function (x) {

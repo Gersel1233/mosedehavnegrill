@@ -70,11 +70,16 @@
   /* "Hvor vil I sidde?" (28/10, eventudvalg-nyheder-28-10.sql). Feltet
      står kun, når kolonnen findes — ellers kunne arket ikke gemmes. */
   var harSidde = !Butik.sky;
+  /* ⚠️ FØRST NÅR NOGEN ER LOGGET IND (29/10). Spørgsmålet gik ud ved
+     sideindlæsningen — også på login-skærmen, hvor det giver 401 og
+     er netop den slags kald, frisk.spec.js vogter imod. */
   if (Butik.sky && Butik.skrive && Butik.skrive.harKolonne) {
-    Butik.skrive.harKolonne('kalender', 'siddevalg').then(function (ja) {
-      harSidde = !!ja;
-      if (!$('arr-form-kort').hidden) tegnForm();
-    }).catch(function () { harSidde = false; });
+    Admin.vedLogin.push(function () {
+      Butik.skrive.harKolonne('kalender', 'siddevalg').then(function (ja) {
+        harSidde = !!ja;
+        if (!$('arr-form-kort').hidden) tegnForm();
+      }).catch(function () { harSidde = false; });
+    });
   }
   function siddevalg() {
     var set = {};

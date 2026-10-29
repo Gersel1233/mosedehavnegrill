@@ -106,13 +106,25 @@
      forskelligt, og så ville den samme bestilling have to
      forskellige næste trin, alt efter hvilken fane man stod på.
      Overblik spørger den her funktion. */
-  Admin.naesteTrin = function (status) {
+  Admin.naesteTrin = function (status, b) {
     /* Ét tryk fra hvor som helst i kæden — se noten ved FAERDIG.
        Overblik spørger den her funktion, så de to skærme aldrig
        kan komme til at sige hver sit om den samme bestilling. */
     if (AABNE.indexOf(status) === -1) return null;
-    return { status: FAERDIG[0], navn: FAERDIG[1],
-             efter: STATUS_NAVNE[FAERDIG[0]] };
+    /* ⚠️ EN LEVERING HAR TO TRYK: "🚗 Kør ud" og "✓ Leveret"  (29/10).
+       Gæstens sms siger "Vi skriver, når maden er på vej" — og den
+       besked sendes, når bestillingen bliver "klar". Men "Sæt som
+       klar" lå bag "···", så ingen trykkede på den: Færdig sprang
+       den over, gæsten fik aldrig "på vej", og "Følg din bestilling"
+       stod på "Sendt", til maden var spist. Mikkel: *"følg din
+       bestilling virker jo ikke"*. Nu er "Kør ud" den grønne knap,
+       til bilen kører — så er sms'en og siden sande af sig selv. */
+    var lev = b && b.hvordan === 'levering' && !b.bord_nummer;
+    if (lev && status !== 'klar') {
+      return { status: 'klar', navn: 'Kør ud', tegn: '\uD83D\uDE97', efter: 'På vej', sms: true };
+    }
+    return { status: FAERDIG[0], navn: lev ? 'Leveret' : FAERDIG[1], tegn: '\u2713',
+             efter: lev ? 'Leveret' : STATUS_NAVNE[FAERDIG[0]] };
   };
 
   /* ⚠️ EN LEVERING ER LOVET ET OPKALD — OG FREM-KNAPPEN SAGDE
@@ -172,9 +184,12 @@
 
   /* Mellemtrinnet — det, der ligger bag "···". Null, når der ikke
      er noget imellem (en KLAR bestilling har kun færdig tilbage). */
-  Admin.mellemTrin = function (status) {
+  Admin.mellemTrin = function (status, b) {
     var n = NAESTE[status];
     if (!n || n[0] === FAERDIG[0]) return null;
+    /* En levering har "Kør ud" som sin grønne knap — "Sæt som klar"
+       ville være den samme handling to gange. */
+    if (n[0] === 'klar' && b && b.hvordan === 'levering' && !b.bord_nummer) return null;
     return { status: n[0], navn: n[1], efter: STATUS_NAVNE[n[0]] };
   };
 
@@ -1213,14 +1228,15 @@
 
     /* ⚠️ ÉT TRYK: knappen er ALTID "✓ Færdig", uanset hvor i
        kæden bestillingen står. Se noten ved FAERDIG. */
-    var n = Admin.naesteTrin(b.status);
+    var n = Admin.naesteTrin(b.status, b);
     if (n) {
-      var frem = lav('button', 'knap primaer gron', '\u2713 ' + n.navn);
+      var frem = lav('button', 'knap primaer gron', n.tegn + ' ' + n.navn);
       frem.addEventListener('click', function () {
         var spg = Admin.spoergFoerst(b);
         if (spg && !confirm(spg)) return;
         gemBestilling(Butik.skrive.bestillingStatus(b.id, n.status, Admin.nyNote(felt, b.intern_note)),
-          'Bestillingen er sat til "' + n.efter + '".');
+          'Bestillingen er sat til "' + n.efter + '".'
+          + (n.sms && String(b.telefon || '').trim() ? ' Gæsten får en sms om, at maden er på vej.' : ''));
       });
       raekke.appendChild(frem);
     }
@@ -1228,7 +1244,7 @@
     /* Mellemtrinnet — "Bekræft" eller "Sæt som klar" — ligger bag
        døren. Den, der VIL markere, at maden er lavet og venter,
        kan stadig; det er bare ikke det, man møder først. */
-    var mel = Admin.mellemTrin(b.status);
+    var mel = Admin.mellemTrin(b.status, b);
     if (mel) {
       var mk = lav('button', 'knap sekundaer', mel.navn);
       mk.type = 'button';
@@ -1277,8 +1293,12 @@
            ved bordet må gæsten sende uden nummer. Så siger den, hvad man
            gør i stedet. */
         var nr = String(b.telefon || '').trim();
-        var hvordan = nr
-          ? 'Husk at ringe til ' + nr + ' – gæsten har fået at vide at vi ringer og bekræfter.'
+        /* ⚠️ GÆSTEN FÅR EN SMS NU  (29/10, beskeder-29-10.sql). Den
+           siger, at vi ringer — så opkaldet står stadig her. Ved
+           bordet (QR) kommer der aldrig en sms. */
+        var hvordan = nr && !b.bord_nummer
+          ? 'Gæsten får en sms om det med det samme. Ring også til ' + nr
+            + ' — sms\'en siger, at vi ringer.'
           : (b.bord_nummer
             ? 'Gæsten har ikke givet et nummer — gå hen til bord ' + b.bord_nummer + ' og sig det.'
             : 'Gæsten har ikke givet et nummer — sig det ved lugen, når hun kommer.');
@@ -1318,7 +1338,7 @@
          godt/færdig" i hele admin; et skridt TILBAGE må ikke bære
          den farve. Døren har stadig noget bag sig (Slet), så den
          er ikke blevet en knap, der åbner ingenting. */
-      if (Admin.naesteTrin(b.status)) mere.appendChild(gendan);
+      if (Admin.naesteTrin(b.status, b)) mere.appendChild(gendan);
       else raekke.appendChild(gendan);
     }
 

@@ -7,6 +7,28 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**SMØRREBRØD KARLSLUNDE** (29/10). Mikkel: *"seere SEO ift smørrebrød Karlslunde — de skal komme op øverst
+ligesom Spiis er øverst med mad Karlslunde"*. MÅLT: ordet Karlslunde stod ingen steder — hverken i titel,
+beskrivelse eller tekst. h-smorrebrod.html: titlen "Smørrebrød ud af huset, Karlslunde og Greve · Mosede
+Havnecafe" (62 tegn, Greve og smørrebrød bevaret), beskrivelse og delefelter nævner Karlslunde, Mosede og
+Greve, og et nyt afsnit "Smørrebrød til Karlslunde, Mosede og Greve" siger kun det sande (vi ligger på Mosede
+Havn; om vi kører ud, afgør zonen). Forsidens beskrivelse: "tæt på Karlslunde". sitemap lastmod 29/10.
+Placeringen afgøres mest af Google Business-profilen (kategori, område, fotos, anmeldelser) — den ejer Mikkel.
+
+**BESKEDERNE HÆNGER SAMMEN — OG PUSH KAN PRØVES** (29/10). Mikkel: notifikationerne skal *"lige være sikker
+på det virker"*, og beskederne skal passe til spis her, levering, to go og dato, være korrekte i admin og nemme
+for personalet. Fundet: køkkenskærmen viser KUN bordene, og afhentning/levering lukkes med ét "✓ Færdig" — så
+"Følg din bestilling" stod på "Sendt" til det sidste, og leveringens sms "vi skriver, når maden er på vej" blev
+aldrig sendt ("Sæt som klar" lå bag ···). Nu: en levering har den grønne knap **🚗 Kør ud** (→ klar → sms "på
+vej") og derefter **✓ Leveret**; afhentning har stadig ét tryk. "Følg din bestilling" har trin pr. slags
+(Modtaget → Klar → Hentet · Modtaget → På vej → Leveret · bordet: Modtaget → I gang → Klar → Serveret), og
+"Modtaget" er nået fra start (bestilt er bestilt). En ny levering lover ikke længere et opkald (Mikkel 9/10).
+Push: knappen «Send en prøve hertil» (én push til DEN enhed), enheden skriver sig på listen igen ved hver
+åbning (logins blev lagt om i dag), og tilmeldinger bipper nu. SMS: afvisning af bestilling/bord/tilmelding
+sender en sms med det samme; påmindelsen 30 min før kommer også, når status er "tilberedes" (manglede). Afvis-
+dialogerne siger, at gæsten får en sms. supabase/beskeder-29-10.sql (13/13), send-push + send-sms udgave
+2026-10-29, er-vi-klar 160.
+
 **"FØLG DIN BESTILLING" HÆNGER SAMMEN MED KVITTERINGEN** (29/10). Mikkel: *"slet ikke opdateret og gjort
 ordentligt … også sammenhængen"* og *"følg din bestilling virker jo ikke"*. min-bestilling/ havde en orange
 cirkel med en stegepande-emoji og grønne prikker — en anden butiks side. Nu: kvitteringens røde ring og hak
