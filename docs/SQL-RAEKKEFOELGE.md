@@ -72,7 +72,7 @@ og derfra:
   → beskeder-29-10.sql   (EFTER sms.sql, sms-alle-28-10.sql og push.sql — og læg send-push + send-sms op igen)
 ```
 
-**`beskeder-29-10.sql` (29/10) — SKAL KØRES, og send-push + send-sms skal lægges op igen (udgave 2026-10-29).**
+**`beskeder-29-10.sql` (29/10) — KØRT I PRODUKTIONEN 29/10** (tjekket: 4 af 4 udløsere, prøveknappen klar; Mikkel har lagt send-push + send-sms op igen, udgave 2026-10-29).
 Mikkel: notifikationerne skal være *"sikre på at de virker"*, og beskederne skal hænge sammen for spis her,
 levering, to go og dato. Filen giver (1) `mosede_push_proeve(endpoint)` bag admin-knappen «Send en prøve
 hertil» — én push til DEN enhed; (2) push ved ny tilmelding (`push_ny_tilmelding` på reservationer); (3) sms,
