@@ -7312,7 +7312,10 @@ body:not(.personale) :is(input, select, textarea)[aria-invalid="true"] {
 .kvit-vaerdi { color: var(--muted); text-align: right; }
 /* Referencen er det gæsten læser op i telefonen. Den skal skille
    sig ud fra resten af kvitteringen. */
-.kvit-linje:first-child .kvit-vaerdi {
+/* ⚠️ IKKE I KIGGET (29/10). Reglen er til referencen øverst på den
+   gamle kvittering — men i "Se den efter" er første linje en RET, og
+   så stod dens pris stort og spærret, som om den var et nummer. */
+:not(#kig-indhold) > .kvit-linje:first-child .kvit-vaerdi {
   font-family: var(--display);
   font-size: 22px;
   letter-spacing: .06em;
