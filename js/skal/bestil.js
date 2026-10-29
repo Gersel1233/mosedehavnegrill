@@ -3196,9 +3196,9 @@
         a.href = Butik.foelgAdresse(b.reference);
         a.textContent = 'Følg din bestilling →';
         return a;
-      }())],
+      }()), K.kontakt ? K.kontakt((data && data.indstillinger) || {}) : null],
       fine: 'Gem linket, eller tag et billede af nummeret. Har du glemt '
-        + 'noget, så ring. Vi kan nå det, indtil maden er lavet.',
+        + 'noget, kan vi nå det, indtil maden er lavet.',
     });
     /* ⚠️ 'start' OG IKKE 'center'. MÅLT på et skud: med center
        lå hakket — det første, gæsten skal se — halvt bag den

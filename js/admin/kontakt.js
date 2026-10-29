@@ -43,7 +43,8 @@
       ['soc-facebook', 'social_facebook'],
       ['soc-instagram', 'social_instagram'],
       ['soc-tiktok', 'social_tiktok'],
-      ['soc-google', 'social_google']].forEach(function (par) {
+      ['soc-google', 'social_google'],
+      ['soc-trustpilot', 'social_trustpilot']].forEach(function (par) {
       var f = $(par[0]);
       if (!f || document.activeElement === f) return;
       var v = i[par[1]];
@@ -117,7 +118,7 @@
        Vi tjekker ikke, at profilen findes — det kan ingen — men en
        tekst uden et punktum i er ikke en hjemmeside, og så ville
        chippen komme tilbage på forsiden og pege ingen steder hen. */
-    ['soc-facebook', 'soc-instagram', 'soc-tiktok', 'soc-google']
+    ['soc-facebook', 'soc-instagram', 'soc-tiktok', 'soc-google', 'soc-trustpilot']
       .forEach(function (id) {
       var f = $(id);
       if (!f) return;

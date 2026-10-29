@@ -99,3 +99,46 @@ test.describe('Leveringen: "🚗 Kør ud" og så "✓ Leveret"', () => {
     await expect.poll(() => besked).toContain('sms');
   });
 });
+
+/* Mikkel med et skud af kvitteringen: *"skriv også … alt vedrørende jeres
+   bestilling, og du ved måske link til Trustpilot for at skrive"*. */
+test.describe('Kvitteringen: alt om jeres bestilling', () => {
+  async function bestilPaaForsiden(page, ind) {
+    const { åbnSkal } = require('./hjaelp');
+    const d = grunddata();
+    d.indstillinger.bestilling_varsel_timer = 1;
+    d.indstillinger.bestilling_min_stk = 1;
+    Object.assign(d.indstillinger, ind || {});
+    await åbnSkal(page, '/index.html#bestil', { ur: '2026-08-07T08:00:00Z', data: d });
+    const dage = await page.locator('#dato option').evaluateAll((os) => os.map((o) => o.value));
+    await page.locator('#dato').selectOption(dage[1] || dage[0]);
+    await page.locator('#bestil .item').first().click();
+    const plus = page.locator('#bestil button[data-d="+"]').first();
+    await plus.click(); await plus.click();
+    await page.fill('#navn', 'Mikkel Gersel');
+    await page.fill('#tlf', '28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toBeVisible();
+  }
+
+  test('telefon, mail og anmeldelseslinks står på kvitteringen', async ({ page }) => {
+    await bestilPaaForsiden(page, {
+      kontakt_email_booking: 'booking@mosedehavnecafe.dk',
+      social_google: 'g.page/r/mosede/review',
+      social_trustpilot: 'https://dk.trustpilot.com/review/mosedehavnecafe.dk',
+    });
+    const k = page.locator('.kvit-kontakt');
+    await expect(k).toContainText('Alt vedrørende jeres bestilling');
+    await expect(k.locator('a[href^="tel:"]')).toHaveCount(1);
+    await expect(k.locator('a[href="mailto:booking@mosedehavnecafe.dk"]')).toHaveCount(1);
+    await expect(k.getByRole('link', { name: 'Google' })).toHaveAttribute('href', 'https://g.page/r/mosede/review');
+    await expect(k.getByRole('link', { name: 'Trustpilot' })).toHaveAttribute('href', /trustpilot/);
+  });
+
+  test('uden et anmeldelseslink står der ingen tom knap', async ({ page }) => {
+    await bestilPaaForsiden(page, { social_google: '', social_trustpilot: '' });
+    await expect(page.locator('.kvit-kontakt')).toBeVisible();
+    await expect(page.locator('.kvit-anmeld')).toHaveCount(0);
+  });
+});

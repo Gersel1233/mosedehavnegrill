@@ -7,6 +7,13 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**KVITTERINGEN: ALT OM JERES BESTILLING + ANMELDELSE** (29/10). Mikkel med et skud af kvitteringen: *"skriv også
+… alt vedrørende jeres bestilling, og du ved måske link til Trustpilot for at skrive"*. Under "Følg din
+bestilling" står nu en boks: "Alt vedrørende jeres bestilling — ring på 28 87 13 43 eller skriv til booking@…
+og sig bestillingsnummeret", og "Smagte det? Skriv en anmeldelse på Google / Trustpilot ⭐" — kun de links, der
+er udfyldt i admin (Indstillinger → Google-anmeldelser, og det nye felt Trustpilot). Ikke ved QR-bordet.
+MosedeKvittering.kontakt i js/skal/kvittering.js; brugt af js/skal/bestil.js og js/bestilling.js.
+
 **SMØRREBRØD KARLSLUNDE** (29/10). Mikkel: *"seere SEO ift smørrebrød Karlslunde — de skal komme op øverst
 ligesom Spiis er øverst med mad Karlslunde"*. MÅLT: ordet Karlslunde stod ingen steder — hverken i titel,
 beskrivelse eller tekst. h-smorrebrod.html: titlen "Smørrebrød ud af huset, Karlslunde og Greve · Mosede

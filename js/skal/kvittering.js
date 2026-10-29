@@ -198,5 +198,63 @@
     return k;
   }
 
-  window.MosedeKvittering = { byg: byg, lav: lav };
+  /* ---- ALT OM JERES BESTILLING — OG EN ANMELDELSE  (29/10) ----
+     Mikkel med et skud af kvitteringen: *"skriv også … alt vedrørende
+     jeres bestilling, og du ved måske link til Trustpilot for at
+     skrive, eller andet"*. Kvitteringen sagde "Har du glemt noget, så
+     ring" — men hverken nummeret eller mailen stod der.
+
+     ⚠️ ANMELDELSEN KOMMER KUN, NÅR LINKET FINDES. Linkene skrives i
+     admin (Indstillinger → Google-anmeldelser / Trustpilot). Et link,
+     vi gætter på, er en blindgyde — og ingen knap er bedre end én,
+     der peger forkert. Google står først: det er den, der hjælper på
+     "smørrebrød Karlslunde". */
+  function kontakt(ind) {
+    ind = ind || {};
+    var M = window.MOSEDE || {};
+    var tlf = String(M.telefonPent || '28 87 13 43');
+    var tlfLink = String(M.telefon || '+4528871343');
+    var mail = String(ind.kontakt_email_booking || ind.kontakt_email || M.email || '').trim();
+    var boks = lav('div', 'kvit-kontakt');
+    boks.appendChild(lav('p', 'kvit-kontakt-top', 'Alt vedrørende jeres bestilling'));
+    var p = lav('p', null, 'Ring på ');
+    var a = lav('a', null, tlf);
+    a.href = 'tel:' + tlfLink;
+    p.appendChild(a);
+    if (mail) {
+      p.appendChild(document.createTextNode(' eller skriv til '));
+      var m = lav('a', null, mail);
+      m.href = 'mailto:' + mail;
+      p.appendChild(m);
+    }
+    p.appendChild(document.createTextNode(' — og sig bestillingsnummeret.'));
+    boks.appendChild(p);
+
+    var links = [];
+    /* Admin gemmer det, ejeren skriver — ofte uden https://. Uden et
+       punktum er det ikke en adresse, og så står der ingen knap. */
+    function adresse(u) {
+      var v = String(u || '').trim();
+      if (!v || /\s/.test(v) || !/\./.test(v)) return null;
+      return /^https?:\/\//i.test(v) ? v : 'https://' + v.replace(/^\/+/, '');
+    }
+    if (adresse(ind.social_google)) links.push(['Google', adresse(ind.social_google)]);
+    if (adresse(ind.social_trustpilot)) links.push(['Trustpilot', adresse(ind.social_trustpilot)]);
+    if (links.length) {
+      var an = lav('p', 'kvit-anmeld', 'Smagte det? Skriv en anmeldelse på ');
+      links.forEach(function (l, i) {
+        if (i) an.appendChild(document.createTextNode(' eller '));
+        var x = lav('a', null, l[0]);
+        x.href = l[1];
+        x.target = '_blank';
+        x.rel = 'noopener';
+        an.appendChild(x);
+      });
+      an.appendChild(document.createTextNode(' ⭐'));
+      boks.appendChild(an);
+    }
+    return boks;
+  }
+
+  window.MosedeKvittering = { byg: byg, lav: lav, kontakt: kontakt };
 }());

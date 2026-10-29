@@ -166,6 +166,17 @@
   box-shadow: inset 0 0 0 1px rgba(36, 26, 23, .10);
 }
 
+/* ---- ALT OM JERES BESTILLING  (29/10) ----------------------
+   Kontakten og anmeldelsen under "Følg din bestilling". Stille —
+   den er til den, der har et spørgsmål, ikke en handling mere. */
+.kvit-kontakt{margin-top:16px;padding:14px 16px;border-radius:14px;text-align:left;
+  background:var(--cream2,var(--sand2,#f7ede1));font-size:14px;line-height:1.55}
+.kvit-kontakt p{margin:0}
+.kvit-kontakt .kvit-kontakt-top{font-weight:700;margin-bottom:2px}
+.kvit-kontakt a{color:var(--red-d,var(--red-dyb,#b41f2e));font-weight:600;
+  text-decoration:underline;text-underline-offset:2px;word-break:break-word}
+.kvit-kontakt .kvit-anmeld{margin-top:8px;padding-top:8px;border-top:1px solid rgba(36,26,23,.10)}
+
 /* ⚠️ MAILKNAPPEN PÅ KVITTERINGEN  (8/9). Kunden så en rå
    mailadresse løbe hen over tre linjer i rødt — det eneste sted
    på gæstesiden, hvor en adresse stod som brødtekst. Den er
