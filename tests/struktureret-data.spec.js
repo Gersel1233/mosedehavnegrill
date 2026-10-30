@@ -57,9 +57,14 @@ async function maerket(page) {
   return page.evaluate(() => {
     const alle = [...document.querySelectorAll('script[type="application/ld+json"]')];
     if (!alle.length) return { antal: 0, data: null };
+    /* ⚠️ FORSIDEN HAR TO BLOKKE (29/10): WebSite (sidens navn i Google,
+       statisk i index.html) og Restaurant (forretningen, js/skal/seo.js).
+       Prøverne her handler om Restaurant-mærket — det findes ved typen,
+       ikke ved rækkefølgen. */
     let data = null;
-    try { data = JSON.parse(alle[0].textContent); } catch (e) { data = 'UGYLDIG JSON'; }
-    return { antal: alle.length, data };
+    const blokke = alle.map((e) => { try { return JSON.parse(e.textContent); } catch (x) { return 'UGYLDIG JSON'; } });
+    data = blokke.find((b) => b && b['@type'] === 'Restaurant') || blokke.find((b) => b && b['@type'] !== 'WebSite') || blokke[0];
+    return { antal: alle.length, data, typer: blokke.map((b) => b && b['@type']) };
   });
 }
 
@@ -77,8 +82,10 @@ for (const sti of indekserbare()) {
       await page.waitForTimeout(700);
       const m = await maerket(page);
 
-      expect(m.antal, `${sti} har ingen struktureret data — Google får hverken navn eller adresse`)
-        .toBe(1);
+      expect(m.typer.filter((t) => t === 'Restaurant').length,
+        `${sti} har ikke præcis ét Restaurant-mærke — Google får hverken navn eller adresse`).toBe(1);
+      expect(m.typer.filter((t) => t !== 'Restaurant' && t !== 'WebSite'),
+        `${sti} har andre blokke end Restaurant og WebSite`).toEqual([]);
       expect(m.data, `${sti} har ugyldig JSON i mærket`).not.toBe('UGYLDIG JSON');
       expect(m.data['@type']).toBe('Restaurant');
       expect(m.data.name).toBe('Mosede Havnecafe');
@@ -384,5 +391,36 @@ test.describe('Forretningens punkt på kortet', () => {
     expect(afstand,
       `mærket peger ${Math.round(afstand)} m fra Havnevej 20I`)
       .toBeLessThan(150);
+  });
+});
+
+/* Logoet og sidens navn i Google (29/10). Mikkel: *"kan vi opdatere logo,
+   og du ved hvordan den ser ud ude på Google"*. */
+test.describe('Logoet og navnet i Google', () => {
+  test('forsiden siger sidens navn, og mærket har et logo på mindst 112 px', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data: grunddata() });
+    await page.waitForTimeout(700);
+    const m = await page.evaluate(() => [...document.querySelectorAll('script[type="application/ld+json"]')]
+      .map((e) => JSON.parse(e.textContent)));
+    const site = m.find((b) => b['@type'] === 'WebSite');
+    expect(site, 'forsiden har ingen WebSite-blok — Google gætter selv på navnet').toBeTruthy();
+    expect(site.name).toBe('Mosede Havnecafe');
+    const r = m.find((b) => b['@type'] === 'Restaurant');
+    expect(r.logo).toMatch(/\/ikoner\/ikon-512\.png$/);
+    const str = await page.evaluate(async (u) => {
+      const img = new Image(); img.src = u.replace(/^https?:\/\/[^/]+/, '');
+      await img.decode(); return [img.naturalWidth, img.naturalHeight];
+    }, r.logo);
+    expect(Math.min(...str)).toBeGreaterThanOrEqual(112);
+  });
+
+  test('hver side har fanens ikon som PNG på 96 px — og favicon.ico ligger i roden', async ({ request }) => {
+    for (const f of ['favicon.ico', 'favicon-96.png', 'favicon-48.png', 'favicon-192.png']) {
+      expect(fs.existsSync(path.join(ROD, f)), f + ' mangler').toBe(true);
+    }
+    for (const sti of indekserbare()) {
+      const fil = sti.endsWith('/') ? path.join(ROD, sti, 'index.html') : path.join(ROD, sti);
+      expect(fs.readFileSync(fil, 'utf8'), sti + ' har ikke PNG-ikonet').toMatch(/favicon-96\.png" sizes="96x96"/);
+    }
   });
 });

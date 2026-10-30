@@ -7,6 +7,14 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**LOGOET I GOOGLE** (30/10). Mikkel: *"kan vi opdatere logo, og du ved hvordan den ser ud ude på Google"*.
+Siden havde kun favicon.svg og intet logo i den strukturerede data. Nu: favicon.ico i roden og favicon-48/96/192.png
+(kransen fra favicon.svg), PNG-ikonet linket på alle 26 offentlige sider, `logo` (ikoner/ikon-512.png) i
+Restaurant-mærket og en statisk WebSite-blok på forsiden med navnet "Mosede Havnecafe". Google opdaterer ikonet
+af sig selv, når den crawler igen (dage til uger); Search Console → URL-inspektion → "Anmod om indeksering"
+skynder på. Logoet i kortet ved siden af resultaterne og på Maps kommer fra Google Business-profilen — det
+uploader ejeren selv. Spiis er ikke rørt herfra (ejerens regel).
+
 **QR-BORDET I FORSIDENS STIL** (29/10). Mikkel: *"kan vi ikke gøre bestillingssiden på QR-bordene i opdateret
 stil som på siden her, med de rigtige menukort i stedet for det der skrammel"* — og *"ikke 1:1 med bestillings-
 siden på forsiden, men noget derhen af, men stadig bestil mad på QR-agtigt"*. ved-bordet/ var mørkt glas over et

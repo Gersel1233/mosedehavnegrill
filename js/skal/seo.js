@@ -125,7 +125,12 @@
          Her stod facade-1400.jpg, og skiltet i den siger
          "MOSEDE HAVN - Grill & Kiosk" — forretningen hedder
          "Grill & ishus". Se noten i index.html. */
-      image: domaene + '/billeder/del-terrasse-800.jpg'
+      image: domaene + '/billeder/del-terrasse-800.jpg',
+      /* ⚠️ LOGOET TIL GOOGLE (29/10). Mikkel: *"kan vi opdatere logo, og du
+         ved hvordan den ser ud ude på Google"*. Uden feltet havde Google
+         intet logo at tage — kun fotoet ovenfor. Kransen fra fanens ikon,
+         512 × 512 (Google kræver mindst 112 × 112). */
+      logo: domaene + '/ikoner/ikon-512.png'
     };
 
     if (M.position && M.position.lat && M.position.lng) {

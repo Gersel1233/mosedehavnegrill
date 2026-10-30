@@ -50,6 +50,12 @@
      laegge admin paa gaestens hjemmeskaerm — eller omvendt. -->
 <link rel="manifest" href="gaest.webmanifest">
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
+<!-- ⚠️ SIDENS NAVN I GOOGLE (29/10). Google viser navnet over hvert resultat
+     ("Mosede Havnecafe") ud fra WebSite-blokken på FORSIDEN — står den der
+     ikke, gætter Google på domænet. Statisk og ikke bygget af js/skal/seo.js:
+     navnet må ikke afhænge af, at JavaScript når at køre. Logoet og resten af
+     forretningen står i seo.js' Restaurant-blok. -->
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Mosede Havnecafe","alternateName":["Mosede Havnecafé","mosedehavnecafe.dk"],"url":"https://mosedehavnecafe.dk/"}</script>
 <!-- ⚠️ MØRK OVER FILMEN, CREME NÅR BJÆLKEN STÅR FAST (11/9). Feltet ved
      kameraet er Safaris, ikke sidens, og det farves af theme-color på
      ældre iPhones. havnegrillen.js skifter til data-fast, når bjælken
@@ -59,7 +65,7 @@
      havnegrillen.css. -->
 <meta name="theme-color" content="#0b0706" data-fast="#fdf7ef">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="css/lukket.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><link rel="stylesheet" href="ny/ark-ny.css?v=__V__"><link rel="stylesheet" href="ny/mosede-ny.css?v=__V__"><!-- ⚠️ FILMEN ER ÅBNINGEN — OG KLASSEN SÆTTES, FØR SIDEN TEGNES (11/9).
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="favicon-96.png" sizes="96x96" type="image/png"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/dagsbesked.css?v=__V__"><link rel="stylesheet" href="css/lukket.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="css/adressefelt.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><link rel="stylesheet" href="ny/ark-ny.css?v=__V__"><link rel="stylesheet" href="ny/mosede-ny.css?v=__V__"><!-- ⚠️ FILMEN ER ÅBNINGEN — OG KLASSEN SÆTTES, FØR SIDEN TEGNES (11/9).
      Bølge-introen er afløst af heroens film (kundens beslutning:
      "fade ind premium ligesom apples hjemmeside og blive til den
      statiske end frame hvor teksten så kommer"). Heroens tekst skal
