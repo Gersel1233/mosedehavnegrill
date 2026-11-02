@@ -73,7 +73,7 @@ og derfra:
   → arrangement-musik-og-spisning-2-11.sql   (EFTER arrangement-kategori.sql)
 ```
 
-**`arrangement-musik-og-spisning-2-11.sql` (2/11) — IKKE KØRT ENDNU.** Chefen: *"man kan ikke lave et blandet
+**`arrangement-musik-og-spisning-2-11.sql` (2/11) — KØRT I PRODUKTIONEN 2/11.** Chefen: *"man kan ikke lave et blandet
 event, som både er musik og spisning."* Filen lader kalender-værnet (`kalender_kategori_ok`) tage imod
 `'musik_spisning'` — knappen "Musik & spisning" i admin. Uden den siger admin på dansk, at den skal køres.
 Prøven er `proev-arrangement-musik-og-spisning-2-11.sql` — 3 af 3 (også at 20.00–02.00 med slut_dato dagen
