@@ -71,7 +71,9 @@
       var kort = lav('article', 'kort arr-kort');
 
       var hvornår = pænDato(a.dato);
-      if (a.slut_dato && a.slut_dato !== a.dato) {
+      var natten = a.start_kl && a.slut_kl
+        && String(a.slut_kl).slice(0, 5) < String(a.start_kl).slice(0, 5);
+      if (a.slut_dato && a.slut_dato !== a.dato && !natten) {
         hvornår += ' – ' + pænDato(a.slut_dato);
       }
       kort.appendChild(lav('div', 'eyebrow', hvornår));

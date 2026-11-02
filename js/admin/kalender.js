@@ -80,11 +80,18 @@
 
     if (!rækker.length) return;
 
+    /* Slutter det efter midnat (fx 20.00–02.00), er det ÉN aften —
+       ikke "lør – søn". slut_dato er kun dagen efter for bremsens skyld. */
+    function natten(k) {
+      return k.start_kl && k.slut_kl
+        && String(k.slut_kl).slice(0, 5) < String(k.start_kl).slice(0, 5);
+    }
+
     rækker.forEach(function (k) {
       var r = lav('div', 'admin-raekke');
 
       var naar = Admin.pænDato(k.dato)
-        + (k.slut_dato && k.slut_dato !== k.dato ? ' – ' + Admin.pænDato(k.slut_dato) : '');
+        + (k.slut_dato && k.slut_dato !== k.dato && !natten(k) ? ' – ' + Admin.pænDato(k.slut_dato) : '');
       r.appendChild(lav('span', 'navn', (k.emoji ? k.emoji + ' ' : '') + naar));
 
       r.appendChild(lav('span', 'maerke ' + (k.type === 'lukkedag' ? 'udsolgt' : 'favorit'),

@@ -42,7 +42,7 @@
      'arrangement' internt — men de er personalets huskesedler, ikke
      noget, der sker på havnen. */
   var NOTE_TITEL = 'Note til dagen';
-  var KAT_NAVN = { musik: 'Musik', spisning: 'Spisning', fest: 'Fest', andet: 'Andet' };
+  var KAT_NAVN = { musik: 'Musik', spisning: 'Spisning', musik_spisning: 'Musik & spisning', fest: 'Fest', andet: 'Andet' };
   var FRIST_NAVN = { 0: 'når det starter', 1: '1 time før', 3: '3 timer før',
     24: 'dagen før', 48: '2 dage før' };
   var UGEDAGE = ['søn', 'man', 'tir', 'ons', 'tor', 'fre', 'lør'];
@@ -134,6 +134,17 @@
     if (!t) return null;
     var s = String(t);
     return parseInt(s.slice(0, 2), 10) * 60 + parseInt(s.slice(3, 5), 10);
+  }
+
+  /* ⚠️ SLUTTER EFTER MIDNAT (2/11). Chefen: *"man kan ikke lægge et
+     opslag på hjemmesiden, som slutter klokken 02.00"*. Arket sagde
+     "Sluttiden skal ligge efter starttiden" om 20.00–02.00. Nu betyder
+     en sluttid FØR starttiden: næste dag. Databasen har altid kunnet
+     det (kalender.slut_dato, check slut_dato >= dato) — det var kun
+     arket, der sagde nej. */
+  function efterMidnat(k) {
+    var a = minutter(k && k.start_kl), b = minutter(k && k.slut_kl);
+    return a !== null && b !== null && b < a;
   }
 
   function stedNavn(k) { return Butik.stedNavn(d(), k); }
@@ -570,6 +581,7 @@
 
   function tegnForm() {
     trykket($('arr-kategori'), 'data-kat', valg.kategori);
+    if ($('arr-slut-hjaelp')) $('arr-slut-hjaelp').hidden = !efterMidnat(udkast());
     trykket($('arr-maade'), 'data-maade', valg.maade);
     var bordMaade = $('arr-maade').querySelector('[data-maade="bord"]');
     if (bordMaade) bordMaade.hidden = !nyeKolonner();
@@ -724,7 +736,7 @@
     var f = lav('div', 'arr-kv-forside');
     var tegn = lav('span', 'arr-kv-forside-tegn');
     tegn.setAttribute('aria-hidden', 'true');
-    if (Butik.arrangementSlags(k) === 'musik') {
+    if (Butik.arrangementSlags(k) === 'musik' || Butik.arrangementSlags(k) === 'musik_spisning') {
       var eq = lav('span', 'arr-kv-eq');
       for (var i = 0; i < 4; i++) eq.appendChild(lav('i'));
       tegn.appendChild(eq);
@@ -758,6 +770,8 @@
     if (a0 === null || b0 === null) return true;
     if (a1 === null) a1 = 24 * 60;
     if (b1 === null) b1 = 24 * 60;
+    if (a1 < a0) a1 += 24 * 60;   /* efter midnat */
+    if (b1 < b0) b1 += 24 * 60;
     return a0 < b1 && b0 < a1;
   }
 
@@ -814,8 +828,8 @@
     if (k.tilmelding && !k.start_kl) {
       return 'Skriv et klokkeslæt for, hvornår det starter — gæsterne, der melder sig til, skal vide, hvornår de skal være der.';
     }
-    if (k.start_kl && k.slut_kl && minutter(k.slut_kl) <= minutter(k.start_kl)) {
-      return 'Sluttiden skal ligge efter starttiden.';
+    if (k.start_kl && k.slut_kl && minutter(k.slut_kl) === minutter(k.start_kl)) {
+      return 'Sluttiden er den samme som starttiden. Slutter det efter midnat, så skriv bare fx 02.00.';
     }
     if (felt('arr-gentag').value && !retter) {
       var til = felt('arr-gentag-til').value;
@@ -846,7 +860,9 @@
       type: 'arrangement',
       titel: k.titel,
       dato: iso,
-      slut_dato: retter ? retter.slut_dato || null : null,
+      /* Slutter det efter midnat, er slutdagen den næste. Ellers som før. */
+      slut_dato: efterMidnat(k) ? plusDage(iso, 1)
+        : (retter && retter.slut_dato && retter.slut_dato !== plusDage(retter.dato, 1) ? retter.slut_dato : null),
       emoji: retter ? retter.emoji || '' : '',
       offentlig: offentlig,
       beskrivelse: k.beskrivelse,
@@ -889,6 +905,18 @@
     } else {
       loefte = Butik.skrive.kalender(raekkeTil(dd[0], offentlig));
     }
+
+    /* ⚠️ "Musik & spisning" (2/11) kræver
+       supabase/arrangement-musik-og-spisning-2-11.sql. Er den ikke kørt,
+       siger databasen kalender_kategori_ok — sig det på dansk i stedet. */
+    loefte = loefte.catch(function (e) {
+      if (/kalender_kategori_ok/.test(String(e && e.message || e))) {
+        throw new Error('"Musik & spisning" er ikke slået til i databasen endnu. '
+          + 'Vælg Musik eller Spisning indtil videre — og bed Mikkel køre '
+          + 'arrangement-musik-og-spisning-2-11.sql.');
+      }
+      throw e;
+    });
 
     var ok = false;
     var besked = retter

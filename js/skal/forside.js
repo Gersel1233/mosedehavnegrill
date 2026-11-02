@@ -273,7 +273,7 @@
     var boble = find('.bic', boks);
     if (!boble) return;
     var erMusik = Butik.arrangementSlags
-      ? Butik.arrangementSlags(k) === 'musik'
+      ? Butik.arrangementSlags(k).indexOf('musik') === 0
       : true;   /* kan reglen ikke nås, står banneret som før */
     boble.innerHTML = erMusik ? EQ_HTML : KALENDER_HTML;
   }

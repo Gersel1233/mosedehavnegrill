@@ -231,7 +231,7 @@
          databasen tager imod det (arrangement-kategori.sql) — men listen
          her kendte det ikke, så valget blev til null, og siden gættede
          igen. Kortlægningen 12/10 fandt det; ingen prøve gemte "Andet". */
-      var lovlige = ['musik', 'spisning', 'fest', 'andet'];
+      var lovlige = ['musik', 'spisning', 'fest', 'andet', 'musik_spisning'];
       ren.kategori = lovlige.indexOf(String(r.kategori)) !== -1
         ? String(r.kategori) : null;
     }

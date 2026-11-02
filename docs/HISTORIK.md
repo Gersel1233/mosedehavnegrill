@@ -7,6 +7,16 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**ARRANGEMENT TIL KL. 02.00 + "MUSIK & SPISNING"** (2/11). Chefen: *"Man kan ikke lægge et opslag på hjemmesiden,
+som slutter klokken 02.00. Og man kan ikke lave et blandet event, som både er musik og spisning."* Begge var sande:
+admin afviste en sluttid før starttiden, og kategorien var ét valg. Nu: (1) en sluttid før starttiden er natten til
+næste dag — admin viser "Slutter efter midnat — natten til næste dag" og gemmer slut_dato = dagen efter, så
+tilmeldingsbremsen (arrangement-sluttid.sql) ikke lukker kl. 02.00 samme dag; siden viser det som én aften
+"kl. 20.00–02.00", ikke "lør – søn". Ingen SQL. (2) Knappen "Musik & spisning" ('musik_spisning') — står under BÅDE
+Musik- og Spisning-filteret på kalendersiden, og forsidens banner viser lydbølgen som ved musik. Kræver
+supabase/arrangement-musik-og-spisning-2-11.sql (prøve 3/3, er-vi-klar 161); uden den siger admin det på dansk.
+tests/arrangement-nat-og-blandet.spec.js.
+
 **LOGOET I GOOGLE** (30/10). Mikkel: *"kan vi opdatere logo, og du ved hvordan den ser ud ude på Google"*.
 Siden havde kun favicon.svg og intet logo i den strukturerede data. Nu: favicon.ico i roden og favicon-48/96/192.png
 (kransen fra favicon.svg), PNG-ikonet linket på alle 26 offentlige sider, `logo` (ikoner/ikon-512.png) i

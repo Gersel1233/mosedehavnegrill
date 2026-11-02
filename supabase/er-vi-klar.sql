@@ -1390,7 +1390,15 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and exists (select 1 from pg_trigger where tgname = 'sms_afvist_bestilling')),
    'Knappen «Send en prøve hertil» svarer "ikke slået til", tilmeldinger bipper ikke, '
    || 'og en afvist gæst hører det kun, hvis nogen ringer. Kør supabase/beskeder-29-10.sql, '
-   || 'og læg send-push og send-sms op igen.')
+   || 'og læg send-push og send-sms op igen.'),
+
+  /* Chefen 2/11: et arrangement kan være BÅDE musik og spisning. */
+  (161, 'Kalenderen', 'Et arrangement kan være "Musik & spisning"',
+   (select exists (select 1 from pg_constraint
+                    where conname = 'kalender_kategori_ok'
+                      and pg_get_constraintdef(oid) like '%musik_spisning%')),
+   'Admin kan vise knappen "Musik & spisning", men databasen afviser gemmet. '
+   || 'Kør supabase/arrangement-musik-og-spisning-2-11.sql.')
 ),
 
 samlet as (

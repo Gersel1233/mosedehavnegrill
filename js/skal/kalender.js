@@ -205,7 +205,7 @@
      ville se ud, som om der var. Har han ikke skrevet noget, står
      der bare slagsen. */
   function kindTekst(k, slags) {
-    var NAVNE = { musik: 'Musik', spisning: 'Spisning', fest: 'Fest', andet: 'Andet' };
+    var NAVNE = { musik: 'Musik', spisning: 'Spisning', musik_spisning: 'Musik & spisning', fest: 'Fest', andet: 'Andet' };
     var navn = NAVNE[slags] || 'Andet';
     var pris = String(k.pris_tekst || '').trim();
     return pris ? navn + ' · ' + pris : navn;
@@ -278,7 +278,8 @@
     arrangementer.forEach(function (k, i) {
       var slags = slagsFor(k);
       var kort = lav('div', 'evcard rev' + (i ? ' d' + Math.min(i, 2) : '') + (k.aflyst ? ' aflyst' : ''));
-      kort.setAttribute('data-kind', slags);
+      /* Musik & spisning står under BEGGE filtre (2/11). */
+      kort.setAttribute('data-kind', slags === 'musik_spisning' ? 'musik spisning' : slags);
       kort.setAttribute('data-ev', String(i));
       kort.setAttribute('data-kalender', String(k.id));
       /* ⚠️ ET ARRANGEMENT KAN LINKES TIL  (2/10). Chefen: *"Lad

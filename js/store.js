@@ -920,8 +920,11 @@
   function arrangementSlags(k) {
     if (!k) return 'andet';
     var valgt = String(k.kategori || '');
+    /* 'musik_spisning' (2/11): chefen — *"man kan ikke lave et blandet
+       event, som både er musik og spisning"*. Det står under BEGGE
+       filtre i kalenderen (js/skal/kalender.js: data-kind). */
     if (valgt === 'musik' || valgt === 'spisning' || valgt === 'fest'
-      || valgt === 'andet') return valgt;
+      || valgt === 'andet' || valgt === 'musik_spisning') return valgt;
     var t = (k.titel || '') + ' ' + (k.beskrivelse || '');
     for (var i = 0; i < ARRANGEMENT_SLAGS.length; i++) {
       if (ARRANGEMENT_SLAGS[i][0].test(t)) return ARRANGEMENT_SLAGS[i][1];
