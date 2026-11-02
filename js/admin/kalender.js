@@ -63,7 +63,7 @@
        at lade ejeren lede efter en fejl, der ikke findes. */
     var næste = rækker.filter(function (k) {
       return k.type === 'arrangement' && k.offentlig !== false
-        && (k.slut_dato || k.dato) >= Butik.nu().dato;
+        && Butik.arrangementSidsteDag(k) >= Butik.nu().dato;
     })[0];
 
     if (!næste) {
@@ -652,9 +652,22 @@
     if (nyType === 'arrangement' && maaSluttid()
       && $('kal-start') && $('kal-start').value
       && $('kal-slut-kl') && $('kal-slut-kl').value
-      && $('kal-slut-kl').value <= $('kal-start').value) {
-      return Admin.brøl('Sluttidspunktet skal ligge efter starten. '
-        + 'Slutter arrangementet efter midnat, så lad feltet stå tomt.');
+      && $('kal-slut-kl').value === $('kal-start').value) {
+      return Admin.brøl('Sluttiden er den samme som starttiden. '
+        + 'Slutter det efter midnat, så skriv bare fx 02.00.');
+    }
+    /* ⚠️ EFTER MIDNAT (2/11, chefen: "man kan ikke lægge et opslag på
+       hjemmesiden, som slutter klokken 02.00"). En sluttid før starten er
+       natten til næste dag — som i fanen Arrangementer. Slutdatoen bliver
+       dagen efter, så tilmeldingsbremsen ikke lukker kl. 02 samme dag. */
+    var natten = nyType === 'arrangement' && maaSluttid()
+      && $('kal-start') && $('kal-start').value
+      && $('kal-slut-kl') && $('kal-slut-kl').value
+      && $('kal-slut-kl').value < $('kal-start').value;
+    if (natten && (!slut || slut === dato)) {
+      var dn = new Date(dato + 'T12:00:00Z');
+      dn.setUTCDate(dn.getUTCDate() + 1);
+      slut = dn.toISOString().slice(0, 10);
     }
 
     /* ⚠️ EN HEL LUKNING SPØRGER FØRST, HVIS DEN RAMMER NOGET (16/9).
@@ -674,7 +687,7 @@
     if (nyType === 'arrangement') {
       var lukket = null;
       var d0 = new Date(dato + 'T12:00:00Z');
-      var d1 = new Date((slut || dato) + 'T12:00:00Z');
+      var d1 = new Date((natten ? dato : (slut || dato)) + 'T12:00:00Z');
       for (var i = 0; d0 <= d1 && i < 400 && !lukket; i++, d0.setUTCDate(d0.getUTCDate() + 1)) {
         lukket = dagensTing(d0.toISOString().slice(0, 10)).lukket;
       }

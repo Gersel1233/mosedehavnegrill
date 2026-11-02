@@ -165,7 +165,7 @@
       return k.type === 'arrangement' && k.titel !== NOTE_TITEL;
     });
   }
-  function erForbi(k) { return (k.slut_dato || k.dato) < iDag(); }
+  function erForbi(k) { return Butik.arrangementSidsteDag(k) < iDag(); }
   function gruppe(k) {
     if (erForbi(k)) return 'forbi';
     return k.offentlig ? 'kommende' : 'kladder';
@@ -712,7 +712,7 @@
     var iDagIso = iDag();
     return alle().filter(function (x) {
       if (retter && String(x.id) === String(retter.id)) return false;
-      return x.offentlig && !x.aflyst && (x.slut_dato || x.dato) >= iDagIso;
+      return x.offentlig && !x.aflyst && Butik.arrangementSidsteDag(x) >= iDagIso;
     }).concat(k.dato && !k.aflyst ? [k] : []).sort(function (a, b) {
       if (a.dato !== b.dato) return a.dato < b.dato ? -1 : 1;
       return String(a.start_kl || '') < String(b.start_kl || '') ? -1 : 1;

@@ -289,7 +289,7 @@
            aflyst koncert øverst på forsiden ville sende folk ned på
            havnen til ingenting. Kalendersiden siger det, der er aflyst. */
         return k.type === 'arrangement' && k.offentlig && !k.aflyst
-          && (k.slut_dato || k.dato) >= i_dag;
+          && (Butik.arrangementSidsteDag ? Butik.arrangementSidsteDag(k) : (k.slut_dato || k.dato)) >= i_dag;
       })
       .sort(function (a, b) {
         if (a.dato !== b.dato) return a.dato < b.dato ? -1 : 1;

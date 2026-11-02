@@ -97,3 +97,23 @@ test('kalendersiden: blandet står under både Musik og Spisning, og natten vise
   await expect(blandet).toBeHidden();
   await expect(fest).toBeVisible();
 });
+
+/* Dagen efter en nat-fest må den ikke stå som "kommende" — ellers viser
+   forsidens banner gårsdagens fest hele lørdagen. Men på selve aftenen
+   og et arrangement over flere dage står de som før. */
+test('dagen efter står natte-arrangementet ikke længere som kommende', async ({ page }) => {
+  const d = grunddata();
+  d.kalender = [
+    række({ titel: 'Fredagsbar til sent', kategori: 'musik', slut_kl: '02:00', slut_dato: '2026-11-15' }),
+    række({ id: 73, titel: 'Havnefestival', kategori: 'fest', dato: '2026-11-14', slut_dato: '2026-11-16', start_kl: '12:00', slut_kl: '22:00' }),
+  ];
+  d.reservationer = [];
+  // Lørdag 15/11 kl. 11 dansk tid
+  await åbnSkal(page, '/h-kalender.html', { ur: '2026-11-15T10:00:00Z', data: d });
+  await expect(page.locator('.evcard', { hasText: 'Havnefestival' })).toBeVisible();
+  await expect(page.locator('.evcard', { hasText: 'Fredagsbar til sent' })).toHaveCount(0);
+
+  // Og selve aftenen (fredag kl. 21) står den.
+  await åbnSkal(page, '/h-kalender.html', { ur: '2026-11-14T20:00:00Z', data: d });
+  await expect(page.locator('.evcard', { hasText: 'Fredagsbar til sent' })).toBeVisible();
+});

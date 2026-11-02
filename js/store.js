@@ -878,12 +878,28 @@
      og uden linjen her ville "Bent har ferie" stå på hjemmesiden,
      hver gang nogen åbnede siden lokalt.
      ============================================================ */
+  /* ⚠️ NATTEN OVER (2/11). Et arrangement 20.00–02.00 har slut_dato =
+     dagen efter, så tilmeldingsbremsen ikke lukker kl. 02 samme dag. Men
+     på SIDEN er det én aften: dagen efter må det ikke stå som "kommende"
+     (forsidens banner ville ellers vise gårsdagens fest hele lørdagen). */
+  function arrangementSidsteDag(k) {
+    if (!k) return '';
+    var natten = k.start_kl && k.slut_kl
+      && String(k.slut_kl).slice(0, 5) < String(k.start_kl).slice(0, 5);
+    if (natten && k.slut_dato) {
+      var d = new Date(k.dato + 'T12:00:00Z');
+      d.setUTCDate(d.getUTCDate() + 1);
+      if (d.toISOString().slice(0, 10) === k.slut_dato) return k.dato;
+    }
+    return k.slut_dato || k.dato;
+  }
+
   function arrangementer(d) {
     var iDag = nu().dato;
     return ((d && d.kalender) || []).filter(function (k) {
       return k.type === 'arrangement'
         && k.offentlig
-        && (k.slut_dato || k.dato) >= iDag;
+        && arrangementSidsteDag(k) >= iDag;
     }).sort(function (a, b) {
       if (a.dato !== b.dato) return a.dato < b.dato ? -1 : 1;
       return String(a.start_kl || '') < String(b.start_kl || '') ? -1 : 1;
@@ -6051,7 +6067,7 @@
     return ((d && d.kalender) || []).filter(function (k) {
       return k.type === 'arrangement'
         && k.offentlig
-        && (k.slut_dato || k.dato) < iDag;
+        && arrangementSidsteDag(k) < iDag;
     }).sort(function (a, b) {
       return String(b.dato || '').localeCompare(String(a.dato || ''));
     }).slice(0, 12);
@@ -6077,6 +6093,7 @@
     dkTilMs: isoTilMs,
     arrangementer: arrangementer,
     arrangementSlags: arrangementSlags,
+    arrangementSidsteDag: arrangementSidsteDag,
     hentPladser: hentPladser,
     FORESPOERGSEL_TYPER: FORESPOERGSEL_TYPER,
     nyhedSynlig: nyhedSynlig,

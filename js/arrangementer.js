@@ -92,7 +92,7 @@
     tegn((d.kalender || []).filter(function (k) {
       return k.type === 'arrangement'
         && k.offentlig !== false
-        && (k.slut_dato || k.dato) >= iDag;
+        && (Butik.arrangementSidsteDag ? Butik.arrangementSidsteDag(k) : (k.slut_dato || k.dato)) >= iDag;
     }));
   }).catch(function () {
     /* Kan der ikke hentes, skal der stå hvorfor der er tomt —

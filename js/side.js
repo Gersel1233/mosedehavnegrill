@@ -1101,7 +1101,7 @@
       .filter(function (k) {
         return k.type === 'arrangement'
           && k.offentlig !== false
-          && (k.slut_dato || k.dato) >= iDag;
+          && (Butik.arrangementSidsteDag ? Butik.arrangementSidsteDag(k) : (k.slut_dato || k.dato)) >= iDag;
       })
       .sort(function (a, b) { return a.dato < b.dato ? -1 : 1; })[0];
 
