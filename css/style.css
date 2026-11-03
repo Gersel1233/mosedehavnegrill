@@ -14062,3 +14062,10 @@ body:not(.personale) .stk-linje > .stk-tilvalg-fold {
 .bord-dag-hoved:first-child { margin-top: 4px; }
 /* "✎ Rediger booking" på én linje i ···-menuen (3/11). */
 .bestil-mere .bord-ret, .bestil-mere button { white-space: nowrap; }
+
+/* ---- NY UDGAVE AF ADMIN (3/11, js/admin/udgave.js) ---- */
+.ny-udgave { position: fixed; left: 50%; transform: translateX(-50%); z-index: 9999;
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 32px);
+  padding: 14px 22px; border: 0; border-radius: 999px; background: var(--red); color: #fff;
+  font: inherit; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,.25); cursor: pointer; }
+@media (min-width: 900px) { .ny-udgave { bottom: 28px; } }
