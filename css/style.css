@@ -14060,3 +14060,5 @@ body:not(.personale) .stk-linje > .stk-tilvalg-fold {
 .bord-dag.fuld:not(.valgt) .bord-dag-tal { color: var(--red-tekst); opacity: 1; font-weight: 600; }
 .bord-dag-hoved { margin: 18px 0 8px; font-size: .95rem; letter-spacing: .02em; text-transform: uppercase; }
 .bord-dag-hoved:first-child { margin-top: 4px; }
+/* "✎ Rediger booking" på én linje i ···-menuen (3/11). */
+.bestil-mere .bord-ret, .bestil-mere button { white-space: nowrap; }
