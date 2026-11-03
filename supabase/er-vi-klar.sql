@@ -1406,7 +1406,14 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and exists (select 1 from pg_proc where proname = 'mosede_gendan_arkiv')
        and (select count(*) from pg_trigger where tgname = 'til_skraldespand' and not tgisinternal) = 7),
    'Et slettet arrangement, en nyhed eller en menuvare er væk for altid — den kan ikke hentes '
-   || 'tilbage fra Skraldespanden. Kør supabase/skraldespand-alt-3-11.sql.')
+   || 'tilbage fra Skraldespanden. Kør supabase/skraldespand-alt-3-11.sql.'),
+
+  /* Chefen 3/11: lister fra egne filer → arbejdsopgaver med initialer. */
+  (163, 'Opgaver', 'Arbejdsopgaver med initialer',
+   (select to_regclass('public.opgavelister') is not null
+       and to_regclass('public.opgaver') is not null
+       and to_regclass('public.opgave_udfoert') is not null),
+   'Fanen Opgaver kan ikke gemme lister eller initialer. Kør supabase/opgaver-3-11.sql.')
 ),
 
 samlet as (

@@ -72,7 +72,14 @@ og derfra:
   → beskeder-29-10.sql   (EFTER sms.sql, sms-alle-28-10.sql og push.sql — og læg send-push + send-sms op igen)
   → arrangement-musik-og-spisning-2-11.sql   (EFTER arrangement-kategori.sql)
   → skraldespand-alt-3-11.sql   (EFTER skraldespand.sql og arrangoer.sql)
+  → opgaver-3-11.sql   (EFTER roller.sql)
 ```
+
+**`opgaver-3-11.sql` (3/11) — IKKE KØRT ENDNU.** Chefen: lister fra egne filer skal blive til arbejdsopgaver,
+personalet sætter initialer ved hver dag. Tre tabeller: `opgavelister` (navn, ugedage), `opgaver` (linjerne) og
+`opgave_udfoert` (initialer, tidspunkt, login, og teksten gemt med, så dagens dokument står, selv om listen
+rettes). Cheferne (`er_ejer_for`) lægger lister ind; alle med admin-adgang (`is_admin_for`) sætter initialer;
+arrangøren ser intet. Én opgave én gang pr. dag. Prøven er `proev-opgaver-3-11.sql` — 7 af 7. er-vi-klar 163.
 
 **`skraldespand-alt-3-11.sql` (3/11) — IKKE KØRT ENDNU.** Mikkel: *"alle slettede skal naturligvis ryge i
 skraldespanden, hvor alt skal ligge og gendannes"*. Arrangementer/kalender, nyheder, menukortets kategorier og

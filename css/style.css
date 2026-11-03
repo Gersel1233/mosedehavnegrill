@@ -14069,3 +14069,33 @@ body:not(.personale) .stk-linje > .stk-tilvalg-fold {
   padding: 14px 22px; border: 0; border-radius: 999px; background: var(--red); color: #fff;
   font: inherit; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,.25); cursor: pointer; }
 @media (min-width: 900px) { .ny-udgave { bottom: 28px; } }
+
+/* ---- ARBEJDSOPGAVER (3/11, js/admin/opgaver.js) ---- */
+.opg-liste { border: 1px solid rgba(0,0,0,.08); border-radius: 16px; padding: 12px 14px; margin: 12px 0; background: #fff; }
+.opg-liste-hoved { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.opg-liste-hoved h3 { margin: 0; font-size: 1.1rem; }
+.opg-liste-tal { font-weight: 700; font-variant-numeric: tabular-nums; opacity: .7; }
+.opg-liste-tal.faerdig { color: #1e7a45; opacity: 1; }
+.opg-raekke { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(0,0,0,.06); min-height: 52px; }
+.opg-raekke:first-of-type { border-top: 0; }
+.opg-tekst { flex: 1; min-width: 0; }
+.opg-raekke.gjort .opg-tekst { opacity: .6; text-decoration: line-through; text-decoration-thickness: 1px; }
+.opg-udfoer { min-width: 96px; }
+.opg-gjort { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.opg-ini { font-weight: 800; color: #1e7a45; letter-spacing: .04em; }
+.opg-tid { font-size: .85rem; opacity: .7; }
+.opg-ini-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.opg-ini-form input { width: 7.5em; text-transform: uppercase; font-weight: 700; letter-spacing: .06em; text-align: center; }
+.knap-link { background: none; border: 0; padding: 6px 4px; font: inherit; font-size: .9rem; text-decoration: underline; cursor: pointer; color: inherit; opacity: .75; }
+.knap-link.fare-tekst { color: var(--red-tekst); opacity: 1; text-decoration: none; font-size: 1.1rem; }
+.opg-dage { display: flex; flex-wrap: wrap; gap: 6px; }
+.opg-ret-liste { border: 1px solid rgba(0,0,0,.08); border-radius: 14px; padding: 10px 14px; margin: 10px 0; }
+.opg-ret-liste summary { font-weight: 700; cursor: pointer; padding: 4px 0; }
+.opg-ret-raekke { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+.opg-ret-raekke input { flex: 1; min-width: 0; }
+.ob-opgaver-raekke { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ob-opgaver.faerdig strong { color: #1e7a45; }
+@media (max-width: 560px) {
+  .opg-raekke { flex-wrap: wrap; }
+  .opg-gjort, .opg-ini-form { width: 100%; justify-content: flex-start; }
+}

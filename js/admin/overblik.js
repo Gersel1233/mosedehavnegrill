@@ -1797,11 +1797,8 @@
      egne (Admin.dagProgram): én regel, to skærme.
      ============================================================ */
   var obDag = null;
-  function plusDag(iso, n) {
-    var d = new Date(iso + 'T12:00:00Z');
-    d.setUTCDate(d.getUTCDate() + n);
-    return d.toISOString().slice(0, 10);
-  }
+  // Én regel ét sted: Butik.isoPlus (js/store.js).
+  function plusDag(iso, n) { return Butik.isoPlus(iso, n); }
   function tegnDagForDag() {
     var boks = $('ob-dag');
     if (!boks || !Admin.dagProgram) return;

@@ -190,6 +190,9 @@
            for ugen — begravet nederst på Forside-fanen fandt ingen
            den. Hører til i Dagen-gruppen: det ER dagens arbejde. -->
       <button role="tab" aria-selected="false" data-panel="p-dagensret"><span class="fane-ikon" aria-hidden="true">🍲</span>Dagens ret</button>
+      <!-- ✅ OPGAVER (3/11): cheferne lægger deres egne lister ind (fil eller tekst),
+           personalet sætter initialer hver dag. js/admin/opgaver.js. -->
+      <button role="tab" aria-selected="false" data-panel="p-opgaver"><span class="fane-ikon" aria-hidden="true">✅</span>Opgaver</button>
       <!-- ⚠️ TILMELDINGER HAR SIN EGEN FANE (30/8, kundens
            spørgsmål: "hvor kommer reservationerne hen?"). De kom
            ingen steder — knappen på kalendersiden havde ingen
@@ -679,6 +682,14 @@
            struktureret". Samme program som kalenderens dag
            (Admin.dagProgram) — bestillinger, borde, baglokale,
            forespørgsler, arrangementer, noter og lukning. -->
+      <!-- ✅ Dagens opgaver (3/11, js/admin/opgaver.js) -->
+      <div class="kort luft-top ob-opgaver" id="ob-opgaver-kort" hidden>
+        <div class="ob-opgaver-raekke">
+          <span>✅ <strong id="ob-opgaver-tal"></strong></span>
+          <button class="knap sekundaer lille" id="ob-opgaver-aabn" type="button">Åbn opgaverne →</button>
+        </div>
+      </div>
+
       <div class="kort luft-top" id="ob-dag-kort">
         <div class="kort-hoved">
           <h2 class="h-panel">📅 Dag for dag</h2>
@@ -3755,6 +3766,64 @@
       </div>
     </div>
 
+    <!-- ============ ARBEJDSOPGAVER (3/11) ==========================
+         js/admin/opgaver.js · supabase/opgaver-3-11.sql -->
+    <div id="p-opgaver" class="panel skjult">
+      <div class="kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Dagens opgaver</h2>
+          <span class="kort-note">tryk Udført og skriv dine initialer</span>
+        </div>
+        <div class="ob-dag-hoved">
+          <button class="knap sekundaer lille" id="opg-dag-forrige" type="button" aria-label="Dagen før">‹</button>
+          <div class="ob-dag-titel">
+            <strong id="opg-dag-navn"></strong>
+            <span class="hjaelp" id="opg-dag-tal"></span>
+          </div>
+          <button class="knap sekundaer lille" id="opg-dag-naeste" type="button" aria-label="Dagen efter">›</button>
+        </div>
+        <div class="ob-dag-genveje">
+          <button class="knap sekundaer lille" id="opg-dag-idag" type="button">I dag</button>
+          <input type="date" id="opg-dag-vaelg" aria-label="Vælg en dag">
+          <button class="knap sekundaer lille" id="opg-print" type="button">🖨️ Print dagen</button>
+        </div>
+        <div id="opg-dag"><p class="hjaelp">Henter …</p></div>
+      </div>
+
+      <div class="kort luft-top" id="opg-ret-kort" hidden>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Listerne</h2>
+          <span class="kort-note">kun cheferne kan lægge lister ind og rette dem</span>
+        </div>
+        <details class="tag-booking" id="opg-ny-fold">
+          <summary>📄 Læg en ny liste ind (fra en fil)</summary>
+          <p class="hjaelp">Vælg jeres fil — Word (.docx), Excel, PDF eller tekst. Hver linje bliver en
+            opgave. I kan rette listen, før den gemmes. Har I den kun på papir eller som billede:
+            kopiér teksten (på iPad'en: hold fingeren på teksten i billedet → Kopiér) og sæt den ind i feltet.</p>
+          <div class="felt">
+            <label for="opg-fil">Fil</label>
+            <input type="file" id="opg-fil"
+                   accept=".docx,.xlsx,.xls,.ods,.csv,.txt,.pdf,application/pdf,text/plain,image/*">
+            <p class="hjaelp" id="opg-fil-status" aria-live="polite"></p>
+          </div>
+          <div class="felt">
+            <label for="opg-ny-navn">Listens navn</label>
+            <input type="text" id="opg-ny-navn" maxlength="80" placeholder="Fx Lukning, Åbning, Rengøring">
+          </div>
+          <div class="felt">
+            <span class="felt-etiket">Hvilke dage</span>
+            <div class="adm-seg opg-dage" id="opg-ny-dage" role="group" aria-label="Hvilke dage"></div>
+          </div>
+          <div class="felt">
+            <label for="opg-ny-tekst">Opgaverne <span class="hjaelp">(én pr. linje)</span></label>
+            <textarea id="opg-ny-tekst" rows="10" placeholder="Tøm opvaskemaskinen&#10;Sluk grillen&#10;Tjek temperatur i køl"></textarea>
+          </div>
+          <button class="knap" id="opg-opret" type="button">Opret listen</button>
+        </details>
+        <div id="opg-lister" class="luft-top"></div>
+      </div>
+    </div>
+
     <div id="p-historik" class="panel skjult">
       <div class="kort">
         <div class="kort-hoved">
@@ -4105,6 +4174,7 @@
 <script src="js/admin/forside.js?v=__V__"></script>
 <script src="js/admin/kontakt.js?v=__V__"></script>
 <script src="js/admin/skraldespand.js?v=__V__"></script>
+<script src="js/admin/opgaver.js?v=__V__"></script>
 <script src="js/admin/logbog.js?v=__V__"></script>
 <!-- ⚠️ SIDST, MEN FØR login.js: baandet skal kunne vises, ogsaa
      naar en anden fane fejler. Se filens eget hoved. -->

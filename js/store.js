@@ -6547,6 +6547,27 @@
     },
 
     /* Aftalernes rabatkoder (28/10) — kun personalet kan læse dem. */
+    /* Arbejdsopgaverne (3/11, supabase/opgaver-3-11.sql): listerne,
+       deres opgaver og hvem der har udført hvad fra `fra` og frem. */
+    hentOpgaver: function (fra) {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve({
+          lister: (d.opgavelister || []).slice(),
+          opgaver: (d.opgaver || []).slice(),
+          udfoert: (d.opgave_udfoert || []).filter(function (u) { return !fra || u.dato >= fra; }),
+        });
+      }
+      return Promise.all([
+        hentTabel('opgavelister', 'select=*' + MIT + '&order=raekkefoelge,id'),
+        hentTabel('opgaver', 'select=*' + MIT + '&order=raekkefoelge,id'),
+        hentTabel('opgave_udfoert', 'select=*' + MIT + (fra ? '&dato=gte.' + encodeURIComponent(fra) : '')
+          + '&order=udfoert'),
+      ]).then(function (s) {
+        return { lister: s[0] || [], opgaver: s[1] || [], udfoert: s[2] || [] };
+      });
+    },
+
     hentRabatkoder: function () {
       if (!SKY) {
         return Promise.resolve(((læsLokalt().rabatkoder) || []).slice().sort(function (a, b) {

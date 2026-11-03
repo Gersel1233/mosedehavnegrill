@@ -1663,6 +1663,136 @@
         { slettet: null, aendret: nuIso });
     },
 
+    /* ---- ARBEJDSOPGAVER (3/11, supabase/opgaver-3-11.sql) ----
+       Cheferne lægger lister ind (fra deres egne filer), personalet
+       sætter initialer ved hver opgave, hver dag. */
+    opretOpgaveliste: function (liste) {
+      var navn = String(liste.navn || '').trim().slice(0, 80);
+      var tekster = (liste.opgaver || []).map(function (t) { return String(t || '').trim().slice(0, 300); })
+        .filter(Boolean);
+      if (!navn) return Promise.reject(new Error('Giv listen et navn, fx "Lukning".'));
+      if (!tekster.length) return Promise.reject(new Error('Listen har ingen opgaver.'));
+      var ugedage = (liste.ugedage && liste.ugedage.length && liste.ugedage.length < 7) ? liste.ugedage : null;
+      if (!SKY) return lokalt(function (d) {
+        d.opgavelister = d.opgavelister || [];
+        d.opgaver = d.opgaver || [];
+        var id = næsteId(d.opgavelister);
+        d.opgavelister.push({ id: id, lokation_id: LOKATION, navn: navn, ugedage: ugedage, aktiv: true,
+          raekkefoelge: d.opgavelister.length, kilde: liste.kilde || null, oprettet: new Date().toISOString() });
+        tekster.forEach(function (t, i) {
+          d.opgaver.push({ id: næsteId(d.opgaver), lokation_id: LOKATION, liste_id: id, tekst: t,
+            raekkefoelge: i, aktiv: true });
+        });
+      });
+      function indsaet(tabel, raekker) {
+        return fetch(cfg.url + '/rest/v1/' + tabel, {
+          method: 'POST', headers: hoveder({ Prefer: 'return=representation' }), body: JSON.stringify(raekker),
+        }).then(function (r) {
+          if (r.ok) return r.json();
+          return r.text().then(function (t) {
+            if (r.status === 404 || /does not exist|opgavelister/.test(t) && /relation/.test(t)) {
+              throw new Error('Opgaverne er ikke slået til i databasen endnu. Bed Mikkel køre opgaver-3-11.sql.');
+            }
+            if (r.status === 401 || r.status === 403 || /row-level security/.test(t)) {
+              throw new Error('Kun cheferne kan lægge lister ind.');
+            }
+            throw new Error('Listen kunne ikke gemmes: ' + t.slice(0, 200));
+          });
+        });
+      }
+      return indsaet('opgavelister', [{ lokation_id: LOKATION, navn: navn, ugedage: ugedage,
+        raekkefoelge: Number(liste.raekkefoelge) || 0, kilde: liste.kilde || null }])
+        .then(function (ny) {
+          var id = ny && ny[0] && ny[0].id;
+          return indsaet('opgaver', tekster.map(function (t, i) {
+            return { lokation_id: LOKATION, liste_id: id, tekst: t, raekkefoelge: i };
+          }));
+        });
+    },
+
+    retOpgaveliste: function (id, felter) {
+      var ren = {};
+      if (felter.navn !== undefined) ren.navn = String(felter.navn || '').trim().slice(0, 80);
+      if (felter.ugedage !== undefined) {
+        ren.ugedage = (felter.ugedage && felter.ugedage.length && felter.ugedage.length < 7) ? felter.ugedage : null;
+      }
+      if (felter.aktiv !== undefined) ren.aktiv = !!felter.aktiv;
+      if (!SKY) return lokalt(function (d) {
+        d.opgavelister = (d.opgavelister || []).map(function (l) {
+          return String(l.id) === String(id) ? Object.assign({}, l, ren) : l;
+        });
+      });
+      return skriv('PATCH', 'opgavelister', 'id=eq.' + encodeURIComponent(id), ren);
+    },
+
+    sletOpgaveliste: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.opgavelister = (d.opgavelister || []).filter(function (l) { return String(l.id) !== String(id); });
+        d.opgaver = (d.opgaver || []).filter(function (o) { return String(o.liste_id) !== String(id); });
+      });
+      return skriv('DELETE', 'opgavelister', 'id=eq.' + encodeURIComponent(id));
+    },
+
+    tilfoejOpgave: function (listeId, tekst, raekkefoelge) {
+      var t = String(tekst || '').trim().slice(0, 300);
+      if (!t) return Promise.reject(new Error('Skriv opgaven.'));
+      if (!SKY) return lokalt(function (d) {
+        d.opgaver = d.opgaver || [];
+        d.opgaver.push({ id: næsteId(d.opgaver), lokation_id: LOKATION, liste_id: Number(listeId), tekst: t,
+          raekkefoelge: Number(raekkefoelge) || 0, aktiv: true });
+      });
+      return skriv('POST', 'opgaver', null, [{ lokation_id: LOKATION, liste_id: Number(listeId), tekst: t,
+        raekkefoelge: Number(raekkefoelge) || 0 }]);
+    },
+
+    retOpgave: function (id, tekst) {
+      var t = String(tekst || '').trim().slice(0, 300);
+      if (!t) return Promise.reject(new Error('En opgave kan ikke være tom — slet den i stedet.'));
+      if (!SKY) return lokalt(function (d) {
+        d.opgaver = (d.opgaver || []).map(function (o) {
+          return String(o.id) === String(id) ? Object.assign({}, o, { tekst: t }) : o;
+        });
+      });
+      return skriv('PATCH', 'opgaver', 'id=eq.' + encodeURIComponent(id), { tekst: t });
+    },
+
+    sletOpgave: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.opgaver = (d.opgaver || []).filter(function (o) { return String(o.id) !== String(id); });
+      });
+      return skriv('DELETE', 'opgaver', 'id=eq.' + encodeURIComponent(id));
+    },
+
+    udfoerOpgave: function (o) {
+      var ini = String(o.initialer || '').trim().toUpperCase();
+      if (!/^[A-ZÆØÅ]{1,4}$/.test(ini)) {
+        return Promise.reject(new Error('Skriv dine initialer — 1 til 4 bogstaver, fx MK.'));
+      }
+      var raekke = { lokation_id: LOKATION, opgave_id: Number(o.opgave_id), liste_id: Number(o.liste_id) || null,
+        dato: o.dato, tekst: String(o.tekst || ''), liste_navn: o.liste_navn || null, initialer: ini };
+      if (!SKY) return lokalt(function (d) {
+        d.opgave_udfoert = d.opgave_udfoert || [];
+        if (d.opgave_udfoert.some(function (u) {
+          return String(u.opgave_id) === String(raekke.opgave_id) && u.dato === raekke.dato;
+        })) throw new Error('Den er allerede sat af en anden. Skærmen henter igen.');
+        d.opgave_udfoert.push(Object.assign({ id: næsteId(d.opgave_udfoert), udfoert: new Date().toISOString(),
+          udfoert_af: auth.email() || null }, raekke));
+      });
+      return skriv('POST', 'opgave_udfoert', null, [raekke]).catch(function (e) {
+        if (/duplicate|opgave_udfoert_en_pr_dag|23505/.test(String(e && e.message))) {
+          throw new Error('Den er allerede sat af en anden. Skærmen henter igen.');
+        }
+        throw e;
+      });
+    },
+
+    fortrydOpgave: function (udfoertId) {
+      if (!SKY) return lokalt(function (d) {
+        d.opgave_udfoert = (d.opgave_udfoert || []).filter(function (u) { return String(u.id) !== String(udfoertId); });
+      });
+      return skriv('DELETE', 'opgave_udfoert', 'id=eq.' + encodeURIComponent(udfoertId));
+    },
+
     /* ---- SKRALDESPANDENS ARKIV (3/11, skraldespand-alt-3-11.sql) ----
        Hent tilbage går gennem databasens funktion, som indsætter med
        DEN, der trykker, som afsender — tabellens egne regler gælder. */

@@ -70,6 +70,9 @@ create index if not exists skraldespand_arkiv_slettet_idx
 create index if not exists skraldespand_arkiv_gruppe_idx
   on public.skraldespand_arkiv (gruppe);
 
+grant select, delete on public.skraldespand_arkiv to authenticated;
+revoke all on public.skraldespand_arkiv from anon;
+
 alter table public.skraldespand_arkiv enable row level security;
 
 -- Læse og slette for altid: personalet (ikke arrangøren) ser alt;

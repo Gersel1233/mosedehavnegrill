@@ -7,6 +7,16 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**ARBEJDSOPGAVER MED INITIALER** (3/11). Chefen: lister, de har på en fil, skal kunne lægges ind på iPad'en,
+så personalet hver dag kan sætte initialer ved det, de har gjort. Mikkel: cheferne lægger selv filerne ind i
+admin. Ny fane **✅ Opgaver** (js/admin/opgaver.js): en chef vælger en fil (Word .docx, Excel, PDF, tekst/CSV),
+hver linje bliver en opgave (punkttegn, tal og ☐ fjernes), listen kan rettes før den gemmes, og der vælges dage.
+Hver dag står listerne friske; "Udført" → initialer → gemt med klokkeslæt. ‹ › mellem dage, "Print dagen" giver
+dagens dokument. Overblik viser "5 af 12 opgaver udført i dag". Filværktøjerne ligger i js/vendor/ (JSZip,
+SheetJS core, pdf.js legacy — licenser ved siden af) og hentes først, når en fil vælges. Billeder læses ikke
+automatisk (kopiér teksten med iPad'ens Live Text). Admin siger også selv til, når der er en ny udgave
+(js/admin/udgave.js). SQL: opgaver-3-11.sql (7/7). Prøver: opgaver.spec.js, opgaver-filer.spec.js.
+
 **ADMIN 3/11: REDIGER BORDBOOKING, DAG FOR DAG, "BOOK DAGEN FAST", SKRALDESPANDEN TAGER ALT.**
 Chefen: *"Kan man ikke få lov at redigere en oprettet bordbooking??"* Mikkel: under de tre prikker; det skal ind i
 kalenderen og overblikket; bordbookinger med dato er uoverskuelige; Overblik skal kunne hoppe frem og tilbage;
