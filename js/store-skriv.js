@@ -28,6 +28,23 @@
   var status = I.status, talEllerNull = I.talEllerNull, tvilling = I.tvilling;
   var cfg = I.cfg, hoveder = I.hoveder;
 
+  /* ⚠️ ØVETILSTANDENS SKRALDESPAND (3/11) — spejler udløseren
+     til_skraldespand i supabase/skraldespand-alt-3-11.sql: en kopi,
+     lige før rækken forsvinder. hoved=false er det, der fulgte med
+     (en kategoris varer). */
+  function arkivLokalt(d, tabel, id, hoved, gruppe) {
+    var r = (d[tabel] || []).filter(function (x) { return String(x.id) === String(id); })[0];
+    if (!r) return;
+    d.skraldespand_arkiv = d.skraldespand_arkiv || [];
+    var nr = d.skraldespand_arkiv.reduce(function (m, a) { return Math.max(m, Number(a.id) || 0); }, 0) + 1;
+    d.skraldespand_arkiv.unshift({
+      id: nr, lokation_id: r.lokation_id || LOKATION, tabel: tabel, raekke_id: String(r.id),
+      raekke: JSON.parse(JSON.stringify(r)), hoved: hoved !== false,
+      gruppe: gruppe || nr, slettet: new Date().toISOString(), slettet_af: auth.email() || null,
+    });
+    return nr;
+  }
+
   /* ============================================================
      DAGENS RETS TILVALG — RENSET SOM DATABASEN VIL HA' DEM  (1/10)
      ------------------------------------------------------------
@@ -616,6 +633,7 @@
 
     sletRabatkode: function (id) {
       if (!SKY) return lokalt(function (d) {
+        arkivLokalt(d, 'rabatkoder', id);
         d.rabatkoder = (d.rabatkoder || []).filter(function (x) { return String(x.id) !== String(id); });
       });
       return skriv('DELETE', 'rabatkoder', 'id=eq.' + encodeURIComponent(id));
@@ -642,6 +660,7 @@
 
     sletBord: function (id) {
       if (!SKY) return lokalt(function (d) {
+        arkivLokalt(d, 'borde', id);
         d.borde = (d.borde || []).filter(function (b) {
           return String(b.id) !== String(id);
         });
@@ -708,6 +727,7 @@
 
     sletDagensRet: function (id) {
       if (!SKY) return lokalt(function (d) {
+        arkivLokalt(d, 'dagens_retter', id);
         d.dagens_retter = (d.dagens_retter || []).filter(function (x) {
           return String(x.id) !== String(id);
         });
@@ -862,6 +882,7 @@
           return String(r.kalender_id) === String(id) && !r.slettet && r.status !== 'afvist';
         });
         if (harTilmeldte) throw new Error('arrangement_har_tilmeldte');
+        arkivLokalt(d, 'kalender', id);
         d.kalender = (d.kalender || []).filter(function (k) {
           return String(k.id) !== String(id);
         });
@@ -954,6 +975,9 @@
        tryk må ikke kunne tage 29 varer med sig. */
     sletKategori: function (id) {
       if (!SKY) return lokalt(function (d) {
+        var gruppe = arkivLokalt(d, 'menu_kategorier', id);
+        (d.menu_varer || []).filter(function (x) { return String(x.kategori_id) === String(id); })
+          .forEach(function (v) { arkivLokalt(d, 'menu_varer', v.id, false, gruppe); });
         d.menu_kategorier = (d.menu_kategorier || [])
           .filter(function (x) { return String(x.id) !== String(id); });
         d.menu_varer = (d.menu_varer || [])
@@ -1095,6 +1119,7 @@
 
     sletVare: function (id) {
       if (!SKY) return lokalt(function (d) {
+        arkivLokalt(d, 'menu_varer', id);
         d.menu_varer = (d.menu_varer || []).filter(function (x) { return String(x.id) !== String(id); });
       });
       return skriv('DELETE', 'menu_varer', 'id=eq.' + encodeURIComponent(id));
@@ -1196,6 +1221,7 @@
 
     sletNyhed: function (id) {
       if (!SKY) return lokalt(function (d) {
+        arkivLokalt(d, 'nyheder', id);
         d.nyheder = (d.nyheder || []).filter(function (x) { return String(x.id) !== String(id); });
       });
       return skriv('DELETE', 'nyheder', 'id=eq.' + encodeURIComponent(id));
@@ -1415,6 +1441,37 @@
       return skriv('PATCH', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id), ren);
     },
 
+    /* ⚠️ RET EN BORDBOOKING (3/11). Chefen: *"kan man ikke få lov at
+       redigere en oprettet bordbooking??"* Personalet må rette alt på
+       rækken (borde.sql: bordbestillinger_ret_admin) — det her er de
+       felter, gæsten selv skrev. Kun de felter, der er sendt med, røres.
+       bord_id sendes kun, når kaldet beder om det: så dømmer databasen
+       bordet igen på den nye dag/tid (bordbestilling_plads). */
+    bordRet: function (id, felter) {
+      var ren = { aendret: new Date().toISOString() };
+      if (felter.navn !== undefined) ren.navn = String(felter.navn || '').trim().slice(0, 80);
+      if (felter.telefon !== undefined) ren.telefon = String(felter.telefon || '').trim().slice(0, 30);
+      if (felter.dato !== undefined) ren.dato = felter.dato;
+      if (felter.tid !== undefined) ren.tid = felter.tid;
+      if (felter.antal_personer !== undefined) ren.antal_personer = Number(felter.antal_personer);
+      if (felter.besked !== undefined) {
+        ren.besked = String(felter.besked || '').trim() ? String(felter.besked).trim().slice(0, 500) : null;
+      }
+      if (felter.bord_id !== undefined) {
+        ren.bord_id = (felter.bord_id === '' || felter.bord_id === null) ? null : Number(felter.bord_id);
+      }
+
+      if (!SKY) return lokalt(function (d) {
+        d.bordbestillinger = (d.bordbestillinger || []).map(function (b) {
+          if (String(b.id) !== String(id)) return b;
+          var ny = Object.assign({}, b, ren);
+          logLokalt(d, 'bordbestillinger', b, ny);
+          return ny;
+        });
+      });
+      return skriv('PATCH', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id), ren);
+    },
+
     bordStatus: function (id, status, note) {
       var ren = { aendret: new Date().toISOString() };
       if (status !== undefined) ren.status = status;
@@ -1606,6 +1663,51 @@
         { slettet: null, aendret: nuIso });
     },
 
+    /* ---- SKRALDESPANDENS ARKIV (3/11, skraldespand-alt-3-11.sql) ----
+       Hent tilbage går gennem databasens funktion, som indsætter med
+       DEN, der trykker, som afsender — tabellens egne regler gælder. */
+    gendanArkiv: function (arkivId) {
+      if (!SKY) return lokalt(function (d) {
+        var liste = d.skraldespand_arkiv || [];
+        var a = liste.filter(function (x) { return String(x.id) === String(arkivId); })[0];
+        if (!a) throw new Error('Den ligger ikke i skraldespanden længere.');
+        var tabel = d[a.tabel] = d[a.tabel] || [];
+        if (tabel.some(function (x) { return String(x.id) === String(a.raekke_id); })) {
+          throw new Error('Den findes allerede — den er hentet tilbage før.');
+        }
+        tabel.push(a.raekke);
+        var med = liste.filter(function (x) {
+          return !x.hoved && String(x.gruppe) === String(a.gruppe) && x.id !== a.id;
+        });
+        med.forEach(function (x) { (d[x.tabel] = d[x.tabel] || []).push(x.raekke); });
+        d.skraldespand_arkiv = liste.filter(function (x) {
+          return x !== a && med.indexOf(x) === -1;
+        });
+      });
+      return fetch(cfg.url + '/rest/v1/rpc/mosede_gendan_arkiv', {
+        method: 'POST', headers: hoveder(), body: JSON.stringify({ p_id: Number(arkivId) }),
+      }).then(function (svar) {
+        if (svar.ok) return svar.json();
+        return svar.text().then(function (t) {
+          if (/skraldespand_findes_allerede/.test(t)) throw new Error('Den findes allerede — den er hentet tilbage før.');
+          if (/skraldespand_findes_ikke/.test(t)) throw new Error('Den ligger ikke i skraldespanden længere.');
+          if (/row-level security|42501/.test(t)) throw new Error('Dit login må ikke hente den slags tilbage. Spørg en chef.');
+          throw new Error('Den kunne ikke hentes tilbage: ' + t.slice(0, 200));
+        });
+      });
+    },
+
+    sletArkivForAltid: function (arkivId) {
+      if (!SKY) return lokalt(function (d) {
+        var liste = d.skraldespand_arkiv || [];
+        var a = liste.filter(function (x) { return String(x.id) === String(arkivId); })[0];
+        d.skraldespand_arkiv = liste.filter(function (x) {
+          return x !== a && !(a && !x.hoved && String(x.gruppe) === String(a.gruppe));
+        });
+      });
+      return skriv('DELETE', 'skraldespand_arkiv', 'id=eq.' + encodeURIComponent(arkivId));
+    },
+
     sletForAltid: function (slags, id) {
       var t = skraldTabel(slags);
       if (!SKY) return lokalt(function (d) {
@@ -1636,12 +1738,20 @@
             return !r.slettet || r.slettet > graense;
           });
         });
+        d.skraldespand_arkiv = (d.skraldespand_arkiv || []).filter(function (a) {
+          return a.slettet > graense;
+        });
       });
 
       return Promise.all(SKRALD_TABELLER.map(function (t) {
         return skriv('DELETE', t.tabel,
           'slettet=lt.' + encodeURIComponent(graense) + MIT);
-      }));
+      }).concat([
+        /* Arkivet (skraldespand-alt-3-11.sql). Findes tabellen ikke
+           endnu, må oprydningen ikke vælte resten. */
+        skriv('DELETE', 'skraldespand_arkiv',
+          'slettet=lt.' + encodeURIComponent(graense) + MIT).catch(function () { return null; }),
+      ]));
     },
 
     /* Logbogen kan ikke rettes — der er ingen update-regel — men

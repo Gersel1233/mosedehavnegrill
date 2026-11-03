@@ -414,9 +414,10 @@
 
   function sletArr(k) {
     if (harTilmeldte(k.id)) return;
-    if (!window.confirm('Slet "' + k.titel + '" helt?\n\nDet kan ikke fortrydes. '
+    if (!window.confirm('Slet "' + k.titel + '"?\n\nDet forsvinder fra hjemmesiden og kalenderen '
+      + 'og ligger i Skraldespanden i 30 dage, hvis I fortryder. '
       + 'Skal det bare ikke ske, så Aflys det — så kan gæsterne se, at det er aflyst.')) return;
-    Admin.gem(Butik.skrive.sletKalender(k.id), 'Slettet.');
+    Admin.gem(Butik.skrive.sletKalender(k.id), 'Slettet — det ligger i Skraldespanden i 30 dage.');
   }
 
   // ----------------------------------------------------------

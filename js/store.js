@@ -6779,6 +6779,19 @@
        ville en enkelt fejl få spanden til at se tom ud — og tom
        betyder "der er ikke noget at fortryde". */
     hentSkraldespand: function () {
+      /* ⚠️ ARKIVET (3/11, skraldespand-alt-3-11.sql): det, personalet
+         selv har lavet — arrangementer, kalender, nyheder, menukort,
+         dagens retter, rabatkoder og borde. Kun hovedrækkerne; det, der
+         fulgte med (en kategoris varer), tælles på hovedrækken. */
+      function fraArkiv(a, alle) {
+        var med = alle.filter(function (x) {
+          return !x.hoved && String(x.gruppe) === String(a.gruppe);
+        }).length;
+        return Object.assign({}, a.raekke || {}, {
+          slags: 'arkiv', arkiv_id: a.id, tabel: a.tabel, med: med,
+          slettet: a.slettet, slettet_af: a.slettet_af,
+        });
+      }
       if (!SKY) {
         var d = læsLokalt();
         var ud = [];
@@ -6787,12 +6800,26 @@
             if (r.slettet) ud.push(Object.assign({}, r, { slags: t.slags }));
           });
         });
+        var ark = d.skraldespand_arkiv || [];
+        ark.forEach(function (a) { if (a.hoved) ud.push(fraArkiv(a, ark)); });
         return Promise.resolve(ud.sort(function (a, b) {
           return a.slettet < b.slettet ? 1 : -1;
         }));
       }
 
-      return Promise.all(SKRALD_TABELLER.map(function (t) {
+      var arkivet = hentTabel('skraldespand_arkiv', 'select=*' + MIT + '&order=slettet.desc')
+        .then(function (alle) {
+          alle = alle || [];
+          return alle.filter(function (a) { return a.hoved; })
+            .map(function (a) { return fraArkiv(a, alle); });
+        })
+        .catch(function (e) {
+          // Før SQL'en er kørt, findes tabellen ikke — spanden virker som før.
+          if (window.console) console.warn('skraldespand arkiv:', e);
+          return [];
+        });
+
+      return Promise.all([arkivet].concat(SKRALD_TABELLER.map(function (t) {
         return hentTabel(t.tabel,
           'select=*' + MIT + '&slettet=not.is.null&order=slettet.desc')
           .then(function (liste) {
@@ -6804,7 +6831,7 @@
             if (window.console) console.warn('skraldespand ' + t.tabel + ':', e);
             return [];
           });
-      })).then(function (dele) {
+      }))).then(function (dele) {
         var ud = [];
         dele.forEach(function (del) { ud = ud.concat(del); });
         return ud.sort(function (a, b) { return a.slettet < b.slettet ? 1 : -1; });

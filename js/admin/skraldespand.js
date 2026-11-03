@@ -41,6 +41,35 @@
     udlejning:     'Baglokalet',
   };
 
+  /* Arkivets slags (3/11, supabase/skraldespand-alt-3-11.sql): det,
+     personalet selv har lavet. */
+  var TABEL_NAVN = {
+    nyheder: 'Nyhed', menu_kategorier: 'Kategori på menukortet', menu_varer: 'Vare på menukortet',
+    dagens_retter: 'Dagens ret', rabatkoder: 'Rabatkode', borde: 'Bord',
+  };
+  var KALENDER_NAVN = {
+    arrangement: 'Arrangement', lukkedag: 'Lukkedag', tidlig_lukning: 'Tidlig lukning', note: 'Note i kalenderen',
+  };
+  function slagsNavn(r) {
+    if (r.slags !== 'arkiv') return SLAGS[r.slags] || r.slags;
+    if (r.tabel === 'kalender') return KALENDER_NAVN[r.type] || 'Kalenderen';
+    return TABEL_NAVN[r.tabel] || r.tabel;
+  }
+  function arkivTitel(r) {
+    if (r.tabel === 'borde') return 'Bord ' + (r.nummer || '');
+    if (r.tabel === 'rabatkoder') return r.kode || r.navn || 'Rabatkode';
+    return r.titel || r.navn || r.tekst || slagsNavn(r);
+  }
+  function arkivLinje(r) {
+    var dele = [];
+    if (r.dato) dele.push(Admin.pænDato(String(r.dato).slice(0, 10))
+      + (r.start_kl ? ' kl. ' + String(r.start_kl).slice(0, 5).replace(':', '.') : ''));
+    if (r.tabel === 'menu_varer' && r.pris != null) dele.push(r.pris + ' kr.');
+    if (r.med) dele.push('+ ' + r.med + (r.med === 1 ? ' vare' : ' varer') + ' kommer med tilbage');
+    if (r.slettet_af) dele.push('slettet af ' + r.slettet_af);
+    return dele.join(' · ');
+  }
+
   var spand = [];
   var toemt = false;
 
@@ -101,6 +130,7 @@
   }
 
   function kort(r) {
+    if (r.slags === 'arkiv') return arkivKort(r);
     var k = lav('div', 'bestil-kort b-afvist');
 
     var top = lav('div', 'bestil-top');
@@ -156,6 +186,47 @@
     return k;
   }
 
+  function arkivKort(r) {
+    var k = lav('div', 'bestil-kort b-afvist');
+    var top = lav('div', 'bestil-top');
+    top.appendChild(lav('span', 'maerke favorit', slagsNavn(r)));
+    var dage = dageTilbage(r.slettet);
+    top.appendChild(lav('span', 'maerke',
+      dage === 0 ? 'Slettes i dag' : dage === 1 ? 'Slettes i morgen' : 'Slettes om ' + dage + ' dage'));
+    k.appendChild(top);
+
+    var hvem = lav('div', 'bestil-hvem');
+    hvem.appendChild(lav('span', 'vare-navn', (r.emoji ? r.emoji + ' ' : '') + arkivTitel(r)));
+    k.appendChild(hvem);
+
+    var tekst = arkivLinje(r);
+    if (tekst) {
+      var linjer = lav('div', 'bestil-linjer');
+      var l1 = lav('div', 'bestil-linje');
+      l1.appendChild(lav('span', 'bestil-vare', tekst));
+      linjer.appendChild(l1);
+      k.appendChild(linjer);
+    }
+
+    var raekke = lav('div', 'knap-raekke');
+    var tilbage = lav('button', 'knap', 'Hent tilbage');
+    tilbage.type = 'button';
+    tilbage.addEventListener('click', function () {
+      gem(Butik.skrive.gendanArkiv(r.arkiv_id),
+        slagsNavn(r) + ' er hentet tilbage — den står samme sted som før.');
+    });
+    raekke.appendChild(tilbage);
+    var vaek = lav('button', 'knap fare', 'Slet for altid');
+    vaek.type = 'button';
+    vaek.addEventListener('click', function () {
+      if (!confirm('Slet "' + arkivTitel(r) + '" for altid?\n\nDen kan ikke hentes tilbage bagefter.')) return;
+      gem(Butik.skrive.sletArkivForAltid(r.arkiv_id), 'Den er slettet for altid.');
+    });
+    raekke.appendChild(vaek);
+    k.appendChild(raekke);
+    return k;
+  }
+
   /* Som Admin.gem(), men henter kun spanden OG de fire lister —
      en række, der hentes tilbage, skal stå på sin egen fane med
      det samme, og en, der smides væk for altid, skal forsvinde
@@ -165,6 +236,12 @@
       .then(hentSpand)
       .then(function () {
         return Promise.all(Admin.friske.map(function (f) { return f(); }));
+      })
+      /* Arkivets rækker (kalender, nyheder, menukort …) bor i
+         Admin.data — hent den igen, så kalenderen og listerne følger
+         med i samme øjeblik. */
+      .then(function () {
+        return Admin.genindlæs ? Admin.genindlæs() : null;
       })
       /* Logbogen står i det samme panel, og handlingen lige her er
          netop en, den skriver om. Blev den ikke hentet igen, ville

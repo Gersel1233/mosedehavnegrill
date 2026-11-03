@@ -331,11 +331,11 @@
       ud.push({
         haster: true,
         titel: loese.length === 1
-          ? 'Dagen med ' + loese[0].navn + ' er ikke låst'
-          : loese.length + ' aftaler er ikke låst',
-        tekst: 'I har sagt ja, men der står ingen udlejning bag. Databasen'
-          + ' spærrer først dagen, når den gør — indtil da kan en gæst'
-          + ' på hjemmesiden tage den.',
+          ? 'Dagen med ' + loese[0].navn + ' er ikke booket fast'
+          : loese.length + ' aftaler er ikke booket fast',
+        tekst: 'I har sagt ja, men aftalen er ikke en booking endnu. Tryk'
+          + ' ✓ Book dagen fast på sagen — så står den som lejet ud i'
+          + ' kalenderen og køreplanen.',
         knap: ['Vis dem', function () { saetFilter('aftalt'); }],
       });
     }
@@ -500,8 +500,8 @@
     /* "Kontaktet" og ikke "Ringet på" (15/9) — samme ord som
        Forespørgsler-fanen og knappen "Jeg har kontaktet dem". */
     { nr: 2, navn: 'Kontaktet', note: 'vi har talt med dem', filter: 'ringet' },
-    { nr: 3, navn: 'Aftalt', note: 'men dagen er ikke låst', filter: 'aftalt' },
-    { nr: 4, navn: 'Lejet ud', note: 'dagen er låst', filter: 'lejet' },
+    { nr: 3, navn: 'Aftalt', note: 'men ikke booket fast endnu', filter: 'aftalt' },
+    { nr: 4, navn: 'Lejet ud', note: 'booket fast', filter: 'lejet' },
   ];
 
   function tegnForloeb(sager) {
@@ -978,8 +978,11 @@
          gør jeres ja til en booking i systemet: den kan ikke
          dobbeltbookes af en kollega, og den står som "lejet ud"
          i køreplanen. */
-      return 'Lås dagen — så bliver jeres ja til en booking, '
-        + 'ingen kollega kan tage.';
+      /* ⚠️ "LÅS DAGEN" VAR FORVIRRENDE (3/11, Mikkel: *"hvad betyder
+         lås dagen ift baglokale bookinger … det er forvirrende"*).
+         Knappen gør aftalen til en rigtig booking — så den hedder det. */
+      return 'Tryk ✓ Book dagen fast — så bliver jeres ja til en booking: '
+        + 'den står som lejet ud i kalenderen, og ingen kollega kan tage dagen.';
     }
     if (s.stand === 'i-hus') {
       return 'Skriv den i kalenderen, hvis den ikke står der.';
@@ -1031,7 +1034,7 @@
     if (!raekke) return;
 
     var f = s.raa;
-    var knap = lav('button', 'knap', laas ? '🔒 Lås dagen' : 'Book lokalet til dem');
+    var knap = lav('button', 'knap', laas ? '✓ Book dagen fast' : 'Book lokalet til dem');
     knap.type = 'button';
     knap.addEventListener('click', function () {
       if (!confirm('Book baglokalet til ' + f.navn + ' '

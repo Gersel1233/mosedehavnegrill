@@ -104,6 +104,22 @@
   };
 
   var borde = [];
+  /* Den booking, der rettes lige nu (3/11). Mens den står åben, tegnes
+     kortet IKKE om — listen opdaterer sig selv, og det, personalet
+     sidder og skriver, må ikke forsvinde under fingrene på dem. */
+  var retter = null;
+  /* Den dag, Bordbookinger viser (null = alle kommende). */
+  var valgtBordDag = null;
+  var UGE_KORT = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
+  var MDR_KORT = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  function kortDag(iso) {
+    var i_dag = Butik.nu().dato;
+    var d = new Date(iso + 'T12:00:00Z');
+    var forskel = Math.round((d - new Date(i_dag + 'T12:00:00Z')) / 864e5);
+    if (forskel === 0) return 'I dag';
+    if (forskel === 1) return 'I morgen';
+    return UGE_KORT[d.getUTCDay()] + ' ' + d.getUTCDate() + '. ' + MDR_KORT[d.getUTCMonth()];
+  }
 
   /* ⚠️ EFTER DAG OG TID, OGSÅ DE NYE (16/9). Her stod "den ÆLDSTE
      først — den, der har ventet længst på sit opkald". Men bord/
@@ -214,10 +230,41 @@
     });
 
     var datoer = Object.keys(dage).sort();
-    if (!datoer.length) return;
+    if (!datoer.length) { valgtBordDag = null; return; }
+    if (valgtBordDag && datoer.indexOf(valgtBordDag) === -1) valgtBordDag = null;
 
     var max = pladser();
+
+    /* ⚠️ DAG FOR DAG (3/11). Mikkel: *"bordbooking med dato og det hele
+       er ret uoverskueligt"*. Linjerne nedenfor sagde tallene, men
+       listen var ét langt bånd af kort på tværs af dage. Nu er hver dag
+       en knap: tryk, og kun den dags bookinger står i listen. "Alle"
+       viser dem alle — med en overskrift for hver dag. */
+    var chips = lav('div', 'bord-dage');
+    chips.setAttribute('role', 'group');
+    chips.setAttribute('aria-label', 'Vis bookinger for en dag');
+    function chip(iso, titel, under, fuld) {
+      var c = lav('button', 'bord-dag' + (valgtBordDag === iso ? ' valgt' : '') + (fuld ? ' fuld' : ''));
+      c.type = 'button';
+      c.setAttribute('aria-pressed', valgtBordDag === iso ? 'true' : 'false');
+      c.appendChild(lav('span', 'bord-dag-navn', titel));
+      c.appendChild(lav('span', 'bord-dag-tal', under));
+      c.addEventListener('click', function () { valgtBordDag = iso; tegnBorde(); });
+      chips.appendChild(c);
+    }
+    var iAlt = datoer.reduce(function (s, x) { return s + dage[x].borde; }, 0);
+    chip(null, 'Alle', iAlt + (iAlt === 1 ? ' booking' : ' bookinger'), false);
     datoer.forEach(function (dato) {
+      var d = dage[dato];
+      var loft = loftFor(dato);
+      var fuld = (max && d.pladser >= max) || (loft !== null && d.borde >= loft);
+      chip(dato, kortDag(dato), d.borde + (d.borde === 1 ? ' booking' : ' bookinger'), fuld);
+    });
+    boks.appendChild(chips);
+
+    datoer.forEach(function (dato) {
+      // Knapperne vælger dagen; linjerne siger, hvor fuld den er.
+      if (valgtBordDag && dato !== valgtBordDag) return;
       var d = dage[dato];
       var linje = lav('div', 'bestil-linje');
       linje.appendChild(lav('span', 'bestil-vare', Admin.pænDato(dato)));
@@ -308,7 +355,12 @@
        "Ingen venter på svar" — men bord/ BOOKER et bord; gæsten
        har fået "vi ses" og venter ikke på et opkald. Se den lange
        note ved overskrifterne i admin.html. */
-    liste('borde-venter', venter, 'Ingen nye bookinger.');
+    if (valgtBordDag) {
+      venter = venter.filter(function (b) { return b.dato === valgtBordDag; });
+    }
+    liste('borde-venter', venter, valgtBordDag
+      ? 'Ingen bookinger ' + kortDag(valgtBordDag).toLowerCase() + '.'
+      : 'Ingen nye bookinger.', true);
     liste('borde-faerdige', slut, 'Ingenting endnu.');
 
     var kort = $('borde-faerdige-kort');
@@ -343,7 +395,7 @@
     return borde_ + '|' + naboer;
   }
 
-  function liste(id, raekker, tomTekst) {
+  function liste(id, raekker, tomTekst, medDage) {
     var boks = $(id);
     if (!boks) return;
     if (!raekker.length) {
@@ -353,16 +405,40 @@
       }]);
       return;
     }
-    Admin.tegnRaekker(boks, raekker.map(function (b) {
+    /* En overskrift for hver dag (3/11): "I DAG · FREDAG 7. AUGUST —
+       2 bookinger · 10 personer". Så står dagene ikke i ét bånd. */
+    var ud = [];
+    var sidste = null;
+    raekker.forEach(function (b) {
+      if (medDage && b.dato !== sidste) {
+        sidste = b.dato;
+        var sammeDag = raekker.filter(function (x) { return x.dato === b.dato; });
+        var pers = sammeDag.reduce(function (s, x) { return s + (Number(x.antal_personer) || 0); }, 0);
+        var tekst = (kortDag(b.dato) === 'I morgen' ? 'I MORGEN · ' : '')
+          + Admin.pænDato(b.dato) + ' — ' + sammeDag.length
+          + (sammeDag.length === 1 ? ' booking' : ' bookinger') + ' · ' + pers + ' personer';
+        ud.push({
+          noegle: 'dag-' + b.dato, aftryk: tekst,
+          byg: function () { return lav('h3', 'bord-dag-hoved', tekst); },
+        });
+      }
+      ud.push(raekke(b));
+    });
+    Admin.tegnRaekker(boks, ud);
+    return;
+    function raekke(b) {
       return {
         noegle: 'bord-' + b.id,
-        aftryk: JSON.stringify(b) + '|' + pladsAftryk(b),
+        aftryk: String(b.id) === String(retter)
+          ? 'ret:' + b.id
+          : JSON.stringify(b) + '|' + pladsAftryk(b),
         byg: function () { return bordKort(b); },
       };
-    }));
+    }
   }
 
   function bordKort(b) {
+    if (String(b.id) === String(retter)) return retKort(b);
     /* ⚠️ ANKOMMET ER FÆRDIG, OG FÆRDIG ER GRØN (28/9). Kortet fik
        b-bekraeftet — den blå, der på en bestilling betyder "i gang".
        En familie, der sidder ved bordet, lignede altså en sag, der
@@ -524,6 +600,13 @@
     if (b.status === 'ny') {
       /* Grøn med et hak, som bestillingernes sidste trin. */
       raekke.appendChild(knap('knap primaer gron', '✓ Ankommet', 'ankommet'));
+      /* ✎ REDIGER (3/11) — chefen: "kan man ikke få lov at redigere en
+         oprettet bordbooking??". Mikkel: under de tre prikker, øverst. */
+      var retKnap = lav('button', 'knap sekundaer bord-ret', '✎ Rediger booking');
+      retKnap.type = 'button';
+      retKnap.setAttribute('aria-label', 'Rediger bookingen for ' + b.navn);
+      retKnap.addEventListener('click', function () { aabnRet(b.id); });
+      mere.appendChild(retKnap);
       /* UDEBLEV OG AFVIS KUN PÅ EN NY BOOKING (3/9): en familie, der
          er kommet, kan hverken udeblive eller afvises. */
       mere.appendChild(knap('knap sekundaer', 'Udeblev', 'udeblev'));
@@ -542,6 +625,179 @@
     k.appendChild(raekke);
     return k;
   }
+
+  /* ============================================================
+     RET EN BOOKING  (3/11)
+     ------------------------------------------------------------
+     Chefen: *"Kan man ikke få lov at redigere en oprettet
+     bordbooking??"* — og Mikkel: *"alt skal naturligvis komme ind i
+     kalenderen og overblik"*. Kortet bliver selv til formularen:
+     navn, telefon, dag, klokken, antal og gæstens besked. Gemmes det,
+     hentes listen igen og meldes ud (Admin.meld 'borde') — det er den
+     SAMME liste, Kalender og Overblik tegner af, så bookingen flytter
+     sig dér i samme øjeblik.
+
+     ⚠️ BORDET DØMMES IGEN. Flyttes dag eller tid på en booking med et
+     bord, sendes bord_id med, så databasen tjekker bordet på det nye
+     tidspunkt (bordbestilling_plads). Er det optaget dér, gemmes
+     ændringen uden bord, og personalet får det at vide.
+     ============================================================ */
+  function aabnRet(id) {
+    retter = id;
+    tegnBorde();
+    var kort = document.querySelector('#borde-venter [data-id="' + id + '"]');
+    if (kort) {
+      kort.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      var første = kort.querySelector('input');
+      if (første) første.focus({ preventScroll: true });
+    }
+  }
+  function lukRet() {
+    retter = null;
+    tegnBorde();
+  }
+
+  function retKort(b) {
+    var k = lav('div', 'bestil-kort b-' + b.status + ' bord-ret-kort');
+    k.setAttribute('data-id', String(b.id));
+
+    var top = lav('div', 'bestil-top');
+    top.appendChild(lav('span', 'bestil-tid', '✎ Rediger booking'));
+    var refM = lav('span', 'bestil-ref',
+      (Butik.pæntNummer && Butik.pæntNummer(b.nummer, 'bord')) || b.reference);
+    refM.title = b.reference;
+    top.appendChild(refM);
+    k.appendChild(top);
+
+    function felt(navn, etiket, type, vaerdi, ekstra) {
+      var boks = lav('div', 'felt' + (ekstra && ekstra.smal ? ' felt-smal' : ''));
+      var id = 'ret-' + navn + '-' + b.id;
+      var l = lav('label', null, etiket);
+      l.setAttribute('for', id);
+      var i = document.createElement('input');
+      i.type = type;
+      i.id = id;
+      i.value = vaerdi == null ? '' : vaerdi;
+      if (ekstra) Object.keys(ekstra).forEach(function (n) {
+        if (n !== 'smal') i.setAttribute(n, ekstra[n]);
+      });
+      boks.appendChild(l);
+      boks.appendChild(i);
+      return { boks: boks, input: i };
+    }
+
+    var fNavn = felt('navn', 'Navn', 'text', b.navn, { maxlength: 80 });
+    var fTlf = felt('telefon', 'Telefon', 'tel', b.telefon, { maxlength: 30, inputmode: 'tel' });
+    var par1 = lav('div', 'felt-par');
+    par1.appendChild(fNavn.boks);
+    par1.appendChild(fTlf.boks);
+    k.appendChild(par1);
+
+    var fDato = felt('dato', 'Dato', 'date', b.dato, { smal: true });
+    var fTid = felt('tid', 'Klokken', 'time', String(b.tid || '').slice(0, 5), { smal: true, step: 900 });
+    var fAntal = felt('antal', 'Antal personer', 'number', b.antal_personer,
+      { smal: true, min: 1, max: 100, step: 1, inputmode: 'numeric' });
+    var par2 = lav('div', 'felt-par');
+    par2.appendChild(fDato.boks);
+    par2.appendChild(fTid.boks);
+    par2.appendChild(fAntal.boks);
+    k.appendChild(par2);
+
+    var fBesked = felt('besked', 'Gæstens besked', 'text', b.besked, { maxlength: 500 });
+    k.appendChild(fBesked.boks);
+
+    k.appendChild(lav('p', 'hjaelp',
+      'Gæsten får ikke selv besked om ændringen — sig det i telefonen.'));
+
+    var raekke = lav('div', 'knap-raekke bestil-handling');
+    var gem = lav('button', 'knap primaer', 'Gem ændringer');
+    gem.type = 'button';
+    var fortryd = lav('button', 'knap sekundaer', 'Fortryd');
+    fortryd.type = 'button';
+    fortryd.addEventListener('click', lukRet);
+    raekke.appendChild(gem);
+    raekke.appendChild(fortryd);
+    k.appendChild(raekke);
+
+    k.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') lukRet();
+      if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT') { e.preventDefault(); gem.click(); }
+    });
+
+    gem.addEventListener('click', function () {
+      var ny = {
+        navn: fNavn.input.value.trim(),
+        telefon: fTlf.input.value.trim(),
+        dato: fDato.input.value,
+        tid: fTid.input.value,
+        antal_personer: Number(fAntal.input.value),
+        besked: fBesked.input.value.trim(),
+      };
+      var fejl = Butik.tjek.navn(ny.navn, 'navn', 80)
+        || Butik.tjek.telefon(ny.telefon)
+        || (ny.dato !== b.dato ? Butik.tjek.dato(ny.dato) : null);
+      if (fejl) return Admin.brøl(fejl);
+      if (!ny.tid) return Admin.brøl('Skriv hvad klokken er. Et bord er også et tidspunkt.');
+      if (!isFinite(ny.antal_personer) || ny.antal_personer < 1 || ny.antal_personer > 100) {
+        return Admin.brøl('Antallet skal være mellem 1 og 100.');
+      }
+
+      // Kun det, der faktisk er ændret, sendes.
+      var gamle = {
+        navn: b.navn || '', telefon: b.telefon || '', dato: b.dato,
+        tid: String(b.tid || '').slice(0, 5), antal_personer: Number(b.antal_personer),
+        besked: b.besked || '',
+      };
+      var aendret = {};
+      Object.keys(ny).forEach(function (n) {
+        if (ny[n] !== gamle[n]) aendret[n] = ny[n];
+      });
+      if (!Object.keys(aendret).length) return lukRet();
+
+      var flytter = aendret.dato !== undefined || aendret.tid !== undefined;
+      var bordNavn = Admin.bordNummer(b);
+      if (flytter && b.bord_id) aendret.bord_id = b.bord_id;
+
+      gem.disabled = true;
+      var udenBord = false;
+      Butik.skrive.bordRet(b.id, aendret).catch(function (e) {
+        // Bordet er lovet væk på det nye tidspunkt: gem uden bord.
+        if (aendret.bord_id && /bord_plads_optaget/.test(String(e && e.message || e))) {
+          udenBord = true;
+          aendret.bord_id = null;
+          return Butik.skrive.bordRet(b.id, aendret);
+        }
+        throw e;
+      }).then(function () {
+        retter = null;
+        return hentBorde();
+      }).then(function () {
+        var dag = Admin.pænDato ? Admin.pænDato(ny.dato) : ny.dato;
+        Admin.kvitter(udenBord
+          ? 'Bookingen er ændret — men ' + (bordNavn || 'bordet') + ' er optaget på det nye tidspunkt, så vælg et nyt bord.'
+          : 'Bookingen er ændret: ' + dag + ' kl. ' + ny.tid.replace(':', '.') + ', '
+            + personer(ny.antal_personer) + '. Den står rigtigt i Kalender og Overblik.');
+      }).catch(function (e) {
+        gem.disabled = false;
+        Admin.brøl(e.message || String(e));
+      });
+    });
+
+    return k;
+  }
+
+  /* Fra Kalender og Overblik: gå til bookingen (og åbn den til
+     rettelse, hvis man trykkede ✎ Ret dér). */
+  Admin.visBooking = function (id, valg) {
+    Admin.visFane('p-borde');
+    if (valg && valg.ret) return aabnRet(id);
+    var kort = document.querySelector('#p-borde [data-id="' + id + '"]');
+    if (kort) {
+      kort.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      kort.classList.add('fremhaevet');
+      setTimeout(function () { kort.classList.remove('fremhaevet'); }, 2400);
+    }
+  };
 
   // ----------------------------------------------------------
   //  PLADSERNE

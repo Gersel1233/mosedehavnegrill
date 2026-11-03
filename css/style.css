@@ -14024,3 +14024,39 @@ body:not(.personale) .stk-linje > .stk-tilvalg-fold {
 .rabat-raekke{display:flex;gap:8px;margin-top:8px}
 .rabat-raekke input{flex:1;min-width:0;text-transform:uppercase;letter-spacing:.04em}
 .rabat-felt .hjaelp.rabat-ok{color:#1f7a3f;font-weight:600}
+
+/* ---- RET EN BORDBOOKING (3/11, js/admin/borde.js retKort) ----
+   Kortet bliver selv til formularen. Felterne følger "Tag en booking i
+   telefonen"; den røde kant siger, at noget er åbent. */
+.bord-ret-kort { border-left-color: var(--red); }
+.bord-ret-kort .felt-par { margin-top: 10px; }
+.bord-ret-kort .hjaelp { margin: 8px 0 4px; }
+.bestil-kort.fremhaevet { animation: bord-fremhaev 2.4s ease-out; }
+@keyframes bord-fremhaev {
+  0%, 30% { box-shadow: 0 0 0 3px var(--red); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bestil-kort.fremhaevet { animation: none; outline: 3px solid var(--red); }
+}
+
+/* ---- OVERBLIK: DAG FOR DAG (3/11) ---- */
+.ob-dag-hoved { display: flex; align-items: center; gap: 12px; margin: 6px 0 10px; }
+.ob-dag-hoved .knap { min-width: 48px; font-size: 1.3rem; line-height: 1; }
+.ob-dag-titel { flex: 1; min-width: 0; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.ob-dag-titel strong { font-size: 1.15rem; }
+.ob-dag-genveje { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; margin-bottom: 12px; }
+.ob-dag-genveje input[type="date"] { width: auto; min-width: 0; max-width: 170px; }
+
+/* ---- BORDBOOKINGER DAG FOR DAG (3/11, js/admin/borde.js) ---- */
+.bord-dage { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 10px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+.bord-dag { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  padding: 8px 14px; border-radius: 14px; border: 1px solid rgba(0,0,0,.12); background: #fff;
+  font: inherit; cursor: pointer; text-align: left; min-height: 48px; }
+.bord-dag-navn { font-weight: 700; }
+.bord-dag-tal { font-size: .82rem; opacity: .75; white-space: nowrap; }
+.bord-dag.valgt { background: var(--red); border-color: var(--red); color: #fff; }
+.bord-dag.valgt .bord-dag-tal { opacity: .9; }
+.bord-dag.fuld:not(.valgt) .bord-dag-tal { color: var(--red-tekst); opacity: 1; font-weight: 600; }
+.bord-dag-hoved { margin: 18px 0 8px; font-size: .95rem; letter-spacing: .02em; text-transform: uppercase; }
+.bord-dag-hoved:first-child { margin-top: 4px; }

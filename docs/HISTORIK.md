@@ -7,6 +7,28 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**ADMIN 3/11: REDIGER BORDBOOKING, DAG FOR DAG, "BOOK DAGEN FAST", SKRALDESPANDEN TAGER ALT.**
+Chefen: *"Kan man ikke få lov at redigere en oprettet bordbooking??"* Mikkel: under de tre prikker; det skal ind i
+kalenderen og overblikket; bordbookinger med dato er uoverskuelige; Overblik skal kunne hoppe frem og tilbage;
+"Lås dagen" er forvirrende; alt slettet skal i skraldespanden og kunne hentes tilbage; arrangementer skal kunne
+redigeres.
+- **Rediger booking** (js/admin/borde.js retKort): ··· → ✎ Rediger booking (også i Overblik). Kortet bliver en
+  formular (navn, telefon, dato, klokken, antal, besked); kun det ændrede sendes (Butik.skrive.bordRet). Flyttes
+  dag/tid på en booking med bord, sendes bord_id med, så bordbestilling_plads dømmer igen; er bordet optaget,
+  gemmes uden bord, og personalet får det at vide. Listen tegnes ikke om under rettelsen. Kalender og Overblik
+  tegner af den samme liste, og kalenderens linje fører til kortet (Admin.visBooking). bord-ret.spec.js.
+- **Bordbookinger dag for dag**: dag-knapper ("Alle", "I dag", "I morgen", "Lør 8. aug" med borde/pladser) og
+  en overskrift pr. dag i listen. **Overblik → 📅 Dag for dag**: ‹ › / I dag / dato, med kalenderens eget
+  dagsprogram (Admin.dagProgram) og "Åbn dagen i kalenderen".
+- **Baglokalet**: "🔒 Lås dagen" hedder nu "✓ Book dagen fast" (og "låst" → "booket fast" overalt), plus en
+  fold "❓ Sådan hænger baglokalet sammen".
+- **Arrangement**: kalenderens linje for et arrangement uden tilmelding åbner det til redigering.
+- **Skraldespanden** (supabase/skraldespand-alt-3-11.sql, prøve 6/6, er-vi-klar 162): arrangementer/kalender,
+  nyheder, menukortets kategorier og varer, dagens retter, rabatkoder og borde får en kopi i skraldespand_arkiv
+  lige før de slettes; rækken forsvinder stadig, så kalender og lister følger med. Historik → Hent tilbage
+  (mosede_gendan_arkiv, security invoker). Indtil SQL'en er kørt, er sletning af de slags stadig endelig.
+  skraldespand-alt.spec.js.
+
 **ARRANGEMENT TIL KL. 02.00 + "MUSIK & SPISNING"** (2/11). Chefen: *"Man kan ikke lægge et opslag på hjemmesiden,
 som slutter klokken 02.00. Og man kan ikke lave et blandet event, som både er musik og spisning."* Begge var sande:
 admin afviste en sluttid før starttiden, og kategorien var ét valg. Nu: (1) en sluttid før starttiden er natten til

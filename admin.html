@@ -673,6 +673,33 @@
       <!-- Det, der er tikket ind til ANDRE dage. Uden den her
            forsvandt en bestilling til på fredag ud af syne, til
            fredag kom. -->
+      <!-- ============ DAG FOR DAG (3/11) ============
+           Mikkel: "gør dog så man kan hoppe frem og tilbage i
+           overblikket og se alt for den dag helt simpelt og
+           struktureret". Samme program som kalenderens dag
+           (Admin.dagProgram) — bestillinger, borde, baglokale,
+           forespørgsler, arrangementer, noter og lukning. -->
+      <div class="kort luft-top" id="ob-dag-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">📅 Dag for dag</h2>
+          <span class="kort-note">alt, der sker på dagen — tryk på en linje for at åbne den</span>
+        </div>
+        <div class="ob-dag-hoved">
+          <button class="knap sekundaer lille" id="ob-dag-forrige" type="button" aria-label="Dagen før">‹</button>
+          <div class="ob-dag-titel">
+            <strong id="ob-dag-navn"></strong>
+            <span class="hjaelp" id="ob-dag-tal"></span>
+          </div>
+          <button class="knap sekundaer lille" id="ob-dag-naeste" type="button" aria-label="Dagen efter">›</button>
+        </div>
+        <div class="ob-dag-genveje">
+          <button class="knap sekundaer lille" id="ob-dag-idag" type="button">I dag</button>
+          <input type="date" id="ob-dag-vaelg" aria-label="Vælg en dag">
+          <button class="knap sekundaer lille" id="ob-dag-kalender" type="button">Åbn dagen i kalenderen →</button>
+        </div>
+        <div id="ob-dag"></div>
+      </div>
+
       <div class="kort luft-top skjult" id="vagt-nyt-kort">
         <div class="kort-hoved">
           <h2 class="h-panel">Nyt til andre dage</h2>
@@ -1781,7 +1808,7 @@
           <p class="hjaelp">
             Til det, I aftaler i røret eller på mail. Den lander i
             listen herunder som <strong>kontaktet</strong> — I har jo
-            allerede talt med dem. <strong>Dagen er ikke låst endnu:</strong>
+            allerede talt med dem. <strong>Dagen er ikke booket fast endnu:</strong>
             det sker først, når I trykker <em>Aftal &amp; sæt tid</em>
             på kortet.
           </p>
@@ -2587,6 +2614,22 @@
              en udlejning bag, kan en gæst på hjemmesiden stadig
              tage dagen, og ingen ville opdage det før opkaldet. -->
         <div class="forloeb" id="lokale-forloeb"></div>
+
+        <!-- Forklaringen (3/11): Mikkel — "det skal alt sammen være nemt
+             og hænge sammen og gerne en beskrivelse, hvor det er
+             kompliceret". -->
+        <details class="tag-booking luft-top" id="lokale-forklaring">
+          <summary>❓ Sådan hænger baglokalet sammen</summary>
+          <p class="hjaelp"><strong>1. Ny</strong> — en gæst har spurgt på hjemmesiden. Ring til dem.</p>
+          <p class="hjaelp"><strong>2. Kontaktet</strong> — I har talt sammen, men intet er aftalt.</p>
+          <p class="hjaelp"><strong>3. Aftalt</strong> — I har sagt ja i telefonen. Dagen er holdt fri på
+            hjemmesiden, men det er endnu ikke en booking.</p>
+          <p class="hjaelp"><strong>4. Lejet ud</strong> — tryk <strong>✓ Book dagen fast</strong> (eller
+            <strong>Book lokalet til dem</strong>). Så er det en rigtig booking: den står som lejet ud i
+            kalenderen og køreplanen, og der kan kun være én pr. dag.</p>
+          <p class="hjaelp">Der kan kun være ét ja pr. dag. Slettes en booking, ligger den i
+            <strong>Skraldespanden</strong> i 30 dage og kan hentes tilbage.</p>
+        </details>
 
         <p class="live-maerke">
           <span class="live-prik" aria-hidden="true"></span>

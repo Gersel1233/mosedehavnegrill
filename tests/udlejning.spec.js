@@ -622,7 +622,7 @@ test.describe('Personalet kan booke lokalet selv', () => {
       .toBe(0);
 
     page.once('dialog', (d) => d.accept());
-    await kort.getByRole('button', { name: 'Lås dagen' }).click();
+    await kort.getByRole('button', { name: 'Book dagen fast' }).click();
 
     // Nu ER der en udlejning bag, og den er bekræftet.
     const d = await gemteData(page);
@@ -667,7 +667,7 @@ test.describe('Baglokalet har ÉN vej frem, og den låser dagen', () => {
     const kort = await åbnFanen(page, grunddata({
       forespoergsler: [baglokaleForesp({ status: 'kontaktet' })],
     }));
-    const aftal = kort.getByRole('button', { name: /Aftal uden at låse dagen/ });
+    const aftal = kort.getByRole('button', { name: /uden at booke dagen fast/ });
     await expect(aftal).toBeHidden();
     await aabnMere(kort);
     await expect(aftal).toBeVisible();
@@ -871,7 +871,7 @@ test.describe('Baglokalets forløb', () => {
       forespoergsler: [baglokaleForesp({ status: 'aftalt' })],
     }));
     await expect(page.locator('#lokale-obs-kort'))
-      .toContainText('Dagen med Mette Lund er ikke låst');
+      .toContainText('Dagen med Mette Lund er ikke booket fast');
     await expect(page.locator('[data-trin="3"] .trinkort-tal')).toHaveText('1');
     await expect(page.locator('[data-trin="3"]')).toHaveClass(/trinkort-advar/);
   });

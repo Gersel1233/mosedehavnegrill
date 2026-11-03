@@ -539,6 +539,15 @@
       merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
     });
     /* Udeblev og Afvis bag døren, som på Køkkenet-fanens kort. */
+    /* ✎ Rediger booking (3/11): samme formular som på Borde-fanen, øverst bag ···. */
+    if (r.booking && Admin.visBooking && r.booking.status === 'ny') {
+      var retKn = lav('button', 'knap sekundaer', '✎ Rediger booking');
+      retKn.type = 'button';
+      retKn.addEventListener('click', function () {
+        Admin.visBooking(r.booking.id, { ret: true });
+      });
+      mere.appendChild(retKn);
+    }
     if (r.booking && Admin.bordHandling) {
       [['knap sekundaer', 'Udeblev', 'udeblev'], ['knap fare', 'Afvis', 'afvis']]
         .forEach(function (h) {
@@ -1777,6 +1786,69 @@
      fane meldte noget ind. MÅLT: personalet skrev en note på
      dagen, gik til Overblik, og der stod "Ingen note skrevet" —
      med noten gemt og det hele. */
+  /* ============================================================
+     DAG FOR DAG  (3/11)
+     ------------------------------------------------------------
+     Mikkel: *"gør dog så man kan hoppe frem og tilbage i
+     overblikket og se alt for den dag helt simpelt og
+     struktureret"*. Resten af Overblik er vagten — det, der skal ud
+     af døren NU. Det her kort er dagen, man bladrer i: ‹ › en dag ad
+     gangen, "I dag" tilbage, eller en dato. Linjerne er kalenderens
+     egne (Admin.dagProgram): én regel, to skærme.
+     ============================================================ */
+  var obDag = null;
+  function plusDag(iso, n) {
+    var d = new Date(iso + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function tegnDagForDag() {
+    var boks = $('ob-dag');
+    if (!boks || !Admin.dagProgram) return;
+    var iDag = Butik.nu().dato;
+    if (!obDag) obDag = iDag;
+    var navn = Admin.pænDato ? Admin.pænDato(obDag) : obDag;
+    var forskel = Math.round((new Date(obDag + 'T12:00:00Z') - new Date(iDag + 'T12:00:00Z')) / 864e5);
+    // pænDato siger selv "I DAG ·"; i morgen og i går siges her.
+    var foran = forskel === 1 ? 'I MORGEN · ' : forskel === -1 ? 'I GÅR · ' : '';
+    $('ob-dag-navn').textContent = foran + navn;
+    $('ob-dag-vaelg').value = obDag;
+    $('ob-dag-idag').hidden = forskel === 0;
+
+    var p = Admin.dagProgram(obDag);
+    var t = p.ting || {};
+    var dele = [];
+    var n = function (liste) { return (liste || []).length; };
+    if (t.lukket) dele.push('🔒 lukket');
+    if (n(t.bestillinger)) dele.push(n(t.bestillinger) + ' bestilling' + (n(t.bestillinger) === 1 ? '' : 'er'));
+    if (n(t.borde)) {
+      var pers = t.borde.reduce(function (s, b) { return s + (Number(b.antal_personer) || 0); }, 0);
+      dele.push(n(t.borde) + ' bordbooking' + (n(t.borde) === 1 ? '' : 'er') + ' (' + pers + ' pers.)');
+    }
+    if (n(t.udlejninger)) dele.push(n(t.udlejninger) + ' i baglokalet');
+    if (n(t.forespoergsler)) dele.push(n(t.forespoergsler) + ' forespørgsel' + (n(t.forespoergsler) === 1 ? '' : 'er'));
+    if (n(t.arrangementer)) dele.push(n(t.arrangementer) + ' arrangement' + (n(t.arrangementer) === 1 ? '' : 'er'));
+    $('ob-dag-tal').textContent = dele.length ? dele.join(' · ') : 'Intet på dagen';
+
+    Admin.tøm(boks);
+    if (p.boks) boks.appendChild(p.boks);
+    else boks.appendChild(lav('p', 'hjaelp', 'Der står ikke noget på dagen endnu.'));
+  }
+  function gaaDag(n) { obDag = plusDag(obDag || Butik.nu().dato, n); tegnDagForDag(); }
+  if ($('ob-dag')) {
+    $('ob-dag-forrige').addEventListener('click', function () { gaaDag(-1); });
+    $('ob-dag-naeste').addEventListener('click', function () { gaaDag(1); });
+    $('ob-dag-idag').addEventListener('click', function () { obDag = Butik.nu().dato; tegnDagForDag(); });
+    $('ob-dag-vaelg').addEventListener('change', function () {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(this.value)) { obDag = this.value; tegnDagForDag(); }
+    });
+    $('ob-dag-kalender').addEventListener('click', function () {
+      if (Admin.aabnDag) Admin.aabnDag(obDag || Butik.nu().dato);
+    });
+  }
+  Admin.efterHent.push(tegnDagForDag);
+  Admin.tegnere.push(tegnDagForDag);
+
   Admin.tegnere.push(tegnKoereplan);
   Admin.tegnere.push(tegnDagensRetKort);
 

@@ -1909,7 +1909,7 @@
            endnu. Se noten ved overskrifterne på Borde-fanen. */
         under: 'Bord til ' + (b.antal_personer || '?')
           + (b.status === 'ny' ? ' · ikke hakket af endnu' : ''),
-        fremhaev: true, fane: 'p-borde',
+        fremhaev: true, fane: 'p-borde', booking: b,
       });
     });
     /* ⚠️ LINJEN SKAL SIGE, HVAD DET ER — IKKE KUN HVAD DET
@@ -1949,7 +1949,11 @@
         /* Tilmeldingerne er dét, man vil se på et arrangement,
            der tager imod — ikke kalenderrækken, man lige har
            lavet. Uden dem er Kalender stedet, man retter den. */
-        fane: p ? 'p-tilmeldinger' : 'p-kalender',
+        fane: p ? 'p-tilmeldinger' : 'p-arrangementer',
+        /* Uden tilmelding åbner linjen arrangementet til redigering
+           (3/11, Mikkel: "hvad med at kunne redigere et allerede
+           oprettet arrangement"). */
+        arrangement: p ? null : k,
       });
     });
     ting.udlejninger.forEach(function (u) {
@@ -2034,7 +2038,14 @@
         r.setAttribute('aria-label', l.tekst + ' — åbn');
         r.appendChild(lav('span', 'nyt-aabn', '→'))
           .setAttribute('aria-hidden', 'true');
-        function gaa() { lukDag(); Admin.visFane(l.fane); }
+        /* En booking åbner SIN kort på Borde-fanen (3/11) — med ✎ Ret
+           lige ved hånden — ikke bare fanen øverst. */
+        function gaa() {
+          lukDag();
+          if (l.booking && Admin.visBooking) Admin.visBooking(l.booking.id);
+          else if (l.arrangement && Admin.arrangementer) Admin.arrangementer.aabn(l.arrangement.id);
+          else Admin.visFane(l.fane);
+        }
         r.addEventListener('click', gaa);
         r.addEventListener('keydown', function (e) {
           if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); gaa(); }
@@ -2564,6 +2575,13 @@
       if (raekkerOver(k, dag)) fundet = k;
     });
     return fundet;
+  };
+
+  /* Dagens program til Overblik (3/11): samme linjer som dagens panel
+     her — én regel for "hvad sker der den dag", to skærme. */
+  Admin.dagProgram = function (dag) {
+    var ting = dagensTing(dag);
+    return { boks: tegnProgram(dag, ting), ting: ting };
   };
 
   /* Åbner kalenderen på en bestemt dag. Fanen skifter, måneden

@@ -1398,7 +1398,15 @@ with tjek(nr, del, hvad, ok, retning) as (values
                     where conname = 'kalender_kategori_ok'
                       and pg_get_constraintdef(oid) like '%musik_spisning%')),
    'Admin kan vise knappen "Musik & spisning", men databasen afviser gemmet. '
-   || 'Kør supabase/arrangement-musik-og-spisning-2-11.sql.')
+   || 'Kør supabase/arrangement-musik-og-spisning-2-11.sql.'),
+
+  /* Mikkel 3/11: alt slettet skal i skraldespanden og kunne hentes tilbage. */
+  (162, 'Historik', 'Skraldespanden tager arrangementer, kalender, nyheder, menukort m.m.',
+   (select to_regclass('public.skraldespand_arkiv') is not null
+       and exists (select 1 from pg_proc where proname = 'mosede_gendan_arkiv')
+       and (select count(*) from pg_trigger where tgname = 'til_skraldespand' and not tgisinternal) = 7),
+   'Et slettet arrangement, en nyhed eller en menuvare er væk for altid — den kan ikke hentes '
+   || 'tilbage fra Skraldespanden. Kør supabase/skraldespand-alt-3-11.sql.')
 ),
 
 samlet as (

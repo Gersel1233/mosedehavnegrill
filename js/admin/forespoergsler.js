@@ -1158,7 +1158,7 @@
       var frem = lav('button',
         'knap' + (stille ? ' sekundaer' : (n[0] === 'aftalt' ? ' foresp-aftal' : '')),
         bekraefter ? '✓ Aftal uden at sætte i kalenderen'
-          : (stille ? '✓ Aftal uden at låse dagen' : n[1]));
+          : (stille ? '✓ Aftalt (uden at booke dagen fast)' : n[1]));
       frem.type = 'button';
       frem.addEventListener('click', function () {
         if (bekraefter && !confirm('Sæt forespørgslen fra ' + f.navn + ' til aftalt?\n\n'
@@ -1166,7 +1166,7 @@
           + 'Brug "Bekræft aftalen" herunder, hvis I har aftalt dag og tid.')) return;
         if (!bekraefter && stille
           && !confirm('Sæt forespørgslen fra ' + f.navn + ' til aftalt?\n\n'
-          + 'Dagen bliver IKKE låst — en anden kan stadig tage den.\n'
+          + 'Dagen bliver IKKE booket fast — en anden kan stadig tage den.\n'
           + 'Skal lokalet være deres, så brug "Book lokalet til dem".')) return;
         gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, n[0], Admin.nyNote(felt, f.intern_note)),
           'Forespørgslen er sat til "' + STATUS_NAVNE[n[0]] + '".');
@@ -1476,7 +1476,7 @@
       ['nyf-navn', 'nyf-telefon', 'nyf-email', 'nyf-dato', 'nyf-antal', 'nyf-besked']
         .forEach(function (id) { $(id).value = ''; });
       Admin.kvitter('Forespørgslen er oprettet og står som kontaktet. '
-        + 'Dagen er ikke låst endnu.');
+        + 'Dagen er ikke booket fast endnu.');
     }).catch(function (e) {
       Admin.brøl(Admin.forklarFejl ? Admin.forklarFejl(e) : (e.message || String(e)));
     }).then(function () {

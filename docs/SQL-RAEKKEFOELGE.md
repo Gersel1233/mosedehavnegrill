@@ -71,7 +71,16 @@ og derfra:
   → bestilling-status-rabat-29-10.sql   (EFTER rabatkoder — den stopper selv, hvis den kommer før)
   → beskeder-29-10.sql   (EFTER sms.sql, sms-alle-28-10.sql og push.sql — og læg send-push + send-sms op igen)
   → arrangement-musik-og-spisning-2-11.sql   (EFTER arrangement-kategori.sql)
+  → skraldespand-alt-3-11.sql   (EFTER skraldespand.sql og arrangoer.sql)
 ```
+
+**`skraldespand-alt-3-11.sql` (3/11) — IKKE KØRT ENDNU.** Mikkel: *"alle slettede skal naturligvis ryge i
+skraldespanden, hvor alt skal ligge og gendannes"*. Arrangementer/kalender, nyheder, menukortets kategorier og
+varer, dagens retter, rabatkoder og borde får en kopi i `skraldespand_arkiv` lige før de slettes (udløseren
+`til_skraldespand`, BEFORE DELETE). Rækken forsvinder stadig fra sin tabel, så kalender og lister følger med
+med det samme. `mosede_gendan_arkiv(id)` (security invoker — tabellens egne regler gælder) sætter den ind igen
+med samme id; en kategoris varer kommer med. 30 dage, ryddes ved login. Prøven er
+`proev-skraldespand-alt-3-11.sql` — 6 af 6. er-vi-klar 162.
 
 **`arrangement-musik-og-spisning-2-11.sql` (2/11) — KØRT I PRODUKTIONEN 2/11.** Chefen: *"man kan ikke lave et blandet
 event, som både er musik og spisning."* Filen lader kalender-værnet (`kalender_kategori_ok`) tage imod

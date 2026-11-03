@@ -2411,10 +2411,10 @@
     sletKnap.title = 'Slet ' + v.navn;
     sletKnap.setAttribute('aria-label', 'Slet ' + v.navn);
     sletKnap.addEventListener('click', function () {
-      if (!window.confirm('Slet "' + v.navn + '" helt?\n\n'
-        + 'Den kan ikke hentes tilbage. Vil du bare tage den af kortet '
+      if (!window.confirm('Slet "' + v.navn + '"?\n\n'
+        + 'Den ligger i Skraldespanden i 30 dage, hvis I fortryder. Vil du bare tage den af kortet '
         + 'i en periode, så fjern hakket i Vis.')) return;
-      Admin.gem(Butik.skrive.sletVare(v.id), v.navn + ' er slettet.');
+      Admin.gem(Butik.skrive.sletVare(v.id), v.navn + ' er slettet — den ligger i Skraldespanden.');
     });
 
     /* RÆKKEFØLGEN ER KUNDENS BILLEDER: navn · beskrivelse · pris ·
