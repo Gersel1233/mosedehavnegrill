@@ -53,10 +53,16 @@ create table if not exists public.opgaver (
   lokation_id  text        not null,
   liste_id     bigint      not null references public.opgavelister(id) on delete cascade,
   tekst        text        not null check (length(trim(tekst)) between 1 and 300),
+  -- Overskriften i filen, opgaven stod under ("Dagligt", "Ved lukning").
+  afsnit       text,
+  -- Skal der skrives en værdi ved opgaven? Fx "Temp. °C" fra egenkontrollen.
+  vaerdi_navn  text,
   raekkefoelge integer     not null default 0,
   aktiv        boolean     not null default true,
   oprettet     timestamptz not null default now()
 );
+alter table public.opgaver add column if not exists afsnit text;
+alter table public.opgaver add column if not exists vaerdi_navn text;
 create index if not exists opgaver_liste_idx on public.opgaver (liste_id, raekkefoelge);
 
 create table if not exists public.opgave_udfoert (
@@ -68,10 +74,13 @@ create table if not exists public.opgave_udfoert (
   tekst        text        not null,
   liste_navn   text,
   initialer    text        not null check (initialer ~ '^[A-Za-zÆØÅæøå]{1,4}$'),
+  vaerdi       text        check (vaerdi is null or length(vaerdi) <= 40),
   udfoert      timestamptz not null default now(),
   udfoert_af   text        default nullif(coalesce(auth.jwt() ->> 'email', ''), '')
 );
 -- Én opgave er gjort én gang pr. dag.
+alter table public.opgave_udfoert add column if not exists vaerdi text;
+
 create unique index if not exists opgave_udfoert_en_pr_dag
   on public.opgave_udfoert (opgave_id, dato) where opgave_id is not null;
 create index if not exists opgave_udfoert_dato_idx

@@ -7,6 +7,17 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**OPGAVER: PDF → PÆNE OPGAVER** (4/11). Mikkel: *"så han kan uploade en PDF-fil, og så er vores system dygtigt nok
+til at gøre det til et sæt opgaver … flot og pænt og nemt for kollegaer og personale."* Ny læser
+(js/admin/opgave-laeser.js): titlen (største tekst / første linje) bliver listens navn, overskrifter (større, fed,
+"Lukning:", VERSALER) bliver afsnit, tabeller giver opgaven fra første kolonne, og papirets felter (ugedage, Sign.,
+Initialer, Dato, "Uge: ____", sidetal, gentagne sidehoveder, "Revideret …") springes over; en opgave over to linjer
+bliver én. En tabel med "Temp. °C" giver opgaverne et felt til tallet (📏). Cheferne ser et udkast med afsnit, kan
+rette alt og trykker "Opret listen". Personalets skærm: store rækker, rund markering, bjælke pr. liste og for dagen,
+grønne initialer og tid, værdien ved siden af. Print viser afsnit og værdier. SQL'en (ikke kørt endnu) har fået
+opgaver.afsnit, opgaver.vaerdi_navn og opgave_udfoert.vaerdi. Prøver: opgaver-filer.spec.js mod en rigtig
+rengøringsplan og et egenkontrol-skema (PDF), Word og Excel.
+
 **ARBEJDSOPGAVER MED INITIALER** (3/11). Chefen: lister, de har på en fil, skal kunne lægges ind på iPad'en,
 så personalet hver dag kan sætte initialer ved det, de har gjort. Mikkel: cheferne lægger selv filerne ind i
 admin. Ny fane **✅ Opgaver** (js/admin/opgaver.js): en chef vælger en fil (Word .docx, Excel, PDF, tekst/CSV),

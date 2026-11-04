@@ -3796,29 +3796,25 @@
           <span class="kort-note">kun cheferne kan lægge lister ind og rette dem</span>
         </div>
         <details class="tag-booking" id="opg-ny-fold">
-          <summary>📄 Læg en ny liste ind (fra en fil)</summary>
-          <p class="hjaelp">Vælg jeres fil — Word (.docx), Excel, PDF eller tekst. Hver linje bliver en
-            opgave. I kan rette listen, før den gemmes. Har I den kun på papir eller som billede:
-            kopiér teksten (på iPad'en: hold fingeren på teksten i billedet → Kopiér) og sæt den ind i feltet.</p>
-          <div class="felt">
-            <label for="opg-fil">Fil</label>
-            <input type="file" id="opg-fil"
-                   accept=".docx,.xlsx,.xls,.ods,.csv,.txt,.pdf,application/pdf,text/plain,image/*">
-            <p class="hjaelp" id="opg-fil-status" aria-live="polite"></p>
+          <summary>📄 Læg en ny liste ind</summary>
+          <div id="opg-upload">
+            <!-- Hele feltet er knappen: et stort mål på iPad'en. På en computer
+                 kan filen også trækkes hen på det. js/admin/opgave-laeser.js. -->
+            <label class="opg-upload-zone" id="opg-upload-zone" for="opg-fil">
+              <span class="opg-upload-tegn" aria-hidden="true">📄</span>
+              <strong>Vælg jeres fil</strong>
+              <span class="hjaelp">PDF, Word (.docx) eller Excel — systemet finder selv titel, afsnit og opgaver</span>
+              <input type="file" id="opg-fil"
+                     accept=".pdf,.docx,.xlsx,.xls,.ods,.csv,.txt,application/pdf,text/plain,image/*">
+            </label>
+            <details class="opg-skriv">
+              <summary>✍️ Eller skriv / sæt teksten ind selv</summary>
+              <textarea id="opg-ny-tekst" rows="7" placeholder="Lukning:&#10;Sluk grillen&#10;Tøm skraldespande&#10;Lås døren"></textarea>
+              <button class="knap sekundaer lille" id="opg-skriv-selv" type="button">Lav opgaver af teksten</button>
+            </details>
           </div>
-          <div class="felt">
-            <label for="opg-ny-navn">Listens navn</label>
-            <input type="text" id="opg-ny-navn" maxlength="80" placeholder="Fx Lukning, Åbning, Rengøring">
-          </div>
-          <div class="felt">
-            <span class="felt-etiket">Hvilke dage</span>
-            <div class="adm-seg opg-dage" id="opg-ny-dage" role="group" aria-label="Hvilke dage"></div>
-          </div>
-          <div class="felt">
-            <label for="opg-ny-tekst">Opgaverne <span class="hjaelp">(én pr. linje)</span></label>
-            <textarea id="opg-ny-tekst" rows="10" placeholder="Tøm opvaskemaskinen&#10;Sluk grillen&#10;Tjek temperatur i køl"></textarea>
-          </div>
-          <button class="knap" id="opg-opret" type="button">Opret listen</button>
+          <p class="opg-status" id="opg-fil-status" aria-live="polite"></p>
+          <div id="opg-udkast" hidden></div>
         </details>
         <div id="opg-lister" class="luft-top"></div>
       </div>
@@ -4174,6 +4170,7 @@
 <script src="js/admin/forside.js?v=__V__"></script>
 <script src="js/admin/kontakt.js?v=__V__"></script>
 <script src="js/admin/skraldespand.js?v=__V__"></script>
+<script src="js/admin/opgave-laeser.js?v=__V__"></script>
 <script src="js/admin/opgaver.js?v=__V__"></script>
 <script src="js/admin/logbog.js?v=__V__"></script>
 <!-- ⚠️ SIDST, MEN FØR login.js: baandet skal kunne vises, ogsaa

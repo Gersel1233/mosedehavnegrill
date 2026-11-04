@@ -14070,32 +14070,89 @@ body:not(.personale) .stk-linje > .stk-tilvalg-fold {
   font: inherit; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,.25); cursor: pointer; }
 @media (min-width: 900px) { .ny-udgave { bottom: 28px; } }
 
-/* ---- ARBEJDSOPGAVER (3/11, js/admin/opgaver.js) ---- */
-.opg-liste { border: 1px solid rgba(0,0,0,.08); border-radius: 16px; padding: 12px 14px; margin: 12px 0; background: #fff; }
-.opg-liste-hoved { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
-.opg-liste-hoved h3 { margin: 0; font-size: 1.1rem; }
-.opg-liste-tal { font-weight: 700; font-variant-numeric: tabular-nums; opacity: .7; }
-.opg-liste-tal.faerdig { color: #1e7a45; opacity: 1; }
-.opg-raekke { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(0,0,0,.06); min-height: 52px; }
-.opg-raekke:first-of-type { border-top: 0; }
-.opg-tekst { flex: 1; min-width: 0; }
-.opg-raekke.gjort .opg-tekst { opacity: .6; text-decoration: line-through; text-decoration-thickness: 1px; }
-.opg-udfoer { min-width: 96px; }
-.opg-gjort { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
-.opg-ini { font-weight: 800; color: #1e7a45; letter-spacing: .04em; }
-.opg-tid { font-size: .85rem; opacity: .7; }
-.opg-ini-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-.opg-ini-form input { width: 7.5em; text-transform: uppercase; font-weight: 700; letter-spacing: .06em; text-align: center; }
-.knap-link { background: none; border: 0; padding: 6px 4px; font: inherit; font-size: .9rem; text-decoration: underline; cursor: pointer; color: inherit; opacity: .75; }
-.knap-link.fare-tekst { color: var(--red-tekst); opacity: 1; text-decoration: none; font-size: 1.1rem; }
+/* ---- ARBEJDSOPGAVER (3/11 · 4/11, js/admin/opgaver.js) ----
+   Mikkel: "det skal fremstå flot og pænt og være nemt for kollegaer og
+   personale". Store mål til fingre på en iPad, en rund markering som på
+   papiret, grøn når det er gjort, og en bjælke, der viser, hvor langt man er. */
+#opg-dag-tal { display: flex; flex-direction: column; align-items: center; gap: 6px; width: min(320px, 100%); margin: 2px auto 0; }
+.opg-bjaelke { height: 8px; border-radius: 99px; background: rgba(0,0,0,.08); overflow: hidden; width: 100%; }
+.opg-bjaelke > span { display: block; height: 100%; border-radius: inherit; background: var(--red); transition: width .4s ease; }
+.opg-bjaelke.faerdig > span { background: #1e7a45; }
+.opg-liste { border: 1px solid rgba(0,0,0,.08); border-radius: 18px; padding: 16px 16px 6px; margin: 14px 0; background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px -16px rgba(60,30,10,.25); }
+.opg-liste.faerdig { border-color: rgba(30,122,69,.35); }
+.opg-liste-hoved { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.opg-liste-hoved h3 { margin: 0; font-size: 1.2rem; }
+.opg-liste-tal { font-weight: 800; font-variant-numeric: tabular-nums; opacity: .65; }
+.opg-liste.faerdig .opg-liste-tal { color: #1e7a45; opacity: 1; }
+.opg-liste > .opg-bjaelke { height: 5px; margin-bottom: 6px; }
+.opg-afsnit { display: flex; justify-content: space-between; margin: 14px 0 2px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,.12);
+  font-size: .78rem; letter-spacing: .09em; text-transform: uppercase; color: #8a5a32; }
+.opg-afsnit-tal { font-variant-numeric: tabular-nums; opacity: .8; }
+.opg-raekke { display: flex; align-items: center; gap: 12px; border-top: 1px solid rgba(0,0,0,.06); min-height: 58px; }
+.opg-afsnit + .opg-raekke, .opg-bjaelke + .opg-raekke { border-top: 0; }
+.opg-tryk { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 8px 2px; border: 0; background: none;
+  font: inherit; color: inherit; text-align: left; cursor: pointer; border-radius: 12px; }
+.opg-tryk:hover { background: rgba(214,42,58,.04); }
+.opg-tryk:active { background: rgba(214,42,58,.08); }
+.opg-cirkel { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(0,0,0,.25); background: #fff;
+  display: inline-flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 16px; }
+.opg-cirkel.lille { width: 18px; height: 18px; border-width: 1.5px; }
+.opg-tryk:hover .opg-cirkel { border-color: var(--red); }
+.opg-raekke.gjort .opg-cirkel { background: #1e7a45; border-color: #1e7a45; }
+.opg-raekke.aaben .opg-cirkel { border-color: var(--red); box-shadow: 0 0 0 4px rgba(214,42,58,.15); }
+.opg-tekst { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 8px 0; }
+.opg-navn { font-size: 1.02rem; line-height: 1.35; }
+.opg-raekke.gjort .opg-navn { color: rgba(0,0,0,.5); text-decoration: line-through; text-decoration-color: rgba(0,0,0,.25); }
+.opg-maal { font-size: .8rem; color: #8a5a32; }
+.opg-udfoer { flex: 0 0 auto; padding: 8px 14px; border-radius: 99px; border: 1px solid rgba(0,0,0,.15); font-weight: 700; font-size: .92rem; background: #fff; }
+.opg-raekke.fremtid { opacity: .6; }
+.opg-gjort { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; padding: 8px 0; }
+.opg-ini { font-weight: 800; color: #fff; background: #1e7a45; border-radius: 8px; padding: 3px 8px; letter-spacing: .05em; font-size: .9rem; }
+.opg-vaerdi { font-weight: 800; color: #1e7a45; background: #e5f4e4; border-radius: 8px; padding: 3px 8px; font-size: .9rem; }
+.opg-tid { font-size: .85rem; opacity: .65; font-variant-numeric: tabular-nums; }
+.opg-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; padding: 8px 0; }
+.opg-form input { width: 7.2em; text-align: center; font-weight: 800; font-size: 1.05rem; }
+.opg-ini-felt { text-transform: uppercase; letter-spacing: .08em; }
+.opg-vaerdi-felt { width: 6.5em !important; }
+.knap-link { background: none; border: 0; padding: 6px 4px; font: inherit; font-size: .9rem; text-decoration: underline; cursor: pointer; color: inherit; opacity: .7; }
+.knap-link.fare-tekst { color: var(--red-tekst); opacity: 1; text-decoration: none; font-size: 1.1rem; min-width: 32px; min-height: 32px; }
+.opg-tom { text-align: center; padding: 26px 12px; border: 1px dashed rgba(0,0,0,.15); border-radius: 18px; margin: 12px 0; }
+.opg-tom-tegn { font-size: 2rem; margin-bottom: 6px; }
 .opg-dage { display: flex; flex-wrap: wrap; gap: 6px; }
-.opg-ret-liste { border: 1px solid rgba(0,0,0,.08); border-radius: 14px; padding: 10px 14px; margin: 10px 0; }
-.opg-ret-liste summary { font-weight: 700; cursor: pointer; padding: 4px 0; }
-.opg-ret-raekke { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
-.opg-ret-raekke input { flex: 1; min-width: 0; }
+
+/* Cheferne: fil → udkast */
+.opg-upload-zone { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 26px 16px;
+  margin: 10px 0; border: 2px dashed rgba(214,42,58,.35); border-radius: 18px; background: #fffaf6; cursor: pointer;
+  transition: border-color .2s, background .2s; }
+.opg-upload-zone:hover, .opg-upload-zone.over { border-color: var(--red); background: #fff1ee; }
+.opg-upload-zone input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.opg-upload-tegn { font-size: 2.2rem; line-height: 1; }
+.opg-upload-zone strong { font-size: 1.1rem; }
+.opg-skriv { margin: 6px 0 4px; }
+.opg-skriv summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+.opg-skriv textarea { width: 100%; margin: 6px 0 8px; }
+.opg-status { margin: 8px 0; font-weight: 600; }
+.opg-status:empty { display: none; }
+.opg-status.ok { color: #1e7a45; }
+.opg-status.fejl { color: var(--red-tekst); }
+.opg-forhaand { display: flex; flex-direction: column; gap: 12px; margin: 10px 0; }
+.opg-forh-afsnit { border: 1px solid rgba(0,0,0,.08); border-radius: 14px; padding: 10px 12px; background: #fff; }
+.opg-forh-hoved { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.opg-forh-hoved input { flex: 1; font-weight: 700; text-transform: none; }
+.opg-forh-raekke { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+.opg-forh-raekke input { flex: 1; min-width: 0; }
+.opg-maal-knap { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 10px; border: 1px solid rgba(0,0,0,.12); background: #fff;
+  cursor: pointer; opacity: .45; font-size: 1rem; }
+.opg-maal-knap[aria-pressed="true"] { opacity: 1; border-color: #8a5a32; background: #fbf1e6; }
+.opg-tilfoej { font-weight: 600; }
+.opg-lister-titel { margin: 18px 0 4px; font-size: 1rem; }
+.opg-ret-liste { border: 1px solid rgba(0,0,0,.08); border-radius: 14px; padding: 10px 14px; margin: 10px 0; background: #fff; }
+.opg-ret-liste summary { cursor: pointer; padding: 6px 0; }
 .ob-opgaver-raekke { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .ob-opgaver.faerdig strong { color: #1e7a45; }
 @media (max-width: 560px) {
   .opg-raekke { flex-wrap: wrap; }
-  .opg-gjort, .opg-ini-form { width: 100%; justify-content: flex-start; }
+  .opg-gjort, .opg-form { width: 100%; justify-content: flex-start; padding-left: 42px; }
+  .opg-udfoer { padding: 7px 11px; font-size: .85rem; }
 }

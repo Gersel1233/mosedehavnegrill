@@ -22,8 +22,8 @@ do $$
 declare v_l bigint;
 begin
   insert into public.opgavelister (lokation_id, navn) values ('mosede', 'PRØVE Lukning') returning id into v_l;
-  insert into public.opgaver (lokation_id, liste_id, tekst, raekkefoelge)
-  values ('mosede', v_l, 'Tøm opvaskemaskinen', 1), ('mosede', v_l, 'Sluk grillen', 2);
+  insert into public.opgaver (lokation_id, liste_id, tekst, afsnit, vaerdi_navn, raekkefoelge)
+  values ('mosede', v_l, 'Tøm opvaskemaskinen', 'Lukning', null, 1), ('mosede', v_l, 'Sluk grillen', 'Lukning', 'Temp. °C', 2);
   insert into _svar values (1, 'chefen lægger en liste med opgaver ind', true);
 exception when others then
   insert into _svar values (1, 'chefen lægger en liste med opgaver ind (' || sqlerrm || ')', false);
@@ -44,8 +44,8 @@ do $$
 declare v_o bigint; v_l bigint;
 begin
   select o.id, o.liste_id into v_o, v_l from public.opgaver o where o.tekst = 'Sluk grillen';
-  insert into public.opgave_udfoert (lokation_id, opgave_id, liste_id, dato, tekst, liste_navn, initialer)
-  values ('mosede', v_o, v_l, '2099-01-01', 'Sluk grillen', 'PRØVE Lukning', 'LK');
+  insert into public.opgave_udfoert (lokation_id, opgave_id, liste_id, dato, tekst, liste_navn, initialer, vaerdi)
+  values ('mosede', v_o, v_l, '2099-01-01', 'Sluk grillen', 'PRØVE Lukning', 'LK', '3,5');
   insert into _svar values (3, 'personalet ser opgaven og sætter initialer',
     exists (select 1 from public.opgave_udfoert where opgave_id = v_o and initialer = 'LK'
               and udfoert_af = 'lone@opg.dk'));

@@ -1668,8 +1668,16 @@
        sætter initialer ved hver opgave, hver dag. */
     opretOpgaveliste: function (liste) {
       var navn = String(liste.navn || '').trim().slice(0, 80);
-      var tekster = (liste.opgaver || []).map(function (t) { return String(t || '').trim().slice(0, 300); })
-        .filter(Boolean);
+      /* Opgaverne kan komme som tekst eller som { tekst, afsnit, vaerdi_navn }
+         (fra læseren, js/admin/opgave-laeser.js). */
+      var tekster = (liste.opgaver || []).map(function (t) {
+        var o = typeof t === 'string' ? { tekst: t } : (t || {});
+        return {
+          tekst: String(o.tekst || '').trim().slice(0, 300),
+          afsnit: String(o.afsnit || '').trim().slice(0, 80) || null,
+          vaerdi_navn: String(o.vaerdi_navn || o.vaerdi || '').trim().slice(0, 40) || null,
+        };
+      }).filter(function (o) { return o.tekst; });
       if (!navn) return Promise.reject(new Error('Giv listen et navn, fx "Lukning".'));
       if (!tekster.length) return Promise.reject(new Error('Listen har ingen opgaver.'));
       var ugedage = (liste.ugedage && liste.ugedage.length && liste.ugedage.length < 7) ? liste.ugedage : null;
@@ -1680,8 +1688,8 @@
         d.opgavelister.push({ id: id, lokation_id: LOKATION, navn: navn, ugedage: ugedage, aktiv: true,
           raekkefoelge: d.opgavelister.length, kilde: liste.kilde || null, oprettet: new Date().toISOString() });
         tekster.forEach(function (t, i) {
-          d.opgaver.push({ id: næsteId(d.opgaver), lokation_id: LOKATION, liste_id: id, tekst: t,
-            raekkefoelge: i, aktiv: true });
+          d.opgaver.push({ id: næsteId(d.opgaver), lokation_id: LOKATION, liste_id: id, tekst: t.tekst,
+            afsnit: t.afsnit, vaerdi_navn: t.vaerdi_navn, raekkefoelge: i, aktiv: true });
         });
       });
       function indsaet(tabel, raekker) {
@@ -1705,7 +1713,8 @@
         .then(function (ny) {
           var id = ny && ny[0] && ny[0].id;
           return indsaet('opgaver', tekster.map(function (t, i) {
-            return { lokation_id: LOKATION, liste_id: id, tekst: t, raekkefoelge: i };
+            return { lokation_id: LOKATION, liste_id: id, tekst: t.tekst, afsnit: t.afsnit,
+              vaerdi_navn: t.vaerdi_navn, raekkefoelge: i };
           }));
         });
     },
@@ -1733,16 +1742,17 @@
       return skriv('DELETE', 'opgavelister', 'id=eq.' + encodeURIComponent(id));
     },
 
-    tilfoejOpgave: function (listeId, tekst, raekkefoelge) {
+    tilfoejOpgave: function (listeId, tekst, raekkefoelge, afsnit) {
       var t = String(tekst || '').trim().slice(0, 300);
+      var a = String(afsnit || '').trim().slice(0, 80) || null;
       if (!t) return Promise.reject(new Error('Skriv opgaven.'));
       if (!SKY) return lokalt(function (d) {
         d.opgaver = d.opgaver || [];
         d.opgaver.push({ id: næsteId(d.opgaver), lokation_id: LOKATION, liste_id: Number(listeId), tekst: t,
-          raekkefoelge: Number(raekkefoelge) || 0, aktiv: true });
+          afsnit: a, raekkefoelge: Number(raekkefoelge) || 0, aktiv: true });
       });
       return skriv('POST', 'opgaver', null, [{ lokation_id: LOKATION, liste_id: Number(listeId), tekst: t,
-        raekkefoelge: Number(raekkefoelge) || 0 }]);
+        afsnit: a, raekkefoelge: Number(raekkefoelge) || 0 }]);
     },
 
     retOpgave: function (id, tekst) {
@@ -1754,6 +1764,30 @@
         });
       });
       return skriv('PATCH', 'opgaver', 'id=eq.' + encodeURIComponent(id), { tekst: t });
+    },
+
+    // Omdøb et afsnit i en liste ("Dagligt" → "Hver dag").
+    retAfsnit: function (listeId, gammel, nyt) {
+      var n = String(nyt || '').trim().slice(0, 80) || null;
+      var g = gammel || null;
+      if (!SKY) return lokalt(function (d) {
+        d.opgaver = (d.opgaver || []).map(function (o) {
+          return String(o.liste_id) === String(listeId) && (o.afsnit || null) === g ? Object.assign({}, o, { afsnit: n }) : o;
+        });
+      });
+      return skriv('PATCH', 'opgaver', 'liste_id=eq.' + encodeURIComponent(listeId)
+        + (g === null ? '&afsnit=is.null' : '&afsnit=eq.' + encodeURIComponent(g)), { afsnit: n });
+    },
+
+    // Skal opgaven have en værdi (fx "Temp. °C")? null = nej.
+    retOpgaveVaerdi: function (id, vaerdiNavn) {
+      var v = String(vaerdiNavn || '').trim().slice(0, 40) || null;
+      if (!SKY) return lokalt(function (d) {
+        d.opgaver = (d.opgaver || []).map(function (o) {
+          return String(o.id) === String(id) ? Object.assign({}, o, { vaerdi_navn: v }) : o;
+        });
+      });
+      return skriv('PATCH', 'opgaver', 'id=eq.' + encodeURIComponent(id), { vaerdi_navn: v });
     },
 
     sletOpgave: function (id) {
@@ -1770,6 +1804,12 @@
       }
       var raekke = { lokation_id: LOKATION, opgave_id: Number(o.opgave_id), liste_id: Number(o.liste_id) || null,
         dato: o.dato, tekst: String(o.tekst || ''), liste_navn: o.liste_navn || null, initialer: ini };
+      // Målingen (fx temperaturen), når opgaven beder om én.
+      if (o.vaerdi_navn) {
+        var v = String(o.vaerdi || '').trim().slice(0, 40);
+        if (!v) return Promise.reject(new Error('Skriv ' + String(o.vaerdi_navn).toLowerCase() + ' først.'));
+        raekke.vaerdi = v;
+      }
       if (!SKY) return lokalt(function (d) {
         d.opgave_udfoert = d.opgave_udfoert || [];
         if (d.opgave_udfoert.some(function (u) {

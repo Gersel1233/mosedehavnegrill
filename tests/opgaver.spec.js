@@ -26,17 +26,20 @@ const LISTE = {
   opgave_udfoert: [],
 };
 
-test('chefen lægger en fil ind, og hver linje bliver en opgave', async ({ page }) => {
+test('chefen lægger en tekstfil ind, ser udkastet og opretter listen', async ({ page }) => {
   await åbnAdmin(page, { ur: UR, data: data('ejer') });
   await visFane(page, 'p-opgaver');
-  await page.locator('#opg-ny-fold summary').click();
+  await page.locator('#opg-ny-fold > summary').click();
   await page.locator('#opg-fil').setInputFiles({
     name: 'Rengøring.txt', mimeType: 'text/plain',
     buffer: Buffer.from('• Vask gulvet\n\n☐ Tør borde af\n3. Tøm skraldespande\n'),
   });
   await expect(page.locator('#opg-fil-status')).toContainText('3 opgaver fundet');
   await expect(page.locator('#opg-ny-navn')).toHaveValue('Rengøring');
-  await expect(page.locator('#opg-ny-tekst')).toHaveValue('Vask gulvet\nTør borde af\nTøm skraldespande');
+  const felter = page.locator('#opg-udkast .opg-forh-raekke input[aria-label="Opgave"]');
+  await expect(felter).toHaveCount(3);
+  await expect(felter.nth(0)).toHaveValue('Vask gulvet');
+  await expect(felter.nth(2)).toHaveValue('Tøm skraldespande');
   await page.locator('#opg-opret').click();
   await expect(page.locator('#kvittering')).toContainText('Listen er oprettet');
 
@@ -46,16 +49,32 @@ test('chefen lægger en fil ind, og hver linje bliver en opgave', async ({ page 
   await expect(page.locator('#opg-dag .opg-liste', { hasText: 'Rengøring' })).toContainText('0/3');
 });
 
+test('chefen skriver selv: "Lukning:" bliver et afsnit', async ({ page }) => {
+  await åbnAdmin(page, { ur: UR, data: data('ejer') });
+  await visFane(page, 'p-opgaver');
+  await page.locator('#opg-ny-fold > summary').click();
+  await page.locator('.opg-skriv summary').click();
+  await page.locator('#opg-ny-tekst').fill('Åbning:\nTænd kaffemaskinen\nLukning:\nSluk grillen\nLås døren');
+  await page.locator('#opg-skriv-selv').click();
+  await expect(page.locator('#opg-udkast .opg-forh-afsnit')).toHaveCount(2);
+  await page.locator('#opg-ny-navn').fill('Dagen');
+  await page.locator('#opg-opret').click();
+  await expect(page.locator('#kvittering')).toContainText('Listen er oprettet');
+  const g = await gemteData(page);
+  expect(g.opgaver.map((o) => o.afsnit + ': ' + o.tekst)).toEqual(['Åbning: Tænd kaffemaskinen', 'Lukning: Sluk grillen', 'Lukning: Lås døren']);
+});
+
 test('personalet sætter initialer, og det gemmes med tid — og kan fortrydes', async ({ page }) => {
   await åbnAdmin(page, { ur: UR, data: data('medarbejder', LISTE) });
   await visFane(page, 'p-opgaver');
   await expect(page.locator('#opg-ret-kort'), 'personalet retter ikke listerne').toBeHidden();
   const r = page.locator('#opg-dag .opg-raekke', { hasText: 'Sluk grillen' });
-  await r.locator('button', { hasText: 'Udført' }).click();
-  await r.locator('input').fill('mk');
+  await r.locator('.opg-tryk').click();
+  await r.locator('.opg-ini-felt').fill('mk');
   await r.locator('button', { hasText: '✓ Udført' }).click();
 
-  await expect(page.locator('#opg-dag .opg-raekke', { hasText: 'Sluk grillen' })).toContainText('✓ MK');
+  await expect(page.locator('#opg-dag .opg-raekke', { hasText: 'Sluk grillen' })).toContainText('MK');
+  await expect(page.locator('#opg-dag .opg-raekke.gjort', { hasText: 'Sluk grillen' })).toHaveCount(1);
   await expect(page.locator('#opg-dag-tal')).toContainText('1 af 2 opgaver udført');
   const u = (await gemteData(page)).opgave_udfoert;
   expect(u).toHaveLength(1);
@@ -63,7 +82,7 @@ test('personalet sætter initialer, og det gemmes med tid — og kan fortrydes',
 
   page.once('dialog', (d) => d.accept());
   await page.locator('#opg-dag .opg-raekke', { hasText: 'Sluk grillen' }).locator('button', { hasText: 'Fortryd' }).click();
-  await expect(page.locator('#opg-dag .opg-raekke', { hasText: 'Sluk grillen' })).not.toContainText('✓');
+  await expect(page.locator('#opg-dag .opg-raekke.gjort', { hasText: 'Sluk grillen' })).toHaveCount(0);
   expect((await gemteData(page)).opgave_udfoert).toHaveLength(0);
 });
 
@@ -71,8 +90,8 @@ test('uden initialer gemmes intet', async ({ page }) => {
   await åbnAdmin(page, { ur: UR, data: data('medarbejder', LISTE) });
   await visFane(page, 'p-opgaver');
   const r = page.locator('#opg-dag .opg-raekke', { hasText: 'Sluk grillen' });
-  await r.locator('button', { hasText: 'Udført' }).click();
-  await r.locator('input').fill('');
+  await r.locator('.opg-tryk').click();
+  await r.locator('.opg-ini-felt').fill('');
   await r.locator('button', { hasText: '✓ Udført' }).click();
   await expect(page.locator('#fejl')).toContainText('initialer');
   expect((await gemteData(page)).opgave_udfoert || []).toHaveLength(0);
@@ -87,12 +106,12 @@ test('dag for dag: i morgen er frisk og kan først udfyldes på dagen; Overblik 
   await expect(page.locator('#ob-opgaver-tal')).toContainText('1 af 2 opgaver udført i dag');
   await page.locator('#ob-opgaver-aabn').click();
   await expect(page.locator('#p-opgaver')).not.toHaveClass(/skjult/);
-  await expect(page.locator('#opg-dag .opg-raekke', { hasText: 'Tøm opvaskemaskinen' })).toContainText('✓ LK');
-  await expect(page.locator('#opg-dag .opg-raekke', { hasText: 'Tøm opvaskemaskinen' })).toContainText('kl. 10.30');
+  await expect(page.locator('#opg-dag .opg-raekke.gjort', { hasText: 'Tøm opvaskemaskinen' })).toContainText('LK');
+  await expect(page.locator('#opg-dag .opg-raekke', { hasText: 'Tøm opvaskemaskinen' })).toContainText('10.30');
 
   await page.locator('#opg-dag-naeste').click();
   await expect(page.locator('#opg-dag-navn')).toContainText('I MORGEN');
-  await expect(page.locator('#opg-dag .opg-raekke', { hasText: 'Tøm opvaskemaskinen' })).not.toContainText('✓');
+  await expect(page.locator('#opg-dag .opg-raekke.gjort', { hasText: 'Tøm opvaskemaskinen' })).toHaveCount(0);
   await expect(page.locator('#opg-dag .opg-raekke').first()).toContainText('kan udfyldes på dagen');
 });
 
