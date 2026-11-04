@@ -7,6 +7,20 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**OPGAVER: HJERNEN** (4/11). Mikkel: *"den virker slet ikke godt nok — hvad hvis det dokument er meget mere
+anderledes og ikke sat op på samme måde? Det skal være en hjerne, der læser dokumentet, og hvad Jim sådan vil med
+hans dokument og formålet med det, og laver lister ud fra det."*
+- Ny Edge Function `supabase/funktioner/laes-opgaver.ts`: Claude (Opus 5.5, structured output) læser PDF og fotos
+  direkte og Word/Excel/tekst som tekst med overskrifter/fed/tabel bevaret, og svarer med lister: titel, afsnit,
+  opgaver, værdi-felter, periode, dage, ansvarlig — flere lister, hvis dokumentet rummer flere rutiner — og en
+  forklaring til chefen. Kun chefer (Verify JWT + er_ejer_for). Serverside fallback ved afvisning.
+- Admin: "🧠 Læser …", grøn boks "Sådan har jeg forstået dokumentet", "Liste 1 af 2" + "Spring over", og fotos
+  af papirlister kan vælges. Svarer hjernen ikke (ikke lagt op, intet net), bruges den enkle læser — og det siges.
+- SLUKKET indtil Mikkel har lavet en Anthropic-nøgle og lagt funktionen op: docs/HJERNE-OPSAETNING.md.
+- Prøvet mod en efterligning (tests/opgaver-hjerne.spec.js) og funktionen mod falske tjenester; ikke mod Claude selv.
+- Fejlen på Mikkels skærmbillede ("Perioder og ugedage er ikke slået til") var opgaver-perioder-4-11.sql, der
+  ikke var kørt.
+
 **OPGAVER: PERIODER OG DAGE + JIMS DOKUMENT** (4/11). Mikkel: *"og hvad hvis det er en uge frem, han laver dem,
 eller 5 dage frem eller 2 uger?"*
 - **En liste kan gælde en periode**: "gælder uge 46-47", "10/11 - 23/11" eller "1.-14. december" i filen bliver

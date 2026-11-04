@@ -560,9 +560,17 @@
 
   function visUdkast(res, kilde) {
     var p = res.periode || null;
+    var ansvarlig = res.ansvarlig && holdet().filter(function (m) {
+      return String(m.initialer).toUpperCase() === String(res.ansvarlig).toUpperCase();
+    })[0];
     udkast = {
       navn: res.titel || '',
       kilde: kilde || null,
+      forklaring: res.forklaring || '',
+      nr: res.nr || 1,
+      af: res.af || 1,
+      dage: res.ugedage || null,
+      ansvarlig_id: ansvarlig ? ansvarlig.id : null,
       gyldig_fra: p && p.fra || '',
       gyldig_til: p && p.til || '',
       periodeFundet: p && p.tekst || '',
@@ -583,6 +591,17 @@
     boks.hidden = !udkast;
     $('opg-upload').hidden = !!udkast;
     if (!udkast) return;
+
+    if (udkast.forklaring) {
+      var hj = lav('div', 'opg-hjerne');
+      hj.appendChild(lav('span', 'opg-hjerne-tegn', '🧠'));
+      var hjT = lav('div');
+      hjT.appendChild(lav('strong', null, 'Sådan har jeg forstået dokumentet'));
+      hjT.appendChild(lav('p', null, udkast.forklaring));
+      hj.appendChild(hjT);
+      boks.appendChild(hj);
+    }
+    if (udkast.af > 1) boks.appendChild(lav('p', 'opg-nr', 'Liste ' + udkast.nr + ' af ' + udkast.af));
 
     var navnF = lav('div', 'felt');
     navnF.appendChild(lav('label', null, 'Listens navn'));
@@ -678,10 +697,23 @@
     var opret = knap('knap', '', opretListen);
     opret.id = 'opg-opret';
     bund.appendChild(opret);
-    bund.appendChild(knap('knap sekundaer', 'Fortryd', function () { udkast = null; tegnUdkast(); }));
+    if (udkastKoe.length) {
+      bund.appendChild(knap('knap sekundaer', 'Spring over', function () { næsteUdkast(); }));
+    }
+    bund.appendChild(knap('knap sekundaer', 'Fortryd', function () { udkast = null; udkastKoe = []; tegnUdkast(); }));
     boks.appendChild(bund);
     opdaterOpret();
   }
+  // Flere lister fra ét dokument: de næste venter her.
+  var udkastKoe = [];
+  function næsteUdkast() {
+    var n = udkastKoe.shift();
+    if (!n) { udkast = null; tegnUdkast(); return; }
+    visUdkast(n.res, n.kilde);
+    var b = $('opg-udkast');
+    if (b && b.scrollIntoView) b.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function opdaterOpret() {
     var b = $('opg-opret');
     if (!b) return;
@@ -706,13 +738,15 @@
       kilde: udkast.kilde, raekkefoelge: data.lister.length, ansvarlig_id: udkast.ansvarlig_id || null,
       gyldig_fra: udkast.gyldig_fra || null, gyldig_til: udkast.gyldig_til || null,
     }).then(function () {
+      if (udkastKoe.length) {
+        næsteUdkast();
+        return hent().then(function () { Admin.kvitter('Listen er oprettet — her er den næste.'); });
+      }
       udkast = null;
       tegnUdkast();
       $('opg-fil-status').textContent = '';
       if ($('opg-ny-fold')) $('opg-ny-fold').open = false;
-      return hent();
-    }).then(function () {
-      Admin.kvitter('Listen er oprettet — den står på dagens opgaver.');
+      return hent().then(function () { Admin.kvitter('Listen er oprettet — den står på dagens opgaver.'); });
     }).catch(function (e) {
       if (b) b.disabled = false;
       Admin.brøl(e && e.message || String(e));
@@ -724,8 +758,41 @@
     function laes(fil) {
       if (!fil || !Admin.opgaveLaeser) return;
       var status = $('opg-fil-status');
-      status.textContent = 'Læser ' + fil.name + ' …';
-      status.className = 'opg-status';
+      udkast = null; udkastKoe = []; tegnUdkast();
+      status.textContent = '🧠 Læser ' + fil.name + ' og finder ud af, hvad der skal gøres … (typisk 10–40 sekunder)';
+      status.className = 'opg-status arbejder';
+      var hold = holdet().map(function (m) { return { navn: m.navn, initialer: m.initialer }; });
+      Admin.opgaveLaeser.forstaa(fil, { hold: hold }).then(function (svar) {
+        if (!svar.lister.length) {
+          status.textContent = (svar.forklaring || 'Der blev ikke fundet nogen opgaver i ' + fil.name + '.')
+            + ' Skriv dem selv under "Skriv selv", hvis det er forkert.';
+          status.className = 'opg-status fejl';
+          return;
+        }
+        var n = svar.lister.reduce(function (s, l) {
+          return s + l.afsnit.reduce(function (t, a) { return t + a.opgaver.length; }, 0);
+        }, 0);
+        status.textContent = '✓ ' + (svar.lister.length > 1 ? svar.lister.length + ' lister med ' : '')
+          + n + (n === 1 ? ' opgave' : ' opgaver') + ' fundet — ret dem herunder, og tryk "Opret listen".';
+        status.className = 'opg-status ok';
+        udkastKoe = svar.lister.map(function (l, i) {
+          return { res: Object.assign({}, l, { forklaring: i === 0 ? svar.forklaring : '', nr: i + 1, af: svar.lister.length }),
+            kilde: fil.name };
+        });
+        næsteUdkast();
+      }).catch(function (e) {
+        // Hjernen svarede ikke → den enkle læser i browseren.
+        if (window.console) console.warn('hjernen:', e && (e.kode || e.message));
+        status.textContent = 'Læser ' + fil.name + ' …';
+        status.className = 'opg-status';
+        enkel(fil, e && e.kode);
+      });
+    }
+    function enkel(fil, kode) {
+      var status = $('opg-fil-status');
+      var note = kode && kode !== 'hjerne_slukket'
+        ? ' (Hjernen svarede ikke' + (kode === 'intet_net' ? ' — tjek nettet' : '') + ', så den enkle læser er brugt.)'
+        : '';
       Admin.opgaveLaeser.laesFil(fil).then(function (res) {
         var n = res.afsnit.reduce(function (s, a) { return s + a.opgaver.length; }, 0);
         if (!n) {
@@ -737,7 +804,7 @@
         var navngivne = res.afsnit.filter(function (a) { return a.navn; }).length;
         status.textContent = '✓ ' + n + (n === 1 ? ' opgave' : ' opgaver') + ' fundet'
           + (navngivne ? ' i ' + navngivne + (navngivne === 1 ? ' afsnit' : ' afsnit') : '')
-          + ' — ret dem herunder, og tryk "Opret listen".';
+          + ' — ret dem herunder, og tryk "Opret listen".' + note;
         status.className = 'opg-status ok';
         visUdkast(res, fil.name);
       }).catch(function (e) {

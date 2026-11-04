@@ -1779,6 +1779,26 @@
         });
     },
 
+    /* HJERNEN (4/11): send dokumentet til supabase/funktioner/laes-opgaver.ts
+       og få lister tilbage. Gemmer intet. e.kode = serverens fejlkode,
+       "hjerne_slukket", når funktionen ikke er lagt op eller nøglen mangler. */
+    hjerneLaes: function (krop) {
+      var fejl = function (kode) { var e = new Error(kode); e.kode = kode; return e; };
+      if (!SKY) return Promise.reject(fejl('hjerne_slukket'));
+      var stop = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var ur = setTimeout(function () { if (stop) stop.abort(); }, 150000);
+      return fetch(cfg.url + '/functions/v1/laes-opgaver', {
+        method: 'POST', headers: hoveder(), body: JSON.stringify(krop), signal: stop ? stop.signal : undefined,
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (r.ok && j && j.ok) return j.resultat;
+          throw fejl((j && j.fejl) || (r.status === 404 ? 'hjerne_slukket' : 'hjerne_fejl'));
+        });
+      }, function (e) {
+        throw fejl(e && e.name === 'AbortError' ? 'for_langsom' : 'intet_net');
+      }).then(function (v) { clearTimeout(ur); return v; }, function (e) { clearTimeout(ur); throw e; });
+    },
+
     // Databasen kender ikke perioder/ugedage endnu → sig det på dansk.
     _periodeFejl: function (e) {
       if (/gyldig_fra|gyldig_til|'ugedag'|"ugedag"|'dato'|"dato"|opgaver\.(ugedag|dato)\b/.test(String(e && e.message))) {

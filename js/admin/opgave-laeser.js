@@ -580,7 +580,111 @@
     return Promise.reject(new Error('Den filtype kan ikke læses. Brug PDF, Word (.docx), Excel eller tekst.'));
   }
 
+  /* ----------------------------------------------------------
+     HJERNEN (4/11, supabase/funktioner/laes-opgaver.ts). Mikkel: *"det
+     skal være en hjerne, der læser dokumentet, og hvad Jim sådan vil
+     med det, og laver lister ud fra det"*. PDF og billeder sendes, som
+     de er (Claude ser siderne); Word/Excel/tekst sendes som tekst med
+     overskrifter (##), fed (**) og tabelceller ( | ), så formen følger med.
+     Svarer hjernen ikke (ikke sat op, ingen net), bruger admin den
+     enkle læser ovenfor — se js/admin/opgaver.js.
+     ---------------------------------------------------------- */
+  function base64(buf) {
+    var b = new Uint8Array(buf), s = '', bid = 0x8000;
+    for (var i = 0; i < b.length; i += bid) s += String.fromCharCode.apply(null, b.subarray(i, i + bid));
+    return btoa(s);
+  }
+  // Et foto fra iPad'en er 3–5 MB; 2000 px på den lange led er nok til at læse det.
+  function mindreBillede(fil) {
+    return new Promise(function (ja, nej) {
+      var url = URL.createObjectURL(fil);
+      var img = new Image();
+      img.onload = function () {
+        var f = Math.min(1, 2000 / Math.max(img.naturalWidth, img.naturalHeight));
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * f);
+        c.height = Math.round(img.naturalHeight * f);
+        var g = c.getContext('2d');
+        g.fillStyle = '#fff';
+        g.fillRect(0, 0, c.width, c.height);
+        g.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        ja(c.toDataURL('image/jpeg', 0.85).split(',')[1]);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); nej(new Error('Billedet kunne ikke åbnes.')); };
+      img.src = url;
+    });
+  }
+  function somTekst(linjer) {
+    return linjer.map(function (l) {
+      var t = l.celler && l.celler.length > 1 ? l.celler.map(norm).join(' | ') : norm(l.tekst);
+      if (!t) return '';
+      if (l.overskrift) return '## ' + t;
+      if (l.fed) return '**' + t + '**';
+      return t;
+    }).join('\n').replace(/\n{3,}/g, '\n\n');
+  }
+  function tilHjernen(fil) {
+    var navn = (fil.name || '').toLowerCase();
+    var ud = { navn: fil.name || 'dokument' };
+    if (/\.pdf$/.test(navn) || fil.type === 'application/pdf') {
+      return som(fil).then(function (b) { ud.mime = 'application/pdf'; ud.data = base64(b); return ud; });
+    }
+    if (/^image\//.test(fil.type) || /\.(jpe?g|png|heic|heif|webp|gif)$/.test(navn)) {
+      return mindreBillede(fil).then(function (d) { ud.mime = 'image/jpeg'; ud.data = d; return ud; });
+    }
+    var linjer = /\.docx$/.test(navn) ? som(fil).then(fraDocx)
+      : /\.(xlsx|xls|ods)$/.test(navn) ? som(fil).then(fraExcel)
+      : /\.csv$/.test(navn) ? som(fil, 'tekst').then(fraCsv)
+      : (/\.(txt|md|text)$/.test(navn) || /^text\//.test(fil.type)) ? som(fil, 'tekst').then(fraTekst)
+      : null;
+    if (!linjer) return Promise.reject(new Error('Den filtype kan ikke læses. Brug PDF, Word (.docx), Excel, tekst eller et billede.'));
+    return linjer.then(function (l) { ud.tekst = somTekst(l); return ud; });
+  }
+
+  /* Hjernens svar → samme form som strukturer(): én pr. liste. */
+  function fraHjernen(svar) {
+    var gyldigDato = function (d) { return /^\d{4}-\d{2}-\d{2}$/.test(d || '') ? d : null; };
+    var gyldigDag = function (n) { n = Number(n); return n >= 1 && n <= 7 ? n : null; };
+    var lister = ((svar && svar.lister) || []).map(function (l) {
+      var afsnit = (l.afsnit || []).map(function (a) {
+        return {
+          navn: norm(a.navn).slice(0, 80), ugedag: gyldigDag(a.ugedag), dato: gyldigDato(a.dato),
+          opgaver: (a.opgaver || []).map(function (o) {
+            return { tekst: norm(o.tekst).slice(0, 300), vaerdi: norm(o.vaerdi).slice(0, 40) || null,
+              ugedag: gyldigDag(o.ugedag), dato: gyldigDato(o.dato) };
+          }).filter(function (o) { return o.tekst; }),
+        };
+      }).filter(function (a) { return a.opgaver.length; });
+      var fra = gyldigDato(l.gyldig_fra), til = gyldigDato(l.gyldig_til);
+      var dage = (l.ugedage || []).map(gyldigDag).filter(Boolean);
+      return {
+        titel: norm(l.titel).slice(0, 80),
+        afsnit: afsnit,
+        periode: fra || til ? { fra: fra, til: til, tekst: norm(l.periode_tekst) } : null,
+        ugedage: dage.length && dage.length < 7 ? dage : null,
+        ansvarlig: norm(l.ansvarlig_initialer).toUpperCase() || null,
+      };
+    }).filter(function (l) { return l.afsnit.length; });
+    return { forklaring: norm(svar && svar.forklaring), lister: lister };
+  }
+
+  // fil → { forklaring, lister } via hjernen. Fejler med e.kode, hvis den ikke svarer.
+  function forstaa(fil, ekstra) {
+    if (!Butik.skrive || !Butik.skrive.hjerneLaes) {
+      var e = new Error('hjerne_slukket'); e.kode = 'hjerne_slukket';
+      return Promise.reject(e);
+    }
+    return tilHjernen(fil).then(function (krop) {
+      krop.idag = dagsDato();
+      krop.hold = (ekstra && ekstra.hold) || [];
+      return Butik.skrive.hjerneLaes(krop);
+    }).then(fraHjernen);
+  }
+
   Admin.opgaveLaeser = {
+    forstaa: forstaa,
+    fraHjernen: fraHjernen,
     laesFil: laesFil,
     fraTekst: function (t, kilde) { return strukturer(fraTekst(t), kilde); },
     strukturer: strukturer,

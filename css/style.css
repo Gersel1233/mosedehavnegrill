@@ -14199,3 +14199,14 @@ body:not(.personale) .stk-linje > .stk-tilvalg-fold {
   .opg-forh-hoved input { flex-basis: 100%; }
   .opg-forh-dag { max-width: none; flex: 1; }
 }
+
+/* ---- HJERNEN I OPGAVERNE (4/11) ---- */
+.opg-hjerne { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; margin: 4px 0 14px;
+  border-radius: 14px; background: #eef4ec; border: 1px solid rgba(30,122,69,.22); }
+.opg-hjerne-tegn { font-size: 1.5rem; line-height: 1; }
+.opg-hjerne strong { display: block; font-size: .92rem; color: #1e5a37; }
+.opg-hjerne p { margin: 3px 0 0; line-height: 1.45; }
+.opg-nr { margin: 0 0 6px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; font-size: .8rem; color: #8a5a32; }
+.opg-status.arbejder { color: #45607a; animation: opg-puls 1.6s ease-in-out infinite; }
+@keyframes opg-puls { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .opg-status.arbejder { animation: none; } }
