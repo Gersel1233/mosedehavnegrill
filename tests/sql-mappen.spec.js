@@ -46,6 +46,7 @@ const IKKE_I_BYGGEREN = {
   'kortets-priser-2': 'skrev priser på kategori_id og ramte nul rækker i en frisk database (målt 1/9) — kortets-priser-3.sql slår kategorien op på NAVN i stedet',
   'udeblivelser': 'restaurant.sql sætter den samme statusliste bredere bagefter (linje 63), så byggeren får den rigtige uden',
   'hvad-ligger-der': 'rapport over hvad der står i gæstetabellerne — skriver ingenting, og der er intet at rapportere i en frisk database',
+  'instagram-4-11': 'retter ÉN indstilling i produktionen (Instagram-adressen) — data, ikke skema',
   'ryd-proevedata': 'oprydning i PRODUKTIONEN. Den kræver en skæringsdato, ejeren selv sætter, og standser på pladsholderen — byggeren har ingen prøvedata at rydde. Reglerne prøves af proev-ryd-proevedata.sql, som bygger sine egne rækker',
   'sluk-det-kortene-ikke-viser': 'ejerens beslutning 25/9 om, hvad der sælges ("følg menukortene — de skal slukkes, hvis ikke de er på menukortene"), ikke skema. MÅLT: fire proev-filer nævner varer, den slukker (Brunchtallerken og Kaffe og pandekage i proev-kortets-priser-3, Tomatmad i proev-smoerrebroed-kortet, laktosefri og vegansk i proev-tillaeg-hensyn). De prøver mekanismen — priserne, tillæggene — og den skal virke igen den dag, ejeren tænder en vare. Kørte byggeren filen, ville de måle et sortiment i stedet for en regel',
   'saet-koderne-29-10': 'sætter koderne på de tre fælles logins i PRODUKTIONEN, skrevet af Mikkel selv i SQL Editor. Nægter at køre med pladsholderne (SKRIV-…), som saet-de-to-koder-4-10 — i byggeren ville den standse databasen (28/10)',

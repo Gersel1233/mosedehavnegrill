@@ -144,8 +144,12 @@
     /* Profilerne binder domænet sammen med de steder, forretningen
        allerede findes — det er dét, sameAs er til.
 
-       ⚠️ INSTAGRAM OG TIKTOK BLIVER STÅENDE, SELV OM DE HEDDER
-       NOGET MED GRILL  (21/9).
+       ⚠️ 4/11: INSTAGRAM ER NU mosedehavnecafe_ishus. Chefen havde
+       ret 21/9 — mosedehavnegrillogishus var den tidligere ejers.
+       Mikkel sendte den rigtige 4/11. Noten herunder er historik.
+
+       (21/9) INSTAGRAM OG TIKTOK BLIVER STÅENDE, SELV OM DE HEDDER
+       NOGET MED GRILL.
 
        Ejeren klagede over, at "Instagram linker til tidligere
        ejers Instagram". MÅLT: det gør det ikke. Mikkel sendte

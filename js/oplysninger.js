@@ -185,7 +185,9 @@ window.MOSEDE = {
        på en forretnings hjemmeside fortæller den bare den næste
        side, hvor gæsten har været. */
     facebook: 'https://www.facebook.com/348833738552801/',
-    instagram: 'https://www.instagram.com/mosedehavnegrillogishus/',
+    /* 4/11: den rigtige profil er mosedehavnecafe_ishus (Mikkel). Den
+       gamle, mosedehavnegrillogishus, var den tidligere ejers. */
+    instagram: 'https://www.instagram.com/mosedehavnecafe_ishus/',
     /* ⚠️ TIKTOK ER NY. Der var kun felter til Facebook og
        Instagram; kanalen findes, og uden et felt kan ejeren ikke
        skifte den. */
