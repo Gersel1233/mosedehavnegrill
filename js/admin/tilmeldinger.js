@@ -378,6 +378,24 @@
       });
       mere.appendChild(af);
     }
+    /* FJERN — GÆSTEN HAR AFLYST (4/11). Chefen: "hvad med at helt fjerne
+       en tilmelding, hvis nu de ringer og aflyser?" Ikke "Afvis": den
+       sender en sms om, at VI ikke kan tage imod dem. Her sendes intet,
+       pladserne bliver fri, og den ligger i Skraldespanden i 30 dage. */
+    var fjern = lav('button', 'knap fare', 'Fjern — gæsten har aflyst');
+    fjern.type = 'button';
+    fjern.addEventListener('click', function () {
+      if (!confirm('Fjern ' + r.navn + ' (' + (r.antal_personer || 1) + ' pers.)?\n\n'
+        + 'Pladserne bliver fri igen. Gæsten får ingen sms. '
+        + 'Fortryder du, kan tilmeldingen hentes tilbage fra Skraldespanden i 30 dage.')) return;
+      Butik.skrive.tilSkraldespand('tilmelding', r.id)
+        .then(hent)
+        .then(function () {
+          Admin.kvitter(r.navn + ' er fjernet — pladserne er fri igen. Fortryd i Skraldespanden.');
+        })
+        .catch(function (e) { Admin.brøl(Admin.forklarFejl(e)); });
+    });
+    mere.appendChild(fjern);
 
     /* ⚠️ PANELET HÆNGER I KNAPRÆKKEN, IKKE PÅ KORTET  (26/9).
        Mikkels skærmbillede af et udlejet baglokale: "de tre prikker

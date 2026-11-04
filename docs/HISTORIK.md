@@ -7,6 +7,15 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**TILMELDINGER: FJERN — GÆSTEN HAR AFLYST** (4/11). Chefen: *"hvad med at helt fjerne en tilmelding, hvis nu de
+ringer og aflyser bookingen? Får de så en sms?"* Ny knap under ···: pladserne bliver fri, der sendes INGEN sms
+(Afvis sender "Desværre kan vi ikke tage imod din tilmelding" — forkert, når gæsten selv har aflyst), og påmindelsen
+dagen før springer den over (send-sms.ts filtrerer slettet). Tilmeldinger er nu med i Skraldespanden (Historik) i
+30 dage og kan hentes tilbage. Svar på hans andre spørgsmål: at se eller rette en booking sender ingen sms (kun
+oprettelse, afvisning og påmindelsen gør); "Personale" står nederst på hjemmesiden; Instagram-linket kommer fra
+Indstillinger → Instagram (står på instagram.com/mosedehavnegrillogishus siden 9/9 — vi mangler den rigtige adresse).
+Prøve: tests/tilmelding-fjern.spec.js.
+
 **OPGAVER: HJERNEN** (4/11). Mikkel: *"den virker slet ikke godt nok — hvad hvis det dokument er meget mere
 anderledes og ikke sat op på samme måde? Det skal være en hjerne, der læser dokumentet, og hvad Jim sådan vil med
 hans dokument og formålet med det, og laver lister ud fra det."*

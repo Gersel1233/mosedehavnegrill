@@ -39,6 +39,7 @@
     forespoergsel: 'Forespørgsel',
     bord:          'Bordbooking',
     udlejning:     'Baglokalet',
+    tilmelding:    'Tilmelding',
   };
 
   /* Arkivets slags (3/11, supabase/skraldespand-alt-3-11.sql): det,
@@ -94,11 +95,27 @@
     if (r.slags === 'udlejning') {
       return r.antal_personer ? r.antal_personer + ' personer' : 'Antal ikke oplyst';
     }
+    if (r.slags === 'tilmelding') {
+      var a = arrangementFor(r);
+      return (r.antal_personer || 1) + (Number(r.antal_personer) === 1 ? ' person' : ' personer')
+        + (a ? ' · ' + a.titel : '');
+    }
     var navne = { catering: 'Catering', baglokale: 'Baglokale', selskab: 'Selskab' };
     return navne[r.type] || r.type || '';
   }
 
+  function arrangementFor(r) {
+    return ((Admin.data && Admin.data.kalender) || []).filter(function (k) {
+      return String(k.id) === String(r.kalender_id);
+    })[0];
+  }
+
   function naar(r) {
+    if (r.slags === 'tilmelding') {
+      var a = arrangementFor(r);
+      return a && a.dato ? Admin.pænDato(a.dato) + (a.start_kl ? ' kl. ' + String(a.start_kl).slice(0, 5).replace(':', '.') : '')
+        : 'Arrangementet';
+    }
     if (r.slags === 'bestilling') {
       return Admin.pænDato(r.hent_dato) + ' kl. '
         + String(r.hent_tid || '').slice(0, 5).replace(':', '.');

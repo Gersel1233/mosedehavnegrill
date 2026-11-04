@@ -106,6 +106,10 @@
     { slags: 'forespoergsel', tabel: 'forespoergsler',   navn: 'Forespørgsel' },
     { slags: 'bord',          tabel: 'bordbestillinger', navn: 'Bordbooking' },
     { slags: 'udlejning',     tabel: 'udlejninger',      navn: 'Baglokalet' },
+    /* 4/11, chefen: "hvad med at helt fjerne en tilmelding, hvis de
+       ringer og aflyser?" Fjernes den, frigives pladserne (tællingen
+       springer slettede over), og den kan hentes tilbage herfra. */
+    { slags: 'tilmelding',    tabel: 'reservationer',    navn: 'Tilmelding' },
   ];
 
   // Bruges af øvetilstanden, hvor der ikke er en database til at
