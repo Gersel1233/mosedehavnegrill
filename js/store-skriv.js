@@ -1787,7 +1787,7 @@
       if (!SKY) return Promise.reject(fejl('hjerne_slukket'));
       var stop = typeof AbortController !== 'undefined' ? new AbortController() : null;
       var ur = setTimeout(function () { if (stop) stop.abort(); }, 150000);
-      return fetch(cfg.url + '/functions/v1/laes-opgaver', {
+      return fetch(cfg.url + '/functions/v1/' + (cfg.hjerne || 'laes-opgaver'), {
         method: 'POST', headers: hoveder(), body: JSON.stringify(krop), signal: stop ? stop.signal : undefined,
       }).then(function (r) {
         return r.json().catch(function () { return {}; }).then(function (j) {

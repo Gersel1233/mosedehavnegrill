@@ -33,6 +33,13 @@ window.MOSEDE_CLOUD = {
      Næste kunde får sin egen udgave af siden med sit eget id. */
   lokation: 'mosede',
 
+  /* HJERNEN TIL OPGAVERNE (4/11): adressen på Edge Function'en
+     supabase/funktioner/laes-opgaver.ts. Den hedder "laes-opgaver" i
+     dashboardet, men Supabase gav den adressen "clever-function", da
+     den blev oprettet — og adressen følger ikke med, når navnet rettes.
+     Målt 4/11: clever-function svarer 403 "kun_cheferne" uden login. */
+  hjerne: 'clever-function',
+
   // Hentet i Supabase: Project Settings → API → "anon" / "public".
   // Kontrolleret: rolle = "anon", projekt = epwyjzakvvbxtpvnhvbn.
   // Den må kun læse – det er adgangsreglerne i databasen der

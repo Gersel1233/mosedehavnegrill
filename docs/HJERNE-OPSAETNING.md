@@ -1,6 +1,8 @@
 # Hjernen til opgavelisterne — sådan slås den til
 
-**Status 4/11 2026: bygget, men SLUKKET.** Indtil trinene herunder er gjort, læser admin
+**Status 4/11 2026 kl. 13: TÆNDT.** Lagt op med nøgle. ⚠️ Adressen er `clever-function` (Supabase gav den det navn ved oprettelsen; det står i `js/config.js` som `hjerne`). Lægges den op igen under et andet navn, skal `hjerne` rettes.
+
+(Tidligere: bygget, men SLUKKET.) Indtil trinene herunder er gjort, læser admin
 filerne med den enkle læser i browseren (som før). Intet går i stykker.
 
 ## Hvad den gør
