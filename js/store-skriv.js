@@ -1511,6 +1511,44 @@
        (se reservation_bremse). Men det er grunden til, at Afvis
        IKKE må blive til en sletning — en slettet række kan ingen
        fortryde, og pladsen ville alligevel blive fri. */
+    /* ⚠️ RET EN TILMELDING (4/11). Mikkel: *"man skal også kunne redigere
+       bookinger i tilmeldinger hurtigt."* Navn, telefon, antal og besked.
+       Hæves antallet, tjekker databasen pladserne (reservation_ret_vaern);
+       øvetilstanden gør det samme. */
+    reservationRet: function (id, felter) {
+      var ren = { aendret: new Date().toISOString() };
+      if (felter.navn !== undefined) ren.navn = String(felter.navn || '').trim().slice(0, 80);
+      if (felter.telefon !== undefined) ren.telefon = String(felter.telefon || '').trim().slice(0, 30);
+      if (felter.antal_personer !== undefined) ren.antal_personer = Number(felter.antal_personer);
+      if (felter.besked !== undefined) {
+        ren.besked = String(felter.besked || '').trim() ? String(felter.besked).trim().slice(0, 500) : null;
+      }
+      if (!SKY) {
+        return lokalt(function (d) {
+          var liste = d.reservationer || [];
+          var r0 = liste.filter(function (r) { return String(r.id) === String(id); })[0];
+          var taeller = function (r) { return !r.slettet && r.status !== 'afvist' && r.status !== 'venteliste'; };
+          if (r0 && ren.antal_personer > (Number(r0.antal_personer) || 0) && taeller(r0)) {
+            var arr = (d.kalender || []).filter(function (k) { return String(k.id) === String(r0.kalender_id); })[0];
+            if (arr && arr.pladser) {
+              var optaget = liste.reduce(function (sum, x) {
+                return String(x.kalender_id) === String(r0.kalender_id) && String(x.id) !== String(id) && taeller(x)
+                  ? sum + (Number(x.antal_personer) || 0) : sum;
+              }, 0);
+              if (optaget + ren.antal_personer > arr.pladser) throw new Error('reservation_udsolgt');
+            }
+          }
+          d.reservationer = liste.map(function (r) {
+            if (String(r.id) !== String(id)) return r;
+            var ny = Object.assign({}, r, ren);
+            logLokalt(d, 'reservationer', r, ny);
+            return ny;
+          });
+        });
+      }
+      return skriv('PATCH', 'reservationer', 'id=eq.' + encodeURIComponent(id), ren);
+    },
+
     reservationStatus: function (id, status, note) {
       var ren = { aendret: new Date().toISOString() };
       if (status !== undefined) ren.status = status;

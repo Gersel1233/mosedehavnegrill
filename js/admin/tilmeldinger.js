@@ -251,14 +251,16 @@
     Admin.tegnRaekker(boks, mine.map(function (r) {
       return {
         noegle: 'res-' + r.id,
-        aftryk: JSON.stringify(r),
-        byg: function () { return kort(r); },
+        // Mens den rettes, tegnes kortet ikke om (listen opdaterer sig selv).
+        aftryk: String(r.id) === String(retter) ? 'ret:' + r.id : JSON.stringify(r),
+        byg: function () { return String(r.id) === String(retter) ? retKort(r) : kort(r); },
       };
     }));
   }
 
   function kort(r) {
     var k = lav('div', 'bestil-kort b-' + r.status);
+    k.setAttribute('data-res', String(r.id));
 
     var top = lav('div', 'bestil-top');
     top.appendChild(Admin.statusMaerke(r.status,
@@ -350,6 +352,12 @@
       kom.addEventListener('click', function () { saet(r, 'bekraeftet'); });
       raekke.appendChild(kom);
     }
+    /* ✎ REDIGER (4/11) — øverst bag ···, som på bordbookingerne. */
+    var ret = lav('button', 'knap sekundaer bord-ret', '✎ Rediger tilmelding');
+    ret.type = 'button';
+    ret.setAttribute('aria-label', 'Rediger tilmeldingen for ' + r.navn);
+    ret.addEventListener('click', function () { aabnRet(r.id); });
+    mere.appendChild(ret);
     if (r.status !== 'udeblevet' && r.status !== 'venteliste') {
       var ude = lav('button', 'knap', 'Udeblev');
       ude.type = 'button';
@@ -391,6 +399,112 @@
     } else {
       k.appendChild(raekke);
     }
+    return k;
+  }
+
+  /* ============================================================
+     RET EN TILMELDING  (4/11)
+     ------------------------------------------------------------
+     Mikkel: *"man skal også kunne redigere bookinger i tilmeldinger
+     hurtigt."* Kortet bliver selv til formularen — samme greb som
+     bordbookingerne (js/admin/borde.js). Hæves antallet, siger
+     databasen nej, hvis der ikke er plads (reservation_ret_vaern).
+     ============================================================ */
+  var retter = null;
+  function aabnRet(id) {
+    retter = id;
+    tegnListe();
+    var k = document.querySelector('#tilmeld-liste [data-res="' + id + '"]');
+    if (k) {
+      k.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      var f = k.querySelector('input');
+      if (f) f.focus({ preventScroll: true });
+    }
+  }
+  function lukRet() { retter = null; tegnListe(); }
+
+  function retKort(r) {
+    var k = lav('div', 'bestil-kort b-' + r.status + ' bord-ret-kort');
+    k.setAttribute('data-res', String(r.id));
+    var top = lav('div', 'bestil-top');
+    top.appendChild(lav('span', 'bestil-tid', '✎ Rediger tilmelding'));
+    var ref = lav('span', 'bestil-ref', r.nummer ? Butik.pæntNummer(r.nummer, 'reservation') : r.reference);
+    top.appendChild(ref);
+    k.appendChild(top);
+
+    function felt(navn, etiket, type, vaerdi, ekstra) {
+      var boks = lav('div', 'felt' + (ekstra && ekstra.smal ? ' felt-smal' : ''));
+      var id = 'tret-' + navn + '-' + r.id;
+      var l = lav('label', null, etiket);
+      l.setAttribute('for', id);
+      var i = document.createElement('input');
+      i.type = type;
+      i.id = id;
+      i.value = vaerdi == null ? '' : vaerdi;
+      Object.keys(ekstra || {}).forEach(function (n) { if (n !== 'smal') i.setAttribute(n, ekstra[n]); });
+      boks.appendChild(l);
+      boks.appendChild(i);
+      return { boks: boks, input: i };
+    }
+    var fNavn = felt('navn', 'Navn', 'text', r.navn, { maxlength: 80 });
+    var fTlf = felt('telefon', 'Telefon', 'tel', r.telefon, { maxlength: 30, inputmode: 'tel' });
+    var p1 = lav('div', 'felt-par');
+    p1.appendChild(fNavn.boks);
+    p1.appendChild(fTlf.boks);
+    k.appendChild(p1);
+    var fAntal = felt('antal', 'Antal personer', 'number', r.antal_personer,
+      { smal: true, min: 1, max: 100, step: 1, inputmode: 'numeric' });
+    var fBesked = felt('besked', 'Gæstens besked', 'text', r.besked, { maxlength: 500 });
+    var p2 = lav('div', 'felt-par');
+    p2.appendChild(fAntal.boks);
+    p2.appendChild(fBesked.boks);
+    k.appendChild(p2);
+    k.appendChild(lav('p', 'hjaelp', 'Gæsten får ikke selv besked om ændringen — sig det i telefonen.'));
+
+    var raekke = lav('div', 'knap-raekke bestil-handling');
+    var gem = lav('button', 'knap primaer', 'Gem ændringer');
+    gem.type = 'button';
+    var fortryd = lav('button', 'knap sekundaer', 'Fortryd');
+    fortryd.type = 'button';
+    fortryd.addEventListener('click', lukRet);
+    raekke.appendChild(gem);
+    raekke.appendChild(fortryd);
+    k.appendChild(raekke);
+    k.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') lukRet();
+      if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT') { e.preventDefault(); gem.click(); }
+    });
+
+    gem.addEventListener('click', function () {
+      var ny = {
+        navn: fNavn.input.value.trim(), telefon: fTlf.input.value.trim(),
+        antal_personer: Number(fAntal.input.value), besked: fBesked.input.value.trim(),
+      };
+      var fejl = Butik.tjek.navn(ny.navn, 'navn', 80) || Butik.tjek.telefon(ny.telefon);
+      if (fejl) return Admin.brøl(fejl);
+      if (!isFinite(ny.antal_personer) || ny.antal_personer < 1 || ny.antal_personer > 100) {
+        return Admin.brøl('Antallet skal være mellem 1 og 100.');
+      }
+      var gamle = { navn: r.navn || '', telefon: r.telefon || '', antal_personer: Number(r.antal_personer), besked: r.besked || '' };
+      var aendret = {};
+      Object.keys(ny).forEach(function (n) { if (ny[n] !== gamle[n]) aendret[n] = ny[n]; });
+      if (!Object.keys(aendret).length) return lukRet();
+      gem.disabled = true;
+      Butik.skrive.reservationRet(r.id, aendret).then(function () {
+        retter = null;
+        return hent();
+      }).then(function () {
+        Admin.kvitter('Tilmeldingen er ændret: ' + ny.navn + ', ' + ny.antal_personer
+          + (ny.antal_personer === 1 ? ' person.' : ' personer.'));
+      }).catch(function (e) {
+        gem.disabled = false;
+        if (/reservation_udsolgt/.test((e && e.message) || '')) {
+          return Admin.brøl('Der er ikke plads til ' + ny.antal_personer + ' personer — arrangementet er fyldt. '
+            + 'Sæt flere pladser på arrangementet, eller tag færre med.');
+        }
+        Admin.brøl(Admin.forklarFejl ? Admin.forklarFejl(e) : (e.message || String(e)));
+      });
+    });
     return k;
   }
 
