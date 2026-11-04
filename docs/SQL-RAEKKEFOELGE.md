@@ -73,16 +73,23 @@ og derfra:
   → arrangement-musik-og-spisning-2-11.sql   (EFTER arrangement-kategori.sql)
   → skraldespand-alt-3-11.sql   (EFTER skraldespand.sql og arrangoer.sql)
   → opgaver-3-11.sql   (EFTER roller.sql)
+  → opgaver-perioder-4-11.sql   (EFTER opgaver-3-11.sql)
 ```
 
-**`opgaver-3-11.sql` (3/11) — IKKE KØRT ENDNU.** Chefen: lister fra egne filer skal blive til arbejdsopgaver,
+**`opgaver-perioder-4-11.sql` (4/11).** Mikkel: *"hvad hvis det er en uge frem, han laver dem, eller 5 dage
+frem eller 2 uger?"* `opgavelister.gyldig_fra`/`gyldig_til` (listen står kun på iPad'en de dage; tom = altid)
+og `opgaver.ugedag` (1–7) / `opgaver.dato` (opgaven står kun den dag; tom = hver dag). Læseren finder "uge
+46-47", "10/11 - 23/11", "10.-14. november" og overskrifter som "Mandag" eller "Fredag 13/11". Prøven er
+`proev-opgaver-perioder-4-11.sql` — 4 af 4. er-vi-klar 164.
+
+**`opgaver-3-11.sql` (3/11) — KØRT I PRODUKTIONEN 4/11** (med medarbejdere, afsnit og værdi). Chefen: lister fra egne filer skal blive til arbejdsopgaver,
 personalet sætter initialer ved hver dag. Tre tabeller: `opgavelister` (navn, ugedage), `opgaver` (linjerne) og
 `opgave_udfoert` (initialer, tidspunkt, login, og teksten gemt med, så dagens dokument står, selv om listen
 rettes). Cheferne (`er_ejer_for`) lægger lister ind; alle med admin-adgang (`is_admin_for`) sætter initialer;
 arrangøren ser intet. Én opgave én gang pr. dag. Prøven er `proev-opgaver-3-11.sql` — 9 af 9 (4/11: også `medarbejdere`, ansvarlig pr. liste og
 `opgave_udfoert.medarbejder_id`, `afsnit`, `vaerdi_navn`, `vaerdi`). er-vi-klar 163.
 
-**`skraldespand-alt-3-11.sql` (3/11) — IKKE KØRT ENDNU.** Mikkel: *"alle slettede skal naturligvis ryge i
+**`skraldespand-alt-3-11.sql` (3/11) — KØRT I PRODUKTIONEN 4/11.** Mikkel: *"alle slettede skal naturligvis ryge i
 skraldespanden, hvor alt skal ligge og gendannes"*. Arrangementer/kalender, nyheder, menukortets kategorier og
 varer, dagens retter, rabatkoder og borde får en kopi i `skraldespand_arkiv` lige før de slettes (udløseren
 `til_skraldespand`, BEFORE DELETE). Rækken forsvinder stadig fra sin tabel, så kalender og lister følger med

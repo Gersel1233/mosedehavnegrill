@@ -32,7 +32,7 @@ test('PDF-egenkontrol: fede overskrifter, nummererede punkter og en temperatur-k
   expect(r.titel).toBe('EGENKONTROL');
   expect(r.afsnit.map((a) => a.navn)).toEqual(['Ved åbning', 'Temperaturer', 'Ved lukning']);
   expect(tekster(r.afsnit[0])).toEqual(['Mål temperatur i køleskab 1 og 2', 'Tjek datoer på mælk og fløde', 'Vask hænder og tag forklæde på']);
-  expect(r.afsnit[1].opgaver).toEqual([
+  expect(r.afsnit[1].opgaver.map((o) => ({ tekst: o.tekst, vaerdi: o.vaerdi }))).toEqual([
     { tekst: 'Køleskab 1 (drikkevarer)', vaerdi: 'Temp. °C' },
     { tekst: 'Køleskab 2 (råvarer)', vaerdi: 'Temp. °C' },
     { tekst: 'Fryser', vaerdi: 'Temp. °C' },
@@ -53,9 +53,11 @@ test('Word (.docx)', async ({ page }) => {
   expect(tekster(r.afsnit[0])).toEqual(['Tænd kaffemaskinen', 'Tjek køleskab (temperatur)', 'Sæt skilte ud']);
 });
 
-test('Excel (.xlsx) — tabelhovedet springes over, ugedagen bliver', async ({ page }) => {
+test('Excel (.xlsx) — tabelhovedet springes over, ugedagen bliver opgavens dag', async ({ page }) => {
   const r = await læs(page, 'Ugeliste.xlsx');
-  expect(tekster(r.afsnit[0])).toEqual(['Rengør fritureolie – Mandag', 'Tjek isdiske', 'Bestil varer – Fredag']);
+  expect(r.afsnit[0].opgaver.map((o) => [o.tekst, o.ugedag])).toEqual([
+    ['Rengør fritureolie', 1], ['Tjek isdiske', null], ['Bestil varer', 5]]);
+  expect(r.periode).toBeNull();
 });
 
 test('chefen uploader en PDF, ser udkastet og opretter listen med afsnit og måling', async ({ page }) => {

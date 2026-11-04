@@ -1714,8 +1714,15 @@
           tekst: String(o.tekst || '').trim().slice(0, 300),
           afsnit: String(o.afsnit || '').trim().slice(0, 80) || null,
           vaerdi_navn: String(o.vaerdi_navn || o.vaerdi || '').trim().slice(0, 40) || null,
+          ugedag: (Number(o.ugedag) >= 1 && Number(o.ugedag) <= 7) ? Number(o.ugedag) : null,
+          dato: /^\d{4}-\d{2}-\d{2}$/.test(o.dato || '') ? o.dato : null,
         };
       }).filter(function (o) { return o.tekst; });
+      /* Perioden (4/11, opgaver-perioder-4-11.sql): "uge 46-47" → fra/til.
+         Felterne sendes kun, når de er sat — så en almindelig liste kan
+         gemmes, også før den nye SQL er kørt. */
+      var periode = skrive._opgavePeriode(liste.gyldig_fra, liste.gyldig_til);
+      if (periode instanceof Error) return Promise.reject(periode);
       if (!navn) return Promise.reject(new Error('Giv listen et navn, fx "Lukning".'));
       if (!tekster.length) return Promise.reject(new Error('Listen har ingen opgaver.'));
       var ugedage = (liste.ugedage && liste.ugedage.length && liste.ugedage.length < 7) ? liste.ugedage : null;
@@ -1725,10 +1732,11 @@
         var id = næsteId(d.opgavelister);
         d.opgavelister.push({ id: id, lokation_id: LOKATION, navn: navn, ugedage: ugedage, aktiv: true,
           raekkefoelge: d.opgavelister.length, kilde: liste.kilde || null, ansvarlig_id: Number(liste.ansvarlig_id) || null,
+          gyldig_fra: periode.gyldig_fra || null, gyldig_til: periode.gyldig_til || null,
           oprettet: new Date().toISOString() });
         tekster.forEach(function (t, i) {
           d.opgaver.push({ id: næsteId(d.opgaver), lokation_id: LOKATION, liste_id: id, tekst: t.tekst,
-            afsnit: t.afsnit, vaerdi_navn: t.vaerdi_navn, raekkefoelge: i, aktiv: true });
+            afsnit: t.afsnit, vaerdi_navn: t.vaerdi_navn, ugedag: t.ugedag, dato: t.dato, raekkefoelge: i, aktiv: true });
         });
       });
       function indsaet(tabel, raekker) {
@@ -1740,6 +1748,10 @@
             if (r.status === 404 || /does not exist|opgavelister/.test(t) && /relation/.test(t)) {
               throw new Error('Opgaverne er ikke slået til i databasen endnu. Bed Mikkel køre opgaver-3-11.sql.');
             }
+            if (/gyldig_fra|gyldig_til|'ugedag'|'dato'|"ugedag"|"dato"/.test(t)) {
+              throw new Error('Perioder og ugedage er ikke slået til i databasen endnu. Bed Mikkel køre '
+                + 'opgaver-perioder-4-11.sql — eller fjern perioden og dagene og gem igen.');
+            }
             if (r.status === 401 || r.status === 403 || /row-level security/.test(t)) {
               throw new Error('Kun cheferne kan lægge lister ind.');
             }
@@ -1747,16 +1759,44 @@
           });
         });
       }
-      return indsaet('opgavelister', [{ lokation_id: LOKATION, navn: navn, ugedage: ugedage,
+      var medDage = tekster.some(function (t) { return t.ugedag || t.dato; });
+      return indsaet('opgavelister', [Object.assign({ lokation_id: LOKATION, navn: navn, ugedage: ugedage,
         raekkefoelge: Number(liste.raekkefoelge) || 0, kilde: liste.kilde || null,
-        ansvarlig_id: Number(liste.ansvarlig_id) || null }])
+        ansvarlig_id: Number(liste.ansvarlig_id) || null }, periode)])
         .then(function (ny) {
           var id = ny && ny[0] && ny[0].id;
           return indsaet('opgaver', tekster.map(function (t, i) {
-            return { lokation_id: LOKATION, liste_id: id, tekst: t.tekst, afsnit: t.afsnit,
+            var o = { lokation_id: LOKATION, liste_id: id, tekst: t.tekst, afsnit: t.afsnit,
               vaerdi_navn: t.vaerdi_navn, raekkefoelge: i };
-          }));
+            // PostgREST vil have de samme felter i hver række.
+            if (medDage) { o.ugedag = t.ugedag; o.dato = t.dato; }
+            return o;
+          })).catch(function (e) {
+            // Listen blev lavet, men opgaverne ikke — fjern den tomme liste igen.
+            return skriv('DELETE', 'opgavelister', 'id=eq.' + encodeURIComponent(id))
+              .catch(function () {}).then(function () { throw e; });
+          });
         });
+    },
+
+    // Databasen kender ikke perioder/ugedage endnu → sig det på dansk.
+    _periodeFejl: function (e) {
+      if (/gyldig_fra|gyldig_til|'ugedag'|"ugedag"|'dato'|"dato"|opgaver\.(ugedag|dato)\b/.test(String(e && e.message))) {
+        throw new Error('Perioder og ugedage er ikke slået til i databasen endnu. Bed Mikkel køre opgaver-perioder-4-11.sql.');
+      }
+      throw e;
+    },
+
+    // { gyldig_fra, gyldig_til } kun med de felter, der er sat — eller en Error.
+    _opgavePeriode: function (fra, til) {
+      var ok = function (x) { return /^\d{4}-\d{2}-\d{2}$/.test(x || ''); };
+      var p = {};
+      if (ok(fra)) p.gyldig_fra = fra;
+      if (ok(til)) p.gyldig_til = til;
+      if (p.gyldig_fra && p.gyldig_til && p.gyldig_til < p.gyldig_fra) {
+        return new Error('Perioden slutter, før den begynder — ret "til"-datoen.');
+      }
+      return p;
     },
 
     retOpgaveliste: function (id, felter) {
@@ -1767,12 +1807,18 @@
       }
       if (felter.aktiv !== undefined) ren.aktiv = !!felter.aktiv;
       if (felter.ansvarlig_id !== undefined) ren.ansvarlig_id = Number(felter.ansvarlig_id) || null;
+      if (felter.gyldig_fra !== undefined || felter.gyldig_til !== undefined) {
+        var p = skrive._opgavePeriode(felter.gyldig_fra, felter.gyldig_til);
+        if (p instanceof Error) return Promise.reject(p);
+        ren.gyldig_fra = p.gyldig_fra || null;
+        ren.gyldig_til = p.gyldig_til || null;
+      }
       if (!SKY) return lokalt(function (d) {
         d.opgavelister = (d.opgavelister || []).map(function (l) {
           return String(l.id) === String(id) ? Object.assign({}, l, ren) : l;
         });
       });
-      return skriv('PATCH', 'opgavelister', 'id=eq.' + encodeURIComponent(id), ren);
+      return skriv('PATCH', 'opgavelister', 'id=eq.' + encodeURIComponent(id), ren).catch(skrive._periodeFejl);
     },
 
     sletOpgaveliste: function (id) {
@@ -1783,17 +1829,20 @@
       return skriv('DELETE', 'opgavelister', 'id=eq.' + encodeURIComponent(id));
     },
 
-    tilfoejOpgave: function (listeId, tekst, raekkefoelge, afsnit) {
+    tilfoejOpgave: function (listeId, tekst, raekkefoelge, afsnit, dag) {
       var t = String(tekst || '').trim().slice(0, 300);
       var a = String(afsnit || '').trim().slice(0, 80) || null;
       if (!t) return Promise.reject(new Error('Skriv opgaven.'));
+      var raekke = { lokation_id: LOKATION, liste_id: Number(listeId), tekst: t,
+        afsnit: a, raekkefoelge: Number(raekkefoelge) || 0 };
+      // Kun med, når den er sat (så det virker, før opgaver-perioder-4-11.sql er kørt).
+      if (dag && Number(dag.ugedag) >= 1 && Number(dag.ugedag) <= 7) raekke.ugedag = Number(dag.ugedag);
+      if (dag && /^\d{4}-\d{2}-\d{2}$/.test(dag.dato || '')) raekke.dato = dag.dato;
       if (!SKY) return lokalt(function (d) {
         d.opgaver = d.opgaver || [];
-        d.opgaver.push({ id: næsteId(d.opgaver), lokation_id: LOKATION, liste_id: Number(listeId), tekst: t,
-          afsnit: a, raekkefoelge: Number(raekkefoelge) || 0, aktiv: true });
+        d.opgaver.push(Object.assign({ id: næsteId(d.opgaver), aktiv: true, ugedag: null, dato: null }, raekke));
       });
-      return skriv('POST', 'opgaver', null, [{ lokation_id: LOKATION, liste_id: Number(listeId), tekst: t,
-        afsnit: a, raekkefoelge: Number(raekkefoelge) || 0 }]);
+      return skriv('POST', 'opgaver', null, [raekke]).catch(skrive._periodeFejl);
     },
 
     retOpgave: function (id, tekst) {
@@ -1861,6 +1910,21 @@
       });
       return skriv('PATCH', 'opgaver', 'liste_id=eq.' + encodeURIComponent(listeId)
         + (g === null ? '&afsnit=is.null' : '&afsnit=eq.' + encodeURIComponent(g)), { afsnit: n });
+    },
+
+    // Hvilken dag står et afsnits opgaver? (ugedag 1–7 eller null = hver dag)
+    retAfsnitDag: function (listeId, afsnit, ugedag) {
+      var u = (Number(ugedag) >= 1 && Number(ugedag) <= 7) ? Number(ugedag) : null;
+      var g = afsnit || null;
+      if (!SKY) return lokalt(function (d) {
+        d.opgaver = (d.opgaver || []).map(function (o) {
+          return String(o.liste_id) === String(listeId) && (o.afsnit || null) === g
+            ? Object.assign({}, o, { ugedag: u, dato: null }) : o;
+        });
+      });
+      return skriv('PATCH', 'opgaver', 'liste_id=eq.' + encodeURIComponent(listeId)
+        + (g === null ? '&afsnit=is.null' : '&afsnit=eq.' + encodeURIComponent(g)), { ugedag: u, dato: null })
+        .catch(skrive._periodeFejl);
     },
 
     // Skal opgaven have en værdi (fx "Temp. °C")? null = nej.

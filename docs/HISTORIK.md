@@ -7,6 +7,22 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**OPGAVER: PERIODER OG DAGE + JIMS DOKUMENT** (4/11). Mikkel: *"og hvad hvis det er en uge frem, han laver dem,
+eller 5 dage frem eller 2 uger?"*
+- **En liste kan gælde en periode**: "gælder uge 46-47", "10/11 - 23/11" eller "1.-14. december" i filen bliver
+  til Fra/Til i udkastet ("9/11–22/11 (uge 46–47)", "Fundet i filen: »…«"). Før og efter står listen ikke på
+  iPad'en. Kan rettes og fjernes ("Altid") under "Jeres lister", der også viser "udløbet".
+- **En opgave kan stå på én dag**: overskrifter som "Mandag" eller "Fredag 13/11" — og en Excel-celle med en
+  ugedag — gør, at opgaverne kun står den dag. Hvert afsnit har en vælger (Hver dag / Kun mandag …); en ny opgave
+  under "Mandag" arver mandagen. Står der intet for en liste den dag, vises den ikke; tal, Overblik og print følger med.
+- **Læseren**: Jims stil (fed titel, "gælder uge 46-47", ÅBNING/LUKNING i versaler, "- " punkter, "Temp
+  køleskab: ____ fryser: ____" → to opgaver med 📏, fed "HUSK …!!" er en opgave, "ring til mig … 22 33 44 55" er
+  ikke). Fejl rettet: `\b` var blevet til et usynligt tegn i uge-reglen.
+- **Testdokument**: filer/jims-liste.docx (= tests/filer-opgaver/Jims-liste.docx) → 15 opgaver i 5 afsnit.
+SQL: `opgaver-perioder-4-11.sql` (gyldig_fra/gyldig_til, opgaver.ugedag/dato; prøve 4/4, er-vi-klar 164). Ikke
+kørt endnu — almindelige lister virker uden; en liste med periode/dage giver en dansk besked om at køre den.
+Prøver: opgaver-perioder.spec.js.
+
 **OPGAVER: MEDARBEJDERE + TESTDOKUMENT** (4/11). Mikkel: *"lav lige et testdokument, og gør også, at de opretter
 medarbejdere derinde, som spiller sammen med systemet — primært opgaverne, når de lægger PDF'er ind."*
 - **👥 Medarbejdere** (kort på Opgaver, kun cheferne): navn + initialer (foreslås af navnet), dobbelte aktive

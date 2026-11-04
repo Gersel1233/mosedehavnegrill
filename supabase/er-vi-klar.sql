@@ -1413,7 +1413,16 @@ with tjek(nr, del, hvad, ok, retning) as (values
    (select to_regclass('public.opgavelister') is not null
        and to_regclass('public.opgaver') is not null
        and to_regclass('public.opgave_udfoert') is not null),
-   'Fanen Opgaver kan ikke gemme lister eller initialer. Kør supabase/opgaver-3-11.sql.')
+   'Fanen Opgaver kan ikke gemme lister eller initialer. Kør supabase/opgaver-3-11.sql.'),
+
+  /* Mikkel 4/11: en liste for "uge 46-47", opgaver kun om mandagen. */
+  (164, 'Opgaver', 'Opgavelister med periode og opgaver på bestemte dage',
+   (select exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'opgavelister' and column_name = 'gyldig_til')
+       and exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'opgaver' and column_name = 'ugedag')),
+   'En liste for "uge 46-47" eller med "Mandag"/"Fredag" kan ikke gemmes. '
+   || 'Kør supabase/opgaver-perioder-4-11.sql.')
 ),
 
 samlet as (

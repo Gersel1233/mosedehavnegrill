@@ -14178,3 +14178,24 @@ body:not(.personale) .stk-linje > .stk-tilvalg-fold {
   .opg-hvem-valg { justify-content: flex-start; }
   .opg-hvem-sp { text-align: left; }
 }
+
+/* ---- PERIODER OG DAGE I OPGAVERNE (4/11) ---- */
+.opg-periode { font-size: .85rem; color: #45607a; font-weight: 600; }
+.opg-kun { align-self: flex-start; font-size: .78rem; font-weight: 700; color: #45607a; background: #e9f0f7;
+  border-radius: 99px; padding: 2px 9px; white-space: nowrap; }
+.opg-forh-raekke .opg-kun { align-self: center; }
+.opg-kun-knap { flex: 0 0 auto; font: inherit; font-size: .8rem; font-weight: 700; color: #45607a; background: #e9f0f7;
+  border: 0; border-radius: 99px; padding: 6px 10px; cursor: pointer; white-space: nowrap; }
+.opg-forh-dag { flex: 0 0 auto; max-width: 11.5em; font-size: .9rem; }
+.opg-periode-raekke { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.opg-periode-raekke input[type="date"] { width: auto; min-width: 9.5em; flex: 0 1 auto; }
+.opg-periode-ord { font-weight: 600; opacity: .7; }
+.opg-periode-info { display: block; margin-top: 6px; font-weight: 700; color: #45607a; }
+.opg-fundet { margin: 4px 0 0; }
+.opg-udloebet { margin-left: 8px; font-size: .78rem; font-weight: 700; color: var(--red-tekst); background: #fff1ee;
+  border-radius: 99px; padding: 2px 8px; }
+@media (max-width: 560px) {
+  .opg-forh-hoved { flex-wrap: wrap; }
+  .opg-forh-hoved input { flex-basis: 100%; }
+  .opg-forh-dag { max-width: none; flex: 1; }
+}

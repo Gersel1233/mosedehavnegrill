@@ -15,6 +15,11 @@
      (og temperaturen, hvis den skal måles) → ✓. Klokkeslættet kommer
      af sig selv. Initialerne huskes på iPad'en til næste gang.
    - DAGEN kan printes som et dokument (fx til egenkontrollen).
+   - PERIODER OG DAGE (4/11, opgaver-perioder-4-11.sql). Mikkel: *"hvad
+     hvis det er en uge frem, han laver dem, eller 5 dage frem eller 2
+     uger?"* En liste kan gælde fra–til ("uge 46-47"), og en opgave kan
+     stå på én ugedag ("Mandag") eller én dato ("Fredag 13/11"). Uden
+     det står det hele hver dag, som før.
 
    ⚠️ INITIALER, IKKE LOGIN: personalet deler booking@, så det er
    initialerne, der siger hvem. Login gemmes også i databasen.
@@ -88,22 +93,58 @@
   }
   function fornavn(n) { return String(n || '').split(' ')[0]; }
 
+  // "9/11" og "uge 46-47 (9/11–22/11)".
+  function dm(iso) { return Number(iso.slice(8, 10)) + '/' + Number(iso.slice(5, 7)); }
+  function ugeNr(iso) {
+    var t = new Date(iso + 'T12:00:00Z');
+    t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+    return Math.ceil(((t - Date.UTC(t.getUTCFullYear(), 0, 1)) / 864e5 + 1) / 7);
+  }
+  function periodeTekst(fra, til) {
+    if (!fra && !til) return '';
+    if (!til) return 'fra ' + dm(fra);
+    if (!fra) return 'til ' + dm(til);
+    var hele = ugedag(fra) === 1 && ugedag(til) === 7;
+    var uger = hele ? ' (uge ' + ugeNr(fra) + (ugeNr(til) !== ugeNr(fra) ? '–' + ugeNr(til) : '') + ')' : '';
+    return dm(fra) + '–' + dm(til) + uger;
+  }
+  function iPerioden(l, iso) {
+    return (!l.gyldig_fra || iso >= l.gyldig_fra) && (!l.gyldig_til || iso <= l.gyldig_til);
+  }
+  // Står opgaven den dag? En dato slår ugedagen; ingen af dem = hver dag.
+  function paaDagen(o, iso) {
+    if (!iso) return true;
+    if (o.dato) return o.dato === iso;
+    if (o.ugedag) return Number(o.ugedag) === ugedag(iso);
+    return true;
+  }
+  function dagNavn(o) {
+    if (o.dato) return UGEDAGE_LANG[ugedag(o.dato) - 1] + ' ' + dm(o.dato);
+    return o.ugedag ? UGEDAGE_LANG[o.ugedag - 1] : '';
+  }
+  var UGEDAGE_LANG = ['mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag', 'søndag'];
+
   function listerFor(iso) {
     var u = ugedag(iso);
     return data.lister.filter(function (l) {
       if (l.aktiv === false) return false;
-      if (l.oprettet && datoFor(l.oprettet) > iso) return false;
+      if (l.oprettet && datoFor(l.oprettet) > iso && !l.gyldig_fra) return false;
+      if (!iPerioden(l, iso)) return false;
+      // En liste, hvor intet står den dag (fx kun "Mandag"), vises ikke.
+      if (opgaverI(l.id).length && !opgaverI(l.id, iso).length) return false;
       return !l.ugedage || !l.ugedage.length || l.ugedage.map(Number).indexOf(u) !== -1;
     }).sort(function (a, b) { return (a.raekkefoelge || 0) - (b.raekkefoelge || 0) || a.id - b.id; });
   }
-  function opgaverI(listeId) {
-    return data.opgaver.filter(function (o) { return String(o.liste_id) === String(listeId) && o.aktiv !== false; })
-      .sort(function (a, b) { return (a.raekkefoelge || 0) - (b.raekkefoelge || 0) || a.id - b.id; });
+  // Uden iso: alle listens opgaver (til at rette). Med iso: kun dem, der står den dag.
+  function opgaverI(listeId, iso) {
+    return data.opgaver.filter(function (o) {
+      return String(o.liste_id) === String(listeId) && o.aktiv !== false && paaDagen(o, iso);
+    }).sort(function (a, b) { return (a.raekkefoelge || 0) - (b.raekkefoelge || 0) || a.id - b.id; });
   }
   // Opgaverne i afsnit, i den rækkefølge de står.
-  function afsnitI(listeId) {
+  function afsnitI(listeId, iso) {
     var ud = [];
-    opgaverI(listeId).forEach(function (o) {
+    opgaverI(listeId, iso).forEach(function (o) {
       var navn = o.afsnit || '';
       var a = ud[ud.length - 1];
       if (!a || a.navn !== navn) { a = { navn: navn, opgaver: [] }; ud.push(a); }
@@ -117,7 +158,7 @@
   function tal(iso) {
     var alle = 0, gjort = 0;
     listerFor(iso).forEach(function (l) {
-      opgaverI(l.id).forEach(function (o) { alle++; if (udfoertFor(o.id, iso)) gjort++; });
+      opgaverI(l.id, iso).forEach(function (o) { alle++; if (udfoertFor(o.id, iso)) gjort++; });
     });
     return { alle: alle, gjort: gjort };
   }
@@ -183,7 +224,7 @@
     }
     var fremtid = dag > iDag();
     lister.forEach(function (l) {
-      var opg = opgaverI(l.id);
+      var opg = opgaverI(l.id, dag);
       var gjort = opg.filter(function (o) { return udfoertFor(o.id, dag); }).length;
       var kort = lav('section', 'opg-liste' + (opg.length && gjort === opg.length ? ' faerdig' : ''));
       var hoved = lav('div', 'opg-liste-hoved');
@@ -191,11 +232,12 @@
       titel.appendChild(lav('h3', null, l.navn));
       var ansv = l.ansvarlig_id && medarbejder(l.ansvarlig_id);
       if (ansv && ansv.aktiv !== false) titel.appendChild(lav('span', 'opg-ansvarlig', '👤 ' + ansv.navn));
+      if (l.gyldig_til) titel.appendChild(lav('span', 'opg-periode', '📅 ' + periodeTekst(l.gyldig_fra, l.gyldig_til)));
       hoved.appendChild(titel);
       hoved.appendChild(lav('span', 'opg-liste-tal', gjort + '/' + opg.length));
       kort.appendChild(hoved);
       kort.appendChild(bjaelke(gjort, opg.length));
-      afsnitI(l.id).forEach(function (a) {
+      afsnitI(l.id, dag).forEach(function (a) {
         if (a.navn) {
           var g = a.opgaver.filter(function (o) { return udfoertFor(o.id, dag); }).length;
           var h = lav('h4', 'opg-afsnit');
@@ -211,6 +253,11 @@
     tegnHold();
   }
 
+  function findesIOverskrift(o) {
+    var a = String(o.afsnit || '').toLowerCase();
+    return !!a && a.indexOf(UGEDAGE_LANG[(o.dato ? ugedag(o.dato) : o.ugedag) - 1]) === 0;
+  }
+
   function raekke(l, o, fremtid) {
     var u = udfoertFor(o.id, dag);
     var r = lav('div', 'opg-raekke' + (u ? ' gjort' : '') + (String(aaben) === String(o.id) ? ' aaben' : ''));
@@ -221,6 +268,9 @@
     var tekst = lav('div', 'opg-tekst');
     tekst.appendChild(lav('span', 'opg-navn', o.tekst));
     if (o.vaerdi_navn && !u) tekst.appendChild(lav('span', 'opg-maal', '📏 ' + o.vaerdi_navn));
+    // "kun i dag": opgaven står ikke de andre dage (står den under en
+    // overskrift, der allerede hedder dagen, er det sagt).
+    if ((o.ugedag || o.dato) && !u && !findesIOverskrift(o)) tekst.appendChild(lav('span', 'opg-kun', 'kun ' + dagNavn(o)));
 
     if (u) {
       r.appendChild(cirkel);
@@ -359,10 +409,10 @@
       + ' ' + dag.slice(0, 4) + ' · printet ' + esc(new Date().toLocaleString('da-DK')) + '</p>';
     var vist = {};
     listerFor(dag).forEach(function (l) {
-      var medVaerdi = opgaverI(l.id).some(function (o) { return o.vaerdi_navn; });
+      var medVaerdi = opgaverI(l.id, dag).some(function (o) { return o.vaerdi_navn; });
       var ans = l.ansvarlig_id && medarbejder(l.ansvarlig_id);
       html += '<h2>' + esc(l.navn) + (ans ? ' <small style="font-weight:400;color:#777">· ansvarlig: ' + esc(ans.navn) + '</small>' : '') + '</h2>';
-      afsnitI(l.id).forEach(function (a) {
+      afsnitI(l.id, dag).forEach(function (a) {
         if (a.navn) html += '<h3>' + esc(a.navn) + '</h3>';
         html += '<table><tr><th>Opgave</th>' + (medVaerdi ? '<th>Værdi</th>' : '')
           + '<th>Initialer</th><th>Kl.</th></tr>';
@@ -452,6 +502,56 @@
     return sel;
   }
 
+  /* "Hvornår gælder listen?" — fra/til, eller altid. id-præfiks: opg-ny / opg-ret-<id>. */
+  function periodeFelter(pre, fra, til, ændret, fundet) {
+    var f = lav('div', 'felt opg-periode-felt');
+    f.appendChild(lav('span', 'felt-etiket', 'Hvornår gælder listen'));
+    var r = lav('div', 'opg-periode-raekke');
+    var fraF = felt('date', fra || '', { id: pre + '-fra', 'aria-label': 'Gælder fra' });
+    var tilF = felt('date', til || '', { id: pre + '-til', 'aria-label': 'Gælder til' });
+    var info = lav('span', 'opg-periode-info');
+    var altid = knap('knap-link', 'Altid', function () { fraF.value = ''; tilF.value = ''; skift(); });
+    var skift = function () {
+      if (fraF.value && tilF.value && tilF.value < fraF.value) tilF.value = fraF.value;
+      info.textContent = fraF.value || tilF.value ? periodeTekst(fraF.value, tilF.value) : 'Altid — indtil I sletter den';
+      altid.hidden = !fraF.value && !tilF.value;
+      ændret(fraF.value || null, tilF.value || null);
+    };
+    fraF.addEventListener('change', skift);
+    tilF.addEventListener('change', skift);
+    r.appendChild(lav('span', 'opg-periode-ord', 'Fra'));
+    r.appendChild(fraF);
+    r.appendChild(lav('span', 'opg-periode-ord', 'til'));
+    r.appendChild(tilF);
+    r.appendChild(altid);
+    f.appendChild(r);
+    f.appendChild(info);
+    info.textContent = fra || til ? periodeTekst(fra, til) : 'Altid — indtil I sletter den';
+    altid.hidden = !fra && !til;
+    if (fundet) f.appendChild(lav('p', 'hjaelp opg-fundet', 'Fundet i filen: »' + fundet + '«'));
+    return f;
+  }
+
+  // Hvilken dag står afsnittets opgaver? Hver dag / en ugedag / én dato.
+  function dagVaelger(a, ændret, blandet) {
+    var sel = document.createElement('select');
+    sel.className = 'opg-forh-dag';
+    sel.setAttribute('aria-label', 'Hvilken dag' + (a.navn ? ' — ' + a.navn : ''));
+    var tilfoej = function (v, t) {
+      var o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); return o;
+    };
+    if (blandet) tilfoej('blandet', 'Forskellige dage').disabled = true;
+    tilfoej('', 'Hver dag');
+    UGEDAGE_LANG.forEach(function (n, i) { tilfoej(String(i + 1), 'Kun ' + n); });
+    if (a.dato) tilfoej('d', 'Kun ' + UGEDAGE_LANG[ugedag(a.dato) - 1] + ' ' + dm(a.dato));
+    sel.value = blandet ? 'blandet' : a.dato ? 'd' : a.ugedag ? String(a.ugedag) : '';
+    sel.addEventListener('change', function () {
+      if (sel.value === 'd') ændret({ ugedag: null, dato: a.dato });
+      else ændret({ ugedag: sel.value ? Number(sel.value) : null, dato: null });
+    });
+    return sel;
+  }
+
   function antalIUdkast() {
     return udkast ? udkast.afsnit.reduce(function (s, a) {
       return s + a.opgaver.filter(function (o) { return String(o.tekst || '').trim(); }).length;
@@ -459,12 +559,17 @@
   }
 
   function visUdkast(res, kilde) {
+    var p = res.periode || null;
     udkast = {
       navn: res.titel || '',
       kilde: kilde || null,
+      gyldig_fra: p && p.fra || '',
+      gyldig_til: p && p.til || '',
+      periodeFundet: p && p.tekst || '',
       afsnit: (res.afsnit && res.afsnit.length ? res.afsnit : [{ navn: '', opgaver: [] }]).map(function (a) {
-        return { navn: a.navn || '', opgaver: a.opgaver.map(function (o) {
-          return typeof o === 'string' ? { tekst: o, vaerdi: null } : { tekst: o.tekst, vaerdi: o.vaerdi || null };
+        return { navn: a.navn || '', ugedag: a.ugedag || null, dato: a.dato || null, opgaver: a.opgaver.map(function (o) {
+          return typeof o === 'string' ? { tekst: o, vaerdi: null }
+            : { tekst: o.tekst, vaerdi: o.vaerdi || null, ugedag: o.ugedag || null, dato: o.dato || null };
         }) };
       }),
     };
@@ -501,6 +606,10 @@
     dageF.appendChild(dage);
     boks.appendChild(dageF);
 
+    boks.appendChild(periodeFelter('opg-ny', udkast.gyldig_fra, udkast.gyldig_til, function (fra, til) {
+      udkast.gyldig_fra = fra; udkast.gyldig_til = til;
+    }, udkast.periodeFundet));
+
     boks.appendChild(lav('p', 'hjaelp', 'Sådan bliver listen. Ret, slet eller tilføj — 📏 betyder, at personalet '
       + 'skal skrive en værdi (fx temperaturen) ved opgaven.'));
 
@@ -512,6 +621,11 @@
         'aria-label': 'Afsnittets overskrift' });
       an.addEventListener('input', function () { a.navn = an.value; });
       h.appendChild(an);
+      h.appendChild(dagVaelger(a, function (v) {
+        a.ugedag = v.ugedag; a.dato = v.dato;
+        a.opgaver.forEach(function (o) { o.ugedag = v.ugedag; o.dato = v.dato; });
+        tegnUdkast();
+      }));
       if (udkast.afsnit.length > 1) {
         h.appendChild(knap('knap-link fare-tekst', '✕', function () {
           udkast.afsnit.splice(ai, 1);
@@ -525,6 +639,12 @@
         var t = felt('text', o.tekst, { maxlength: '300', 'aria-label': 'Opgave' });
         t.addEventListener('input', function () { o.tekst = t.value; opdaterOpret(); });
         r.appendChild(t);
+        // Én opgave på én dag i et afsnit for hver dag (en Excel-række med "Mandag").
+        if ((o.ugedag || o.dato) && !a.ugedag && !a.dato) {
+          r.appendChild(knap('opg-kun-knap', 'kun ' + dagNavn(o) + ' ✕', function () {
+            o.ugedag = null; o.dato = null; tegnUdkast();
+          })).setAttribute('aria-label', 'Opgaven står kun ' + dagNavn(o) + ' — tryk for hver dag');
+        }
         var maal = knap('opg-maal-knap', '📏', function () {
           o.vaerdi = o.vaerdi ? null : 'Temp. °C';
           maal.setAttribute('aria-pressed', o.vaerdi ? 'true' : 'false');
@@ -575,13 +695,16 @@
     var opgaver = [];
     udkast.afsnit.forEach(function (a) {
       a.opgaver.forEach(function (o) {
-        if (String(o.tekst || '').trim()) opgaver.push({ tekst: o.tekst, afsnit: a.navn, vaerdi_navn: o.vaerdi });
+        if (String(o.tekst || '').trim()) {
+          opgaver.push({ tekst: o.tekst, afsnit: a.navn, vaerdi_navn: o.vaerdi, ugedag: o.ugedag || null, dato: o.dato || null });
+        }
       });
     });
     if (b) b.disabled = true;
     Butik.skrive.opretOpgaveliste({
       navn: udkast.navn, opgaver: opgaver, ugedage: udkast.dage || null,
       kilde: udkast.kilde, raekkefoelge: data.lister.length, ansvarlig_id: udkast.ansvarlig_id || null,
+      gyldig_fra: udkast.gyldig_fra || null, gyldig_til: udkast.gyldig_til || null,
     }).then(function () {
       udkast = null;
       tegnUdkast();
@@ -679,7 +802,9 @@
         sum.appendChild(lav('strong', null, l.navn));
         sum.appendChild(lav('span', 'hjaelp', ' · ' + opgaverI(l.id).length + ' opgaver · '
           + (l.ugedage && l.ugedage.length ? l.ugedage.map(function (n) { return UGEDAGE[n - 1]; }).join(', ') : 'hver dag')
+          + (l.gyldig_fra || l.gyldig_til ? ' · ' + periodeTekst(l.gyldig_fra, l.gyldig_til) : '')
           + (l.kilde ? ' · fra ' + l.kilde : '')));
+        if (l.gyldig_til && l.gyldig_til < iDag()) sum.appendChild(lav('span', 'opg-udloebet', 'udløbet'));
         fold.appendChild(sum);
 
         var f1 = lav('div', 'felt');
@@ -709,6 +834,11 @@
         f2.appendChild(dage);
         fold.appendChild(f2);
 
+        fold.appendChild(periodeFelter('opg-ret-' + l.id, l.gyldig_fra, l.gyldig_til, function (fra, til) {
+          gem(Butik.skrive.retOpgaveliste(l.id, { gyldig_fra: fra, gyldig_til: til }),
+            fra || til ? 'Perioden er gemt: ' + periodeTekst(fra, til) + '.' : 'Listen gælder nu altid.');
+        }));
+
         afsnitI(l.id).forEach(function (a) {
           var blok = lav('div', 'opg-forh-afsnit');
           var h = lav('div', 'opg-forh-hoved');
@@ -717,6 +847,14 @@
             gem(Butik.skrive.retAfsnit(l.id, a.navn || null, an.value), 'Overskriften er gemt.');
           });
           h.appendChild(an);
+          var nøgle = function (o) { return (o.dato || '') + '|' + (o.ugedag || ''); };
+          var blandet = a.opgaver.some(function (o) { return nøgle(o) !== nøgle(a.opgaver[0]); });
+          var f0 = a.opgaver[0] || {};
+          h.appendChild(dagVaelger({ navn: a.navn, ugedag: f0.ugedag, dato: f0.dato }, function (v) {
+            gem(Butik.skrive.retAfsnitDag(l.id, a.navn || null, v.ugedag),
+              v.ugedag ? (a.navn ? a.navn : 'Opgaverne') + ' står nu kun om ' + UGEDAGE_LANG[v.ugedag - 1] + 'en.'
+                : (a.navn ? a.navn : 'Opgaverne') + ' står nu hver dag.');
+          }, blandet));
           blok.appendChild(h);
           a.opgaver.forEach(function (o) {
             var r = lav('div', 'opg-forh-raekke');
@@ -724,6 +862,7 @@
             var t = felt('text', o.tekst, { maxlength: '300', 'aria-label': 'Opgave' });
             t.addEventListener('change', function () { gem(Butik.skrive.retOpgave(o.id, t.value), 'Opgaven er gemt.'); });
             r.appendChild(t);
+            if (blandet && (o.ugedag || o.dato)) r.appendChild(lav('span', 'opg-kun', 'kun ' + dagNavn(o)));
             var maal = knap('opg-maal-knap', '📏', function () {
               gem(Butik.skrive.retOpgaveVaerdi(o.id, o.vaerdi_navn ? null : 'Temp. °C'),
                 o.vaerdi_navn ? 'Der skal ikke længere skrives en værdi.' : 'Personalet skriver nu en værdi ved opgaven.');
@@ -741,7 +880,9 @@
           var ny = lav('div', 'opg-forh-raekke');
           var nyt = felt('text', '', { maxlength: '300', placeholder: 'Ny opgave' + (a.navn ? ' under ' + a.navn : '') + ' …' });
           var tilfoej = knap('knap sekundaer lille', '+ Tilføj', function () {
-            gem(Butik.skrive.tilfoejOpgave(l.id, nyt.value, opgaverI(l.id).length, a.navn || null), 'Opgaven er tilføjet.');
+            // En ny opgave under "Mandag" står også kun om mandagen.
+            gem(Butik.skrive.tilfoejOpgave(l.id, nyt.value, opgaverI(l.id).length, a.navn || null,
+              blandet ? null : { ugedag: f0.ugedag || null, dato: f0.dato || null }), 'Opgaven er tilføjet.');
           });
           nyt.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); tilfoej.click(); } });
           ny.appendChild(nyt);

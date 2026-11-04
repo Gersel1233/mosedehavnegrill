@@ -20,7 +20,8 @@
      af: ____", tabelhoveder og tomme linjer forsvinder.
    - En opgave, der fortsætter på næste linje, bliver én opgave.
 
-   Ud kommer { titel, afsnit: [{ navn, opgaver: [{ tekst, vaerdi }] }] } — og
+   Ud kommer { titel, periode: { fra, til }, afsnit: [{ navn, ugedag, dato,
+   opgaver: [{ tekst, vaerdi, ugedag, dato }] }] } — og
    (vaerdi = "Temp. °C", når opgaven stod i en tabel med en måling)
    cheferne ser det, før det gemmes, og kan rette alt.
 
@@ -117,6 +118,89 @@
   }
 
   /* ----------------------------------------------------------
+     PERIODER OG UGEDAGE (4/11). Mikkel: *"og hvad hvis det er en uge
+     frem, han laver dem, eller 5 dage frem eller 2 uger?"* Står der
+     "uge 46-47", "10/11 - 23/11" eller "10.-14. november", gælder
+     listen kun de dage. En overskrift som "Mandag" eller "Fredag 13/11"
+     — eller en tabelcelle med en ugedag — giver opgaver, der kun står
+     den dag.
+     ---------------------------------------------------------- */
+  var MDR = { jan: 1, januar: 1, feb: 2, februar: 2, mar: 3, marts: 3, apr: 4, april: 4, maj: 5, jun: 6, juni: 6,
+    jul: 7, juli: 7, aug: 8, august: 8, sep: 9, sept: 9, september: 9, okt: 10, oktober: 10, nov: 11, november: 11,
+    dec: 12, december: 12 };
+  var MDR_RE = '(jan(?:uar)?|feb(?:ruar)?|mar(?:ts)?|apr(?:il)?|maj|juni?|juli?|aug(?:ust)?|sep(?:t(?:ember)?)?|okt(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
+  var UGEDAG = { mandag: 1, man: 1, tirsdag: 2, tir: 2, onsdag: 3, ons: 3, torsdag: 4, tor: 4, fredag: 5, fre: 5,
+    lørdag: 6, lør: 6, søndag: 7, søn: 7 };
+  function dagsDato() { try { return Butik.nu().dato; } catch (e) { return new Date().toISOString().slice(0, 10); } }
+  function plus(d, n) { var x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); }
+  function iso(y, m, d) { return y + '-' + (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d; }
+  function gyldig(y, m, d) { var x = new Date(Date.UTC(y, m - 1, d)); return x.getUTCMonth() === m - 1 && x.getUTCDate() === d; }
+  // Uden årstal: det nærmeste år, så datoen ikke ligger langt tilbage.
+  function aarFor(m, d) {
+    var nu = dagsDato(); var y = Number(nu.slice(0, 4));
+    return iso(y, m, d) < plus(nu, -60) ? y + 1 : y;
+  }
+  function fuldtAar(a) { a = Number(a); return a < 100 ? 2000 + a : a; }
+  function ugeMandag(uge, aar) {
+    var jan4 = new Date(Date.UTC(aar, 0, 4));
+    var dow = (jan4.getUTCDay() + 6) % 7;
+    jan4.setUTCDate(jan4.getUTCDate() - dow + (uge - 1) * 7);
+    return jan4.toISOString().slice(0, 10);
+  }
+  function ugeNr(d) {
+    var x = new Date(d + 'T12:00:00Z');
+    var t = new Date(Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate()));
+    t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+    var aar = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+    return Math.ceil(((t - aar) / 864e5 + 1) / 7);
+  }
+  function findPeriode(tekst) {
+    var s = lille(tekst);
+    var m = /(?:^|[^a-zæøå])uge(?:rne|r|n)?\s*(\d{1,2})(?:\s*(?:-|–|og|til|\+|&)\s*(?:uge\s*)?(\d{1,2}))?(?![\d])/.exec(s);
+    if (m && Number(m[1]) >= 1 && Number(m[1]) <= 53) {
+      var u1 = Number(m[1]), u2 = m[2] ? Number(m[2]) : u1;
+      var nu = dagsDato(), aar = Number(nu.slice(0, 4));
+      if (u1 < ugeNr(nu) - 8) aar += 1;
+      var fra = ugeMandag(u1, aar);
+      var til = plus(ugeMandag(u2 >= u1 ? u2 : u1, aar), 6);
+      return { fra: fra, til: til, match: m[0] };
+    }
+    m = /(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?\s*(?:-|–|til)\s*(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?/.exec(s);
+    if (m) {
+      var y1 = m[3] ? fuldtAar(m[3]) : aarFor(+m[2], +m[1]);
+      var y2 = m[6] ? fuldtAar(m[6]) : (+m[5] < +m[2] ? y1 + 1 : y1);
+      if (gyldig(y1, +m[2], +m[1]) && gyldig(y2, +m[5], +m[4])) {
+        return { fra: iso(y1, +m[2], +m[1]), til: iso(y2, +m[5], +m[4]), match: m[0] };
+      }
+    }
+    m = new RegExp('(\\d{1,2})\\.?\\s*(?:' + MDR_RE + '\\.?\\s*)?(?:-|–|til)\\s*(\\d{1,2})\\.?\\s*' + MDR_RE).exec(s);
+    if (m) {
+      var m2 = MDR[m[4]] || MDR[m[4].slice(0, 3)], m1 = m[2] ? (MDR[m[2]] || MDR[m[2].slice(0, 3)]) : m2;
+      var a1 = aarFor(m1, +m[1]), a2 = m2 < m1 ? a1 + 1 : a1;
+      if (gyldig(a1, m1, +m[1]) && gyldig(a2, m2, +m[3])) {
+        return { fra: iso(a1, m1, +m[1]), til: iso(a2, m2, +m[3]), match: m[0] };
+      }
+    }
+    return null;
+  }
+  // "Mandag", "Fredag 13/11", "tirsdag d. 10. november" — hele teksten er en dag.
+  function findDag(tekst) {
+    var s = lille(tekst).replace(/[:.!]+$/, '').trim();
+    var m = new RegExp('^(mandag|tirsdag|onsdag|torsdag|fredag|lørdag|søndag|man|tir|ons|tor|fre|lør|søn)\\.?'
+      + '(?:\\s*(?:den\\s+|d\\.\\s*)?(?:(\\d{1,2})[./](\\d{1,2})(?:[./](\\d{2,4}))?|(\\d{1,2})\\.?\\s*' + MDR_RE + '))?$').exec(s);
+    if (!m) return null;
+    var ud = { ugedag: UGEDAG[m[1]] };
+    var d = m[2] ? +m[2] : (m[5] ? +m[5] : null);
+    var mm = m[3] ? +m[3] : (m[6] ? (MDR[m[6]] || MDR[m[6].slice(0, 3)]) : null);
+    if (d && mm) {
+      var y = m[4] ? fuldtAar(m[4]) : aarFor(mm, d);
+      if (gyldig(y, mm, d)) ud.dato = iso(y, mm, d);
+    }
+    return ud;
+  }
+  function stort(t) { t = norm(t); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
+
+  /* ----------------------------------------------------------
      STRUKTUREN: linjer → { titel, afsnit }
      En linje er { tekst, celler, str, fed, side, y, x, overskrift? }.
      ---------------------------------------------------------- */
@@ -157,8 +241,54 @@
     var HOVEDORD = ['enhed', 'beskrivelse', 'område', 'emne', 'punkt', 'aktivitet', 'handling', 'hvad',
       'udstyr', 'sted', 'vare', 'produkt', 'kontrolpunkt'];
 
+    var periode = null;
+
     linjer.forEach(function (l, i) {
       var celler = (l.celler && l.celler.length ? l.celler : [l.tekst]).map(norm).filter(Boolean);
+      var forrigeLinje = linjer[i - 1];
+      // Luft over linjen: en tom linje i Word, et hul i en PDF.
+      var luft = l.efterTom || i === 0 || (forrigeLinje && l.y && forrigeLinje.y && (l.side || 1) === (forrigeLinje.side || 1)
+        && forrigeLinje.y - l.y > (l.str || 11) * 1.9);
+
+      // Perioden ("gælder uge 46-47", "10/11 - 23/11") — kun øverst i dokumentet.
+      if (!periode && !afsnit.some(function (a) { return a.opgaver.length; })) {
+        var p = findPeriode(l.tekst);
+        if (p) {
+          periode = { fra: p.fra, til: p.til, tekst: norm(l.tekst) };
+          var rest = lille(l.tekst).replace(p.match, '').replace(/\b(gælder|gaelder|for|fra|periode|perioden|i|plan|uge|ugerne)\b/g, '')
+            .replace(/[^a-zæøå]/g, '');
+          if (rest.length < 4 && titel) return;          // linjen ER perioden
+          if (rest.length < 4 && !titel && !l.titel && !(brød && l.str >= brød * 1.15)) return;
+        }
+      }
+      // En dag som overskrift: "Mandag", "Fredag 13/11:".
+      var dagHoved = celler.length === 1 && findDag(celler[0]);
+      if (dagHoved) {
+        nu = { navn: stort(celler[0].replace(/:$/, '')), opgaver: [], ugedag: dagHoved.ugedag, dato: dagHoved.dato || null };
+        aktivMaaling = null;
+        afsnit.push(nu);
+        forrige = null;
+        return;
+      }
+      // Hilsner og "ring til mig": noter, ikke opgaver.
+      if (/^(mvh|vh|med venlig hilsen|hilsen|kh)\b/.test(lille(l.tekst))
+          || /\bring\b.*\d{2}\s?\d{2}\s?\d{2}\s?\d{2}/.test(lille(l.tekst))) return;
+      // "Temp køleskab: ______   fryser: ______" → én opgave pr. felt, med et felt til tallet.
+      if (/_{3,}|\.{5,}/.test(l.tekst)) {
+        var maal = /temp|grad|°/i.test(l.tekst) ? 'Temp. °C' : 'Værdi';
+        var dele = l.tekst.split(/_{3,}|\.{5,}/).map(function (x) { return rensPunkt(x).replace(/[:\s]+$/, '').trim(); })
+          .filter(function (x) {
+            return x.replace(/[^A-Za-zÆØÅæøå]/g, '').length >= 3
+              && !/^(dato|uge|ugenr|uge nr|initialer|underskrift|sign|signatur|kontrolleret af|ansvarlig|udfyldt af|godkendt af|navn|kl)\b/i.test(x);
+          });
+        if (dele.length && !/^(dato|uge|initialer|underskrift|sign|kontrolleret|ansvarlig|udfyldt|godkendt)/i.test(lille(l.tekst))) {
+          dele.forEach(function (x) {
+            nu.opgaver.push({ tekst: stort(x).slice(0, 300), vaerdi: maal, ugedag: nu.ugedag || null, dato: nu.dato || null });
+          });
+          forrige = null;
+          return;
+        }
+      }
       // Tabelhoved: kun papirets egne ord ("Opgave | Man | Tir | … | Sign.").
       // Et tabelhoved med en måling ("Temp. °C"): rækkerne under får et felt til tallet.
       var maaling = celler.length > 1 && celler.slice(1).some(function (c) { return /temp|°\s?c|grader|måling|værdi/i.test(c); })
@@ -174,6 +304,15 @@
       if (erStoej(l.tekst)) return;
       var meningsfulde = celler.filter(function (c) { return erOplysning(c) || (!erFeltord(c) && !erStoej(c)); });
       if (!meningsfulde.length) return;
+      // "Rengør fritureolie | Mandag" → opgaven står kun om mandagen.
+      var raekkeDag = null;
+      if (meningsfulde.length > 1) {
+        var dagCelle = meningsfulde.filter(function (c) { return findDag(c); })[0];
+        if (dagCelle) {
+          raekkeDag = findDag(dagCelle);
+          meningsfulde = meningsfulde.filter(function (c) { return c !== dagCelle; });
+        }
+      }
 
       var tekst = rensPunkt(meningsfulde[0]);
       if (meningsfulde.length > 1 && meningsfulde.length <= 3) {
@@ -184,17 +323,23 @@
 
       var kort = tekst.length <= 60 && tekst.split(' ').length <= 9 && !/[.!?]$/.test(tekst);
       var stor = brød && l.str && l.str >= brød * 1.15;
+      // Fed alene er ikke nok — Jim fremhæver også en vigtig opgave. Der skal være luft over.
       var erOverskrift = l.overskrift === true
-        || (kort && celler.length === 1 && (stor || l.fed || versaler(tekst) || /:$/.test(tekst)));
+        || (kort && celler.length === 1 && (stor || (l.fed && luft) || versaler(tekst) || /:$/.test(tekst)));
       if (l.overskrift === false) erOverskrift = false;
 
       // Den første korte linje er titlen, når den hedder som filen, eller
       // når det, der følger, er punkter ("Lukning" · "- Sluk grillen" …).
       if (!erOverskrift && !titel && kort && celler.length === 1 && !punkt(l.tekst)
           && !afsnit.some(function (a) { return a.opgaver.length; })) {
-        var naeste = linjer.slice(i + 1, i + 4).filter(function (x) { return norm(x.tekst) && !erStoej(x.tekst); });
+        // Perioden ("gælder uge 46-47") og en overskrift ("ÅBNING") må stå imellem.
+        var naeste = linjer.slice(i + 1, i + 5).filter(function (x) {
+          return norm(x.tekst) && !erStoej(x.tekst) && !findPeriode(x.tekst);
+        }).slice(0, 3);
+        var hoved = function (x) { var t = norm(x.tekst); return t.length <= 40 && (versaler(t) || /:$/.test(t) || !!findDag(t)); };
         if ((kilde && ligner(tekst, kilde.replace(/\.[^.]+$/, '')))
-            || (naeste.length >= 2 && naeste.every(function (x) { return punkt(x.tekst); }))) {
+            || (naeste.length >= 2 && naeste.every(function (x) { return punkt(x.tekst) || hoved(x); })
+                && naeste.some(function (x) { return punkt(x.tekst); }))) {
           titel = tekst.replace(/:$/, '');
           return;
         }
@@ -220,7 +365,7 @@
       var fortsætter = forrige && /^[a-zæøå(]/.test(tekst) && !/^[•·\-–—*]/.test(norm(meningsfulde[0]))
         && !/[.!?:]$/.test(forrige.tekst)
         && (l.side || 1) === (forrige.side || 1)
-        && (!l.y || !forrige.y || Math.abs(forrige.y - l.y) <= (l.str || 12) * 2.2);
+        && l.y && forrige.y && Math.abs(forrige.y - l.y) <= (l.str || 12) * 2.2;   // kun i en PDF
       if (fortsætter) {
         var sidste = nu.opgaver.length - 1;
         nu.opgaver[sidste].tekst = (nu.opgaver[sidste].tekst + ' ' + tekst).slice(0, 300);
@@ -229,23 +374,36 @@
       }
 
       if (nu.opgaver.length && nu.opgaver[nu.opgaver.length - 1].tekst === tekst) return;
-      nu.opgaver.push({ tekst: tekst.slice(0, 300), vaerdi: aktivMaaling });
+      nu.opgaver.push({ tekst: tekst.slice(0, 300), vaerdi: aktivMaaling,
+        ugedag: raekkeDag ? raekkeDag.ugedag : (nu.ugedag || null),
+        dato: raekkeDag ? (raekkeDag.dato || null) : (nu.dato || null) });
       forrige = { tekst: tekst, side: l.side, y: l.y };
     });
 
     afsnit = afsnit.filter(function (a) { return a.opgaver.length; });
     // Én afsnit uden navn + intet andet = bare en liste.
     if (!titel && kilde) titel = kilde.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
-    return { titel: (titel || '').slice(0, 80), afsnit: afsnit };
+    // Datoer i dag-afsnittene uden en periode: perioden er fra første til sidste dato.
+    var datoer = [];
+    afsnit.forEach(function (a) { a.opgaver.forEach(function (o) { if (o.dato) datoer.push(o.dato); }); });
+    if (!periode && datoer.length) {
+      datoer.sort();
+      periode = { fra: datoer[0], til: datoer[datoer.length - 1], tekst: '' };
+    }
+    return { titel: (titel || '').slice(0, 80), afsnit: afsnit, periode: periode };
   }
 
   // ----------------------------------------------------------
   //  FORMATERNE → LINJER
   // ----------------------------------------------------------
   function fraTekst(tekst) {
+    var tom = true;
     return String(tekst || '').split(/\r?\n/).map(function (t) {
       var md = /^#{1,6}\s+(.*)$/.exec(t.trim());
-      return md ? { tekst: md[1], overskrift: true } : { tekst: t };
+      var l = md ? { tekst: md[1], overskrift: true } : { tekst: t };
+      l.efterTom = tom;
+      tom = !norm(t);
+      return l;
     });
   }
 
@@ -293,13 +451,20 @@
         else if (/heading|overskrift/i.test(navn)) l.overskrift = true;
         return l;
       }
+      var tom = true;
       Array.prototype.forEach.call(krop ? krop.childNodes : [], function (n) {
-        if (n.localName === 'p') linjer.push(afsnitLinje(n));
+        if (n.localName === 'p') {
+          var l = afsnitLinje(n);
+          l.efterTom = tom;
+          tom = !norm(l.tekst);
+          linjer.push(l);
+        }
         if (n.localName === 'tbl') {
           Array.prototype.forEach.call(n.getElementsByTagNameNS(W, 'tr'), function (tr) {
             var celler = Array.prototype.map.call(tr.getElementsByTagNameNS(W, 'tc'), tekstAf);
             linjer.push({ tekst: celler.join(' '), celler: celler, str: 11, overskrift: false });
           });
+          tom = false;
         }
       });
       return linjer;
