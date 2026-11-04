@@ -7,6 +7,19 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**OPGAVER: MEDARBEJDERE + TESTDOKUMENT** (4/11). Mikkel: *"lav lige et testdokument, og gør også, at de opretter
+medarbejdere derinde, som spiller sammen med systemet — primært opgaverne, når de lægger PDF'er ind."*
+- **👥 Medarbejdere** (kort på Opgaver, kun cheferne): navn + initialer (foreslås af navnet), dobbelte aktive
+  initialer afvises; fjernes man, sættes aktiv = false, så historikken stadig kan sige, hvem det var.
+- **Ét tryk på sit navn**: når holdet findes, åbner en opgave med "Hvem gjorde det?" og runde navne-knapper
+  (den ansvarlige og den sidst brugte først); "Andre initialer" til vikarer. Gemmer initialer + medarbejder_id.
+- **Ansvarlig pr. liste**: vælges i udkastet, når PDF'en lægges ind, og kan rettes bagefter; vises som
+  "👤 Lone Krogh" på listen og i printet.
+- **Testdokument**: filer/eksempel-opgaveliste.pdf (2 sider, 5 afsnit, 19 opgaver, temperaturtabel, ugedage,
+  "Sign.", sidetal) — og knappen "🧪 Prøv med et eksempel" i admin.
+SQL (stadig ikke kørt): opgaver-3-11.sql har nu også tabellen medarbejdere, opgavelister.ansvarlig_id og
+opgave_udfoert.medarbejder_id (prøve 9/9). Prøver: opgaver-hold.spec.js.
+
 **OPGAVER: PDF → PÆNE OPGAVER** (4/11). Mikkel: *"så han kan uploade en PDF-fil, og så er vores system dygtigt nok
 til at gøre det til et sæt opgaver … flot og pænt og nemt for kollegaer og personale."* Ny læser
 (js/admin/opgave-laeser.js): titlen (største tekst / første linje) bliver listens navn, overskrifter (større, fed,

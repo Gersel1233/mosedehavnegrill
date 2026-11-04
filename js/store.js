@@ -6553,6 +6553,7 @@
       if (!SKY) {
         var d = læsLokalt();
         return Promise.resolve({
+          medarbejdere: (d.medarbejdere || []).slice(),
           lister: (d.opgavelister || []).slice(),
           opgaver: (d.opgaver || []).slice(),
           udfoert: (d.opgave_udfoert || []).filter(function (u) { return !fra || u.dato >= fra; }),
@@ -6563,8 +6564,9 @@
         hentTabel('opgaver', 'select=*' + MIT + '&order=raekkefoelge,id'),
         hentTabel('opgave_udfoert', 'select=*' + MIT + (fra ? '&dato=gte.' + encodeURIComponent(fra) : '')
           + '&order=udfoert'),
+        hentTabel('medarbejdere', 'select=*' + MIT + '&order=navn').catch(function () { return []; }),
       ]).then(function (s) {
-        return { lister: s[0] || [], opgaver: s[1] || [], udfoert: s[2] || [] };
+        return { lister: s[0] || [], opgaver: s[1] || [], udfoert: s[2] || [], medarbejdere: s[3] || [] };
       });
     },
 

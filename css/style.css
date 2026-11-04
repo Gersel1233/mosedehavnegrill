@@ -14156,3 +14156,25 @@ body:not(.personale) .stk-linje > .stk-tilvalg-fold {
   .opg-gjort, .opg-form { width: 100%; justify-content: flex-start; padding-left: 42px; }
   .opg-udfoer { padding: 7px 11px; font-size: .85rem; }
 }
+
+/* ---- MEDARBEJDERE I OPGAVERNE (4/11) ---- */
+.opg-liste-titel { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.opg-ansvarlig { font-size: .85rem; color: #8a5a32; font-weight: 600; }
+.opg-hvem { font-size: .85rem; font-weight: 600; color: #1e7a45; }
+.opg-hvem-valg { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+.opg-hvem-sp { width: 100%; text-align: right; font-size: .85rem; font-weight: 700; opacity: .7; }
+.opg-person { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 6px 14px 6px 6px;
+  border: 1px solid rgba(0,0,0,.14); border-radius: 99px; background: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.opg-person:hover { border-color: #1e7a45; }
+.opg-person:active { background: #e5f4e4; }
+.opg-person:disabled { opacity: .5; }
+.opg-person-ini { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 6px;
+  border-radius: 99px; background: #1e7a45; color: #fff; font-weight: 800; letter-spacing: .04em; font-size: .9rem; }
+.opg-hold-raekke, .opg-hold-ny { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.opg-hold-raekke input:not(.kort-felt), .opg-hold-ny input:not(.kort-felt) { flex: 1; min-width: 0; }
+.opg-ini-felt.kort-felt { width: 5.2em; flex: 0 0 auto; }
+.opg-eksempel { margin: 4px 0 8px; }
+@media (max-width: 560px) {
+  .opg-hvem-valg { justify-content: flex-start; }
+  .opg-hvem-sp { text-align: left; }
+}

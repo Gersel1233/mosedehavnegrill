@@ -1724,7 +1724,8 @@
         d.opgaver = d.opgaver || [];
         var id = næsteId(d.opgavelister);
         d.opgavelister.push({ id: id, lokation_id: LOKATION, navn: navn, ugedage: ugedage, aktiv: true,
-          raekkefoelge: d.opgavelister.length, kilde: liste.kilde || null, oprettet: new Date().toISOString() });
+          raekkefoelge: d.opgavelister.length, kilde: liste.kilde || null, ansvarlig_id: Number(liste.ansvarlig_id) || null,
+          oprettet: new Date().toISOString() });
         tekster.forEach(function (t, i) {
           d.opgaver.push({ id: næsteId(d.opgaver), lokation_id: LOKATION, liste_id: id, tekst: t.tekst,
             afsnit: t.afsnit, vaerdi_navn: t.vaerdi_navn, raekkefoelge: i, aktiv: true });
@@ -1747,7 +1748,8 @@
         });
       }
       return indsaet('opgavelister', [{ lokation_id: LOKATION, navn: navn, ugedage: ugedage,
-        raekkefoelge: Number(liste.raekkefoelge) || 0, kilde: liste.kilde || null }])
+        raekkefoelge: Number(liste.raekkefoelge) || 0, kilde: liste.kilde || null,
+        ansvarlig_id: Number(liste.ansvarlig_id) || null }])
         .then(function (ny) {
           var id = ny && ny[0] && ny[0].id;
           return indsaet('opgaver', tekster.map(function (t, i) {
@@ -1764,6 +1766,7 @@
         ren.ugedage = (felter.ugedage && felter.ugedage.length && felter.ugedage.length < 7) ? felter.ugedage : null;
       }
       if (felter.aktiv !== undefined) ren.aktiv = !!felter.aktiv;
+      if (felter.ansvarlig_id !== undefined) ren.ansvarlig_id = Number(felter.ansvarlig_id) || null;
       if (!SKY) return lokalt(function (d) {
         d.opgavelister = (d.opgavelister || []).map(function (l) {
           return String(l.id) === String(id) ? Object.assign({}, l, ren) : l;
@@ -1804,6 +1807,49 @@
       return skriv('PATCH', 'opgaver', 'id=eq.' + encodeURIComponent(id), { tekst: t });
     },
 
+    /* ---- MEDARBEJDERNE (4/11) — navn og initialer, kun cheferne ---- */
+    gemMedarbejder: function (m) {
+      var navn = String(m.navn || '').trim().slice(0, 80);
+      var ini = String(m.initialer || '').trim().toUpperCase();
+      if (!navn) return Promise.reject(new Error('Skriv medarbejderens navn.'));
+      if (!/^[A-ZÆØÅ]{1,4}$/.test(ini)) return Promise.reject(new Error('Initialerne skal være 1 til 4 bogstaver, fx MK.'));
+      var ren = { navn: navn, initialer: ini };
+      if (!SKY) return lokalt(function (d) {
+        d.medarbejdere = d.medarbejdere || [];
+        if (d.medarbejdere.some(function (x) {
+          return x.aktiv !== false && String(x.initialer).toUpperCase() === ini && String(x.id) !== String(m.id);
+        })) throw new Error('Initialerne ' + ini + ' bruges allerede af en anden.');
+        if (m.id) {
+          d.medarbejdere = d.medarbejdere.map(function (x) { return String(x.id) === String(m.id) ? Object.assign({}, x, ren) : x; });
+        } else {
+          d.medarbejdere.push(Object.assign({ id: næsteId(d.medarbejdere), lokation_id: LOKATION, aktiv: true,
+            oprettet: new Date().toISOString() }, ren));
+        }
+      });
+      var loefte = m.id
+        ? skriv('PATCH', 'medarbejdere', 'id=eq.' + encodeURIComponent(m.id), ren)
+        : skriv('POST', 'medarbejdere', null, [Object.assign({ lokation_id: LOKATION }, ren)]);
+      return loefte.catch(function (e) {
+        if (/medarbejdere_initialer_unik|duplicate|23505/.test(String(e && e.message))) {
+          throw new Error('Initialerne ' + ini + ' bruges allerede af en anden.');
+        }
+        throw e;
+      });
+    },
+
+    // Fjern fra holdet (aktiv = false) — historikken kan stadig sige, hvem det var.
+    fjernMedarbejder: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.medarbejdere = (d.medarbejdere || []).map(function (x) {
+          return String(x.id) === String(id) ? Object.assign({}, x, { aktiv: false }) : x;
+        });
+        d.opgavelister = (d.opgavelister || []).map(function (l) {
+          return String(l.ansvarlig_id) === String(id) ? Object.assign({}, l, { ansvarlig_id: null }) : l;
+        });
+      });
+      return skriv('PATCH', 'medarbejdere', 'id=eq.' + encodeURIComponent(id), { aktiv: false });
+    },
+
     // Omdøb et afsnit i en liste ("Dagligt" → "Hver dag").
     retAfsnit: function (listeId, gammel, nyt) {
       var n = String(nyt || '').trim().slice(0, 80) || null;
@@ -1842,6 +1888,7 @@
       }
       var raekke = { lokation_id: LOKATION, opgave_id: Number(o.opgave_id), liste_id: Number(o.liste_id) || null,
         dato: o.dato, tekst: String(o.tekst || ''), liste_navn: o.liste_navn || null, initialer: ini };
+      if (o.medarbejder_id) raekke.medarbejder_id = Number(o.medarbejder_id);
       // Målingen (fx temperaturen), når opgaven beder om én.
       if (o.vaerdi_navn) {
         var v = String(o.vaerdi || '').trim().slice(0, 40);

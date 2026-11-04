@@ -25,7 +25,7 @@
   var $ = Admin.$;
   var lav = Admin.lav;
 
-  var data = { lister: [], opgaver: [], udfoert: [] };
+  var data = { lister: [], opgaver: [], udfoert: [], medarbejdere: [] };
   var hentet = false;
   var dag = null;            // den viste dag (iso)
   var aaben = null;          // opgaven, der står åben til initialer
@@ -73,6 +73,20 @@
     b.setAttribute('aria-valuenow', String(gjort));
     return b;
   }
+
+  /* Holdet (4/11): de aktive medarbejdere, efter navn. */
+  function holdet() {
+    return (data.medarbejdere || []).filter(function (m) { return m.aktiv !== false; })
+      .sort(function (a, b) { return String(a.navn).localeCompare(String(b.navn), 'da'); });
+  }
+  function medarbejder(id) {
+    return (data.medarbejdere || []).filter(function (m) { return String(m.id) === String(id); })[0];
+  }
+  function navnFor(ini) {
+    var m = (data.medarbejdere || []).filter(function (x) { return String(x.initialer).toUpperCase() === String(ini).toUpperCase(); })[0];
+    return m ? m.navn : '';
+  }
+  function fornavn(n) { return String(n || '').split(' ')[0]; }
 
   function listerFor(iso) {
     var u = ugedag(iso);
@@ -173,7 +187,11 @@
       var gjort = opg.filter(function (o) { return udfoertFor(o.id, dag); }).length;
       var kort = lav('section', 'opg-liste' + (opg.length && gjort === opg.length ? ' faerdig' : ''));
       var hoved = lav('div', 'opg-liste-hoved');
-      hoved.appendChild(lav('h3', null, l.navn));
+      var titel = lav('div', 'opg-liste-titel');
+      titel.appendChild(lav('h3', null, l.navn));
+      var ansv = l.ansvarlig_id && medarbejder(l.ansvarlig_id);
+      if (ansv && ansv.aktiv !== false) titel.appendChild(lav('span', 'opg-ansvarlig', '👤 ' + ansv.navn));
+      hoved.appendChild(titel);
       hoved.appendChild(lav('span', 'opg-liste-tal', gjort + '/' + opg.length));
       kort.appendChild(hoved);
       kort.appendChild(bjaelke(gjort, opg.length));
@@ -190,6 +208,7 @@
       boks.appendChild(kort);
     });
     tegnLister();
+    tegnHold();
   }
 
   function raekke(l, o, fremtid) {
@@ -211,7 +230,11 @@
         ? Admin.pænDato(datoFor(u.udfoert)).replace('I DAG · ', '') + ' kl. ' + kl(u.udfoert)
         : kl(u.udfoert);
       if (u.vaerdi) m.appendChild(lav('span', 'opg-vaerdi', u.vaerdi + (/°/.test(o.vaerdi_navn || '') ? ' °C' : '')));
-      m.appendChild(lav('span', 'opg-ini', u.initialer));
+      var ini = lav('span', 'opg-ini', u.initialer);
+      var hvem = navnFor(u.initialer);
+      if (hvem) ini.title = hvem;
+      m.appendChild(ini);
+      if (hvem) m.appendChild(lav('span', 'opg-hvem', fornavn(hvem)));
       m.appendChild(lav('span', 'opg-tid', hvornaar));
       m.appendChild(knap('knap-link', 'Fortryd', function () {
         if (!window.confirm('Fjern ' + u.initialer + ' fra "' + o.tekst + '"?')) return;
@@ -238,26 +261,62 @@
           'aria-label': o.vaerdi_navn, class: 'opg-vaerdi-felt' });
         form.appendChild(vaerdi);
       }
+      var send = function (iniTekst, medId, knapEl) {
+        var v = String(iniTekst || '').trim().toUpperCase();
+        if (knapEl) knapEl.disabled = true;
+        huskIni(v);
+        Butik.skrive.udfoerOpgave({ opgave_id: o.id, liste_id: l.id, dato: dag, tekst: o.tekst, liste_navn: l.navn,
+          initialer: v, medarbejder_id: medId || null, vaerdi_navn: o.vaerdi_navn, vaerdi: vaerdi ? vaerdi.value : null })
+          .then(function () { aaben = null; return hent(); })
+          .catch(function (e) { if (knapEl) knapEl.disabled = false; Admin.brøl(e && e.message || String(e)); });
+      };
+      var hold = holdet();
+      if (hold.length) {
+        /* ÉT TRYK PÅ SIT NAVN (4/11). Den ansvarlige og den, der sidst
+           brugte iPad'en, står først. */
+        var sidst = sidsteIni();
+        var foerst = function (m) {
+          return (String(m.id) === String(l.ansvarlig_id) ? 0 : 2) + (String(m.initialer).toUpperCase() === sidst ? 0 : 1);
+        };
+        var hvem = lav('div', 'opg-hvem-valg');
+        hvem.appendChild(lav('span', 'opg-hvem-sp', 'Hvem gjorde det?'));
+        hold.slice().sort(function (a, b) { return foerst(a) - foerst(b); }).forEach(function (m) {
+          var b = knap('opg-person', '');
+          b.appendChild(lav('span', 'opg-person-ini', m.initialer));
+          b.appendChild(lav('span', 'opg-person-navn', fornavn(m.navn)));
+          b.setAttribute('aria-label', m.navn + ' (' + m.initialer + ') gjorde det');
+          b.addEventListener('click', function () { send(m.initialer, m.id, b); });
+          hvem.appendChild(b);
+        });
+        // En vikar, der ikke står på holdet, skriver selv.
+        var andre = knap('knap-link', 'Andre initialer', function () {
+          andre.hidden = true;
+          var ini = felt('text', '', { maxlength: '4', autocapitalize: 'characters', autocomplete: 'off',
+            placeholder: 'Initialer', 'aria-label': 'Dine initialer', class: 'opg-ini-felt' });
+          var ok = knap('knap primaer gron', '✓ Udført', function () { send(ini.value, null, ok); });
+          ini.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ok.click(); } });
+          hvem.appendChild(ini);
+          hvem.appendChild(ok);
+          ini.focus();
+        });
+        hvem.appendChild(andre);
+        form.appendChild(hvem);
+        form.appendChild(knap('knap-link', 'Annullér', function () { aaben = null; tegn(); }));
+        r.appendChild(form);
+        if (vaerdi) setTimeout(function () { try { vaerdi.focus({ preventScroll: true }); } catch (e) { vaerdi.focus(); } }, 0);
+        return r;
+      }
       var ini = felt('text', sidsteIni(), { maxlength: '4', autocapitalize: 'characters', autocomplete: 'off',
         placeholder: 'Initialer', 'aria-label': 'Dine initialer', class: 'opg-ini-felt' });
       form.appendChild(ini);
       var ok = knap('knap primaer gron', '✓ Udført');
       form.appendChild(ok);
       form.appendChild(knap('knap-link', 'Annullér', function () { aaben = null; tegn(); }));
-      var send = function () {
-        var v = ini.value.trim().toUpperCase();
-        ok.disabled = true;
-        huskIni(v);
-        Butik.skrive.udfoerOpgave({ opgave_id: o.id, liste_id: l.id, dato: dag, tekst: o.tekst,
-          liste_navn: l.navn, initialer: v, vaerdi_navn: o.vaerdi_navn, vaerdi: vaerdi ? vaerdi.value : null })
-          .then(function () { aaben = null; return hent(); })
-          .catch(function (e) { ok.disabled = false; Admin.brøl(e && e.message || String(e)); });
-      };
-      ok.addEventListener('click', send);
+      ok.addEventListener('click', function () { send(ini.value, null, ok); });
       [ini, vaerdi].forEach(function (f) {
         if (!f) return;
         f.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter') { e.preventDefault(); send(); }
+          if (e.key === 'Enter') { e.preventDefault(); ok.click(); }
           if (e.key === 'Escape') { aaben = null; tegn(); }
         });
       });
@@ -295,13 +354,14 @@
       + 'h1{font-size:20px;margin:0 0 2px}p.u{margin:0 0 18px;color:#666}h2{font-size:16px;margin:24px 0 6px}'
       + 'h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#7a5a3a;margin:12px 0 4px}'
       + 'table{width:100%;border-collapse:collapse;margin-bottom:6px}td,th{border:1px solid #c9bfb3;padding:6px 8px;text-align:left}'
-      + 'th{background:#f3eee8;font-size:12px}td.i{width:80px;font-weight:700}td.t{width:70px}td.v{width:80px}</style></head><body>'
+      + 'th{background:#f3eee8;font-size:12px}td.i{width:120px;font-weight:700}td.t{width:70px}td.v{width:80px}</style></head><body>'
       + '<h1>Arbejdsopgaver — Mosede Havnecafe</h1><p class="u">' + esc(Admin.pænDato(dag).replace('I DAG · ', ''))
       + ' ' + dag.slice(0, 4) + ' · printet ' + esc(new Date().toLocaleString('da-DK')) + '</p>';
     var vist = {};
     listerFor(dag).forEach(function (l) {
       var medVaerdi = opgaverI(l.id).some(function (o) { return o.vaerdi_navn; });
-      html += '<h2>' + esc(l.navn) + '</h2>';
+      var ans = l.ansvarlig_id && medarbejder(l.ansvarlig_id);
+      html += '<h2>' + esc(l.navn) + (ans ? ' <small style="font-weight:400;color:#777">· ansvarlig: ' + esc(ans.navn) + '</small>' : '') + '</h2>';
       afsnitI(l.id).forEach(function (a) {
         if (a.navn) html += '<h3>' + esc(a.navn) + '</h3>';
         html += '<table><tr><th>Opgave</th>' + (medVaerdi ? '<th>Værdi</th>' : '')
@@ -311,7 +371,8 @@
           if (u) vist[u.id] = true;
           html += '<tr><td>' + esc(o.tekst) + '</td>'
             + (medVaerdi ? '<td class="v">' + esc(u && u.vaerdi ? u.vaerdi : (o.vaerdi_navn ? '' : '—')) + '</td>' : '')
-            + '<td class="i">' + esc(u ? u.initialer : '') + '</td><td class="t">' + esc(u ? kl(u.udfoert) : '') + '</td></tr>';
+            + '<td class="i">' + esc(u ? u.initialer + (navnFor(u.initialer) ? ' · ' + fornavn(navnFor(u.initialer)) : '') : '')
+            + '</td><td class="t">' + esc(u ? kl(u.udfoert) : '') + '</td></tr>';
         });
         html += '</table>';
       });
@@ -373,6 +434,24 @@
     }).map(function (b) { return Number(b.getAttribute('data-dag')); });
   }
 
+  function ansvarligVaelger(valgt, ændret) {
+    var sel = document.createElement('select');
+    sel.setAttribute('aria-label', 'Ansvarlig');
+    var o0 = document.createElement('option');
+    o0.value = '';
+    o0.textContent = 'Alle på holdet';
+    sel.appendChild(o0);
+    holdet().forEach(function (m) {
+      var o = document.createElement('option');
+      o.value = String(m.id);
+      o.textContent = m.navn + ' (' + m.initialer + ')';
+      if (String(valgt) === String(m.id)) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener('change', function () { ændret(sel.value ? Number(sel.value) : null); });
+    return sel;
+  }
+
   function antalIUdkast() {
     return udkast ? udkast.afsnit.reduce(function (s, a) {
       return s + a.opgaver.filter(function (o) { return String(o.tekst || '').trim(); }).length;
@@ -406,6 +485,13 @@
     navn.addEventListener('input', function () { udkast.navn = navn.value; });
     navnF.appendChild(navn);
     boks.appendChild(navnF);
+
+    if (holdet().length) {
+      var ansF = lav('div', 'felt');
+      ansF.appendChild(lav('label', null, 'Ansvarlig'));
+      ansF.appendChild(ansvarligVaelger(udkast.ansvarlig_id, function (v) { udkast.ansvarlig_id = v; }));
+      boks.appendChild(ansF);
+    }
 
     var dageF = lav('div', 'felt');
     dageF.appendChild(lav('span', 'felt-etiket', 'Hvilke dage skal den udfyldes'));
@@ -495,7 +581,7 @@
     if (b) b.disabled = true;
     Butik.skrive.opretOpgaveliste({
       navn: udkast.navn, opgaver: opgaver, ugedage: udkast.dage || null,
-      kilde: udkast.kilde, raekkefoelge: data.lister.length,
+      kilde: udkast.kilde, raekkefoelge: data.lister.length, ansvarlig_id: udkast.ansvarlig_id || null,
     }).then(function () {
       udkast = null;
       tegnUdkast();
@@ -554,6 +640,18 @@
         laes(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]);
       });
     }
+    /* PRØV MED ET EKSEMPEL (4/11): et testdokument, der ligger på siden
+       (filer/eksempel-opgaveliste.pdf), så cheferne kan se, hvad der sker. */
+    if ($('opg-eksempel')) {
+      $('opg-eksempel').addEventListener('click', function () {
+        fetch('filer/eksempel-opgaveliste.pdf').then(function (r) {
+          if (!r.ok) throw new Error('Eksemplet kunne ikke hentes.');
+          return r.blob();
+        }).then(function (b) {
+          laes(new File([b], 'eksempel-opgaveliste.pdf', { type: 'application/pdf' }));
+        }).catch(function (e) { Admin.brøl(e.message || String(e)); });
+      });
+    }
     $('opg-skriv-selv').addEventListener('click', function () {
       var t = $('opg-ny-tekst').value;
       if (!String(t).trim()) { visUdkast({ titel: '', afsnit: [{ navn: '', opgaver: [{ tekst: '', vaerdi: null }] }] }); return; }
@@ -592,6 +690,15 @@
         });
         f1.appendChild(navn);
         fold.appendChild(f1);
+
+        if (holdet().length) {
+          var fA = lav('div', 'felt');
+          fA.appendChild(lav('label', null, 'Ansvarlig'));
+          fA.appendChild(ansvarligVaelger(l.ansvarlig_id, function (v) {
+            gem(Butik.skrive.retOpgaveliste(l.id, { ansvarlig_id: v }), v ? 'Den ansvarlige er sat.' : 'Listen er for alle på holdet.');
+          }));
+          fold.appendChild(fA);
+        }
 
         var f2 = lav('div', 'felt');
         f2.appendChild(lav('span', 'felt-etiket', 'Hvilke dage'));
@@ -658,6 +765,65 @@
   var åbneLister = {};
 
   // ----------------------------------------------------------
+  //  MEDARBEJDERNE (4/11) — kun cheferne
+  // ----------------------------------------------------------
+  function foreslaaIni(navn) {
+    var dele = String(navn || '').trim().split(/\s+/).filter(Boolean);
+    if (!dele.length) return '';
+    var ini = dele.length === 1 ? dele[0].slice(0, 2) : dele[0][0] + dele[dele.length - 1][0];
+    return ini.toUpperCase().replace(/[^A-ZÆØÅ]/g, '');
+  }
+  function tegnHold() {
+    var kort = $('opg-hold-kort');
+    var boks = $('opg-hold');
+    if (!kort || !boks) return;
+    kort.hidden = !ejer();
+    if (!ejer()) return;
+    Admin.tøm(boks);
+    var hold = holdet();
+    if (!hold.length) {
+      boks.appendChild(lav('p', 'hjaelp', 'Ingen endnu. Opret holdet herunder — så trykker personalet bare på sit navn, '
+        + 'når en opgave er gjort.'));
+    }
+    hold.forEach(function (m) {
+      var r = lav('div', 'opg-hold-raekke');
+      r.appendChild(lav('span', 'opg-person-ini', m.initialer));
+      var navn = felt('text', m.navn, { maxlength: '80', 'aria-label': 'Navn' });
+      var ini = felt('text', m.initialer, { maxlength: '4', 'aria-label': 'Initialer', class: 'opg-ini-felt kort-felt' });
+      var gemIt = function () {
+        if (navn.value === m.navn && ini.value.toUpperCase() === m.initialer) return;
+        gem(Butik.skrive.gemMedarbejder({ id: m.id, navn: navn.value, initialer: ini.value }), 'Gemt.');
+      };
+      navn.addEventListener('change', gemIt);
+      ini.addEventListener('change', gemIt);
+      r.appendChild(navn);
+      r.appendChild(ini);
+      r.appendChild(knap('knap-link fare-tekst', '✕', function () {
+        if (!window.confirm('Fjern ' + m.navn + ' fra holdet?\n\nDet, ' + fornavn(m.navn) + ' har udført, står stadig i historikken.')) return;
+        gem(Butik.skrive.fjernMedarbejder(m.id), m.navn + ' er fjernet fra holdet.');
+      })).setAttribute('aria-label', 'Fjern ' + m.navn);
+      boks.appendChild(r);
+    });
+  }
+  function opsaetHold() {
+    if (!$('opg-hold-tilfoej')) return;
+    var navn = $('opg-hold-navn');
+    var ini = $('opg-hold-ini');
+    var rørt = false;
+    ini.addEventListener('input', function () { rørt = !!ini.value; });
+    navn.addEventListener('input', function () { if (!rørt) ini.value = foreslaaIni(navn.value); });
+    var tilfoej = function () {
+      gem(Butik.skrive.gemMedarbejder({ navn: navn.value, initialer: ini.value }).then(function () {
+        navn.value = ''; ini.value = ''; rørt = false; navn.focus();
+      }), 'Medarbejderen er oprettet.');
+    };
+    $('opg-hold-tilfoej').addEventListener('click', tilfoej);
+    [navn, ini].forEach(function (f) {
+      f.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); tilfoej(); } });
+    });
+  }
+
+  // ----------------------------------------------------------
   //  OPSÆTNING
   // ----------------------------------------------------------
   if ($('opg-dag')) {
@@ -669,6 +835,7 @@
     });
     $('opg-print').addEventListener('click', printDagen);
     opsaetNy();
+    opsaetHold();
   }
   if ($('ob-opgaver-aabn')) {
     $('ob-opgaver-aabn').addEventListener('click', function () { dag = iDag(); Admin.visFane('p-opgaver'); });

@@ -3807,6 +3807,7 @@
               <input type="file" id="opg-fil"
                      accept=".pdf,.docx,.xlsx,.xls,.ods,.csv,.txt,application/pdf,text/plain,image/*">
             </label>
+            <button class="knap sekundaer lille opg-eksempel" id="opg-eksempel" type="button">🧪 Prøv med et eksempel</button>
             <details class="opg-skriv">
               <summary>✍️ Eller skriv / sæt teksten ind selv</summary>
               <textarea id="opg-ny-tekst" rows="7" placeholder="Lukning:&#10;Sluk grillen&#10;Tøm skraldespande&#10;Lås døren"></textarea>
@@ -3817,6 +3818,21 @@
           <div id="opg-udkast" hidden></div>
         </details>
         <div id="opg-lister" class="luft-top"></div>
+      </div>
+
+      <!-- MEDARBEJDERNE (4/11): navn + initialer. Personalet trykker på sit
+           navn i opgaverne; en liste kan have en ansvarlig. Kun cheferne. -->
+      <div class="kort luft-top" id="opg-hold-kort" hidden>
+        <div class="kort-hoved">
+          <h2 class="h-panel">👥 Medarbejdere</h2>
+          <span class="kort-note">dem, der trykker på deres navn i opgaverne</span>
+        </div>
+        <div id="opg-hold"></div>
+        <div class="opg-hold-ny">
+          <input type="text" id="opg-hold-navn" maxlength="80" placeholder="Navn, fx Mikkel Kruse" aria-label="Navn">
+          <input type="text" id="opg-hold-ini" class="opg-ini-felt kort-felt" maxlength="4" placeholder="MK" aria-label="Initialer">
+          <button class="knap" id="opg-hold-tilfoej" type="button">+ Opret</button>
+        </div>
       </div>
     </div>
 

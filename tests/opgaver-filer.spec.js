@@ -91,3 +91,24 @@ test('chefen uploader en PDF, ser udkastet og opretter listen med afsnit og mål
   expect(u).toHaveLength(1);
   expect(u[0]).toMatchObject({ tekst: 'Køleskab 1 (drikkevarer)', initialer: 'LK', vaerdi: '3,5' });
 });
+
+test('testdokumentet (filer/eksempel-opgaveliste.pdf) bliver til 5 afsnit og 19 opgaver', async ({ page }) => {
+  const r = await læs(page, 'eksempel-opgaveliste.pdf');
+  expect(r.titel).toBe('Daglige opgaver – Mosede Havnecafe');
+  expect(r.afsnit.map((a) => a.navn)).toEqual(['Ved åbning', 'Egenkontrol – temperaturer', 'I løbet af dagen', 'Ved lukning', 'Ugentligt']);
+  expect(r.afsnit.reduce((s, a) => s + a.opgaver.length, 0)).toBe(19);
+  expect(r.afsnit[1].opgaver.every((o) => o.vaerdi === 'Temp. °C')).toBe(true);
+  expect(tekster(r.afsnit[3])).toContain('Rengør grillplade og stål, og tør alle overflader af med sprit');
+  expect(JSON.stringify(r)).not.toMatch(/Uge:|Sign|Side \d|Kontrolleret|Revideret|Enhed/);
+});
+
+test('"Prøv med et eksempel" lægger testdokumentet ind som udkast', async ({ page }) => {
+  const d = grunddata();
+  d.personale = [{ email: 'test@lesreg.dk', lokation_id: 'mosede', rolle: 'ejer', aktiv: true, navn: 'Mig' }];
+  await åbnAdmin(page, { ur: '2026-11-04T10:00:00Z', data: d });
+  await page.evaluate(() => Admin.visFane('p-opgaver'));
+  await page.locator('#opg-ny-fold > summary').click();
+  await page.locator('#opg-eksempel').click();
+  await expect(page.locator('#opg-fil-status')).toContainText('19 opgaver fundet i 5 afsnit', { timeout: 15000 });
+  await expect(page.locator('#opg-ny-navn')).toHaveValue('Daglige opgaver – Mosede Havnecafe');
+});

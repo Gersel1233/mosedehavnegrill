@@ -1,7 +1,7 @@
 -- ============================================================
 --  PRØVE: ARBEJDSOPGAVER MED INITIALER  (3/11 2026)
 --  Kør EFTER opgaver-3-11.sql. Alt rulles tilbage.
---  Skal skrive: ALLE 7 AF 7 BESTOD.
+--  Skal skrive: ALLE 9 AF 9 BESTOD.
 -- ============================================================
 begin;
 
@@ -77,10 +77,37 @@ exception when check_violation then
   insert into _svar values (5, 'tomme initialer afvises', true);
 end $$;
 
+-- 8) Chefen opretter en medarbejder; to aktive med samme initialer afvises
+set local request.jwt.claims = '{"email":"chef@opg.dk"}';
+do $$
+begin
+  insert into public.medarbejdere (lokation_id, navn, initialer) values ('mosede', 'Mikkel Kruse', 'MK');
+  begin
+    insert into public.medarbejdere (lokation_id, navn, initialer) values ('mosede', 'Maria Kjær', 'mk');
+    insert into _svar values (8, 'chefen opretter medarbejdere; dobbelte initialer afvises', false);
+  exception when unique_violation then
+    insert into _svar values (8, 'chefen opretter medarbejdere; dobbelte initialer afvises', true);
+  end;
+exception when others then
+  insert into _svar values (8, 'chefen opretter medarbejdere (' || sqlerrm || ')', false);
+end $$;
+
+-- 9) Personalet ser holdet, men kan ikke oprette nogen
+set local request.jwt.claims = '{"email":"lone@opg.dk"}';
+do $$
+begin
+  insert into public.medarbejdere (lokation_id, navn, initialer) values ('mosede', 'Snyder', 'SN');
+  insert into _svar values (9, 'personalet ser holdet, men opretter ingen', false);
+exception when others then
+  insert into _svar values (9, 'personalet ser holdet, men opretter ingen',
+    (select count(*) from public.medarbejdere where initialer = 'MK') = 1);
+end $$;
+
 -- 6) Arrangøren ser ingenting
 set local request.jwt.claims = '{"email":"event@opg.dk"}';
-insert into _svar select 6, 'arrangøren ser ingen opgaver',
-  not exists (select 1 from public.opgaver where tekst like 'Sluk%');
+insert into _svar select 6, 'arrangøren ser ingen opgaver og intet hold',
+  not exists (select 1 from public.opgaver where tekst like 'Sluk%')
+  and not exists (select 1 from public.medarbejdere);
 
 -- 7) Dagens dokument står, selv om chefen sletter listen bagefter
 set local request.jwt.claims = '{"email":"chef@opg.dk"}';
@@ -91,7 +118,7 @@ insert into _svar select 7, 'dagens dokument står, selv om listen slettes',
 
 reset role;
 select nr, navn, case when bestod then 'BESTOD' else 'FEJLEDE' end as udfald from _svar order by nr;
-select case when (select count(*) from _svar where bestod) = 7
-  then 'ALLE 7 AF 7 BESTOD' else 'NOGET FEJLEDE — se listen ovenfor' end as resultat;
+select case when (select count(*) from _svar where bestod) = 9
+  then 'ALLE 9 AF 9 BESTOD' else 'NOGET FEJLEDE — se listen ovenfor' end as resultat;
 
 rollback;
