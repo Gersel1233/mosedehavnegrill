@@ -712,6 +712,14 @@ test.describe('Heroens film er åbningen', () => {
     const o = t + (b[t + 4] === 1 ? 92 : 80);
     return [b.readUInt32BE(o) >>> 16, b.readUInt32BE(o + 4) >>> 16];
   }
+  /* Varigheden læses af mvhd-boksen (4/11): filmen var 5 s, den nye er 8 s,
+     og en fast længde i regnestykket ville gøre bitraten forkert. */
+  function mp4Varighed(fil) {
+    const b = fs.readFileSync(fil);
+    const t = b.indexOf('mvhd');
+    if (b[t + 4] === 1) return Number(b.readBigUInt64BE(t + 28)) / b.readUInt32BE(t + 24);
+    return b.readUInt32BE(t + 20) / b.readUInt32BE(t + 16);
+  }
   function jpgMaal(fil) {
     const b = fs.readFileSync(fil);
     let i = 2;
@@ -735,7 +743,7 @@ test.describe('Heroens film er åbningen', () => {
       /* ⚠️ H.264-RESERVEN MÅ IKKE PRESSES IGEN. 14/9 blev den halveret for
          at stoppe hak (1,1 Mbit/s), og kunden så det med det samme: "ikke
          4k-agtig". Hakkene klares af motoren nu; filen skal have bits. */
-      const bit = fs.statSync(`film/hero-${fmt}.mp4`).size * 8 / 5.04;
+      const bit = fs.statSync(`film/hero-${fmt}.mp4`).size * 8 / mp4Varighed(`film/hero-${fmt}.mp4`);
       expect(bit, `H.264-reserven ${fmt} er presset til ${(bit / 1e6).toFixed(1)} Mbit/s`).toBeGreaterThan(2e6);
     }
   });
