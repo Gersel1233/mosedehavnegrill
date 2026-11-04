@@ -7,6 +7,23 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**COOKIES OG MÅLINGER EFTER REGLERNE** (4/11). Mikkel: *"vi skal jo så lige have styr på det med cookies og
+persondatapolitik, så vi overholder alle regler"* — marketingbureauet (Marketing Advisor) vil måle med GA4, Tag
+Manager og Meta Pixel.
+- **admin → Indstillinger → 📊 Målinger og cookies**: felter til GA4 (G-…), Tag Manager (GTM-…) og Meta Pixel (tal).
+  Forkerte koder afvises. Tomt = ingen målinger.
+- **js/samtykke.js** på alle gæstesider (ikke min-bestilling og ved-bordet, hvor gæstens egen bestilling står):
+  uden koder sker INTET (intet banner, ingen cookies — jura-prøverne måler det stadig). Med koder: banner med lige
+  store "Ja tak"/"Nej tak", "Vælg selv" uden forudfyldte flueben, INTET hentes fra Google/Meta før et ja (heller
+  ikke Consent Mode-pings), Googles samtykke sættes før gtag/GTM, valget huskes 6 måneder og spørges igen ved et
+  nyt værktøj, "Cookies" i bunden af hver side ændrer det, og et tilbagetrukket ja sletter _ga/_fbp og genindlæser.
+- **Persondatapolitikken** retter sig selv: uden koder står "Vi måler ingenting"; med koder vises værktøjerne med
+  formål, firma og cookies, grundlag (samtykke), USA/Data Privacy Framework, fælles ansvar ved Meta Pixel, og
+  "Skift dit cookie-valg".
+- **supabase/samtykke-4-11.sql**: valgene logges uden navn (tilfældigt id), så samtykket kan dokumenteres (GDPR
+  art. 7, stk. 1); kun chefer læser; ryddes efter 2 år. Prøve 4/4, er-vi-klar 165.
+- Prøver: tests/samtykke.spec.js (16).
+
 **TILMELDINGER: FJERN — GÆSTEN HAR AFLYST** (4/11). Chefen: *"hvad med at helt fjerne en tilmelding, hvis nu de
 ringer og aflyser bookingen? Får de så en sms?"* Ny knap under ···: pladserne bliver fri, der sendes INGEN sms
 (Afvis sender "Desværre kan vi ikke tage imod din tilmelding" — forkert, når gæsten selv har aflyst), og påmindelsen

@@ -4108,6 +4108,37 @@
 
         <button class="knap" id="gem-kontakt">Gem kontakt</button>
       </div>
+
+      <!-- MÅLINGER OG COOKIES (4/11). js/admin/maaling.js + js/samtykke.js.
+           Tomme felter = siden måler ingenting og viser intet banner. -->
+      <div class="kort luft-top" id="maaling-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">📊 Målinger og cookies</h2>
+          <span class="kort-note">tomt = ingen målinger og intet banner</span>
+        </div>
+        <p class="hjaelp">Skriv kun en kode her, når I vil måle (fx når marketingbureauet giver jer den). Så spørger hjemmesiden
+          gæsten med et cookie-banner, og intet bliver hentet fra Google eller Meta, før gæsten har sagt ja. Persondatapolitikken
+          retter sig selv efter, hvad der står her.</p>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="maal-ga4">Google Analytics (GA4)</label>
+            <input type="text" id="maal-ga4" maxlength="20" autocomplete="off" spellcheck="false" placeholder="G-XXXXXXXXXX">
+          </div>
+          <div class="felt">
+            <label for="maal-gtm">Google Tag Manager</label>
+            <input type="text" id="maal-gtm" maxlength="20" autocomplete="off" spellcheck="false" placeholder="GTM-XXXXXXX">
+          </div>
+        </div>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="maal-meta">Meta Pixel (Facebook/Instagram)</label>
+            <input type="text" id="maal-meta" maxlength="20" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="kun tal, fx 1234567890123456">
+          </div>
+          <div class="felt"></div>
+        </div>
+        <p class="hjaelp" id="maal-status" aria-live="polite"></p>
+        <button class="knap" id="gem-maaling">Gem målinger</button>
+      </div>
     </div>
 
     </div><!-- .admin-indhold -->
@@ -4185,6 +4216,7 @@
 <script src="js/admin/dagensret.js?v=__V__"></script>
 <script src="js/admin/forside.js?v=__V__"></script>
 <script src="js/admin/kontakt.js?v=__V__"></script>
+<script src="js/admin/maaling.js?v=__V__"></script>
 <script src="js/admin/skraldespand.js?v=__V__"></script>
 <script src="js/admin/opgave-laeser.js?v=__V__"></script>
 <script src="js/admin/opgaver.js?v=__V__"></script>

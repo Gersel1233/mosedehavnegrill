@@ -74,7 +74,13 @@ og derfra:
   → skraldespand-alt-3-11.sql   (EFTER skraldespand.sql og arrangoer.sql)
   → opgaver-3-11.sql   (EFTER roller.sql)
   → opgaver-perioder-4-11.sql   (EFTER opgaver-3-11.sql)
+  → samtykke-4-11.sql   (EFTER roller.sql)
 ```
+
+**`samtykke-4-11.sql` (4/11).** Cookie-samtykker logges uden navn (tilfældigt id, valg, version, side, tid), så
+forretningen kan dokumentere samtykket (GDPR art. 7, stk. 1). Gæsten må kun skrive; kun cheferne læser; rækker
+over 2 år ryddes. Bruges af js/samtykke.js, som kun spørger, når en målekode står i admin → Indstillinger →
+Målinger og cookies. Prøven er `proev-samtykke-4-11.sql` — 4 af 4. er-vi-klar 165.
 
 **`opgaver-perioder-4-11.sql` (4/11).** Mikkel: *"hvad hvis det er en uge frem, han laver dem, eller 5 dage
 frem eller 2 uger?"* `opgavelister.gyldig_fra`/`gyldig_til` (listen står kun på iPad'en de dage; tom = altid)

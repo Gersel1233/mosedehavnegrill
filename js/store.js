@@ -6077,15 +6077,45 @@
     }).slice(0, 12);
   }
 
+  /* MÅLINGER (4/11): når en gæst har SENDT noget, siges det til siden med
+     hændelsen "mosede:maal". js/samtykke.js sender den videre til Google
+     og Meta — KUN hvis gæsten har sagt ja, og kun hvis der er en målekode
+     i admin. ⚠️ Ingen navne, numre, adresser eller beskeder kommer med:
+     kun HVAD der skete og HVOR MEGET (beløb, antal personer). */
+  function maalt(type, fn, detaljer) {
+    return function (x) {
+      var svar = fn.apply(this, arguments);
+      if (!svar || typeof svar.then !== 'function') return svar;
+      return svar.then(function (v) {
+        try {
+          var d = { type: type };
+          if (detaljer) Object.assign(d, detaljer(x || {}));
+          window.dispatchEvent(new CustomEvent('mosede:maal', { detail: d }));
+        } catch (e) { /* en måling må aldrig vælte en bestilling */ }
+        return v;
+      });
+    };
+  }
+  function bestillingsVaerdi(b) {
+    var kr = (b.linjer || []).reduce(function (s, l) {
+      return s + (Number(l.pris) || 0) * (Number(l.antal) || 0);
+    }, 0);
+    return kr > 0 ? { vaerdi: Math.round(kr) } : {};
+  }
+  function personer(x) {
+    var n = Number(x.antal_personer || x.antal);
+    return n > 0 ? { antal: n } : {};
+  }
+
   window.Butik = {
     sidstSvar: function () { return SKY ? sidstSvar : null; },
     tjek: tjek,
-    bestil: bestil,
+    bestil: maalt('bestilling', bestil, bestillingsVaerdi),
     noedudgangSms: noedudgangSms,
-    forespoerg: forespoerg,
-    bookBord: bookBord,
-    lejLokale: lejLokale,
-    reserverPlads: reserverPlads,
+    forespoerg: maalt('forespoergsel', forespoerg, function (f) { return { slags: String(f.type || '').slice(0, 30) }; }),
+    bookBord: maalt('bordbooking', bookBord, personer),
+    lejLokale: maalt('baglokale', lejLokale, personer),
+    reserverPlads: maalt('tilmelding', reserverPlads, personer),
     steder: steder,
     stedNavn: stedNavn,
     kortFortalt: kortFortalt,

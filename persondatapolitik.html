@@ -42,13 +42,14 @@
      CVR-nummer er værre end en manglende række: det peger på en
      anden virksomhed.
      ============================================================ -->
-<meta name="description" content="Persondatapolitik for Mosede Havnecafe: hvad vi gemmer, hvorfor, hvor længe — og hvorfor der ikke er et cookie-banner. Vi bruger ingen cookies og måler ingenting.">
+<meta name="description" content="Persondatapolitik for Mosede Havnecafe: hvad vi gemmer, hvorfor og hvor længe — og cookies: vi måler kun, hvis du selv siger ja.">
 <link rel="canonical" href="https://mosedehavnecafe.dk/persondatapolitik.html">
+<style>[data-maaling][hidden]{display:none!important}</style>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Mosede Havnecafe">
 <meta property="og:locale" content="da_DK">
 <meta property="og:title" content="Persondata og cookies · Mosede Havnecafe">
-<meta property="og:description" content="Persondatapolitik for Mosede Havnecafe: hvad vi gemmer, hvorfor, hvor længe — og hvorfor der ikke er et cookie-banner. Vi bruger ingen cookies og måler ingenting.">
+<meta property="og:description" content="Persondatapolitik for Mosede Havnecafe: hvad vi gemmer, hvorfor og hvor længe — og cookies: vi måler kun, hvis du selv siger ja.">
 <meta property="og:url" content="https://mosedehavnecafe.dk/persondatapolitik.html">
 <meta property="og:image" content="https://mosedehavnecafe.dk/billeder/del-terrasse-800.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -62,14 +63,16 @@
 <div class="screen" id="sc">
 <div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage" data-tilbage><svg viewBox="0 0 24 24"><use href="ikoner.svg#tilbage"/></svg></a><a class="ordmaerke hjem" href="index.html" data-tilbage>Mosede Havnecafe</a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24"><use href="ikoner.svg#menu"/></svg></button></div>
 
-<div class="phead"><h1>Persondata,<br>cookies og os</h1><p class="sub">Skrevet så det kan læses. Vi sælger mad — vi sælger ikke oplysninger, og vi sporer dig ikke.</p></div>
+<div class="phead"><h1>Persondata,<br>cookies og os</h1><p class="sub">Skrevet så det kan læses. Vi sælger mad — vi sælger ikke oplysninger, og vi måler kun, hvis du selv siger ja.</p></div>
 
 <section class="jura">
   <div class="panel rev">
     <div class="eyebrow">Kort fortalt</div>
     <ul class="jura-kort">
-      <li><b>Vi bruger ingen cookies.</b> Ikke én. Derfor er der heller ikke et banner, du skal klikke væk.</li>
-      <li><b>Vi måler ingenting.</b> Ingen Google Analytics, ingen Facebook-pixel, ingen indlejrede kort.</li>
+      <li data-maaling="ingen"><b>Vi bruger ingen cookies.</b> Ikke én. Derfor er der heller ikke et banner, du skal klikke væk.</li>
+      <li data-maaling="ingen"><b>Vi måler ingenting.</b> Ingen Google Analytics, ingen Facebook-pixel, ingen indlejrede kort.</li>
+      <li data-maaling="aktiv" hidden><b>Cookies kun med dit ja.</b> Siden virker lige godt uden. Statistik og markedsføring starter først, når du har sagt ja — og du kan altid sige nej igen under &quot;Cookies&quot; nederst på siden.</li>
+      <li data-maaling="aktiv" hidden><b>Dit navn kommer aldrig med.</b> Det, du skriver i en bestilling eller booking — navn, nummer, allergi — bliver aldrig sendt til Google eller Meta.</li>
       <li><b>Skrifterne ligger hos os selv</b> — din browser henter ikke noget fra Google, når du åbner siden.</li>
       <li><b>Vi gemmer det, du selv skriver i en formular</b> — navn, nummer og hvad du skal have — og vi bruger det til at lave din mad.</li>
     </ul>
@@ -189,8 +192,9 @@
        var målt for den gamle tjeneste, og den nye er ikke målt. Intet uden belæg. -->
   <p class="fine"><b>Din adresse bliver slået op.</b> Skriver du en leveringsadresse, spørger siden <a href="https://adressevaelger.dk" target="_blank" rel="noopener">Adressevælger</a> — Klimadatastyrelsens adressetjeneste — om adressen findes, og om den ligger inden for det område, vi kører ud til. Det sker, mens du skriver, og igen når du sender bestillingen. Vi sender kun selve adressen, ikke dit navn og ikke dit telefonnummer. Klimadatastyrelsen er en dansk myndighed.</p>
 
-  <div class="rev d1"><div class="eyebrow">Din browser</div><h2>Cookies<br>— og det, der ikke er cookies</h2></div>
-  <p class="sub"><b>Vi sætter ingen cookies.</b> Til gengæld ligger der tre ting i din egen browser, som aldrig forlader den:</p>
+  <div class="rev d1" id="cookies"><div class="eyebrow">Din browser</div><h2>Cookies<br>— og det, der ikke er cookies</h2></div>
+  <p class="sub" data-maaling="ingen"><b>Vi sætter ingen cookies.</b> Til gengæld ligger der tre ting i din egen browser, som aldrig forlader den:</p>
+  <p class="sub" data-maaling="aktiv" hidden><b>Vi sætter kun cookies, hvis du siger ja.</b> Nogle ting ligger dog altid i din egen browser, fordi siden ikke virker uden dem — de forlader den aldrig:</p>
   <div class="jura-liste rev d2">
     <div class="jura-blok">
       <h3>Din kurv</h3>
@@ -219,7 +223,26 @@
            paastand paa en jura-side skal kunne slaas op. -->
     </div>
   </div>
-  <p class="fine">Alle tre er nødvendige for, at siden virker, som du har bedt om. Derfor kræver de hverken samtykke eller et banner — og vi har ikke sat et, du skal klikke væk. Vil du fjerne dem, kan du rydde sidedata i din browsers indstillinger; så tømmer du bare kurven, og næste gang du bestiller, bliver du spurgt om handelsbetingelserne igen.</p>
+  <div class="jura-liste" data-maaling="aktiv" hidden>
+    <div class="jura-blok">
+      <h3>Dit cookie-valg</h3>
+      <p>Browseren husker dit ja eller nej i 6 måneder, så du ikke bliver spurgt ved hvert besøg. Vi gemmer også — uden navn — hvornår og hvad du valgte, så vi kan vise, at vi har spurgt.</p>
+    </div>
+  </div>
+  <p class="fine">De er nødvendige for, at siden virker, som du har bedt om. Derfor kræver de ikke samtykke<span data-maaling="ingen"> — og fordi vi ikke måler noget, er der heller ikke et banner, du skal klikke væk</span>. Vil du fjerne dem, kan du rydde sidedata i din browsers indstillinger; så tømmer du bare kurven, og næste gang du bestiller, bliver du spurgt om handelsbetingelserne igen.</p>
+
+  <!-- STATISTIK OG MARKEDSFØRING (4/11) — kun når en målekode står i admin.
+       js/samtykke.js viser blokken og fylder #maaling-liste med de værktøjer,
+       der faktisk er slået til. Uden JavaScript og uden koder: skjult. -->
+  <div data-maaling="aktiv" hidden>
+    <div><div class="eyebrow">Kun med dit ja</div><h2>Statistik og<br>markedsføring</h2></div>
+    <p class="sub">Siger du ja i banneret, bruger vi:</p>
+    <div class="jura-liste" id="maaling-liste"></div>
+    <p class="fine"><b>Grundlaget</b> er dit samtykke (cookiebekendtgørelsen § 4 og databeskyttelsesforordningen art. 6, stk. 1, litra a). Intet bliver hentet fra Google eller Meta, før du har sagt ja, og et nej gælder, til du selv ændrer det.</p>
+    <p class="fine"><b>Hvad de ser:</b> hvilke sider du besøger, hvornår, hvilken slags enhed du bruger og cirka hvor du er (ud fra IP-adressen). Ikke dit navn, dit nummer eller det, du bestiller. Google og Meta kan behandle oplysningerne i USA; begge er tilsluttet EU-US Data Privacy Framework. Ved Meta Pixel er vi og Meta fælles ansvarlige for indsamlingen, og Meta er selv ansvarlig for, hvad de bagefter bruger det til — se <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener">Metas privatlivspolitik</a> og <a href="https://policies.google.com/privacy?hl=da" target="_blank" rel="noopener">Googles</a>.</p>
+    <p class="fine" id="samtykke-status" aria-live="polite"></p>
+    <button class="g" type="button" data-cookie-valg>Skift dit cookie-valg</button>
+  </div>
 
   <div class="rev d1"><div class="eyebrow">Dine rettigheder</div><h2>Du bestemmer<br>over dine oplysninger</h2></div>
   <div class="note trin-liste rev d1">
@@ -260,6 +283,7 @@
 <script src="havnegrillen.js?v=__V__"></script>
 <script src="js/config.js?v=__V__"></script>
 <script src="js/store.js?v=__V__"></script>
+<script src="js/samtykke.js?v=__V__"></script>
 <!-- js/oplysninger.js er den ENE kilde til navn, adresse og
      telefon; js/skal/seo.js bygger Restaurant-mærket af den.
      js/skal/kontakt.js bytter mailadresserne ud med ejerens

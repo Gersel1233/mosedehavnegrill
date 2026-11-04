@@ -1422,7 +1422,13 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and exists (select 1 from information_schema.columns
                     where table_schema = 'public' and table_name = 'opgaver' and column_name = 'ugedag')),
    'En liste for "uge 46-47" eller med "Mandag"/"Fredag" kan ikke gemmes. '
-   || 'Kør supabase/opgaver-perioder-4-11.sql.')
+   || 'Kør supabase/opgaver-perioder-4-11.sql.'),
+
+  /* Mikkel 4/11: cookies og persondata efter reglerne, når der måles. */
+  (165, 'Jura', 'Cookie-samtykker kan dokumenteres',
+   (select to_regclass('public.samtykke_log') is not null),
+   'Gæsternes cookie-valg bliver ikke logget, så samtykket kan ikke dokumenteres. '
+   || 'Kør supabase/samtykke-4-11.sql.')
 ),
 
 samlet as (
