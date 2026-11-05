@@ -176,24 +176,14 @@ test.describe('Heroens film er åbningen', () => {
   };
   const rullet = (page) => page.evaluate(() => Math.max(window.scrollY, (document.getElementById('sc') || {}).scrollTop || 0));
 
-  test('"tryk for at springe over" står under åbningen og er væk bagefter', async ({ page }, info) => {
+  /* ⚠️ FORSIDEN SIGER IKKE "TRYK FOR AT SPRINGE OVER"  (5/11). Mikkel:
+     "fjern white bare". Linjen og ordene er væk; et tryk springer stadig
+     over (prøven nedenfor). */
+  test('forsiden har ingen "spring over"-linje — og intet hvidt under filmen', async ({ page }) => {
     await page.route('**/film/hero-*.mp4*', () => {});
     await åbnSkal(page, '/', { data: grunddata() });
-    const knap = page.locator('.hero-spring');
-    await expect.poll(() => synlighed(page, '.hero-spring')).toBe(1);
-    const k = await knap.evaluate((e) => { const r = e.getBoundingClientRect(); return { h: r.height, bund: r.bottom, vh: innerHeight }; });
-    expect(k.h, 'trykfladen er for lille til en finger').toBeGreaterThanOrEqual(30);
-    expect(k.bund, 'knappen står uden for skærmen').toBeLessThanOrEqual(k.vh);
-    await trykPaa(page, info, '.hero-spring');
-    await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
-    await expect.poll(() => knap.evaluate((e) => getComputedStyle(e).visibility)).toBe('hidden');
-    /* ⚠️ OG TRYKKET FULGTE IKKE LINKET UNDER KNAPPEN. Den slipper, i
-       samme øjeblik den springer, og på en lav telefon står "Selskab &
-       catering" lige under den (målt: det samme tryk hoppede til
-       #selskab). */
-    await page.waitForTimeout(900);
-    expect(await rullet(page), 'trykket på "spring over" fulgte linket under den').toBeLessThan(40);
-    expect(await page.evaluate(() => location.hash)).toBe('');
+    expect(await aabner(page)).toBe(true);
+    await expect(page.locator('.hero-spring')).toHaveCount(0);
   });
 
   /* Og det samme gælder hele heroen: et tryk midt i filmen, hvor
@@ -210,12 +200,6 @@ test.describe('Heroens film er åbningen', () => {
     /* Modstykket: bagefter virker knappen, som den skal. */
     await trykPaa(page, info, '.hero-cta .g');
     await expect.poll(() => rullet(page), { message: '"Bestil mad" virker ikke efter åbningen' }).toBeGreaterThan(200);
-  });
-
-  test('et direkte link har ingen "tryk for at springe over"', async ({ page }) => {
-    await åbnSkal(page, '/#menu', { data: grunddata() });
-    await page.waitForTimeout(1600);
-    expect(await page.locator('.hero-spring').evaluate((e) => getComputedStyle(e).visibility)).toBe('hidden');
   });
 
   test('når filmen er slut, står slutbilledet — og teksten', async ({ page }, info) => {
@@ -851,9 +835,9 @@ test.describe('Slutbilledet lever', () => {
    ------------------------------------------------------------
    Mikkels ord: åbningen var hverken "cinematisk nok med
    havnecaféen tekst eller interaktiv". Navnet er filmens titel,
-   teksten står væk fra maden, punkter på maden fører videre, og
-   "Se filmen" spiller den igen — også på en iPhone på
-   strømbesparelse, der aldrig startede den selv.
+   teksten står væk fra maden, og punkter på maden fører videre.
+   5/11: "Se filmen" og billedet, der fulgte musen, er taget af igen
+   ("lad dem være statiske"), og titlen toner frem på stedet.
    Filmen afspilles ikke her (play() er stubbet); begivenhederne
    sendes, som browseren ville sende dem.
    ============================================================ */
@@ -930,46 +914,24 @@ test.describe('Åbningen som en filmplakat', () => {
     expect(info.project.name === 'computer' ? bg.startsWith('linear-gradient(90deg') : bg.startsWith('linear-gradient(rgba')).toBe(true);
   });
 
-  test('"Se filmen" spiller den forfra — også når den aldrig startede af sig selv', async ({ page }) => {
-    /* En iPhone på strømbesparelse: det første play() (uden tryk)
-       afvises, et play() fra et tryk må gerne. */
-    await page.addInitScript(() => {
-      window.__play = 0;
-      HTMLMediaElement.prototype.play = function () {
-        if (this.classList && this.classList.contains('hero-liv')) return Promise.resolve();
-        window.__play++;
-        return window.__play === 1 ? Promise.reject(new Error('NotAllowedError')) : Promise.resolve();
-      };
-    });
-    await åbnSkal(page, '/', { data: grunddata() });
-    await expect.poll(() => aabner(page)).toBe(false);
-    await expect.poll(() => ordSynlig(page), { timeout: 5000 }).toEqual([1, 1]);
-    const knap = page.locator('.hero-igen');
-    await expect(knap).toBeVisible();
-    await expect(knap).toHaveAccessibleName('Se filmen');
-    await knap.click();
-    expect(await page.evaluate(() => window.__play)).toBe(2);
-    const film = page.locator('.hero-film');
-    await expect(film).toHaveClass(/\bigen\b/);
-    await expect(film).not.toHaveClass(/\bslut\b/);
-    expect(await page.locator('.hero-film video:not(.hero-liv)').getAttribute('src')).toMatch(/film\/hero-(16x9|9x16)\.mp4/);
-    await expect.poll(() => synlighed(page, '.hero .status'), { timeout: 3000 }).toBe(0);
-    expect(await ordSynlig(page), 'navnet bliver stående').toEqual([1, 1]);
-    await page.locator('.hero-film video:not(.hero-liv)').evaluate((v) => v.dispatchEvent(new Event('ended')));
-    await expect(film).not.toHaveClass(/\bigen\b/);
-    await expect(film).toHaveClass(/\bslut\b/);
-    await expect.poll(() => synlighed(page, '.hero .status'), { timeout: 3000 }).toBe(1);
-  });
-
-  test('et tryk på heroen stopper filmen, der spilles igen', async ({ page }) => {
+  test('ingen "Se filmen"-knap, og billedet står stille — også under musen', async ({ page }) => {
     await taelPlay(page);
     await åbnSkal(page, '/', { data: grunddata() });
     await page.evaluate(() => window.MosedeFilm.spring());
-    await page.locator('.hero-igen').click();
-    const film = page.locator('.hero-film');
-    await expect(film).toHaveClass(/\bigen\b/);
-    await page.locator('.hero-navn').dispatchEvent('pointerdown');
-    await expect(film).not.toHaveClass(/\bigen\b/);
-    await expect(film).toHaveClass(/\bslut\b/);
+    await expect(page.locator('.hero-igen')).toHaveCount(0);
+    await page.mouse.move(40, 40);
+    await page.mouse.move(900, 600, { steps: 8 });
+    await page.waitForTimeout(400);
+    const t = await page.locator('.hero-slut').evaluate((e) => getComputedStyle(e).transform);
+    expect(t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)', 'slutbilledet bevæger sig: ' + t).toBe(true);
+  });
+
+  test('titlen toner frem på stedet — den stiger ikke op', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    const t = await page.locator('.hero-navn .ord').first().evaluate((e) => getComputedStyle(e).transform);
+    expect(t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)', 'titlen er flyttet: ' + t).toBe(true);
+    const h = await page.locator('.hero h1').evaluate((e) => getComputedStyle(e).transform);
+    expect(h === 'none' || h === 'matrix(1, 0, 0, 1, 0, 0)', 'overskriften venter forskudt: ' + h).toBe(true);
   });
 });

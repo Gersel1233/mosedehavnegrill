@@ -187,10 +187,10 @@
     <a class="hero-pin" href="#smoerrebroed" style="--x:.6;--y:.71;--xh:.6;--yh:.735"><i aria-hidden="true"></i><span>Smørrebrød</span></a>
     <a class="hero-pin" href="#menu" style="--x:.4;--y:.5;--xh:.4;--yh:.655"><i aria-hidden="true"></i><span>Fadøl ved vandet</span></a>
   </div>
-  <!-- Et tryk hvor som helst har altid sprunget filmen over; nu SIGER
-       siden det — stille. Linjen under løber med filmens egen resttid.
-       Knappen findes kun under åbningen (havnegrillen.css). -->
-  <button class="hero-spring" type="button"><span class="tryk">Tryk for at springe over</span><span class="klik">Klik for at springe over</span><i aria-hidden="true"></i></button>
+  <!-- ⚠️ INGEN "TRYK FOR AT SPRINGE OVER" PÅ FORSIDEN  (5/11). Mikkel: "fjern
+       white bare" — den hvide linje og ordene under filmen. Et tryk, et
+       rul eller en tast springer stadig over (js/skal/hero-film.js); der
+       står bare intet om det. Historiens film har sin egen. -->
   <!-- ⚠️ FILMENS SCRIPT STÅR HER OG ER ASYNC (13/9). Kundens ord: "den
        tøver før den begynder". Det stod som det SIDSTE af seksten
        scripts nederst, så filmen fik først sin adresse — og browseren
@@ -225,12 +225,6 @@
          nedenfor viger, mens den står (havnegrillen.css). -->
     <a class="hero-lukket" href="#lukket-kort" data-lukket-pil hidden></a>
     <a class="hero-nyhed" href="#bestil" data-vaelg-levering data-levering-nyhed hidden><b>Nyhed</b>Vi kører maden ud<i aria-hidden="true">→</i></a>
-    <!-- "SE FILMEN"  (4/11). Spiller filmen igen — og er den eneste vej
-         til den på en iPhone på strømbesparelse, som aldrig starter en
-         film af sig selv (dér kom teksten med det samme, og Mikkel så
-         "videoen virker ikke"). Et tryk er lov til at starte den.
-         js/skal/hero-film.js viser knappen. -->
-    <button class="hero-igen" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg><span>Se filmen</span></button>
   </div>
 </div>
 

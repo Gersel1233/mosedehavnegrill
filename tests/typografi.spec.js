@@ -280,7 +280,9 @@ test.describe('Skalaen kan ikke skride tilbage', () => {
        "ÅBNINGEN SOM EN FILMPLAKAT"). Tallet er designets nye plads; prøven
        vogter stadig det samme: at skalaen ikke flytter den. */
     const top = await h1.evaluate((e) => Math.round(e.getBoundingClientRect().top));
-    expect(Math.abs(top - 219), 'h1 flyttede sig med skalaen').toBeLessThanOrEqual(2);
+    /* 274 (5/11): pladsen til leveringsnyheden over navnet holdes nu fra
+       første billede, så titlen ikke hopper, når nyheden kommer. */
+    expect(Math.abs(top - 274), 'h1 flyttede sig med skalaen').toBeLessThanOrEqual(2);
   });
 });
 
