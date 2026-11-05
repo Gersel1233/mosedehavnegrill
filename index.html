@@ -175,6 +175,18 @@
     <img class="hero-slut" alt="" decoding="async">
     <i class="hero-bjaelke top"></i><i class="hero-bjaelke bund"></i><i class="hero-korn"></i>
   </div>
+  <!-- ⚠️ PUNKTERNE PÅ MADEN  (4/11). Mikkel: åbningen skal være
+       "interaktiv". Når filmen er færdig, lyser to punkter op på det, der
+       lige er sat på bordet — et tryk går til smørrebrødet og til
+       menukortet. Pladsen er en brøkdel af SLUTBILLEDET (--x/--y for
+       16:9, --xh/--yh for 9:16), og stilarket regner den om til skærmen
+       med samme regel som object-fit: cover — intet script. Ligger UDEN
+       for .hero-film, som er aria-hidden: links må ikke stå i et skjult
+       træ. -->
+  <div class="hero-pins">
+    <a class="hero-pin" href="#smoerrebroed" style="--x:.6;--y:.71;--xh:.6;--yh:.735"><i aria-hidden="true"></i><span>Smørrebrød</span></a>
+    <a class="hero-pin" href="#menu" style="--x:.4;--y:.5;--xh:.4;--yh:.655"><i aria-hidden="true"></i><span>Fadøl ved vandet</span></a>
+  </div>
   <!-- Et tryk hvor som helst har altid sprunget filmen over; nu SIGER
        siden det — stille. Linjen under løber med filmens egen resttid.
        Knappen findes kun under åbningen (havnegrillen.css). -->
@@ -192,6 +204,12 @@
     <!-- ⚠️ ISEN STÅR FØRST (15/9). Ejerens ord: "på titlen vil han
          have noget andet end grillmad" — og isen er husets stolthed.
          Valgt af Mikkel: "Is, smørrebrød og mad direkte ved havnen". -->
+    <!-- ⚠️ NAVNET ER FILMENS TITEL  (4/11). Mikkel: åbningen var ikke
+         "cinematisk nok med havnecaféen tekst". Navnet kommer frem MENS
+         filmen spiller — ord for ord, ud af en blødhed, som en titel i en
+         biograf — og står der bagefter som sidens store ord. h1 er stadig
+         linjen under (hans valg 15/9, og den bærer søgeordene). -->
+    <p class="hero-navn"><span class="ord">Mosede</span> <span class="ord">Havnecafé</span></p>
     <h1><em>Is</em>, smørrebrød og mad direkte ved havnen</h1>
     <span class="status"><svg class="lanterne" viewBox="0 0 24 24" aria-hidden="true"><use href="ikoner.svg#lanterne-slukket"/></svg>Lukket lige nu · åbner 10.00</span>
     <div class="hero-cta">
@@ -207,6 +225,12 @@
          nedenfor viger, mens den står (havnegrillen.css). -->
     <a class="hero-lukket" href="#lukket-kort" data-lukket-pil hidden></a>
     <a class="hero-nyhed" href="#bestil" data-vaelg-levering data-levering-nyhed hidden><b>Nyhed</b>Vi kører maden ud<i aria-hidden="true">→</i></a>
+    <!-- "SE FILMEN"  (4/11). Spiller filmen igen — og er den eneste vej
+         til den på en iPhone på strømbesparelse, som aldrig starter en
+         film af sig selv (dér kom teksten med det samme, og Mikkel så
+         "videoen virker ikke"). Et tryk er lov til at starte den.
+         js/skal/hero-film.js viser knappen. -->
+    <button class="hero-igen" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg><span>Se filmen</span></button>
   </div>
 </div>
 

@@ -845,3 +845,131 @@ test.describe('Slutbilledet lever', () => {
     }
   });
 });
+
+/* ============================================================
+   ÅBNINGEN SOM EN FILMPLAKAT  (4/11)
+   ------------------------------------------------------------
+   Mikkels ord: åbningen var hverken "cinematisk nok med
+   havnecaféen tekst eller interaktiv". Navnet er filmens titel,
+   teksten står væk fra maden, punkter på maden fører videre, og
+   "Se filmen" spiller den igen — også på en iPhone på
+   strømbesparelse, der aldrig startede den selv.
+   Filmen afspilles ikke her (play() er stubbet); begivenhederne
+   sendes, som browseren ville sende dem.
+   ============================================================ */
+test.describe('Åbningen som en filmplakat', () => {
+  const ordSynlig = (page) => page.locator('.hero-navn .ord').evaluateAll((l) => l.map((e) => Number(getComputedStyle(e).opacity)));
+
+  test('navnet kommer frem, MENS filmen spiller — ikke først bagefter', async ({ page }) => {
+    await taelPlay(page);
+    /* Filen hentes ikke: en browser uden H.264 ville svare med en fejl,
+       og en fejl springer åbningen over (se filmKanSpilles ovenfor). */
+    await page.addInitScript(() => {
+      Object.defineProperty(HTMLMediaElement.prototype, 'src', {
+        configurable: true, get() { return this.__src || ''; }, set(v) { this.__src = v; },
+      });
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('.hero-navn')).toHaveText('Mosede Havnecafé');
+    expect(await aabner(page), 'åbningen er i gang').toBe(true);
+    expect(await ordSynlig(page), 'før filmen spiller, står titlen ikke').toEqual([0, 0]);
+    await page.locator('.hero-film video:not(.hero-liv)').evaluate((v) => {
+      v.dispatchEvent(new Event('canplaythrough'));
+      v.dispatchEvent(new Event('playing'));
+    });
+    await expect.poll(() => ordSynlig(page), { timeout: 5000 }).toEqual([1, 1]);
+    expect(await aabner(page), 'resten af teksten venter stadig på filmens slutning').toBe(true);
+    expect(await synlighed(page, '.hero h1')).toBe(0);
+  });
+
+  test('punkterne på maden kommer, når filmen er færdig — og kan trykkes', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await synlighed(page, '.hero-pin'), 'ingen punkter under filmen').toBe(0);
+    await page.evaluate(() => window.MosedeFilm.spring());
+    const pins = page.locator('.hero-pin');
+    await expect(pins).toHaveCount(2);
+    expect(await pins.evaluateAll((l) => l.map((a) => a.getAttribute('href')))).toEqual(['#smoerrebroed', '#menu']);
+    await expect.poll(() => synlighed(page, '.hero-pin'), { timeout: 5000 }).toBe(1);
+    /* Intet ligger over prikken: et tryk på den rammer punktet. */
+    for (const i of [0, 1]) {
+      const ramt = await pins.nth(i).locator('i').evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        const ved = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !!(ved && ved.closest('.hero-pin') === el.closest('.hero-pin'));
+      });
+      expect(ramt, `punkt ${i + 1} er dækket af noget`).toBe(true);
+    }
+  });
+
+  test('teksten står væk fra maden — den slutter, før punkterne begynder', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    await page.evaluate(() => window.MosedeFilm.spring());
+    await expect.poll(() => synlighed(page, '.hero-pin'), { timeout: 5000 }).toBe(1);
+    const maal = await page.evaluate(() => {
+      const synlig = (e) => e.offsetParent !== null && getComputedStyle(e).visibility !== 'hidden';
+      const tekst = [...document.querySelectorAll('.hero-in > *')].filter(synlig).map((e) => e.getBoundingClientRect());
+      const pins = [...document.querySelectorAll('.hero-pin')].map((e) => e.getBoundingClientRect());
+      const overlap = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+      return { rammer: pins.some((p) => tekst.some((t) => overlap(p, t))), n: tekst.length };
+    });
+    expect(maal.n).toBeGreaterThan(3);
+    expect(maal.rammer, 'et punkt på maden står under teksten').toBe(false);
+  });
+
+  test('mørket ligger kun, hvor teksten står — maden står i fuld styrke', async ({ page }, info) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    await page.evaluate(() => window.MosedeFilm.spring());
+    const bg = await page.locator('.hero.film').evaluate((e) => getComputedStyle(e, '::after').backgroundImage);
+    /* Hvert lag skal slutte gennemsigtigt: ingen hinde over hele billedet. */
+    const lag = bg.split(/,\s*(?=linear-gradient|radial-gradient)/);
+    expect(lag.length).toBeGreaterThan(1);
+    for (const l of lag) expect(l, 'et lag dækker hele billedet').toMatch(/rgba\(12, 9, 8, 0\)/);
+    expect(info.project.name === 'computer' ? bg.startsWith('linear-gradient(90deg') : bg.startsWith('linear-gradient(rgba')).toBe(true);
+  });
+
+  test('"Se filmen" spiller den forfra — også når den aldrig startede af sig selv', async ({ page }) => {
+    /* En iPhone på strømbesparelse: det første play() (uden tryk)
+       afvises, et play() fra et tryk må gerne. */
+    await page.addInitScript(() => {
+      window.__play = 0;
+      HTMLMediaElement.prototype.play = function () {
+        if (this.classList && this.classList.contains('hero-liv')) return Promise.resolve();
+        window.__play++;
+        return window.__play === 1 ? Promise.reject(new Error('NotAllowedError')) : Promise.resolve();
+      };
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => aabner(page)).toBe(false);
+    await expect.poll(() => ordSynlig(page), { timeout: 5000 }).toEqual([1, 1]);
+    const knap = page.locator('.hero-igen');
+    await expect(knap).toBeVisible();
+    await expect(knap).toHaveAccessibleName('Se filmen');
+    await knap.click();
+    expect(await page.evaluate(() => window.__play)).toBe(2);
+    const film = page.locator('.hero-film');
+    await expect(film).toHaveClass(/\bigen\b/);
+    await expect(film).not.toHaveClass(/\bslut\b/);
+    expect(await page.locator('.hero-film video:not(.hero-liv)').getAttribute('src')).toMatch(/film\/hero-(16x9|9x16)\.mp4/);
+    await expect.poll(() => synlighed(page, '.hero .status'), { timeout: 3000 }).toBe(0);
+    expect(await ordSynlig(page), 'navnet bliver stående').toEqual([1, 1]);
+    await page.locator('.hero-film video:not(.hero-liv)').evaluate((v) => v.dispatchEvent(new Event('ended')));
+    await expect(film).not.toHaveClass(/\bigen\b/);
+    await expect(film).toHaveClass(/\bslut\b/);
+    await expect.poll(() => synlighed(page, '.hero .status'), { timeout: 3000 }).toBe(1);
+  });
+
+  test('et tryk på heroen stopper filmen, der spilles igen', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    await page.evaluate(() => window.MosedeFilm.spring());
+    await page.locator('.hero-igen').click();
+    const film = page.locator('.hero-film');
+    await expect(film).toHaveClass(/\bigen\b/);
+    await page.locator('.hero-navn').dispatchEvent('pointerdown');
+    await expect(film).not.toHaveClass(/\bigen\b/);
+    await expect(film).toHaveClass(/\bslut\b/);
+  });
+});

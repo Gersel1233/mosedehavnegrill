@@ -274,8 +274,13 @@ test.describe('Skalaen kan ikke skride tilbage', () => {
     await page.evaluate(() => window.MosedeFilm && window.MosedeFilm.spring());
     const h1 = page.locator('.hero h1');
     await expect.poll(() => h1.evaluate((e) => getComputedStyle(e).transform)).toBe('none');
+    /* ⚠️ 219 OG IKKE 260 (4/11): heroen blev en filmplakat — navnet
+       "Mosede Havnecafé" står stort over h1, kransen er rykket op i
+       hjørnet, og teksten skal slutte, før maden begynder (ny/mosede-ny.css,
+       "ÅBNINGEN SOM EN FILMPLAKAT"). Tallet er designets nye plads; prøven
+       vogter stadig det samme: at skalaen ikke flytter den. */
     const top = await h1.evaluate((e) => Math.round(e.getBoundingClientRect().top));
-    expect(Math.abs(top - 260), 'h1 flyttede sig med skalaen').toBeLessThanOrEqual(2);
+    expect(Math.abs(top - 219), 'h1 flyttede sig med skalaen').toBeLessThanOrEqual(2);
   });
 });
 

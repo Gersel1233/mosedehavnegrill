@@ -168,6 +168,80 @@
   if (knap) knap.addEventListener('click', spring);
 
   var ro = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ⚠️ ÅBNINGEN KAN RØRES  (4/11). Mikkels ord: den var hverken
+     "cinematisk nok med havnecaféen tekst eller interaktiv".
+
+     "SE FILMEN" spiller filmen forfra. Den står HER — før springet for
+     reduceret bevægelse og direkte links nedenfor — fordi netop dér er
+     den gæstens eneste vej til filmen: en iPhone på strømbesparelse
+     afviser play() uden et tryk, og så kom teksten med det samme.
+     Trykket på knappen ER lov til at spille. Mens den spiller igen,
+     viger teksten (havnegrillen.css: .igen), og et tryk hvor som helst
+     på heroen stopper den igen. Lytterne til 'ended' og 'error' står
+     også her, for i springets gren nås de nedenfor aldrig. */
+  var hero = film.closest ? film.closest('.hero') : null;
+  var igenKnap = document.querySelector('.hero-igen');
+  function filmKilde() {
+    var h = film.hasAttribute('data-hevc') && typeof video.canPlayType === 'function' && kanHevc();
+    return base + (h ? '-hevc' : '') + '.mp4' + stempel;
+  }
+  function igenSlut() {
+    if (!film.classList.contains('igen')) return;
+    film.classList.remove('igen');
+    if (!video.paused) video.pause();
+    visSlut();
+    styrLiv();
+  }
+  function afspilIgen() {
+    if (!video || typeof video.play !== 'function') return;
+    if (!video.getAttribute('src')) video.src = filmKilde();
+    /* Filmens egne vagter (vent på hele filen, stå ikke frosset)
+       gælder åbningen; her har gæsten selv bedt om den. */
+    vist = true;
+    kanTilEnde = true;
+    film.classList.remove('slut');
+    film.classList.add('spiller', 'afspiller', 'igen');
+    if (still) still.classList.remove('vis');
+    if (liv) { liv.pause(); liv.classList.remove('vis'); }
+    try { video.currentTime = 0; } catch (e) { /* intet at spole */ }
+    var p = video.play();
+    if (p && typeof p.catch === 'function') p.catch(igenSlut);
+  }
+  if (video && typeof video.play === 'function') {
+    video.addEventListener('ended', igenSlut);
+    video.addEventListener('error', igenSlut);
+    if (igenKnap) {
+      igenKnap.hidden = false;
+      igenKnap.addEventListener('click', function (e) { e.stopPropagation(); afspilIgen(); });
+    }
+    if (hero) hero.addEventListener('pointerdown', function (e) {
+      if (e.target && e.target.closest && e.target.closest('.hero-igen')) return;
+      igenSlut();
+    });
+  }
+
+  /* BILLEDET FØLGER MUSEN — en anelse  (4/11). Kun med en rigtig mus
+     og ikke ved reduceret bevægelse. Slutbilledet (og sløjfen) står
+     5 % større og glider højst 14 px modsat musen; punkterne på maden
+     flytter præcis med (--zoom i havnegrillen.css). Én skrivning pr.
+     billede (requestAnimationFrame), og kun når filmen er færdig. */
+  if (hero && !ro && window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    hero.classList.add('parallakse');
+    var mx = 0, my = 0, venter = false;
+    window.addEventListener('pointermove', function (e) {
+      if (!film.classList.contains('slut') || film.classList.contains('igen')) return;
+      mx = e.clientX / (window.innerWidth || 1) - 0.5;
+      my = e.clientY / (window.innerHeight || 1) - 0.5;
+      if (venter) return;
+      venter = true;
+      requestAnimationFrame(function () {
+        venter = false;
+        hero.style.setProperty('--px', (mx * 2).toFixed(3));
+        hero.style.setProperty('--py', (my * 2).toFixed(3));
+      });
+    }, { passive: true });
+  }
   /* Uden klassen er der ingen åbning: et direkte link (#menu) eller
      reduceret bevægelse. Slutbilledet står, og teksten er fremme. */
   if (ro || !html.classList.contains('film-aabner') || !video || typeof video.play !== 'function') {
