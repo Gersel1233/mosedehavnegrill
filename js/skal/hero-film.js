@@ -156,7 +156,9 @@
     visSlut();
     if (video && !video.paused) video.pause();
     fjernLyttere();
+    if (hvisSprung) hvisSprung();
   }
+  var hvisSprung = null;
   function rullet() {
     var sc = document.getElementById('sc');
     var y = Math.max(window.scrollY || 0, sc ? sc.scrollTop : 0);
@@ -174,7 +176,12 @@
      er, og det samme på desktop." Slutbilledet står stille. */
   /* Uden klassen er der ingen åbning: et direkte link (#menu) eller
      reduceret bevægelse. Slutbilledet står, og teksten er fremme. */
-  if (ro || !html.classList.contains('film-aabner') || !video || typeof video.play !== 'function') {
+  /* ⚠️ DATASPARING OG 2G FÅR INGEN FILM  (5/11). 1–1,5 MB på et net, der
+     ikke kan bære dem, ender kun i et hak eller et spring — slutbilledet
+     og teksten med det samme er bedre. (Sløjfen har samme regel.) */
+  var forbindelse = navigator.connection;
+  var sparer = !!(forbindelse && (forbindelse.saveData || /(^|-)2g$/.test(forbindelse.effectiveType || '')));
+  if (ro || sparer || !html.classList.contains('film-aabner') || !video || typeof video.play !== 'function') {
     spring();
     return;
   }
@@ -291,10 +298,49 @@
   }
   var hevc = film.hasAttribute('data-hevc') && typeof video.canPlayType === 'function' && kanHevc();
   film.setAttribute('data-codec', hevc ? 'hevc' : 'h264');
-  video.src = base + (hevc ? '-hevc' : '') + '.mp4' + stempel;
+  var kilde = base + (hevc ? '-hevc' : '') + '.mp4' + stempel;
+  film.setAttribute('data-kilde', kilde);
 
-  var p = video.play();
-  if (p && typeof p.catch === 'function') p.catch(spring);
+  /* ⚠️ FILMEN HENTES HELT, FØR DEN SPILLER  (5/11). Mikkels ord: "videoen
+     hakker eller fejler spilningen stadig ret tit, hvis ikke man har godt
+     nok internet". Reglen fra 14/9 — vis den først, når den kan spille
+     til ende — hvilede på browserens eget skøn (canplaythrough), og
+     Safari på en iPhone siger "klar" længe før filen er hentet: filmen
+     begyndte, gik i stå, og STOP_MS sprang til slutbilledet midt i.
+     Nu hentes HELE filen med fetch og spilles fra hukommelsen (en
+     blob-adresse): når den først spiller, kan den ikke hakke. Imens står
+     filmens første billede. Når den ikke frem inden værnet (7 s), kommer
+     slutbilledet og teksten i stedet — og en film, der når frem efter
+     et spring, spilles ikke. Fejler hentningen, springes der.
+     Uden fetch (meget gamle browsere) streames den som før. */
+  var afbryd = window.AbortController ? new AbortController() : null;
+  function hentHelt(url) {
+    if (!window.fetch || !window.Promise || !window.URL || !URL.createObjectURL) return null;
+    return fetch(url, afbryd ? { signal: afbryd.signal } : undefined).then(function (svar) {
+      if (!svar.ok) throw new Error('HTTP ' + svar.status);
+      return svar.blob();
+    }).then(function (blob) { return URL.createObjectURL(blob); });
+  }
+  /* Springes filmen over, før den spiller, stoppes hentningen: på et
+     svagt net skal resten af siden have nettet. */
+  function stopHent() {
+    if (vist) return;
+    try { if (afbryd) afbryd.abort(); if (window.MosedeFilmHent && MosedeFilmHent.stop) MosedeFilmHent.stop(); } catch (e) { /* intet at stoppe */ }
+  }
+  function spil(url) {
+    if (afsloeret) return;
+    video.src = url;
+    var p = video.play();
+    if (p && typeof p.catch === 'function') p.catch(spring);
+  }
+  /* Hentningen er normalt begyndt allerede øverst i index.html, før
+     stilarkene (MosedeFilmHent); kun hvis adressen er den samme. */
+  hvisSprung = stopHent;
+  var forud = window.MosedeFilmHent;
+  var henter = null;
+  try { henter = forud && forud.url === kilde ? forud.blob : hentHelt(kilde); } catch (e) { henter = null; }
+  if (henter) henter.then(spil, function () { spring(); });
+  else spil(kilde);
 
   /* ⚠️ PASSIVE LYTTERE. En ikke-passiv wheel/touchmove tvinger
      browseren til at vente på JavaScript, før den må rulle
@@ -305,6 +351,12 @@
   /* Værnet: går filmen i stå, kommer teksten alligevel. Og herfra er
      det SCRIPTETS værn, der gælder — stilarkets faste 8 s er kun til,
      hvis det her script aldrig nåede så langt (`film-styret`). */
-  vaernOm(7000);
+  /* ⚠️ VÆRNET TÆLLES FRA SIDENS START, OG DET ER 6 S  (5/11). Målt på
+     et svagt net: scriptet selv kom først efter flere sekunder, og 7 s
+     derfra gav en sort skærm i 12. Teksten kommer nu senest 6 s efter,
+     at siden begyndte (mindst 1,2 s efter, at scriptet kører) — spiller
+     filmen inden, flyttes værnet til dens resttid som før. */
+  var gaaet = window.performance && performance.now ? performance.now() : 0;
+  vaernOm(Math.max(1200, 6000 - gaaet));
   html.classList.add('film-styret');
 }());

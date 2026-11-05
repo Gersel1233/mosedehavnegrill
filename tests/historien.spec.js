@@ -370,8 +370,8 @@ test.describe('Historien åbner med en film', () => {
 
     const fmt = info.project.name === 'mobil' ? '9x16' : '16x9';
     await expect(film).toHaveAttribute('data-format', fmt);
-    await expect(film.locator('video'))
-      .toHaveAttribute('src', new RegExp(`film/historie-${fmt}\\.mp4`));
+    /* Filen hentes helt, før den spilles (5/11): valget står i data-kilde. */
+    await expect(film).toHaveAttribute('data-kilde', new RegExp(`film/historie-${fmt}\\.mp4`));
     /* Startbilledet vælges af browseren, FØR scriptet kører — og
        reglen skal være den samme som filmens, ellers kan de to være
        hver sit format. */

@@ -1,5 +1,14 @@
 <!DOCTYPE html>
-<html lang="da"><head><meta charset="utf-8"><link rel="canonical" href="https://mosedehavnecafe.dk/"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mosede Havnecafe — smørrebrød og is på Mosede Havn i Greve</title>
+<html lang="da"><head><meta charset="utf-8"><!-- ⚠️ FILMEN HENTES FØRST AF ALT  (5/11). Mikkel: "videoen hakker eller
+     fejler … hvis ikke man har godt nok internet". MÅLT med en drosslet
+     forbindelse (3 Mbit/s): filmen kæmpede med sidens billeder, skrifter og
+     scripts om nettet og nåede aldrig frem; teksten kom efter 12 s. Her,
+     øverst i head og FØR stilarkene (et script venter på stilark over sig),
+     begynder hentningen, i det øjeblik siden begynder. js/skal/hero-film.js
+     tager den over (MosedeFilmHent), når adressen er den samme — reglerne
+     for format, HEVC og stempel er de samme som dér og i data-hoej-naar.
+     Samme betingelser som klassen film-aabner nedenfor + datasparing/2G. -->
+<script>(function(){try{if(location.hash||!window.fetch||!window.Promise||!window.URL||!URL.createObjectURL)return;var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type==='back_forward')return;if(document.referrer.indexOf(location.origin+'/')===0)return;if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;var c=navigator.connection;if(c&&(c.saveData||/(^|-)2g$/.test(c.effectiveType||'')))return;var v=document.createElement('video'),h=false;try{h=/probably|maybe/.test(v.canPlayType('video/mp4; codecs="hvc1.1.6.L150.B0"'))||/probably|maybe/.test(v.canPlayType('video/mp4; codecs="hvc1"'))}catch(e){}var V='__V__',u='film/hero-'+(matchMedia('(orientation: portrait)').matches?'9x16':'16x9')+(h?'-hevc':'')+'.mp4'+(V.indexOf('__')===0?'':'?v='+V);var ac=window.AbortController?new AbortController():null;var b=fetch(u,{priority:'low',signal:ac?ac.signal:undefined}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.blob()}).then(function(x){return URL.createObjectURL(x)});b['catch'](function(){});window.MosedeFilmHent={url:u,blob:b,stop:function(){if(ac)ac.abort()}}}catch(e){}})();</script><link rel="canonical" href="https://mosedehavnecafe.dk/"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mosede Havnecafe — smørrebrød og is på Mosede Havn i Greve</title>
 
 
 <!-- ⚠️ CANONICAL OG DELEFELTER KOM FOERST 30/8, sammen med

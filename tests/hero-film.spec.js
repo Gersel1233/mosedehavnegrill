@@ -78,7 +78,8 @@ test.describe('Heroens film er åbningen', () => {
     const forventet = info.project.name === 'computer' ? '16x9' : '9x16';
     await expect(page.locator('.hero-film')).toHaveAttribute('data-format', forventet);
     const v = page.locator('.hero-film video:not(.hero-liv)');
-    expect(await v.getAttribute('src')).toContain(`film/hero-${forventet}.mp4`);
+    /* Filen hentes helt, før den spilles (5/11) — hvilken fil, står i data-kilde. */
+    expect(await page.locator('.hero-film').getAttribute('data-kilde')).toContain(`film/hero-${forventet}.mp4`);
     expect(await v.getAttribute('poster')).toContain(`film/hero-${forventet}-start.jpg`);
     /* Startbilledet vælges af browseren, før scriptet kører, og derfor
        står formatreglen to steder. De to må aldrig skride fra hinanden. */
@@ -672,7 +673,7 @@ test.describe('Heroens film er åbningen', () => {
     await kanHevc(page);
     await åbnSkal(page, '/', { data: grunddata() });
     const fmt = info.project.name === 'computer' ? '16x9' : '9x16';
-    await expect(page.locator('.hero-film video:not(.hero-liv)')).toHaveAttribute('src', new RegExp(`film/hero-${fmt}-hevc\\.mp4`));
+    await expect(page.locator('.hero-film')).toHaveAttribute('data-kilde', new RegExp(`film/hero-${fmt}-hevc\\.mp4`));
     await expect(page.locator('.hero-film')).toHaveAttribute('data-codec', 'hevc');
   });
 
@@ -682,7 +683,7 @@ test.describe('Heroens film er åbningen', () => {
     await taelPlay(page);
     await kanHevc(page);
     await åbnSkal(page, '/historien.html', { data: grunddata() });
-    const src = await page.locator('.hero-film video:not(.hero-liv)').getAttribute('src');
+    const src = await page.locator('.hero-film').getAttribute('data-kilde');
     expect(src).toMatch(/film\/historie-(9x16|16x9)\.mp4/);
     expect(src).not.toContain('-hevc');
   });
@@ -933,5 +934,70 @@ test.describe('Åbningen som en filmplakat', () => {
     expect(t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)', 'titlen er flyttet: ' + t).toBe(true);
     const h = await page.locator('.hero h1').evaluate((e) => getComputedStyle(e).transform);
     expect(h === 'none' || h === 'matrix(1, 0, 0, 1, 0, 0)', 'overskriften venter forskudt: ' + h).toBe(true);
+  });
+});
+
+/* ============================================================
+   FILMEN HENTES HELT, FØR DEN SPILLER  (5/11)
+   ------------------------------------------------------------
+   Mikkels ord: "videoen hakker eller fejler spilningen stadig ret
+   tit, hvis ikke man har godt nok internet". Safari sagde "klar"
+   (canplaythrough) længe før filen var hentet. Nu hentes hele filen
+   med fetch og spilles fra hukommelsen; når den ikke frem i tide,
+   kommer slutbilledet og teksten — og den spilles ikke bagefter.
+   ============================================================ */
+test.describe('Filmen spiller fra hukommelsen', () => {
+  test('filmen spilles først, når HELE filen er hentet — og så fra en blob', async ({ page }) => {
+    await taelPlay(page);
+    let svar = null;
+    await page.route('**/film/hero-*.mp4*', (r) => {
+      if (/-liv\.mp4/.test(r.request().url())) return r.fulfill({ status: 404, body: '' });
+      svar = r;
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => svar !== null).toBe(true);
+    await page.waitForTimeout(600);
+    expect(await page.evaluate(() => window.__play), 'filmen blev bedt om at spille, før filen var hentet').toBe(0);
+    expect(await page.locator('.hero-film video:not(.hero-liv)').getAttribute('src')).toBeNull();
+    expect(await aabner(page), 'åbningen venter stadig').toBe(true);
+    await svar.fulfill({ status: 200, contentType: 'video/mp4', body: Buffer.alloc(4096) });
+    await expect.poll(() => page.evaluate(() => window.__play)).toBe(1);
+    expect(await page.locator('.hero-film video:not(.hero-liv)').getAttribute('src')).toMatch(/^blob:/);
+  });
+
+  test('når filen ikke når frem, kommer slutbilledet og teksten — og filmen spilles ikke bagefter', async ({ page }) => {
+    await taelPlay(page);
+    let svar = null;
+    await page.route('**/film/hero-*.mp4*', (r) => {
+      if (/-liv\.mp4/.test(r.request().url())) return r.fulfill({ status: 404, body: '' });
+      svar = r;
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => aabner(page), { timeout: 10000 }).toBe(false);
+    await expect(page.locator('.hero-film')).toHaveClass(/\bslut\b/);
+    expect(await synlighed(page, '.hero h1')).toBeGreaterThan(0);
+    await svar.fulfill({ status: 200, contentType: 'video/mp4', body: Buffer.alloc(4096) });
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.__play), 'en sen film blev spillet bag teksten').toBe(0);
+  });
+
+  test('en fil, der ikke kan hentes, giver slutbilledet med det samme', async ({ page }) => {
+    await taelPlay(page);
+    await page.route('**/film/hero-*.mp4*', (r) => r.fulfill({ status: 404, body: '' }));
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => aabner(page), { timeout: 3000 }).toBe(false);
+    expect(await page.evaluate(() => window.__play)).toBe(0);
+  });
+
+  test('datasparing giver ingen film', async ({ page }) => {
+    await taelPlay(page);
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'connection', { configurable: true, get: () => ({ saveData: true, effectiveType: '4g' }) });
+    });
+    let hentet = 0;
+    await page.route('**/film/hero-*.mp4*', (r) => { hentet++; r.fulfill({ status: 404, body: '' }); });
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => aabner(page), { timeout: 3000 }).toBe(false);
+    expect(hentet, 'filmen blev hentet trods datasparing').toBe(0);
   });
 });
