@@ -36,6 +36,15 @@
       tekst.appendChild(lav('strong', null, r.navn));
       tekst.appendChild(lav('span', 'rabat-kode-maerke', r.kode));
       tekst.appendChild(lav('span', 'rabat-procent', r.procent + ' %' + (r.aktiv === false ? ' · slukket' : '')));
+      /* Kampagnens periode (11/11) — og om den er i gang. */
+      if (r.gyldig_fra || r.gyldig_til) {
+        var iDag = Butik.nu ? Butik.nu().dato : '';
+        var kort = function (d) { var x = String(d).slice(0, 10).split('-'); return Number(x[2]) + '/' + Number(x[1]); };
+        var periode = (r.gyldig_fra ? kort(r.gyldig_fra) : '…') + '–' + (r.gyldig_til ? kort(r.gyldig_til) : '…');
+        var status = r.gyldig_til && iDag > String(r.gyldig_til).slice(0, 10) ? 'udløbet'
+          : (r.gyldig_fra && iDag < String(r.gyldig_fra).slice(0, 10) ? 'starter ' + kort(r.gyldig_fra) : 'kører nu');
+        tekst.appendChild(lav('span', 'rabat-periode rabat-periode--' + status.split(' ')[0], 'Kampagne ' + periode + ' · ' + status));
+      }
       raekke.appendChild(tekst);
 
       var knapper = lav('div', 'rabat-knapper');
@@ -80,6 +89,9 @@
         procent: ($('rabat-procent') || {}).value,
         aktiv: true,
       };
+      var fra = ($('rabat-fra') || {}).value || '';
+      var til = ($('rabat-til') || {}).value || '';
+      if (fra || til) { r.gyldig_fra = fra; r.gyldig_til = til; }
       Admin.gem(Butik.skrive.rabatkode(r),
         'Koden ' + String(r.kode || '').trim().toUpperCase() + ' er lavet. Giv den til ' + String(r.navn || '').trim() + '.')
         .then(hent)
@@ -88,7 +100,7 @@
              afviste databasen den, skal det skrevne blive stående. */
           var k = String(r.kode || '').replace(/\s+/g, '').toUpperCase();
           if ((liste || []).some(function (x) { return x.kode === k; })) {
-            ['rabat-navn', 'rabat-kode', 'rabat-procent'].forEach(function (id) { if ($(id)) $(id).value = ''; });
+            ['rabat-navn', 'rabat-kode', 'rabat-procent', 'rabat-fra', 'rabat-til'].forEach(function (id) { if ($(id)) $(id).value = ''; });
           }
         });
     });

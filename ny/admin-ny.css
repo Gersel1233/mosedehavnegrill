@@ -313,3 +313,15 @@ body.personale .vare-tilkoeb-ny{min-height:40px;padding:0 2px;border:0;backgroun
 .rabat-ny{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) auto;gap:10px;align-items:end}
 @media (max-width:700px){.rabat-ny{grid-template-columns:1fr 1fr}.rabat-ny .felt:first-child,.rabat-ny .knap{grid-column:1/-1}}
 .bestil-rabat .bestil-linjepris{color:#1f7a3f;font-weight:600}
+
+/* Kampagnekoder (11/11): periode og status under koden */
+.rabat-periode{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font-size:.8rem;font-weight:600;background:rgba(42,95,143,.1);color:#2a5f8f}
+.rabat-periode--udløbet{background:rgba(36,26,23,.08);color:#6f5b55}
+.rabat-periode--starter{background:rgba(240,160,60,.16);color:#8a5a12}
+/* Kampagnekodernes to datofelter (11/11): seks felter på rækken, og en
+   datovælger må aldrig gøre rækken bredere end skærmen (målt: på en
+   telefon skubbede den bundbjælkens "Mere" ind under filteret). */
+.rabat-ny{grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,.8fr) minmax(0,1.3fr) minmax(0,1.3fr) auto}
+.rabat-ny .felt{min-width:0}
+.rabat-ny input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+@media (max-width:900px){.rabat-ny{grid-template-columns:1fr 1fr}.rabat-ny .felt:first-child,.rabat-ny .knap{grid-column:1/-1}}

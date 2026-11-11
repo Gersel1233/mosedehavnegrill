@@ -4715,7 +4715,7 @@
      Koderne bor i supabase/rabatkoder-28-10.sql. Gæsten kan kun spørge
      om sin egen kode; beløbet regnes af databasen, og reglen her er den
      samme, så skærmen viser det, bonen kommer til at sige. */
-  var RABAT_UGYLDIG = 'Rabatkoden passer ikke. Tjek den, eller fjern den og bestil uden.';
+  var RABAT_UGYLDIG = 'Rabatkoden passer ikke eller gælder ikke lige nu. Tjek den, eller fjern den og bestil uden.';
   function rabatBeloeb(linjer, procent) {
     var sum = (linjer || []).reduce(function (s, l) {
       var p = Number(l && l.pris), a = Number(l && l.antal);
@@ -4723,10 +4723,19 @@
     }, 0);
     return Math.round(sum * Number(procent || 0) / 100);
   }
+  /* En kampagnekode gælder kun i sin periode (11/11). Datoerne er
+     dansk tid og begge dage med; tom = ingen grænse den vej. */
+  function rabatGaelder(r, dato) {
+    var d = dato || nu().dato;
+    if (r.gyldig_fra && d < String(r.gyldig_fra).slice(0, 10)) return false;
+    if (r.gyldig_til && d > String(r.gyldig_til).slice(0, 10)) return false;
+    return true;
+  }
   function rabatkodeLokalt(d, kode, lok) {
     var k = String(kode || '').trim().toUpperCase();
     return ((d || {}).rabatkoder || []).filter(function (r) {
-      return r.aktiv !== false && r.kode === k && (r.lokation_id || LOKATION) === (lok || LOKATION);
+      return r.aktiv !== false && r.kode === k && (r.lokation_id || LOKATION) === (lok || LOKATION)
+        && rabatGaelder(r);
     })[0] || null;
   }
   function tjekRabatkode(kode) {
@@ -6148,6 +6157,7 @@
     dagLukketFor: dagLukketFor,
     tjekRabatkode: tjekRabatkode,
     rabatBeloeb: rabatBeloeb,
+    rabatGaelder: rabatGaelder,
     dagMærkat: dagMærkat,
     dagenHeltLukket: dagenHeltLukket,
     qrAaben: qrAaben,

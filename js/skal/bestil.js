@@ -2875,7 +2875,65 @@
       { navn: 'Levering', antal: 1, pris: l.pris, emballage: true }]);
   }
 
+  /* ============================================================
+     RABATKODEN PÅ FORSIDEN  (11/11)
+     ------------------------------------------------------------
+     Jim: en kampagnekode skal give den lovede rabat automatisk.
+     Koden tjekkes hos databasen (Butik.tjekRabatkode), når gæsten
+     trykker "Brug koden" — og igen lige før afsendelsen, hvis hun
+     bare skrev den. Databasen regner det endelige beløb ud.
+     ============================================================ */
+  var forsideRabat = null;
+  function rabatKode() {
+    var f = document.getElementById('forside-rabatkode');
+    return f ? String(f.value || '').trim().toUpperCase() : '';
+  }
+  function rabatSvar(t, god) {
+    var p = document.getElementById('forside-rabat-svar');
+    if (!p) return;
+    p.textContent = t || '';
+    p.classList.toggle('rabat-ok', !!god);
+  }
+  function tjekForsideRabat() {
+    var kode = rabatKode();
+    if (!kode) { forsideRabat = null; rabatSvar(''); return Promise.resolve(true); }
+    if (forsideRabat && forsideRabat.kode === kode) return Promise.resolve(true);
+    if (!Butik.tjekRabatkode) return Promise.resolve(true);
+    return Butik.tjekRabatkode(kode).then(function (r) {
+      forsideRabat = r;
+      if (r) {
+        rabatSvar('✓ ' + r.navn + ' — ' + r.procent + ' % rabat trækkes fra. Du betaler ved lugen.', true);
+        return true;
+      }
+      rabatSvar('Koden passer ikke eller gælder ikke lige nu. Tjek den, eller fjern den og bestil uden.');
+      return false;
+    }).catch(function () {
+      rabatSvar('Koden kunne ikke tjekkes lige nu. Prøv igen om lidt.');
+      return false;
+    });
+  }
+  (function () {
+    var knapR = document.getElementById('forside-rabat-tjek');
+    var feltR = document.getElementById('forside-rabatkode');
+    if (knapR) knapR.addEventListener('click', function () { tjekForsideRabat(); });
+    if (feltR) {
+      feltR.addEventListener('input', function () {
+        if (forsideRabat && forsideRabat.kode !== rabatKode()) { forsideRabat = null; rabatSvar(''); }
+      });
+      feltR.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); tjekForsideRabat(); }
+      });
+    }
+  }());
+
   function send() {
+    /* En skrevet kode, der ikke er tjekket endnu, tjekkes først. */
+    if (rabatKode() && !(forsideRabat && forsideRabat.kode === rabatKode())) {
+      return tjekForsideRabat().then(function (ok) {
+        if (ok) send();
+        else brøl('Rabatkoden passer ikke eller gælder ikke lige nu. Tjek den, eller fjern den og bestil uden.');
+      });
+    }
     var navn = værdi('navn');
     var tlf = værdi('tlf');
     var besked = værdi('besked');
@@ -3045,6 +3103,7 @@
          lave et stykke af. Kolonnen fyld findes i forvejen —
          bestil/ har sendt den siden 20/8. */
       fyld: valgtFyld.slice(),
+      rabat_kode: forsideRabat && forsideRabat.kode === rabatKode() ? forsideRabat.kode : undefined,
     }).then(function (raekke) {
       glemKurv();
       visTak(raekke);

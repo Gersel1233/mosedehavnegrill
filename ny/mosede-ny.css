@@ -1270,3 +1270,13 @@ body.ny-side .hero.film .hero-cta .g{height:52px;min-height:52px;font-size:15.5p
   .hav .hero.film h1{font-size:clamp(19px,1.45vw,25px);max-width:28ch}
   .hav .hero.film .hero-cta{grid-template-columns:repeat(2,minmax(0,1fr));width:100%;max-width:420px;justify-content:start}
 }
+
+/* Rabatkoden på forsidens "Bestil mad" (11/11) — samme greb som bestil/ */
+.rabat-forside summary{cursor:pointer;font-weight:600;color:var(--sea,#2a5f8f);padding:6px 0;list-style:none}
+.rabat-forside summary::-webkit-details-marker{display:none}
+.rabat-forside summary::before{content:"+ "}
+.rabat-forside[open] summary::before{content:"− "}
+.rabat-forside .rabat-raekke{display:flex;gap:8px;margin-top:8px;align-items:center}
+.rabat-forside .rabat-raekke .inp{flex:1;min-width:0;text-transform:uppercase;letter-spacing:.04em}
+.rabat-forside .rabat-raekke .g{flex:none;height:48px;padding:0 16px;font-size:15px}
+.rabat-forside .hint.rabat-ok{color:#1f7a3f;font-weight:600}

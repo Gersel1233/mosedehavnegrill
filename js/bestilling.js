@@ -3129,7 +3129,7 @@
     /* Rabatkoden tjekkes, før kigget vises — en kode, der ikke passer,
        skal siges HER, ikke ved afsendelsen. */
     tjekRabat().then(function (ok) {
-      if (!ok) { sigFejl('Rabatkoden passer ikke. Tjek den, eller fjern den og bestil uden.'); return; }
+      if (!ok) { sigFejl('Rabatkoden passer ikke eller gælder ikke lige nu. Tjek den, eller fjern den og bestil uden.'); return; }
       if (rabat) tilKig.rabat_kode = rabat.kode;
       visKig(tilKig);
     });
@@ -3163,7 +3163,7 @@
         visSum();
         return true;
       }
-      rabatSvar('Koden passer ikke. Tjek den, eller fjern den og bestil uden.');
+      rabatSvar('Koden passer ikke eller gælder ikke lige nu. Tjek den, eller fjern den og bestil uden.');
       return false;
     }).catch(function () {
       rabatSvar('Koden kunne ikke tjekkes lige nu. Prøv igen om lidt.');

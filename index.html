@@ -662,6 +662,20 @@
       </label>
     </div>
   <div class="field"><label for="besked">Besked (valgfrit)</label><textarea class="inp" id="besked" placeholder="Fx særlige ønsker"></textarea></div>
+  <!-- RABATKODE OGSÅ HER  (11/11). Jim: en kampagnekode skal virke, når
+       gæsten bestiller — og forsidens "Bestil mad" er det sted, flest
+       bestiller. Samme kode og samme regel som bestil/; databasen regner
+       rabatten ud (zz_rabatkode). js/skal/bestil.js. -->
+  <details class="field rabat-felt rabat-forside" id="forside-rabat">
+    <summary>Har du en rabatkode?</summary>
+    <div class="rabat-raekke">
+      <input class="inp" id="forside-rabatkode" type="text" maxlength="30" autocomplete="off"
+             autocapitalize="characters" autocorrect="off" spellcheck="false"
+             placeholder="Fx JUL10" aria-label="Rabatkode" aria-describedby="forside-rabat-svar">
+      <button type="button" class="g ghost lille" id="forside-rabat-tjek">Brug koden</button>
+    </div>
+    <p class="hint" id="forside-rabat-svar" aria-live="polite"></p>
+  </details>
   <!-- ⚠️ HVAD KAN IKKE BESTILLES LIGE NU, OG HVORFOR (30/8).
        Kundens ord: "morgenmad kun 10-12.30 og derefter alt
        andet." En kategori, der bare forsvinder fra listen, ligner

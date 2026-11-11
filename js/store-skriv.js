@@ -615,6 +615,17 @@
       }
       if (!ren.navn) return Promise.reject(new Error('Skriv, hvem aftalen er med — fx Greve Kommune.'));
       if (!(ren.procent >= 1 && ren.procent <= 50)) return Promise.reject(new Error('Rabatten skal være mellem 1 og 50 %.'));
+      /* KAMPAGNEKODER (11/11): en periode, koden gælder i. Sendes kun,
+         når der ER en periode (eller koden havde en) — en database uden
+         supabase/rabatkoder-kampagne-11-11.sql kender ikke kolonnerne. */
+      var dagOk = /^\d{4}-\d{2}-\d{2}$/;
+      if ('gyldig_fra' in r || 'gyldig_til' in r) {
+        var fra = String(r.gyldig_fra || '').slice(0, 10);
+        var til = String(r.gyldig_til || '').slice(0, 10);
+        if ((fra && !dagOk.test(fra)) || (til && !dagOk.test(til))) return Promise.reject(new Error('Datoen kunne ikke læses — vælg den i kalenderen.'));
+        if (fra && til && til < fra) return Promise.reject(new Error('Slutdatoen ligger før startdatoen.'));
+        if (fra || til || r.id) { ren.gyldig_fra = fra || null; ren.gyldig_til = til || null; }
+      }
       if (!SKY) return lokalt(function (d) {
         d.rabatkoder = d.rabatkoder || [];
         var andre = d.rabatkoder.filter(function (x) { return String(x.id) !== String(r.id); });
@@ -624,9 +635,16 @@
         if (r.id) d.rabatkoder = d.rabatkoder.map(function (x) { return String(x.id) === String(r.id) ? Object.assign({}, x, ren) : x; });
         else d.rabatkoder.push(Object.assign({ id: næsteId(d.rabatkoder), oprettet: new Date().toISOString() }, ren));
       });
-      if (r.id) return skriv('PATCH', 'rabatkoder', 'id=eq.' + encodeURIComponent(r.id), ren);
+      var ikkeSatOp = function (e) {
+        if (/gyldig_(fra|til)|PGRST204/.test(String(e && e.message))) {
+          throw new Error('Kampagnedatoer er ikke sat op endnu. Sig til Lesreg: supabase/rabatkoder-kampagne-11-11.sql skal køres. Koden kan laves uden datoer imens.');
+        }
+        throw e;
+      };
+      if (r.id) return skriv('PATCH', 'rabatkoder', 'id=eq.' + encodeURIComponent(r.id), ren).catch(ikkeSatOp);
       return skriv('POST', 'rabatkoder', null, [ren]).catch(function (e) {
         if (/rabatkode_unik|duplicate/i.test(String(e && e.message))) throw new Error('Koden ' + ren.kode + ' findes allerede.');
+        ikkeSatOp(e);
         throw e;
       });
     },

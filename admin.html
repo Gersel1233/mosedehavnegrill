@@ -1729,9 +1729,11 @@
           <h2 class="h-panel">Aftaler og rabatkoder</h2>
           <span class="kort-note">til dem, der har en ordning med jer</span>
         </div>
-        <p class="hjaelp">Giv en virksomhed eller en forening en kode. Gæsten skriver den, når hun
-          bestiller smørrebrød ud af huset, og rabatten står på bonen: <em>Aftale: Greve Kommune
-          −32 kr.</em> Der betales stadig ved lugen. En kode, der er slukket, virker ikke længere.</p>
+        <p class="hjaelp">Giv en virksomhed eller en forening en kode — eller lav en kampagnekode til
+          alle. Gæsten skriver koden, når hun bestiller, og rabatten står på bonen: <em>Aftale: Greve
+          Kommune −32 kr.</em> Der betales stadig ved lugen. En <strong>fast aftale</strong> har ingen
+          datoer. En <strong>kampagne</strong> får en start- og slutdato og stopper af sig selv.
+          En kode, der er slukket, virker ikke.</p>
         <div id="rabat-liste" class="rabat-liste"></div>
         <div class="admin-raekke rabat-ny" id="rabat-ny">
           <label class="felt"><span>Aftalen er med</span>
@@ -1741,6 +1743,13 @@
                    spellcheck="false" placeholder="GREVE10"></label>
           <label class="felt felt-smal"><span>Rabat i %</span>
             <input type="number" id="rabat-procent" min="1" max="50" inputmode="numeric" placeholder="10"></label>
+          <!-- KAMPAGNEKODER (11/11). Jim: en kampagne på 14 dage, hvor koden
+               giver den lovede rabat automatisk. Tomme felter = koden gælder
+               altid (en fast aftale). -->
+          <label class="felt felt-smal"><span>Gælder fra <em>(valgfrit)</em></span>
+            <input type="date" id="rabat-fra"></label>
+          <label class="felt felt-smal"><span>Gælder til og med <em>(valgfrit)</em></span>
+            <input type="date" id="rabat-til"></label>
           <button type="button" class="knap" id="rabat-tilfoej">Lav koden</button>
         </div>
       </div>
