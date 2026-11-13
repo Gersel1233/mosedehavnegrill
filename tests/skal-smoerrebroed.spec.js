@@ -380,9 +380,9 @@ test.describe('Fragten står i summen', () => {
 
     const sum = page.locator('#sumline');
     await expect(sum).toContainText('levering 79,-');
-    await expect(sum).toContainText('emballage 4 × 10,-');
-    // 4 × 55 + 4 × 10 + 79
-    await expect(sum).toContainText('339,-');
+    await expect(sum).toContainText('emballage 10,- pr. bestilling');
+    // 4 × 55 + 10 (emballage én gang, 13/11) + 79
+    await expect(sum).toContainText('309,-');
   });
 
   test('afhentning koster ingen fragt', async ({ page }) => {
@@ -392,8 +392,8 @@ test.describe('Fragten står i summen', () => {
     await tælOp(page, 'Smørrebrød', 'Rejemad', 4);
     const sum = page.locator('#sumline');
     await expect(sum).not.toContainText('levering');
-    // 4 × 55 + 4 × 10
-    await expect(sum).toContainText('260,-');
+    // 4 × 55 + 10 (emballage én gang, 13/11)
+    await expect(sum).toContainText('230,-');
   });
 
   /* ============================================================
@@ -413,8 +413,8 @@ test.describe('Fragten står i summen', () => {
     const sum = page.locator('#sumline');
     await expect(sum).toContainText('levering gratis');
     await expect(sum).not.toContainText('levering 79');
-    // 4 × 55 + 4 × 10 — de 79 er væk
-    await expect(sum).toContainText('260,-');
+    // 4 × 55 + 10 — de 79 er væk
+    await expect(sum).toContainText('230,-');
   });
 
   test('en gratis periode en anden dag koster som før', async ({ page }) => {
@@ -667,8 +667,8 @@ test.describe('Kvitteringen', () => {
     const liste = page.locator('.kvit-liste');
     await expect(liste).toContainText('4 × Rejemad');
     await expect(liste).toContainText('Emballage');
-    // 4 × 55 + 4 × 10
-    await expect(page.locator('.kvit-total')).toContainText('260,-');
+    // 4 × 55 + 10 (emballage én gang, 13/11)
+    await expect(page.locator('.kvit-total')).toContainText('230,-');
   });
 
   /* ⚠️ KOMMER NUMMERET IKKE, STÅR REFERENCEN ALENE — og der skal

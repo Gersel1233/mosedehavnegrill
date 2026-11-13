@@ -1124,14 +1124,15 @@ test.describe('Emballage', () => {
     await page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]').click();
   }
 
-  test('to portioner ud af huset koster to gange emballage', async ({ page }) => {
+  /* 13/11: emballagen er ÉN gang pr. bestilling (Jim), ikke pr. portion. */
+  test('to portioner ud af huset koster emballage én gang', async ({ page }) => {
     await åbn(page, { data: medEmballage() });
     await laegIKurven(page);
 
     const sum = page.locator('#sumline');
-    await expect(sum).toContainText('emballage 2 × 10');
-    // 2 × 89 + 2 × 10
-    await expect(sum).toContainText('198');
+    await expect(sum).toContainText('emballage 10,- pr. bestilling');
+    // 2 × 89 + 10
+    await expect(sum).toContainText('188');
   });
 
   /* ⚠️ ALDRIG VED SPIS HER. Maden bæres ud på en tallerken, og et
@@ -1169,7 +1170,7 @@ test.describe('Emballage', () => {
 
     await page.locator('[data-kategori="Øl"]').click();
     await page.locator('[data-vare="Fadøl, lille"] button[data-d="+"]').click();
-    await expect(page.locator('#sumline')).toContainText('emballage 1 × 10');
+    await expect(page.locator('#sumline')).toContainText('emballage 10,- pr. bestilling');
   });
 
   /* ⚠️ EMBALLAGEN ER EN LINJE, IKKE ET SKJULT TILLÆG. Køkkenet
@@ -1186,7 +1187,7 @@ test.describe('Emballage', () => {
     const b = (await gemteData(page)).bestillinger[0];
     const emb = b.linjer.filter((l) => l.navn === 'Bakke')[0];
     expect(emb, 'emballagen fulgte ikke med').toBeTruthy();
-    expect(emb.antal).toBe(2);
+    expect(emb.antal, 'emballagen er én gang pr. bestilling (13/11)').toBe(1);
     expect(emb.pris).toBe(10);
   });
 });

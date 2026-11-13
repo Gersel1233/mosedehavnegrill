@@ -2640,7 +2640,7 @@
       et.appendChild(lav('span', 'kurv-navn',
         String((data.indstillinger || {}).emballage_navn || '').trim() || 'Emballage'));
       et.appendChild(lav('span', 'kurv-pris',
-        emb.antal + ' × ' + window.MosedePris(emb.pris)));
+        'pr. bestilling'));
       e.appendChild(et);
       e.appendChild(lav('span', 'kurv-pris', window.MosedePris(emb.ialt)));
       boks.appendChild(e);

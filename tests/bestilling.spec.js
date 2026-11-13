@@ -987,13 +987,14 @@ test.describe('Emballage ud af huset', () => {
     return d;
   }
 
-  test('to portioner ud af huset koster to gange emballage', async ({ page }) => {
+  /* 13/11: emballagen er ÉN gang pr. bestilling (Jim), ikke pr. portion. */
+  test('to portioner ud af huset koster emballage én gang', async ({ page }) => {
     await åbnBestil(page, { data: medEmballage() });
     await vaelg(page, 2);
 
-    // 2 × 89 = 178, plus 2 × 10 i emballage = 198.
+    // 2 × 89 = 178, plus 10 i emballage for hele bestillingen = 188.
     await expect(page.locator('#bestil-sum-tekst')).toContainText('2 stykker');
-    await expect(page.locator('#bestil-sum-tekst')).toContainText('198');
+    await expect(page.locator('#bestil-sum-tekst')).toContainText('188');
   });
 
   /* ⚠️ OG GÆSTEN SKAL KUNNE SE HVORFOR. Et tillæg, hun først
@@ -1006,7 +1007,8 @@ test.describe('Emballage ud af huset', () => {
     const liste = page.locator('#kurv-liste');
     await expect(liste).toBeVisible();
     await expect(liste.locator('.kurv-emballage')).toContainText('Emballage');
-    await expect(liste.locator('.kurv-emballage')).toContainText('2 × 10');
+    await expect(liste.locator('.kurv-emballage')).toContainText('pr. bestilling');
+    await expect(liste.locator('.kurv-emballage')).not.toContainText('2 ×');
   });
 
   /* Ejerens eget navn, hvis han har skrevet et — og navnet følger

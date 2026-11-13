@@ -2590,7 +2590,7 @@
     var emb = emballagen();
     if (emb.antal) {
       linjer.appendChild(lav('span', 'sum-emb',
-        '  + emballage ' + emb.antal + ' × ' + kroner(emb.pris)));
+        '  + emballage ' + kroner(emb.ialt) + ' pr. bestilling'));
     }
     /* ⚠️ FRAGTEN SKAL STÅ, IKKE BARE TÆLLE MED (4/9). MÅLT på
        smørrebrødssiden: fire stykker à 55 med emballage sagde

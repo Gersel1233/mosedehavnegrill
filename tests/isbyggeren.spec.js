@@ -494,7 +494,7 @@ test.describe('Et forløb pr. slags is', () => {
 
     await page.locator('[data-kategori="Smørrebrød"]').click();
     await page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]').click();
-    await expect(sum, 'maden mistede sin emballage').toContainText('emballage 1 × 10');
+    await expect(sum, 'maden mistede sin emballage').toContainText('emballage 10,- pr. bestilling');
   });
 
   /* ⚠️ FIRE FLISER PÅ EN TELEFON ER TO OG TO. Første udgave stod én

@@ -566,21 +566,27 @@
     return !!(k && k.afdeling === 'is');
   }
 
-  /* Hvor mange portioner skal der emballage på? Linjerne er
-     {kat, antal}; kalderen kender sin egen kurv. */
+  /* ⚠️ ÉN GANG PR. BESTILLING, IKKE PR. PORTION  (13/11). Jims ord:
+     *"så lægger den 10,- kr. på i emballage for hver eneste
+     bestilling, det skal meget gerne kun være 10,- kr. samlet pr.
+     ordre"*. Før talte reglen portioner: 6 stk. smørrebrød gav 60 kr.
+     i emballage. Nu er det samme form som fragten: én linje, ét
+     beløb, så snart der er NOGET på bestillingen, der skal pakkes.
+     Databasen tjekker kun prisen pr. stk. (afsnit C), ikke antallet.
+     Linjerne er {kat, antal}; kalderen kender sin egen kurv. */
   function emballage(d, linjer, hvordan) {
     var pris = emballagePris(d);
     if (!pris || hvordan === 'spis_her') return { antal: 0, pris: 0, ialt: 0 };
     var kat = emballageKategorier(d);
-    var antal = 0;
-    (linjer || []).forEach(function (l) {
-      if (erIsKategori(d, l.kat)) return;
+    var noget = (linjer || []).some(function (l) {
+      if (erIsKategori(d, l.kat)) return false;
+      if (!(Number(l.antal) > 0)) return false;
       /* Tom liste = alt, der bestilles ud af huset. Det er det
          rimelige udgangspunkt, når ejeren har sat en pris men
          ikke peget på kategorier. */
-      if (!kat.length || kat.indexOf(Number(l.kat)) !== -1) antal += Number(l.antal) || 0;
+      return !kat.length || kat.indexOf(Number(l.kat)) !== -1;
     });
-    return { antal: antal, pris: pris, ialt: antal * pris };
+    return noget ? { antal: 1, pris: pris, ialt: pris } : { antal: 0, pris: 0, ialt: 0 };
   }
 
   /* ============================================================
