@@ -176,6 +176,11 @@ update public.menu_varer v set pris = 99
  where k.id = v.kategori_id and k.lokation_id = 'mosede' and k.rolle = 'smoerrebroed'
    and lower(btrim(v.navn)) in ('rejemad', 'tartarmad') and v.pris = 95;
 
+-- Prøvevaren "leverpostejs mad" til 3000,- (Mikkel 18/11: fjern den).
+-- Slukkes, ikke slettes — den kan slettes helt i admin.
+update public.menu_varer set aktiv = false
+ where lokation_id = 'mosede' and lower(btrim(navn)) = 'leverpostejs mad' and pris >= 1000;
+
 -- ---------- 4) Herregårdsbøf ------------------------------------------
 insert into public.menu_varer (kategori_id, lokation_id, navn, beskrivelse, pris, sortering, aktiv, oversaettelser)
 select p.kategori_id, 'mosede', 'Herregårdsbøf', 'Med pommes frites, bearnaise og grønne ærter', 105,
@@ -196,5 +201,6 @@ select case when position('mosede_pakke_tjek' in pg_get_functiondef('public.mose
              and exists (select 1 from public.menu_kategorier where lokation_id = 'mosede' and pakke_pris = 110)
              and exists (select 1 from public.menu_kategorier where lokation_id = 'mosede' and pakke_pris = 140)
              and exists (select 1 from public.menu_varer where lokation_id = 'mosede' and navn = 'Herregårdsbøf')
-            then '✅ Nye smørrebrødspriser, 3 stk.-pris og Herregårdsbøf er klar'
+             and not exists (select 1 from public.menu_varer where lokation_id = 'mosede' and aktiv and pris >= 1000 and lower(btrim(navn)) = 'leverpostejs mad')
+            then '✅ Nye smørrebrødspriser, 3 stk.-pris og Herregårdsbøf er klar — 3000 kr.-varen er slukket'
             else '❌ Noget gik galt — sig til Lesreg' end as svar;
