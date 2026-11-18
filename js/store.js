@@ -3219,6 +3219,9 @@
          madlinje ville være en kolonne fuld af støj i en jsonb,
          personalet også kigger i. */
       if (l.emballage === true) ud.emballage = true;
+      /* 3 stk.-prisens kategori (18/11) — databasen regner fradraget
+         efter på den. Samme feltliste-fælde som flaget lige over. */
+      if (l.emballage === true && /^[0-9]{1,12}$/.test(String(l.pakke || ''))) ud.pakke = Number(l.pakke);
       /* ⚠️ OG SMAGENE SKAL MED — SAMME FÆLDE, TREDJE GANG  (25/9).
          `emballage: true` blev tørret af her 4/9, fragten samme dag,
          og nu isens smage: linjen bygges af FASTE felter, så alt
@@ -3909,6 +3912,13 @@
       if (/bestilling_ukendt_vare/.test(t)) {
         var uv = efterKoden('bestilling_ukendt_vare');
         return new Error((uv ? '"' + uv + '"' : 'En af varerne') + ' står ikke på kortet længere. '
+          + 'Genindlæs siden, og send igen.');
+      }
+      /* 3 stk.-prisen (18/11, smoerrebroed-3-stk-18-11.sql): siden og
+         databasen regnede forskelligt — typisk en gammel fane fra før
+         en prisændring. */
+      if (/bestilling_pakke_forkert/.test(t)) {
+        return new Error('Prisen for 3 stk. passer ikke med kortet lige nu. '
           + 'Genindlæs siden, og send igen.');
       }
       if (/bestilling_tillaeg_forkert/.test(t)) {

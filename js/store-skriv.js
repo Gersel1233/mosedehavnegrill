@@ -968,6 +968,18 @@
         ren.rolle = I.ROLLER.indexOf(k.rolle) !== -1 ? k.rolle : null;
       }
 
+      /* 3 STK.-PRISEN (18/11) — kun når admin sender den (kolonnerne
+         kom med smoerrebroed-3-stk-18-11.sql). Alle tre eller ingen;
+         databasens kategori_pakke_ok siger det samme. */
+      if (k.pakke_antal !== undefined) {
+        var pa = Number(k.pakke_antal), pp = Number(k.pakke_pris), ps = Number(k.pakke_stykpris);
+        var gyldig = k.pakke_antal !== null && pa >= 2 && pa <= 20 && Math.round(pa) === pa
+          && pp > 0 && ps > 0 && pp < pa * ps;
+        ren.pakke_antal = gyldig ? pa : null;
+        ren.pakke_pris = gyldig ? pp : null;
+        ren.pakke_stykpris = gyldig ? ps : null;
+      }
+
       if (!SKY) {
         return lokalt(function (d) {
           d.menu_kategorier = d.menu_kategorier || [];

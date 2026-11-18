@@ -590,6 +590,58 @@
   }
 
   /* ============================================================
+     3 STK.-PRISEN  (18/11)
+     ------------------------------------------------------------
+     Jim: *"Alm. Smørrebrød til 39,- 3 Stk. 110,-  Stort Smørrebrød
+     55,- 3 Stk. 140,-"*. Kategorien bærer reglen (pakke_antal,
+     pakke_pris, pakke_stykpris — smoerrebroed-3-stk-18-11.sql), og
+     her bliver den til en FRADRAGSLINJE: «3 stk. Alm. smørrebrød
+     110,-», antal = hele sæt, pris = 110 − 3 × 39 = −7.
+
+     Kun stykker til PRÆCIS stykprisen tæller: rejemaden til 99 og
+     fiskefilet med rejer til 65 står i samme kategori og er uden for.
+     Man må blande slags. Databasen regner det samme efter
+     (mosede_pakke_tjek) og afviser en linje, der ikke passer.
+
+     Linjerne er {kat, antal, pris}; kalderen kender sin egen kurv. */
+  function pakkeRegel(k) {
+    var a = Number(k && k.pakke_antal);
+    var p = Number(k && k.pakke_pris);
+    var s = Number(k && k.pakke_stykpris);
+    if (!(a >= 2) || !(p > 0) || !(s > 0) || !(p < a * s)) return null;
+    return { antal: a, pris: p, stykpris: s };
+  }
+  function prisTekst(n) {
+    return (Math.round(n * 100) / 100).toString().replace('.', ',') + ',-';
+  }
+  function pakker(d, linjer) {
+    var ud = [];
+    ((d && d.menu_kategorier) || []).forEach(function (k) {
+      if (k.aktiv === false) return;
+      var r = pakkeRegel(k);
+      if (!r) return;
+      var n = (linjer || []).reduce(function (sum, l) {
+        if (!l || l.emballage || Number(l.kat) !== Number(k.id)) return sum;
+        if (Number(l.pris) !== r.stykpris) return sum;
+        var a = Number(l.antal);
+        return sum + (isFinite(a) && a > 0 ? Math.round(a) : 0);
+      }, 0);
+      var saet = Math.floor(n / r.antal);
+      if (saet < 1) return;
+      var stk = r.pris - r.antal * r.stykpris;
+      ud.push({
+        navn: r.antal + ' stk. ' + String(k.navn || '').trim() + ' ' + prisTekst(r.pris),
+        antal: saet, pris: stk, ialt: saet * stk, pakke: Number(k.id),
+        regel: r, kategori: String(k.navn || '').trim(),
+      });
+    });
+    return ud;
+  }
+  function pakkeIalt(d, linjer) {
+    return pakker(d, linjer).reduce(function (s, p) { return s + p.ialt; }, 0);
+  }
+
+  /* ============================================================
      LEVERINGEN KOSTER PENGE, OG DE SKAL MED I SUMMEN  (3/9)
      ------------------------------------------------------------
      Kundens ord: *"med levering der tjekker at det er korrekt ift
@@ -1051,6 +1103,9 @@
     sidsteTid: sidsteTid,
     emballage: emballage,
     emballagePris: emballagePris,
+    pakker: pakker,
+    pakkeIalt: pakkeIalt,
+    pakkeRegel: pakkeRegel,
     levering: levering,
     leveringsGebyr: leveringsGebyr,
     leveringsPostnr: leveringsPostnr,

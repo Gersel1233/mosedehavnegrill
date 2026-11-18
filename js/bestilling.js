@@ -2466,7 +2466,20 @@
     for (var k in kurv.stk) {
       sum += Number(kurvPost(k, liste).pris || 0) * kurv.stk[k];
     }
-    return sum + emballagen().ialt + fragten().ialt;
+    return sum + pakkerne().reduce(function (t, p) { return t + p.ialt; }, 0)
+      + emballagen().ialt + fragten().ialt;
+  }
+
+  /* 3 STK.-PRISEN (18/11) — reglen bor i js/bestil-regler.js. */
+  function pakkerne() {
+    if (!R.pakker) return [];
+    var liste = bestilbare();
+    var linjer = [];
+    for (var k in kurv.stk) {
+      var p = kurvPost(k, liste);
+      if (p.kat !== null && !p.is) linjer.push({ kat: p.kat, antal: kurv.stk[k], pris: p.pris });
+    }
+    return R.pakker(data, linjer);
   }
 
   /* ============================================================
@@ -2544,7 +2557,15 @@
      præcis, hvad der skete med emballagen, som kun forsiden
      regnede med i et døgn (31/8). */
   function medTillaeg(linjer) {
-    return leveringsLinje(emballageLinje(linjer));
+    return leveringsLinje(emballageLinje(pakkeLinjer(linjer)));
+  }
+
+  /* 3 stk.-prisen er en fradragslinje: emballage: true (penge, ikke
+     arbejde) og kategorien i `pakke`, som databasen regner efter. */
+  function pakkeLinjer(linjer) {
+    return linjer.concat(pakkerne().map(function (p) {
+      return { navn: p.navn, antal: p.antal, pris: p.pris, emballage: true, pakke: p.pakke };
+    }));
   }
 
   function leveringsLinje(linjer) {
@@ -2629,6 +2650,19 @@
       taeller.appendChild(ned); taeller.appendChild(tal); taeller.appendChild(op);
       r.appendChild(taeller);
       boks.appendChild(r);
+    });
+
+    /* 3 stk.-prisen står som sin egen linje (18/11), så gæsten kan
+       regne efter: «3 stk. Alm. smørrebrød 110,-  −7,-». */
+    pakkerne().forEach(function (pk) {
+      var pr = lav('div', 'kurv-linje kurv-emballage kurv-pakke');
+      var pt = lav('div', 'kurv-tekst');
+      pt.appendChild(lav('span', 'kurv-navn',
+        (pk.antal > 1 ? pk.antal + ' × ' : '') + pk.regel.antal + ' stk. ' + pk.kategori));
+      pt.appendChild(lav('span', 'kurv-pris', 'for ' + window.MosedePris(pk.regel.pris)));
+      pr.appendChild(pt);
+      pr.appendChild(lav('span', 'kurv-pris', '−' + window.MosedePris(-pk.ialt)));
+      boks.appendChild(pr);
     });
 
     /* ⚠️ EMBALLAGEN STÅR SOM SIN EGEN LINJE. Et tillæg, gæsten

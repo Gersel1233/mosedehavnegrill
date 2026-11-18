@@ -506,7 +506,16 @@
       var l = kurv[k];
       if (typeof l.pris === 'number' && isFinite(l.pris)) s += l.pris * l.antal;
     });
-    return s + emballagen().ialt + fragten().ialt;
+    return s + pakkerne().reduce(function (t, p) { return t + p.ialt; }, 0)
+      + emballagen().ialt + fragten().ialt;
+  }
+
+  /* 3 STK.-PRISEN (18/11) — reglen bor i js/bestil-regler.js. */
+  function pakkerne() {
+    if (!R.pakker) return [];
+    return R.pakker(data, Object.keys(kurv).map(function (k) {
+      return { kat: kurv[k].kat, antal: kurv[k].antal, pris: kurv[k].pris };
+    }));
   }
 
   /* ⚠️ EMBALLAGE ER IKKE EN VARE, MEN DEN ER EN PRIS (30/8).
@@ -2587,6 +2596,11 @@
        Butik.retKanBestilles). Skrev vi grenen alligevel, ville
        den være død kode, der LIGNER et værn — og den næste, der
        læser filen, ville tro, at tilfældet var dækket. */
+    pakkerne().forEach(function (p) {
+      linjer.appendChild(lav('span', 'sum-emb sum-pakke',
+        '  ' + (p.antal > 1 ? p.antal + ' × ' : '') + p.regel.antal + ' stk. '
+        + p.kategori + ' ' + kroner(p.regel.pris) + ': −' + kroner(-p.ialt)));
+    });
     var emb = emballagen();
     if (emb.antal) {
       linjer.appendChild(lav('span', 'sum-emb',
@@ -2864,7 +2878,16 @@
      præcis, hvad der skete med emballagen, som kun forsiden
      regnede med i et døgn (31/8). */
   function medTillaeg(linjer) {
-    return leveringsLinje(emballageLinje(linjer));
+    return leveringsLinje(emballageLinje(pakkeLinjer(linjer)));
+  }
+
+  /* 3 stk.-prisen er en fradragslinje med flaget emballage: true —
+     penge, ikke arbejde (Butik.erEmballage) — og kategorien i `pakke`,
+     som databasen regner efter (mosede_pakke_tjek). */
+  function pakkeLinjer(linjer) {
+    return linjer.concat(pakkerne().map(function (p) {
+      return { navn: p.navn, antal: p.antal, pris: p.pris, emballage: true, pakke: p.pakke };
+    }));
   }
 
   function leveringsLinje(linjer) {

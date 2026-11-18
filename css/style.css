@@ -12865,6 +12865,10 @@ body.personale .kat-dage-linje > label { font-size: 13px; font-weight: 600; colo
    hvor kategorien står. Ikke hele bredden på en computer. */
 body.personale .kat-rolle-linje .kat-rolle { max-width: 16rem; }
 body.personale .kat-rolle-linje .kat-rolle-hjaelp { flex-basis: 100%; margin: 0; }
+/* 3 stk.-pris (18/11): tre små tal på én linje, hjælpen under. */
+body.personale .kat-pakke-linje .kat-pakke-tal { width: 5.2rem; min-width: 0; flex: 0 0 auto; }
+body.personale .kat-pakke-linje > span { font-size: 13px; color: var(--muted); }
+body.personale .kat-pakke-linje .kat-pakke-hjaelp { flex-basis: 100%; margin: 0; }
 /* Gratis levering (14/10) — sit eget lille felt i leveringskortet. */
 body.personale .gratis-levering { margin: 14px 0 4px; padding: 12px 14px; border-radius: 14px;
   background: var(--creme, #fbf6ee); border: 1px solid rgba(36, 26, 23, .08); }

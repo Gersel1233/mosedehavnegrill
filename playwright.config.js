@@ -9,9 +9,12 @@ const fs = require('fs');
 /* Nogle byggemiljøer har en Chromium liggende i forvejen på en
    anden version end den Playwright selv ville hente. Findes den,
    bruger vi den – ellers lader vi Playwright bestemme. */
-const forudInstalleret = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+/* ⚠️ Versionen skifter med containeren (1194 → 1243, 18/11); den
+   faste genvej /opt/pw-browsers/chromium peger altid på den, der er. */
+const forudInstalleret = ['/opt/pw-browsers/chromium',
+  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'].filter((f) => fs.existsSync(f))[0] || '';
 const launchOptions = {
-  ...(fs.existsSync(forudInstalleret) ? { executablePath: forudInstalleret } : {}),
+  ...(forudInstalleret ? { executablePath: forudInstalleret } : {}),
   // Containere kører ofte som root, og Chromium nægter at starte
   // med sandkasse som root. Det gælder kun testmiljøet – gæsternes
   // browser er ikke berørt.

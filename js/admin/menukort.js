@@ -1359,6 +1359,57 @@
       rolleLinje.appendChild(rolleHjaelp);
     }
 
+    /* «3 STK.-PRIS» (18/11, smoerrebroed-3-stk-18-11.sql). Jim: alm.
+       smørrebrød 39,- / 3 stk. 110,-. Kun varer til PRÆCIS stykprisen
+       tæller, så rejemaden til 99 er uden for. Kun når databasen har
+       kolonnerne — ellers ville hvert kategorigem fejle (PGRST204). */
+    var pakkeLinje = null;
+    var pakkeFelter = null;
+    if (Object.prototype.hasOwnProperty.call(k, 'pakke_antal')) {
+      var talFelt = function (id, vaerdi, etiket) {
+        var f = document.createElement('input');
+        f.type = 'number'; f.min = '0'; f.step = '1'; f.inputMode = 'numeric';
+        f.id = id; f.className = 'kat-pakke-tal';
+        f.setAttribute('aria-label', etiket + ' for ' + k.navn);
+        f.value = (vaerdi === null || vaerdi === undefined) ? '' : String(Number(vaerdi));
+        return f;
+      };
+      pakkeFelter = {
+        antal: talFelt('kat-pakke-antal-' + k.id, k.pakke_antal, 'Antal stk.'),
+        pris: talFelt('kat-pakke-pris-' + k.id, k.pakke_pris, 'Samlet pris'),
+        stk: talFelt('kat-pakke-stk-' + k.id, k.pakke_stykpris, 'Gælder varer til'),
+      };
+      pakkeLinje = lav('div', 'kat-dage-linje kat-pakke-linje');
+      var pl = lav('label', null, 'Flere for');
+      pl.setAttribute('for', pakkeFelter.antal.id);
+      pakkeLinje.appendChild(pl);
+      pakkeLinje.appendChild(pakkeFelter.antal);
+      pakkeLinje.appendChild(lav('span', null, 'stk. for'));
+      pakkeLinje.appendChild(pakkeFelter.pris);
+      pakkeLinje.appendChild(lav('span', null, 'kr. · gælder varer til'));
+      pakkeLinje.appendChild(pakkeFelter.stk);
+      pakkeLinje.appendChild(lav('span', null, 'kr.'));
+      var pakkeHjaelp = lav('p', 'hjaelp kat-pakke-hjaelp');
+      var visPakke = function () {
+        var a = Number(pakkeFelter.antal.value), p2 = Number(pakkeFelter.pris.value),
+          st = Number(pakkeFelter.stk.value);
+        if (!pakkeFelter.antal.value && !pakkeFelter.pris.value && !pakkeFelter.stk.value) {
+          pakkeHjaelp.textContent = 'Tomt = ingen mængdepris. Eksempel: 3 stk. for 110 kr., gælder varer til 39 kr.';
+          return;
+        }
+        var n = ((Admin.data || {}).menu_varer || []).filter(function (v) {
+          return String(v.kategori_id) === String(k.id) && v.aktiv !== false && Number(v.pris) === st;
+        }).length;
+        pakkeHjaelp.textContent = (a >= 2 && p2 > 0 && st > 0 && p2 < a * st)
+          ? 'Gæsten sparer ' + (a * st - p2) + ' kr. pr. ' + a + ' stk. Gælder ' + n
+            + (n === 1 ? ' vare' : ' varer') + ' i kategorien til ' + st + ' kr. — de må blandes.'
+          : 'Udfyld alle tre: mindst 2 stk., og prisen skal være lavere end ' + (a > 0 && st > 0 ? a * st : '…') + ' kr.';
+      };
+      ['antal', 'pris', 'stk'].forEach(function (x) { pakkeFelter[x].addEventListener('input', visPakke); });
+      visPakke();
+      pakkeLinje.appendChild(pakkeHjaelp);
+    }
+
     /* NOTEN GÆLDER HELE KATEGORIEN. "På toastbrød eller rugbrød"
        hører til alle tolv slags pindemad, ikke til hver linje —
        skrevet på hver vare ville den fylde tolv gange og sige det
@@ -1570,6 +1621,22 @@
       // undefined = rør ikke kolonnen. Se noten i js/store-skriv.js.
       if (dage) ud.dage = dageVaerdi();
       if (rolleVælger) ud.rolle = rolleVælger.value || null;
+      if (pakkeFelter) {
+        var pa = pakkeFelter.antal.value.trim(), pp = pakkeFelter.pris.value.trim(),
+          ps = pakkeFelter.stk.value.trim();
+        if (!pa && !pp && !ps) {
+          ud.pakke_antal = null; ud.pakke_pris = null; ud.pakke_stykpris = null;
+        } else {
+          var na = Number(pa), np = Number(pp), ns = Number(ps);
+          if (!(na >= 2 && na <= 20 && Math.round(na) === na) || !(np > 0) || !(ns > 0)) {
+            return 'Mængdeprisen: skriv antal (2-20), samlet pris og hvilken stykpris den gælder — eller tøm alle tre.';
+          }
+          if (!(np < na * ns)) {
+            return 'Mængdeprisen skal være lavere end ' + na + ' × ' + ns + ' = ' + (na * ns) + ' kr.';
+          }
+          ud.pakke_antal = na; ud.pakke_pris = np; ud.pakke_stykpris = ns;
+        }
+      }
 
       /* ⚠️ HELE KORTET SKRIVES, IKKE KUN MIN RÆKKE. kategori_tider
          er ÉN indstilling med alle kategorier i; skrev vi kun
@@ -1607,6 +1674,7 @@
       h.appendChild(dageLinje);
     }
     if (rolleLinje) h.appendChild(rolleLinje);
+    if (pakkeLinje) h.appendChild(pakkeLinje);
     h.appendChild(flytKnapper(k, alle, 'kategori'));
     h.appendChild(gem);
     h.appendChild(note);
